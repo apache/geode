@@ -57,8 +57,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   public void initialize(byte[] bytes, Version version) {
     this.bytes = bytes;
-    this.nBytes = bytes.length;
-    this.pos = 0;
+    nBytes = bytes.length;
+    pos = 0;
     this.version = version;
   }
 
@@ -71,12 +71,12 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   }
 
   private int skipOver(long n) {
-    final int capacity = (this.nBytes - this.pos);
+    final int capacity = (nBytes - pos);
     if (n <= capacity) {
-      this.pos += (int) n;
+      pos += (int) n;
       return (int) n;
     } else {
-      this.pos += capacity;
+      pos += capacity;
       return capacity;
     }
   }
@@ -86,8 +86,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public int read() throws IOException {
-    if (this.pos < this.nBytes) {
-      return (this.bytes[this.pos++] & 0xff);
+    if (pos < nBytes) {
+      return (bytes[pos++] & 0xff);
     } else {
       throw new EOFException();
     }
@@ -104,13 +104,13 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
       throw new IndexOutOfBoundsException();
     }
 
-    final int capacity = (this.nBytes - this.pos);
+    final int capacity = (nBytes - pos);
     if (len > capacity) {
       len = capacity;
     }
     if (len > 0) {
-      System.arraycopy(this.bytes, this.pos, b, off, len);
-      this.pos += len;
+      System.arraycopy(bytes, pos, b, off, len);
+      pos += len;
       return len;
     } else {
       return 0;
@@ -130,14 +130,14 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public int available() {
-    return (this.nBytes - this.pos);
+    return (nBytes - pos);
   }
 
   /**
    * Get the current position in the byte[].
    */
   public int position() {
-    return this.pos;
+    return pos;
   }
 
   /**
@@ -161,9 +161,9 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   @Override
   public void readFully(byte[] b, int off, int len) throws IOException {
     if (len > 0) {
-      if ((this.nBytes - this.pos) >= len) {
-        System.arraycopy(this.bytes, this.pos, b, off, len);
-        this.pos += len;
+      if ((nBytes - pos) >= len) {
+        System.arraycopy(bytes, pos, b, off, len);
+        pos += len;
       } else {
         throw new EOFException();
       }
@@ -185,8 +185,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public boolean readBoolean() throws IOException {
-    if (this.pos < this.nBytes) {
-      return (this.bytes[this.pos++] != 0);
+    if (pos < nBytes) {
+      return (bytes[pos++] != 0);
     } else {
       throw new EOFException();
     }
@@ -197,8 +197,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public byte readByte() throws IOException {
-    if (this.pos < this.nBytes) {
-      return this.bytes[this.pos++];
+    if (pos < nBytes) {
+      return bytes[pos++];
     } else {
       throw new EOFException();
     }
@@ -217,9 +217,9 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public short readShort() throws IOException {
-    if ((this.pos + 1) < this.nBytes) {
-      int result = (this.bytes[this.pos++] & 0xff);
-      return (short) ((result << 8) | (this.bytes[this.pos++] & 0xff));
+    if ((pos + 1) < nBytes) {
+      int result = (bytes[pos++] & 0xff);
+      return (short) ((result << 8) | (bytes[pos++] & 0xff));
     } else {
       throw new EOFException();
     }
@@ -230,9 +230,9 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public int readUnsignedShort() throws IOException {
-    if ((this.pos + 1) < this.nBytes) {
-      int result = (this.bytes[this.pos++] & 0xff);
-      return ((result << 8) | (this.bytes[this.pos++] & 0xff));
+    if ((pos + 1) < nBytes) {
+      int result = (bytes[pos++] & 0xff);
+      return ((result << 8) | (bytes[pos++] & 0xff));
     } else {
       throw new EOFException();
     }
@@ -243,9 +243,9 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public char readChar() throws IOException {
-    if ((this.pos + 1) < this.nBytes) {
-      int result = this.bytes[this.pos++] << 8;
-      return (char) (result | (this.bytes[this.pos++] & 0xff));
+    if ((pos + 1) < nBytes) {
+      int result = bytes[pos++] << 8;
+      return (char) (result | (bytes[pos++] & 0xff));
     } else {
       throw new EOFException();
     }
@@ -256,11 +256,11 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public int readInt() throws IOException {
-    if ((this.pos + 3) < this.nBytes) {
-      int result = (this.bytes[this.pos++] & 0xff);
-      result = (result << 8) | (this.bytes[this.pos++] & 0xff);
-      result = (result << 8) | (this.bytes[this.pos++] & 0xff);
-      return ((result << 8) | (this.bytes[this.pos++] & 0xff));
+    if ((pos + 3) < nBytes) {
+      int result = (bytes[pos++] & 0xff);
+      result = (result << 8) | (bytes[pos++] & 0xff);
+      result = (result << 8) | (bytes[pos++] & 0xff);
+      return ((result << 8) | (bytes[pos++] & 0xff));
     } else {
       throw new EOFException();
     }
@@ -271,15 +271,15 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public long readLong() throws IOException {
-    if ((this.pos + 7) < this.nBytes) {
-      long result = (this.bytes[this.pos++] & 0xff);
-      result = (result << 8) | (this.bytes[this.pos++] & 0xff);
-      result = (result << 8) | (this.bytes[this.pos++] & 0xff);
-      result = (result << 8) | (this.bytes[this.pos++] & 0xff);
-      result = (result << 8) | (this.bytes[this.pos++] & 0xff);
-      result = (result << 8) | (this.bytes[this.pos++] & 0xff);
-      result = (result << 8) | (this.bytes[this.pos++] & 0xff);
-      return ((result << 8) | (this.bytes[this.pos++] & 0xff));
+    if ((pos + 7) < nBytes) {
+      long result = (bytes[pos++] & 0xff);
+      result = (result << 8) | (bytes[pos++] & 0xff);
+      result = (result << 8) | (bytes[pos++] & 0xff);
+      result = (result << 8) | (bytes[pos++] & 0xff);
+      result = (result << 8) | (bytes[pos++] & 0xff);
+      result = (result << 8) | (bytes[pos++] & 0xff);
+      result = (result << 8) | (bytes[pos++] & 0xff);
+      return ((result << 8) | (bytes[pos++] & 0xff));
     } else {
       throw new EOFException();
     }
@@ -311,19 +311,19 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
       return "";
     }
 
-    if ((this.pos + utfLen) <= this.nBytes) {
+    if ((pos + utfLen) <= nBytes) {
       String asciiString = readASCII(utfLen);
       if (asciiString != null) {
         return asciiString;
       }
-      if (this.charBuf == null || this.charBuf.length < utfLen) {
+      if (charBuf == null || charBuf.length < utfLen) {
         int charBufLength = (((utfLen / 2) + 1) * 3);
-        this.charBuf = new char[charBufLength];
+        charBuf = new char[charBufLength];
       }
       final byte[] bytes = this.bytes;
-      final char[] chars = this.charBuf;
+      final char[] chars = charBuf;
 
-      int index = this.pos;
+      int index = pos;
       final int limit = index + utfLen;
       int nChars = 0;
       int char1, char2, char3;
@@ -383,7 +383,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
             break;
         }
       }
-      this.pos = limit;
+      pos = limit;
       return new String(chars, 0, nChars);
     } else {
       throw new EOFException();
@@ -404,7 +404,9 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
       }
     }
     pos = limit;
-    return new String(bytes, 0, startIdx, utfLen);
+    @SuppressWarnings("deprecation")
+    final String string = new String(bytes, 0, startIdx, utfLen);
+    return string;
   }
 
   /**
@@ -413,10 +415,10 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * or -1 if at EOF.
    */
   private int readByteAsInt() {
-    if (this.pos >= this.nBytes) {
+    if (pos >= nBytes) {
       return -1;
     } else {
-      return this.bytes[this.pos++] & 0xff;
+      return bytes[pos++] & 0xff;
     }
   }
 
@@ -424,33 +426,35 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public String readLine() throws IOException {
-    if (this.pos >= this.nBytes) {
+  public String readLine() {
+    if (pos >= nBytes) {
       return null;
     }
     // index of the first byte in the line
-    int startIdx = this.pos;
+    int startIdx = pos;
     // index of the last byte in the line
     int lastIdx = -1;
     while (lastIdx == -1) {
       int c = readByteAsInt();
       switch (c) {
         case -1:
-          lastIdx = this.pos;
+          lastIdx = pos;
           break;
         case '\n':
-          lastIdx = this.pos - 1;
+          lastIdx = pos - 1;
           break;
         case '\r':
-          lastIdx = this.pos - 1;
+          lastIdx = pos - 1;
           int c2 = readByteAsInt();
           if (c2 != '\n' && c2 != -1) {
-            this.pos--;
+            pos--;
           }
           break;
       }
     }
-    return new String(this.bytes, 0, startIdx, lastIdx - startIdx);
+    @SuppressWarnings("deprecation")
+    final String string = new String(bytes, 0, startIdx, lastIdx - startIdx);
+    return string;
   }
 
   /**
@@ -458,10 +462,10 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public void close() {
-    this.bytes = null;
-    this.nBytes = 0;
-    this.pos = 0;
-    this.version = null;
+    bytes = null;
+    nBytes = 0;
+    pos = 0;
+    version = null;
   }
 
   /**
@@ -469,8 +473,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public String toString() {
-    return this.version == null ? super.toString()
-        : (super.toString() + " (v" + this.version + ')');
+    return version == null ? super.toString()
+        : (super.toString() + " (v" + version + ')');
   }
 
   private void throwUTFEncodingError(int index, int char1, int char2, Integer char3, int enc)

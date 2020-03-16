@@ -34,7 +34,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 /**
  * Class ClusterWANInfoService
  *
- * This class contains implementations of getting Cluster's WAN Informations (connected clusters)
+ * This class contains implementations of getting Cluster's WAN Information (connected clusters)
  *
  * @since GemFire version 7.5
  */
@@ -66,7 +66,7 @@ public class ClusterWANInfoService implements PulseService {
       connectedClusterListJson.add(clusterJSON);
     }
     // Response JSON
-    responseJSON.put("connectedClusters", connectedClusterListJson);
+    responseJSON.set("connectedClusters", connectedClusterListJson);
     // Send json response
     return responseJSON;
   }

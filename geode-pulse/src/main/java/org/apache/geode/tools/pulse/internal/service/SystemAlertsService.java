@@ -61,13 +61,13 @@ public class SystemAlertsService implements PulseService {
     String strPageNumber = requestDataJSON.get("SystemAlerts").get("pageNumber").textValue();
     if (StringUtils.isNotBlank(strPageNumber)) {
       try {
-        pageNumber = Integer.valueOf(strPageNumber);
-      } catch (NumberFormatException e) {
+        pageNumber = Integer.parseInt(strPageNumber);
+      } catch (NumberFormatException ignored) {
       }
     }
 
     // cluster's Members
-    responseJSON.put("systemAlerts", getAlertsJson(cluster, pageNumber));
+    responseJSON.set("systemAlerts", getAlertsJson(cluster, pageNumber));
     responseJSON.put("pageNumber", cluster.getNotificationPageNumber());
     responseJSON.put("connectedFlag", cluster.isConnectedFlag());
     responseJSON.put("connectedErrorMsg", cluster.getConnectionErrorMsg());
@@ -116,10 +116,10 @@ public class SystemAlertsService implements PulseService {
           infoJsonArray.add(objAlertJson);
         }
       }
-      alertsJsonObject.put("info", infoJsonArray);
-      alertsJsonObject.put("warnings", warningJsonArray);
-      alertsJsonObject.put("errors", errorJsonArray);
-      alertsJsonObject.put("severe", severeJsonArray);
+      alertsJsonObject.set("info", infoJsonArray);
+      alertsJsonObject.set("warnings", warningJsonArray);
+      alertsJsonObject.set("errors", errorJsonArray);
+      alertsJsonObject.set("severe", severeJsonArray);
     }
     return alertsJsonObject;
   }

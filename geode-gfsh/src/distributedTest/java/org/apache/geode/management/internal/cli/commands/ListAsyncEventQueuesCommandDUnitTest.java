@@ -50,6 +50,7 @@ public class ListAsyncEventQueuesCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void list() {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();

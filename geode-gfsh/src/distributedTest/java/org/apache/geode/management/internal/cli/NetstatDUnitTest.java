@@ -50,7 +50,8 @@ public class NetstatDUnitTest {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-  private static MemberVM locator0, server0, server1;
+  private static MemberVM server0;
+  private static MemberVM server1;
 
   private static final String GROUP_1 = "group-1";
 
@@ -60,7 +61,7 @@ public class NetstatDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    locator0 = lsRule.startLocatorVM(0);
+    MemberVM locator0 = lsRule.startLocatorVM(0);
 
     Properties props = new Properties();
     props.setProperty("groups", GROUP_1);
@@ -75,7 +76,7 @@ public class NetstatDUnitTest {
   }
 
   @Test
-  public void testOutputToConsoleForAllMembers() throws Exception {
+  public void testOutputToConsoleForAllMembers() {
     gfsh.executeAndAssertThat("netstat").statusIsSuccess()
         .doesNotContainOutput("Could not execute");
 
@@ -89,7 +90,7 @@ public class NetstatDUnitTest {
   }
 
   @Test
-  public void testOutputToConsoleForOneMember() throws Exception {
+  public void testOutputToConsoleForOneMember() {
     gfsh.executeAndAssertThat("netstat --member=server-1")
         .statusIsSuccess()
         .doesNotContainOutput("Could not execute");
@@ -103,7 +104,7 @@ public class NetstatDUnitTest {
 
   @Ignore("GEODE-6228")
   @Test
-  public void testOutputToConsoleWithLsofForOneMember() throws Exception {
+  public void testOutputToConsoleWithLsofForOneMember() {
     gfsh.executeAndAssertThat("netstat --member=server-1 --with-lsof")
         .statusIsSuccess().doesNotContainOutput("Could not execute");
 
@@ -165,6 +166,7 @@ public class NetstatDUnitTest {
 
     File outputFile = new File(temp.newFolder(), "command.log.txt");
 
+    @SuppressWarnings("deprecation")
     CommandResult result =
         gfsh.executeCommand("netstat --with-lsof=true --file=" + outputFile.getAbsolutePath());
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);

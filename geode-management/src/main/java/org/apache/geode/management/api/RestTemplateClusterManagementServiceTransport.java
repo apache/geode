@@ -242,7 +242,7 @@ public class RestTemplateClusterManagementServiceTransport
         .getBody();
   }
 
-  private static <T> HttpEntity makeEntity(T config) {
+  private static <T> HttpEntity<?> makeEntity(T config) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(INCLUDE_CLASS_HEADER, "true");
     if (config instanceof HasFile) {
@@ -251,7 +251,7 @@ public class RestTemplateClusterManagementServiceTransport
       if (file != null) {
         content.add(HasFile.FILE_PARAM, new FileSystemResource(file));
         content.add(HasFile.CONFIG_PARAM, config);
-        return new HttpEntity(content, headers);
+        return new HttpEntity<>(content, headers);
       }
     }
     return new HttpEntity<>(config, headers);

@@ -56,54 +56,54 @@ public class QueryStatisticsService implements PulseService {
     Cluster.Statement[] stmts = cluster.getStatements();
 
     ArrayNode queryListJson = mapper.createArrayNode();
-    for (int i = 0; i < stmts.length; ++i) {
+    for (Cluster.Statement stmt : stmts) {
       ObjectNode queryJSON = mapper.createObjectNode();
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_QUERYDEFINITION, stmts[i].getQueryDefinition());
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESCOMPILED, mapper.valueToTree(
-          stmts[i].getNumTimesCompiled() < 0 ? this.VALUE_NA : stmts[i].getNumTimesCompiled()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_NUMEXECUTION, mapper.valueToTree(
-          stmts[i].getNumExecution() < 0 ? this.VALUE_NA : stmts[i].getNumExecution()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_NUMEXECUTIONSINPROGRESS,
-          mapper.valueToTree(stmts[i].getNumExecutionsInProgress() < 0 ? this.VALUE_NA
-              : stmts[i].getNumExecutionsInProgress()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESGLOBALINDEXLOOKUP,
-          mapper.valueToTree(stmts[i].getNumTimesGlobalIndexLookup() < 0 ? this.VALUE_NA
-              : stmts[i].getNumTimesGlobalIndexLookup()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_NUMROWSMODIFIED, mapper.valueToTree(
-          stmts[i].getNumRowsModified() < 0 ? this.VALUE_NA : stmts[i].getNumRowsModified()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_PARSETIME, mapper
-          .valueToTree(stmts[i].getParseTime() < 0 ? this.VALUE_NA : stmts[i].getParseTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_BINDTIME,
-          mapper.valueToTree(stmts[i].getBindTime() < 0 ? this.VALUE_NA : stmts[i].getBindTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_OPTIMIZETIME, mapper.valueToTree(
-          stmts[i].getOptimizeTime() < 0 ? this.VALUE_NA : stmts[i].getOptimizeTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_ROUTINGINFOTIME, mapper.valueToTree(
-          stmts[i].getRoutingInfoTime() < 0 ? this.VALUE_NA : stmts[i].getRoutingInfoTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_GENERATETIME, mapper.valueToTree(
-          stmts[i].getGenerateTime() < 1 ? this.VALUE_NA : stmts[i].getGenerateTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_TOTALCOMPILATIONTIME,
-          mapper.valueToTree(stmts[i].getTotalCompilationTime() < 0 ? this.VALUE_NA
-              : stmts[i].getTotalCompilationTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_EXECUTIONTIME, mapper.valueToTree(
-          stmts[i].getExecutionTime() < 0 ? this.VALUE_NA : stmts[i].getExecutionTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_PROJECTIONTIME, mapper.valueToTree(
-          stmts[i].getProjectionTime() < 0 ? this.VALUE_NA : stmts[i].getProjectionTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_TOTALEXECUTIONTIME, mapper.valueToTree(
-          stmts[i].getTotalExecutionTime() < 0 ? this.VALUE_NA : stmts[i].getTotalExecutionTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_ROWSMODIFICATIONTIME,
-          mapper.valueToTree(stmts[i].getRowsModificationTime() < 0 ? this.VALUE_NA
-              : stmts[i].getRowsModificationTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_QNNUMROWSSEEN, mapper.valueToTree(
-          stmts[i].getqNNumRowsSeen() < 0 ? this.VALUE_NA : stmts[i].getqNNumRowsSeen()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_QNMSGSENDTIME, mapper.valueToTree(
-          stmts[i].getqNMsgSendTime() < 0 ? this.VALUE_NA : stmts[i].getqNMsgSendTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_QNMSGSERTIME, mapper.valueToTree(
-          stmts[i].getqNMsgSerTime() < 0 ? this.VALUE_NA : stmts[i].getqNMsgSerTime()));
-      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_QNRESPDESERTIME, mapper.valueToTree(
-          stmts[i].getqNRespDeSerTime() < 0 ? this.VALUE_NA : stmts[i].getqNRespDeSerTime()));
+      queryJSON.put(PulseConstants.MBEAN_ATTRIBUTE_QUERYDEFINITION, stmt.getQueryDefinition());
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESCOMPILED, mapper.valueToTree(
+          stmt.getNumTimesCompiled() < 0 ? VALUE_NA : stmt.getNumTimesCompiled()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_NUMEXECUTION, mapper.valueToTree(
+          stmt.getNumExecution() < 0 ? VALUE_NA : stmt.getNumExecution()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_NUMEXECUTIONSINPROGRESS,
+          mapper.valueToTree(stmt.getNumExecutionsInProgress() < 0 ? VALUE_NA
+              : stmt.getNumExecutionsInProgress()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESGLOBALINDEXLOOKUP,
+          mapper.valueToTree(stmt.getNumTimesGlobalIndexLookup() < 0 ? VALUE_NA
+              : stmt.getNumTimesGlobalIndexLookup()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_NUMROWSMODIFIED, mapper.valueToTree(
+          stmt.getNumRowsModified() < 0 ? VALUE_NA : stmt.getNumRowsModified()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_PARSETIME, mapper
+          .valueToTree(stmt.getParseTime() < 0 ? VALUE_NA : stmt.getParseTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_BINDTIME,
+          mapper.valueToTree(stmt.getBindTime() < 0 ? VALUE_NA : stmt.getBindTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_OPTIMIZETIME, mapper.valueToTree(
+          stmt.getOptimizeTime() < 0 ? VALUE_NA : stmt.getOptimizeTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_ROUTINGINFOTIME, mapper.valueToTree(
+          stmt.getRoutingInfoTime() < 0 ? VALUE_NA : stmt.getRoutingInfoTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_GENERATETIME, mapper.valueToTree(
+          stmt.getGenerateTime() < 1 ? VALUE_NA : stmt.getGenerateTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_TOTALCOMPILATIONTIME,
+          mapper.valueToTree(stmt.getTotalCompilationTime() < 0 ? VALUE_NA
+              : stmt.getTotalCompilationTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_EXECUTIONTIME, mapper.valueToTree(
+          stmt.getExecutionTime() < 0 ? VALUE_NA : stmt.getExecutionTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_PROJECTIONTIME, mapper.valueToTree(
+          stmt.getProjectionTime() < 0 ? VALUE_NA : stmt.getProjectionTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_TOTALEXECUTIONTIME, mapper.valueToTree(
+          stmt.getTotalExecutionTime() < 0 ? VALUE_NA : stmt.getTotalExecutionTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_ROWSMODIFICATIONTIME,
+          mapper.valueToTree(stmt.getRowsModificationTime() < 0 ? VALUE_NA
+              : stmt.getRowsModificationTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_QNNUMROWSSEEN, mapper.valueToTree(
+          stmt.getqNNumRowsSeen() < 0 ? VALUE_NA : stmt.getqNNumRowsSeen()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_QNMSGSENDTIME, mapper.valueToTree(
+          stmt.getqNMsgSendTime() < 0 ? VALUE_NA : stmt.getqNMsgSendTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_QNMSGSERTIME, mapper.valueToTree(
+          stmt.getqNMsgSerTime() < 0 ? VALUE_NA : stmt.getqNMsgSerTime()));
+      queryJSON.set(PulseConstants.MBEAN_ATTRIBUTE_QNRESPDESERTIME, mapper.valueToTree(
+          stmt.getqNRespDeSerTime() < 0 ? VALUE_NA : stmt.getqNRespDeSerTime()));
       queryListJson.add(queryJSON);
     }
-    responseJSON.put("queriesList", queryListJson);
+    responseJSON.set("queriesList", queryListJson);
 
     // return jmx status
     responseJSON.put("connectedFlag", cluster.isConnectedFlag());

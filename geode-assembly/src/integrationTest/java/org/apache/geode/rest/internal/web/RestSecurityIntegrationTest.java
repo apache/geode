@@ -19,6 +19,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -57,16 +59,16 @@ public class RestSecurityIntegrationTest {
   }
 
   @Test
-  public void testListFunctions() throws Exception {
+  public void testListFunctions() {
     assertResponse(restClient.doGet("/functions", "user", "wrongPswd")).hasStatusCode(401);
     assertResponse(restClient.doGet("/functions", "user", "user")).hasStatusCode(403);
     assertResponse(restClient.doGet("/functions", "dataRead", "dataRead"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE);
   }
 
   @Test
-  public void executeNotRegisteredFunction() throws Exception {
+  public void executeNotRegisteredFunction() {
     assertResponse(restClient.doPost("/functions/invalid-function-id", "user", "wrongPswd", ""))
         .hasStatusCode(401);
     assertResponse(restClient.doPost("/functions/invalid-function-id", "user", "user", ""))
@@ -74,18 +76,18 @@ public class RestSecurityIntegrationTest {
   }
 
   @Test
-  public void testQueries() throws Exception {
+  public void testQueries() {
     restClient.doGetAndAssert("/queries", "user", "wrongPswd")
         .hasStatusCode(401);
     restClient.doGetAndAssert("/queries", "user", "user")
         .hasStatusCode(403);
     restClient.doGetAndAssert("/queries", "dataRead", "dataRead")
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE);
   }
 
   @Test
-  public void testAdhocQuery() throws Exception {
+  public void testAdhocQuery() {
     restClient.doGetAndAssert("/queries/adhoc?q=", "user", "wrongPswd")
         .hasStatusCode(401);
     restClient.doGetAndAssert("/queries/adhoc?q=", "user", "user")
@@ -97,7 +99,7 @@ public class RestSecurityIntegrationTest {
   }
 
   @Test
-  public void testPostQuery() throws Exception {
+  public void testPostQuery() {
     assertResponse(restClient.doPost("/queries?id=0&q=", "user", "wrongPswd", ""))
         .hasStatusCode(401);
     assertResponse(restClient.doPost("/queries?id=0&q=", "user", "user", ""))
@@ -107,7 +109,7 @@ public class RestSecurityIntegrationTest {
   }
 
   @Test
-  public void testPostQuery2() throws Exception {
+  public void testPostQuery2() {
     assertResponse(restClient.doPost("/queries/id", "user", "wrongPswd", "{\"id\" : \"foo\"}"))
         .hasStatusCode(401);
     assertResponse(restClient.doPost("/queries/id", "user", "user", "{\"id\" : \"foo\"}"))
@@ -117,7 +119,7 @@ public class RestSecurityIntegrationTest {
   }
 
   @Test
-  public void testPutQuery() throws Exception {
+  public void testPutQuery() {
     assertResponse(restClient.doPut("/queries/id", "user", "wrongPswd", "{\"id\" : \"foo\"}"))
         .hasStatusCode(401);
     assertResponse(restClient.doPut("/queries/id", "user", "user", "{\"id\" : \"foo\"}"))
@@ -127,7 +129,7 @@ public class RestSecurityIntegrationTest {
   }
 
   @Test
-  public void testDeleteQuery() throws Exception {
+  public void testDeleteQuery() {
     assertResponse(restClient.doDelete("/queries/id", "user", "wrongPswd"))
         .hasStatusCode(401);
     assertResponse(restClient.doDelete("/queries/id", "stranger", "stranger"))
@@ -137,14 +139,14 @@ public class RestSecurityIntegrationTest {
   }
 
   @Test
-  public void testServers() throws Exception {
+  public void testServers() {
     assertResponse(restClient.doGet("/servers", "user", "wrongPswd"))
         .hasStatusCode(401);
     assertResponse(restClient.doGet("/servers", "stranger", "stranger"))
         .hasStatusCode(403);
     assertResponse(restClient.doGet("/servers", "cluster", "cluster"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE);
   }
 
   /**
@@ -152,7 +154,7 @@ public class RestSecurityIntegrationTest {
    * should not be able to determine whether a user/password combination is good
    */
   @Test
-  public void testPing() throws Exception {
+  public void testPing() {
     assertResponse(restClient.doHEAD("/ping", "stranger", "stranger"))
         .hasStatusCode(200);
     assertResponse(restClient.doGet("/ping", "stranger", "stranger"))
@@ -168,9 +170,9 @@ public class RestSecurityIntegrationTest {
    * Test permissions on retrieving a list of regions.
    */
   @Test
-  public void getRegions() throws Exception {
+  public void getRegions() throws IOException {
     JsonNode jsonObject = assertResponse(restClient.doGet("", "dataRead", "dataRead"))
-        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_VALUE)
         .getJsonObject();
 
     JsonNode regions = jsonObject.get("regions");
@@ -194,7 +196,7 @@ public class RestSecurityIntegrationTest {
    * Test permissions on getting a region
    */
   @Test
-  public void getRegion() throws Exception {
+  public void getRegion() {
     // Test an unknown user - 401 error
     assertResponse(restClient.doGet("/" + REGION_NAME, "user", "wrongPswd"))
         .hasStatusCode(401);
@@ -205,14 +207,14 @@ public class RestSecurityIntegrationTest {
 
     // Test an authorized user - 200
     assertResponse(restClient.doGet("/" + REGION_NAME, "data", "data"))
-        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_VALUE);
   }
 
   /**
    * Test permissions on HEAD region
    */
   @Test
-  public void headRegion() throws Exception {
+  public void headRegion() {
     // Test an unknown user - 401 error
     assertResponse(restClient.doHEAD("/" + REGION_NAME, "user", "wrongPswd"))
         .hasStatusCode(401);
@@ -230,7 +232,7 @@ public class RestSecurityIntegrationTest {
    * Test permissions on deleting a region
    */
   @Test
-  public void deleteRegion() throws Exception {
+  public void deleteRegion() {
     // Test an unknown user - 401 error
     assertResponse(restClient.doDelete("/" + REGION_NAME, "user", "wrongPswd"))
         .hasStatusCode(401);
@@ -244,10 +246,10 @@ public class RestSecurityIntegrationTest {
    * Test permissions on getting a region's keys
    */
   @Test
-  public void getRegionKeys() throws Exception {
+  public void getRegionKeys() {
     // Test an authorized user
     assertResponse(restClient.doGet("/" + REGION_NAME + "/keys", "data", "data"))
-        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_VALUE);
     // Test an unauthorized user
     assertResponse(restClient.doGet("/" + REGION_NAME + "/keys", "dataWrite", "dataWrite"))
         .hasStatusCode(403);
@@ -257,11 +259,11 @@ public class RestSecurityIntegrationTest {
    * Test permissions on retrieving a key from a region
    */
   @Test
-  public void getRegionKey() throws Exception {
+  public void getRegionKey() {
     // Test an authorized user
     assertResponse(restClient.doGet("/" + REGION_NAME + "/key1", "dataReadAuthRegionKey1",
         "dataReadAuthRegionKey1"))
-            .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+            .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_VALUE);
 
     // Test an unauthorized user
     assertResponse(restClient.doGet("/" + REGION_NAME + "/key1", "dataWrite", "dataWrite"))
@@ -272,7 +274,7 @@ public class RestSecurityIntegrationTest {
    * Test permissions on deleting a region's key(s)
    */
   @Test
-  public void deleteRegionKey() throws Exception {
+  public void deleteRegionKey() {
     // Test an unknown user - 401 error
     assertResponse(restClient.doDelete("/" + REGION_NAME + "/key1", "user", "wrongPswd"))
         .hasStatusCode(401);
@@ -291,7 +293,7 @@ public class RestSecurityIntegrationTest {
    * Test permissions on deleting a region's key(s)
    */
   @Test
-  public void postRegionKey() throws Exception {
+  public void postRegionKey() {
     // Test an unknown user - 401 error
     assertResponse(restClient.doPost("/" + REGION_NAME + "?key9", "user", "wrongPswd",
         "{ \"key9\" : \"foo\" }"))
@@ -312,7 +314,7 @@ public class RestSecurityIntegrationTest {
    * Test permissions on deleting a region's key(s)
    */
   @Test
-  public void putRegionKey() throws Exception {
+  public void putRegionKey() {
 
     String json =
         "{\"@type\":\"com.gemstone.gemfire.web.rest.domain.Order\",\"purchaseOrderNo\":1121,\"customerId\":1012,\"description\":\"Order for  XYZ Corp\",\"orderDate\":\"02/10/2014\",\"deliveryDate\":\"02/20/2014\",\"contact\":\"Jelly Bean\",\"email\":\"jelly.bean@example.com\",\"phone\":\"01-2048096\",\"items\":[{\"itemNo\":1,\"description\":\"Product-100\",\"quantity\":12,\"unitPrice\":5,\"totalPrice\":60}],\"totalPrice\":225}";

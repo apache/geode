@@ -55,6 +55,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * {@link GeodeConsoleAppender}.
  */
 @Category(LoggingTest.class)
+@SuppressWarnings("deprecation")
 public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   private static final String CONFIG_FILE_NAME =

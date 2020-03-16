@@ -460,8 +460,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     commandLine.add(
         "-Dsun.rmi.dgc.server.gcInterval".concat("=").concat(Long.toString(Long.MAX_VALUE - 1)));
     if (launcher.isRedirectingOutput()) {
-      commandLine
-          .add("-D".concat(OSProcess.DISABLE_REDIRECTION_CONFIGURATION_PROPERTY).concat("=true"));
+      addOutputRedirect(commandLine);
     }
     commandLine.add(ServerLauncher.class.getName());
     commandLine.add(ServerLauncher.Command.START.getName());
@@ -558,6 +557,12 @@ public class StartServerCommand extends OfflineGfshCommand {
     }
 
     return commandLine.toArray(new String[] {});
+  }
+
+  @SuppressWarnings("deprecation")
+  private void addOutputRedirect(List<String> commandLine) {
+    commandLine
+        .add("-D".concat(OSProcess.DISABLE_REDIRECTION_CONFIGURATION_PROPERTY).concat("=true"));
   }
 
   String getServerClasspath(final boolean includeSystemClasspath, final String userClasspath) {

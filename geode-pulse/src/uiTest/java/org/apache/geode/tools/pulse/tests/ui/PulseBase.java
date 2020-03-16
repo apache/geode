@@ -68,9 +68,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -95,7 +92,7 @@ public abstract class PulseBase {
   public abstract String getPulseURL();
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     // Make sure we go to the home page first
     searchByXPathAndClick(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
   }
@@ -119,7 +116,7 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testClusterLocatorCount() throws IOException {
+  public void testClusterLocatorCount() {
     String clusterLocators = getWebDriver().findElement(By.id(CLUSTER_VIEW_LOCATORS_ID)).getText();
 
     String totallocators = JMXProperties.getInstance().getProperty("server.S1.locatorCount");
@@ -202,7 +199,7 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testClusterGridViewMemberID() throws InterruptedException {
+  public void testClusterGridViewMemberID() {
     searchByIdAndClick("default_grid_button");
     List<WebElement> elements =
         getWebDriver().findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
@@ -264,7 +261,7 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testClusterGridViewCPUUsage() throws Exception {
+  public void testClusterGridViewCPUUsage() {
     searchByIdAndClick("default_grid_button");
     for (int i = 1; i <= 3; i++) {
       String CPUUsage = getWebDriver()
@@ -277,7 +274,7 @@ public abstract class PulseBase {
   }
 
 
-  public void testRgraphWidget() throws InterruptedException {
+  public void testRgraphWidget() {
     searchByIdAndClick("default_rgraph_button");
     searchByIdAndClick("h1");
     searchByIdAndClick("M1");
@@ -285,7 +282,7 @@ public abstract class PulseBase {
 
   @Test
   @Ignore("ElementNotVisible with phantomJS")
-  public void testMemberTotalRegionCount() throws InterruptedException {
+  public void testMemberTotalRegionCount() {
     testRgraphWidget();
     String RegionCount = getWebDriver().findElement(By.id(MEMBER_VIEW_REGION_ID)).getText();
     String memberRegionCount =
@@ -294,7 +291,7 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testMemberNumThread() throws InterruptedException {
+  public void testMemberNumThread() {
     searchByIdAndClick("default_grid_button");
     searchByIdAndClick("M1&M1");
     String ThreadCount = getWebDriver().findElement(By.id(MEMBER_VIEW_THREAD_ID)).getText();
@@ -303,7 +300,7 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testMemberTotalFileDescriptorOpen() throws InterruptedException {
+  public void testMemberTotalFileDescriptorOpen() {
     searchByIdAndClick("default_grid_button");
     searchByIdAndClick("M1&M1");
     String SocketCount = getWebDriver().findElement(By.id(MEMBER_VIEW_SOCKETS_ID)).getText();
@@ -313,7 +310,7 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testMemberLoadAverage() throws InterruptedException {
+  public void testMemberLoadAverage() {
     searchByIdAndClick("default_grid_button");
     searchByIdAndClick("M1&M1");
     String LoadAvg = getWebDriver().findElement(By.id(MEMBER_VIEW_LOADAVG_ID)).getText();
@@ -341,13 +338,13 @@ public abstract class PulseBase {
     }
     memberOffHeapFreeSize =
         Float.parseFloat(new DecimalFormat("##.##").format(memberOffHeapFreeSize));
-    assertEquals(memberOffHeapFreeSize, OffHeapFreeSize);
+    assertEquals(memberOffHeapFreeSize, OffHeapFreeSize, 0);
 
   }
 
   @Ignore("WIP") // May be useful in near future
   @Test
-  public void testOffHeapUsedSize() throws InterruptedException {
+  public void testOffHeapUsedSize() {
 
     String OffHeapUsedSizeString =
         getWebDriver().findElement(By.id(MEMBER_VIEW_OFFHEAPUSEDSIZE_ID)).getText();
@@ -365,11 +362,11 @@ public abstract class PulseBase {
     }
     memberOffHeapUsedSize =
         Float.parseFloat(new DecimalFormat("##.##").format(memberOffHeapUsedSize));
-    assertEquals(memberOffHeapUsedSize, OffHeapUsedSize);
+    assertEquals(memberOffHeapUsedSize, OffHeapUsedSize, 0);
   }
 
   @Test
-  public void testMemberJVMPauses() throws Exception {
+  public void testMemberJVMPauses() {
     searchByIdAndClick("default_grid_button");
     searchByIdAndClick("M1&M1");
     String JVMPauses = getWebDriver().findElement(By.id(MEMBER_VIEW_JVMPAUSES_ID)).getText();
@@ -400,7 +397,7 @@ public abstract class PulseBase {
 
   @Test
   @Ignore("ElementNotVisible with phantomJS")
-  public void testMemberAverageWrites() throws InterruptedException {
+  public void testMemberAverageWrites() {
     testRgraphWidget();
     String WritePerSec = getWebDriver().findElement(By.id(MEMBER_VIEW_WRITEPERSEC_ID)).getText();
     String memberWritePerSec = JMXProperties.getInstance().getProperty("member.M1.averageWrites");
@@ -410,12 +407,10 @@ public abstract class PulseBase {
 
   @Test
   @Ignore("ElementNotVisible with phantomJS")
-  public void testMemberGridViewData() throws InterruptedException {
+  public void testMemberGridViewData() {
     testRgraphWidget();
     searchByXPathAndClick(PulseTestLocators.MemberDetailsView.gridButtonXpath);
     // get the number of rows on the grid
-    List<WebElement> noOfRows =
-        getWebDriver().findElements(By.xpath("//table[@id='memberRegionsList']/tbody/tr"));
     String MemberRegionName = getWebDriver()
         .findElement(By.xpath("//table[@id='memberRegionsList']/tbody/tr[2]/td[1]")).getText();
     String memberRegionName = JMXProperties.getInstance().getProperty("region.R1.name");
@@ -434,7 +429,7 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testDropDownList() throws InterruptedException {
+  public void testDropDownList() {
     searchByIdAndClick("default_grid_button");
     searchByIdAndClick("M1&M1");
     searchByIdAndClick("memberName");
@@ -556,30 +551,30 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testDataBrowserRegionName() throws InterruptedException {
+  public void testDataBrowserRegionName() {
     loadDataBrowserpage();
     String DataBrowserRegionName1 =
         getWebDriver().findElement(By.id(DATA_BROWSER_REGIONName1)).getText();
     String databrowserRegionNametemp1 = JMXProperties.getInstance().getProperty("region.R1.name");
-    String databrowserRegionName1 = databrowserRegionNametemp1.replaceAll("[\\/]", "");
+    String databrowserRegionName1 = databrowserRegionNametemp1.replaceAll("[/]", "");
     assertEquals(databrowserRegionName1, DataBrowserRegionName1);
 
     String DataBrowserRegionName2 =
         getWebDriver().findElement(By.id(DATA_BROWSER_REGIONName2)).getText();
     String databrowserRegionNametemp2 = JMXProperties.getInstance().getProperty("region.R2.name");
-    String databrowserRegionName2 = databrowserRegionNametemp2.replaceAll("[\\/]", "");
+    String databrowserRegionName2 = databrowserRegionNametemp2.replaceAll("[/]", "");
     assertEquals(databrowserRegionName2, DataBrowserRegionName2);
 
     String DataBrowserRegionName3 =
         getWebDriver().findElement(By.id(DATA_BROWSER_REGIONName3)).getText();
     String databrowserRegionNametemp3 = JMXProperties.getInstance().getProperty("region.R3.name");
-    String databrowserRegionName3 = databrowserRegionNametemp3.replaceAll("[\\/]", "");
+    String databrowserRegionName3 = databrowserRegionNametemp3.replaceAll("[/]", "");
     assertEquals(databrowserRegionName3, DataBrowserRegionName3);
 
   }
 
   @Test
-  public void testDataBrowserRegionMembersVerificaition() throws InterruptedException {
+  public void testDataBrowserRegionMembersVerificaition() {
     loadDataBrowserpage();
     searchByIdAndClick(DATA_BROWSER_REGION1_CHECKBOX);
     String DataBrowserMember1Name1 =
@@ -630,7 +625,7 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void testDataBrowserColocatedRegions() throws InterruptedException {
+  public void testDataBrowserColocatedRegions() {
     loadDataBrowserpage();
     String databrowserMemberNames1 = JMXProperties.getInstance().getProperty("region.R1.members");
     String databrowserMemberNames2 = JMXProperties.getInstance().getProperty("region.R2.members");
@@ -654,51 +649,20 @@ public abstract class PulseBase {
 
     String databrowserColocatedRegiontemp1 =
         JMXProperties.getInstance().getProperty("region.R1.name");
-    String databrowserColocatedRegion1 = databrowserColocatedRegiontemp1.replaceAll("[\\/]", "");
+    String databrowserColocatedRegion1 = databrowserColocatedRegiontemp1.replaceAll("[/]", "");
 
     String databrowserColocatedRegiontemp2 =
         JMXProperties.getInstance().getProperty("region.R2.name");
-    String databrowserColocatedRegion2 = databrowserColocatedRegiontemp2.replaceAll("[\\/]", "");
+    String databrowserColocatedRegion2 = databrowserColocatedRegiontemp2.replaceAll("[/]", "");
 
     String databrowserColocatedRegiontemp3 =
         JMXProperties.getInstance().getProperty("region.R3.name");
-    String databrowserColocatedRegion3 = databrowserColocatedRegiontemp3.replaceAll("[\\/]", "");
+    String databrowserColocatedRegion3 = databrowserColocatedRegiontemp3.replaceAll("[/]", "");
 
     assertEquals(databrowserColocatedRegion1, DataBrowserColocatedRegion1);
     assertEquals(databrowserColocatedRegion2, DataBrowserColocatedRegion2);
     assertEquals(databrowserColocatedRegion3, DataBrowserColocatedRegion3);
 
-  }
-
-  @Ignore("WIP") // clusterDetails element not found on Data Browser page. No assertions in test
-  @Test
-  public void testDataBrowserQueryValidation() throws IOException, InterruptedException {
-    loadDataBrowserpage();
-    WebElement textArea = getWebDriver().findElement(By.id("dataBrowserQueryText"));
-    textArea.sendKeys("query1");
-    WebElement executeButton = getWebDriver().findElement(By.id("btnExecuteQuery"));
-    executeButton.click();
-    String QueryResultHeader1 = getWebDriver()
-        .findElement(By.xpath("//div[@id='clusterDetails']/div/div/span[@class='n-title']"))
-        .getText();
-    double count = 0, countBuffer = 0, countLine = 0;
-    String lineNumber = "";
-    String filePath =
-        "E:\\springsource\\springsourceWS\\Pulse-Cedar\\src\\main\\resources\\testQueryResultSmall.txt";
-    BufferedReader br;
-    String line = "";
-    br = new BufferedReader(new FileReader(filePath));
-    while ((line = br.readLine()) != null) {
-      countLine++;
-      String[] words = line.split(" ");
-
-      for (String word : words) {
-        if (word.equals(QueryResultHeader1)) {
-          count++;
-          countBuffer++;
-        }
-      }
-    }
   }
 
   public void testTreeMapPopUpData(String S1, String gridIcon) {
@@ -722,7 +686,7 @@ public abstract class PulseBase {
       int j = 1;
       String CPUUsageM1temp = getWebDriver()
           .findElement(By.xpath("//div[@id='_tooltip']/div/div/div[2]/div/div[2]/div")).getText();
-      String CPUUsageM1 = CPUUsageM1temp.replaceAll("[\\%]", "");
+      String CPUUsageM1 = CPUUsageM1temp.replaceAll("[%]", "");
       String cpuUsageM1 = JMXProperties.getInstance().getProperty("member.M" + (i) + ".cpuUsage");
       assertEquals(cpuUsageM1, CPUUsageM1);
 
@@ -804,35 +768,6 @@ public abstract class PulseBase {
     searchByLinkAndClick(DATA_DROPDOWN_ID);
     WebElement TreeMapMember = getWebDriver().findElement(By.id("GraphTreeMapClusterData-canvas"));
     TreeMapMember.click();
-  }
-
-  @Ignore("WIP")
-  @Test
-  public void testNumberOfRegions() throws InterruptedException {
-
-    getWebDriver().findElement(By.xpath("//a[text()='Data Browser']")).click();
-
-    Thread.sleep(1000);
-    List<WebElement> regionList = getWebDriver().findElements(By.xpath("//ul[@id='treeDemo']/li"));
-    String regions = JMXProperties.getInstance().getProperty("regions");
-    String[] regionName = regions.split(" ");
-    for (String string : regionName) {
-    }
-    // JMXProperties.getInstance().getProperty("region.R1.regionType");
-    int i = 1;
-    for (WebElement webElement : regionList) {
-      // webElement.getAttribute(arg0)
-      i++;
-    }
-
-    getWebDriver().findElement(By.id("treeDemo_1_check")).click();
-
-    List<WebElement> memeberList =
-        getWebDriver().findElements(By.xpath("//ul[@id='membersList']/li"));
-    int j = 0;
-    for (WebElement webElement : memeberList) {
-      j++;
-    }
   }
 
   @Test

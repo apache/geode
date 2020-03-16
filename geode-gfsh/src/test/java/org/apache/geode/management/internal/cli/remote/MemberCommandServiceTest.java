@@ -49,6 +49,7 @@ public class MemberCommandServiceTest {
 
   @Test
   public void processCommandError() throws Exception {
+    @SuppressWarnings("deprecation")
     MemberCommandService memberCommandService = new MemberCommandService(cache);
 
     Result result = memberCommandService.processCommand("fake command");

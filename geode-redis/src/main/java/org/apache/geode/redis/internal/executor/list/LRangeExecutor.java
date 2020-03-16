@@ -30,7 +30,7 @@ import org.apache.geode.redis.internal.executor.ListQuery;
 
 public class LRangeExecutor extends ListExecutor {
 
-  private final String ERROR_NOT_NUMERIC = "The index provided is not numeric";
+  private static final String ERROR_NOT_NUMERIC = "The index provided is not numeric";
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -49,7 +49,7 @@ public class LRangeExecutor extends ListExecutor {
     int redisStop;
 
     checkDataType(key, RedisDataType.REDIS_LIST, context);
-    Region<Integer, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    Region<Object, Object> keyRegion = getRegion(context, key);
 
     if (keyRegion == null) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
@@ -81,7 +81,7 @@ public class LRangeExecutor extends ListExecutor {
 
     List<Struct> range;
     try {
-      range = getRange(context, key, redisStart, redisStop, keyRegion);
+      range = getRange(context, key, redisStart, redisStop);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -95,14 +95,15 @@ public class LRangeExecutor extends ListExecutor {
   }
 
   private List<Struct> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start,
-      int stop, Region r) throws Exception {
+      int stop) throws Exception {
 
     Query query = getQuery(key, ListQuery.LRANGE, context);
 
-    Object[] params = {Integer.valueOf(stop + 1)};
+    Object[] params = {stop + 1};
+    @SuppressWarnings("unchecked")
     SelectResults<Struct> results = (SelectResults<Struct>) query.execute(params);
     int size = results.size();
-    if (results == null || size <= start) {
+    if (size <= start) {
       return null;
     }
 

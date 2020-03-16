@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class HeadlessGfshIntegrationTest {
   public TestName testName = new TestName();
 
   @Before
-  public void setup() throws IOException, ClassNotFoundException {
+  public void setup() throws IOException {
     port = getRandomAvailablePort(SOCKET);
 
     Properties properties = new Properties();
@@ -72,11 +73,16 @@ public class HeadlessGfshIntegrationTest {
     properties.put(HTTP_SERVICE_PORT, "0");
     properties.put(MCAST_PORT, "0");
 
-    ds = DistributedSystem.connect(properties);
-    cache = (GemFireCacheImpl) CacheFactory.create(ds);
+    legacyConnect(properties);
 
     gfsh = new HeadlessGfsh("Test", 25,
         this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath());
+  }
+
+  @SuppressWarnings("deprecation")
+  private void legacyConnect(Properties properties) {
+    ds = DistributedSystem.connect(properties);
+    cache = (GemFireCacheImpl) CacheFactory.create(ds);
   }
 
   @SuppressWarnings({"deprecation"})
@@ -116,12 +122,12 @@ public class HeadlessGfshIntegrationTest {
     gfsh.clear();
     gfsh.executeCommand("list members");
 
-    LinkedBlockingQueue headlessQueue = gfsh.getQueue();
+    LinkedBlockingQueue<Object> headlessQueue = gfsh.getQueue();
     headlessQueue.clear();
     headlessQueue.put("ERROR RESULT");
     CommandResult result = gfsh.getResult();
     assertNotNull(result);
-    assertTrue(result.getStatus() == Result.Status.ERROR);
+    assertSame(result.getStatus(), Result.Status.ERROR);
     System.out.println(result.toString());
   }
 }

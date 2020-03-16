@@ -14,18 +14,16 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.internal.protocol.TestExecutionContext.getNoAuthCacheExecutionContext;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,19 +32,22 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRegionNamesRequest;
+import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRegionNamesResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+public class GetRegionNamesRequestOperationHandlerJUnitTest
+    extends OperationHandlerJUnitTest<GetRegionNamesRequest, GetRegionNamesResponse> {
   private final String TEST_REGION1 = "test region 1";
   private final String TEST_REGION2 = "test region 2";
   private final String TEST_REGION3 = "test region 3";
 
+  @SuppressWarnings("unchecked")
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     Region<String, String> region1Stub = mock(Region.class);
     when(region1Stub.getFullPath()).thenReturn(TEST_REGION1);
     Region<String, String> region2Stub = mock(Region.class);
@@ -61,44 +62,29 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
 
   @Test
   public void processReturnsCacheRegions() throws Exception {
-    Result result = operationHandler.process(serializationService,
+    Result<GetRegionNamesResponse> result = operationHandler.process(serializationService,
         ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(cacheStub));
-    Assert.assertTrue(result instanceof Success);
+    assertThat(result).isInstanceOf(Success.class);
 
-    RegionAPI.GetRegionNamesResponse getRegionsResponse =
-        (RegionAPI.GetRegionNamesResponse) result.getMessage();
-    Assert.assertEquals(3, getRegionsResponse.getRegionsCount());
-
-    // There's no guarantee for what order we receive the regions in from the response
-    String name1 = getRegionsResponse.getRegions(0);
-    String name2 = getRegionsResponse.getRegions(1);
-    String name3 = getRegionsResponse.getRegions(2);
-    Assert.assertTrue("The same region was returned multiple times",
-        !name1.equals(name2) && !name1.equals(name3) && !name2.equals(name3));
-    ArrayList arrayList = new ArrayList();
-    arrayList.add(TEST_REGION1);
-    arrayList.add(TEST_REGION2);
-    arrayList.add(TEST_REGION3);
-
-    assertTrue(arrayList.contains(name1));
-    assertTrue(arrayList.contains(name2));
-    assertTrue(arrayList.contains(name3));
+    GetRegionNamesResponse getRegionsResponse = result.getMessage();
+    assertThat(getRegionsResponse.getRegionsCount()).isEqualTo(3);
+    assertThat(getRegionsResponse.getRegionsList()).hasSize(3)
+        .containsExactlyInAnyOrder(TEST_REGION1, TEST_REGION2, TEST_REGION3);
   }
 
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
     InternalCache emptyCache = mock(InternalCacheForClientAccess.class);
     doReturn(emptyCache).when(emptyCache).getCacheForProcessingClientRequests();
-    when(emptyCache.rootRegions())
-        .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
-    Result result = operationHandler.process(serializationService,
+    when(emptyCache.rootRegions()).thenReturn(Collections.unmodifiableSet(Collections.emptySet()));
+    Result<GetRegionNamesResponse> result = operationHandler.process(serializationService,
         ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(emptyCache));
-    Assert.assertTrue(result instanceof Success);
+    assertThat(result).isInstanceOf(Success.class);
 
-    RegionAPI.GetRegionNamesResponse getRegionsResponse =
-        (RegionAPI.GetRegionNamesResponse) result.getMessage();
-    Assert.assertEquals(0, getRegionsResponse.getRegionsCount());
+    GetRegionNamesResponse getRegionsResponse = result.getMessage();
+    assertThat(getRegionsResponse.getRegionsCount()).isEqualTo(0);
+    assertThat(getRegionsResponse.getRegionsList()).isEmpty();
   }
 }

@@ -29,12 +29,12 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 
-public class ShowMissingDiskStoresFunction implements InternalFunction {
+public class ShowMissingDiskStoresFunction implements InternalFunction<Void> {
 
   @Override
-  public void execute(FunctionContext context) {
-    final Set<PersistentMemberPattern> memberMissingIDs = new HashSet<PersistentMemberPattern>();
-    Set<ColocatedRegionDetails> missingColocatedRegions = new HashSet<ColocatedRegionDetails>();
+  public void execute(FunctionContext<Void> context) {
+    final Set<PersistentMemberPattern> memberMissingIDs = new HashSet<>();
+    Set<ColocatedRegionDetails> missingColocatedRegions = new HashSet<>();
 
     if (context == null) {
       throw new RuntimeException();

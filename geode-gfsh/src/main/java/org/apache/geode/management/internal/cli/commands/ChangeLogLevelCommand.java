@@ -27,7 +27,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.LogLevel;
@@ -93,14 +92,15 @@ public class ChangeLogLevelCommand extends GfshCommand {
           "No members were found matching the given member IDs or groups.");
     }
 
-    Function logFunction = new ChangeLogLevelFunction();
+    ChangeLogLevelFunction logFunction = new ChangeLogLevelFunction();
     FunctionService.registerFunction(logFunction);
     Object[] functionArgs = new Object[1];
     functionArgs[0] = logLevel;
 
     ResultModel result = new ResultModel();
 
-    Execution execution = FunctionService.onMembers(dsMembers).setArguments(functionArgs);
+    @SuppressWarnings("unchecked")
+    Execution<?, ?, ?> execution = FunctionService.onMembers(dsMembers).setArguments(functionArgs);
     if (execution == null) {
       return ResultModel.createError(CliStrings.CHANGE_LOGLEVEL__MSG__CANNOT_EXECUTE);
     }
@@ -120,6 +120,7 @@ public class ChangeLogLevelCommand extends GfshCommand {
         }
 
         if (object != null) {
+          @SuppressWarnings("unchecked")
           Map<String, String> resultMap = (Map<String, String>) object;
           Map.Entry<String, String> entry = resultMap.entrySet().iterator().next();
 

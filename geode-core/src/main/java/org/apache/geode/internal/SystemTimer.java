@@ -81,10 +81,7 @@ public class SystemTimer {
 
   /**
    * List of all of the swarms in the system
-   *
-   * @guarded.By self
    */
-  // <T, HashMap<Object, ArrayList<WeakReference<SystemTimer>>>>
   @MakeNotStatic
   private static final HashMap allSwarms = new HashMap();
 

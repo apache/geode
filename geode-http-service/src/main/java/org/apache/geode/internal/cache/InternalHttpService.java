@@ -97,14 +97,14 @@ public class InternalHttpService implements HttpService {
     // Add a handler collection here, so that each new context adds itself
     // to this collection.
     httpServer.setHandler(new HandlerCollection(true));
-    ServerConnector connector = null;
+    final ServerConnector connector;
 
     HttpConfiguration httpConfig = new HttpConfiguration();
     httpConfig.setSecureScheme(HTTPS);
     httpConfig.setSecurePort(port);
 
     if (sslConfig.isEnabled()) {
-      SslContextFactory sslContextFactory = new SslContextFactory.Server();
+      SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 
       if (StringUtils.isNotBlank(sslConfig.getAlias())) {
         sslContextFactory.setCertAlias(sslConfig.getAlias());
@@ -191,7 +191,7 @@ public class InternalHttpService implements HttpService {
     webapp.addAliasCheck(new AllowSymLinkAliasChecker());
 
     if (attributeNameValuePairs != null) {
-      attributeNameValuePairs.forEach((key, value) -> webapp.setAttribute(key, value));
+      attributeNameValuePairs.forEach(webapp::setAttribute);
     }
 
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));
@@ -214,13 +214,12 @@ public class InternalHttpService implements HttpService {
   private String getWebAppBaseDirectory(final String context) {
     String underscoredContext = context.replace("/", "_");
     String uuid = UUID.randomUUID().toString().substring(0, 8);
-    final String workingDirectory = USER_DIR.concat(FILE_PATH_SEPARATOR)
+
+    return USER_DIR.concat(FILE_PATH_SEPARATOR)
         .concat("GemFire_" + USER_NAME).concat(FILE_PATH_SEPARATOR).concat("services")
         .concat(FILE_PATH_SEPARATOR).concat("http").concat(FILE_PATH_SEPARATOR)
         .concat((StringUtils.isBlank(bindAddress)) ? "0.0.0.0" : bindAddress).concat("_")
         .concat(String.valueOf(port).concat(underscoredContext)).concat("_").concat(uuid);
-
-    return workingDirectory;
   }
 
   @Override
@@ -240,9 +239,9 @@ public class InternalHttpService implements HttpService {
     } finally {
       try {
         this.httpServer.destroy();
-      } catch (Exception ignore) {
+      } catch (Exception e) {
         logger.info("Failed to properly release resources held by the HTTP service: {}",
-            ignore.getMessage(), ignore);
+            e.getMessage(), e);
       } finally {
         this.httpServer = null;
       }

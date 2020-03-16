@@ -43,9 +43,11 @@ public class RegionCreateFunctionJUnitTest {
   @Test
   public void testSkipIfExists() {
     RegionCreateFunction function = spy(new RegionCreateFunction());
+    @SuppressWarnings("unchecked")
     FunctionContext<CreateRegionFunctionArgs> context = mock(FunctionContext.class);
     InternalCache internalCache = mock(InternalCache.class);
     InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
+    @SuppressWarnings("unchecked")
     ResultSender<Object> resultSender = mock(ResultSender.class);
 
     when(context.getResultSender()).thenReturn(resultSender);

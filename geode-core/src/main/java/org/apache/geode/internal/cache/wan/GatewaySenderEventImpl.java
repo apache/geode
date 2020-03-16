@@ -922,7 +922,7 @@ public class GatewaySenderEventImpl
     if (this.substituteValue == null) {
       // If the value is already serialized, use it.
       this.valueIsObject = 0x01;
-      /**
+      /*
        * so ends up being stored in this.valueObj
        */
       @Retained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)

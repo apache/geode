@@ -21,8 +21,8 @@ import org.apache.geode.internal.serialization.BasicSerializable;
 /**
  * A request to the TCP server to provide information about the server
  *
- * @since GemFire 5.7
- *
+ * @deprecated this was created for the deprecated Admin API
  */
+@Deprecated
 public class InfoRequest implements BasicSerializable {
 }

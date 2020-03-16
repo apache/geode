@@ -272,8 +272,8 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    * Inserts the specified element at the tail of this queue, waiting if necessary for space to
    * become available.
    *
-   * @throws InterruptedException {@inheritDoc}
-   * @throws NullPointerException {@inheritDoc}
+   * @throws InterruptedException {@inheritDoc} when this method is unable to get the put lock
+   * @throws NullPointerException {@inheritDoc} when this method attempts to put null
    */
   @Override
   public void put(E e) throws InterruptedException {
@@ -337,8 +337,8 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    *
    * @return {@code true} if successful, or {@code false} if the specified waiting time elapses
    *         before space is available.
-   * @throws InterruptedException {@inheritDoc}
-   * @throws NullPointerException {@inheritDoc}
+   * @throws InterruptedException {@inheritDoc} when this method is unable to acquire the put lock
+   * @throws NullPointerException {@inheritDoc} when this method attempts to insert null
    */
   @Override
   public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
@@ -647,10 +647,14 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
   }
 
   /**
-   * @throws UnsupportedOperationException {@inheritDoc}
-   * @throws ClassCastException {@inheritDoc}
-   * @throws NullPointerException {@inheritDoc}
-   * @throws IllegalArgumentException {@inheritDoc}
+   * @throws UnsupportedOperationException if addition of elements
+   *         is not supported by the specified collection
+   * @throws ClassCastException if the class of an element of this queue
+   *         prevents it from being added to the specified collection
+   * @throws NullPointerException if the specified collection is null
+   * @throws IllegalArgumentException if the specified collection is this
+   *         queue, or some property of an element of this queue prevents
+   *         it from being added to the specified collection
    */
   @Override
   public int drainTo(Collection<? super E> c) {
@@ -658,10 +662,14 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
   }
 
   /**
-   * @throws UnsupportedOperationException {@inheritDoc}
-   * @throws ClassCastException {@inheritDoc}
-   * @throws NullPointerException {@inheritDoc}
-   * @throws IllegalArgumentException {@inheritDoc}
+   * @throws UnsupportedOperationException if addition of elements
+   *         is not supported by the specified collection
+   * @throws ClassCastException if the class of an element of this queue
+   *         prevents it from being added to the specified collection
+   * @throws NullPointerException if the specified collection is null
+   * @throws IllegalArgumentException if the specified collection is this
+   *         queue, or some property of an element of this queue prevents
+   *         it from being added to the specified collection
    */
   @Override
   public int drainTo(Collection<? super E> c, int maxElements) {

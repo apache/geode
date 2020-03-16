@@ -57,8 +57,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
   private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS; // 60
                                                                                           // seconds
-  private final RedisLockService hashLockService;
-  private final RedisLockService setLockService;
+  private final RedisLockService lockService;
 
   private final Cache cache;
   private final GeodeRedisServer server;
@@ -75,7 +74,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   private Queue<Command> transactionQueue;
   private final RegionProvider regionProvider;
-  private final byte[] authPwd;
+  private final byte[] authPassword;
 
   private boolean isAuthenticated;
 
@@ -93,44 +92,37 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   /**
    * Default constructor for execution contexts.
    *
-   * @param ch Channel used by this context, should be one to one
+   * @param channel Channel used by this context, should be one to one
    * @param cache The Geode cache instance of this vm
    * @param regionProvider The region provider of this context
    * @param server Instance of the server it is attached to, only used so that any execution
    *        can initiate a shutdwon
-   * @param pwd Authentication password for each context, can be null
+   * @param password Authentication password for each context, can be null
    */
-  public ExecutionHandlerContext(Channel ch, Cache cache, RegionProvider regionProvider,
-      GeodeRedisServer server, byte[] pwd, KeyRegistrar keyRegistrar,
-      PubSub pubSub,
-      RedisLockService hashLockService,
-      RedisLockService setLockService) {
+  public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
+      GeodeRedisServer server, byte[] password, KeyRegistrar keyRegistrar, PubSub pubSub,
+      RedisLockService lockService) {
     this.keyRegistrar = keyRegistrar;
-    this.hashLockService = hashLockService;
-    this.setLockService = setLockService;
+    this.lockService = lockService;
     this.pubSub = pubSub;
-    if (ch == null || cache == null || regionProvider == null || server == null) {
+    if (channel == null || cache == null || regionProvider == null || server == null) {
       throw new IllegalArgumentException("Only the authentication password may be null");
     }
     this.cache = cache;
     this.server = server;
-    this.channel = ch;
+    this.channel = channel;
     this.needChannelFlush = new AtomicBoolean(false);
-    this.byteBufAllocator = channel.alloc();
+    this.byteBufAllocator = this.channel.alloc();
     this.transactionID = null;
     this.transactionQueue = null; // Lazy
     this.regionProvider = regionProvider;
-    this.authPwd = pwd;
-    this.isAuthenticated = pwd != null ? false : true;
+    this.authPassword = password;
+    this.isAuthenticated = password != null ? false : true;
 
   }
 
-  public RedisLockService getHashLockService() {
-    return this.hashLockService;
-  }
-
-  public RedisLockService getSetLockService() {
-    return this.setLockService;
+  public RedisLockService getLockService() {
+    return this.lockService;
   }
 
   private void flushChannel() {
@@ -382,8 +374,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * Get the authentication password, this will be same server wide. It is exposed here as opposed
    * to {@link GeodeRedisServer}.
    */
-  public byte[] getAuthPwd() {
-    return this.authPwd;
+  public byte[] getAuthPassword() {
+    return this.authPassword;
   }
 
   /**

@@ -65,12 +65,12 @@ public class ServerCQImplTest {
     // Initialize cache
     serverCq.addToCqResultKeys("key1");
     serverCq.setCqResultsCacheInitialized();
-    assertThat(serverCq.cqResultKeysInitialized).isTrue();
+    assertThat(serverCq.isCqResultsCacheInitialized()).isTrue();
     assertThat(serverCq.isPartOfCqResult("key1")).isTrue();
 
     // Invalidate and assert results
     serverCq.invalidateCqResultKeys();
-    assertThat(serverCq.cqResultKeysInitialized).isFalse();
+    assertThat(serverCq.isCqResultsCacheInitialized()).isFalse();
     assertThat(serverCq.isPartOfCqResult("key1")).isFalse();
   }
 }

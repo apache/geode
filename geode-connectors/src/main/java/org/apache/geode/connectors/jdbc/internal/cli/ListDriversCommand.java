@@ -28,7 +28,6 @@ import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
-import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -38,7 +37,6 @@ public class ListDriversCommand extends SingleGfshCommand {
   static final String LIST_DRIVERS = "list drivers";
   static final String LIST_DRIVERS__HELP = EXPERIMENTAL
       + "Lists all drivers currently registered by the cluster's Driver Manager.";
-  static final String LIST_OF_DRIVERS = "List of registered JDBC drivers";
   static final String NO_MEMBERS_FOUND = "No members found";
   static final String MEMBER_NAME_NOT_FOUND = "No member found with name: ";
   static final String LIST_DRIVERS_SECTION = "LIST_DRIVERS";
@@ -47,7 +45,7 @@ public class ListDriversCommand extends SingleGfshCommand {
 
 
   @CliCommand(value = LIST_DRIVERS, help = LIST_DRIVERS__HELP)
-  @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
+  @CliMetaData()
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
 
@@ -96,6 +94,7 @@ public class ListDriversCommand extends SingleGfshCommand {
     return resultModel;
   }
 
+  @SuppressWarnings("unchecked")
   List<String> getListOfDrivers(CliFunctionResult listDriversResult) {
     return (List<String>) listDriversResult.getResultObject();
   }

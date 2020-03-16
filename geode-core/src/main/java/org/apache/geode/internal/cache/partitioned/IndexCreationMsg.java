@@ -135,7 +135,7 @@ public class IndexCreationMsg extends PartitionMessage {
           exceptionMsgs.append(ex.getMessage()).append("\n");
         }
         logger.debug("Got an MultiIndexCreationException with \n: {}", exceptionMsgs);
-        logger.debug("{} indexes were created succesfully", failedIndexNames.size());
+        logger.debug("{} indexes were created successfully", failedIndexNames.size());
       }
       replyEx = new ReplyException(
           "Remote Index Creation Failed", exx);

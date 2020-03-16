@@ -32,13 +32,13 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  * RegionSnapshotService to import the data
  *
  */
-public class ImportDataFunction implements InternalFunction {
+public class ImportDataFunction implements InternalFunction<Object[]> {
 
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
-    final Object[] args = (Object[]) context.getArguments();
+  public void execute(FunctionContext<Object[]> context) {
+    final Object[] args = context.getArguments();
     if (args.length < 4) {
       throw new IllegalStateException(
           "Arguments length does not match required length. Import command may have been sent from incompatible older version");
@@ -52,11 +52,11 @@ public class ImportDataFunction implements InternalFunction {
     try {
       final Cache cache =
           ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
-      final Region<?, ?> region = cache.getRegion(regionName);
+      final Region<Object, Object> region = cache.getRegion(regionName);
       final String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
       if (region != null) {
-        RegionSnapshotService<?, ?> snapshotService = region.getSnapshotService();
-        SnapshotOptions options = snapshotService.createOptions();
+        RegionSnapshotService<Object, Object> snapshotService = region.getSnapshotService();
+        SnapshotOptions<Object, Object> options = snapshotService.createOptions();
         options.invokeCallbacks(invokeCallbacks);
         options.setParallelMode(parallel);
         File importFile = new File(importFileName);

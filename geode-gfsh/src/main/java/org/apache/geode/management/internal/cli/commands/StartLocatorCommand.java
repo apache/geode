@@ -392,21 +392,18 @@ public class StartLocatorCommand extends OfflineGfshCommand {
 
         connectSuccess = true;
         responseFailureMessage = null;
-      } catch (SecurityException ignore) {
-        getGfsh().logToFile(ignore.getMessage(), ignore);
+      } catch (SecurityException | AuthenticationFailedException e) {
+        getGfsh().logToFile(e.getMessage(), e);
         jmxManagerAuthEnabled = true;
         break; // no need to continue after SecurityException
-      } catch (AuthenticationFailedException ignore) {
-        getGfsh().logToFile(ignore.getMessage(), ignore);
-        jmxManagerAuthEnabled = true;
-        break; // no need to continue after AuthenticationFailedException
-      } catch (SSLException ignore) {
+      } // no need to continue after AuthenticationFailedException
+      catch (SSLException e) {
         // another type of SSL error occurred (possibly a configuration issue); pass the buck...
-        getGfsh().logToFile(ignore.getMessage(), ignore);
+        getGfsh().logToFile(e.getMessage(), e);
         responseFailureMessage = "Check your SSL configuration and try again.";
-      } catch (Exception ignore) {
-        getGfsh().logToFile(ignore.getMessage(), ignore);
-        responseFailureMessage = "Failed to connect; unknown cause: " + ignore.getMessage();
+      } catch (Exception e) {
+        getGfsh().logToFile(e.getMessage(), e);
+        responseFailureMessage = "Failed to connect; unknown cause: " + e.getMessage();
       }
     }
 
@@ -448,6 +445,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     }
   }
 
+  @SuppressWarnings("deprecation")
   String[] createStartLocatorCommandLine(final LocatorLauncher launcher,
       final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
       final Properties gemfireProperties, final String userClasspath,

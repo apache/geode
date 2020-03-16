@@ -37,18 +37,13 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Links;
 import org.apache.geode.management.operation.RebalanceOperation;
-import org.apache.geode.management.runtime.RebalanceResult;
 
 public class RestTemplateClusterManagementServiceTransportTest {
   private RestTemplateClusterManagementServiceTransport restServiceTransport;
   private RestTemplate restTemplate;
-  private ResponseEntity responseEntity;
-  private AbstractConfiguration configuration;
+  private ResponseEntity<?> responseEntity;
+  private AbstractConfiguration<?> configuration;
   private Links links;
-  private ClusterManagementRealizationResult realizationSuccess;
-  private ClusterManagementListResult listResult;
-  private ClusterManagementGetResult getResult;
-  private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> rebalanceOperationResult;
 
   @Before
   public void init() {
@@ -60,14 +55,13 @@ public class RestTemplateClusterManagementServiceTransportTest {
     links = mock(Links.class);
     when(configuration.getLinks()).thenReturn(links);
 
-    realizationSuccess = mock(ClusterManagementRealizationResult.class);
+    ClusterManagementRealizationResult realizationSuccess =
+        mock(ClusterManagementRealizationResult.class);
     when(realizationSuccess.isSuccessful()).thenReturn(true);
-    listResult = mock(ClusterManagementListResult.class);
+    ClusterManagementListResult<?, ?> listResult = mock(ClusterManagementListResult.class);
     when(listResult.isSuccessful()).thenReturn(true);
-    getResult = mock(ClusterManagementGetResult.class);
+    ClusterManagementGetResult<?, ?> getResult = mock(ClusterManagementGetResult.class);
     when(getResult.isSuccessful()).thenReturn(true);
-
-    rebalanceOperationResult = mock(ClusterManagementOperationResult.class);
   }
 
   @Test

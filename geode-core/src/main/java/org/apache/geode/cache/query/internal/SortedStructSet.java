@@ -122,7 +122,7 @@ public class SortedStructSet extends TreeSet
     return super.add(fieldValues);
   }
 
-  /**
+  /*
    * For internal use. Just add the Object[] values for a struct with same type
    *
    * public boolean addFieldValues(Object[] fieldValues) { //return super.add(fieldValues);
@@ -150,7 +150,7 @@ public class SortedStructSet extends TreeSet
     return super.contains(fieldValues);
   }
 
-  /**
+  /*
    * Does this set contain a Struct of the correct type with the specified values?
    *
    * public boolean containsFieldValues(Object[] fieldValues) { return super.contains(fieldValues);

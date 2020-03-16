@@ -163,7 +163,7 @@ public class GMSLocatorRecoveryIntegrationTest {
       MembershipConfig membershipConfig = new MembershipConfig() {
         public String getLocators() {
           try {
-            return LocalHostUtil.getLocalHost().getHostName() + "[" + port + "]";
+            return LocalHostUtil.getLocalHostName() + "[" + port + "]";
           } catch (UnknownHostException e) {
             throw new RuntimeException("unable to locate localhost for this machine");
           }

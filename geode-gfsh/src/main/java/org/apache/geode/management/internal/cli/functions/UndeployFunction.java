@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-public class UndeployFunction implements InternalFunction {
+public class UndeployFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = UndeployFunction.class.getName();
@@ -42,12 +42,12 @@ public class UndeployFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Object[]> context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
 
     try {
-      final Object[] args = (Object[]) context.getArguments();
+      final Object[] args = context.getArguments();
       final String[] jarFilenameList = (String[]) args[0]; // Comma separated
       InternalCache cache = (InternalCache) context.getCache();
 
@@ -67,7 +67,8 @@ public class UndeployFunction implements InternalFunction {
       } else {
         final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
         jarNamesToUndeploy =
-            jarClassLoaders.stream().map(l -> l.getDeployedFileName()).collect(Collectors.toList());
+            jarClassLoaders.stream().map(DeployedJar::getDeployedFileName)
+                .collect(Collectors.toList());
       }
 
       Map<String, String> undeployedJars = new HashMap<>();

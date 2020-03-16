@@ -37,7 +37,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class OqlQueryRequestOperationHandler
@@ -47,7 +46,7 @@ public class OqlQueryRequestOperationHandler
   @Override
   public Result<OQLQueryResponse> process(final ProtobufSerializationService serializationService,
       final OQLQueryRequest request, final MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, ConnectionStateException, EncodingException,
+      throws InvalidExecutionContextException, EncodingException,
       DecodingException {
     String queryString = request.getQuery();
     List<EncodedValue> encodedParameters = request.getBindParameterList();
@@ -93,6 +92,7 @@ public class OqlQueryRequestOperationHandler
     }
 
     // The result is a list of structs
+    @SuppressWarnings("unchecked")
     SelectResults<Struct> structResults = (SelectResults<Struct>) selectResults;
 
     StructType elementType = (StructType) structResults.getCollectionType().getElementType();

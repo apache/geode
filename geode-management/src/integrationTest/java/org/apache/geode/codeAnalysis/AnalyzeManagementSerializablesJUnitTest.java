@@ -13,18 +13,16 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.codeAnalysis;
 
-public class Pair<T, U> {
-  T fst;
-  U snd;
+import org.junit.experimental.categories.Category;
 
-  Pair(Object fst, Object snd) {
-    this.fst = (T) fst;
-    this.snd = (U) snd;
-  }
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-  public static Pair of(Object fst, Object snd) {
-    return new Pair(fst, snd);
+@Category({SerializationTest.class})
+public class AnalyzeManagementSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+  @Override
+  protected String getModuleName() {
+    return "geode-management";
   }
 }

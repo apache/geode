@@ -48,34 +48,27 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * TCP server which listens on a port and delegates requests to a request handler. The server uses
- * expects messages containing a global version number, followed by a DataSerializable object
+ * TcpServer listens on a port and delegates requests to one or more request handlers. Use
+ * TcpClient to send messages to a TcpServer. Messages should all implement DataSerializableFixedID.
  * <p>
- * This code was factored out of GossipServer.java to allow multiple handlers to share the same
- * gossip server port.
- *
- * @since GemFire 5.7
+ * TcpServer accepts a connection, reads one request, passes the request to a handler,
+ * sends the reply and then closes the connection.
+ * <p>
+ * TcpServer is used in the Geode Locator service.
  */
 public class TcpServer {
 
   /**
-   * The version of the tcp server protocol
-   * <p>
-   * This should be incremented if the gossip message structures change
-   * <p>
-   * 0 - special indicator of a non-gossip message from a client<br>
-   * 1000 - gemfire 5.5 - using java serialization<br>
-   * 1001 - 5.7 - using DataSerializable and supporting server locator messages.<br>
-   * 1002 - 7.1 - sending GemFire version along with GOSSIP_VERSION in each request.
-   * <p>
-   * with the addition of support for all old versions of clients you can no longer change this
-   * version number
+   * GOSSIPVERSION is a remnant of the pre-open-source TcpServer. It was used to designate
+   * the on-wire protocol for TcpServer communications prior to the introduction of Geode's
+   * Version class. It should not be changed and exists for backward-compatibility.
    */
   public static final int GOSSIPVERSION = 1002;
 
-  // Don't change it ever. We did NOT send GemFire version in a Gossip request till 1001 version.
-  // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a
-  // GossipServer.
+  /**
+   * Version 1001 was the on-wire protocol version prior to the introduction of the use of
+   * Geode's Version class to designate the on-wire protocol.
+   */
   public static final int OLDGOSSIPVERSION = 1001;
 
   @MutableForTesting("The map used here is mutable, because some tests modify it")
@@ -83,15 +76,6 @@ public class TcpServer {
       createGossipToVersionMap();
   public static final int GOSSIP_BYTE = 0;
   private static final String P2P_BACKLOG_PROPERTY_NAME = "p2p.backlog";
-
-  // For test purpose only
-  @MutableForTesting
-  public static boolean isTesting = false;
-  // Non-final field for testing to avoid any security holes in system.
-  @MutableForTesting
-  public static int TESTVERSION = GOSSIPVERSION;
-  @MutableForTesting
-  public static int OLDTESTVERSION = OLDGOSSIPVERSION;
 
   public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
 
@@ -122,9 +106,8 @@ public class TcpServer {
 
 
   /*
-   * Initialize versions map. Warning: This map must be compatible with all GemFire versions being
-   * handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS are same for then
-   * current GOSSIPVERSION should be used.
+   * Old on-wire protocol map. This should be removed in a release that breaks all backward
+   * compatibility since it has been replaced with Geode's Version class.
    */
   private static Map<Integer, Short> createGossipToVersionMap() {
     HashMap<Integer, Short> map = new HashMap<>();
@@ -133,6 +116,25 @@ public class TcpServer {
     return map;
   }
 
+  /**
+   * The constructor for TcpServer
+   *
+   * @param port The port to listen on
+   * @param bind_address The bind-address to use (may be null)
+   * @param handler The TcpHandler that will process messages
+   * @param threadName The name to use in the listening thread
+   * @param protocolChecker A cut point for inserting a message handler with different serialization
+   * @param nanoTimeSupplier A time supplier
+   * @param executorServiceSupplier A provider of the executor to be used by handlers
+   * @param socketCreator The socket-creator that TcpServer should use. If null a default socket
+   *        creator is constructed
+   * @param objectSerializer The serializer
+   * @param objectDeserializer The deserializer
+   * @param readTimeoutPropertyName A system property name used to look up read timeout millis
+   * @param backlogLimitPropertyName A system property name used to establish the server socket
+   *        backlog
+   * @see #start()
+   */
   public TcpServer(int port, InetAddress bind_address, TcpHandler handler,
       String threadName, ProtocolChecker protocolChecker,
       final LongSupplier nanoTimeSupplier,
@@ -161,6 +163,9 @@ public class TcpServer {
     backlogLimit = Integer.getInteger(backlogLimitPropertyName, p2pBacklog);
   }
 
+  /**
+   * This method is used during a Geode auto-reconnect to restart the server-socket thread
+   */
   public void restarting() throws IOException {
     this.shuttingDown = false;
     startServerThread();
@@ -172,6 +177,12 @@ public class TcpServer {
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
   }
 
+  /**
+   * After constructing a TcpServer use this method to start its server-socket listening thread.
+   * A TcpServer should be stopped via a ShutdownRequest made through a TcpClient.
+   *
+   * @see TcpClient#stop(HostAndPort)
+   */
   public void start() throws IOException {
     this.shuttingDown = false;
     startServerThread();
@@ -207,27 +218,47 @@ public class TcpServer {
     }
   }
 
+  /**
+   * Wait on the server-socket thread using {@link Thread#join(long)}
+   *
+   * @param millis how long to wait
+   */
   public void join(long millis) throws InterruptedException {
-    if (serverThread != null) {
+    if (isAlive()) {
       serverThread.join(millis);
     }
   }
 
+  /**
+   * Wait on the server-socket thread using {@link Thread#join()}
+   */
   public void join() throws InterruptedException {
-    if (serverThread != null) {
+    if (isAlive()) {
       serverThread.join();
     }
   }
 
+  /**
+   * Check to see if the server-socket thread is alive
+   */
   public boolean isAlive() {
     return serverThread != null && serverThread.isAlive();
   }
 
+  /**
+   * Check to see if we've requested that the server-socket thread has been requested
+   * to shut down
+   */
   public boolean isShuttingDown() {
     return this.shuttingDown;
   }
 
-  public SocketAddress getBindAddress() {
+  /**
+   * Returns the server-socket's local socket address
+   *
+   * @see ServerSocket#getLocalSocketAddress()
+   */
+  public SocketAddress getSocketAddress() {
     return srv_sock.getLocalSocketAddress();
   }
 
@@ -462,15 +493,11 @@ public class TcpServer {
   }
 
   public static int getCurrentGossipVersion() {
-    return TcpServer.isTesting ? TcpServer.TESTVERSION : TcpServer.GOSSIPVERSION;
+    return GOSSIPVERSION;
   }
 
   public static int getOldGossipVersion() {
-    return TcpServer.isTesting ? TcpServer.OLDTESTVERSION : TcpServer.OLDGOSSIPVERSION;
-  }
-
-  public static Map<Integer, Short> getGossipVersionMapForTestOnly() {
-    return GOSSIP_TO_GEMFIRE_VERSION_MAP;
+    return OLDGOSSIPVERSION;
   }
 
 }

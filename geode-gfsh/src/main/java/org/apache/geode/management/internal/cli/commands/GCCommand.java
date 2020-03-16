@@ -24,7 +24,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -69,7 +68,7 @@ public class GCCommand extends GfshCommand {
       dsMembers = getAllNormalMembers();
     }
 
-    Function garbageCollectionFunction = new GarbageCollectionFunction();
+    GarbageCollectionFunction garbageCollectionFunction = new GarbageCollectionFunction();
     List<?> resultList =
         (List<?>) ManagementUtils.executeFunction(garbageCollectionFunction, null, dsMembers)
             .getResult();
@@ -77,16 +76,15 @@ public class GCCommand extends GfshCommand {
     for (Object object : resultList) {
       if (object == null) {
         errors.addLine("ResultMap was null");
-        continue;
       } else if (object instanceof Throwable) {
         errors.addLine("Exception in GC " + ((Throwable) object).getMessage());
         LogWrapper.getInstance(getCache())
             .fine("Exception in GC " + ((Throwable) object).getMessage(), ((Throwable) object));
-        continue;
       } else if (object instanceof String) {
         // unexpected exception string - cache may be closed or something
         errors.addLine((String) object);
       } else {
+        @SuppressWarnings("unchecked")
         Map<String, String> resultMap = (Map<String, String>) object;
         summary
             .accumulate(CliStrings.GC__MSG__MEMBER_NAME, resultMap.get("MemberId"));

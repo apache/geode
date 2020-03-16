@@ -17,9 +17,10 @@ package org.apache.geode.distributed.internal.tcpserver;
 import java.net.Socket;
 
 /**
- * ConnectionWatcher is used to observe tcp/ip connection formation in SockCreator implementations.
+ * ConnectionWatcher is used to observe tcp/ip connection formation in socket-creator
+ * implementations.
  *
- *
+ * @see AdvancedSocketCreator#connect(HostAndPort, int, ConnectionWatcher, boolean, int, boolean)
  */
 public interface ConnectionWatcher {
   /**

@@ -79,7 +79,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
         sender.getDispatcherThreads());
 
     nDispatcher = sender.getDispatcherThreads();
-    /**
+    /*
      * We have to divide the buckets/shadowPRs here. So that the individual processors can start
      * with a set of events to deal with In case of shadowPR getting created it will have to attach
      * itself to one of the processors when they are created.
@@ -255,7 +255,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "ConcurrentParallelGatewaySenderEventProcessor: {} stopped dispatching: {}",
-                (b ? "Successfully" : "Unsuccesfully"), this);
+                (b ? "Successfully" : "Unsuccessfully"), this);
           }
         } catch (ExecutionException e) {
           // we don't expect any exception but if caught then eat it and log warning

@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.util;
 
-/**
+/*
  * Abstract class for CqListener. Utility class that implements all methods in
  * <code>CqListener</code> with empty implementations. Applications can subclass this class and only
  * override the methods of interest.

@@ -51,18 +51,19 @@ public class ImportClusterConfigurationCommandDUnitTest {
   private MemberVM locator;
   private String commandWithFile;
 
-  private static String CLUSTER_XML =
+  private static final String CLUSTER_XML =
       "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
           + "<cache xmlns=\"http://geode.apache.org/schema/cache\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" copy-on-read=\"false\" is-server=\"false\" lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" version=\"1.0\" xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\">\n"
           + "<region name=\"regionForCluster\">\n"
           + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>\n"
           + "  </region>\n" + "</cache>\n";
 
-  private static String GROUP_XML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-      + "<cache xmlns=\"http://geode.apache.org/schema/cache\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" copy-on-read=\"false\" is-server=\"false\" lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" version=\"1.0\" xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\">\n"
-      + "<region name=\"regionForGroupA\">\n"
-      + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>\n"
-      + "  </region>\n" + "</cache>\n";
+  private static final String GROUP_XML =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+          + "<cache xmlns=\"http://geode.apache.org/schema/cache\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" copy-on-read=\"false\" is-server=\"false\" lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" version=\"1.0\" xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\">\n"
+          + "<region name=\"regionForGroupA\">\n"
+          + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>\n"
+          + "  </region>\n" + "</cache>\n";
 
   @Before
   public void setUp() throws Exception {
@@ -80,7 +81,7 @@ public class ImportClusterConfigurationCommandDUnitTest {
 
     MemberVM server1 = cluster.startServerVM(1, locator.getPort());
     server1.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion("regionForCluster");
+      Region<?, ?> region = ClusterStartupRule.getCache().getRegion("regionForCluster");
       assertThat(region).isNotNull();
       assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
     });
@@ -103,23 +104,23 @@ public class ImportClusterConfigurationCommandDUnitTest {
     properties.setProperty(GROUPS_NAME, "groupA");
     MemberVM server2 = cluster.startServerVM(2, properties, locator.getPort());
     server2.invoke(() -> {
-      Region region1 = ClusterStartupRule.getCache().getRegion("regionForCluster");
-      Region region2 = ClusterStartupRule.getCache().getRegion("regionForGroupA");
+      Region<?, ?> region1 = ClusterStartupRule.getCache().getRegion("regionForCluster");
+      Region<?, ?> region2 = ClusterStartupRule.getCache().getRegion("regionForGroupA");
       assertThat(region1).isNotNull();
       assertThat(region2).isNotNull();
     });
 
     // server1 is not affected
     server1.invoke(() -> {
-      Region region1 = ClusterStartupRule.getCache().getRegion("regionForCluster");
-      Region region2 = ClusterStartupRule.getCache().getRegion("regionForGroupA");
+      Region<?, ?> region1 = ClusterStartupRule.getCache().getRegion("regionForCluster");
+      Region<?, ?> region2 = ClusterStartupRule.getCache().getRegion("regionForGroupA");
       assertThat(region1).isNotNull();
       assertThat(region2).isNull();
     });
   }
 
   @Test
-  public void canNotConfigureIfServersAreNotEmpty() throws IOException {
+  public void canNotConfigureIfServersAreNotEmpty() {
     // start a server, and create a standalone region on that server
     MemberVM server = cluster.startServerVM(1, locator.getPort());
     server.invoke(() -> {
@@ -131,9 +132,10 @@ public class ImportClusterConfigurationCommandDUnitTest {
   }
 
   @Test
-  public void configureVanillaServers() throws IOException {
+  public void configureVanillaServers() {
     Properties properties = new Properties();
     properties.setProperty(GROUPS_NAME, "groupA");
+    @SuppressWarnings("unused")
     MemberVM serverA = cluster.startServerVM(1, properties, locator.getPort());
     gfsh.executeAndAssertThat(commandWithFile + " --group=groupA").statusIsSuccess()
         .containsOutput("Successfully set the 'groupA' configuration to the content of")
@@ -142,6 +144,7 @@ public class ImportClusterConfigurationCommandDUnitTest {
 
     // start another server that belongs to both groupA and groupB
     properties.setProperty(GROUPS_NAME, "groupA,groupB");
+    @SuppressWarnings("unused")
     MemberVM serverB = cluster.startServerVM(2, properties, locator.getPort());
 
     // try to set the cluster configuration of groupB, in this case, we can't bounce serverB because

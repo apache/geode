@@ -75,7 +75,7 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
     ExecutorService execService =
         LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
 
-    List<Callable<List>> callables = new ArrayList<>();
+    List<Callable<List<String>>> callables = new ArrayList<>();
 
     for (final DistributedMember member : dsMembers) {
 
@@ -114,7 +114,7 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
     }
 
     Iterator<DistributedMember> memberIterator = dsMembers.iterator();
-    List<Future<List>> futures;
+    List<Future<List<String>>> futures;
 
     try {
       futures = execService.invokeAll(callables);
@@ -128,7 +128,7 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
 
     ResultModel resultModel = new ResultModel();
     TabularResultModel resultData = resultModel.addTable(CliStrings.START_GATEWAYSENDER);
-    for (Future<List> future : futures) {
+    for (Future<List<String>> future : futures) {
       DistributedMember member = memberIterator.next();
       List<String> memberStatus;
       try {

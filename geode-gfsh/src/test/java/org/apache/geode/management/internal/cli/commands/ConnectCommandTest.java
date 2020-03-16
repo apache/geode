@@ -15,9 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +44,7 @@ import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
+@SuppressWarnings("deprecation")
 public class ConnectCommandTest {
 
   @ClassRule
@@ -61,7 +59,7 @@ public class ConnectCommandTest {
   private ArgumentCaptor<File> fileCaptor;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     properties = new Properties();
     gfsh = mock(Gfsh.class);
     operationInvoker = mock(OperationInvoker.class);
@@ -79,14 +77,14 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void whenGfshIsAlreadyConnected() throws Exception {
+  public void whenGfshIsAlreadyConnected() {
     when(gfsh.isConnectedAndReady()).thenReturn(true);
     gfshParserRule.executeAndAssertThat(connectCommand, "connect")
         .containsOutput("Already connected to");
   }
 
   @Test
-  public void whenGfshIsNotConnected() throws Exception {
+  public void whenGfshIsNotConnected() {
     when(gfsh.isConnectedAndReady()).thenReturn(false);
     when(resultModel.getStatus()).thenReturn(Result.Status.OK);
     gfshParserRule.executeAndAssertThat(connectCommand, "connect")
@@ -129,7 +127,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void givenTokenIsSetInProperties() throws Exception {
+  public void givenTokenIsSetInProperties() {
     doReturn(properties).when(connectCommand).resolveSslProperties(any(), anyBoolean(), any(),
         any());
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --token=FOO_BAR");
@@ -138,7 +136,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void promptForPasswordIfUsernameIsGiven() throws Exception {
+  public void promptForPasswordIfUsernameIsGiven() {
     doReturn(properties).when(connectCommand).resolveSslProperties(any(), anyBoolean(), any(),
         any());
     result = gfshParserRule.executeCommandWithInstance(connectCommand, "connect --user=user");
@@ -149,7 +147,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void notPromptForPasswordIfUsernameIsGiven() throws Exception {
+  public void notPromptForPasswordIfUsernameIsGiven() {
     doReturn(properties).when(connectCommand).resolveSslProperties(any(), anyBoolean(), any(),
         any());
     result = gfshParserRule.executeCommandWithInstance(connectCommand,
@@ -161,7 +159,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void notPromptForPasswordIfuserNameIsGivenInFile() throws Exception {
+  public void notPromptForPasswordIfuserNameIsGivenInFile() {
     // username specified in property file won't prompt for password
     properties.setProperty("security-username", "user");
     doReturn(properties).when(connectCommand).loadProperties(any(File.class));
@@ -173,7 +171,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void plainConnectNotLoadFileNotPrompt() throws Exception {
+  public void plainConnectNotLoadFileNotPrompt() {
     result = gfshParserRule.executeCommandWithInstance(connectCommand, "connect");
     // will not try to load from any file
     verify(connectCommand).loadProperties(null, null);
@@ -184,7 +182,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void connectUseSsl() throws Exception {
+  public void connectUseSsl() {
     result = gfshParserRule.executeCommandWithInstance(connectCommand, "connect --use-ssl");
 
     // will not try to load from any file
@@ -214,7 +212,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void securityFileContainsSSLPropsAndNoUseSSL() throws Exception {
+  public void securityFileContainsSSLPropsAndNoUseSSL() {
     properties.setProperty(SSL_KEYSTORE, "keystore");
     result = gfshParserRule.executeCommandWithInstance(connectCommand,
         "connect --security-properties-file=test");
@@ -229,7 +227,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void securityFileContainsNoSSLPropsAndNoUseSSL() throws Exception {
+  public void securityFileContainsNoSSLPropsAndNoUseSSL() {
     result = gfshParserRule.executeCommandWithInstance(connectCommand,
         "connect --security-properties-file=test");
 
@@ -243,8 +241,10 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void connectUseLegacySecurityPropertiesFile() throws Exception {
-    properties.setProperty(JMX_MANAGER_SSL_KEYSTORE, "jmx-keystore");
+  public void connectUseLegacySecurityPropertiesFile() {
+    properties.setProperty(
+        org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE,
+        "jmx-keystore");
     result = gfshParserRule.executeCommandWithInstance(connectCommand,
         "connect --security-properties-file=test --key-store=keystore --key-store-password=password");
 
@@ -258,11 +258,13 @@ public class ConnectCommandTest {
 
     // the command option will be ignored
     assertThat(properties).hasSize(1);
-    assertThat(properties.get(JMX_MANAGER_SSL_KEYSTORE)).isEqualTo("jmx-keystore");
+    assertThat(properties
+        .get(org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE))
+            .isEqualTo("jmx-keystore");
   }
 
   @Test
-  public void connectUseSecurityPropertiesFile_promptForMissing() throws Exception {
+  public void connectUseSecurityPropertiesFile_promptForMissing() {
     properties.setProperty(SSL_KEYSTORE, "keystore");
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     result = gfshParserRule.executeCommandWithInstance(connectCommand,
@@ -274,7 +276,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void connectUseSecurityPropertiesFileAndOption_promptForMissing() throws Exception {
+  public void connectUseSecurityPropertiesFileAndOption_promptForMissing() {
     properties.setProperty(SSL_KEYSTORE, "keystore");
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     result = gfshParserRule.executeCommandWithInstance(connectCommand,
@@ -297,37 +299,43 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void containsLegacySSLConfigTest_ssl() throws Exception {
+  public void containsLegacySSLConfigTest_ssl() {
     properties.setProperty(SSL_KEYSTORE, "keystore");
     assertThat(ConnectCommand.containsLegacySSLConfig(properties)).isFalse();
   }
 
   @Test
-  public void containsLegacySSLConfigTest_cluster() throws Exception {
-    properties.setProperty(CLUSTER_SSL_KEYSTORE, "cluster-keystore");
+  public void containsLegacySSLConfigTest_cluster() {
+    properties.setProperty(
+        org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE,
+        "cluster-keystore");
     assertThat(ConnectCommand.containsLegacySSLConfig(properties)).isTrue();
   }
 
   @Test
-  public void containsLegacySSLConfigTest_jmx() throws Exception {
-    properties.setProperty(JMX_MANAGER_SSL_KEYSTORE, "jmx-keystore");
+  public void containsLegacySSLConfigTest_jmx() {
+    properties.setProperty(
+        org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE,
+        "jmx-keystore");
     assertThat(ConnectCommand.containsLegacySSLConfig(properties)).isTrue();
   }
 
   @Test
-  public void containsLegacySSLConfigTest_http() throws Exception {
-    properties.setProperty(HTTP_SERVICE_SSL_KEYSTORE, "http-keystore");
+  public void containsLegacySSLConfigTest_http() {
+    properties.setProperty(
+        org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE,
+        "http-keystore");
     assertThat(ConnectCommand.containsLegacySSLConfig(properties)).isTrue();
   }
 
   @Test
-  public void loadPropertiesWithNull() throws Exception {
+  public void loadPropertiesWithNull() {
     doCallRealMethod().when(connectCommand).loadProperties(any());
     assertThat(connectCommand.loadProperties(null, null)).isEmpty();
   }
 
   @Test
-  public void isSslImpliedByOptions() throws Exception {
+  public void isSslImpliedByOptions() {
     assertThat(connectCommand.isSslImpliedBySslOptions((String) null)).isFalse();
     assertThat(connectCommand.isSslImpliedBySslOptions((String[]) null)).isFalse();
 
@@ -337,7 +345,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void resolveSslProperties() throws Exception {
+  public void resolveSslProperties() {
     // assume properties loaded from either file has an ssl property
     properties.setProperty(SSL_KEYSTORE, "keystore");
     properties = connectCommand.resolveSslProperties(gfsh, false, null, null);

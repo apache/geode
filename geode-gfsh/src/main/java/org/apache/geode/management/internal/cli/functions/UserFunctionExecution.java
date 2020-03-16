@@ -103,22 +103,26 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
     }
   }
 
-  ResultCollector parseResultCollector(String resultCollectorName)
+  @SuppressWarnings("unchecked")
+  ResultCollector<Object, List<Object>> parseResultCollector(String resultCollectorName)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
     if (resultCollectorName != null && resultCollectorName.length() > 0) {
-      return (ResultCollector) ClassPathLoader.getLatest().forName(resultCollectorName)
+      return (ResultCollector<Object, List<Object>>) ClassPathLoader.getLatest()
+          .forName(resultCollectorName)
           .newInstance();
     } else {
       return null;
     }
   }
 
-  Execution buildExecution(Cache cache, String onRegion) throws RegionNotFoundException {
-    Execution execution;
+  @SuppressWarnings("unchecked")
+  Execution<Object, Object, List<Object>> buildExecution(Cache cache, String onRegion)
+      throws RegionNotFoundException {
+    Execution<Object, Object, List<Object>> execution;
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
     if (onRegion != null && onRegion.length() > 0) {
-      Region region = cache.getRegion(onRegion);
+      Region<?, ?> region = cache.getRegion(onRegion);
 
       if (region == null) {
         throw new RegionNotFoundException(onRegion);
@@ -175,13 +179,14 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
       // Parse Arguments
       Set<String> filters = parseFilters(filterString);
       String[] functionArgs = parseArguments(argumentsString);
-      ResultCollector resultCollectorInstance = parseResultCollector(resultCollectorName);
+      ResultCollector<Object, List<Object>> resultCollectorInstance =
+          parseResultCollector(resultCollectorName);
 
       // Security check
       function.getRequiredPermissions(onRegion, functionArgs).forEach(securityService::authorize);
 
       // Build & Configure Execution Context
-      Execution execution = buildExecution(cache, onRegion);
+      Execution<Object, Object, List<Object>> execution = buildExecution(cache, onRegion);
       if (execution == null) {
         context.getResultSender()
             .lastResult(new CliFunctionResult(context.getMemberName(), ERROR,
@@ -205,13 +210,13 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
       }
 
       // Execute Function and gather results
-      List results = null;
+      List<Object> results = null;
       boolean functionSuccess = true;
       List<String> resultMessage = new ArrayList<>();
 
-      ResultCollector rc = execution.execute(function.getId());
+      ResultCollector<Object, List<Object>> rc = execution.execute(function.getId());
       if (function.hasResult()) {
-        results = (List) rc.getResult();
+        results = rc.getResult();
       }
 
       if (results != null) {

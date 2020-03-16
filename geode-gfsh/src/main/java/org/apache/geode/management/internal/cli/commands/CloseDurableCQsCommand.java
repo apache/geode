@@ -67,6 +67,7 @@ public class CloseDurableCQsCommand extends GfshCommand {
 
     final ResultCollector<?, ?> rc =
         executeFunction(new CloseDurableCqFunction(), params, targetMembers);
+    @SuppressWarnings("unchecked")
     final List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
     return ResultModel.createMemberStatusResult(results);
   }

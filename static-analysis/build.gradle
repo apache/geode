@@ -16,3 +16,4 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${project.projectDir}/../gradle/warnings.gradle"

@@ -2,7 +2,7 @@
 
 ## Contents
 1. [Overview](#overview)
-2. [Performance Test](#performance-test)
+2. [Performance Test Scripts](#performance-test)
 
 ## <a name="overview"></a>Overview
 
@@ -12,13 +12,49 @@ take advantage of Geode’s scaling capabilities without changing their client c
 connect to a Geode server in the same way they connect to a Redis server, using an IP address and a 
 port number.
 
-## <a name="performance-test"></a>Performance Test
+## <a name="performance-test"></a>Performance Test Scripts
 
+###The `benchmark.sh` Script
 To run the performance tests, use the `benchmark.sh` script located in the 
 `geode-redis/src/performanceTest` directory.  This script uses the `redis-benchmark` command to
-measure performance of various Redis commands in requests per second.
+measure performance of various Redis commands in requests per second. It runs the commands in two
+different ways. First it runs several clients in parallel, all testing the same command. Then it
+runs all the commands together in parallel, crudely simulating a variety of simultaneous operations.
 
-Mandatory command line arguments for `benchmark.sh`:
+Optional command line arguments for `benchmark.sh`:
+- `-h` indicates the host to connect to (default: `localhost`)
+- `-p` indicates the port to connect to (default: `6379`)
+- `-t` indicates the number of times the `redis-benchmark` command will run (default: `10`)
+- `-c` indicates the number of times the individual commands will run (default: `100000`)
+- `-f` indicates an optional prefix for the summary file name
+
+The script will output a CSV file called `[optional prefix_]benchmark_summary.csv` which can be
+easily loaded into any spreadsheet program for analysis.
+
+Sample output:
+```csv
+Command,Fastest Response Time (Msec),95th-99th Percentile (Msec),Slowest Response Time (Msec),Avg Requests Per Second
+SET,1,8,43,13329
+GET,1,4,15,17842
+INCR,1,5,29,16069
+MSET,1,7,732,11183
+Parallel-SET,1,4,20,18460
+Parallel-GET,1,4,21,18291
+Parallel-INCR,1,4,20,18271
+Parallel-MSET,1,4,21,17771
+```
+
+###Benchmark Helper Scripts
+The `benchmark.sh` script uses several helper scripts. The `execute-operation.sh` script runs a
+particular instance of `redis-benchmark`. The `summarize-operation-results.sh` script processes the
+output of `execute-operation.sh`, and the `summarize-batch-results.sh` script processes the output
+of multiple runs of `summarize-operation-results.sh`.
+
+###The `environment-setup.sh` Script
+The `environment-setup.sh` is optional. It can start a local Geode Redis Adapter, or confirm that a
+local Redis server is running, then call `benchmark.sh`.
+
+Mandatory command line arguments for `environment-setup.sh`:
 - either `-g` or `-r`
 
 `-g` will:
@@ -28,43 +64,14 @@ Mandatory command line arguments for `benchmark.sh`:
 `-r` will:
 - Connect to a Redis server that is already running
 
-Optional command line arguments for `benchmark.sh`:
-- `-h` indicates the host to connect to (default: `localhost`)
-- `-p` indicates the port to connect to (default: `6379`)
-- `-t` indicates the number of times the `redis-benchmark` command will run (default: `10`)
-- `-c` indicates the number of times the individual commands will run (default: `100000`)
+Optional command line arguments for `environment-setup.sh`:
+- `-f` indicates an optional prefix for the summary file name that will be passed to `benchmark.sh`
 
-The script will output a CSV file called `[current git short SHA]-aggregate.csv` which can be easily
-loaded into any spreadsheet program for analysis.
-
-Sample output:
-```csv
-Command, Average Requests Per Second
-SET, 78561.4
-GET, 86181.4
-INCR, 81021.9
-LPUSH, 32934.9
-RPUSH, 32095.3
-LPOP, 11715.8
-RPOP, 12054.4
-SADD, 74603.7
-SPOP, 2853.92
-```
-
-The `benchmark.sh` script calls the `aggregator.sh` script, which handles running the 
-`redis-benchmark` command and aggregating the results after `benchmark.sh` has validated the
-environment.  The aggregator script can be run on its own if you already have an environment set up.
-
-Optional command line arguments for `aggregator.sh`:
-- `-h` indicates the host to connect to (default: `localhost`)
-- `-p` indicates the port to connect to (default: `6379`)
-- `-t` indicates the number of times the `redis-benchmark` command will run (default: `10`)
-- `-c` indicates the number of times the individual commands will run (default: `100000`)
-- `-n` indicates the output file prefix you would like to use (default: current git short SHA)
-
-The `shacompare.sh` script takes in two different commit hashes, checks them out, and calls the 
-`benchmark.sh` script for each.  It generates two aggregate CSV files that can later be compared
-for performance changes.
+###The `shacompare.sh` Script
+The `shacompare.sh` script is used to compare performance between different commits. This script
+takes in two different commit hashes, checks them out, uses `environment-setup.sh` script to start
+up the Geode Redis server, and runs the benchmarks for each commit. It generates two summary CSV
+files, labeled with the short commit hash, that can be compared for performance changes.
 
 Mandatory command line arguments for `shacompare.sh`:
 - `-b` is the commit hash for the first commit you would like to compare

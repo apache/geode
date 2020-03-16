@@ -36,22 +36,28 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
@@ -63,6 +69,7 @@ import org.apache.geode.test.version.VersionManager;
  * This test verifies that the current version (1.12 or later) is compatible with the latest
  * version before 1.12
  */
+@Category({MembershipTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class TcpServerProductVersionDUnitTest implements Serializable {
@@ -83,9 +90,9 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     SocketCreatorFactory.close();
   }
 
+
   private static final TestVersion oldProductVersion = getOldProductVersion();
-  private static final TestVersion currentProductVersion =
-      TestVersion.valueOf(VersionManager.CURRENT_VERSION);
+  private static final TestVersion currentProductVersion = TestVersion.CURRENT_VERSION;
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<VersionConfiguration> data() {
@@ -112,12 +119,10 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     return olderVersions.get(olderVersions.size() - 1);
   }
 
+  @SuppressWarnings("unused")
   private enum VersionConfiguration {
-
-    // OLD_OLD(oldProductVersion, oldProductVersion),
     OLD_CURRENT(oldProductVersion, currentProductVersion),
     CURRENT_OLD(currentProductVersion, oldProductVersion);
-    // CURRENT_CURRENT(currentProductVersion, currentProductVersion);
 
     final TestVersion clientProductVersion;
     final TestVersion locatorProductVersion;
@@ -138,19 +143,36 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
 
   @Test
   public void testAllMessageTypes() {
-    VM clientVM = Host.getHost(0).getVM(versions.clientProductVersion.toString(), 0);
-    VM locatorVM = Host.getHost(0).getVM(versions.locatorProductVersion.toString(), 1);
+    int clientVMNumber = versions.clientProductVersion.isSameAs(Version.CURRENT)
+        ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
+    int locatorVMNumber = versions.locatorProductVersion.isSameAs(Version.CURRENT)
+        ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
+    VM clientVM = Host.getHost(0).getVM(versions.clientProductVersion.toString(), clientVMNumber);
+    VM locatorVM =
+        Host.getHost(0).getVM(versions.locatorProductVersion.toString(), locatorVMNumber);
     int locatorPort = createLocator(locatorVM, true);
 
     clientVM.invoke("issue version request",
         createRequestResponseFunction(locatorPort, VersionRequest.class.getName(),
             VersionResponse.class.getName()));
-    clientVM.invoke("issue info request",
-        createRequestResponseFunction(locatorPort, InfoRequest.class.getName(),
-            InfoResponse.class.getName()));
+    testDeprecatedMessageTypes(clientVM, locatorPort);
     clientVM.invoke("issue shutdown request",
         createRequestResponseFunction(locatorPort, ShutdownRequest.class.getName(),
             ShutdownResponse.class.getName()));
+    locatorVM.invoke("wait for locator to stop", () -> {
+      Locator locator = Locator.getLocator();
+      if (locator != null) {
+        ((InternalLocator) locator).stop(false, false, false);
+        GeodeAwaitility.await().until(((InternalLocator) locator)::isStopped);
+      }
+    });
+  }
+
+  @SuppressWarnings("deprecation")
+  private void testDeprecatedMessageTypes(VM clientVM, int locatorPort) {
+    clientVM.invoke("issue info request",
+        createRequestResponseFunction(locatorPort, InfoRequest.class.getName(),
+            InfoResponse.class.getName()));
   }
 
   private SerializableRunnableIF createRequestResponseFunction(
@@ -170,17 +192,19 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         tcpClient = getLegacyTcpClient();
       }
 
+      @SuppressWarnings("deprecation")
+      final InetAddress localHost = SocketCreator.getLocalHost();
       Object response;
       try {
         Method requestToServer =
             TcpClient.class.getMethod("requestToServer", InetAddress.class, int.class, Object.class,
                 int.class);
-        response = requestToServer.invoke(tcpClient, SocketCreator.getLocalHost(), locatorPort,
+        response = requestToServer.invoke(tcpClient, localHost, locatorPort,
             requestMessage, 1000);
       } catch (NoSuchMethodException e) {
         response = tcpClient
             .requestToServer(
-                new HostAndPort(SocketCreator.getLocalHost().getHostAddress(), locatorPort),
+                new HostAndPort(localHost.getHostAddress(), locatorPort),
                 requestMessage, 1000);
       }
 
@@ -239,7 +263,9 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     Properties properties = new Properties();
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
+    @SuppressWarnings("deprecation")
+    final int currentVMNum = VM.getCurrentVMNum();
+    properties.setProperty(NAME, "vm" + currentVMNum);
     return properties;
   }
 

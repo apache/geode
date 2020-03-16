@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -61,7 +62,7 @@ public class RebalanceOperationPerformer {
 
       List<RebalanceRegionResult> rebalanceRegionResults = new ArrayList<>();
 
-      RuntimeException latestNoMembersException = null;
+      NoMembersException latestNoMembersException = null;
 
       for (String regionName : includeRegions) {
 
@@ -81,15 +82,17 @@ public class RebalanceOperationPerformer {
       }
 
       if (latestNoMembersException != null && !result.getSuccess()) {
-        throw latestNoMembersException;
+        result.setStatusMessage(latestNoMembersException.getMessage());
+      } else {
+        result.setRebalanceSummary(rebalanceRegionResults);
       }
-
-      result.setRebalanceSummary(rebalanceRegionResults);
 
       return result;
     } else {
-      result = (RebalanceResultImpl) executeRebalanceOnDS((InternalCache) cache,
-          String.valueOf(simulate), excludeRegions);
+      result =
+          (RebalanceResultImpl) executeRebalanceOnDS(ManagementService.getManagementService(cache),
+              (InternalCache) cache,
+              String.valueOf(simulate), excludeRegions, new FunctionExecutor());
     }
 
     return result;
@@ -201,11 +204,12 @@ public class RebalanceOperationPerformer {
     return member;
   }
 
-  private static List<MemberPRInfo> getMemberRegionList(InternalCache cache,
+  private static List<MemberPRInfo> getMemberRegionList(ManagementService managementService,
+      InternalCache cache,
       List<String> listExcludedRegion) {
     List<MemberPRInfo> listMemberPRInfo = new ArrayList<>();
     String[] listDSRegions =
-        ManagementService.getManagementService(cache).getDistributedSystemMXBean().listRegions();
+        managementService.getDistributedSystemMXBean().listRegions();
     final Set<DistributedMember> dsMembers = ManagementUtils.getAllMembers(cache);
 
     for (String regionName : listDSRegions) {
@@ -241,8 +245,7 @@ public class RebalanceOperationPerformer {
         regionName = Region.SEPARATOR + regionName;
       }
       // remove this prefix /
-      DistributedRegionMXBean bean =
-          ManagementService.getManagementService(cache).getDistributedRegionMXBean(regionName);
+      DistributedRegionMXBean bean = managementService.getDistributedRegionMXBean(regionName);
 
       if (bean != null) {
         if (bean.getRegionType().equals(DataPolicy.PARTITION.toString())
@@ -290,7 +293,7 @@ public class RebalanceOperationPerformer {
     return listMembersId.toString();
   }
 
-  private static boolean checkResultList(List<String> errors, List resultList,
+  private static boolean checkResultList(List<String> errors, List<Object> resultList,
       DistributedMember member) {
     boolean toContinueForOtherMembers = false;
     if (CollectionUtils.isNotEmpty(resultList)) {
@@ -317,16 +320,33 @@ public class RebalanceOperationPerformer {
     return toContinueForOtherMembers;
   }
 
-  private static RebalanceResult executeRebalanceOnDS(InternalCache cache, String simulate,
-      List<String> excludeRegionsList) {
+  /**
+   * This class was introduced so that it can be mocked
+   * to all executeRebalanceOnDS to be unit tested
+   */
+  @VisibleForTesting
+  static class FunctionExecutor {
+    public List<Object> execute(Function rebalanceFunction, Object[] functionArgs,
+        DistributedMember dsMember) {
+      return (List<Object>) ManagementUtils.executeFunction(rebalanceFunction,
+          functionArgs, Collections.singleton(dsMember)).getResult();
+    }
+  }
+
+  @VisibleForTesting
+  static RebalanceResult executeRebalanceOnDS(ManagementService managementService,
+      InternalCache cache, String simulate,
+      List<String> excludeRegionsList, FunctionExecutor functionExecutor) {
     RebalanceResultImpl rebalanceResult = new RebalanceResultImpl();
     rebalanceResult.setSuccess(false);
     List<String> errors = new ArrayList<>();
 
-    List<MemberPRInfo> listMemberRegion = getMemberRegionList(cache, excludeRegionsList);
+    List<MemberPRInfo> listMemberRegion =
+        getMemberRegionList(managementService, cache, excludeRegionsList);
 
     if (listMemberRegion.size() == 0) {
       rebalanceResult.setStatusMessage(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
+      rebalanceResult.setSuccess(true);
       return rebalanceResult;
     }
 
@@ -365,13 +385,11 @@ public class RebalanceOperationPerformer {
             Set<String> excludeRegionSet = new HashSet<>();
             functionArgs[2] = excludeRegionSet;
 
-            List resultList = new ArrayList();
+            List<Object> resultList = new ArrayList<>();
 
             try {
               if (checkMemberPresence(cache, dsMember)) {
-                resultList = (ArrayList) ManagementUtils.executeFunction(rebalanceFunction,
-                    functionArgs, Collections.singleton(dsMember)).getResult();
-
+                resultList = functionExecutor.execute(rebalanceFunction, functionArgs, dsMember);
                 if (checkResultList(errors, resultList, dsMember)) {
                   continue;
                 }
@@ -384,11 +402,10 @@ public class RebalanceOperationPerformer {
                 break;
               } else {
                 if (i == memberPR.dsMemberList.size() - 1) {
-                  errors.add(
-                      MessageFormat.format(
-                          CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
-                          memberPR.region, listOfAllMembers(memberPR.dsMemberList)) + ", " +
-                          CliStrings.REBALANCE__MSG__MEMBERS_MIGHT_BE_DEPARTED);
+                  // The last member hosting this region departed so no need to rebalance it.
+                  // So act as if we never tried to rebalance this region.
+                  // Break to get out of this inner loop and try the next region (if any).
+                  break;
                 } else {
                   continue;
                 }

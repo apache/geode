@@ -32,6 +32,7 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.InternalQueryService;
@@ -52,7 +53,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class OqlQueryRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+public class OqlQueryRequestOperationHandlerJUnitTest
+    extends OperationHandlerJUnitTest<OQLQueryRequest, OQLQueryResponse> {
 
   public static final String SELECT_STAR_QUERY = "select * from /region";
   public static final String STRING_RESULT_1 = "result1";
@@ -60,7 +62,7 @@ public class OqlQueryRequestOperationHandlerJUnitTest extends OperationHandlerJU
   private InternalQueryService queryService;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     queryService = mock(InternalQueryService.class);
     when(cacheStub.getQueryService()).thenReturn(queryService);
     operationHandler = new OqlQueryRequestOperationHandler();
@@ -88,7 +90,8 @@ public class OqlQueryRequestOperationHandlerJUnitTest extends OperationHandlerJU
       TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
     Query query = mock(DefaultQuery.class);
     when(queryService.newQuery(eq(SELECT_STAR_QUERY))).thenReturn(query);
-    SelectResults results = new ResultsBag();
+    @SuppressWarnings("unchecked")
+    SelectResults<String> results = new ResultsBag();
     results.setElementType(new ObjectTypeImpl());
     results.add(STRING_RESULT_1);
     results.add(STRING_RESULT_2);
@@ -112,7 +115,7 @@ public class OqlQueryRequestOperationHandlerJUnitTest extends OperationHandlerJU
     when(queryService.newQuery(eq(SELECT_STAR_QUERY))).thenReturn(query);
 
 
-    SelectResults results = new LinkedStructSet();
+    SelectResults<Struct> results = new LinkedStructSet();
     StructTypeImpl elementType = new StructTypeImpl(new String[] {"field1"});
     results.setElementType(elementType);
     results.add(new StructImpl(elementType, new Object[] {STRING_RESULT_1}));

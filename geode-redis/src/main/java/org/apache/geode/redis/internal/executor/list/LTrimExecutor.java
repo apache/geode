@@ -29,11 +29,11 @@ import org.apache.geode.redis.internal.executor.ListQuery;
 
 public class LTrimExecutor extends ListExecutor {
 
-  private final String ERROR_KEY_NOT_EXISTS = "The key does not exists on this server";
+  private static final String ERROR_KEY_NOT_EXISTS = "The key does not exists on this server";
 
-  private final String ERROR_NOT_NUMERIC = "The index provided is not numeric";
+  private static final String ERROR_NOT_NUMERIC = "The index provided is not numeric";
 
-  private final String SUCCESS = "OK";
+  private static final String SUCCESS = "OK";
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -52,7 +52,7 @@ public class LTrimExecutor extends ListExecutor {
     int redisStop;
 
     checkDataType(key, RedisDataType.REDIS_LIST, context);
-    Region keyRegion = getRegion(context, key);
+    Region<Object, Object> keyRegion = getRegion(context, key);
 
     if (keyRegion == null) {
       command
@@ -90,7 +90,7 @@ public class LTrimExecutor extends ListExecutor {
 
     List<Integer> keepList;
     try {
-      keepList = getRange(context, key, redisStart, redisStop, keyRegion);
+      keepList = getRange(context, key, redisStart, redisStop);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -108,11 +108,12 @@ public class LTrimExecutor extends ListExecutor {
   }
 
   private List<Integer> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start,
-      int stop, Region r) throws Exception {
+      int stop) throws Exception {
     Query query = getQuery(key, ListQuery.LTRIM, context);
 
-    Object[] params = {Integer.valueOf(stop + 1)};
+    Object[] params = {stop + 1};
 
+    @SuppressWarnings("unchecked")
     SelectResults<Integer> results = (SelectResults<Integer>) query.execute(params);
     if (results == null || results.size() <= start) {
       return null;

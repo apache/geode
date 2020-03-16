@@ -66,7 +66,7 @@ public class MembersListService implements PulseService {
     }
 
     // Response JSON
-    responseJSON.put("clusterMembers", memberListJson);
+    responseJSON.set("clusterMembers", memberListJson);
     responseJSON.put("clusterName", cluster.getServerName());
 
     // Send json response

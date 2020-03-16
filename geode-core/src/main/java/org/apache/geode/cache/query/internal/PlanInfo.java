@@ -14,16 +14,15 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Encapsulates evaluation info about compiled values
  *
  * @version $Revision: 1.1 $
  * @since GemFire 4.1
  */
-
-import java.util.ArrayList;
-import java.util.List;
-
 class PlanInfo {
 
   boolean evalAsFilter = false;

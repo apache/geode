@@ -50,10 +50,12 @@ RETURN_CODE=$?
   exit 1
 fi
 
-bash benchmark.sh -g
+FILE_PREFIX=$(git rev-parse --short HEAD)
+bash environment-setup.sh -g -f ${FILE_PREFIX}
 
 git checkout ${COMPARISON_COMMIT}
 
-bash benchmark.sh -g
+FILE_PREFIX=$(git rev-parse --short HEAD)
+bash environment-setup.sh -g -f ${FILE_PREFIX}
 
 git checkout ${ORIGINAL_BRANCH}

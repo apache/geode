@@ -30,7 +30,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.functions.CliFunctionResult.StatusState;
 
-public class DestroyGatewayReceiverFunction extends CliFunction {
+public class DestroyGatewayReceiverFunction extends CliFunction<Void> {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1490927519860899562L;
   private static final String ID = DestroyGatewayReceiverFunction.class.getName();
@@ -39,7 +39,7 @@ public class DestroyGatewayReceiverFunction extends CliFunction {
       new DestroyGatewayReceiverFunction();
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext<Void> context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
     Cache cache = context.getCache();

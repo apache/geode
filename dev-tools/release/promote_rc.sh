@@ -112,11 +112,11 @@ done
 
 echo ""
 echo "============================================================"
-echo "Checking that artifacts have published to www.apache.org..."
+echo "Waiting for artifacts to publish to downloads.apache.org..."
 echo "============================================================"
 for suffix in "" .asc .sha256 ; do
   file=apache-geode-${VERSION}.tgz
-  url=https://www.apache.org/dist/geode/${VERSION}/${file}${suffix}
+  url=https://downloads.apache.org/geode/${VERSION}/${file}${suffix}
   expectedsize=$(cd ${SVN_DIR}/../../release/geode/${VERSION}; ls -l ${file}${suffix} | awk '{print $5}')
   actualsize=0
   while [ $expectedsize -ne $actualsize ] ; do
@@ -147,8 +147,9 @@ GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-g
 set +x
 sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.cgi?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
     -e '/ *mirror ".*www.*/d' \
+    -e '/ *mirror ".*downloads.*/d' \
     -e 's# *mirror ".*archive.*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"\
-  mirror "https://www.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+  mirror "https://downloads.apache.org/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
     -e 's/ *sha256 ".*/  sha256 "'"${GEODE_SHA}"'"/' \
     -i.bak apache-geode.rb
 rm apache-geode.rb.bak
@@ -189,7 +190,7 @@ set -x
 cd ${GEODE_NATIVE}/docker
 git pull -r
 set +x
-sed -e "/wget.*closer.*apache-geode-/s#http.*filename=geode#https://www.apache.org/dist/geode#" \
+sed -e "/wget.*closer.*apache-geode-/s#http.*filename=geode#https://downloads.apache.org/geode#" \
     -e "/wget.*closer.*apache-rat-/s#http.*filename=creadur#https://archive.apache.org/dist/creadur#" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -i.bak Dockerfile

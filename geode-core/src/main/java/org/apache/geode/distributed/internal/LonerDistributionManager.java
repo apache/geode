@@ -14,12 +14,10 @@
  */
 package org.apache.geode.distributed.internal;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +47,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
@@ -1205,9 +1202,7 @@ public class LonerDistributionManager implements DistributionManager {
 
       String name = this.system.getName();
 
-      InetAddress hostAddr = LocalHostUtil.getLocalHost();
-      host = SocketCreator.use_client_host_name ? hostAddr.getCanonicalHostName()
-          : hostAddr.getHostAddress();
+      host = SocketCreator.getClientHostName();
       DistributionConfig config = system.getConfig();
       DurableClientAttributes dac = null;
       if (config.getDurableClientId() != null) {
@@ -1342,6 +1337,11 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
+  public String getRedundancyZone(InternalDistributedMember member) {
+    return null;
+  }
+
+  @Override
   public boolean areInSameZone(InternalDistributedMember member1,
       InternalDistributedMember member2) {
     return false;
@@ -1357,13 +1357,6 @@ public class LonerDistributionManager implements DistributionManager {
   public Set<InternalDistributedMember> getMembersInSameZone(
       InternalDistributedMember acceptedMember) {
     return Collections.singleton(acceptedMember);
-  }
-
-  @Override
-  public Set<InetAddress> getEquivalents(InetAddress in) {
-    Set<InetAddress> value = new HashSet<InetAddress>();
-    value.add(this.getId().getInetAddress());
-    return value;
   }
 
   @Override
@@ -1470,7 +1463,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  /** returns the Threads Monitoring instance */
+  /* returns the Threads Monitoring instance */
   public ThreadsMonitoring getThreadMonitoring() {
     return this.threadMonitor;
   }

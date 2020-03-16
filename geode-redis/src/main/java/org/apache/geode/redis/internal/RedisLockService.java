@@ -27,7 +27,7 @@ import org.apache.geode.cache.TimeoutException;
 /**
  * Locking mechanism to support Redis operations
  */
-public class RedisLockService {
+public class RedisLockService implements RedisLockServiceMBean {
 
   private static final int DEFAULT_TIMEOUT = 1000;
   private final int timeoutMS;
@@ -47,6 +47,11 @@ public class RedisLockService {
    */
   public RedisLockService(int timeoutMS) {
     this.timeoutMS = timeoutMS;
+  }
+
+  @Override
+  public int getLockCount() {
+    return map.size();
   }
 
   /**

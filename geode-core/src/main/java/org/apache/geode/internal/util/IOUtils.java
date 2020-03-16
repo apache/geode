@@ -198,7 +198,7 @@ public abstract class IOUtils {
    * @param pathname a String indicating the name of the path.
    * @return a boolean indicating whether the path represented by name (pathname) actually exists in
    *         the file system of the localhost (system).
-   * @see org.apache.geode.internal.lang.StringUtils#isBlank(String)
+   * @see org.apache.geode.internal.lang.StringUtils#isNotBlank(CharSequence)
    * @see java.io.File#exists()
    */
   public static boolean isExistingPathname(final String pathname) {

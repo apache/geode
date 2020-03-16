@@ -17,6 +17,12 @@ package org.apache.geode.distributed.internal.tcpserver;
 import java.io.DataInputStream;
 import java.net.Socket;
 
+/**
+ * ProtocolChecker checks the given byte to determine whether it is a valid communication
+ * mode. A ProtocolChecker may optionally handle all communication on the given socket
+ * and return a true value. Otherwise if the given byte is a valid communication mode the
+ * checker should return false.
+ */
 public interface ProtocolChecker {
   boolean checkProtocol(Socket socket, DataInputStream input,
       int firstByte) throws Exception;

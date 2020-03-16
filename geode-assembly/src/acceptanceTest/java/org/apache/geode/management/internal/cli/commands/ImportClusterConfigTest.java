@@ -17,7 +17,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;

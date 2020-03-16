@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.net.InetAddressUtils.getLoopback;
-import static org.apache.geode.internal.net.InetAddressUtils.getLoopbackAddress;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -23,16 +21,20 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 
 import org.junit.After;
 import org.junit.Test;
 
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * multicast availability is tested in JGroupsMessengerJUnitTest
  */
 public class AvailablePortJUnitTest {
+  private static final String LOOPBACK_ADDRESS =
+      LocalHostUtil.preferIPv6Addresses() ? "::1" : "127.0.0.1";
 
   private ServerSocket socket;
 
@@ -43,6 +45,10 @@ public class AvailablePortJUnitTest {
     }
   }
 
+  private InetAddress getLoopback() throws UnknownHostException {
+    return InetAddress.getByName(LOOPBACK_ADDRESS);
+  }
+
   @Test
   public void testIsPortAvailable() throws IOException {
     socket = new ServerSocket();
@@ -50,7 +56,7 @@ public class AvailablePortJUnitTest {
     socket.bind(new InetSocketAddress(getLoopback(), port));
 
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
-        InetAddress.getByName(getLoopbackAddress())));
+        InetAddress.getByName(LOOPBACK_ADDRESS)));
     // Get local host will return the hostname for the server, so this should succeed, since we're
     // bound to the loopback address only.
     assertTrue(

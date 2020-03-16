@@ -172,7 +172,6 @@ public class InternalDistributedMember
    * @param groups the server groups / roles
    * @param attr durable client attributes, if any
    *
-   * @throws UnknownHostException if the given hostname cannot be resolved
    */
   public InternalDistributedMember(String host, int p, String n, String u, int vmKind,
       String[] groups, DurableClientAttributes attr) {
@@ -312,7 +311,7 @@ public class InternalDistributedMember
     memberIdentifier.setProcessId(OSProcess.getId());
     try {
       if (SocketCreator.resolve_dns) {
-        setHostName(LocalHostUtil.getLocalHost().getHostName());
+        setHostName(LocalHostUtil.getLocalHostName());
       } else {
         setHostName(LocalHostUtil.getLocalHost().getHostAddress());
       }

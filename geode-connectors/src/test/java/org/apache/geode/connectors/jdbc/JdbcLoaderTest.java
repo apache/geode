@@ -32,15 +32,14 @@ import org.apache.geode.test.fake.Fakes;
 public class JdbcLoaderTest {
 
   private SqlHandler sqlHandler;
-  private LoaderHelper loaderHelper;
+  private LoaderHelper<Object, Object> loaderHelper;
 
   private JdbcLoader<Object, Object> loader;
 
-  private InternalCache cache;
-
+  @SuppressWarnings("unchecked")
   @Before
-  public void setUp() throws Exception {
-    cache = Fakes.cache();
+  public void setUp() {
+    InternalCache cache = Fakes.cache();
     sqlHandler = mock(SqlHandler.class);
     loaderHelper = mock(LoaderHelper.class);
 

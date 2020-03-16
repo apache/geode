@@ -38,7 +38,6 @@ import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 public class StatusClusterConfigServiceCommand extends GfshCommand {
-  @SuppressWarnings("unchecked")
   @CliCommand(value = CliStrings.STATUS_SHARED_CONFIG, help = CliStrings.STATUS_SHARED_CONFIG_HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_LOCATOR)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
@@ -67,6 +66,7 @@ public class StatusClusterConfigServiceCommand extends GfshCommand {
     ResultCollector<?, ?> rc =
         ManagementUtils.executeFunction(new FetchSharedConfigurationStatusFunction(), null,
             locators);
+    @SuppressWarnings("unchecked")
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
     for (CliFunctionResult result : results) {

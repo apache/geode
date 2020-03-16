@@ -42,15 +42,13 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class DeregisterDriverCommandTest {
   private DeregisterDriverCommand command;
   private JndiBindingsType.JndiBinding dataSource;
-  private List<JndiBindingsType.JndiBinding> dataSources;
   private Set<DistributedMember> memberSet;
-  private InternalConfigurationPersistenceService clusterConfigService;
-  private CacheConfig cacheConfig;
   private List<CliFunctionResult> resultList = new ArrayList<>();
   private CliFunctionResult result;
   private final String DRIVER_CLASS_NAME = "test-jdbc-driver-class-name";
   private final String DATA_SOURCE_NAME = "data-source-name";
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     command = spy(new DeregisterDriverCommand());
@@ -58,12 +56,13 @@ public class DeregisterDriverCommandTest {
     dataSource = new JndiBindingsType.JndiBinding();
     dataSource.setJndiName(DATA_SOURCE_NAME);
     dataSource.setJdbcDriverClass("driver name");
-    dataSources = new ArrayList<>();
+    List<JndiBindingsType.JndiBinding> dataSources = new ArrayList<>();
     dataSources.add(dataSource);
     doReturn(memberSet).when(command).findMembers(any(), any());
     doReturn(resultList).when(command).executeAndGetFunctionResult(any(), any(), any());
-    clusterConfigService = mock(InternalConfigurationPersistenceService.class);
-    cacheConfig = mock(CacheConfig.class);
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
+    CacheConfig cacheConfig = mock(CacheConfig.class);
     when(cacheConfig.getJndiBindings()).thenReturn(dataSources);
 
     doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
@@ -75,13 +74,13 @@ public class DeregisterDriverCommandTest {
     when(memberSet.size()).thenReturn(1);
 
     result = new CliFunctionResult("Server1", CliFunctionResult.StatusState.OK,
-        DRIVER_CLASS_NAME + " was succesfully deregistered.");
+        DRIVER_CLASS_NAME + " was successfully deregistered.");
     resultList.add(result);
 
     ResultModel resultModel = command.deregisterDriver(DRIVER_CLASS_NAME);
 
     assertThat(resultModel.toString())
-        .contains(DRIVER_CLASS_NAME + " was succesfully deregistered.");
+        .contains(DRIVER_CLASS_NAME + " was successfully deregistered.");
     assertThat(resultModel.getStatus()).isEqualTo(Result.Status.OK);
 
     resultList.clear();

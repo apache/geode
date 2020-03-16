@@ -117,7 +117,7 @@ public class FunctionServiceStats {
   private static final int _resultsReceived;
 
 
-  /**
+  /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
    */
   static {

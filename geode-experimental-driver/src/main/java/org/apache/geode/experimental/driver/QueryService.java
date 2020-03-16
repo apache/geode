@@ -26,5 +26,5 @@ public interface QueryService {
    *        of any involved regions.
    * @return Query abstraction.
    */
-  <T> Query newQuery(String queryString);
+  <T> Query<T> newQuery(String queryString);
 }

@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal.net;
+package org.apache.geode.admin.internal;
 
-import static org.apache.geode.internal.net.InetAddressUtils.validateHostOrThrow;
+import static org.apache.geode.admin.internal.InetAddressUtils.validateHostOrThrow;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

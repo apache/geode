@@ -27,11 +27,10 @@ import org.junit.Test;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.util.test.TestUtil;
+import org.apache.geode.test.util.ResourceUtils;
 
 public class RegisterDriverCommandDUnitTest {
 
-  private static MemberVM locator, server1, server2;
   final String JDBC_DRIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
 
   @ClassRule
@@ -43,9 +42,11 @@ public class RegisterDriverCommandDUnitTest {
 
   @BeforeClass
   public static void before() throws Exception {
-    locator = cluster.startLocatorVM(0);
-    server1 = cluster.startServerVM(1, "group1", locator.getPort());
-    server2 = cluster.startServerVM(2, "group1", locator.getPort());
+    MemberVM locator = cluster.startLocatorVM(0);
+    @SuppressWarnings("unused")
+    MemberVM server1 = cluster.startServerVM(1, "group1", locator.getPort());
+    @SuppressWarnings("unused")
+    MemberVM server2 = cluster.startServerVM(2, "group1", locator.getPort());
 
     gfsh.connectAndVerify(locator);
   }
@@ -78,7 +79,7 @@ public class RegisterDriverCommandDUnitTest {
   }
 
   private File loadTestResource(String fileName) {
-    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    String filePath = ResourceUtils.getResource(this.getClass(), fileName).getPath();
     Assertions.assertThat(filePath).isNotNull();
 
     return new File(filePath);

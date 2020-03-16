@@ -24,7 +24,7 @@ public class ProtobufFunctionService implements FunctionService {
   }
 
   @Override
-  public <T> Function newFunction(String functionId) {
-    return new ProtobufFunction<T>(functionId, channel, valueEncoder);
+  public <T> Function<T> newFunction(String functionId) {
+    return new ProtobufFunction<>(functionId, channel, valueEncoder);
   }
 }

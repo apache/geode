@@ -19,13 +19,11 @@ import static org.apache.geode.security.ResourcePermission.Operation.WRITE;
 import static org.apache.geode.security.ResourcePermission.Resource.CLUSTER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.After;
@@ -47,18 +45,17 @@ public class SecureFunctionServiceImplTest {
   public static final String REGION = "TestRegion";
   public static final String FUNCTION_ID = "id";
   private SecureFunctionServiceImpl functionService;
-  private InternalCache cache;
-  private Security security;
-  private Region region;
-  private Function function;
+  private Function<Void> function;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    cache = mock(InternalCacheForClientAccess.class);
+    InternalCache cache = mock(InternalCacheForClientAccess.class);
     doReturn(cache).when(cache).getCacheForProcessingClientRequests();
-    region = mock(Region.class);
+    @SuppressWarnings("unchecked")
+    Region<Object, Object> region = mock(Region.class);
     when(cache.getRegion(REGION)).thenReturn(region);
-    security = mock(Security.class);
+    Security security = mock(Security.class);
     doThrow(NotAuthorizedException.class).when(security).authorize(any());
     doThrow(NotAuthorizedException.class).when(security).authorize(any(), any(), any(), any());
     functionService = new SecureFunctionServiceImpl(cache, security);
@@ -73,7 +70,7 @@ public class SecureFunctionServiceImplTest {
   }
 
   @Test
-  public void executeFunctionOnRegionWithoutAuthorization() throws Exception {
+  public void executeFunctionOnRegionWithoutAuthorization() {
     when(function.getRequiredPermissions(REGION, null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
@@ -82,27 +79,23 @@ public class SecureFunctionServiceImplTest {
   }
 
   @Test
-  public void executeFunctionOnMemberWithoutAuthorization() throws Exception {
+  public void executeFunctionOnMemberWithoutAuthorization() {
     when(function.getRequiredPermissions(null, null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
-        () -> functionService.executeFunctionOnMember(FUNCTION_ID, null, Arrays.asList("member")))
-            .isInstanceOf(NotAuthorizedException.class);
+        () -> functionService.executeFunctionOnMember(FUNCTION_ID, null,
+            Collections.singletonList("member")))
+                .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void executeFunctionOnGroupsWithoutAuthorization() throws Exception {
+  public void executeFunctionOnGroupsWithoutAuthorization() {
     when(function.getRequiredPermissions(null, null))
         .thenReturn(Collections.singleton(new ResourcePermission(CLUSTER, WRITE, REGION, ALL)));
     assertThatThrownBy(
-        () -> functionService.executeFunctionOnGroups(FUNCTION_ID, null, Arrays.asList("group")))
-            .isInstanceOf(NotAuthorizedException.class);
-  }
-
-  private void authorize(ResourcePermission.Resource resource,
-      ResourcePermission.Operation operation, String region, String key) {
-    doNothing().when(security).authorize(resource, operation, region, key);
-    doNothing().when(security).authorize(new ResourcePermission(resource, operation, region, key));
+        () -> functionService.executeFunctionOnGroups(FUNCTION_ID, null,
+            Collections.singletonList("group")))
+                .isInstanceOf(NotAuthorizedException.class);
   }
 
 }

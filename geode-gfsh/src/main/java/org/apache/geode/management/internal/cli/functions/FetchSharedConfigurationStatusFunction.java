@@ -24,12 +24,12 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-public class FetchSharedConfigurationStatusFunction implements InternalFunction {
+public class FetchSharedConfigurationStatusFunction implements InternalFunction<Void> {
 
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Void> context) {
     InternalLocator locator = InternalLocator.getLocator();
     InternalCache cache = (InternalCache) context.getCache();
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();

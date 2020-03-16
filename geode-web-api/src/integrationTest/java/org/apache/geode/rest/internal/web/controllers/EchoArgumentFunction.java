@@ -28,7 +28,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 
-public class EchoArgumentFunction implements Function {
+public class EchoArgumentFunction implements Function<Object> {
   /**
    * Specifies whether the function sends results while executing. The method returns false if no
    * result is expected.<br>
@@ -60,7 +60,7 @@ public class EchoArgumentFunction implements Function {
    * @since GemFire 6.0
    */
   @Override
-  public void execute(final FunctionContext context) {
+  public void execute(final FunctionContext<Object> context) {
     Object args = context.getArguments();
 
     // Echo the arguments back to the caller for assertion

@@ -311,7 +311,7 @@ public class ManagementAgent {
     final String hostname;
     final InetAddress bindAddr;
     if (StringUtils.isBlank(this.config.getJmxManagerBindAddress())) {
-      hostname = LocalHostUtil.getLocalHost().getHostName();
+      hostname = LocalHostUtil.getLocalHostName();
       bindAddr = null;
     } else {
       hostname = this.config.getJmxManagerBindAddress();

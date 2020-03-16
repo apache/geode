@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.commons.lang3.StringUtils.defaultString;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +29,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.IndexDetails;
@@ -57,7 +58,7 @@ public class ListIndexCommand extends GfshCommand {
 
     for (final IndexDetails indexDetails : indexDetailsList) {
       indexTable.accumulate("Member Name",
-          StringUtils.defaultString(indexDetails.getMemberName()));
+          defaultString(indexDetails.getMemberName()));
       indexTable.accumulate("Member ID", indexDetails.getMemberId());
       indexTable.accumulate("Region Path", indexDetails.getRegionPath());
       indexTable.accumulate("Name", indexDetails.getIndexName());
@@ -99,7 +100,9 @@ public class ListIndexCommand extends GfshCommand {
 
     for (Object result : results) {
       if (result instanceof Set) { // ignore FunctionInvocationTargetExceptions and other Exceptions
-        indexDetailsList.addAll((Set<IndexDetails>) result);
+        @SuppressWarnings("unchecked")
+        Set<IndexDetails> set = (Set<IndexDetails>) result;
+        indexDetailsList.addAll(set);
       }
     }
     Collections.sort(indexDetailsList);

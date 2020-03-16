@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexStatistics;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.ObjectUtils;
@@ -36,13 +35,13 @@ import org.apache.geode.internal.lang.ObjectUtils;
  * @see org.apache.geode.distributed.DistributedMember
  * @since GemFire 7.0
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "deprecation"})
 public class IndexDetails implements Comparable<IndexDetails>, Serializable {
 
   private static final long serialVersionUID = -2198907141534201288L;
   private IndexStatisticsDetails indexStatisticsDetails;
 
-  private IndexType indexType;
+  private org.apache.geode.cache.query.IndexType indexType;
 
   private String indexedExpression;
   private String fromClause;
@@ -90,7 +89,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     setProjectionAttributes(index.getProjectionAttributes());
     setRegionName(index.getRegion().getName());
     if (index instanceof AbstractIndex) {
-      setIsValid(((AbstractIndex) index).isValid());
+      setIsValid(index.isValid());
     } else {
       setIsValid(false);
     }
@@ -144,12 +143,12 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     this.indexStatisticsDetails = indexStatisticsDetails;
   }
 
-  public IndexType getIndexType() {
+  public org.apache.geode.cache.query.IndexType getIndexType() {
     return indexType;
   }
 
 
-  public void setIndexType(final IndexType indexType) {
+  public void setIndexType(final org.apache.geode.cache.query.IndexType indexType) {
     this.indexType = indexType;
   }
 
@@ -228,21 +227,17 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
 
   @Override
   public String toString() {
-    final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
-
-    buffer.append(" {fromClause = ").append(getFromClause());
-    buffer.append(", indexExpression = ").append(getIndexedExpression());
-    buffer.append(", indexName = ").append(getIndexName());
-    buffer.append(", indexType = ").append(getIndexType().getName());
-    buffer.append(", memberId = ").append(getMemberId());
-    buffer.append(", memberName = ").append(getMemberName());
-    buffer.append(", regionName = ").append(getRegionName());
-    buffer.append(", regionPath = ").append(getRegionPath());
-    buffer.append(", isValid = ").append(getIsValid());
-    buffer.append(", projectAttributes = ").append(getProjectionAttributes());
-    buffer.append("}");
-
-    return buffer.toString();
+    return getClass().getSimpleName() + " {fromClause = " + getFromClause() +
+        ", indexExpression = " + getIndexedExpression() +
+        ", indexName = " + getIndexName() +
+        ", indexType = " + getIndexType().getName() +
+        ", memberId = " + getMemberId() +
+        ", memberName = " + getMemberName() +
+        ", regionName = " + getRegionName() +
+        ", regionPath = " + getRegionPath() +
+        ", isValid = " + getIsValid() +
+        ", projectAttributes = " + getProjectionAttributes() +
+        "}";
   }
 
   public static class IndexStatisticsDetails implements Serializable {
@@ -295,16 +290,12 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
 
     @Override
     public String toString() {
-      final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
-
-      buffer.append(" {numberOfKeys = ").append(getNumberOfKeys());
-      buffer.append(", numberOfUpdates = ").append(getNumberOfUpdates());
-      buffer.append(", numberOfValues = ").append(getNumberOfValues());
-      buffer.append(", totalUpdateTime = ").append(getTotalUpdateTime());
-      buffer.append(", totalUses").append(getTotalUses());
-      buffer.append("}");
-
-      return buffer.toString();
+      return getClass().getSimpleName() + " {numberOfKeys = " + getNumberOfKeys() +
+          ", numberOfUpdates = " + getNumberOfUpdates() +
+          ", numberOfValues = " + getNumberOfValues() +
+          ", totalUpdateTime = " + getTotalUpdateTime() +
+          ", totalUses" + getTotalUses() +
+          "}";
     }
   }
 }

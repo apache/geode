@@ -425,12 +425,12 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
   }
 
   @Override
-  /**
+  /*
    * We don't expect any callers to call this code, but just in case, implementation is provided for
    * backward compatibility
    *
    * @deprecated since 1.4 use processCommand(String commandString, Map<String, String> env,
-   *             List<String> stagedFilePaths)
+   * List<String> stagedFilePaths)
    */
   public String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData) {
     // save the binaryData into stagedFile first, and then call the new api

@@ -61,6 +61,7 @@ public class ListDeployedCommand extends GfshCommand {
         null, targetMembers);
 
     for (CliFunctionResult cliResult : functionResults) {
+      @SuppressWarnings("unchecked")
       Map<String, String> strings = (Map<String, String>) cliResult.getResultObject();
       if (strings == null) {
         continue;

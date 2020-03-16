@@ -147,6 +147,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   // -------------------------------------------------------------------------
 
   /**
+   * This method has migrated to LocalHostUtil but is kept in place here for
+   * backward-compatibility testing.
+   *
    * @deprecated use LocalHostUtil.getLocalHost()
    */
   public static InetAddress getLocalHost() throws UnknownHostException {
@@ -187,13 +190,19 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     initialize();
   }
 
+  /** returns the hostname or address for this client */
+  public static String getClientHostName() throws UnknownHostException {
+    InetAddress hostAddr = LocalHostUtil.getLocalHost();
+    return SocketCreator.use_client_host_name ? hostAddr.getCanonicalHostName()
+        : hostAddr.getHostAddress();
+  }
 
   // -------------------------------------------------------------------------
   // Initializers (change SocketCreator state)
   // -------------------------------------------------------------------------
 
   protected void initializeCreators() {
-    serverSocketCreator = new SCServerSocketCreator(this);
+    clusterSocketCreator = new SCClusterSocketCreator(this);
     clientSocketCreator = new SCClientSocketCreator(this);
     advancedSocketCreator = new SCAdvancedSocketCreator(this);
   }
@@ -666,7 +675,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
       List<GatewayTransportFilter> transportFilters, int socketBufferSize) throws IOException {
     if (transportFilters.isEmpty()) {
-      return ((SCServerSocketCreator) forCluster())
+      return ((SCClusterSocketCreator) forCluster())
           .createServerSocket(nport, backlog, bindAddr, socketBufferSize, useSSL());
     } else {
       printConfig();

@@ -75,7 +75,12 @@ public class ListAsyncEventQueuesCommand extends GfshCommand {
    */
   private ResultModel buildAsyncEventQueueInfo(List<CliFunctionResult> results) {
     if (results.stream().filter(CliFunctionResult::isSuccessful)
-        .noneMatch(r -> ((List<AsyncEventQueueDetails>) r.getResultObject()).size() > 0)) {
+        .noneMatch(r -> {
+          @SuppressWarnings("unchecked")
+          final List<AsyncEventQueueDetails> resultObject =
+              (List<AsyncEventQueueDetails>) r.getResultObject();
+          return resultObject.size() > 0;
+        })) {
       return ResultModel.createInfo(CliStrings.LIST_ASYNC_EVENT_QUEUES__NO_QUEUES_FOUND_MESSAGE);
     }
 
@@ -85,7 +90,10 @@ public class ListAsyncEventQueuesCommand extends GfshCommand {
 
     results.stream().filter(CliFunctionResult::isSuccessful).forEach(successfulResult -> {
       String memberName = successfulResult.getMemberIdOrName();
-      ((List<AsyncEventQueueDetails>) successfulResult.getResultObject())
+      @SuppressWarnings("unchecked")
+      final List<AsyncEventQueueDetails> resultObject =
+          (List<AsyncEventQueueDetails>) successfulResult.getResultObject();
+      resultObject
           .forEach(entry -> detailsTable.addRow(memberName, entry.getId(),
               String.valueOf(entry.getBatchSize()), String.valueOf(entry.isPersistent()),
               String.valueOf(entry.getDiskStoreName()), String.valueOf(entry.getMaxQueueMemory()),

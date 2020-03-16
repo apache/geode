@@ -51,7 +51,7 @@ import org.apache.geode.rest.internal.web.util.ArrayUtils;
  * @since GemFire 8.0
  */
 @Controller("pdxCrudController")
-@Api(value = "region", description = "region CRUD operations", tags = "region")
+@Api(value = "region", tags = "region")
 @RequestMapping(PdxBasedCrudController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class PdxBasedCrudController extends CommonCrudController {
@@ -96,7 +96,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         region, key);
 
     region = decode(region);
-    Object existingPdxObj = null;
+    Object existingPdxObj;
 
     // Check whether the user has supplied single JSON doc or Array of JSON docs
     final JSONTypes jsonType = validateJsonAndFindType(json);
@@ -127,7 +127,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
-      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiOperation(value = "read all data for region",
       notes = "Read all data for region. Use limit param to get fixed or limited number of entries.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -148,7 +148,7 @@ public class PdxBasedCrudController extends CommonCrudController {
     final RegionData<Object> data = new RegionData<>(region);
 
     final HttpHeaders headers = new HttpHeaders();
-    String keyList = null;
+    String keyList;
     int regionSize = getRegion(region).size();
     List<Object> keys = new ArrayList<>(regionSize);
     List<Object> values = new ArrayList<>(regionSize);
@@ -166,7 +166,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       keyList = StringUtils.collectionToDelimitedString(keys, ",");
     } else {
       try {
-        int maxLimit = Integer.valueOf(limit);
+        int maxLimit = Integer.parseInt(limit);
         if (maxLimit < 0) {
           String errorMessage =
               String.format("Negative limit param (%1$s) is not valid!", maxLimit);
@@ -201,7 +201,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",
-      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiOperation(value = "read data for specific keys",
       notes = "Read data for specific set of keys in region.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),

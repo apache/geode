@@ -14,16 +14,6 @@
  */
 package org.apache.geode.internal.jta;
 
-/**
- * <p>
- * TransactionManager: A JTA compatible Transaction Manager.
- * </p>
- *
- * @since GemFire 4.1.1
- *
- * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager instead.
- */
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,6 +43,16 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+
+/**
+ * <p>
+ * TransactionManager: A JTA compatible Transaction Manager.
+ * </p>
+ *
+ * @since GemFire 4.1.1
+ *
+ * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager instead.
+ */
 
 @Deprecated
 public class TransactionManagerImpl implements TransactionManager, Serializable {

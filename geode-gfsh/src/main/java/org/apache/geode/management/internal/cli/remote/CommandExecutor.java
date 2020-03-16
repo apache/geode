@@ -14,15 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -66,6 +66,7 @@ public class CommandExecutor {
    *         ResultModel or ExitShellRequest
    */
   @VisibleForTesting
+  @SuppressWarnings("deprecation")
   public Object execute(Object command, GfshParseResult parseResult) {
     String userInput = parseResult.getUserInput();
     if (userInput != null) {
@@ -126,10 +127,10 @@ public class CommandExecutor {
 
     // for errors more lower-level than Exception, just throw them.
     catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
+      org.apache.geode.SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      SystemFailure.checkFailure();
+      org.apache.geode.SystemFailure.checkFailure();
       throw t;
     }
   }
@@ -177,9 +178,9 @@ public class CommandExecutor {
     if (!StringUtils.isBlank(groupInput)) {
       groupsToUpdate = Arrays.asList(groupInput.split(","));
     } else if (gfshCommand instanceof UpdateAllConfigurationGroupsMarker) {
-      groupsToUpdate = ccService.getGroups().stream().collect(Collectors.toList());
+      groupsToUpdate = new ArrayList<>(ccService.getGroups());
     } else {
-      groupsToUpdate = Arrays.asList("cluster");
+      groupsToUpdate = Collections.singletonList("cluster");
     }
 
     for (String group : groupsToUpdate) {

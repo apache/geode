@@ -57,17 +57,17 @@ public class CreateMappingFunctionTest {
 
   private RegionMapping regionMapping;
   private FunctionContext<Object[]> context;
-  private DistributedMember distributedMember;
   private ResultSender<Object> resultSender;
   private JdbcConnectorService service;
   private InternalCache cache;
-  private Region region;
-  private RegionAttributes attributes;
+  private Region<Object, Object> region;
+  private RegionAttributes<Object, Object> attributes;
   private AsyncEventQueueFactory asyncEventQueueFactory;
   private final Object[] functionInputs = new Object[2];
 
   private CreateMappingFunction function;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     context = mock(FunctionContext.class);
@@ -75,7 +75,7 @@ public class CreateMappingFunctionTest {
     cache = mock(InternalCache.class);
     region = mock(LocalRegion.class);
     DistributedSystem system = mock(DistributedSystem.class);
-    distributedMember = mock(DistributedMember.class);
+    DistributedMember distributedMember = mock(DistributedMember.class);
     service = mock(JdbcConnectorService.class);
 
     regionMapping = new RegionMapping(REGION_NAME, null, null, null, null, null, null);
@@ -149,7 +149,7 @@ public class CreateMappingFunctionTest {
   }
 
   @Test
-  public void createRegionMappingThrowsIfRegionDoesNotExist() throws Exception {
+  public void createRegionMappingThrowsIfRegionDoesNotExist() {
     when(cache.getRegion(REGION_NAME)).thenReturn(null);
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
@@ -170,7 +170,7 @@ public class CreateMappingFunctionTest {
     function.executeFunction(context);
 
     verify(service, times(1)).createRegionMapping(regionMapping);
-    AttributesMutator mutator = region.getAttributesMutator();
+    AttributesMutator<Object, Object> mutator = region.getAttributesMutator();
     verify(mutator, times(1)).setCacheLoader(any());
   }
 
@@ -179,7 +179,7 @@ public class CreateMappingFunctionTest {
     setupSynchronous();
     function.executeFunction(context);
 
-    AttributesMutator mutator = region.getAttributesMutator();
+    AttributesMutator<Object, Object> mutator = region.getAttributesMutator();
     verify(mutator, times(1)).setCacheWriter(any());
   }
 
@@ -188,7 +188,7 @@ public class CreateMappingFunctionTest {
     setupSynchronous();
     function.executeFunction(context);
 
-    AttributesMutator mutator = region.getAttributesMutator();
+    AttributesMutator<Object, Object> mutator = region.getAttributesMutator();
     verify(mutator, never()).addAsyncEventQueueId(any());
   }
 
@@ -206,7 +206,7 @@ public class CreateMappingFunctionTest {
     function.executeFunction(context);
 
     verify(service, times(1)).createRegionMapping(regionMapping);
-    AttributesMutator mutator = region.getAttributesMutator();
+    AttributesMutator<Object, Object> mutator = region.getAttributesMutator();
     verify(mutator, times(1)).addAsyncEventQueueId(queueName);
   }
 
@@ -219,19 +219,21 @@ public class CreateMappingFunctionTest {
     verify(asyncEventQueueFactory, times(1)).setParallel(false);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void shouldOnlyAddAEQIdForProxyPR() throws Exception {
     when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     PartitionedRegion pr = mock(PartitionedRegion.class);
     when(cache.getRegion(REGION_NAME)).thenReturn(pr);
     when(pr.getAttributes()).thenReturn(attributes);
-    PartitionAttributes pa = mock(PartitionAttributes.class);
+    PartitionAttributes<Object, Object> pa = mock(PartitionAttributes.class);
     when(attributes.getPartitionAttributes()).thenReturn(pa);
     when(pa.getLocalMaxMemory()).thenReturn(0);
     when(pr.getAttributesMutator()).thenReturn(mock(AttributesMutator.class));
     function.executeFunction(context);
 
-    AttributesMutator mutator = pr.getAttributesMutator();
+    @SuppressWarnings("unchecked")
+    AttributesMutator<Object, Object> mutator = pr.getAttributesMutator();
     verify(mutator, times(1)).addAsyncEventQueueId(any());
 
     verify(mutator, times(0)).setCacheWriter(any());
@@ -248,7 +250,8 @@ public class CreateMappingFunctionTest {
     when(lr.getAttributesMutator()).thenReturn(mock(AttributesMutator.class));
     function.executeFunction(context);
 
-    AttributesMutator mutator = lr.getAttributesMutator();
+    @SuppressWarnings("unchecked")
+    AttributesMutator<Object, Object> mutator = lr.getAttributesMutator();
     verify(mutator, times(1)).addAsyncEventQueueId(any());
 
     verify(mutator, times(0)).setCacheWriter(any());

@@ -62,6 +62,7 @@ public class HttpRequesterTest {
   public void setup() {
     uri = URI.create("http://test.org/test");
     restTemplate = mock(RestTemplate.class);
+    @SuppressWarnings("unchecked")
     ResponseEntity<String> responseEntity = mock(ResponseEntity.class);
     when(restTemplate.exchange(any(), any(), any(), eq(String.class))).thenReturn(responseEntity);
     when(responseEntity.getBody()).thenReturn("done");

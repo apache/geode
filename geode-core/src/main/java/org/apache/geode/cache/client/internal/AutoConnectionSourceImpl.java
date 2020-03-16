@@ -73,19 +73,23 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   @Immutable
   private static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
 
+  /**
+   * A Comparator used to sort a list of locator addresses. This should not be
+   * used in other ways as it can return zero when two addresses aren't actually equal.
+   */
   @Immutable
   private static final Comparator<HostAndPort> SOCKET_ADDRESS_COMPARATOR =
       (address, otherAddress) -> {
         InetSocketAddress inetSocketAddress = address.getSocketInetAddress();
         InetSocketAddress otherInetSocketAddress = otherAddress.getSocketInetAddress();
         // shouldn't happen, but if it does we'll say they're the same.
-        if (inetSocketAddress.getAddress() == null
-            || otherInetSocketAddress.getAddress() == null) {
+        if (inetSocketAddress.getHostString() == null
+            || otherInetSocketAddress.getHostString() == null) {
           return 0;
         }
 
-        int result = inetSocketAddress.getAddress().getCanonicalHostName()
-            .compareTo(otherInetSocketAddress.getAddress().getCanonicalHostName());
+        int result = inetSocketAddress.getHostString()
+            .compareTo(otherInetSocketAddress.getHostString());
         if (result != 0) {
           return result;
         } else {

@@ -56,7 +56,7 @@ public class MBeanAggregator implements ProxyListener {
 
 
 
-  /**
+  /*
    * Static list of MBeans which are currently supported for aggregation
    */
   static {

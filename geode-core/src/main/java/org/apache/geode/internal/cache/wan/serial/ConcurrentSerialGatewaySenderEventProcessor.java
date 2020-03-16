@@ -293,7 +293,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
           boolean b = f.get();
           if (logger.isDebugEnabled()) {
             logger.debug("ConcurrentSerialGatewaySenderEventProcessor: {} stopped dispatching: {}",
-                (b ? "Successfully" : "Unsuccesfully"), this);
+                (b ? "Successfully" : "Unsuccessfully"), this);
           }
         } catch (ExecutionException e) {
           // we don't expect any exception but if caught then eat it and log

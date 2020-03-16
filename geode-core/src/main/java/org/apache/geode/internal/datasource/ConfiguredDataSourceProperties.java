@@ -200,7 +200,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
       maxPoolSize = mxpoolSize;
   }
 
-  /**
+  /*
    * Sets the max idle time
    *
    */

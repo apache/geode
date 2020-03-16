@@ -14,8 +14,8 @@
  */
 package org.apache.geode.rest.internal.web;
 
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 
-public abstract class RestFunctionTemplate extends FunctionAdapter {
+public abstract class RestFunctionTemplate<T> implements Function<T> {
   public int invocationCount = 0;
 }

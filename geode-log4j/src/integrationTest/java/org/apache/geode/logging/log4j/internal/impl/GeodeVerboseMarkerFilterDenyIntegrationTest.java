@@ -44,6 +44,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * {@code onMatch} of {@code DENY} and {@code onMismatch} of {@code ACCEPT}.
  */
 @Category(LoggingTest.class)
+@SuppressWarnings("deprecation")
 public class GeodeVerboseMarkerFilterDenyIntegrationTest {
 
   private static final String CONFIG_FILE_NAME =

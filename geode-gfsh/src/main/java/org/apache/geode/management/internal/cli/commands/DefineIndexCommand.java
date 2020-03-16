@@ -19,7 +19,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -42,9 +41,10 @@ public class DefineIndexCommand extends GfshCommand {
       @CliOption(key = CliStrings.DEFINE_INDEX__REGION, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DEFINE_INDEX__REGION__HELP) String regionPath,
-      @CliOption(key = CliStrings.DEFINE_INDEX__TYPE, unspecifiedDefaultValue = "range",
+      @SuppressWarnings("deprecation") @CliOption(key = CliStrings.DEFINE_INDEX__TYPE,
+          unspecifiedDefaultValue = "range",
           optionContext = ConverterHint.INDEX_TYPE,
-          help = CliStrings.DEFINE_INDEX__TYPE__HELP) final IndexType indexType) {
+          help = CliStrings.DEFINE_INDEX__TYPE__HELP) final org.apache.geode.cache.query.IndexType indexType) {
 
     ResultModel result = new ResultModel();
 

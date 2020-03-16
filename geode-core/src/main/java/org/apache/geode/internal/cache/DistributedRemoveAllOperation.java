@@ -941,7 +941,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
           InternalDistributedMember id = rgn.getMyId();
           ev.setLocalFilterInfo(entry.filterRouting.getFilterInfo(id));
         }
-        /**
+        /*
          * Setting tailKey for the secondary bucket here. Tail key was update by the primary.
          */
         ev.setTailKey(entry.getTailKey());

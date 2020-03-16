@@ -25,13 +25,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -89,18 +87,9 @@ public class DestroyIndexCommandsDUnitTest {
     assertIndexCount(REGION_1, 2);
   }
 
-  private static void createRegionAndIndex() throws Exception {
-    Cache cache = ClusterStartupRule.getCache();
-    RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-    Region region = factory.create(REGION_1);
-
-    cache.getQueryService().createIndex(INDEX_1, "key", "/" + REGION_1);
-    cache.getQueryService().createIndex(INDEX_2, "id", "/" + REGION_1);
-    region.put(1, new Stock("SUNW", 10));
-  }
-
   @Test
-  public void testDestroyAllIndexesOnRegion() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testDestroyAllIndexesOnRegion() {
     gfsh.executeAndAssertThat("destroy index --region=" + REGION_1).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status", "OK", "OK")
         .tableHasColumnWithExactValuesInAnyOrder("Message",
@@ -116,7 +105,8 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   @Test
-  public void testDestroyOneIndexOnRegion() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testDestroyOneIndexOnRegion() {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --region=" + REGION_1)
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Message",
             "Destroyed index INDEX1 on region REGION1", "Destroyed index INDEX1 on region REGION1");
@@ -138,7 +128,8 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   @Test
-  public void testDestroyAllIndexesOnOneMember() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testDestroyAllIndexesOnOneMember() {
     gfsh.executeAndAssertThat("destroy index --member=server-1").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed all indexes");
 
@@ -158,7 +149,8 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   @Test
-  public void testDestroyOneIndexOnOneMember() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testDestroyOneIndexOnOneMember() {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
         .statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX1");
@@ -185,7 +177,8 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   @Test
-  public void testPartialSuccessResultDestroyOneIndex() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testPartialSuccessResultDestroyOneIndex() {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Status", "OK")
         .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX1");
@@ -210,6 +203,7 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void destroyIndexOnOneGroupWithoutAssociatedClusterConfig() {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --group=" + GROUP_1)
         .statusIsSuccess().tableHasColumnWithValuesContaining("Member", "server-1")
@@ -242,6 +236,7 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void destroyIndexOnRegionNotInClusterConfig() {
     IgnoredException.addIgnoredException("failed to update cluster config for cluster");
     IgnoredException.addIgnoredException(
@@ -249,7 +244,7 @@ public class DestroyIndexCommandsDUnitTest {
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
       factory.create("REGION3");
       cache.getQueryService().createIndex("INDEX3", "key", "/REGION3");
     });

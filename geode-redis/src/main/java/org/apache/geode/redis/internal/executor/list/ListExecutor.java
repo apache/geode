@@ -17,8 +17,6 @@ package org.apache.geode.redis.internal.executor.list;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
@@ -32,25 +30,19 @@ public abstract class ListExecutor extends AbstractExecutor {
     LEFT, RIGHT
   }
 
-  ;
-
-  protected static QueryService getQueryService() {
-    return GemFireCacheImpl.getInstance().getQueryService();
-  }
-
   @SuppressWarnings("unchecked")
   @Override
-  protected Region<Integer, ByteArrayWrapper> getOrCreateRegion(ExecutionHandlerContext context,
+  protected Region<Object, Object> getOrCreateRegion(ExecutionHandlerContext context,
       ByteArrayWrapper key,
       RedisDataType type) {
-    return (Region<Integer, ByteArrayWrapper>) context.getRegionProvider().getOrCreateRegion(key,
+    return (Region<Object, Object>) context.getRegionProvider().getOrCreateRegion(key,
         type, context);
   }
 
   @SuppressWarnings("unchecked")
-  protected Region<Integer, ByteArrayWrapper> getRegion(ExecutionHandlerContext context,
+  protected Region<Object, Object> getRegion(ExecutionHandlerContext context,
       ByteArrayWrapper key) {
-    return (Region<Integer, ByteArrayWrapper>) context.getRegionProvider().getRegion(key);
+    return (Region<Object, Object>) context.getRegionProvider().getRegion(key);
   }
 
   /**
@@ -68,7 +60,7 @@ public abstract class ListExecutor extends AbstractExecutor {
    * @param context Context of this push
    */
   protected void pushElements(ByteArrayWrapper key, List<byte[]> commandElems, int startIndex,
-      int endIndex, Region keyRegion, ListDirection pushType,
+      int endIndex, Region<Object, Object> keyRegion, ListDirection pushType,
       ExecutionHandlerContext context) {
 
     String indexKey = pushType == ListDirection.LEFT ? "head" : "tail";
@@ -129,7 +121,7 @@ public abstract class ListExecutor extends AbstractExecutor {
        *
        */
 
-      boolean indexSet = false;
+      boolean indexSet;
       do {
         Integer existingIndex = (Integer) keyRegion.get(indexKey);
         if (index != null && ((pushType == ListDirection.RIGHT && existingIndex < index)

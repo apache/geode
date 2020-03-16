@@ -22,7 +22,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  
+
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-logging'))
@@ -36,6 +36,9 @@ dependencies {
   implementation('org.apache.commons:commons-lang3')
   implementation('mx4j:mx4j')
   implementation('org.apache.logging.log4j:log4j-api')
+
+  compileOnly(platform(project(':boms:geode-all-bom')))
+  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
   runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
 

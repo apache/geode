@@ -385,7 +385,7 @@ public abstract class Locator {
     Object ba = this.bindAddress;
     if (ba == null) {
       try {
-        ba = LocalHostUtil.getLocalHost().getHostName();
+        ba = LocalHostUtil.getLocalHostName();
       } catch (java.net.UnknownHostException uh) {
       }
     }

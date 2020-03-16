@@ -55,7 +55,7 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
   }
 
   @Override
-  public boolean processEvents(List<AsyncEvent> events) {
+  public boolean processEvents(@SuppressWarnings("rawtypes") List<AsyncEvent> events) {
     changeTotalEvents(events.size());
 
     if (!events.isEmpty()) {
@@ -71,24 +71,29 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
     Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
     try {
-      for (AsyncEvent event : events) {
-        if (eventCanBeIgnored(event.getOperation())) {
-          changeIgnoredEvents(1);
-          continue;
-        }
-        try {
-          getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
-              getPdxInstance(event));
-          changeSuccessfulEvents(1);
-        } catch (SQLException | RuntimeException ex) {
-          changeFailedEvents(1);
-          logger.error("Exception processing event {}", event, ex);
-        }
-      }
+      processEventsList(events);
     } finally {
       cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
     }
     return true;
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private void processEventsList(List<AsyncEvent> events) {
+    for (AsyncEvent event : events) {
+      if (eventCanBeIgnored(event.getOperation())) {
+        changeIgnoredEvents(1);
+        continue;
+      }
+      try {
+        getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
+            getPdxInstance(event));
+        changeSuccessfulEvents(1);
+      } catch (SQLException | RuntimeException ex) {
+        changeFailedEvents(1);
+        logger.error("Exception processing event {}", event, ex);
+      }
+    }
   }
 
   long getTotalEvents() {
@@ -126,7 +131,7 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
   /**
    * precondition: DefaultQuery.setPdxReadSerialized(true)
    */
-  private PdxInstance getPdxInstance(AsyncEvent event) {
+  private PdxInstance getPdxInstance(@SuppressWarnings("rawtypes") AsyncEvent event) {
     Object value = event.getDeserializedValue();
     if (!(value instanceof PdxInstance)) {
       value = CopyHelper.copy(value);

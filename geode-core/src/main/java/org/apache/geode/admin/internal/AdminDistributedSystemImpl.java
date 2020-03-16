@@ -14,11 +14,11 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.toInetAddress;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +41,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import org.apache.logging.log4j.Logger;
+import org.jgroups.annotations.GuardedBy;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
@@ -177,8 +178,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    * This is volatile to allow SystemFailure to deliver fatal poison-pill to thisAdminDS without
    * waiting on synchronization.
    *
-   * @guarded.By CONNECTION_SYNC
    */
+  @GuardedBy("CONNECTION_SYNC")
   @MakeNotStatic
   private static volatile AdminDistributedSystemImpl thisAdminDS;
 

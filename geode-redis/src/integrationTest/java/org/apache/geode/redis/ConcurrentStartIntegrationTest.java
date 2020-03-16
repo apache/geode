@@ -49,16 +49,16 @@ public class ConcurrentStartIntegrationTest {
 
   @After
   public void tearDown() {
-    if (this.cache != null) {
-      this.cache.close();
-      this.cache = null;
+    if (cache != null) {
+      cache.close();
+      cache = null;
     }
   }
 
   @Test
   public void testCachelessStart() throws InterruptedException {
     runNServers(numServers);
-    GemFireCacheImpl.getInstance().close();
+    getCache().close();
   }
 
   @Test
@@ -66,7 +66,7 @@ public class ConcurrentStartIntegrationTest {
     CacheFactory cf = new CacheFactory();
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
-    this.cache = cf.create();
+    cache = cf.create();
 
     runNServers(numServers);
   }
@@ -76,14 +76,10 @@ public class ConcurrentStartIntegrationTest {
     final Thread[] threads = new Thread[n];
     for (int i = 0; i < n; i++) {
       final int j = i;
-      Runnable r = new Runnable() {
-
-        @Override
-        public void run() {
-          GeodeRedisServer s = new GeodeRedisServer(ports[j]);
-          s.start();
-          s.shutdown();
-        }
+      Runnable r = () -> {
+        GeodeRedisServer s = new GeodeRedisServer(ports[j]);
+        s.start();
+        s.shutdown();
       };
 
       Thread t = new Thread(r);
@@ -93,7 +89,12 @@ public class ConcurrentStartIntegrationTest {
     }
     for (Thread t : threads)
       t.join();
-    this.cache = GemFireCacheImpl.getInstance();
-    assertFalse(this.cache.isClosed());
+    cache = getCache();
+    assertFalse(cache.isClosed());
+  }
+
+  @SuppressWarnings("deprecation")
+  private GemFireCacheImpl getCache() {
+    return GemFireCacheImpl.getInstance();
   }
 }

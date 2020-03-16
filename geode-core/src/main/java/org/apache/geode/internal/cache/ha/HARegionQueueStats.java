@@ -105,7 +105,7 @@ public class HARegionQueueStats {
   /** Id of the num sequence violated statistic */
   private static final int _numSequenceViolated;
 
-  /**
+  /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
    */
   static {

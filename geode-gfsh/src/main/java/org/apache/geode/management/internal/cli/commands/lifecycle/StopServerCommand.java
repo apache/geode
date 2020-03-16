@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands.lifecycle;
 
+import static io.micrometer.core.instrument.util.StringUtils.isNotBlank;
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 
 import java.util.concurrent.TimeUnit;
@@ -23,7 +24,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
@@ -49,7 +49,7 @@ public class StopServerCommand extends OfflineGfshCommand {
       throws Exception {
     ServerLauncher.ServerState serverState;
 
-    if (StringUtils.isNotBlank(member)) {
+    if (isNotBlank(member)) {
       if (!isConnectedAndReady()) {
         return ResultModel.createError(CliStrings
             .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
@@ -97,7 +97,7 @@ public class StopServerCommand extends OfflineGfshCommand {
         }
       }
 
-      return ResultModel.createInfo(StringUtils.EMPTY);
+      return ResultModel.createInfo("");
     } else {
       return ResultModel.createError(serverState.toString());
     }

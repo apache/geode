@@ -20,30 +20,31 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.ConverterHint;
 
 /***
  * Added converter to enable auto-completion for index-type
  *
  */
-public class IndexTypeConverter implements Converter<IndexType> {
+@SuppressWarnings("deprecation")
+public class IndexTypeConverter implements Converter<org.apache.geode.cache.query.IndexType> {
 
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-    return IndexType.class.isAssignableFrom(type)
+    return org.apache.geode.cache.query.IndexType.class.isAssignableFrom(type)
         && optionContext.contains(ConverterHint.INDEX_TYPE);
   }
 
   @Override
-  public IndexType convertFromText(String value, Class<?> targetType, String optionContext) {
+  public org.apache.geode.cache.query.IndexType convertFromText(String value, Class<?> targetType,
+      String optionContext) {
     switch (value.toLowerCase()) {
       case "range":
-        return IndexType.FUNCTIONAL;
+        return org.apache.geode.cache.query.IndexType.FUNCTIONAL;
       case "key":
-        return IndexType.PRIMARY_KEY;
+        return org.apache.geode.cache.query.IndexType.PRIMARY_KEY;
       case "hash":
-        return IndexType.HASH;
+        return org.apache.geode.cache.query.IndexType.HASH;
     }
 
     throw new IllegalArgumentException("invalid index type: " + value);

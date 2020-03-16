@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.remote;
 import java.util.Map;
 
 import org.apache.geode.cache.internal.CommandProcessor;
-import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
@@ -28,7 +27,8 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
  *
  * @deprecated since Geode 1.3. simply use commandProcessor to process the command
  */
-public class CommandStatementImpl implements CommandStatement {
+@Deprecated
+public class CommandStatementImpl implements org.apache.geode.management.cli.CommandStatement {
 
   private CommandProcessor cmdProcessor;
   private String commandString;
@@ -64,7 +64,7 @@ public class CommandStatementImpl implements CommandStatement {
 
   @Override
   public String toString() {
-    return CommandStatement.class.getSimpleName() + "[commandString=" + commandString + ", env="
+    return super.getClass().getSimpleName() + "[commandString=" + commandString + ", env="
         + env + "]";
   }
 }

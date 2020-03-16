@@ -21,9 +21,12 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLException;
 
@@ -39,11 +42,11 @@ import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * <p>
  * Client for the TcpServer component of the Locator.
- * </p>
  *
- * @since GemFire 5.7
+ * @see TcpServer#TcpServer(int, InetAddress, TcpHandler, String, ProtocolChecker,
+ *      LongSupplier, Supplier, TcpSocketCreator, ObjectSerializer, ObjectDeserializer, String,
+ *      String)
  */
 public class TcpClient {
 
@@ -63,6 +66,8 @@ public class TcpClient {
    * Constructs a new TcpClient
    *
    * @param socketCreator the SocketCreator to use in communicating with the Locator
+   * @param objectSerializer serializer for messages sent to the TcpServer
+   * @param objectDeserializer deserializer for responses from the TcpServer
    */
   public TcpClient(TcpSocketCreator socketCreator, final ObjectSerializer objectSerializer,
       final ObjectDeserializer objectDeserializer) {
@@ -72,7 +77,7 @@ public class TcpClient {
   }
 
   /**
-   * Stops the Locator running on a given host and port
+   * Stops the TcpServer running on a given host and port
    */
   public void stop(HostAndPort addr) throws java.net.ConnectException {
     try {
@@ -92,7 +97,10 @@ public class TcpClient {
    * Contacts the Locator running on the given host, and port and gets information about it. Two
    * <code>String</code>s are returned: the first string is the working directory of the locator
    * and the second string is the product directory of the locator.
+   *
+   * @deprecated this was created for the deprecated Admin API
    */
+  @Deprecated
   public String[] getInfo(HostAndPort addr) {
     try {
       InfoRequest request = new InfoRequest();
@@ -115,7 +123,8 @@ public class TcpClient {
    * @param addr The locator's address
    * @param request The request message
    * @param timeout Timeout for sending the message and receiving a reply
-   * @return the reply
+   * @return the reply. This may return a null
+   *         if we're unable to form a connection to the TcpServer before the given timeout elapses
    */
   public Object requestToServer(HostAndPort addr, Object request, int timeout)
       throws IOException, ClassNotFoundException {
@@ -130,7 +139,10 @@ public class TcpClient {
    * @param request The request message
    * @param timeout Timeout for sending the message and receiving a reply
    * @param replyExpected Whether to wait for a reply
-   * @return The reply, or null if no reply is expected
+   * @return The reply, or null if no reply is expected. This may also return a null
+   *         if we're unable to form a connection to the TcpServer before the given timeout elapses
+   * @throws ClassNotFoundException if the deserializer throws this exception
+   * @throws IOException if there is a problem interacting with the server
    */
   public Object requestToServer(HostAndPort addr, Object request, int timeout,
       boolean replyExpected) throws IOException, ClassNotFoundException {
@@ -296,7 +308,7 @@ public class TcpClient {
     synchronized (serverVersions) {
       serverVersions.put(addr, Version.GFE_57.ordinal());
     }
-    return Short.valueOf(Version.GFE_57.ordinal());
+    return Version.GFE_57.ordinal();
   }
 
 

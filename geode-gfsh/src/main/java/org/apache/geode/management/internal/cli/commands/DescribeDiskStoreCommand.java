@@ -64,6 +64,7 @@ public class DescribeDiskStoreCommand extends GfshCommand {
   DiskStoreDetails getDiskStoreDescription(final String memberName, final String diskStoreName) {
     final DistributedMember member = getMember(memberName);
 
+    @SuppressWarnings("unchecked")
     final ResultCollector<?, ?> resultCollector =
         getMembersFunctionExecutor(Collections.singleton(member)).setArguments(diskStoreName)
             .execute(new DescribeDiskStoreFunction());

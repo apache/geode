@@ -61,6 +61,7 @@ public class CreateJndiBindingCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testCreateJndiBinding() {
     // assert that is no datasource
     VMProvider.invokeInEveryMember(

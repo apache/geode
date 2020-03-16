@@ -393,10 +393,21 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * <p>
    * Initializes this acceptor thread to listen for connections on the given port.
    *
-   * @param gatewayReceiver the GatewayReceiver that will use this AcceptorImpl instance
-   * @param gatewayReceiverMetrics the GatewayReceiverMetrics to use for exposing metrics
    * @param port The port on which this acceptor listens for connections. If {@code 0}, a
    *        random port will be chosen.
+   * @param notifyBySubscription the bridges setting whether if it to be notified by subscription
+   * @param maximumMessageCount maximum message count setting in the Cache Client Notifier
+   * @param messageTimeToLive message time to live setting in the Cache Client Notifier
+   * @param connectionListener listener to detect if connect or disconnect events
+   * @param overflowAttributes overflow attributes of Cache Client Notifier
+   * @param tcpNoDelay TCP delay for the outgoing sockets
+   * @param serverConnectionFactory server connection factory for the client
+   * @param timeLimitMillis time limit to wait attemping to bind to a server socket
+   * @param socketCreatorSupplier socket creator for the server connection
+   * @param cacheClientNotifierProvider collection of cache client notifiers
+   * @param clientHealthMonitorProvider collection of clinet health monitors
+   * @param isGatewayReceiver flag to determine if member is gateway receiver
+   * @param statisticsClock maintains the JVM's clock
    * @param bindHostName The ip address or host name this acceptor listens on for connections. If
    *        {@code null} or "" then all local addresses are used
    * @param socketBufferSize The buffer size for server-side sockets
@@ -1179,7 +1190,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   public String getServerName() {
     String name = serverSock.getLocalSocketAddress().toString();
     try {
-      name = LocalHostUtil.getLocalHost().getCanonicalHostName() + "-" + name;
+      name = LocalHostUtil.getCanonicalLocalHostName() + "-" + name;
     } catch (Exception e) {
     }
     return name;
@@ -1766,7 +1777,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     }
     if (needCanonicalHostName) {
       try {
-        result = LocalHostUtil.getLocalHost().getCanonicalHostName();
+        result = LocalHostUtil.getCanonicalLocalHostName();
       } catch (UnknownHostException ex) {
         throw new IllegalStateException("getLocalHost failed with " + ex);
       }

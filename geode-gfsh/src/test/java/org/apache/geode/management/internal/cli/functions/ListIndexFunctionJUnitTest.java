@@ -36,7 +36,6 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexStatistics;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -59,11 +58,12 @@ public class ListIndexFunctionJUnitTest {
   private AtomicLong counter;
   private QueryService mockQueryService;
   private TestResultSender testResultSender;
-  private FunctionContext mockFunctionContext;
+  private FunctionContext<Void> mockFunctionContext;
   private final String mockMemberId = "mockMemberId";
   private final String mockMemberName = "mockMemberName";
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setup() {
     counter = new AtomicLong(0L);
     testResultSender = new TestResultSender();
@@ -122,8 +122,10 @@ public class ListIndexFunctionJUnitTest {
         expectedIndexDetails.getIndexStatisticsDetails());
   }
 
+  @SuppressWarnings("deprecation")
   private IndexDetails createIndexDetails(final String regionPath, final String indexName,
-      final IndexType indexType, final String fromClause, final String indexedExpression,
+      final org.apache.geode.cache.query.IndexType indexType, final String fromClause,
+      final String indexedExpression,
       final String projectionAttributes, final String regionName) {
     final IndexDetails indexDetails = new IndexDetails(mockMemberId, regionPath, indexName);
     indexDetails.setFromClause(fromClause);
@@ -151,6 +153,7 @@ public class ListIndexFunctionJUnitTest {
 
   @SuppressWarnings("unchecked")
   private Index createMockIndex(final IndexDetails indexDetails) {
+    @SuppressWarnings("rawtypes")
     final Region mockRegion =
         mock(Region.class, "Region " + indexDetails.getRegionPath() + " " + counter
             .getAndIncrement());
@@ -189,21 +192,25 @@ public class ListIndexFunctionJUnitTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "deprecation"})
   public void testExecute() throws Throwable {
     // Expected Results
     final IndexDetails indexDetailsOne = createIndexDetails("/Employees", "empIdIdx",
-        IndexType.PRIMARY_KEY, "/Employees", "id", "id, firstName, lastName", "Employees");
+        org.apache.geode.cache.query.IndexType.PRIMARY_KEY, "/Employees", "id",
+        "id, firstName, lastName", "Employees");
     indexDetailsOne.setIndexStatisticsDetails(
         createIndexStatisticsDetails(10124L, 4096L, 10124L, 1284100L, 280120L));
     final IndexDetails indexDetailsTwo = createIndexDetails("/Employees", "empGivenNameIdx",
-        IndexType.FUNCTIONAL, "/Employees", "lastName", "id, firstName, lastName", "Employees");
+        org.apache.geode.cache.query.IndexType.FUNCTIONAL, "/Employees", "lastName",
+        "id, firstName, lastName", "Employees");
     final IndexDetails indexDetailsThree = createIndexDetails("/Contractors", "empIdIdx",
-        IndexType.PRIMARY_KEY, "/Contrators", "id", "id, firstName, lastName", "Contractors");
+        org.apache.geode.cache.query.IndexType.PRIMARY_KEY, "/Contrators", "id",
+        "id, firstName, lastName", "Contractors");
     indexDetailsThree.setIndexStatisticsDetails(
         createIndexStatisticsDetails(1024L, 256L, 20248L, 768001L, 24480L));
     final IndexDetails indexDetailsFour = createIndexDetails("/Employees", "empIdIdx",
-        IndexType.FUNCTIONAL, "/Employees", "emp_id", "id, surname, givenname", "Employees");
+        org.apache.geode.cache.query.IndexType.FUNCTIONAL, "/Employees", "emp_id",
+        "id, surname, givenname", "Employees");
     final Set<IndexDetails> expectedIndexDetailsSet =
         new HashSet<>(Arrays.asList(indexDetailsOne, indexDetailsTwo, indexDetailsThree));
 
@@ -263,7 +270,7 @@ public class ListIndexFunctionJUnitTest {
         .hasMessage("Mocked Exception");
   }
 
-  private static class TestResultSender implements ResultSender {
+  private static class TestResultSender implements ResultSender<Object> {
     private Throwable t;
     private final List<Object> results = new LinkedList<>();
 

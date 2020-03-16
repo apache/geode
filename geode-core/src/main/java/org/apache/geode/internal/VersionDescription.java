@@ -138,7 +138,7 @@ public class VersionDescription {
 
   private static String getLocalHost() {
     try {
-      return LocalHostUtil.getLocalHost().toString();
+      return LocalHostUtil.getLocalHostString();
     } catch (UnknownHostException e) {
       return e.getMessage();
     }

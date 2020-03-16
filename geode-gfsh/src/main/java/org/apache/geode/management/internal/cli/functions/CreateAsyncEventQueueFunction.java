@@ -49,18 +49,18 @@ import org.apache.geode.management.internal.functions.CliFunctionResult.StatusSt
  *
  * @since GemFire 8.0
  */
-public class CreateAsyncEventQueueFunction extends CliFunction {
+public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.AsyncEventQueue> {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext<CacheConfig.AsyncEventQueue> context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
 
     try {
-      CacheConfig.AsyncEventQueue config = (CacheConfig.AsyncEventQueue) context.getArguments();
+      CacheConfig.AsyncEventQueue config = context.getArguments();
 
       InternalCache cache = (InternalCache) context.getCache();
 
@@ -91,11 +91,9 @@ public class CreateAsyncEventQueueFunction extends CliFunction {
       String[] gatewayEventFilters = config.getGatewayEventFilters().stream()
           .map(ClassNameType::getClassName).toArray(String[]::new);
 
-      if (gatewayEventFilters != null) {
-        for (String gatewayEventFilter : gatewayEventFilters) {
-          asyncEventQueueFactory
-              .addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilter));
-        }
+      for (String gatewayEventFilter : gatewayEventFilters) {
+        asyncEventQueueFactory
+            .addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilter));
       }
 
       DeclarableType gatewayEventSubstitutionFilter = config.getGatewayEventSubstitutionFilter();
@@ -124,7 +122,7 @@ public class CreateAsyncEventQueueFunction extends CliFunction {
         }
 
         ((Declarable) listenerInstance).initialize(cache, listenerProperties);
-        ((Declarable) listenerInstance).init(listenerProperties); // for backwards compatibility
+        legacyInit((Declarable) listenerInstance, listenerProperties);
 
         Map<Declarable, Properties> declarablesMap = new HashMap<>();
         declarablesMap.put((Declarable) listenerInstance, listenerProperties);
@@ -140,6 +138,11 @@ public class CreateAsyncEventQueueFunction extends CliFunction {
       logger.error("Could not create async event queue: {}", e.getMessage(), e);
       return new CliFunctionResult(memberId, e, null);
     }
+  }
+
+  @SuppressWarnings("deprecation")
+  private void legacyInit(Declarable listenerInstance, Properties listenerProperties) {
+    listenerInstance.init(listenerProperties); // for backwards compatibility
   }
 
   private Object newInstance(String className)

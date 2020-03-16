@@ -40,6 +40,7 @@ public class ListDriversFunctionTest {
   private List<String> driverNames;
 
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     context = mock(FunctionContextImpl.class);

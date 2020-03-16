@@ -89,6 +89,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.AuthTokenEnabledComponents;
@@ -467,7 +468,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private boolean startDevRestApi = DEFAULT_START_DEV_REST_API;
 
   /**
-   * port on which {@link GemFireMemcachedServer} server is started
+   * port on which GemFireMemcachedServer server is started
    */
   private int memcachedPort;
 
@@ -487,7 +488,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private boolean distributedTransactions = DEFAULT_DISTRIBUTED_TRANSACTIONS;
 
   /**
-   * port on which {@link GeodeRedisServer} is started
+   * port on which GeodeRedisServer is started
    */
   private int redisPort = DEFAULT_REDIS_PORT;
 
@@ -1776,7 +1777,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         return bindAddress + "[" + startLocatorPort + "]";
       }
       try {
-        return LocalHostUtil.getLocalHost().getHostName() + "[" + startLocatorPort
+        return LocalHostUtil.getLocalHostName() + "[" + startLocatorPort
             + "]";
       } catch (UnknownHostException ignore) {
         // punt and use this.startLocator instead

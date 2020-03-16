@@ -65,6 +65,7 @@ public class DestroyDataSourceCommandDUnitTest {
         "create data-source --name=datasource1 --url=\"jdbc:derby:memory:newDB;create=true\"");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testDestroyDataSource() {
     // assert that there is a datasource
@@ -120,6 +121,7 @@ public class DestroyDataSourceCommandDUnitTest {
     });
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testDestroySimpleDataSource() throws Exception {
     // drop the default pooled data source
@@ -230,14 +232,14 @@ public class DestroyDataSourceCommandDUnitTest {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("id", this.id);
-      writer.writeString("name", this.name);
+      writer.writeString("id", id);
+      writer.writeString("name", name);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("id");
-      this.name = reader.readString("name");
+      id = reader.readString("id");
+      name = reader.readString("name");
     }
   }
 

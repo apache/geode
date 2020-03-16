@@ -30,10 +30,19 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
 /**
- * This class is serializable for testing. A number of client/server and WAN tests
+ * HostAndPort is a holder of a host name/address and a port. It is the primary
+ * way to specify a connection endpoint in the socket-creator methods.
+ * <p>
+ * Note: This class is serializable for testing. A number of client/server and WAN tests
  * transmit PoolAttributes between unit test JVMs using RMI. PoolAttributes are
  * Externalizable for this purpose and use Geode serialization to transmit HostAndPort
  * objects along with other attributes.
+ *
+ * @see TcpSocketCreator
+ * @see ClusterSocketCreator
+ * @see ClientSocketCreator
+ * @see AdvancedSocketCreator
+ * @see TcpClient
  */
 public class HostAndPort implements DataSerializableFixedID {
 
@@ -56,10 +65,9 @@ public class HostAndPort implements DataSerializableFixedID {
   }
 
   /**
-   * If location is not litteral IP address a new resolved {@link InetSocketAddress} is returned.
-   *
-   * @return resolved {@link InetSocketAddress}, otherwise stored {@link InetSocketAddress} if
-   *         literal IP address is used.
+   * Returns an InetSocketAddress for this host and port. An attempt is made to resolve the
+   * host name but if resolution fails an unresolved InetSocketAddress is returned. This return
+   * value will not hold an InetAddress, so calling getAddress() on it will return null.
    */
   public InetSocketAddress getSocketInetAddress() {
     if (socketInetAddress.isUnresolved()) {
@@ -98,11 +106,6 @@ public class HostAndPort implements DataSerializableFixedID {
   @Override
   public String toString() {
     return getClass().getSimpleName() + " [socketInetAddress=" + socketInetAddress + "]";
-  }
-
-  private InetSocketAddress cloneUnresolved(final InetSocketAddress inetSocketAddress) {
-    return InetSocketAddress.createUnresolved(inetSocketAddress.getHostString(),
-        inetSocketAddress.getPort());
   }
 
   public InetAddress getAddress() {
@@ -149,6 +152,8 @@ public class HostAndPort implements DataSerializableFixedID {
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[0];
+    return null;
   }
+
+
 }

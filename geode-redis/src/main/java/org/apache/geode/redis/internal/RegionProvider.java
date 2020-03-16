@@ -57,7 +57,7 @@ import org.apache.geode.redis.internal.executor.SortedSetQuery;
  * synchronized, which is done away with and abstracted by this class.
  */
 public class RegionProvider implements Closeable {
-  private final ConcurrentHashMap<ByteArrayWrapper, Region<?, ?>> regions;
+  private final ConcurrentHashMap<ByteArrayWrapper, Region<Object, Object>> regions;
 
   /**
    * This is the Redis meta data {@link Region} that holds the {@link RedisDataType} information for
@@ -92,6 +92,7 @@ public class RegionProvider implements Closeable {
   private static final CreateRegionCommand createRegionCmd = new CreateRegionCommand();
   private final ConcurrentHashMap<String, Lock> locks;
 
+  @SuppressWarnings("deprecation")
   public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion,
       KeyRegistrar redisMetaRegion,
@@ -116,16 +117,16 @@ public class RegionProvider implements Closeable {
     }
     this.hashRegion = hashRegion;
     this.setRegion = setRegion;
-    this.regions = new ConcurrentHashMap<>();
+    regions = new ConcurrentHashMap<>();
     this.stringsRegion = stringsRegion;
     this.hLLRegion = hLLRegion;
-    this.keyRegistrar = redisMetaRegion;
+    keyRegistrar = redisMetaRegion;
     this.cache = cache;
-    this.queryService = cache.getQueryService();
+    queryService = cache.getQueryService();
     this.expirationsMap = expirationsMap;
     this.expirationExecutor = expirationExecutor;
-    this.defaultRegionType = defaultShortcut;
-    this.locks = new ConcurrentHashMap<>();
+    defaultRegionType = defaultShortcut;
+    locks = new ConcurrentHashMap<>();
   }
 
   public Region<?, ?> getRegion(ByteArrayWrapper key) {
@@ -133,12 +134,40 @@ public class RegionProvider implements Closeable {
       return null;
     }
 
-    return this.regions.get(key);
+    return regions.get(key);
 
   }
 
+  public Region<ByteArrayWrapper, ?> getRegionForType(RedisDataType redisDataType) {
+    if (redisDataType == null) {
+      return null;
+    }
+
+    switch (redisDataType) {
+      case REDIS_STRING:
+        return stringsRegion;
+
+      case REDIS_HASH:
+        return hashRegion;
+
+      case REDIS_SET:
+      case REDIS_SORTEDSET:
+        return setRegion;
+
+      case REDIS_HLL:
+        return hLLRegion;
+
+      case REDIS_PROTECTED:
+      case REDIS_PUBSUB:
+      case NONE:
+      case REDIS_LIST:
+      default:
+        return null;
+    }
+  }
+
   public void removeRegionReferenceLocally(ByteArrayWrapper key, RedisDataType type) {
-    Lock lock = this.locks.get(key.toString());
+    Lock lock = locks.get(key.toString());
     boolean locked = false;
     try {
       if (lock != null) {
@@ -158,7 +187,7 @@ public class RegionProvider implements Closeable {
   }
 
   public boolean removeKey(ByteArrayWrapper key) {
-    RedisDataType type = this.keyRegistrar.getType(key);
+    RedisDataType type = keyRegistrar.getType(key);
     return removeKey(key, type);
   }
 
@@ -170,26 +199,26 @@ public class RegionProvider implements Closeable {
     if (type == RedisDataType.REDIS_PROTECTED) {
       return false;
     }
-    Lock lock = this.locks.get(key.toString());
+    Lock lock = locks.get(key.toString());
     try {
       if (lock != null) {// Strings/hlls will not have locks
         lock.lock();
       }
-      this.keyRegistrar.unregister(key);
+      keyRegistrar.unregister(key);
       try {
         if (type == RedisDataType.REDIS_STRING) {
-          return this.stringsRegion.remove(key) != null;
+          return stringsRegion.remove(key) != null;
         } else if (type == RedisDataType.REDIS_HLL) {
-          return this.hLLRegion.remove(key) != null;
+          return hLLRegion.remove(key) != null;
         } else if (type == RedisDataType.REDIS_LIST) {
-          return this.destroyRegion(key, type);
+          return destroyRegion(key, type);
         } else if (type == RedisDataType.REDIS_SET) {
           // remove the set
-          this.setRegion.remove(key);
+          setRegion.remove(key);
           return true;
         } else if (type == RedisDataType.REDIS_HASH) {
           // Check hash
-          this.hashRegion.remove(key);
+          hashRegion.remove(key);
           return true;
         } else {
           return false;
@@ -203,7 +232,7 @@ public class RegionProvider implements Closeable {
           removeKeyExpiration(key);
         }
         if (lock != null) {
-          this.locks.remove(key.toString());
+          locks.remove(key.toString());
         }
       }
     } finally {
@@ -222,16 +251,16 @@ public class RegionProvider implements Closeable {
     if (type == null || type == RedisDataType.REDIS_STRING || type == RedisDataType.REDIS_HLL) {
       return;
     }
-    Region<?, ?> r = this.regions.get(key);
+    Region<Object, Object> r = regions.get(key);
     if (r != null) {
       return;
     }
-    if (!this.regions.containsKey(key)) {
+    if (!regions.containsKey(key)) {
       String stringKey = key.toString();
-      Lock lock = this.locks.get(stringKey);
+      Lock lock = locks.get(stringKey);
       if (lock == null) {
-        this.locks.putIfAbsent(stringKey, new ReentrantLock());
-        lock = this.locks.get(stringKey);
+        locks.putIfAbsent(stringKey, new ReentrantLock());
+        lock = locks.get(stringKey);
       }
       boolean locked = false;
       try {
@@ -256,7 +285,7 @@ public class RegionProvider implements Closeable {
               // ignore
             }
           }
-          this.regions.put(key, r);
+          regions.put(key, r);
         }
       } finally {
         if (locked) {
@@ -270,18 +299,18 @@ public class RegionProvider implements Closeable {
       ExecutionHandlerContext context, boolean addToMeta) {
 
     String regionName = key.toString();
-    this.keyRegistrar.validate(key, type);
-    Region<?, ?> r = this.regions.get(key);
+    keyRegistrar.validate(key, type);
+    Region<Object, Object> r = regions.get(key);
     if (r != null && r.isDestroyed()) {
       removeKey(key, type);
       r = null;
     }
     if (r == null) {
       String stringKey = key.toString();
-      Lock lock = this.locks.get(stringKey);
+      Lock lock = locks.get(stringKey);
       if (lock == null) {
-        this.locks.putIfAbsent(stringKey, new ReentrantLock());
-        lock = this.locks.get(stringKey);
+        locks.putIfAbsent(stringKey, new ReentrantLock());
+        lock = locks.get(stringKey);
       }
 
       try {
@@ -297,7 +326,7 @@ public class RegionProvider implements Closeable {
               txm = cache.getCacheTransactionManager();
               transactionId = txm.suspend();
             }
-            Exception concurrentCreateDestroyException = null;
+            Exception concurrentCreateDestroyException;
             do {
               concurrentCreateDestroyException = null;
 
@@ -319,9 +348,9 @@ public class RegionProvider implements Closeable {
                 }
               }
             } while (concurrentCreateDestroyException != null);
-            this.regions.put(key, r);
+            regions.put(key, r);
             if (addToMeta) {
-              this.keyRegistrar.register(key, type);
+              keyRegistrar.register(key, type);
             }
           } finally {
             if (hasTransaction) {
@@ -344,7 +373,7 @@ public class RegionProvider implements Closeable {
    * @return Flag if destroyed
    */
   private boolean destroyRegion(ByteArrayWrapper key, RedisDataType type) {
-    Region<?, ?> r = this.regions.get(key);
+    Region<?, ?> r = regions.get(key);
     if (r != null) {
       try {
         r.destroyRegion();
@@ -364,8 +393,8 @@ public class RegionProvider implements Closeable {
    * @param type Type of key to remove all state
    */
   private void removeRegionState(ByteArrayWrapper key, RedisDataType type) {
-    this.preparedQueries.remove(key);
-    this.regions.remove(key);
+    preparedQueries.remove(key);
+    regions.remove(key);
   }
 
   private void doInitializeSortedSet(ByteArrayWrapper key, Region<?, ?> r)
@@ -381,24 +410,23 @@ public class RegionProvider implements Closeable {
     HashMap<Enum<?>, Query> queryList = new HashMap<>();
     for (SortedSetQuery lq : SortedSetQuery.values()) {
       String queryString = lq.getQueryString(fullpath);
-      Query query = this.queryService.newQuery(queryString);
+      Query query = queryService.newQuery(queryString);
       queryList.put(lq, query);
     }
-    this.preparedQueries.put(key, queryList);
+    preparedQueries.put(key, queryList);
   }
 
-  @SuppressWarnings("rawtypes")
-  private void doInitializeList(ByteArrayWrapper key, Region r) {
+  private void doInitializeList(ByteArrayWrapper key, Region<Object, Object> r) {
     r.put("head", 0);
     r.put("tail", 0);
     String fullpath = r.getFullPath();
     HashMap<Enum<?>, Query> queryList = new HashMap<>();
     for (ListQuery lq : ListQuery.values()) {
       String queryString = lq.getQueryString(fullpath);
-      Query query = this.queryService.newQuery(queryString);
+      Query query = queryService.newQuery(queryString);
       queryList.put(lq, query);
     }
-    this.preparedQueries.put(key, queryList);
+    preparedQueries.put(key, queryList);
   }
 
   /**
@@ -408,8 +436,8 @@ public class RegionProvider implements Closeable {
    * @param regionPath Name of Region to create
    * @return Region Region created globally
    */
-  private Region<?, ?> createRegionGlobally(String regionPath) {
-    Region<?, ?> r = null;
+  private Region<Object, Object> createRegionGlobally(String regionPath) {
+    Region<Object, Object> r;
     r = cache.getRegion(regionPath);
     if (r != null) {
       return r;
@@ -436,15 +464,15 @@ public class RegionProvider implements Closeable {
   }
 
   public Query getQuery(ByteArrayWrapper key, Enum<?> query) {
-    return this.preparedQueries.get(key).get(query);
+    return preparedQueries.get(key).get(query);
   }
 
   public boolean regionExists(ByteArrayWrapper key) {
-    return this.regions.containsKey(key);
+    return regions.containsKey(key);
   }
 
   public Region<ByteArrayWrapper, ByteArrayWrapper> getStringsRegion() {
-    return this.stringsRegion;
+    return stringsRegion;
   }
 
   /**
@@ -462,7 +490,7 @@ public class RegionProvider implements Closeable {
   }
 
   public Region<ByteArrayWrapper, HyperLogLogPlus> gethLLRegion() {
-    return this.hLLRegion;
+    return hLLRegion;
   }
 
   /**
@@ -476,13 +504,13 @@ public class RegionProvider implements Closeable {
    * @return True is expiration set, false otherwise
    */
   public boolean setExpiration(ByteArrayWrapper key, long delay) {
-    RedisDataType type = this.keyRegistrar.getType(key);
+    RedisDataType type = keyRegistrar.getType(key);
     if (type == null) {
       return false;
     }
-    ScheduledFuture<?> future = this.expirationExecutor
+    ScheduledFuture<?> future = expirationExecutor
         .schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
-    this.expirationsMap.put(key, future);
+    expirationsMap.put(key, future);
     return true;
   }
 
@@ -503,14 +531,14 @@ public class RegionProvider implements Closeable {
       return false;
     }
 
-    RedisDataType type = this.keyRegistrar.getType(key);
+    RedisDataType type = keyRegistrar.getType(key);
     if (type == null) {
       return false;
     }
 
-    ScheduledFuture<?> future = this.expirationExecutor
+    ScheduledFuture<?> future = expirationExecutor
         .schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
-    this.expirationsMap.put(key, future);
+    expirationsMap.put(key, future);
     return true;
   }
 
@@ -539,7 +567,7 @@ public class RegionProvider implements Closeable {
    * @return True if key has expiration, false otherwise
    */
   public boolean hasExpiration(ByteArrayWrapper key) {
-    return this.expirationsMap.containsKey(key);
+    return expirationsMap.containsKey(key);
   }
 
   /**
@@ -549,19 +577,19 @@ public class RegionProvider implements Closeable {
    * @return Remaining time in milliseconds or 0 if no delay or key doesn't exist
    */
   public long getExpirationDelayMillis(ByteArrayWrapper key) {
-    ScheduledFuture<?> future = this.expirationsMap.get(key);
+    ScheduledFuture<?> future = expirationsMap.get(key);
     return future != null ? future.getDelay(TimeUnit.MILLISECONDS) : 0L;
   }
 
   @Override
   public void close() {
-    this.preparedQueries.clear();
+    preparedQueries.clear();
   }
 
   public String dumpRegionsCache() {
     StringBuilder builder = new StringBuilder();
-    for (Entry<ByteArrayWrapper, Region<?, ?>> e : this.regions.entrySet()) {
-      builder.append(e.getKey() + " --> {" + e.getValue() + "}\n");
+    for (Entry<ByteArrayWrapper, Region<Object, Object>> e : regions.entrySet()) {
+      builder.append(e.getKey()).append(" --> {").append(e.getValue()).append("}\n");
     }
     return builder.toString();
   }

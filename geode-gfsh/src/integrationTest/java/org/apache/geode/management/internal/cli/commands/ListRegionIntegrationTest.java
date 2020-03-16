@@ -49,28 +49,31 @@ public class ListRegionIntegrationTest {
   }
 
   @Test
-  public void memberAndGroupAreMutuallyExclusive() throws Exception {
+  public void memberAndGroupAreMutuallyExclusive() {
     String cmd = "list regions --member=" + MEMBER_NAME + " --group=" + GROUP_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsError()
         .containsOutput("Please provide either \"member\" or \"group\" option.");
   }
 
   @Test
-  public void commandWithNoOptionsSucceeds() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void commandWithNoOptionsSucceeds() {
     String cmd = "list regions";
     gfsh.executeAndAssertThat(cmd).statusIsSuccess()
         .tableHasColumnWithValuesContaining(OUTPUT_HEADER, REGION_NAME);
   }
 
   @Test
-  public void commandWithMemberSucceeds() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void commandWithMemberSucceeds() {
     String cmd = "list regions --member=" + MEMBER_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsSuccess()
         .tableHasColumnWithValuesContaining(OUTPUT_HEADER, REGION_NAME);
   }
 
   @Test
-  public void commandWithGroupSucceeds() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void commandWithGroupSucceeds() {
     String cmd = "list regions --group=" + GROUP_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsSuccess()
         .tableHasColumnWithValuesContaining(OUTPUT_HEADER, REGION_NAME);

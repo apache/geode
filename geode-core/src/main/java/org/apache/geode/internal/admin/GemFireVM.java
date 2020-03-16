@@ -254,21 +254,6 @@ public interface GemFireVM {
    */
   void takeRegionSnapshot(String regionName, int snapshotId);
 
-  // /**
-  // * Clears any results of a snapshot request still waiting to be streamed back
-  // */
-  // public void flushSnapshots();
-
-
-  /**
-   * Returns the name given to the {@link org.apache.geode.GemFireConnection} of this process
-   */
-  // public String getName();
-
-  // /**
-  // * Returns true if a cache has been created.
-  // */
-  // public boolean hasCache();
   /**
    * The distribution ID if this VM. Its used to identify this VM by members if this VM's
    * distributed system.

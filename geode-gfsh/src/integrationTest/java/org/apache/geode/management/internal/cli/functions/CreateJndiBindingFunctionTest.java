@@ -51,15 +51,15 @@ public class CreateJndiBindingFunctionTest {
 
   private CreateJndiBindingFunction createBindingFunction;
   private FunctionContext<Object[]> context;
-  private DistributedSystem distributedSystem;
-  private ResultSender resultSender;
+  private ResultSender<Object> resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
 
   @Before
+  @SuppressWarnings({"unchecked", "deprecation"})
   public void setup() {
     createBindingFunction = spy(new CreateJndiBindingFunction());
     context = mock(FunctionContext.class);
-    distributedSystem = mock(DistributedSystem.class);
+    DistributedSystem distributedSystem = mock(DistributedSystem.class);
     resultSender = mock(ResultSender.class);
     resultCaptor = ArgumentCaptor.forClass(CliFunctionResult.class);
 

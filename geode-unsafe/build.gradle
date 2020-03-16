@@ -21,6 +21,7 @@ plugins {
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))

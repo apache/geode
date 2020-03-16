@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.jgroups.annotations.GuardedBy;
+
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
@@ -32,9 +34,8 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /**
    * has initMembers been invoked?
-   *
-   * @guarded.By initLock
    */
+  @GuardedBy("initLock")
   private boolean initialized;
 
 

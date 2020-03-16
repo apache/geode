@@ -51,7 +51,7 @@ public interface DSFIDSerializer {
    * DataSerializableFixedID
    * classes so that deserialization knows how to instantiate them.
    */
-  void registerDSFID(int dsfid, Class dsfidClass);
+  void registerDSFID(int dsfid, Class<?> dsfidClass);
 
   /**
    * Creates a DataSerializableFixedID or StreamableFixedID instance by deserializing it from the

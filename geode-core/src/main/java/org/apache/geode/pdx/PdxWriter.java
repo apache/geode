@@ -402,8 +402,7 @@ public interface PdxWriter {
    * Java Object[] is mapped to .NET System.Collections.Generic.List<Object>. For how each element
    * of the array is a mapped to .NET see {@link #writeObject(String, Object, boolean) writeObject}.
    * Note that this call may serialize elements that are not compatible with non-java languages. To
-   * ensure that only portable objects are serialized use
-   * {@link #writeObjectArray(String, Object[], boolean)}.
+   * ensure that only portable objects are serialized use this method
    *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write

@@ -62,7 +62,7 @@ public class ClusterGCPausesService implements PulseService {
       }
     }
     responseJSON.put("currentGCPauses", cluster.getGarbageCollectionCount());
-    responseJSON.put("gCPausesTrend", pauses);
+    responseJSON.set("gCPausesTrend", pauses);
     // Send json response
     return responseJSON;
   }

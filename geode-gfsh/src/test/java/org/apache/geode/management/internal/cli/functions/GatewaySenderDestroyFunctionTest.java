@@ -36,13 +36,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class GatewaySenderDestroyFunctionTest {
 
   private GatewaySenderDestroyFunction function;
-  private FunctionContext context;
+  private FunctionContext<GatewaySenderDestroyFunctionArgs> context;
   private InternalCache cache;
-  private ResultSender resultSender;
+  private ResultSender<Object> resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
   private GatewaySenderDestroyFunctionArgs args;
 
   @Before
+  @SuppressWarnings("unchecked")
   public void before() {
     function = spy(GatewaySenderDestroyFunction.class);
     context = mock(FunctionContext.class);
@@ -58,7 +59,8 @@ public class GatewaySenderDestroyFunctionTest {
   }
 
   @Test
-  public void gateWaySenderNotFound_ifExists_false() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void gateWaySenderNotFound_ifExists_false() {
     when(cache.getGatewaySender(any())).thenReturn(null);
     when(args.isIfExists()).thenReturn(false);
     function.execute(context);
@@ -71,7 +73,8 @@ public class GatewaySenderDestroyFunctionTest {
   }
 
   @Test
-  public void gateWaySenderNotFound_ifExists_true() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void gateWaySenderNotFound_ifExists_true() {
     when(cache.getGatewaySender(any())).thenReturn(null);
     when(args.isIfExists()).thenReturn(true);
     function.execute(context);

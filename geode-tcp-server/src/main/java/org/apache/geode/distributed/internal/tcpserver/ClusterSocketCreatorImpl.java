@@ -21,10 +21,14 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ServerSocketCreatorImpl implements ClusterSocketCreator {
+/**
+ * ClusterSocketCreatorImpl is constructed and held by a TcpSocketCreator. It is
+ * accessed through the method {@link TcpSocketCreator#forCluster()}.
+ */
+public class ClusterSocketCreatorImpl implements ClusterSocketCreator {
   private final TcpSocketCreatorImpl socketCreator;
 
-  protected ServerSocketCreatorImpl(TcpSocketCreatorImpl socketCreator) {
+  protected ClusterSocketCreatorImpl(TcpSocketCreatorImpl socketCreator) {
 
     this.socketCreator = socketCreator;
   }

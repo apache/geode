@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
@@ -35,7 +36,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
-import org.mockito.Matchers;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -84,7 +84,9 @@ public class SizeExportLogsFunctionIntegrationTest {
     config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
 
     server.withProperties(config).startServer();
-    FunctionContext context =
+
+    @SuppressWarnings("unchecked")
+    FunctionContext<ExportLogsFunction.Args> context =
         new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
 
     // log and stat files sizes are not constant with a real cache running, so check for the sizer
@@ -102,7 +104,8 @@ public class SizeExportLogsFunctionIntegrationTest {
 
     server.withProperties(config).startServer();
 
-    FunctionContext context =
+    @SuppressWarnings("unchecked")
+    FunctionContext<ExportLogsFunction.Args> context =
         new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
     new SizeExportLogsFunction().execute(context);
     getAndVerifySizeEstimate(resultSender, 0L);
@@ -112,7 +115,8 @@ public class SizeExportLogsFunctionIntegrationTest {
   public void withFunctionError_shouldThrow() {
     server.withProperties(config).startServer();
 
-    FunctionContext context =
+    @SuppressWarnings("unchecked")
+    FunctionContext<ExportLogsFunction.Args> context =
         new FunctionContextImpl(server.getCache(), "functionId", null, resultSender);
     new SizeExportLogsFunction().execute(context);
     assertThatThrownBy(resultSender::getResults).isInstanceOf(NullPointerException.class);
@@ -124,13 +128,14 @@ public class SizeExportLogsFunctionIntegrationTest {
     config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
     server.withProperties(config).startServer();
 
-    FunctionContext context =
+    @SuppressWarnings("unchecked")
+    FunctionContext<ExportLogsFunction.Args> context =
         new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
     SizeExportLogsFunction testFunction = new SizeExportLogsFunction();
     SizeExportLogsFunction spyFunction = spy(testFunction);
     long fakeDiskAvailable = 1024;
     doReturn(fakeDiskAvailable).when(spyFunction)
-        .getDiskAvailable(Matchers.any(DistributionConfig.class));
+        .getDiskAvailable(any(DistributionConfig.class));
 
     spyFunction.execute(context);
     assertThatThrownBy(resultSender::getResults).isInstanceOf(ManagementException.class);
@@ -157,7 +162,7 @@ public class SizeExportLogsFunctionIntegrationTest {
         .isLessThanOrEqualTo(maxExpected);
   }
 
-  private static class TestResultSender implements ResultSender {
+  private static class TestResultSender implements ResultSender<Object> {
 
     private final List<Object> results = new LinkedList<>();
 

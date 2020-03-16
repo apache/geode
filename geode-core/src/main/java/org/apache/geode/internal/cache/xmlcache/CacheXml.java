@@ -546,10 +546,10 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   protected static final String KEY_INDEX = "key-index";
   /** The name of the index type attribute */
   protected static final String INDEX_TYPE = "type";
-  /** The name of the <code>hash-index</code> index type attribute */
-  /**
+  /* The name of the <code>hash-index</code> index type attribute */
+  /*
    * @deprecated Due to the overhead caused by rehashing while expanding the backing array, Hash
-   *             Index has been deprecated since Apache Geode 1.4.0. Use {@link CacheXml#FUNCTIONAL}
+   * Index has been deprecated since Apache Geode 1.4.0. Use {@link CacheXml#FUNCTIONAL}
    */
   @Deprecated
   protected static final String HASH_INDEX_TYPE = "hash";

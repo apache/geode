@@ -14,8 +14,8 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.validateHost;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
 import java.net.InetAddress;
 import java.util.Properties;

@@ -450,9 +450,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return getBindAddress().getCanonicalHostName();
       }
 
-      InetAddress localhost = LocalHostUtil.getLocalHost();
-
-      return localhost.getCanonicalHostName();
+      return LocalHostUtil.getCanonicalLocalHostName();
     } catch (UnknownHostException handled) {
       // Returning localhost/127.0.0.1 implies the bindAddress was null and no IP address for
       // localhost could be found
@@ -663,7 +661,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Starts a Locator running on the specified port and bind address, as determined by getPort and
-   * getBindAddress respectively, defaulting to 10334 and 'localhost' if not specified, with both
+   * getSocketAddress respectively, defaulting to 10334 and 'localhost' if not specified, with both
    * peer and server location enabled.
    *
    * 'start' is an asynchronous invocation of the Locator. As such, this method makes no guarantees

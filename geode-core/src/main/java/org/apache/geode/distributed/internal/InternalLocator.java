@@ -92,6 +92,7 @@ import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatisticsConfig;
+import org.apache.geode.logging.internal.InternalSessionContext;
 import org.apache.geode.logging.internal.LoggingSession;
 import org.apache.geode.logging.internal.NullLoggingSession;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -232,8 +233,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       return;
     }
     synchronized (locatorLock) {
-      locator.loggingSession.stopSession();
-      locator.loggingSession.shutdown();
+      if (locator.loggingSession.getState() != InternalSessionContext.State.STOPPED) {
+        locator.loggingSession.stopSession();
+        locator.loggingSession.shutdown();
+      }
       if (locator.equals(InternalLocator.locator)) {
         InternalLocator.locator = null;
       }
@@ -944,7 +947,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           }
         }
       }
-      return;
     }
 
     if (locatorDiscoverer != null) {
@@ -953,7 +955,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     // stop the TCPServer
-    membershipLocator.stop();
+    if (!membershipLocator.isShuttingDown()) {
+      membershipLocator.stop();
+    }
 
     removeLocator(this);
 
@@ -1318,8 +1322,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   public void onConnect(InternalDistributedSystem sys) {
     try {
       locatorStats.hookupStats(sys,
-          LocalHostUtil.getLocalHost().getCanonicalHostName() + '-' + membershipLocator
-              .getBindAddress());
+          LocalHostUtil.getCanonicalLocalHostName() + '-' + membershipLocator
+              .getSocketAddress());
     } catch (UnknownHostException e) {
       logger.warn(e);
     }

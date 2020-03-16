@@ -54,7 +54,7 @@ public class SecureCacheImpl implements SecureCache {
   public SecureCacheImpl(InternalCache cache, Security security) {
     this.cache = cache;
     this.security = security;
-    this.functionService = new SecureFunctionServiceImpl(cache, security);
+    functionService = new SecureFunctionServiceImpl(cache, security);
   }
 
   @Override
@@ -69,8 +69,8 @@ public class SecureCacheImpl implements SecureCache {
         if (!authorized) {
           security.authorize(DATA, READ, regionName, key);
         }
-        V value = (V) region.get(key);
-        value = (V) security.postProcess(regionName, key, value);
+        V value = region.get(key);
+        value = postProcess(regionName, key, value);
         successConsumer.accept(key, value);
       } catch (Exception e) {
         failureConsumer.accept(key, e);
@@ -78,12 +78,17 @@ public class SecureCacheImpl implements SecureCache {
     });
   }
 
+  @SuppressWarnings("unchecked")
+  private <K, V> V postProcess(String regionName, K key, V value) {
+    return (V) security.postProcess(regionName, key, value);
+  }
+
   @Override
   public <K, V> V get(String regionName, K key) {
     security.authorize(DATA, READ, regionName, key);
     Region<K, V> region = getRegion(regionName);
-    Object value = region.get(key);
-    return (V) security.postProcess(regionName, key, value);
+    V value = region.get(key);
+    return postProcess(regionName, key, value);
   }
 
   @Override
@@ -117,8 +122,8 @@ public class SecureCacheImpl implements SecureCache {
   public <K, V> V remove(String regionName, K key) {
     security.authorize(DATA, WRITE, regionName, key);
     Region<K, V> region = getRegion(regionName);
-    Object oldValue = region.remove(key);
-    return (V) security.postProcess(regionName, key, oldValue);
+    V oldValue = region.remove(key);
+    return postProcess(regionName, key, oldValue);
   }
 
   @Override
@@ -143,7 +148,8 @@ public class SecureCacheImpl implements SecureCache {
   @Override
   public <K> Set<K> keySet(String regionName) {
     security.authorize(DATA, READ, regionName, ALL);
-    return ((Region<K, ?>) getRegion(regionName)).keySet();
+    final Region<K, Object> region = getRegion(regionName);
+    return region.keySet();
   }
 
   @Override
@@ -162,9 +168,9 @@ public class SecureCacheImpl implements SecureCache {
   public <K, V> V putIfAbsent(String regionName, K key, V value) {
     security.authorize(DATA, WRITE, regionName, key);
     Region<K, V> region = getRegion(regionName);
-    Object oldValue = region.putIfAbsent(key, value);
+    V oldValue = region.putIfAbsent(key, value);
 
-    return (V) security.postProcess(regionName, key, oldValue);
+    return postProcess(regionName, key, oldValue);
   }
 
   @Override
@@ -206,6 +212,7 @@ public class SecureCacheImpl implements SecureCache {
     }
 
     // The result is a list of structs
+    @SuppressWarnings("unchecked")
     SelectResults<Struct> structResults = (SelectResults<Struct>) selectResults;
 
     List<Struct> postProcessed =
@@ -217,12 +224,10 @@ public class SecureCacheImpl implements SecureCache {
   }
 
   private Struct postProcessStruct(Struct struct) {
-    List<Object> newValues = Arrays.stream(struct.getFieldValues())
-        .map(element -> security.postProcess(null, null, element)).collect(Collectors.toList());
-    StructImpl newStruct =
-        new StructImpl((StructTypeImpl) struct.getStructType(), newValues.toArray());
 
-    return newStruct;
+    return new StructImpl((StructTypeImpl) struct.getStructType(),
+        Arrays.stream(struct.getFieldValues())
+            .map(element -> security.postProcess(null, null, element)).toArray());
   }
 
   private <K, V> Region<K, V> getRegion(String regionName) {

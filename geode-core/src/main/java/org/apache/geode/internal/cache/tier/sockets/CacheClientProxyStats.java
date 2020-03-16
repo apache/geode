@@ -85,7 +85,7 @@ public class CacheClientProxyStats implements MessageStats {
   private static final int _cqCountId;
   private static final int _sentBytesId;
 
-  /**
+  /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
    */
   static {

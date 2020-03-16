@@ -45,7 +45,6 @@ public class AuthorizationTest {
   private static final String TEST_PASSWORD = TEST_USERNAME;
   private Locator locator;
   private Cache cache;
-  private Driver driver;
   private int locatorPort;
 
 
@@ -88,7 +87,7 @@ public class AuthorizationTest {
     Driver driver =
         new DriverFactory().addLocator("localhost", locatorPort).setUsername(TEST_USERNAME)
             .setPassword(TEST_PASSWORD).create();
-    Region region = driver.getRegion("internalRegion");
+    Region<String, String> region = driver.getRegion("internalRegion");
     assertThat(region).isNotNull();
     assertFailure(() -> region.clear());
     assertFailure(() -> region.get("some key"));

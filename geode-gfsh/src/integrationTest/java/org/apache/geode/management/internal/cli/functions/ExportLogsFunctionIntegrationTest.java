@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -43,19 +44,21 @@ public class ExportLogsFunctionIntegrationTest {
   public ServerStarterRule serverStarterRule = new ServerStarterRule().withAutoStart();
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     serverWorkingDir = serverStarterRule.getWorkingDir();
   }
 
   @Test
   public void exportLogsFunctionDoesNotBlowUp() throws Throwable {
     File logFile1 = new File(serverWorkingDir, "server1.log");
-    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line");
+    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line",
+        Charset.defaultCharset());
     File logFile2 = new File(serverWorkingDir, "server2.log");
-    FileUtils.writeStringToFile(logFile2, "some log for server2 \n some other log line");
+    FileUtils.writeStringToFile(logFile2, "some log for server2 \n some other log line",
+        Charset.defaultCharset());
 
     File notALogFile = new File(serverWorkingDir, "foo.txt");
-    FileUtils.writeStringToFile(notALogFile, "some text");
+    FileUtils.writeStringToFile(notALogFile, "some text", Charset.defaultCharset());
 
     verifyExportLogsFunctionDoesNotBlowUp(serverStarterRule.getCache());
 
@@ -65,6 +68,7 @@ public class ExportLogsFunctionIntegrationTest {
 
   @Test
   public void createOrGetExistingExportLogsRegionDoesNotBlowUp() {
+    @SuppressWarnings("deprecation")
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     ExportLogsFunction.createOrGetExistingExportLogsRegion(false, cache);
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();
@@ -72,6 +76,7 @@ public class ExportLogsFunctionIntegrationTest {
 
   @Test
   public void destroyExportLogsRegionWorksAsExpectedForInitiatingMember() {
+    @SuppressWarnings("deprecation")
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();
@@ -84,14 +89,16 @@ public class ExportLogsFunctionIntegrationTest {
     ExportLogsFunction.Args args =
         new ExportLogsFunction.Args(null, null, "info", false, false, false);
     CapturingResultSender resultSender = new CapturingResultSender();
-    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender);
+    @SuppressWarnings("unchecked")
+    FunctionContext<ExportLogsFunction.Args> context =
+        new FunctionContextImpl(cache, "functionId", args, resultSender);
     new ExportLogsFunction().execute(context);
     if (resultSender.getThrowable() != null) {
       throw resultSender.getThrowable();
     }
   }
 
-  private static class CapturingResultSender implements ResultSender {
+  private static class CapturingResultSender implements ResultSender<Object> {
     private Throwable throwable;
 
     public Throwable getThrowable() {

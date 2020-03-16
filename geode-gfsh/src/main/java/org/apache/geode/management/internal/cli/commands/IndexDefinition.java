@@ -21,14 +21,15 @@ import java.util.Set;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.query.IndexType;
 
 class IndexDefinition {
   @Immutable
   static final Set<RegionConfig.Index> indexDefinitions =
       Collections.synchronizedSet(new HashSet<>());
 
-  static void addIndex(String name, String expression, String fromClause, IndexType type) {
+  @SuppressWarnings("deprecation")
+  static void addIndex(String name, String expression, String fromClause,
+      org.apache.geode.cache.query.IndexType type) {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setName(name);
     index.setFromClause(fromClause);

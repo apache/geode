@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.management.internal.cli.GfshParser;
 
@@ -39,7 +38,7 @@ import org.apache.geode.management.internal.cli.GfshParser;
 public class ReadWriteFile {
 
   public static void main(String[] args) {
-    if (args.length < 6 || args.length > 6) {
+    if (args.length != 6) {
       throw new IllegalArgumentException(
           "Requires only 6  arguments : <logInputFileName> <logOutputFileName> <LogLevel> <UptoLogLevel> <StartTime> <EndTime>");
     }
@@ -79,30 +78,18 @@ public class ReadWriteFile {
         output.close();
         return ("can not write file " + logToBeWritten);
       }
+      List<String> logLevels = getLogLevels(logLevel, onlyLogLevel);
 
-      // build possible log levels based on user input
-      // get all the levels below the one mentioned by user
-      List<String> logLevels = new ArrayList<>();
-      if (onlyLogLevel.toLowerCase().equals("false")) {
-        for (int level : LogWriterImpl.allLevels) {
-          if (level >= LogLevel.getLogWriterLevel(logLevel)) {
-            logLevels.add(LogWriterImpl.levelToString(level).toLowerCase());
-          }
-        }
-      } else {
-        logLevels.add(logLevel);
-      }
       boolean timeRangeCheck = false;
-      boolean foundLogLevelTag = false;
       boolean validateLogLevel = true;
       while (input.ready() && (line = input.readLine()) != null) {
         if (!new File(logFileName).canRead()) {
           return ("Cannot read logFileName=" + logFileName);
         }
         lineCount++;
-        foundLogLevelTag = line.startsWith("[");
+        boolean foundLogLevelTag = line.startsWith("[");
         if (line.contains("[info ") && !timeRangeCheck) {
-          String stTime = "";
+          StringBuilder stTime = new StringBuilder();
           int spaceCounter = 0;
           for (int i = line.indexOf("[info ") + 6; i < line.length(); i++) {
             if (line.charAt(i) == ' ') {
@@ -111,22 +98,19 @@ public class ReadWriteFile {
             if (spaceCounter > 2) {
               break;
             }
-            stTime = stTime + line.charAt(i);
+            stTime.append(line.charAt(i));
           }
           SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
           Date d = df.parse(stTime.substring(0, stTime.length() - 4));
           Time fileStartTime = new Time(d.getTime());
           File inputFile = new File(logFileName);
           Time fileEndTime = new Time(inputFile.lastModified());
-          Time longStart = new Time(Long.valueOf(startTime));
-          Time longEnd = new Time(Long.valueOf(endTime));
+          Time longStart = new Time(Long.parseLong(startTime));
+          Time longEnd = new Time(Long.parseLong(endTime));
           long userStartTime = longStart.getTime();
           long userEndTime = longEnd.getTime();
-          if ((fileStartTime.getTime() >= userStartTime && fileStartTime.getTime() <= userEndTime)
-              || (fileEndTime.getTime() >= userStartTime && fileEndTime.getTime() <= userEndTime)
-              || (fileStartTime.getTime() >= userStartTime && fileStartTime.getTime() <= userEndTime
-                  && fileEndTime.getTime() >= userStartTime
-                  && fileEndTime.getTime() <= userEndTime)) {
+          if (fileStartTime.getTime() >= userStartTime && fileStartTime.getTime() <= userEndTime
+              || fileEndTime.getTime() >= userStartTime && fileEndTime.getTime() <= userEndTime) {
             // set this so that no need to check time range for each line
             timeRangeCheck = true;
           } else {
@@ -136,7 +120,7 @@ public class ReadWriteFile {
         }
 
         if (foundLogLevelTag) {
-          validateLogLevel = checkLogLevel(line, logLevel, logLevels, foundLogLevelTag);
+          validateLogLevel = checkLogLevel(line, logLevel, logLevels);
         }
 
         if (validateLogLevel) {
@@ -162,11 +146,28 @@ public class ReadWriteFile {
     }
   }
 
-  static boolean checkLogLevel(String line, String logLevel, List<String> logLevels,
-      boolean foundLogLevelTag) {
+  @SuppressWarnings("deprecation")
+  private static List<String> getLogLevels(String logLevel, String onlyLogLevel) {
+    // build possible log levels based on user input
+    // get all the levels below the one mentioned by user
+    List<String> logLevels = new ArrayList<>();
+    if (onlyLogLevel.toLowerCase().equals("false")) {
+      for (int level : org.apache.geode.internal.logging.LogWriterImpl.allLevels) {
+        if (level >= LogLevel.getLogWriterLevel(logLevel)) {
+          logLevels.add(
+              org.apache.geode.internal.logging.LogWriterImpl.levelToString(level).toLowerCase());
+        }
+      }
+    } else {
+      logLevels.add(logLevel);
+    }
+    return logLevels;
+  }
+
+  static boolean checkLogLevel(String line, String logLevel, List<String> logLevels) {
     if (line == null) {
       return false;
-    } else if (foundLogLevelTag) {
+    } else {
       if (logLevel.toLowerCase().equals("all")) {
         return true;
       } else if (line.equals(GfshParser.LINE_SEPARATOR)) {
@@ -180,18 +181,15 @@ public class ReadWriteFile {
               boolean flag =
                   line.substring(indexFrom + 1, indexTo).toLowerCase().contains(permittedLogLevel);
               if (flag) {
-                return flag;
+                return true;
               }
             }
           }
           return false;
-
         } else {
           return true;
         }
       }
-    } else {
-      return true;
     }
   }
 }

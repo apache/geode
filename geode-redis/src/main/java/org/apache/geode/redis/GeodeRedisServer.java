@@ -15,9 +15,11 @@
 package org.apache.geode.redis;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.redis.internal.RedisLockServiceMBean.OBJECTNAME__REDISLOCKSERVICE_MBEAN;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -34,6 +36,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.net.ssl.KeyManagerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -46,15 +54,13 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.oio.OioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.oio.OioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.Future;
 
-import org.apache.geode.LogWriter;
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
@@ -215,7 +221,8 @@ public class GeodeRedisServer {
   /**
    * Gem logwriter
    */
-  private LogWriter logger;
+  @SuppressWarnings("deprecation")
+  private org.apache.geode.LogWriter logger;
 
   private RegionProvider regionCache;
 
@@ -287,7 +294,7 @@ public class GeodeRedisServer {
   private KeyRegistrar keyRegistrar;
   private PubSub pubSub;
   private RedisLockService hashLockService;
-  private RedisLockService setLockService;
+
 
   /**
    * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
@@ -363,15 +370,15 @@ public class GeodeRedisServer {
    * @param logLevel The logging level to be used by GemFire
    */
   public GeodeRedisServer(String bindAddress, int port, String logLevel) {
-    this.serverPort = port <= 0 ? DEFAULT_REDIS_SERVER_PORT : port;
+    serverPort = port <= 0 ? DEFAULT_REDIS_SERVER_PORT : port;
     this.bindAddress = bindAddress;
     this.logLevel = logLevel;
-    this.numWorkerThreads = setNumWorkerThreads();
-    this.singleThreadPerConnection = this.numWorkerThreads == 0;
-    this.numSelectorThreads = 1;
-    this.metaListener = new MetaCacheListener();
-    this.expirationFutures = new ConcurrentHashMap<ByteArrayWrapper, ScheduledFuture<?>>();
-    this.expirationExecutor =
+    numWorkerThreads = setNumWorkerThreads();
+    singleThreadPerConnection = numWorkerThreads == 0;
+    numSelectorThreads = 1;
+    metaListener = new MetaCacheListener();
+    expirationFutures = new ConcurrentHashMap<>();
+    expirationExecutor =
         Executors.newScheduledThreadPool(numExpirationThreads, new ThreadFactory() {
           private final AtomicInteger counter = new AtomicInteger();
 
@@ -384,9 +391,9 @@ public class GeodeRedisServer {
           }
 
         });
-    this.DEFAULT_REGION_TYPE = setRegionType();
-    this.shutdown = false;
-    this.started = false;
+    DEFAULT_REGION_TYPE = setRegionType();
+    shutdown = false;
+    started = false;
   }
 
   /**
@@ -395,8 +402,8 @@ public class GeodeRedisServer {
    * @return The InetAddress to bind to
    */
   private InetAddress getBindAddress() throws UnknownHostException {
-    return this.bindAddress == null || this.bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
-        : InetAddress.getByName(this.bindAddress);
+    return bindAddress == null || bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
+        : InetAddress.getByName(bindAddress);
   }
 
   /**
@@ -408,9 +415,7 @@ public class GeodeRedisServer {
         startGemFire();
         initializeRedis();
         startRedisServer();
-      } catch (IOException e) {
-        throw new RuntimeException("Could not start Server", e);
-      } catch (InterruptedException e) {
+      } catch (IOException | InterruptedException e) {
         throw new RuntimeException("Could not start Server", e);
       }
       started = true;
@@ -422,6 +427,7 @@ public class GeodeRedisServer {
    * {@link Region} to be protected. Also, every {@code GeodeRedisServer} will check for entries
    * already in the meta data Region.
    */
+  @SuppressWarnings("deprecation")
   private void startGemFire() {
     Cache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
@@ -437,11 +443,11 @@ public class GeodeRedisServer {
       }
     }
     this.cache = cache;
-    this.logger = cache.getLogger();
+    logger = cache.getLogger();
   }
 
   private void initializeRedis() {
-    synchronized (this.cache) {
+    synchronized (cache) {
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
 
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
@@ -452,24 +458,24 @@ public class GeodeRedisServer {
 
       if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
         RegionFactory<ByteArrayWrapper, ByteArrayWrapper> regionFactory =
-            gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+            gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
         stringsRegion = regionFactory.create(STRING_REGION);
       }
       if ((hLLRegion = cache.getRegion(HLL_REGION)) == null) {
         RegionFactory<ByteArrayWrapper, HyperLogLogPlus> regionFactory =
-            gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+            gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
         hLLRegion = regionFactory.create(HLL_REGION);
       }
 
       if ((redisHash = cache.getRegion(HASH_REGION)) == null) {
         RegionFactory<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> regionFactory =
-            gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+            gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
         redisHash = regionFactory.create(HASH_REGION);
       }
 
       if ((redisSet = cache.getRegion(SET_REGION)) == null) {
         RegionFactory<ByteArrayWrapper, Set<ByteArrayWrapper>> regionFactory =
-            gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+            gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
         redisSet = regionFactory.create(SET_REGION);
       }
 
@@ -482,12 +488,11 @@ public class GeodeRedisServer {
         redisMetaData = redisMetaDataFactory.create(REDIS_META_DATA_REGION);
       }
 
-      this.keyRegistrar = new KeyRegistrar(redisMetaData);
-      this.hashLockService = new RedisLockService();
-      this.setLockService = new RedisLockService();
-      this.pubSub = new PubSubImpl(new Subscriptions());
-      this.regionCache = new RegionProvider(stringsRegion, hLLRegion, this.keyRegistrar,
-          expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE, redisHash, redisSet);
+      keyRegistrar = new KeyRegistrar(redisMetaData);
+      hashLockService = new RedisLockService();
+      pubSub = new PubSubImpl(new Subscriptions());
+      regionCache = new RegionProvider(stringsRegion, hLLRegion, keyRegistrar,
+          expirationFutures, expirationExecutor, DEFAULT_REGION_TYPE, redisHash, redisSet);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HLL_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(STRING_REGION, RedisDataType.REDIS_PROTECTED);
@@ -496,6 +501,23 @@ public class GeodeRedisServer {
     }
 
     checkForRegions();
+    registerLockServiceMBean();
+  }
+
+  private void registerLockServiceMBean() {
+    try {
+      ObjectName mbeanON = new ObjectName(OBJECTNAME__REDISLOCKSERVICE_MBEAN);
+      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+
+      Set<ObjectName> names = platformMBeanServer.queryNames(mbeanON, null);
+      if (names.isEmpty()) {
+        platformMBeanServer.registerMBean(hashLockService, mbeanON);
+        logger.info("Registered RedisLockServiceMBean on " + mbeanON);
+      }
+    } catch (InstanceAlreadyExistsException | MBeanRegistrationException
+        | NotCompliantMBeanException | MalformedObjectNameException e) {
+      throw new GemFireConfigException("Error while configuring RedisLockServiceMBean", e);
+    }
   }
 
   private void checkForRegions() {
@@ -507,7 +529,7 @@ public class GeodeRedisServer {
       if (newRegion == null && type != RedisDataType.REDIS_STRING && type != RedisDataType.REDIS_HLL
           && type != RedisDataType.REDIS_PROTECTED) {
         try {
-          this.regionCache
+          regionCache
               .createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(regionName), type);
         } catch (Exception e) {
           if (logger.errorEnabled()) {
@@ -548,14 +570,13 @@ public class GeodeRedisServer {
 
     bossGroup = null;
     workerGroup = null;
-    Class<? extends ServerChannel> socketClass = null;
+    Class<? extends ServerChannel> socketClass;
     if (singleThreadPerConnection) {
-      bossGroup = new OioEventLoopGroup(Integer.MAX_VALUE, selectorThreadFactory);
-      workerGroup = new OioEventLoopGroup(Integer.MAX_VALUE, workerThreadFactory);
-      socketClass = OioServerSocketChannel.class;
+      socketClass =
+          startRedisServiceSingleThreadPerConnection(selectorThreadFactory, workerThreadFactory);
     } else {
-      bossGroup = new NioEventLoopGroup(this.numSelectorThreads, selectorThreadFactory);
-      workerGroup = new NioEventLoopGroup(this.numWorkerThreads, workerThreadFactory);
+      bossGroup = new NioEventLoopGroup(numSelectorThreads, selectorThreadFactory);
+      workerGroup = new NioEventLoopGroup(numWorkerThreads, workerThreadFactory);
       socketClass = NioServerSocketChannel.class;
     }
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
@@ -566,7 +587,7 @@ public class GeodeRedisServer {
     b.group(bossGroup, workerGroup).channel(socketClass)
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
-          public void initChannel(SocketChannel ch) throws Exception {
+          public void initChannel(SocketChannel ch) {
             if (logger.fineEnabled()) {
               logger.fine("GeodeRedisServer-Connection established with " + ch.remoteAddress());
             }
@@ -575,7 +596,7 @@ public class GeodeRedisServer {
             p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
             p.addLast(ExecutionHandlerContext.class.getSimpleName(),
                 new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
-                    keyRegistrar, pubSub, hashLockService, setLockService));
+                    keyRegistrar, pubSub, hashLockService));
           }
         }).option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
@@ -584,17 +605,27 @@ public class GeodeRedisServer {
 
     // Bind and start to accept incoming connections.
     ChannelFuture f = b.bind(new InetSocketAddress(getBindAddress(), serverPort)).sync();
-    if (this.logger.infoEnabled()) {
+    if (logger.infoEnabled()) {
       String logMessage = "GeodeRedisServer started {" + getBindAddress() + ":" + serverPort
-          + "}, Selector threads: " + this.numSelectorThreads;
-      if (this.singleThreadPerConnection) {
+          + "}, Selector threads: " + numSelectorThreads;
+      if (singleThreadPerConnection) {
         logMessage += ", One worker thread per connection";
       } else {
-        logMessage += ", Worker threads: " + this.numWorkerThreads;
+        logMessage += ", Worker threads: " + numWorkerThreads;
       }
-      this.logger.info(logMessage);
+      logger.info(logMessage);
     }
-    this.serverChannel = f.channel();
+    serverChannel = f.channel();
+  }
+
+  @SuppressWarnings("deprecation")
+  private Class<? extends ServerChannel> startRedisServiceSingleThreadPerConnection(
+      ThreadFactory selectorThreadFactory, ThreadFactory workerThreadFactory) {
+    bossGroup =
+        new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, selectorThreadFactory);
+    workerGroup =
+        new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, workerThreadFactory);
+    return io.netty.channel.socket.oio.OioServerSocketChannel.class;
   }
 
   private void addSSLIfEnabled(SocketChannel ch, ChannelPipeline p) {
@@ -637,12 +668,12 @@ public class GeodeRedisServer {
    */
   private void afterKeyCreate(EntryEvent<String, RedisDataType> event) {
     if (event.isOriginRemote()) {
-      final String key = (String) event.getKey();
+      final String key = event.getKey();
       final RedisDataType value = event.getNewValue();
       if (value != RedisDataType.REDIS_STRING && value != RedisDataType.REDIS_HLL
           && value != RedisDataType.REDIS_PROTECTED) {
         try {
-          this.regionCache.createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(key),
+          regionCache.createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(key),
               value);
         } catch (RegionDestroyedException ignore) { // Region already destroyed, ignore
         }
@@ -656,14 +687,14 @@ public class GeodeRedisServer {
    */
   private void afterKeyDestroy(EntryEvent<String, RedisDataType> event) {
     if (event.isOriginRemote()) {
-      final String key = (String) event.getKey();
+      final String key = event.getKey();
       final RedisDataType value = event.getOldValue();
       if (value != null && value != RedisDataType.REDIS_STRING && value != RedisDataType.REDIS_HLL
           && value != RedisDataType.REDIS_PROTECTED) {
         ByteArrayWrapper kW = Coder.stringToByteArrayWrapper(key);
-        Region<?, ?> r = this.regionCache.getRegion(kW);
+        Region<?, ?> r = regionCache.getRegion(kW);
         if (r != null) {
-          this.regionCache.removeRegionReferenceLocally(kW, value);
+          regionCache.removeRegionReferenceLocally(kW, value);
         }
       }
     }
@@ -700,21 +731,21 @@ public class GeodeRedisServer {
       if (logger.infoEnabled()) {
         logger.info("GeodeRedisServer shutting down");
       }
-      ChannelFuture closeFuture = this.serverChannel.closeFuture();
+      ChannelFuture closeFuture = serverChannel.closeFuture();
       Future<?> c = workerGroup.shutdownGracefully();
       Future<?> c2 = bossGroup.shutdownGracefully();
-      this.serverChannel.close();
+      serverChannel.close();
       c.syncUninterruptibly();
       c2.syncUninterruptibly();
-      this.regionCache.close();
+      regionCache.close();
       if (mainThread != null) {
         mainThread.interrupt();
       }
-      for (ScheduledFuture<?> f : this.expirationFutures.values()) {
+      for (ScheduledFuture<?> f : expirationFutures.values()) {
         f.cancel(true);
       }
-      this.expirationFutures.clear();
-      this.expirationExecutor.shutdownNow();
+      expirationFutures.clear();
+      expirationExecutor.shutdownNow();
       closeFuture.syncUninterruptibly();
       shutdown = true;
     }
@@ -751,7 +782,7 @@ public class GeodeRedisServer {
         Thread.sleep(Long.MAX_VALUE);
       } catch (InterruptedException e1) {
         break;
-      } catch (Exception e) {
+      } catch (Exception ignored) {
       }
     }
   }

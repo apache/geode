@@ -81,7 +81,7 @@ public class ServerSerializableObjectHttpMessageConverter
       throw new HttpMessageNotReadableException(
           String.format("Unable to convert the HTTP message body into an Object of type (%1$s)",
               type.getName()),
-          e);
+          e, inputMessage);
     }
   }
 

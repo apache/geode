@@ -1238,7 +1238,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   @VisibleForTesting
-  /** remove the given TXStates for test */
+  /* remove the given TXStates for test */
   public void removeTransactions(Set<TXId> txIds, boolean distribute) {
     synchronized (this.hostedTXStates) {
       Iterator<Map.Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();

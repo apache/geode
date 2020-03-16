@@ -26,19 +26,12 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 
-public class GetOrderDescriptionFunction implements Function {
+public class GetOrderDescriptionFunction implements Function<String> {
 
   @Override
-  public void execute(FunctionContext context) {
-    Region region = null;
-
-    if (context.getArguments() instanceof String) {
-      String arg = (String) context.getArguments();
-    } else {
-      System.out.println("GetOrderDescriptionFunction : Invalid Arguments");
-    }
-
-    InternalCache cache = null;
+  public void execute(FunctionContext<String> context) {
+    InternalCache cache;
+    Region<?, ?> region;
     try {
       cache = (InternalCache) CacheFactory.getAnyInstance();
       cache.getCacheConfig().setPdxReadSerialized(true);
@@ -49,16 +42,16 @@ public class GetOrderDescriptionFunction implements Function {
     }
 
     RegionFunctionContext regionContext = (RegionFunctionContext) context;
+    @SuppressWarnings("unchecked")
     Set<String> keys = (Set<String>) regionContext.getFilter();
-    Iterator keysIterator = keys.iterator();
+    Iterator<String> keysIterator = keys.iterator();
     Object key = null;
-    while (keysIterator.hasNext()) {
+    if (keysIterator.hasNext()) {
       key = (keysIterator.next());
-      break;
     }
 
     Object obj = region.get(key);
-    String description = "";
+    String description;
     if (obj instanceof PdxInstance) {
       PdxInstance pi = (PdxInstance) obj;
       Order receivedOrder = (Order) pi.getObject();

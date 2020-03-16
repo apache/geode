@@ -35,7 +35,7 @@ public class ClusterManagementListResultTest {
   private ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     list = new ClusterManagementListResult<>();
   }
 
@@ -81,7 +81,7 @@ public class ClusterManagementListResultTest {
     assertThat(json).containsOnlyOnce("\"self\":\"#HREF/management/v1/regions/regionA\"")
         .containsOnlyOnce("\"self\":\"#HREF/management/v1/regions/regionB\"");
 
-    ClusterManagementListResult result =
+    ClusterManagementListResult<?, ?> result =
         mapper.readValue(json, ClusterManagementListResult.class);
 
     assertThat(result.getEntityGroupInfo()).hasSize(3);

@@ -22,7 +22,6 @@ import io.netty.util.concurrent.EventExecutor;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.redis.GeodeRedisServer;
 
@@ -42,7 +41,8 @@ public class ExecutionHandlerContextJUnitTest {
     ChannelPipeline channelPipeline = Mockito.mock(ChannelPipeline.class);
     EventExecutor eventExecutor = Mockito.mock(EventExecutor.class);
     ChannelHandlerContext channelHandlerContext = Mockito.mock(ChannelHandlerContext.class);
-    LogWriter logWriter = Mockito.mock(LogWriter.class);
+    @SuppressWarnings("deprecation")
+    org.apache.geode.LogWriter logWriter = Mockito.mock(org.apache.geode.LogWriter.class);
     Command msg = Mockito.mock(Command.class);
     RegionProvider regionProvider = Mockito.mock(RegionProvider.class);
     GeodeRedisServer server = Mockito.mock(GeodeRedisServer.class);
@@ -59,7 +59,7 @@ public class ExecutionHandlerContextJUnitTest {
     byte[] pwd = null;
     ExecutionHandlerContext handler =
         new ExecutionHandlerContext(ch, cache, regionProvider, server, pwd, keyRegistrar, pubSub,
-            lockService, lockService);
+            lockService);
 
     Mockito.when(msg.getCommandType()).thenReturn(redisCommandType);
     Executor exec = Mockito.mock(Executor.class);

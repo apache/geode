@@ -42,6 +42,7 @@ public class ClusterManagementServiceBuilderTest {
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
+  @SuppressWarnings("unchecked")
   private <T> T getFieldValue(Object target, String fieldName) throws NoSuchFieldException {
 
     Field field = ReflectionUtils.findField(target.getClass(), fieldName);
@@ -82,7 +83,7 @@ public class ClusterManagementServiceBuilderTest {
   }
 
   @Test
-  public void notSettingSSLUsesHTTP() throws NoSuchAlgorithmException, NoSuchFieldException {
+  public void notSettingSSLUsesHTTP() throws NoSuchFieldException {
     ClusterManagementService cms =
         new ClusterManagementServiceBuilder().setHost(HOST).setPort(PORT).build();
 

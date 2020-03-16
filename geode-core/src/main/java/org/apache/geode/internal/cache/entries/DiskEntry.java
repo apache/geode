@@ -1541,7 +1541,7 @@ public interface DiskEntry extends RegionEntry {
      * Removes the key/value pair in the given entry from disk
      *
      * @throws RegionClearedException If the operation is aborted due to a clear
-     * @see DiskRegion#remove
+     * @see DiskRegion#remove(InternalRegion, DiskEntry, boolean, boolean)
      */
     public static void removeFromDisk(DiskEntry entry, InternalRegion region, boolean isClear)
         throws RegionClearedException {

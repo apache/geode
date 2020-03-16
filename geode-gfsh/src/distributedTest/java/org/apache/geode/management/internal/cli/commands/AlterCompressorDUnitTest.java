@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -79,7 +80,7 @@ public class AlterCompressorDUnitTest {
 
     // Load Data only from server3 since region is replicated
     server3.invoke(() -> {
-      Region testRegion = ClusterStartupRule.getCache().getRegion("testRegion");
+      Region<String, String> testRegion = ClusterStartupRule.getCache().getRegion("testRegion");
       IntStream.range(0, 100).forEach(i -> testRegion.put("key" + i, "value" + i));
     });
   }
@@ -90,7 +91,7 @@ public class AlterCompressorDUnitTest {
   // 3) Bounce servers and validate that the region is recovered and data is compressed.
   // 4) Again in offline remove the compressor and assert that region is recovered.
   @Test
-  public void alterDiskCompressor() throws Exception {
+  public void alterDiskCompressor() {
     // verify no compressor to start with
     gfsh.executeAndAssertThat("describe region --name=testRegion").statusIsSuccess()
         .doesNotContainOutput("compressor");
@@ -107,7 +108,7 @@ public class AlterCompressorDUnitTest {
     server3.stop(false);
 
     // Alter disk-store & region to add compressor
-    Arrays.asList(server1, server2).stream().forEach(server -> {
+    Stream.of(server1, server2).forEach(server -> {
       String diskDir = server.getWorkingDir() + "/diskStore";
       // make sure offline diskstore has no compressor
       gfsh.executeAndAssertThat(
@@ -148,7 +149,7 @@ public class AlterCompressorDUnitTest {
     server2.stop(false);
     server3.stop(false);
 
-    Arrays.asList(server1, server2).stream().forEach(server -> {
+    Stream.of(server1, server2).forEach(server -> {
       String diskDir = server.getWorkingDir() + "/diskStore";
       // make sure offline diskstore has no compressor
       gfsh.executeAndAssertThat(
@@ -183,11 +184,10 @@ public class AlterCompressorDUnitTest {
     VMProvider.invokeInEveryMember(AlterCompressorDUnitTest::verifyRegionIsNotCompressed, server2);
   }
 
-  private void startServers() throws Exception {
+  private void startServers() {
     // start server1 and server2 in parallel because they each has a replicate data store on disk
-    Arrays.asList(1, 2).parallelStream().forEach(id -> {
-      cluster.startServerVM(id, "dataStore", locator.getPort());
-    });
+    Arrays.asList(1, 2).parallelStream()
+        .forEach(id -> cluster.startServerVM(id, "dataStore", locator.getPort()));
 
     cluster.startServerVM(3, "accessor", locator.getPort());
   }
@@ -214,7 +214,7 @@ public class AlterCompressorDUnitTest {
 
   private static void verifyRegionIsCompressed() {
     // assert the region attributes
-    Region testRegion = ClusterStartupRule.getCache().getRegion("testRegion");
+    Region<String, String> testRegion = ClusterStartupRule.getCache().getRegion("testRegion");
     assertThat(testRegion.getAttributes().getCompressor()).isNotNull();
     assertThat(testRegion.getAttributes().getCompressor()).isInstanceOf(TestCompressor1.class);
 
@@ -233,7 +233,7 @@ public class AlterCompressorDUnitTest {
 
   private static void verifyRegionIsNotCompressed() {
     // assert the region attributes
-    Region testRegion = ClusterStartupRule.getCache().getRegion("testRegion");
+    Region<String, String> testRegion = ClusterStartupRule.getCache().getRegion("testRegion");
     assertThat(testRegion.getAttributes().getCompressor()).isNull();
 
     // assert that values are not compressed

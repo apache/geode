@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.doReturn;
@@ -27,7 +28,6 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,6 +67,7 @@ public class JdbcConnectorServiceTest {
   DataSource dataSource = mock(DataSource.class);
   Connection connection = mock(Connection.class);
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
     mapping = mock(RegionMapping.class);
@@ -104,7 +105,7 @@ public class JdbcConnectorServiceTest {
   }
 
   @Test
-  public void returnsNoMappingIfEmpty() throws Exception {
+  public void returnsNoMappingIfEmpty() {
     assertThat(service.getMappingForRegion("foo")).isNull();
   }
 
@@ -192,14 +193,14 @@ public class JdbcConnectorServiceTest {
 
   @Test(expected = JdbcConnectorException.class)
   public void validateMappingThrowsExceptionWithModifiedIdColumns() {
-    when(view.getKeyColumnNames()).thenReturn(Arrays.asList(VALUE_COLUMN_NAME.toUpperCase()));
+    when(view.getKeyColumnNames()).thenReturn(singletonList(VALUE_COLUMN_NAME.toUpperCase()));
     when(mapping.getSpecifiedIds()).thenReturn(false);
     service.validateMapping(mapping);
   }
 
   @Test
   public void validateMappingSucceedsWithModifiedIdColumnsWithSpecifiedIds() {
-    when(view.getKeyColumnNames()).thenReturn(Arrays.asList(VALUE_COLUMN_NAME.toUpperCase()));
+    when(view.getKeyColumnNames()).thenReturn(singletonList(VALUE_COLUMN_NAME.toUpperCase()));
     service.validateMapping(mapping);
   }
 

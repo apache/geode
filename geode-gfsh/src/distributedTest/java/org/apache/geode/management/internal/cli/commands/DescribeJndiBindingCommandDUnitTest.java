@@ -28,8 +28,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class DescribeJndiBindingCommandDUnitTest {
 
-  private static MemberVM locator, server;
-
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
@@ -42,13 +40,15 @@ public class DescribeJndiBindingCommandDUnitTest {
     // props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
     // ListJndiBindingFunction.class.getName());
 
-    locator = cluster.startLocatorVM(0);
-    server = cluster.startServerVM(1, props, locator.getPort());
+    MemberVM locator = cluster.startLocatorVM(0);
+    @SuppressWarnings("unused")
+    MemberVM server = cluster.startServerVM(1, props, locator.getPort());
 
     gfsh.connectAndVerify(locator);
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void describeJndiBindingForSimpleDataSource() {
     gfsh.executeAndAssertThat(
         "create jndi-binding --name=jndi-simple --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\" --username=joe --datasource-config-properties={'name':'prop1','value':'value1','type':'java.lang.String'}")
@@ -64,6 +64,7 @@ public class DescribeJndiBindingCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void describeJndiBindingForManagedDataSource() {
     gfsh.executeAndAssertThat(
         "create jndi-binding --name=jndi-managed --type=MANAGED --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\" --init-pool-size=1 --max-pool-size=10 --idle-timeout-seconds=2 --blocking-timeout-seconds=11 --login-timeout-seconds=7 --datasource-config-properties={'name':'prop1','value':'value1','type':'java.lang.String'} --managed-conn-factory-class="
@@ -89,6 +90,7 @@ public class DescribeJndiBindingCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void describeJndiBindingForPooledDataSource() {
     gfsh.executeAndAssertThat(
         "create jndi-binding --name=jndi-pooled --type=POOLED --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\" --conn-pooled-datasource-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --init-pool-size=1 --max-pool-size=10 --idle-timeout-seconds=2 --blocking-timeout-seconds=11 --login-timeout-seconds=7 --datasource-config-properties={'name':'prop1','value':'value1','type':'java.lang.String'}")
@@ -113,6 +115,7 @@ public class DescribeJndiBindingCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void describeJndiBindingForXAPooledDataSource() {
     gfsh.executeAndAssertThat(
         "create jndi-binding --name=jndi-xapooled --type=XAPOOLED --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\" --xa-datasource-class=org.apache.derby.jdbc.EmbeddedXADataSource --init-pool-size=1 --max-pool-size=10 --idle-timeout-seconds=2 --blocking-timeout-seconds=11 --login-timeout-seconds=7 --datasource-config-properties={'name':'prop1','value':'value1','type':'java.lang.String'},{'name':'databaseName','value':'newDB','type':'java.lang.String'},{'name':'createDatabase','value':'create','type':'java.lang.String'}")

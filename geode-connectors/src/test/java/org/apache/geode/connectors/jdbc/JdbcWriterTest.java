@@ -44,12 +44,11 @@ public class JdbcWriterTest {
   private SqlHandler sqlHandler;
   private InternalRegion region;
   private SerializedCacheValue<Object> serializedNewValue;
-  private RegionEvent<Object, Object> regionEvent;
-  private InternalCache cache;
   private Object key;
 
   private JdbcWriter<Object, Object> writer;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     entryEvent = mock(EntryEvent.class);
@@ -57,8 +56,7 @@ public class JdbcWriterTest {
     sqlHandler = mock(SqlHandler.class);
     region = mock(InternalRegion.class);
     serializedNewValue = mock(SerializedCacheValue.class);
-    regionEvent = mock(RegionEvent.class);
-    cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     key = "key";
 
     when(entryEvent.getRegion()).thenReturn(region);
@@ -71,6 +69,7 @@ public class JdbcWriterTest {
     writer = new JdbcWriter<>(sqlHandler, cache);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void beforeUpdateWithPdxInstanceWritesToSqlHandler() throws Exception {
     writer.beforeUpdate(entryEvent);
@@ -86,6 +85,7 @@ public class JdbcWriterTest {
         .isInstanceOf(IllegalArgumentException.class);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void beforeCreateWithPdxInstanceWritesToSqlHandler() throws Exception {
     writer.beforeCreate(entryEvent);
@@ -94,6 +94,7 @@ public class JdbcWriterTest {
     assertThat(writer.getTotalEvents()).isEqualTo(1);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void beforeCreateWithNewPdxInstanceWritesToSqlHandler() throws Exception {
     PdxInstance newPdxInstance = mock(PdxInstance.class);
@@ -116,6 +117,7 @@ public class JdbcWriterTest {
     assertThat(writer.getTotalEvents()).isEqualTo(0);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void beforeDestroyWithDestroyEventWritesToSqlHandler() throws Exception {
     when(entryEvent.getOperation()).thenReturn(Operation.DESTROY);
@@ -126,6 +128,7 @@ public class JdbcWriterTest {
     verify(sqlHandler, times(1)).write(eq(region), eq(Operation.DESTROY), eq(key), eq(null));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void beforeRegionDestroyDoesNotWriteToSqlHandler() {
     writer.beforeRegionDestroy(mock(RegionEvent.class));
@@ -133,6 +136,7 @@ public class JdbcWriterTest {
     verifyZeroInteractions(sqlHandler);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void beforeRegionClearDoesNotWriteToSqlHandler() {
     writer.beforeRegionClear(mock(RegionEvent.class));

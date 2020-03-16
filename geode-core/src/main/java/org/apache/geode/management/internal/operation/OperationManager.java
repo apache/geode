@@ -63,6 +63,10 @@ public class OperationManager implements AutoCloseable {
     }
 
     String opId = historyManager.recordStart(op);
+    // get the operationState BEFORE we start the async thread
+    // so that start will return a result that is not influenced
+    // by how far the async thread gets in its execution.
+    OperationState<A, V> operationState = historyManager.get(opId);
 
     CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
         .whenComplete((result, exception) -> {
@@ -70,7 +74,7 @@ public class OperationManager implements AutoCloseable {
           historyManager.recordEnd(opId, result, cause);
         });
 
-    return historyManager.get(opId);
+    return operationState;
   }
 
   @SuppressWarnings("unchecked")
