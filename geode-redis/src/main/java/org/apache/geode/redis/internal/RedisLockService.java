@@ -31,7 +31,8 @@ public class RedisLockService implements RedisLockServiceMBean {
 
   private static final int DEFAULT_TIMEOUT = 1000;
   private final int timeoutMS;
-  private Map<ByteArrayWrapper, Lock> map = Collections.synchronizedMap(new WeakHashMap<>());
+  private final Map<KeyHashIdentifier, Lock> locks =
+      Collections.synchronizedMap(new WeakHashMap<>());
 
   /**
    * Construct with the default 1000ms timeout setting
@@ -51,7 +52,7 @@ public class RedisLockService implements RedisLockServiceMBean {
 
   @Override
   public int getLockCount() {
-    return map.size();
+    return locks.size();
   }
 
   /**
@@ -70,29 +71,29 @@ public class RedisLockService implements RedisLockServiceMBean {
       throw new IllegalArgumentException("key cannot be null");
     }
 
+    KeyHashIdentifier lockKey = new KeyHashIdentifier(key.toBytes());
+
     Lock lock = new ReentrantLock();
-    Lock oldLock = map.putIfAbsent(key, lock);
+    Lock oldLock = locks.putIfAbsent(lockKey, lock);
     if (oldLock != null) {
       lock = oldLock;
       // we need to get a reference to the actual key object so that the backing WeakHashMap does
       // not clean it up.
-      for (ByteArrayWrapper keyInSet : map.keySet()) {
-        if (keyInSet.equals(key)) {
-          key = keyInSet;
-          break;
+      synchronized (locks) {
+        for (KeyHashIdentifier keyInSet : locks.keySet()) {
+          if (keyInSet.equals(lockKey)) {
+            lockKey = keyInSet;
+            break;
+          }
         }
       }
     }
 
     if (!lock.tryLock(timeoutMS, TimeUnit.MILLISECONDS)) {
-      throw new TimeoutException("Couldn't get lock for " + key.toString());
+      throw new TimeoutException("Couldn't get lock for " + lockKey.toString());
     }
 
-    return new AutoCloseableLock(key, lock);
-  }
-
-  int getMapSize() {
-    return map.size();
+    return new AutoCloseableLock(lockKey, lock);
   }
 
 }

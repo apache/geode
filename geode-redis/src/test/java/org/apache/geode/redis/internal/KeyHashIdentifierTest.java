@@ -13,24 +13,32 @@
  * the License.
  *
  */
+
 package org.apache.geode.redis.internal;
 
-import java.util.concurrent.locks.Lock;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Created by gosullivan on 3/10/17.
- */
-public class AutoCloseableLock implements AutoCloseable {
-  private final Lock lock;
-  private final KeyHashIdentifier key;
+import org.junit.Test;
 
-  public AutoCloseableLock(KeyHashIdentifier key, Lock lock) {
-    this.key = key;
-    this.lock = lock;
+public class KeyHashIdentifierTest {
+
+  @Test
+  public void equals_shouldReturnTrue_givenDistinctObjectsWithSameValue() {
+    KeyHashIdentifier key1 = new KeyHashIdentifier(new byte[] {0, 1, 2, 3});
+    KeyHashIdentifier key2 = new KeyHashIdentifier(new byte[] {0, 1, 2, 3});
+
+    assertThat(key1.equals(key2))
+        .as("equals() method should return true")
+        .isTrue();
   }
 
-  @Override
-  public void close() {
-    lock.unlock();
+  @Test
+  public void equals_shouldReturnFalse_givenDistinctObjectsWithDifferentValues() {
+    KeyHashIdentifier key1 = new KeyHashIdentifier(new byte[] {0, 1, 2, 3});
+    KeyHashIdentifier key2 = new KeyHashIdentifier(new byte[] {0, 1, 2, 4});
+
+    assertThat(key1.equals(key2))
+        .as("equals() method should return false")
+        .isFalse();
   }
 }
