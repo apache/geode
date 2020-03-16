@@ -150,7 +150,7 @@ public class PartitionRebalanceDetailsImpl
 
   @Override
   public int getPrimaryNumOfMembers() {
-    return numOfMembers;
+    return getPartitionMemberDetailsAfter().size();
   }
 
   @Override
