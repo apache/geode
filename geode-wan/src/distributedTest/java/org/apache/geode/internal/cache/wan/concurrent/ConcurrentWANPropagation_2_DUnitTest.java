@@ -22,7 +22,6 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 /**
@@ -204,11 +203,11 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
 
     AsyncInvocation inv1 =
         vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
-    Wait.pause(2000);
+    deprecatedPause(2000);
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
 
-    inv1.join();
-    inv2.join();
+    ((AsyncInvocation<?>) inv1).await();
+    ((AsyncInvocation<?>) inv2).await();
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));

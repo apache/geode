@@ -179,7 +179,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       cacheServer.setHostnameForClients(hostnameForSenders);
     }
     cacheServer.setBindAddress(bindAddress);
-    cacheServer.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
+    setGroups(cacheServer);
 
     try {
       cacheServer.start();
@@ -189,6 +189,11 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       logger.info("Failed to create server socket on {}[{}]", bindAddress, port);
       return false;
     }
+  }
+
+  @SuppressWarnings("deprecation")
+  private void setGroups(CacheServer cacheServer) {
+    cacheServer.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
   }
 
   @Override
@@ -279,14 +284,14 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   @Override
   public String toString() {
-    return new StringBuilder().append("Gateway Receiver").append("@")
-        .append(Integer.toHexString(hashCode())).append("'; port=").append(getPort())
-        .append("; bindAddress=").append(getBindAddress()).append("'; hostnameForSenders=")
-        .append(getHostnameForSenders()).append("; maximumTimeBetweenPings=")
-        .append(getMaximumTimeBetweenPings()).append("; socketBufferSize=")
-        .append(getSocketBufferSize()).append("; isManualStart=").append(isManualStart())
-        .append("; group=").append(Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP}))
-        .append("]").toString();
+    return "Gateway Receiver" + "@"
+        + Integer.toHexString(hashCode()) + "'; port=" + getPort()
+        + "; bindAddress=" + getBindAddress() + "'; hostnameForSenders="
+        + getHostnameForSenders() + "; maximumTimeBetweenPings="
+        + getMaximumTimeBetweenPings() + "; socketBufferSize="
+        + getSocketBufferSize() + "; isManualStart=" + isManualStart()
+        + "; group=" + Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP})
+        + "]";
   }
 
   private static class PortRange {

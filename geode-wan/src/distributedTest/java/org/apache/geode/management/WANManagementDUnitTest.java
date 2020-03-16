@@ -362,7 +362,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     DistributedMember puneMember = puneSender.invoke(() -> WANTestBase.getMember());
 
-    WANTestBase.checkRemoteClusterStatus(managing, puneMember);
+    WANTestBase.checkRemoteClusterStatus(managing);
 
   }
 

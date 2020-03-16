@@ -25,7 +25,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -37,8 +36,8 @@ public class WANSSLDUnitTest extends WANTestBase {
 
   @Test
   public void testSenderSSLReceiverSSL() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createReceiverWithSSL(nyPort));
 
@@ -65,8 +64,8 @@ public class WANSSLDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException("SSL Error");
     IgnoredException.addIgnoredException("Unrecognized SSL message");
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createReceiverWithSSL(nyPort));
 
@@ -103,15 +102,15 @@ public class WANSSLDUnitTest extends WANTestBase {
     vm4.invoke(() -> testQueueSize(senderId, numPuts));
 
     // Stop the receiver
-    vm2.invoke(() -> closeCache());
-    vm2.invoke(() -> closeSocketCreatorFactory());
+    vm2.invoke(WANTestBase::closeCache);
+    vm2.invoke(this::closeSocketCreatorFactory);
 
     // Restart the receiver with SSL disabled
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> createReplicatedRegion(regionName, null, isOffHeap()));
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
-    // Wait for the queue to drain
+    // org.apache.geode.test.dunit.Wait for the queue to drain
     vm4.invoke(() -> checkQueueSize(senderId, 0));
 
     // Verify region size on receiver
@@ -124,11 +123,11 @@ public class WANSSLDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException("failed accepting client");
     IgnoredException.addIgnoredException("Error in connecting to peer");
     IgnoredException.addIgnoredException("Remote host closed connection during handshake");
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.createCacheWithSSL(lnPort));
 
@@ -144,21 +143,19 @@ public class WANSSLDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1));
 
-    Boolean doesSizeMatch = (Boolean) vm2
+    Boolean doesSizeMatch = vm2
         .invoke(() -> WANSSLDUnitTest.ValidateSSLRegionSize(getTestMethodName() + "_RR", 1));
 
     assertFalse(doesSizeMatch);
   }
 
+  @SuppressWarnings("deprecation")
   public static boolean ValidateSSLRegionSize(String regionName, final int regionSize) {
-    final Region r = cache.getRegion(SEPARATOR + regionName);
+    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
     assertNotNull(r);
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
-    if (r.size() == regionSize) {
-      return true;
-    }
-    return false;
+    return r.size() == regionSize;
   }
 
   private void closeSocketCreatorFactory() {

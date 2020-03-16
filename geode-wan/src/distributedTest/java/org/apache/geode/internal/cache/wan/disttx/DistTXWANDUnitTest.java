@@ -22,23 +22,18 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({WanTest.class})
 public class DistTXWANDUnitTest extends WANTestBase {
 
+  @SuppressWarnings("deprecation")
   @Override
-  protected final void postSetUpWANTestBase() throws Exception {
-    Invoke.invokeInEveryVM(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + LOG_LEVEL,
-            LogWriterUtils.getDUnitLogLevel());
-        return null;
-      }
+  protected final void postSetUpWANTestBase() {
+    Invoke.invokeInEveryVM(() -> {
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + LOG_LEVEL,
+          org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel());
     });
   }
 
@@ -48,9 +43,9 @@ public class DistTXWANDUnitTest extends WANTestBase {
    */
   @Ignore("TODO: test is disabled")
   @Test
-  public void testPartitionedSerialPropagation_SenderSameAsCoordinator() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testPartitionedSerialPropagation_SenderSameAsCoordinator() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -82,9 +77,9 @@ public class DistTXWANDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testPartitionedSerialPropagation_SenderNotSameAsCoordinator() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testPartitionedSerialPropagation_SenderNotSameAsCoordinator() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -118,9 +113,9 @@ public class DistTXWANDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testPartitionedRegionParallelPropagation() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testPartitionedRegionParallelPropagation() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);

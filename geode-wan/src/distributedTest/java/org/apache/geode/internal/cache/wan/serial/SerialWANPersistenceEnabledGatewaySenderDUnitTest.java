@@ -23,6 +23,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -43,8 +44,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
   @Test
   public void testReplicatedRegionWithGatewaySenderPersistenceEnabled() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -83,8 +84,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
   @Test
   public void testPersistentReplicatedRegionWithGatewaySender() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -124,8 +125,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    */
   @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -162,23 +163,24 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    * Enable persistence for GatewaySender, kill the sender and restart it. Check if the remote site
    * receives all the event.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String firstDStore = vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
-    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String secondDStore = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
 
-    logger.info("The first ds is " + firstDStore);
-    logger.info("The second ds is " + secondDStore);
+    getLogWriter().info("The first ds is " + firstDStore);
+    getLogWriter().info("The second ds is " + secondDStore);
 
     vm2.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
@@ -215,10 +217,10 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     // testName + "_RR", 0 ));
 
     // kill the vm
-    vm4.invoke(() -> WANTestBase.killSender());
-    vm5.invoke(() -> WANTestBase.killSender());
-    vm6.invoke(() -> WANTestBase.killSender());
-    vm7.invoke(() -> WANTestBase.killSender());
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm6.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm7.invoke((SerializableRunnableIF) WANTestBase::killSender);
 
     logger.info("Killed all the sender. ");
     // restart the vm
@@ -251,19 +253,20 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    * bring that up again. Check if the remote site receives all the event. again?
    *
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String firstDStore = vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
-    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String secondDStore = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
 
     logger.info("The first ds is " + firstDStore);
@@ -293,8 +296,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     logger.info("Completed puts in the region");
 
     // kill the vm
-    vm4.invoke(() -> WANTestBase.killSender());
-    vm5.invoke(() -> WANTestBase.killSender());
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
 
     logger.info("Killed the sender. ");
     // restart the vm
@@ -335,10 +338,11 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    * bring that up again. Check if the remote site receives all the event. again?
    *
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testPersistentReplicatedRegionWithGatewaySender_Restart() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -372,8 +376,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     logger.info("Completed puts in the region");
 
     // kill the vm
-    vm4.invoke(() -> WANTestBase.killSender());
-    vm5.invoke(() -> WANTestBase.killSender());
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
 
     logger.info("Killed the sender. ");
     // restart the vm
@@ -390,7 +394,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     vm5.invoke(() -> WANTestBase.startSender("ln"));
     logger.info("Started the sender in vm 5");
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase
+    AsyncInvocation<?> inv1 = vm4.invokeAsync(() -> WANTestBase
         .createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
     vm5.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
         isOffHeap()));
@@ -414,19 +418,20 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    * bring that up again. Check if the remote site receives all the event. again? In this case put
    * is continuously happening while the vm is down.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart2() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String firstDStore = vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
-    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String secondDStore = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
 
     logger.info("The first ds is " + firstDStore);
@@ -456,8 +461,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     logger.info("Completed puts in the region");
 
     // kill the vm
-    vm4.invoke(() -> WANTestBase.killSender());
-    vm5.invoke(() -> WANTestBase.killSender());
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
 
     logger.info("Killed the sender. ");
     // restart the vm

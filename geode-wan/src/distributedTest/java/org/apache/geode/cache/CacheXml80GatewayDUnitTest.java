@@ -84,7 +84,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     // Create an AsyncEventQueue with GatewayEventSubstitutionFilter.
     String id = getName();
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
-    factory.setGatewayEventSubstitutionListener(new MyGatewayEventSubstitutionFilter());
+    factory.setGatewayEventSubstitutionListener(new MyGatewayEventSubstitutionFilter<>());
     AsyncEventQueue queue =
         factory.create(id, new CacheXml70DUnitTestHelper.MyAsyncEventListener());
 
@@ -111,8 +111,8 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     // exception.
     String id = getName();
     GatewaySenderFactory factory = cache.createGatewaySenderFactory();
-    factory.setManualStart(true);
-    factory.setGatewayEventSubstitutionFilter(new MyGatewayEventSubstitutionFilter());
+    setDeprecatedManualStart(factory, true);
+    factory.setGatewayEventSubstitutionFilter(new MyGatewayEventSubstitutionFilter<>());
     GatewaySender sender = factory.create(id, 2);
 
     // Verify the GatewayEventSubstitutionFilter is set on the GatewaySender.
@@ -128,23 +128,30 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     assertNotNull(senderOnCache.getGatewayEventSubstitutionFilter());
   }
 
+  @SuppressWarnings("deprecation")
+  private void setDeprecatedManualStart(GatewaySenderFactory factory, boolean value) {
+    factory.setManualStart(value);
+  }
+
   protected void validateGatewayReceiver(GatewayReceiver receiver1,
       GatewayReceiver gatewayReceiver) {
     CacheXml70GatewayDUnitTest.validateGatewayReceiver(receiver1, gatewayReceiver);
     assertEquals(receiver1.isManualStart(), gatewayReceiver.isManualStart());
   }
 
-  public static class MyGatewayEventSubstitutionFilter
-      implements GatewayEventSubstitutionFilter, Declarable {
+  public static class MyGatewayEventSubstitutionFilter<K, V>
+      implements GatewayEventSubstitutionFilter<K, V>, Declarable {
 
     @Override
-    public Object getSubstituteValue(EntryEvent event) {
+    public Object getSubstituteValue(EntryEvent<K, V> event) {
       return event.getKey();
     }
 
     @Override
     public void close() {}
 
+    @SuppressWarnings("deprecation")
+    @Deprecated
     @Override
     public void init(Properties properties) {}
   }

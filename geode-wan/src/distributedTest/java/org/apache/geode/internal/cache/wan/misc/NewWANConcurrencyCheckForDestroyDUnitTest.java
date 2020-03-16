@@ -37,8 +37,6 @@ import org.apache.geode.internal.cache.Token.Tombstone;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 /**
@@ -57,6 +55,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     super();
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testVersionTagTimestampForDestroy() {
 
@@ -68,21 +67,21 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // Site 2 and Site 3.
 
     // Site 1
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver());
+    vm1.invoke(WANTestBase::createReceiver);
 
     // Site 2
-    Integer nyPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     // Site 3
-    Integer tkPort = (Integer) vm4.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer tkPort = vm4.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
     createCacheInVMs(tkPort, vm5);
-    Integer tkRecPort = (Integer) vm5.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(WANTestBase::createReceiver);
 
-    LogWriterUtils.getLogWriter().info("Created locators and receivers in 3 distributed systems");
+    getLogWriter().info("Created locators and receivers in 3 distributed systems");
 
     // Site 1
     vm1.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 1, false, false, null, true));
@@ -109,7 +108,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.startSender("tk1"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("tk1"));
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     // Perform a put in vm1
     vm1.invoke(new CacheSerializableRunnable("Putting an entry in ds1") {
@@ -118,7 +117,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
       public void run2() throws CacheException {
         assertNotNull(cache);
 
-        Region region = cache.getRegion(SEPARATOR + "repRegion");
+        Region<String, String> region = cache.getRegion(SEPARATOR + "repRegion");
         region.put("testKey", "testValue");
 
         assertEquals(1, region.size());
@@ -126,13 +125,13 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     });
 
     // wait for vm1 to propagate put to vm3 and vm5
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
-    long destroyTimeStamp = (Long) vm3
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterOp());
+    long destroyTimeStamp = vm3
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterOp);
 
     // wait for vm1 to propagate destroyed entry's new version tag to vm5
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     vm5.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.verifyTimestampAfterOp(
         destroyTimeStamp, 1 /* ds 3 receives gateway event only from ds 1 */));
@@ -144,6 +143,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
    * finally checks for final timestamp in version for RegionEntry with key "testKey". If timestamp
    * on both site is same that means events were transferred in correct sequence.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testPutAllEventSequenceOnSerialGatewaySenderWithRR() {
 
@@ -151,16 +151,16 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // a Replicated Region with one entry and concurrency checks enabled.
 
     // Site 1
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     vm1.invoke(() -> WANTestBase.createCache(lnPort));
-    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver());
+    vm1.invoke(WANTestBase::createReceiver);
 
     // Site 2
-    Integer nyPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
-    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
-    LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
+    getLogWriter().info("Created locators and receivers in 2 distributed systems");
 
     // Site 1
     vm1.invoke(() -> WANTestBase.createSender("ln1", 2, false, 10, 1, false, false, null, true));
@@ -176,52 +176,44 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.startSender("ny1"));
     vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ny1"));
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     // Perform a put in vm1
-    AsyncInvocation asynch1 =
-        vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
+    AsyncInvocation<Void> asynch1 =
+        vm1.invokeAsync("Putting an entry in ds1", () -> {
+          assertNotNull(cache);
+          // Test hook to make put wait after RE lock is released but before Gateway events are
+          // sent.
+          DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 2000;
 
-          @Override
-          public void run2() throws CacheException {
-            assertNotNull(cache);
-            // Test hook to make put wait after RE lock is released but before Gateway events are
-            // sent.
-            DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 2000;
+          Region<String, String> region = cache.getRegion(SEPARATOR + "repRegion");
+          Map<String, String> testMap = new HashMap<>();
+          testMap.put("testKey", "testValue1");
+          region.putAll(testMap);
 
-            Region region = cache.getRegion(SEPARATOR + "repRegion");
-            Map testMap = new HashMap();
-            testMap.put("testKey", "testValue1");
-            region.putAll(testMap);
-
-            assertEquals(1, region.size());
-            assertEquals("testValue2", region.get("testKey"));
-          }
+          assertEquals(1, region.size());
+          assertEquals("testValue2", region.get("testKey"));
         });
 
     // wait for vm1 to propagate put to vm3
-    Wait.pause(1000);
+    deprecatedPause(1000);
 
-    AsyncInvocation asynch2 =
-        vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
+    AsyncInvocation<Void> asynch2 =
+        vm1.invokeAsync("Putting an entry in ds1", () -> {
+          assertNotNull(cache);
+          Region<String, String> region = cache.getRegion(SEPARATOR + "repRegion");
 
-          @Override
-          public void run2() throws CacheException {
-            assertNotNull(cache);
-            Region region = cache.getRegion(SEPARATOR + "repRegion");
-
-            while (!region.containsKey("testKey")) {
-              Wait.pause(10);
-            }
-            // Test hook to make put wait after RE lock is released but before Gateway events are
-            // sent.
-            DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 0;
-
-            region.put("testKey", "testValue2");
-
-            assertEquals(1, region.size());
-            assertEquals("testValue2", region.get("testKey"));
+          while (!region.containsKey("testKey")) {
+            deprecatedPause(10);
           }
+          // Test hook to make put wait after RE lock is released but before Gateway events are
+          // sent.
+          DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 0;
+
+          region.put("testKey", "testValue2");
+
+          assertEquals(1, region.size());
+          assertEquals("testValue2", region.get("testKey"));
         });
 
     try {
@@ -240,13 +232,13 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     }
 
     // Wait for all Gateway events be received by vm3.
-    Wait.pause(1000);
+    deprecatedPause(1000);
 
-    long putAllTimeStampVm1 = (Long) vm1
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+    long putAllTimeStampVm1 = vm1
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
-    long putAllTimeStampVm3 = (Long) vm3
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+    long putAllTimeStampVm3 = vm3
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }
@@ -254,6 +246,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
   /**
    * This is similar to above test but for PartitionedRegion.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
 
@@ -261,16 +254,16 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // a Replicated Region with one entry and concurrency checks enabled.
 
     // Site 1
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver());
+    vm1.invoke(WANTestBase::createReceiver);
 
     // Site 2
-    Integer nyPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
-    LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
+    getLogWriter().info("Created locators and receivers in 2 distributed systems");
 
     // Site 1
     vm1.invoke(() -> WANTestBase.createSender("ln1", 2, false, 10, 1, false, false, null, true));
@@ -286,52 +279,44 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.startSender("ny1"));
     vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ny1"));
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     // Perform a put in vm1
-    AsyncInvocation asynch1 =
-        vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
+    AsyncInvocation<Void> asynch1 =
+        vm1.invokeAsync("Putting an entry in ds1", () -> {
+          assertNotNull(cache);
+          // Test hook to make put wait after RE lock is released but before Gateway events are
+          // sent.
+          DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 2000;
 
-          @Override
-          public void run2() throws CacheException {
-            assertNotNull(cache);
-            // Test hook to make put wait after RE lock is released but before Gateway events are
-            // sent.
-            DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 2000;
+          Region<String, String> region = cache.getRegion(SEPARATOR + "repRegion");
+          Map<String, String> testMap = new HashMap<>();
+          testMap.put("testKey", "testValue1");
+          region.putAll(testMap);
 
-            Region region = cache.getRegion(SEPARATOR + "repRegion");
-            Map testMap = new HashMap();
-            testMap.put("testKey", "testValue1");
-            region.putAll(testMap);
-
-            assertEquals(1, region.size());
-            assertEquals("testValue2", region.get("testKey"));
-          }
+          assertEquals(1, region.size());
+          assertEquals("testValue2", region.get("testKey"));
         });
 
     // wait for vm1 to propagate put to vm3
-    Wait.pause(1000);
+    deprecatedPause(1000);
 
-    AsyncInvocation asynch2 =
-        vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
+    AsyncInvocation<Void> asynch2 =
+        vm1.invokeAsync("Putting an entry in ds1", () -> {
+          assertNotNull(cache);
+          Region<String, String> region = cache.getRegion(SEPARATOR + "repRegion");
 
-          @Override
-          public void run2() throws CacheException {
-            assertNotNull(cache);
-            Region region = cache.getRegion(SEPARATOR + "repRegion");
-
-            while (!region.containsKey("testKey")) {
-              Wait.pause(10);
-            }
-            // Test hook to make put wait after RE lock is released but before Gateway events are
-            // sent.
-            DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 0;
-
-            region.put("testKey", "testValue2");
-
-            assertEquals(1, region.size());
-            assertEquals("testValue2", region.get("testKey"));
+          while (!region.containsKey("testKey")) {
+            deprecatedPause(10);
           }
+          // Test hook to make put wait after RE lock is released but before Gateway events are
+          // sent.
+          DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 0;
+
+          region.put("testKey", "testValue2");
+
+          assertEquals(1, region.size());
+          assertEquals("testValue2", region.get("testKey"));
         });
 
     try {
@@ -350,13 +335,13 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     }
 
     // Wait for all Gateway events be received by vm3.
-    Wait.pause(1000);
+    deprecatedPause(1000);
 
-    long putAllTimeStampVm1 = (Long) vm1
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+    long putAllTimeStampVm1 = vm1
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
-    long putAllTimeStampVm3 = (Long) vm3
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+    long putAllTimeStampVm3 = vm3
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }
@@ -365,6 +350,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
    * Tests if conflict checks are happening based on DSID and timestamp even if version tag is
    * generated in local distributed system.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testConflictChecksBasedOnDsidAndTimeStamp() {
 
@@ -373,16 +359,16 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // a Replicated Region with one entry and concurrency checks enabled.
 
     // Site 1
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver());
+    vm1.invoke(WANTestBase::createReceiver);
 
     // Site 2
-    Integer nyPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
-    LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
+    getLogWriter().info("Created locators and receivers in 2 distributed systems");
 
     // Site 1
     vm1.invoke(() -> WANTestBase.createSender("ln1", 2, false, 10, 1, false, false, null, true));
@@ -401,7 +387,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.startSender("ny1"));
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ny1"));
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     // Perform a put in vm1
     vm1.invoke(new CacheSerializableRunnable("Putting an entry in ds1") {
@@ -410,7 +396,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
       public void run2() throws CacheException {
         assertNotNull(cache);
 
-        Region region = cache.getRegion(SEPARATOR + "repRegion");
+        Region<String, String> region = cache.getRegion(SEPARATOR + "repRegion");
         region.put("testKey", "testValue1");
 
         assertEquals(1, region.size());
@@ -418,21 +404,17 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     });
 
     // wait for vm4 to have later timestamp before sending operation to vm1
-    Wait.pause(300);
+    deprecatedPause(300);
 
-    AsyncInvocation asynch =
-        vm4.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds2 in vm4") {
+    AsyncInvocation<Void> asynch =
+        vm4.invokeAsync("Putting an entry in ds2 in vm4", () -> {
+          assertNotNull(cache);
+          Region<String, String> region = cache.getRegion(SEPARATOR + "repRegion");
 
-          @Override
-          public void run2() throws CacheException {
-            assertNotNull(cache);
-            Region region = cache.getRegion(SEPARATOR + "repRegion");
+          region.put("testKey", "testValue2");
 
-            region.put("testKey", "testValue2");
-
-            assertEquals(1, region.size());
-            assertEquals("testValue2", region.get("testKey"));
-          }
+          assertEquals(1, region.size());
+          assertEquals("testValue2", region.get("testKey"));
         });
 
     try {
@@ -442,33 +424,30 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     }
 
     // Wait for all local ds events be received by vm3.
-    Wait.pause(1000);
+    deprecatedPause(1000);
 
-    vm3.invoke(new CacheSerializableRunnable("Check dsid") {
+    vm3.invoke("Check dsid", () -> {
+      Region<String, String> region = cache.getRegion("repRegion");
 
-      @Override
-      public void run2() throws CacheException {
-        Region region = cache.getRegion("repRegion");
-
-        Region.Entry entry = ((LocalRegion) region).getEntry("testKey", /* null, */
-            true); // commented while merging revision 43582
-        RegionEntry re = null;
-        if (entry instanceof EntrySnapshot) {
-          re = ((EntrySnapshot) entry).getRegionEntry();
-        } else if (entry instanceof NonTXEntry) {
-          re = ((NonTXEntry) entry).getRegionEntry();
-        }
-        VersionTag tag = re.getVersionStamp().asVersionTag();
-        assertEquals(2, tag.getDistributedSystemId());
+      @SuppressWarnings("unchecked")
+      Region.Entry<String, String> entry = ((LocalRegion) region).getEntry("testKey", /* null, */
+          true); // commented while merging revision 43582
+      RegionEntry re = null;
+      if (entry instanceof EntrySnapshot) {
+        re = ((EntrySnapshot) entry).getRegionEntry();
+      } else if (entry instanceof NonTXEntry) {
+        re = ((NonTXEntry) entry).getRegionEntry();
       }
+      VersionTag<?> tag = re.getVersionStamp().asVersionTag();
+      assertEquals(2, tag.getDistributedSystemId());
     });
 
     // Check vm3 has latest timestamp from vm4.
-    long putAllTimeStampVm1 = (Long) vm4
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+    long putAllTimeStampVm1 = vm4
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
-    long putAllTimeStampVm3 = (Long) vm3
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+    long putAllTimeStampVm3 = vm3
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }
@@ -476,15 +455,18 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
   /*
    * For VM1 in ds 1. Used in testPutAllEventSequenceOnSerialGatewaySender.
    */
+  @SuppressWarnings("deprecation")
   public static long getVersionTimestampAfterPutAllOp() {
-    Region region = cache.getRegion("repRegion");
+    Region<String, String> region = cache.getRegion("repRegion");
 
     while (!(region.containsKey("testKey") /* && region.get("testKey").equals("testValue2") */)) {
-      Wait.pause(10);
+      deprecatedPause(10);
     }
     assertEquals(1, region.size());
 
-    Region.Entry entry = ((LocalRegion) region).getEntry("testKey", /* null, */ true);
+    @SuppressWarnings("unchecked")
+    Region.Entry<String, String> entry =
+        ((LocalRegion) region).getEntry("testKey", /* null, */ true);
     RegionEntry re = null;
     if (entry instanceof EntrySnapshot) {
       re = ((EntrySnapshot) entry).getRegionEntry();
@@ -492,10 +474,10 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
       re = ((NonTXEntry) entry).getRegionEntry();
     }
     if (re != null) {
-      LogWriterUtils.getLogWriter().fine(
+      getLogWriter().fine(
           "RegionEntry for testKey: " + re.getKey() + " " + re.getValueInVM((LocalRegion) region));
 
-      VersionTag tag = re.getVersionStamp().asVersionTag();
+      VersionTag<?> tag = re.getVersionStamp().asVersionTag();
       return tag.getVersionTimeStamp();
     } else {
       return -1;
@@ -505,19 +487,21 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
   /*
    * For VM3 in ds 2.
    */
+  @SuppressWarnings("deprecation")
   public static long getVersionTimestampAfterOp() {
-    Region region = cache.getRegion("repRegion");
+    Region<String, ?> region = cache.getRegion("repRegion");
     assertEquals(1, region.size());
 
     region.destroy("testKey");
 
-    Region.Entry entry = ((LocalRegion) region).getEntry("testKey", /* null, */ true);
+    @SuppressWarnings("unchecked")
+    Region.Entry<String, ?> entry = ((LocalRegion) region).getEntry("testKey", /* null, */ true);
     RegionEntry re = ((EntrySnapshot) entry).getRegionEntry();
-    LogWriterUtils.getLogWriter().fine(
+    getLogWriter().fine(
         "RegionEntry for testKey: " + re.getKey() + " " + re.getValueInVM((LocalRegion) region));
     assertTrue(re.getValueInVM((LocalRegion) region) instanceof Tombstone);
 
-    VersionTag tag = re.getVersionStamp().asVersionTag();
+    VersionTag<?> tag = re.getVersionStamp().asVersionTag();
     return tag.getVersionTimeStamp();
   }
 
@@ -525,14 +509,15 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
    * For VM 5 in ds 3.
    */
   public static void verifyTimestampAfterOp(long timestamp, int memberid) {
-    Region region = cache.getRegion("repRegion");
+    Region<String, ?> region = cache.getRegion("repRegion");
     assertEquals(0, region.size());
 
-    Region.Entry entry = ((LocalRegion) region).getEntry("testKey", /* null, */ true);
+    @SuppressWarnings("unchecked")
+    Region.Entry<String, ?> entry = ((LocalRegion) region).getEntry("testKey", /* null, */ true);
     RegionEntry re = ((EntrySnapshot) entry).getRegionEntry();
     assertTrue(re.getValueInVM((LocalRegion) region) instanceof Tombstone);
 
-    VersionTag tag = re.getVersionStamp().asVersionTag();
+    VersionTag<?> tag = re.getVersionStamp().asVersionTag();
     assertEquals(timestamp, tag.getVersionTimeStamp());
     assertEquals(memberid, tag.getDistributedSystemId());
   }

@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache.wan.wancommand;
 import static org.apache.geode.management.MXBeanAwaitility.awaitGatewayReceiverMXBeanProxy;
 import static org.apache.geode.management.MXBeanAwaitility.awaitGatewaySenderMXBeanProxy;
 import static org.apache.geode.management.MXBeanAwaitility.awaitMemberMXBeanProxy;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +42,6 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
@@ -57,12 +56,13 @@ import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
+@SuppressWarnings("ConstantConditions")
 public class WANCommandUtils implements Serializable {
 
+  @SuppressWarnings("deprecation")
   public static void createSender(String dsName, int remoteDsId, boolean isParallel,
       Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
       GatewayEventFilter filter, boolean isManualStart) {
@@ -144,6 +144,7 @@ public class WANCommandUtils implements Serializable {
     assertThat(sender.isPaused()).isEqualTo(isPaused);
   }
 
+  @SuppressWarnings("deprecation")
   public static void verifySenderAttributes(String senderId, int remoteDsID, boolean isParallel,
       boolean manualStart, int socketBufferSize, int socketReadTimeout,
       boolean enableBatchConflation, int batchSize, int batchTimeInterval,
@@ -180,7 +181,7 @@ public class WANCommandUtils implements Serializable {
 
       List<GatewayEventFilter> actualGatewayEventFilters = sender.getGatewayEventFilters();
       List<String> actualEventFilterClassNames =
-          new ArrayList<String>(actualGatewayEventFilters.size());
+          new ArrayList<>(actualGatewayEventFilters.size());
       for (GatewayEventFilter filter : actualGatewayEventFilters) {
         actualEventFilterClassNames.add(filter.getClass().getName());
       }
@@ -200,7 +201,7 @@ public class WANCommandUtils implements Serializable {
         List<GatewayTransportFilter> actualGatewayTransportFilters =
             sender.getGatewayTransportFilters();
         List<String> actualTransportFilterClassNames =
-            new ArrayList<String>(actualGatewayTransportFilters.size());
+            new ArrayList<>(actualGatewayTransportFilters.size());
         for (GatewayTransportFilter filter : actualGatewayTransportFilters) {
           actualTransportFilterClassNames.add(filter.getClass().getName());
         }
@@ -221,7 +222,7 @@ public class WANCommandUtils implements Serializable {
     Set<String> senderIds = senders.stream().map(AbstractGatewaySender.class::cast)
         .map(AbstractGatewaySender::getId).collect(Collectors.toSet());
     assertThat(senderIds).doesNotContain(senderId);
-    String queueRegionNameSuffix = null;
+    String queueRegionNameSuffix;
     if (isParallel) {
       queueRegionNameSuffix = ParallelGatewaySenderQueue.QSTRING;
     } else {
@@ -266,7 +267,7 @@ public class WANCommandUtils implements Serializable {
     fact.setStartPort(AvailablePort.AVAILABLE_PORTS_LOWER_BOUND);
     fact.setEndPort(AvailablePort.AVAILABLE_PORTS_UPPER_BOUND);
     fact.setManualStart(true);
-    GatewayReceiver receiver = fact.create();
+    fact.create();
   }
 
   public static void verifyReceiverState(boolean isRunning) {
@@ -289,7 +290,7 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void verifyGatewayReceiverProfile(String expected) {
-    Set<GatewayReceiver> receivers = ((Cache) ClusterStartupRule.getCache()).getGatewayReceivers();
+    Set<GatewayReceiver> receivers = ClusterStartupRule.getCache().getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       CacheServerImpl server = (CacheServerImpl) receiver.getServer();
       CacheServerAdvisor.CacheServerProfile profile =
@@ -302,7 +303,7 @@ public class WANCommandUtils implements Serializable {
       int endPort, String bindAddress, int maxTimeBetweenPings, int socketBufferSize,
       List<String> expectedGatewayTransportFilters, String hostnameForSenders) {
 
-    Set<GatewayReceiver> receivers = ((Cache) ClusterStartupRule.getCache()).getGatewayReceivers();
+    Set<GatewayReceiver> receivers = ClusterStartupRule.getCache().getGatewayReceivers();
     assertEquals("Number of receivers is incorrect", 1, receivers.size());
     for (GatewayReceiver receiver : receivers) {
       assertEquals("isRunning", isRunning, receiver.isRunning());
@@ -321,7 +322,7 @@ public class WANCommandUtils implements Serializable {
         List<GatewayTransportFilter> actualGatewayTransportFilters =
             receiver.getGatewayTransportFilters();
         List<String> actualTransportFilterClassNames =
-            new ArrayList<String>(actualGatewayTransportFilters.size());
+            new ArrayList<>(actualGatewayTransportFilters.size());
         for (GatewayTransportFilter filter : actualGatewayTransportFilters) {
           actualTransportFilterClassNames.add(filter.getClass().getName());
         }
@@ -362,19 +363,12 @@ public class WANCommandUtils implements Serializable {
       final boolean isRunning) {
     GatewayReceiverMXBean gatewayReceiverMXBean = awaitGatewayReceiverMXBeanProxy(member);
     GeodeAwaitility.await("Awaiting GatewayReceiverMXBean.isRunning(" + isRunning + ")")
-        .untilAsserted(() -> {
-          assertThat(gatewayReceiverMXBean.isRunning()).isEqualTo(isRunning);
-        });
+        .untilAsserted(() -> assertThat(gatewayReceiverMXBean.isRunning()).isEqualTo(isRunning));
     assertThat(gatewayReceiverMXBean).isNotNull();
   }
 
   public static InternalDistributedMember getMember(final VM vm) {
-    return vm.invoke(() -> {
-      return ClusterStartupRule.getCache().getMyId();
-    });
+    return vm.invoke(() -> ClusterStartupRule.getCache().getMyId());
   }
 
-  public static SerializableCallableIF<DistributedMember> getMemberIdCallable() {
-    return () -> ClusterStartupRule.getCache().getDistributedSystem().getDistributedMember();
-  }
 }

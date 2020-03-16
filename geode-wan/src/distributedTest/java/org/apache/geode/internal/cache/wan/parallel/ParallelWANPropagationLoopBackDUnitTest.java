@@ -18,8 +18,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -42,9 +40,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     // create receiver on site1 and site2
     createCacheInVMs(lnPort, vm2, vm4, vm5);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     createCacheInVMs(nyPort, vm3, vm6, vm7);
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     // create senders on site1
     vm2.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
@@ -80,18 +78,18 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     startSenderInVMs("ny", vm3, vm6, vm7);
 
 
-    // pause senders on site1
+    // deprecatedPause senders on site1
     vm2.invoke(() -> WANTestBase.pauseSender("ln"));
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
 
-    // pause senders on site2
+    // deprecatedPause senders on site2
     vm3.invoke(() -> WANTestBase.pauseSender("ny"));
     vm6.invoke(() -> WANTestBase.pauseSender("ny"));
     vm7.invoke(() -> WANTestBase.pauseSender("ny"));
 
-    // this is required since sender pause doesn't take effect immediately
-    Wait.pause(1000);
+    // this is required since sender deprecatedPause doesn't take effect immediately
+    deprecatedPause(1000);
 
     // Do 100 puts on site1
     vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));
@@ -181,7 +179,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     vm5.invoke(() -> WANTestBase.startSender("tk"));
 
-    // pause senders on site1 and site3. Site2 has the sender running to pass along events
+    // deprecatedPause senders on site1 and site3. Site2 has the sender running to pass along events
     vm3.invoke(() -> WANTestBase.pauseSender("ln"));
     vm6.invoke(() -> WANTestBase.pauseSender("ln"));
 
@@ -234,9 +232,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(lnPort, vm3, vm6);
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
-    vm3.invoke(() -> WANTestBase.createReceiver());
-    vm4.invoke(() -> WANTestBase.createReceiver());
-    vm5.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
+    vm4.invoke(WANTestBase::createReceiver);
+    vm5.invoke(WANTestBase::createReceiver);
 
     // site1
     vm3.invoke(() -> WANTestBase.createSender("ln1", 2, true, 100, 10, false, false, null, true));
@@ -284,7 +282,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.startSender("tk1"));
     vm5.invoke(() -> WANTestBase.startSender("tk2"));
 
-    // pause senders on all the sites
+    // deprecatedPause senders on all the sites
     vm3.invoke(() -> WANTestBase.pauseSender("ln1"));
     vm3.invoke(() -> WANTestBase.pauseSender("ln2"));
     vm6.invoke(() -> WANTestBase.pauseSender("ln1"));
@@ -298,8 +296,8 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.pauseSender("tk1"));
     vm5.invoke(() -> WANTestBase.pauseSender("tk2"));
 
-    // this is required since sender pause doesn't take effect immediately
-    Wait.pause(1000);
+    // this is required since sender deprecatedPause doesn't take effect immediately
+    deprecatedPause(1000);
 
     // do puts on site1
     vm3.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));

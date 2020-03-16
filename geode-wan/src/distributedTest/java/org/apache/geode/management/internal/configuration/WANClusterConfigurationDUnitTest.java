@@ -15,9 +15,6 @@
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,13 +44,10 @@ public class WANClusterConfigurationDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static final String REPLICATE_REGION = "ReplicateRegion1";
-
   private MemberVM locator;
-  private MemberVM dataMember;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     locator = clusterStartupRule.startLocatorVM(3);
   }
 
@@ -64,8 +58,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
 
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -103,8 +97,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
 
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -139,8 +133,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
 
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -181,8 +175,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
     addIgnoredException("Could not execute \"list gateways\"");
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -214,10 +208,8 @@ public class WANClusterConfigurationDUnitTest {
   }
 
   private void waitTillAllGatewaySendersAreReady() {
-    await().untilAsserted(() -> {
-      gfsh.executeAndAssertThat(CliStrings.LIST_GATEWAY).statusIsSuccess()
-          .hasTableSection("gatewaySenders").hasRowSize(4);
-    });
+    await().untilAsserted(() -> gfsh.executeAndAssertThat(CliStrings.LIST_GATEWAY).statusIsSuccess()
+        .hasTableSection("gatewaySenders").hasRowSize(4));
   }
 
 
@@ -228,8 +220,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
 
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -269,8 +261,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
 
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -308,8 +300,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
 
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -353,8 +345,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
 
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -398,8 +390,8 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("cannot have the same parallel gateway sender id");
 
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(2, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -438,22 +430,20 @@ public class WANClusterConfigurationDUnitTest {
     addIgnoredException("could not get remote locator");
 
     final String gsId = "GatewaySender1";
-    final String batchSize = "1000";
-    final String dispatcherThreads = "5";
-    final String enableConflation = "false";
-    final String manualStart = "false";
-    final String alertThreshold = "1000";
-    final String batchTimeInterval = "20";
-    final String maxQueueMemory = "100";
-    final String orderPolicy = GatewaySender.OrderPolicy.KEY.toString();
-    final String parallel = "true";
-    final String rmDsId = "250";
-    final String socketBufferSize =
-        String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000);
-    final String socketReadTimeout =
-        String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 200);
+    final int batchSize = 1000;
+    final int dispatcherThreads = 5;
+    final boolean enableConflation = false;
+    final boolean manualStart = false;
+    final int alertThreshold = 1000;
+    final int batchTimeInterval = 20;
+    final int maxQueueMemory = 100;
+    final GatewaySender.OrderPolicy orderPolicy = GatewaySender.OrderPolicy.KEY;
+    final boolean parallel = true;
+    final int rmDsId = 250;
+    final int socketBufferSize = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
+    final int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 200;
 
-    dataMember = clusterStartupRule.startServerVM(1, locator.getPort());
+    clusterStartupRule.startServerVM(1, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -470,23 +460,29 @@ public class WANClusterConfigurationDUnitTest {
     // create GatewaySender
     csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ID, gsId);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE, batchSize);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD, alertThreshold);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE,
+        String.valueOf(batchSize));
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD,
+        String.valueOf(alertThreshold));
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL,
-        batchTimeInterval);
+        String.valueOf(batchTimeInterval));
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
-        dispatcherThreads);
+        String.valueOf(dispatcherThreads));
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION,
-        enableConflation);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__MANUALSTART, manualStart);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY, maxQueueMemory);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY, orderPolicy);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, parallel);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, rmDsId);
+        String.valueOf(enableConflation));
+    setDeprecatedManualStart(csb, String.valueOf(manualStart));
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY,
+        String.valueOf(maxQueueMemory));
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY,
+        String.valueOf(orderPolicy));
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
+        String.valueOf(parallel));
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
+        String.valueOf(rmDsId));
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE,
-        socketBufferSize);
+        String.valueOf(socketBufferSize));
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT,
-        socketReadTimeout);
+        String.valueOf(socketReadTimeout));
 
     gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
@@ -498,9 +494,7 @@ public class WANClusterConfigurationDUnitTest {
     // verify GatewayReceiver attributes saved in cluster config
     newMember.invoke(() -> {
       Set<GatewayReceiver> gatewayReceivers = ClusterStartupRule.getCache().getGatewayReceivers();
-      assertNotNull(gatewayReceivers);
-      assertFalse(gatewayReceivers.isEmpty());
-      assertTrue(gatewayReceivers.size() == 1);
+      assertThat(gatewayReceivers).isNotNull().isNotEmpty().hasSize(1);
       for (GatewayReceiver gr : gatewayReceivers) {
         assertThat(gr.isManualStart()).isTrue();
         assertThat(gr.getStartPort()).isEqualTo(10000);
@@ -513,20 +507,29 @@ public class WANClusterConfigurationDUnitTest {
     // verify GatewaySender attributes saved in cluster config
     newMember.invoke(() -> {
       GatewaySender gs = ClusterStartupRule.getCache().getGatewaySender(gsId);
-      assertNotNull(gs);
-      assertTrue(alertThreshold.equals(Integer.toString(gs.getAlertThreshold())));
-      assertTrue(batchSize.equals(Integer.toString(gs.getBatchSize())));
-      assertTrue(dispatcherThreads.equals(Integer.toString(gs.getDispatcherThreads())));
-      assertTrue(enableConflation.equals(Boolean.toString(gs.isBatchConflationEnabled())));
-      assertTrue(manualStart.equals(Boolean.toString(gs.isManualStart())));
-      assertTrue(alertThreshold.equals(Integer.toString(gs.getAlertThreshold())));
-      assertTrue(batchTimeInterval.equals(Integer.toString(gs.getBatchTimeInterval())));
-      assertTrue(maxQueueMemory.equals(Integer.toString(gs.getMaximumQueueMemory())));
-      assertTrue(orderPolicy.equals(gs.getOrderPolicy().toString()));
-      assertTrue(parallel.equals(Boolean.toString(gs.isParallel())));
-      assertTrue(rmDsId.equals(Integer.toString(gs.getRemoteDSId())));
-      assertTrue(socketBufferSize.equals(Integer.toString(gs.getSocketBufferSize())));
-      assertTrue(socketReadTimeout.equals(Integer.toString(gs.getSocketReadTimeout())));
+      assertThat(gs).isNotNull();
+      assertThat(gs.getAlertThreshold()).isEqualTo(alertThreshold);
+      assertThat(gs.getBatchSize()).isEqualTo(batchSize);
+      assertThat(gs.getDispatcherThreads()).isEqualTo(dispatcherThreads);
+      assertThat(gs.isBatchConflationEnabled()).isEqualTo(enableConflation);
+      assertDeprecatedManualStart(manualStart, gs);
+      assertThat(gs.getBatchTimeInterval()).isEqualTo(batchTimeInterval);
+      assertThat(gs.getMaximumQueueMemory()).isEqualTo(maxQueueMemory);
+      assertThat(gs.getOrderPolicy()).isSameAs(orderPolicy);
+      assertThat(gs.isParallel()).isEqualTo(parallel);
+      assertThat(gs.getRemoteDSId()).isEqualTo(rmDsId);
+      assertThat(gs.getSocketBufferSize()).isEqualTo(socketBufferSize);
+      assertThat(gs.getSocketReadTimeout()).isEqualTo(socketReadTimeout);
     });
+  }
+
+  @SuppressWarnings("deprecation")
+  private static void assertDeprecatedManualStart(boolean manualStart, GatewaySender gs) {
+    assertThat(gs.isManualStart()).isEqualTo(manualStart);
+  }
+
+  @SuppressWarnings("deprecation")
+  private static void setDeprecatedManualStart(CommandStringBuilder csb, String manualStart) {
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__MANUALSTART, manualStart);
   }
 }

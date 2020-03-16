@@ -18,7 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_S
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -27,12 +27,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -40,20 +38,12 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
 public class WANLocatorServerDUnitTest extends WANTestBase {
 
   static PoolImpl proxy;
-
-  @Override
-  protected final void postSetUpWANTestBase() throws Exception {
-    final Host host = Host.getHost(0);
-  }
 
   @Test
   public void test_3Locators_2Servers() {
@@ -73,9 +63,9 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANLocatorServerDUnitTest.createReceiver(port1, port2, port3));
     vm5.invoke(() -> WANLocatorServerDUnitTest.createClient(port1, port2, port3));
 
-    vm0.invoke(() -> WANLocatorServerDUnitTest.disconnect());
-    vm1.invoke(() -> WANLocatorServerDUnitTest.disconnect());
-    vm2.invoke(() -> WANLocatorServerDUnitTest.disconnect());
+    vm0.invoke(WANLocatorServerDUnitTest::disconnect);
+    vm1.invoke(WANLocatorServerDUnitTest::disconnect);
+    vm2.invoke(WANLocatorServerDUnitTest::disconnect);
 
     vm0.invoke(() -> WANLocatorServerDUnitTest.createLocator(port1, port2, port3, port1));
 
@@ -83,7 +73,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANLocatorServerDUnitTest.createLocator(port1, port2, port3, port3));
 
-    vm5.invoke(() -> WANLocatorServerDUnitTest.tryNewConnection());
+    vm5.invoke(WANLocatorServerDUnitTest::tryNewConnection);
   }
 
   public static void createLocator(Integer port1, Integer port2, Integer port3,
@@ -99,6 +89,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
     test.getSystem(props);
   }
 
+  @SuppressWarnings("deprecation")
   public static void createReceiver(Integer port1, Integer port2, Integer port3) {
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
@@ -107,7 +98,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
         "localhost[" + port1 + "],localhost[" + port2 + "],localhost[" + port3 + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
+    cache = createCache(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
@@ -119,27 +110,6 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
     } catch (IOException e) {
       fail("Test " + test.getName() + " failed to start GatewayReceiver on port " + port, e);
     }
-  }
-
-  public static void createServer(Integer port1, Integer port2, Integer port3) {
-    WANTestBase test = new WANTestBase();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS,
-        "localhost[" + port1 + "],localhost[" + port2 + "],localhost[" + port3 + "]");
-
-    InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
-    CacheServer server = cache.addCacheServer();
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server.setPort(port);
-    try {
-      server.start();
-    } catch (IOException e) {
-      fail("Test " + test.getName() + " failed to start CacheServer on port " + port, e);
-    }
-    LogWriterUtils.getLogWriter()
-        .info("Server Started on port : " + port + " : server : " + server);
   }
 
   public static void disconnect() {
@@ -169,11 +139,10 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   }
 
   public static void tryNewConnection() {
-    Connection con1 = null;
     try {
-      con1 = proxy.acquireConnection();
+      proxy.acquireConnection();
     } catch (Exception e) {
-      Assert.fail("No Exception expected", e);
+      fail("No Exception expected", e);
     }
 
   }

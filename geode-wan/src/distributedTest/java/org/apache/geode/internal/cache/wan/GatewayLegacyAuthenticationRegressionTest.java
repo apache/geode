@@ -40,7 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
@@ -53,7 +52,6 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.Authenticator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -195,6 +193,7 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
     return sender != null && sender.isRunning();
   }
 
+  @SuppressWarnings("deprecation")
   private Properties createLocatorConfig(int systemId, int locatorPort, int remoteLocatorPort) {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
@@ -211,6 +210,7 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
     return config;
   }
 
+  @SuppressWarnings("deprecation")
   private Properties createServerConfig(int locatorPort) {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
@@ -256,6 +256,7 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
     return receiverFactory;
   }
 
+  @SuppressWarnings("deprecation")
   private GatewaySenderFactory createGatewaySenderFactory(File[] dirs, String diskStoreName) {
     InternalGatewaySenderFactory senderFactory =
         (InternalGatewaySenderFactory) cacheRule.getCache().createGatewaySenderFactory();
@@ -295,14 +296,16 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
     }
   }
 
-  public static class TestPeerAuthenticator implements Authenticator {
+  @SuppressWarnings("deprecation")
+  public static class TestPeerAuthenticator implements org.apache.geode.security.Authenticator {
 
-    public static Authenticator create() {
+    public static org.apache.geode.security.Authenticator create() {
       return new TestPeerAuthenticator();
     }
 
     @Override
-    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)
+    public void init(Properties securityProps, org.apache.geode.LogWriter systemLogger,
+        org.apache.geode.LogWriter securityLogger)
         throws AuthenticationFailedException {
       // nothing
     }
@@ -333,8 +336,10 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
       return new TestPeerAuthInitialize();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void init(LogWriter systemLogger, LogWriter securityLogger)
+    public void init(org.apache.geode.LogWriter systemLogger,
+        org.apache.geode.LogWriter securityLogger)
         throws AuthenticationFailedException {
       // nothing
     }
@@ -366,14 +371,17 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
     }
   }
 
-  public static class TestClientOrReceiverAuthenticator implements Authenticator {
+  @SuppressWarnings("deprecation")
+  public static class TestClientOrReceiverAuthenticator
+      implements org.apache.geode.security.Authenticator {
 
-    public static Authenticator create() {
+    public static org.apache.geode.security.Authenticator create() {
       return new TestClientOrReceiverAuthenticator();
     }
 
     @Override
-    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)
+    public void init(Properties securityProps, org.apache.geode.LogWriter systemLogger,
+        org.apache.geode.LogWriter securityLogger)
         throws AuthenticationFailedException {
       // nothing
     }

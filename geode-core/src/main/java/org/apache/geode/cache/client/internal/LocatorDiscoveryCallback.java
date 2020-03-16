@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
@@ -26,16 +27,16 @@ public interface LocatorDiscoveryCallback {
   /**
    * Called to indicate that new locators have been discovered
    *
-   * @param locators a list of InetSocketAddresses of new locators that have been discovered.
+   * @param locators a list of {@link InetSocketAddress} of new locators that have been discovered.
    */
-  void locatorsDiscovered(List locators);
+  void locatorsDiscovered(List<InetSocketAddress> locators);
 
   /**
    * Called to indicated that locators have been removed from the list of available locators.
    *
-   * @param locators a list of InetSocketAddresses of locators that have been removed
+   * @param locators a list of {@link InetSocketAddress} of locators that have been removed
    */
-  void locatorsRemoved(List locators);
+  void locatorsRemoved(List<InetSocketAddress> locators);
 
 
 }

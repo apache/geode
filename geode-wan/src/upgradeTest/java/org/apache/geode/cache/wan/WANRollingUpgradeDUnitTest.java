@@ -70,13 +70,14 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.VersionManager;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings("deprecation")
 @Category(WanTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
+public abstract class WANRollingUpgradeDUnitTest
+    extends org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase {
   @Parameterized.Parameters(name = "from_v{0}")
-  public static Collection data() {
+  public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
@@ -152,7 +153,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   VM rollLocatorToCurrent(VM rollLocator, int port, int distributedSystemId,
       String locators, String remoteLocators, boolean enableClusterConfiguration) {
-    rollLocator.invoke(() -> stopLocator());
+    rollLocator.invoke(this::stopLocator);
     VM newLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, rollLocator.getId());
     newLocator.invoke(() -> startLocator(port, distributedSystemId, locators, remoteLocators,
         enableClusterConfiguration));
@@ -161,7 +162,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   VM rollStartAndConfigureServerToCurrent(VM oldServer, String locators,
       int distributedSystem, String regionName, String senderId, int messageSyncInterval) {
-    oldServer.invoke(() -> closeCache());
+    oldServer.invoke(JUnit4CacheTestCase::closeCache);
     VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
     startAndConfigureServers(rollServer, null, locators, distributedSystem, regionName, senderId,
         messageSyncInterval);
@@ -179,17 +180,17 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
     // Start and configure server 1
     server1.invoke(() -> createCache(locators));
-    server1.invoke(() -> addCacheServer());
+    server1.invoke(this::addCacheServer);
     server1.invoke(() -> createGatewaySender(senderId, distributedSystem, messageSyncInterval));
-    server1.invoke(() -> createGatewayReceiver());
+    server1.invoke(this::createGatewayReceiver);
     server1.invoke(() -> createPartitionedRegion(regionName, senderId));
 
     // Start and configure server 2 if necessary
     if (server2 != null) {
       server2.invoke(() -> createCache(locators));
-      server2.invoke(() -> addCacheServer());
+      server2.invoke(this::addCacheServer);
       server2.invoke(() -> createGatewaySender(senderId, distributedSystem, messageSyncInterval));
-      server2.invoke(() -> createGatewayReceiver());
+      server2.invoke(this::createGatewayReceiver);
       server2.invoke(() -> createPartitionedRegion(regionName, senderId));
     }
   }
@@ -227,7 +228,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     assertEquals(numPuts, localServer1QueueSize + localServer2QueueSize);
 
     // Stop one sender
-    localServer1.invoke(() -> closeCache());
+    localServer1.invoke(JUnit4CacheTestCase::closeCache);
 
     // Wait for the other sender's queue to be empty
     localServer2.invoke(() -> waitForQueueRegionToCertainSize(senderId, 0, false));
@@ -288,10 +289,10 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   void resetAllMessageSyncIntervals(VM site1Server1, VM site1Server2, VM site2Server1,
       VM site2Server2) {
-    site1Server1.invoke(() -> resetMessageSyncInterval());
-    site1Server2.invoke(() -> resetMessageSyncInterval());
-    site2Server1.invoke(() -> resetMessageSyncInterval());
-    site2Server2.invoke(() -> resetMessageSyncInterval());
+    site1Server1.invoke(this::resetMessageSyncInterval);
+    site1Server2.invoke(this::resetMessageSyncInterval);
+    site2Server1.invoke(this::resetMessageSyncInterval);
+    site2Server2.invoke(this::resetMessageSyncInterval);
   }
 
   private void resetMessageSyncInterval() {
@@ -304,16 +305,16 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void createPartitionedRegion(String regionName, String gatewaySenderId) {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(1);
     paf.setTotalNumBuckets(10);
     getCache().createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
-        .addCacheListener(new EventCountCacheListener()).addGatewaySenderId(gatewaySenderId)
+        .addCacheListener(new EventCountCacheListener<>()).addGatewaySenderId(gatewaySenderId)
         .setPartitionAttributes(paf.create()).create(regionName);
   }
 
   protected void doPuts(String regionName, int numPuts) {
-    Region region = getCache().getRegion(regionName);
+    Region<Integer, Integer> region = getCache().getRegion(regionName);
     for (int i = 0; i < numPuts; i++) {
       region.put(i, i);
     }
@@ -377,54 +378,54 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
         (AbstractGatewaySender) getCache().getGatewaySender(gatewaySenderId);
     ConcurrentParallelGatewaySenderQueue prq =
         (ConcurrentParallelGatewaySenderQueue) ags.getQueues().iterator().next();
-    Region region = prq.getRegion();
-    Region localDataSet = primaryOnly ? PartitionRegionHelper.getLocalPrimaryData(region)
+    Region<?, ?> region = prq.getRegion();
+    Region<?, ?> localDataSet = primaryOnly ? PartitionRegionHelper.getLocalPrimaryData(region)
         : PartitionRegionHelper.getLocalData(region);
     return localDataSet.size();
   }
 
   protected Integer getEventsReceived(String regionName) {
-    Region region = getCache().getRegion(regionName);
-    EventCountCacheListener cl =
-        (EventCountCacheListener) region.getAttributes().getCacheListener();
+    Region<?, ?> region = getCache().getRegion(regionName);
+    EventCountCacheListener<?, ?> cl =
+        (EventCountCacheListener<?, ?>) region.getAttributes().getCacheListener();
     return cl.getEventsReceived();
   }
 
   protected void clearEventsReceived(String regionName) {
-    Region region = getCache().getRegion(regionName);
-    EventCountCacheListener cl =
-        (EventCountCacheListener) region.getAttributes().getCacheListener();
+    Region<?, ?> region = getCache().getRegion(regionName);
+    EventCountCacheListener<?, ?> cl =
+        (EventCountCacheListener<?, ?>) region.getAttributes().getCacheListener();
     cl.clearEventsReceived();
   }
 
-  static class EventCountCacheListener extends CacheListenerAdapter {
+  static class EventCountCacheListener<K, V> extends CacheListenerAdapter<K, V> {
 
     AtomicInteger eventsReceived = new AtomicInteger();
 
     @Override
-    public void afterCreate(EntryEvent event) {
+    public void afterCreate(EntryEvent<K, V> event) {
       process(event);
     }
 
     @Override
-    public void afterUpdate(EntryEvent event) {
+    public void afterUpdate(EntryEvent<K, V> event) {
       process(event);
     }
 
-    void process(EntryEvent event) {
+    void process(@SuppressWarnings("unused") EntryEvent<K, V> event) {
       incrementEventsReceived();
     }
 
     int incrementEventsReceived() {
-      return this.eventsReceived.incrementAndGet();
+      return eventsReceived.incrementAndGet();
     }
 
     int getEventsReceived() {
-      return this.eventsReceived.get();
+      return eventsReceived.get();
     }
 
     void clearEventsReceived() {
-      this.eventsReceived.set(0);
+      eventsReceived.set(0);
     }
   }
 }

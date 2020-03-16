@@ -66,7 +66,6 @@ import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -92,12 +91,12 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       new DistributedRestoreSystemProperties();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     addIgnoredException("Broken pipe||Unexpected IOException");
   }
 
   @Test(timeout = 300_000)
-  public void testStopOneConcurrentGatewaySenderWithSSL() throws Exception {
+  public void testStopOneConcurrentGatewaySenderWithSSL() {
     Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
@@ -180,7 +179,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Normal scenario in which the sender is paused in between.
    */
   @Test
-  public void testParallelPropagationSenderPause() throws Exception {
+  public void testParallelPropagationSenderPause() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -193,7 +192,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // FIRST RUN: now, the senders are started. So, start the puts
     vm4.invoke(() -> doPuts(getUniqueName() + "_PR", 100));
 
-    // now, pause all of the senders
+    // now, deprecatedPause all of the senders
     vm4.invoke(() -> pauseSender("ln"));
     vm5.invoke(() -> pauseSender("ln"));
     vm6.invoke(() -> pauseSender("ln"));
@@ -223,9 +222,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     int numPuts = 1000;
     // now, the senders are started. So, start the puts
-    AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", numPuts));
+    AsyncInvocation<?> async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", numPuts));
 
-    // now, pause all of the senders
+    // now, deprecatedPause all of the senders
     vm4.invoke(() -> pauseSender("ln"));
     vm5.invoke(() -> pauseSender("ln"));
     vm6.invoke(() -> pauseSender("ln"));
@@ -237,7 +236,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm6.invoke(() -> resumeSender("ln"));
     vm7.invoke(() -> resumeSender("ln"));
 
-    async.await(2, TimeUnit.MINUTES);
+    async.await();
     validateParallelSenderQueueAllBucketsDrained();
 
     // find the region size on remote vm
@@ -246,11 +245,12 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   /**
    * Negative scenario in which a sender that is stopped (and not paused) is resumed. Expected:
-   * resume is only valid for pause. If a sender which is stopped is resumed, it will not be started
+   * resume is only valid for deprecatedPause. If a sender which is stopped is resumed, it will not
+   * be started
    * again.
    */
   @Test
-  public void testParallelPropagationSenderResumeNegativeScenario() throws Exception {
+  public void testParallelPropagationSenderResumeNegativeScenario() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -305,7 +305,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Normal scenario in which a sender is stopped.
    */
   @Test
-  public void testParallelPropagationSenderStop() throws Exception {
+  public void testParallelPropagationSenderStop() {
     addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -334,7 +334,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Normal scenario in which a sender is stopped and then started again.
    */
   @Test
-  public void testParallelPropagationSenderStartAfterStop() throws Exception {
+  public void testParallelPropagationSenderStartAfterStop() {
     addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -452,21 +452,21 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> validateRegionSizeRemainsSame(getUniqueName() + "_PR", 200));
 
     // SECOND RUN: start async puts on region
-    ArrayList<Integer> vm4List = null;
-    ArrayList<Integer> vm5List = null;
-    ArrayList<Integer> vm6List = null;
-    ArrayList<Integer> vm7List = null;
+    ArrayList<Integer> vm4List;
+    ArrayList<Integer> vm5List;
+    ArrayList<Integer> vm6List;
+    ArrayList<Integer> vm7List;
     boolean foundEventsDroppedDueToPrimarySenderNotRunning = false;
     int count = 0;
 
     do {
       stopSenders();
-      AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 5000));
+      AsyncInvocation<?> async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 5000));
 
       // when puts are happening by another thread, start the senders
       startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
-      async.join();
+      async.await();
       vm4List =
           (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
       vm5List =
@@ -479,7 +479,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
         foundEventsDroppedDueToPrimarySenderNotRunning = true;
       }
       count++;
-    } while (foundEventsDroppedDueToPrimarySenderNotRunning == false && count < 5);
+    } while (!foundEventsDroppedDueToPrimarySenderNotRunning && count < 5);
     assertThat(foundEventsDroppedDueToPrimarySenderNotRunning);
 
     // verify all the buckets on all the sender nodes are drained
@@ -495,7 +495,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Normal scenario in which a sender is stopped and then started again on accessor node.
    */
   @Test
-  public void testParallelPropagationSenderStartAfterStopOnAccessorNode() throws Exception {
+  public void testParallelPropagationSenderStartAfterStopOnAccessorNode() {
     addIgnoredException("Broken pipe");
     addIgnoredException("Connection reset");
     addIgnoredException("Unexpected IOException");
@@ -540,7 +540,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   }
 
   /**
-   * Normal scenario in which a combinations of start, pause, resume operations is tested
+   * Normal scenario in which a combinations of start, deprecatedPause, resume operations is tested
    */
   @Test
   public void testStartPauseResumeParallelGatewaySender() throws Exception {
@@ -572,7 +572,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm6.invoke(() -> verifySenderPausedState("ln"));
     vm7.invoke(() -> verifySenderPausedState("ln"));
 
-    AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 1000));
+    AsyncInvocation<?> async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 1000));
 
     vm4.invoke(() -> resumeSender("ln"));
     vm5.invoke(() -> resumeSender("ln"));
@@ -784,7 +784,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> createCache(nyPort));
     vm2.invoke(() -> createPartitionedRegion(regionName, null, 0, 100, isOffHeap()));
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     validateRegionSizes(regionName, numPuts, vm2);
 
@@ -793,15 +793,13 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       GeodeAwaitility.await()
           .untilAsserted(() -> assertThat(System.getProperty(MAX_MESSAGE_SIZE_PROPERTY))
               .isEqualTo(String.valueOf(1024 * 1024)));
-      GeodeAwaitility.await().untilAsserted(() -> {
-        assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0);
-      });
+      GeodeAwaitility.await().untilAsserted(
+          () -> assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0));
     });
   }
 
   @Test
-  public void testParallelGatewaySenderConcurrentPutClearNoOffheapOrphans()
-      throws Exception {
+  public void testParallelGatewaySenderConcurrentPutClearNoOffheapOrphans() {
     MemberVM locator = clusterStartupRule.startLocatorVM(1, new Properties());
     Properties properties = new Properties();
     properties.put(OFF_HEAP_MEMORY_SIZE_NAME, "100");
@@ -810,15 +808,17 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     final String gatewaySenderId = "ln";
 
     server.invoke(() -> {
-      IgnoredException ie = addIgnoredException("could not get remote locator");
+      addIgnoredException("could not get remote locator");
       InternalCache cache = ClusterStartupRule.getCache();
       GatewaySender sender =
           cache.createGatewaySenderFactory().setParallel(true).create(gatewaySenderId, 1);
-      Region userRegion = cache.createRegionFactory(RegionShortcut.PARTITION).setOffHeap(true)
-          .addGatewaySenderId("ln").create(regionName);
+      Region<String, String> userRegion =
+          cache.<String, String>createRegionFactory(RegionShortcut.PARTITION).setOffHeap(true)
+              .addGatewaySenderId("ln").create(regionName);
       PartitionedRegion shadowRegion = (PartitionedRegion) ((AbstractGatewaySender) sender)
           .getEventProcessor().getQueue().getRegion();
-      CacheWriter mockCacheWriter = mock(CacheWriter.class);
+      @SuppressWarnings("unchecked")
+      CacheWriter<String, String> mockCacheWriter = mock(CacheWriter.class);
       CountDownLatch cacheWriterLatch = new CountDownLatch(1);
       CountDownLatch shadowRegionClearLatch = new CountDownLatch(1);
 
@@ -856,23 +856,20 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       // above.
       callables.add(Executors.callable(() -> {
         try {
-          OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
-            @Override
-            public void run() {
-              // Wait for the cache writer to be invoked to release this countdown latch.
-              // This guarantees that the region entry will contain a Token.REMOVED_PHASE_1.
-              try {
-                cacheWriterLatch.await();
-              } catch (InterruptedException e) {
-                throw new TestException(
-                    "Thread was interrupted while waiting for mocked cache writer to be invoked");
-              }
-
-              clearShadowBucketRegions(shadowRegion);
-
-              // Signal to the cache writer that the clear is complete and the put can continue.
-              shadowRegionClearLatch.countDown();
+          OffHeapRegionEntryHelper.doWithOffHeapClear(() -> {
+            // Wait for the cache writer to be invoked to release this countdown latch.
+            // This guarantees that the region entry will contain a Token.REMOVED_PHASE_1.
+            try {
+              cacheWriterLatch.await();
+            } catch (InterruptedException e) {
+              throw new TestException(
+                  "Thread was interrupted while waiting for mocked cache writer to be invoked");
             }
+
+            clearShadowBucketRegions(shadowRegion);
+
+            // Signal to the cache writer that the clear is complete and the put can continue.
+            shadowRegionClearLatch.countDown();
           });
         } catch (Exception ex) {
           throw new RuntimeException(ex);
@@ -900,12 +897,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   private void clearShadowBucketRegions(PartitionedRegion shadowRegion) {
     PartitionedRegionDataStore.BucketVisitor bucketVisitor =
-        new PartitionedRegionDataStore.BucketVisitor() {
-          @Override
-          public void visit(Integer bucketId, Region r) {
-            ((BucketRegion) r).clearEntries(null);
-          }
-        };
+        (bucketId, r) -> ((BucketRegion) r).clearEntries(null);
 
     shadowRegion.getDataStore().visitBuckets(bucketVisitor);
   }

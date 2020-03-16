@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -51,10 +51,10 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
    *
    */
   @Test
-  public void testReplicatedSerialPropagation_withoutRemoteSite() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+  public void testReplicatedSerialPropagation_withoutRemoteSite() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -87,8 +87,8 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     vm3.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
@@ -96,9 +96,9 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagation() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testReplicatedSerialPropagation() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -134,12 +134,12 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
 
   @Test
-  public void testReplicatedSerialPropagationWithLocalSiteClosedAndRebuilt() throws Exception {
+  public void testReplicatedSerialPropagationWithLocalSiteClosedAndRebuilt() {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Unexpected IOException");
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -170,14 +170,14 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 1000));
 
     // ---------close local site and build again-----------------------------------------
-    vm4.invoke(() -> WANTestBase.killSender());
-    vm5.invoke(() -> WANTestBase.killSender());
-    vm6.invoke(() -> WANTestBase.killSender());
-    vm7.invoke(() -> WANTestBase.killSender());
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm6.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm7.invoke((SerializableRunnableIF) WANTestBase::killSender);
 
     Integer regionSize =
-        (Integer) vm2.invoke(() -> WANTestBase.getRegionSize(getUniqueName() + "_RR"));
-    LogWriterUtils.getLogWriter().info("Region size on remote is: " + regionSize);
+        vm2.invoke(() -> WANTestBase.getRegionSize(getUniqueName() + "_RR"));
+    getLogWriter().info("Region size on remote is: " + regionSize);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -217,10 +217,11 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
    * the two regions is destroyed in the middle.
    *
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithLocalRegionDestroy() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
@@ -270,7 +271,7 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_2", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // do puts in RR_2 in main thread
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 500));
@@ -278,7 +279,7 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_2"));
 
     try {
-      inv1.join();
+      inv1.await();
     } catch (InterruptedException e) {
       e.printStackTrace();
       fail();
@@ -295,10 +296,11 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.
    *
    */
+  @SuppressWarnings("deprecation")
   @Test
-  public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testReplicatedSerialPropagationWithRemoteRegionDestroy() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
@@ -340,13 +342,13 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 100));
     // destroy RR_1 in remote site
     vm2.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_1"));
 
     try {
-      inv1.join();
+      inv1.await();
     } catch (InterruptedException e) {
       e.printStackTrace();
       fail();
@@ -366,10 +368,11 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
    * destroyed in the middle on remote site.
    *
    */
+  @SuppressWarnings("deprecation")
   @Test
-  public void testReplicatedSerialPropagationWithRemoteRegionDestroy2() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testReplicatedSerialPropagationWithRemoteRegionDestroy2() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
@@ -429,11 +432,11 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 1000));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
 
     try {
-      inv1.join();
+      inv1.await();
     } catch (InterruptedException e) {
       e.printStackTrace();
       fail();
@@ -444,11 +447,12 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
   }
 
+  @SuppressWarnings("deprecation")
   @Test
-  public void testReplicatedSerialPropagationWithRemoteRegionDestroy3() throws Exception {
+  public void testReplicatedSerialPropagationWithRemoteRegionDestroy3() {
     final String senderId = "ln";
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -502,17 +506,17 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // start puts in RR_2 in another thread
-    AsyncInvocation inv2 =
+    AsyncInvocation<?> inv2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 1000));
     // destroy RR_2 on remote site in the middle
     vm2.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_2"));
 
     try {
-      inv1.join();
-      inv2.join();
+      inv1.await();
+      inv2.await();
     } catch (InterruptedException e) {
       e.printStackTrace();
       fail();

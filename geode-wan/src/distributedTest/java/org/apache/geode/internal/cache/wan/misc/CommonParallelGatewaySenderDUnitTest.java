@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.util.Set;
 
@@ -33,20 +32,18 @@ import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
 public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
 
   @Test
-  public void testSameSenderWithNonColocatedRegions() throws Exception {
+  public void testSameSenderWithNonColocatedRegions() {
     IgnoredException.addIgnoredException("cannot have the same parallel");
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
     vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR1", "ln", 1, 100,
@@ -58,7 +55,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     } catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException) || !(e.getCause().getMessage()
           .contains("cannot have the same parallel gateway sender id"))) {
-        Assert.fail("Expected IllegalStateException", e);
+        fail("Expected IllegalStateException", e);
       }
     }
   }
@@ -66,18 +63,12 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Simple scenario. Two regions attach the same PGS
    *
-   * @throws Exception Below test is disabled intentionally 1> In this release 8.0, for rolling
-   *         upgrade support queue name is changed to old style 2>Common parallel sender for
-   *         different non colocated regions is not supported in 8.0 so no need to bother about
-   *         ParallelGatewaySenderQueue#convertPathToName 3> We have to enabled it in next release
-   *         4> Version based rolling upgrade support should be provided. based on the version of
-   *         the gemfire QSTRING should be used between 8.0 and version prior to 8.0
    */
   @Test
   @Ignore("TODO")
-  public void testParallelPropagation() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testParallelPropagation() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -151,9 +142,9 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   @Ignore("TODO")
-  public void testParallelPropagationPersistenceEnabled() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testParallelPropagationPersistenceEnabled() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -233,9 +224,9 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
   @Ignore("TODO")
   public void testPRWithGatewaySenderPersistenceEnabled_Restart() {
     // create locator on local site
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     // create locator on remote site
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
@@ -245,16 +236,16 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     // create senders with disk store
-    String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String diskStore1 = vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
-    String diskStore2 = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String diskStore2 = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
-    String diskStore3 = (String) vm6.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String diskStore3 = vm6.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
-    String diskStore4 = (String) vm7.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String diskStore4 = vm7.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
 
-    LogWriterUtils.getLogWriter()
+    getLogWriter()
         .info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
 
     // create PR on remote site
@@ -299,7 +290,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    // pause the senders
+    // deprecatedPause the senders
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
     vm6.invoke(() -> WANTestBase.pauseSender("ln"));
@@ -308,17 +299,17 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     // start puts in region on local site
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "PR1", 3000));
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "PR2", 5000));
-    LogWriterUtils.getLogWriter().info("Completed puts in the region");
+    getLogWriter().info("Completed puts in the region");
 
     // --------------------close and rebuild local site
     // -------------------------------------------------
     // kill the senders
-    vm4.invoke(() -> WANTestBase.killSender());
-    vm5.invoke(() -> WANTestBase.killSender());
-    vm6.invoke(() -> WANTestBase.killSender());
-    vm7.invoke(() -> WANTestBase.killSender());
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm6.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm7.invoke((SerializableRunnableIF) WANTestBase::killSender);
 
-    LogWriterUtils.getLogWriter().info("Killed all the senders.");
+    getLogWriter().info("Killed all the senders.");
 
     // restart the vm
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
@@ -326,7 +317,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createCache(lnPort));
     vm7.invoke(() -> WANTestBase.createCache(lnPort));
 
-    LogWriterUtils.getLogWriter().info("Created back the cache");
+    getLogWriter().info("Created back the cache");
 
     // create senders with disk store
     vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2, true, 100, 10, false, true,
@@ -338,25 +329,24 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2, true, 100, 10, false, true,
         null, diskStore4, true));
 
-    LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
+    getLogWriter().info("Created the senders back from the disk store.");
     // create PR on local site
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase
+    AsyncInvocation<?> inv1 = vm4.invokeAsync(() -> WANTestBase
         .createPartitionedRegion(getTestMethodName() + "PR1", "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase
+    AsyncInvocation<?> inv2 = vm5.invokeAsync(() -> WANTestBase
         .createPartitionedRegion(getTestMethodName() + "PR1", "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase
+    AsyncInvocation<?> inv3 = vm6.invokeAsync(() -> WANTestBase
         .createPartitionedRegion(getTestMethodName() + "PR1", "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv4 = vm7.invokeAsync(() -> WANTestBase
+    AsyncInvocation<?> inv4 = vm7.invokeAsync(() -> WANTestBase
         .createPartitionedRegion(getTestMethodName() + "PR1", "ln", 1, 100, isOffHeap()));
 
     try {
-      inv1.join();
-      inv2.join();
-      inv3.join();
-      inv4.join();
+      inv1.await();
+      inv2.await();
+      inv3.await();
+      inv4.await();
     } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
+      fail(", e");
     }
 
     inv1 = vm4.invokeAsync(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "PR2",
@@ -369,29 +359,28 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
         "ln", 1, 100, isOffHeap()));
 
     try {
-      inv1.join();
-      inv2.join();
-      inv3.join();
-      inv4.join();
+      inv1.await();
+      inv2.await();
+      inv3.await();
+      inv4.await();
     } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
+      fail("", e);
     }
 
-    LogWriterUtils.getLogWriter().info("Created back the partitioned regions");
+    getLogWriter().info("Created back the partitioned regions");
 
     // start the senders in async mode. This will ensure that the
     // node of shadow PR that went down last will come up first
     startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
-    LogWriterUtils.getLogWriter().info("Waiting for senders running.");
+    getLogWriter().info("Waiting for senders running.");
     // wait for senders running
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    LogWriterUtils.getLogWriter().info("All the senders are now running...");
+    getLogWriter().info("All the senders are now running...");
 
     // ----------------------------------------------------------------------------------------------------
 
@@ -415,30 +404,33 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
         (ConcurrentParallelGatewaySenderQueue) ((AbstractGatewaySender) sender).getQueues()
             .toArray(new RegionQueue[1])[0];
 
-    Set<PartitionedRegion> shadowPRs = (Set<PartitionedRegion>) regionQueue.getRegions();
+    Set<PartitionedRegion> shadowPRs = regionQueue.getRegions();
 
     for (PartitionedRegion shadowPR : shadowPRs) {
       Set<BucketRegion> buckets = shadowPR.getDataStore().getAllLocalBucketRegions();
 
       for (final BucketRegion bucket : buckets) {
-        WaitCriterion wc = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            if (bucket.keySet().size() == 0) {
-              getLogWriter().info("Bucket " + bucket.getId() + " is empty");
-              return true;
-            }
-            return false;
-          }
+        @SuppressWarnings("deprecation")
+        org.apache.geode.test.dunit.WaitCriterion wc =
+            new org.apache.geode.test.dunit.WaitCriterion() {
+              @Override
+              public boolean done() {
+                if (bucket.keySet().size() == 0) {
+                  getLogWriter().info("Bucket " + bucket.getId() + " is empty");
+                  return true;
+                }
+                return false;
+              }
 
-          @Override
-          public String description() {
-            return "Expected bucket entries for bucket: " + bucket.getId()
-                + " is: 0 but actual entries: " + bucket.keySet().size()
-                + " This bucket isPrimary: " + bucket.getBucketAdvisor().isPrimary() + " KEYSET: "
-                + bucket.keySet();
-          }
-        };
+              @Override
+              public String description() {
+                return "Expected bucket entries for bucket: " + bucket.getId()
+                    + " is: 0 but actual entries: " + bucket.keySet().size()
+                    + " This bucket isPrimary: " + bucket.getBucketAdvisor().isPrimary()
+                    + " KEYSET: "
+                    + bucket.keySet();
+              }
+            };
         GeodeAwaitility.await().untilAsserted(wc);
 
       } // for loop ends
@@ -456,14 +448,12 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm2.invoke(
         () -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 10,
             isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     vm2.invoke(() -> WANTestBase.addListenerOnRegion(getTestMethodName() + "_PR"));
 
     // Create sender with batchSize disabled
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
-    StringBuilder builder = new StringBuilder();
     String senderId = "ln";
-    builder.append(senderId);
     vm4.invoke(() -> {
       InternalGatewaySenderFactory gateway =
           (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
@@ -478,7 +468,9 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
 
     // Create region with the sender ids
     vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR",
-        builder.toString(), 0, 10, isOffHeap()));
+        senderId
+        // Create region with the sender ids
+        , 0, 10, isOffHeap()));
 
     // Do puts
     int numPuts = 100;

@@ -34,9 +34,7 @@ import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -44,7 +42,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class SerialWANPropagationDUnitTest extends WANTestBase {
 
   @Override
-  public final void postSetUpWANTestBase() throws Exception {
+  public final void postSetUpWANTestBase() {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection refused");
@@ -57,8 +55,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    */
   @Ignore("TODO: test is disabled because of #52190")
   @Test
-  public void testReplicatedSerialPropagation_withoutRemoteLocator() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+  public void testReplicatedSerialPropagation_withoutRemoteLocator() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -75,12 +73,12 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 1000));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm2.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
@@ -98,10 +96,10 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagation_withoutRemoteSite() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+  public void testReplicatedSerialPropagation_withoutRemoteSite() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -128,8 +126,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
 
@@ -141,10 +139,10 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * Added to reproduce the bug #46595
    */
   @Test
-  public void testReplicatedSerialPropagationWithoutRemoteSite_defect46595() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+  public void testReplicatedSerialPropagationWithoutRemoteSite_defect46595() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -166,8 +164,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
 
-    // pause for some time before starting up the remote site
-    Wait.pause(10000);
+    // deprecatedPause for some time before starting up the remote site
+    deprecatedPause(10000);
 
     createCacheInVMs(nyPort, vm2, vm3);
 
@@ -176,8 +174,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
 
@@ -186,9 +184,9 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagation() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testReplicatedSerialPropagation() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -217,9 +215,9 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagationWithLocalSiteClosedAndRebuilt() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testReplicatedSerialPropagationWithLocalSiteClosedAndRebuilt() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -244,14 +242,14 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 1000));
 
     // ---------close local site and build again-----------------------------------------
-    vm4.invoke(() -> WANTestBase.killSender());
-    vm5.invoke(() -> WANTestBase.killSender());
-    vm6.invoke(() -> WANTestBase.killSender());
-    vm7.invoke(() -> WANTestBase.killSender());
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm6.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm7.invoke((SerializableRunnableIF) WANTestBase::killSender);
 
     Integer regionSize =
-        (Integer) vm2.invoke(() -> WANTestBase.getRegionSize(getUniqueName() + "_RR"));
-    LogWriterUtils.getLogWriter().info("Region size on remote is: " + regionSize);
+        vm2.invoke(() -> WANTestBase.getRegionSize(getUniqueName() + "_RR"));
+    getLogWriter().info("Region size on remote is: " + regionSize);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -284,10 +282,11 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * Two regions configured with the same sender and put is in progress on both the regions. One of
    * the two regions is destroyed in the middle.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithLocalRegionDestroy() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
@@ -336,14 +335,14 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_2", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // do puts in RR_2 in main thread
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 500));
     // destroy RR_2 after above puts are complete
     vm4.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_2"));
 
-    inv1.join();
+    inv1.await();
 
     // vm4.invoke(() -> WANTestBase.verifyQueueSize( "ln", 0 ));
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR_1", 1000));
@@ -354,10 +353,11 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * 1 region and sender configured on local site and 1 region and a receiver configured on remote
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
@@ -398,12 +398,12 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // destroy RR_1 in remote site
     vm2.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_1"));
 
-    inv1.join();
+    inv1.await();
 
     // verify that all is well in local site. All the events should be present in local region
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR_1", 1000));
@@ -419,10 +419,11 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * regions. Same two regions are configured on remote site as well. One of the two regions is
    * destroyed in the middle on remote site.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy2() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
@@ -480,20 +481,21 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 1000));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
 
-    inv1.join();
+    inv1.await();
 
     // though region RR_2 is destroyed, RR_1 should still get all the events put in it
     // in local site
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR_1", 1000));
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy3() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
 
@@ -545,17 +547,16 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // start puts in RR_2 in another thread
-    AsyncInvocation inv2 =
+    AsyncInvocation<?> inv2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 1000));
     // destroy RR_2 on remote site in the middle
     vm2.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_2"));
 
-    inv1.join();
-    inv2.join();
-
+    inv1.await();
+    inv2.await();
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR_1", 1000));
 
@@ -593,15 +594,16 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * remote site. Puts to the local region are in progress. Receiver on remote site is stopped in
    * the middle by closing remote site cache.
    */
+  @SuppressWarnings("deprecation")
   @Category({WanTest.class})
   @Test
   public void testReplicatedSerialPropagationWithRemoteReceiverStopped() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -629,26 +631,27 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 500));
     // close cache in remote site. This will automatically kill the remote receivers.
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
 
-    inv1.join();
+    inv1.await();
 
     // verify that all is well in local site
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR_1", 500));
     vm4.invoke(() -> WANTestBase.verifyRegionQueueNotEmpty("ln"));
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithRemoteReceiverRestarted() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -671,14 +674,14 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
-    Wait.pause(2000);
-    vm2.invoke(() -> WANTestBase.closeCache());
+    deprecatedPause(2000);
+    vm2.invoke(WANTestBase::closeCache);
 
-    inv1.join();
+    inv1.await();
 
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
 
@@ -688,22 +691,23 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", null, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
     vm2.invoke(() -> WANTestBase.checkMinimumGatewayReceiverStats(1, 1));
   }
 
+  @SuppressWarnings({"DuplicatedCode", "deprecation"})
   @Test
   public void testReplicatedSerialPropagationWithRemoteReceiverRestarted_SenderReceiverPersistent()
       throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -727,13 +731,13 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
 
-    inv1.join();
+    inv1.await();
 
     // verify that all is well in local site
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR_1", 8000));
@@ -743,7 +747,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
@@ -752,15 +756,16 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR_1", 8000));
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithRemoteSiteBouncedBack_ReceiverPersistent()
       throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -782,15 +787,15 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
-    Wait.pause(2000);
-    vm1.invoke(() -> WANTestBase.shutdownLocator());
-    vm2.invoke(() -> WANTestBase.closeCache());
+    deprecatedPause(2000);
+    vm1.invoke(WANTestBase::shutdownLocator);
+    vm2.invoke(WANTestBase::closeCache);
 
-    inv1.join();
+    inv1.await();
 
     // Do some extra puts after cache close so that some events are in the queue.
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
@@ -807,7 +812,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
@@ -816,17 +821,18 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkMinimumGatewayReceiverStats(1, 1));
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithRemoteSiteBouncedBackWithMultipleRemoteLocators()
       throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort1 = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort1 = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     Integer nyPort2 =
-        (Integer) vm3.invoke(() -> WANTestBase.createSecondRemoteLocator(2, nyPort1, lnPort));
+        vm3.invoke(() -> WANTestBase.createSecondRemoteLocator(2, nyPort1, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort1, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -848,15 +854,15 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
-    Wait.pause(2000);
-    vm1.invoke(() -> WANTestBase.shutdownLocator());
-    vm2.invoke(() -> WANTestBase.closeCache());
+    deprecatedPause(2000);
+    vm1.invoke(WANTestBase::shutdownLocator);
+    vm2.invoke(WANTestBase::closeCache);
 
-    inv1.join();
+    inv1.await();
 
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // verify that all is well in local site
@@ -867,18 +873,19 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort2, vm6);
     vm6.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", null, isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createReceiver());
+    vm6.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
     vm6.invoke(() -> WANTestBase.checkMinimumGatewayReceiverStats(1, 1));
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithRemoteReceiverRestartedOnOtherNode()
       throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
@@ -894,7 +901,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     // create one RR (RR_1) on remote site
     vm2.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm3.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
@@ -909,14 +916,14 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.startSender("ln"));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
-    vm2.invoke(() -> WANTestBase.closeCache());
-    vm3.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
+    vm3.invoke(WANTestBase::closeCache);
 
-    inv1.join();
+    inv1.await();
 
     // verify that all is well in local site
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR_1", 8000));
@@ -926,7 +933,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm3);
     vm3.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
@@ -935,15 +942,15 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagationToTwoWanSites() throws Exception {
+  public void testReplicatedSerialPropagationToTwoWanSites() {
     Integer lnPort = createFirstLocatorWithDSId(1);
-    Integer nyPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer nyPort = vm0.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     createCacheInVMs(tkPort, vm3);
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -980,10 +987,11 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationHA() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -1005,13 +1013,13 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm6.invoke(createReplicatedRegionRunnable());
     vm7.invoke(createReplicatedRegionRunnable());
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
-    Wait.pause(2000);
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    deprecatedPause(2000);
+    AsyncInvocation<?> inv2 = vm4.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
 
-    inv1.join();
-    inv2.join();
+    inv1.await();
+    inv2.await();
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
@@ -1027,17 +1035,18 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * SUR: disabling due to connection information not available in open source enable this once in
    * closed source
    */
+  @SuppressWarnings("deprecation")
   @Ignore("TODO: test is disabled")
   @Test
   public void testReplicatedSerialPropagationHA_ReceiverAffinity() throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3, vm6, vm7);
     createReceiverInVMs(vm2, vm3, vm6, vm7);
 
-    LogWriterUtils.getLogWriter().info("Started receivers on remote site");
+    getLogWriter().info("Started receivers on remote site");
 
     WANTestBase.createCacheInVMs(lnPort, vm4, vm5);
 
@@ -1055,38 +1064,38 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5);
 
-    LogWriterUtils.getLogWriter().info("Started senders on local site");
+    getLogWriter().info("Started senders on local site");
 
     vm4.invoke(createReplicatedRegionRunnable());
     vm5.invoke(createReplicatedRegionRunnable());
 
-    AsyncInvocation inv1 =
-        vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
-    LogWriterUtils.getLogWriter().info("Started async puts on local site");
-    Wait.pause(1000);
 
-    Map oldConnectionInfo =
-        (Map) vm4.invoke(() -> WANTestBase.getSenderToReceiverConnectionInfo("ln"));
+    vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
+    getLogWriter().info("Started async puts on local site");
+    deprecatedPause(1000);
+
+    Map<String, Object> oldConnectionInfo =
+        vm4.invoke(() -> WANTestBase.getSenderToReceiverConnectionInfo("ln"));
     assertNotNull(oldConnectionInfo);
     String oldServerHost = (String) oldConnectionInfo.get("serverHost");
     int oldServerPort = (Integer) oldConnectionInfo.get("serverPort");
-    LogWriterUtils.getLogWriter().info("Got sender to receiver connection information");
+    getLogWriter().info("Got sender to receiver connection information");
 
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
-    inv2.join();
-    LogWriterUtils.getLogWriter().info("Killed primary sender on local site");
-    Wait.pause(5000);// give some time for vm5 to take primary charge
+    AsyncInvocation<?> inv2 = vm4.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
+    inv2.await();
+    getLogWriter().info("Killed primary sender on local site");
+    deprecatedPause(5000);
 
-    Map newConnectionInfo =
-        (Map) vm5.invoke(() -> WANTestBase.getSenderToReceiverConnectionInfo("ln"));
+    Map<String, Object> newConnectionInfo =
+        vm5.invoke(() -> WANTestBase.getSenderToReceiverConnectionInfo("ln"));
     assertNotNull(newConnectionInfo);
     String newServerHost = (String) newConnectionInfo.get("serverHost");
     int newServerPort = (Integer) newConnectionInfo.get("serverPort");
-    LogWriterUtils.getLogWriter().info("Got new sender to receiver connection information");
+    getLogWriter().info("Got new sender to receiver connection information");
     assertEquals(oldServerHost, newServerHost);
     assertEquals(oldServerPort, newServerPort);
 
-    LogWriterUtils.getLogWriter().info(
+    getLogWriter().info(
         "Matched the new connection info with old connection info. Receiver affinity verified.");
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
@@ -1104,17 +1113,18 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * SUR: commenting due to connection information not available in open source enable this once in
    * closed source
    */
+  @SuppressWarnings("deprecation")
   @Ignore("TODO: test is disabled")
   @Test
   public void testReplicatedSerialPropagationHA_ReceiverAffinityScenario2() throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3, vm6, vm7);
     createReceiverInVMs(vm2, vm3, vm6, vm7);
 
-    LogWriterUtils.getLogWriter().info("Started receivers on remote site");
+    getLogWriter().info("Started receivers on remote site");
 
     createCacheInVMs(lnPort, vm4, vm5);
 
@@ -1132,63 +1142,63 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5);
 
-    LogWriterUtils.getLogWriter().info("Started senders on local site");
+    getLogWriter().info("Started senders on local site");
 
     vm4.invoke(createReplicatedRegionRunnable());
     vm5.invoke(createReplicatedRegionRunnable());
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
-    LogWriterUtils.getLogWriter().info("Started async puts on local site");
-    Wait.pause(1000);
+    getLogWriter().info("Started async puts on local site");
+    deprecatedPause(1000);
 
-    Map oldConnectionInfo =
-        (Map) vm4.invoke(() -> WANTestBase.getSenderToReceiverConnectionInfo("ln"));
+    Map<String, Object> oldConnectionInfo =
+        vm4.invoke(() -> WANTestBase.getSenderToReceiverConnectionInfo("ln"));
     assertNotNull(oldConnectionInfo);
     String oldServerHost = (String) oldConnectionInfo.get("serverHost");
     int oldServerPort = (Integer) oldConnectionInfo.get("serverPort");
-    LogWriterUtils.getLogWriter().info("Got sender to receiver connection information");
+    getLogWriter().info("Got sender to receiver connection information");
 
     // ---------------------------- KILL vm4
     // --------------------------------------
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
-    inv2.join();
-    LogWriterUtils.getLogWriter().info("Killed vm4 (primary sender) on local site");
+    AsyncInvocation<?> inv2 = vm4.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
+    inv2.await();
+    getLogWriter().info("Killed vm4 (primary sender) on local site");
     // -----------------------------------------------------------------------------
 
     vm5.invoke(() -> WANTestBase.waitForSenderToBecomePrimary("ln"));
-    LogWriterUtils.getLogWriter().info("vm5 sender has now acquired primary status");
-    Wait.pause(5000);// give time to process unprocessedEventsMap
+    getLogWriter().info("vm5 sender has now acquired primary status");
+    deprecatedPause(5000);
 
     // ---------------------------REBUILD vm4
     // --------------------------------------
-    LogWriterUtils.getLogWriter().info("Rebuilding vm4....");
+    getLogWriter().info("Rebuilding vm4....");
     createCacheInVMs(lnPort, vm4);
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
     vm4.invoke(() -> WANTestBase.startSender("ln"));
     vm4.invoke(createReplicatedRegionRunnable());
-    LogWriterUtils.getLogWriter().info("Rebuilt vm4");
+    getLogWriter().info("Rebuilt vm4");
     // -----------------------------------------------------------------------------
 
     // --------------------------- KILL vm5
     // ----------------------------------------
-    inv1.join();// once the puts are done, kill vm5
-    LogWriterUtils.getLogWriter().info("puts in vm5 are done");
+    inv1.await();
+    getLogWriter().info("puts in vm5 are done");
 
-    inv2 = vm5.invokeAsync(() -> WANTestBase.killSender());
-    inv2.join();
+    inv2 = vm5.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
+    inv2.await();
     vm4.invoke(() -> WANTestBase.waitForSenderToBecomePrimary("ln"));
     // -----------------------------------------------------------------------------
 
-    Map newConnectionInfo =
-        (Map) vm4.invoke(() -> WANTestBase.getSenderToReceiverConnectionInfo("ln"));
+    Map<String, Object> newConnectionInfo =
+        vm4.invoke(() -> WANTestBase.getSenderToReceiverConnectionInfo("ln"));
     assertNotNull(newConnectionInfo);
     String newServerHost = (String) newConnectionInfo.get("serverHost");
     int newServerPort = (Integer) newConnectionInfo.get("serverPort");
-    LogWriterUtils.getLogWriter().info("Got new sender to receiver connection information");
+    getLogWriter().info("Got new sender to receiver connection information");
     assertEquals(oldServerHost, newServerHost);
     assertEquals(oldServerPort, newServerPort);
-    LogWriterUtils.getLogWriter().info(
+    getLogWriter().info(
         "Matched the new connection info with old connection info. Receiver affinity verified.");
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
@@ -1196,12 +1206,12 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testNormalRegionSerialPropagation() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testNormalRegionSerialPropagation() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5);
 
@@ -1238,8 +1248,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    */
   @Test
   public void testReplicatedSerialPropagationWithRemoteSenderConfiguredButNotStarted() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -1274,7 +1284,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testPreloadedSerialPropagation() throws Exception {
+  public void testPreloadedSerialPropagation() {
     // Start locators
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
@@ -1284,7 +1294,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, Scope.DISTRIBUTED_ACK,
         DataPolicy.PRELOADED, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     vm2.invoke(() -> WANTestBase.addListenerOnRegion(regionName));
 
     // Create sender and preloaded region

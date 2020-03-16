@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
@@ -25,9 +26,9 @@ import java.util.List;
 public class LocatorDiscoveryCallbackAdapter implements LocatorDiscoveryCallback {
 
   @Override
-  public void locatorsDiscovered(List locators) {}
+  public void locatorsDiscovered(List<InetSocketAddress> locators) {}
 
   @Override
-  public void locatorsRemoved(List locators) {}
+  public void locatorsRemoved(List<InetSocketAddress> locators) {}
 
 }

@@ -74,9 +74,8 @@ public class WANConfigurationJUnitTest {
       sender1.start();
       fail("Expected IllegalStateException but not thrown");
     } catch (Exception e) {
-      if ((e instanceof IllegalStateException && e.getMessage().startsWith(
+      if (!(e instanceof IllegalStateException && e.getMessage().startsWith(
           "Locators must be configured before starting gateway-sender."))) {
-      } else {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
@@ -110,6 +109,7 @@ public class WANConfigurationJUnitTest {
   /**
    * Test to validate that sender with same Id can not be added to cache.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void test_SameGatewaySenderCreatedTwice() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
@@ -121,10 +121,8 @@ public class WANConfigurationJUnitTest {
       fact.create("NYSender", 2);
       fail("Expected IllegalStateException but not thrown");
     } catch (Exception e) {
-      if (e instanceof IllegalStateException
-          && e.getMessage().contains("A GatewaySender with id")) {
-
-      } else {
+      if (!(e instanceof IllegalStateException
+          && e.getMessage().contains("A GatewaySender with id"))) {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
@@ -133,6 +131,7 @@ public class WANConfigurationJUnitTest {
   /**
    * Test to validate that same gatewaySender Id can not be added to the region attributes.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void test_SameGatewaySenderIdAddedTwice() {
     try {
@@ -141,14 +140,12 @@ public class WANConfigurationJUnitTest {
       fact.setParallel(true);
       fact.setManualStart(true);
       GatewaySender sender1 = fact.create("NYSender", 2);
-      RegionFactory factory = cache.createRegionFactory();
+      RegionFactory<?, ?> factory = cache.createRegionFactory();
       factory.addGatewaySenderId(sender1.getId());
       factory.addGatewaySenderId(sender1.getId());
       fail("Expected IllegalArgumentException but not thrown");
     } catch (Exception e) {
-      if (e instanceof IllegalArgumentException && e.getMessage().contains("is already added")) {
-
-      } else {
+      if (!(e instanceof IllegalArgumentException && e.getMessage().contains("is already added"))) {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
@@ -157,16 +154,16 @@ public class WANConfigurationJUnitTest {
   @Test
   public void test_GatewaySenderIdAndAsyncEventId() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    RegionFactory factory = cache.createRegionFactory();
+    RegionFactory<?, ?> factory = cache.createRegionFactory();
     factory.addGatewaySenderId("ln");
     factory.addGatewaySenderId("ny");
     factory.addAsyncEventQueueId("Async_LN");
 
-    Set<String> senderIds = new HashSet<String>();
+    Set<String> senderIds = new HashSet<>();
     senderIds.add("ln");
     senderIds.add("ny");
 
-    Region r = factory.create("Customer");
+    Region<?, ?> r = factory.create("Customer");
     assertEquals(senderIds, ((LocalRegion) r).getGatewaySenderIds());
   }
 
@@ -175,6 +172,7 @@ public class WANConfigurationJUnitTest {
    * distribution policy
    *
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void test_GatewaySender_Parallel_DistributedRegion() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
@@ -183,7 +181,7 @@ public class WANConfigurationJUnitTest {
     fact.setManualStart(true);
     GatewaySender sender1 = fact.create("NYSender", 2);
 
-    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory<?, ?> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
     regionFactory.addGatewaySenderId(sender1.getId());
 
     assertThatThrownBy(() -> regionFactory.create("test_GatewaySender_Parallel_DistributedRegion"))
@@ -192,6 +190,7 @@ public class WANConfigurationJUnitTest {
                 + "test_GatewaySender_Parallel_DistributedRegion");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void test_GatewaySender_Parallel_MultipleDispatcherThread() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
@@ -200,12 +199,13 @@ public class WANConfigurationJUnitTest {
     fact.setManualStart(true);
     fact.setDispatcherThreads(4);
     try {
-      GatewaySender sender1 = fact.create("NYSender", 2);
+      fact.create("NYSender", 2);
     } catch (GatewaySenderException e) {
       fail("UnExpected Exception " + e);
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void test_GatewaySender_Serial_ZERO_DispatcherThread() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
@@ -213,11 +213,10 @@ public class WANConfigurationJUnitTest {
     fact.setManualStart(true);
     fact.setDispatcherThreads(0);
     try {
-      GatewaySender sender1 = fact.create("NYSender", 2);
+      fact.create("NYSender", 2);
       fail("Expected GatewaySenderException but not thrown");
     } catch (GatewaySenderException e) {
-      if (e.getMessage().contains("can not be created with dispatcher threads less than 1")) {
-      } else {
+      if (!e.getMessage().contains("can not be created with dispatcher threads less than 1")) {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
@@ -251,7 +250,7 @@ public class WANConfigurationJUnitTest {
     GatewayReceiver receiver1 = fact.create();
 
 
-    Region region = cache.createRegionFactory().create("test_ValidateGatewayReceiverAttributes");
+    cache.createRegionFactory().create("test_ValidateGatewayReceiverAttributes");
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     GatewayReceiver rec = receivers.iterator().next();
     assertEquals(receiver1.getHostnameForSenders(), rec.getHostnameForSenders());
@@ -294,6 +293,7 @@ public class WANConfigurationJUnitTest {
   /**
    * Test to validate that serial gateway sender attributes are correctly set
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void test_ValidateSerialGatewaySenderAttributes() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
@@ -315,9 +315,9 @@ public class WANConfigurationJUnitTest {
     boolean groupTransactionEvents = false;
     fact.setGroupTransactionEvents(groupTransactionEvents);
     GatewaySender sender1 = fact.create("TKSender", 2);
-    RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<?, ?> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
     factory.addGatewaySenderId(sender1.getId());
-    Region region = factory.create("test_ValidateGatewaySenderAttributes");
+    factory.create("test_ValidateGatewaySenderAttributes");
     Set<GatewaySender> senders = cache.getGatewaySenders();
     assertEquals(senders.size(), 1);
     GatewaySender gatewaySender = senders.iterator().next();
@@ -340,6 +340,7 @@ public class WANConfigurationJUnitTest {
   /**
    * Test to validate that parallel gateway sender attributes are correctly set
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void test_ValidateParallelGatewaySenderAttributes() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
@@ -361,10 +362,10 @@ public class WANConfigurationJUnitTest {
     fact.addGatewayTransportFilter(myStreamFilter2);
     GatewaySender sender1 = fact.create("TKSender", 2);
 
-    RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<?, ?> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
     factory.addGatewaySenderId(sender1.getId());
 
-    Region region = factory.create("test_ValidateGatewaySenderAttributes");
+    factory.create("test_ValidateGatewaySenderAttributes");
     Set<GatewaySender> senders = cache.getGatewaySenders();
     assertEquals(1, senders.size());
     GatewaySender gatewaySender = senders.iterator().next();
@@ -389,16 +390,14 @@ public class WANConfigurationJUnitTest {
     InternalGatewaySenderFactory fact =
         (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
     AsyncEventListener listener = new MyGatewaySenderEventListener();
-    ((InternalGatewaySenderFactory) fact).addAsyncEventListener(listener);
+    fact.addAsyncEventListener(listener);
     try {
       fact.create("ln", 2);
       fail(
           "Expected GatewaySenderException. When a sender is added , remoteDSId should not be provided.");
     } catch (Exception e) {
-      if (e instanceof GatewaySenderException && e.getMessage().contains(
-          "cannot define a remote site because at least AsyncEventListener is already added.")) {
-
-      } else {
+      if (!(e instanceof GatewaySenderException && e.getMessage().contains(
+          "cannot define a remote site because at least AsyncEventListener is already added."))) {
         fail("Expected GatewaySenderException but received :" + e);
       }
     }
@@ -460,9 +459,8 @@ public class WANConfigurationJUnitTest {
     GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
     fact.addGatewayTransportFilter(myStreamFilter1);
 
-    long then = System.currentTimeMillis();
     GatewayReceiver receiver = fact.create();
-    assertThatThrownBy(() -> receiver.start()).isInstanceOf(GatewayReceiverException.class)
+    assertThatThrownBy(receiver::start).isInstanceOf(GatewayReceiverException.class)
         .hasMessageContaining("No available free port found in the given range");
   }
 
@@ -559,7 +557,7 @@ public class WANConfigurationJUnitTest {
       fact.setMaximumTimeBetweenPings(1000);
       fact.setSocketBufferSize(4000);
       fact.setEndPort(4999);
-      GatewayReceiver receiver = fact.create();
+      fact.create();
       fail("wrong end port set in the GatewayReceiver");
     } catch (IllegalStateException expected) {
       if (!expected.getMessage()
@@ -571,9 +569,9 @@ public class WANConfigurationJUnitTest {
   }
 
   @After
-  public void tearDown() throws Exception {
-    if (this.cache != null) {
-      this.cache.close();
+  public void tearDown() {
+    if (cache != null) {
+      cache.close();
     }
   }
 }

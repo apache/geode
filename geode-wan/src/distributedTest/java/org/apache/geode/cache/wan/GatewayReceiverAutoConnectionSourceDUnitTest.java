@@ -27,7 +27,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.AutoConnectionSourceImpl;
-import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.test.dunit.Host;
@@ -36,8 +35,10 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
+@SuppressWarnings("deprecation")
 @Category({WanTest.class})
-public class GatewayReceiverAutoConnectionSourceDUnitTest extends LocatorTestBase {
+public class GatewayReceiverAutoConnectionSourceDUnitTest
+    extends org.apache.geode.cache.client.internal.LocatorTestBase {
 
   public GatewayReceiverAutoConnectionSourceDUnitTest() {
     super();
@@ -109,7 +110,7 @@ public class GatewayReceiverAutoConnectionSourceDUnitTest extends LocatorTestBas
       @Override
       public void run() {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
-        Region region = cache.getRegion(regionName);
+        Region<?, ?> region = cache.getRegion(regionName);
         PoolImpl pool = (PoolImpl) PoolManager.find(region);
         AutoConnectionSourceImpl connectionSource =
             (AutoConnectionSourceImpl) pool.getConnectionSource();

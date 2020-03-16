@@ -24,8 +24,6 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -37,7 +35,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   }
 
   @Override
-  protected final void postSetUpWANTestBase() throws Exception {
+  protected final void postSetUpWANTestBase() {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Unexpected IOException");
@@ -45,8 +43,8 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
 
   @Test
   public void testParallelGatewaySenderWithoutStarting() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -92,8 +90,8 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    */
   @Test
   public void testParallelGatewaySenderStartOnAccessorNode() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -144,9 +142,9 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    *
    */
   @Test
-  public void testParallelPropagationSenderPause() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testParallelPropagationSenderPause() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -187,12 +185,12 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     // FIRST RUN: now, the senders are started. So, start the puts
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));
 
-    // now, pause all of the senders
+    // now, deprecatedPause all of the senders
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
     vm6.invoke(() -> WANTestBase.pauseSender("ln"));
     vm7.invoke(() -> WANTestBase.pauseSender("ln"));
-    Wait.pause(2000);
+    deprecatedPause(2000);
     // SECOND RUN: keep one thread doing puts to the region
     vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
@@ -206,9 +204,9 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    *
    */
   @Test
-  public void testParallelPropagationSenderResume() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testParallelPropagationSenderResume() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -249,14 +247,14 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     // now, the senders are started. So, start the puts
     vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
-    // now, pause all of the senders
+    // now, deprecatedPause all of the senders
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
     vm6.invoke(() -> WANTestBase.pauseSender("ln"));
     vm7.invoke(() -> WANTestBase.pauseSender("ln"));
 
     // sleep for a second or two
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     // resume the senders
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
@@ -264,7 +262,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm6.invoke(() -> WANTestBase.resumeSender("ln"));
     vm7.invoke(() -> WANTestBase.resumeSender("ln"));
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -278,14 +276,15 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
 
   /**
    * Negative scenario in which a sender that is stopped (and not paused) is resumed. Expected:
-   * resume is only valid for pause. If a sender which is stopped is resumed, it will not be started
+   * resume is only valid for deprecatedPause. If a sender which is stopped is resumed, it will not
+   * be started
    * again.
    *
    */
   @Test
-  public void testParallelPropagationSenderResumeNegativeScenario() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testParallelPropagationSenderResumeNegativeScenario() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -342,9 +341,9 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    *
    */
   @Test
-  public void testParallelPropagationSenderStop() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testParallelPropagationSenderStop() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
@@ -401,10 +400,11 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   /**
    * Normal scenario in which a sender is stopped and then started again.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testParallelPropagationSenderStartAfterStop() throws Throwable {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
@@ -451,7 +451,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm6.invoke(() -> WANTestBase.stopSender("ln"));
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     // SECOND RUN: do some of the puts after the senders are stopped
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
@@ -461,10 +461,10 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // start the senders again
-    AsyncInvocation vm4start = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm5start = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm6start = vm6.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm7start = vm7.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<?> vm4start = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<?> vm5start = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<?> vm6start = vm6.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<?> vm7start = vm7.invokeAsync(() -> WANTestBase.startSender("ln"));
     int START_TIMEOUT = 30000;
     vm4start.getResult(START_TIMEOUT);
     vm5start.getResult(START_TIMEOUT);
@@ -482,9 +482,9 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // SECOND RUN: do some more puts
-    AsyncInvocation async =
+    AsyncInvocation<?> async =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    async.join();
+    async.await();
 
     // verify all the buckets on all the sender nodes are drained
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -507,11 +507,12 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * happening on the region by another thread.
    *
    */
+  @SuppressWarnings("deprecation")
   @Ignore("Bug47553")
   @Test
   public void testParallelPropagationSenderStartAfterStop_Scenario2() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
@@ -548,12 +549,12 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    LogWriterUtils.getLogWriter().info("All the senders are now started");
+    getLogWriter().info("All the senders are now started");
 
     // FIRST RUN: now, the senders are started. So, do some of the puts
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 200));
 
-    LogWriterUtils.getLogWriter().info("Done few puts");
+    getLogWriter().info("Done few puts");
 
     // now, stop all of the senders
     vm4.invoke(() -> WANTestBase.stopSender("ln"));
@@ -561,31 +562,31 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm6.invoke(() -> WANTestBase.stopSender("ln"));
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
-    LogWriterUtils.getLogWriter().info("All the senders are stopped");
-    Wait.pause(2000);
+    getLogWriter().info("All the senders are stopped");
+    deprecatedPause(2000);
 
     // SECOND RUN: do some of the puts after the senders are stopped
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    LogWriterUtils.getLogWriter().info("Done some more puts in second run");
+    getLogWriter().info("Done some more puts in second run");
 
     // Region size on remote site should remain same and below the number of puts done in the FIRST
     // RUN
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // SECOND RUN: start async puts on region
-    AsyncInvocation async =
+    AsyncInvocation<?> async =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 5000));
-    LogWriterUtils.getLogWriter().info("Started high number of puts by async thread");
+    getLogWriter().info("Started high number of puts by async thread");
 
-    LogWriterUtils.getLogWriter().info("Starting the senders at the same time");
+    getLogWriter().info("Starting the senders at the same time");
     // when puts are happening by another thread, start the senders
     startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
-    LogWriterUtils.getLogWriter().info("All the senders are started");
+    getLogWriter().info("All the senders are started");
 
-    async.join();
+    async.await();
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     // verify all the buckets on all the sender nodes are drained
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -602,10 +603,11 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * Normal scenario in which a sender is stopped and then started again on accessor node.
    *
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testParallelPropagationSenderStartAfterStopOnAccessorNode() throws Throwable {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -662,14 +664,14 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // start the senders again
-    AsyncInvocation vm4start = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm5start = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm6start = vm6.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm7start = vm7.invokeAsync(() -> WANTestBase.startSender("ln"));
-    vm4start.join();
-    vm5start.join();
-    vm6start.join();
-    vm7start.join();
+    AsyncInvocation<?> vm4start = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<?> vm5start = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<?> vm6start = vm6.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<?> vm7start = vm7.invokeAsync(() -> WANTestBase.startSender("ln"));
+    vm4start.await();
+    vm5start.await();
+    vm6start.await();
+    vm7start.await();
 
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
@@ -682,9 +684,9 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // SECOND RUN: do some more puts
-    AsyncInvocation async =
+    AsyncInvocation<?> async =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    async.join();
+    async.await();
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
 
@@ -698,19 +700,20 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
 
 
   /**
-   * Normal scenario in which a combinations of start, pause, resume operations is tested
+   * Normal scenario in which a combinations of start, deprecatedPause, resume operations is tested
    */
+  @SuppressWarnings("deprecation")
   @Test
-  public void testStartPauseResumeParallelGatewaySender() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testStartPauseResumeParallelGatewaySender() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    LogWriterUtils.getLogWriter().info("Created cache on local site");
+    getLogWriter().info("Created cache on local site");
 
     vm4.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, true, 100, 10, false, false, null,
         true, 5, OrderPolicy.KEY));
@@ -721,7 +724,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm7.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, true, 100, 10, false, false, null,
         true, 5, OrderPolicy.KEY));
 
-    LogWriterUtils.getLogWriter().info("Created senders on local site");
+    getLogWriter().info("Created senders on local site");
 
     vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
@@ -732,16 +735,16 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
 
-    LogWriterUtils.getLogWriter().info("Created PRs on local site");
+    getLogWriter().info("Created PRs on local site");
 
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
         isOffHeap()));
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
         isOffHeap()));
-    LogWriterUtils.getLogWriter().info("Created PRs on remote site");
+    getLogWriter().info("Created PRs on remote site");
 
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    LogWriterUtils.getLogWriter().info("Done 1000 puts on local site");
+    getLogWriter().info("Done 1000 puts on local site");
 
     // Since puts are already done on userPR, it will have the buckets created.
     // During sender start, it will wait until those buckets are created for shadowPR as well.
@@ -754,31 +757,31 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    LogWriterUtils.getLogWriter().info("Started senders on local site");
+    getLogWriter().info("Started senders on local site");
 
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 5000));
-    LogWriterUtils.getLogWriter().info("Done 5000 puts on local site");
+    getLogWriter().info("Done 5000 puts on local site");
 
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
     vm6.invoke(() -> WANTestBase.pauseSender("ln"));
     vm7.invoke(() -> WANTestBase.pauseSender("ln"));
-    LogWriterUtils.getLogWriter().info("Paused senders on local site");
+    getLogWriter().info("Paused senders on local site");
 
     vm4.invoke(() -> WANTestBase.verifySenderPausedState("ln"));
     vm5.invoke(() -> WANTestBase.verifySenderPausedState("ln"));
     vm6.invoke(() -> WANTestBase.verifySenderPausedState("ln"));
     vm7.invoke(() -> WANTestBase.verifySenderPausedState("ln"));
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    LogWriterUtils.getLogWriter().info("Started 1000 async puts on local site");
+    getLogWriter().info("Started 1000 async puts on local site");
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
     vm5.invoke(() -> WANTestBase.resumeSender("ln"));
     vm6.invoke(() -> WANTestBase.resumeSender("ln"));
     vm7.invoke(() -> WANTestBase.resumeSender("ln"));
-    LogWriterUtils.getLogWriter().info("Resumed senders on local site");
+    getLogWriter().info("Resumed senders on local site");
 
     vm4.invoke(() -> WANTestBase.verifySenderResumedState("ln"));
     vm5.invoke(() -> WANTestBase.verifySenderResumedState("ln"));
@@ -786,7 +789,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm7.invoke(() -> WANTestBase.verifySenderResumedState("ln"));
 
     try {
-      inv1.join();
+      inv1.await();
     } catch (InterruptedException e) {
       e.printStackTrace();
       fail("Interrupted the async invocation.");

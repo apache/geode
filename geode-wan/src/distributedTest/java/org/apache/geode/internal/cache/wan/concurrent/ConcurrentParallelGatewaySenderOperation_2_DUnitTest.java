@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache.wan.concurrent;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,13 +29,9 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -48,7 +44,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
 
   @Override
-  protected final void postSetUpWANTestBase() throws Exception {
+  protected final void postSetUpWANTestBase() {
     IgnoredException.addIgnoredException("RegionDestroyedException");
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
@@ -58,8 +54,8 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
   @Test
   public void shuttingOneSenderInAVMShouldNotAffectOthersBatchRemovalThread() {
-    Integer lnport = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnport));
+    Integer lnport = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnport));
 
     createCacheInVMs(lnport, vm2, vm3);
     vm2.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true));
@@ -72,7 +68,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
         false));
     vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
         false));
-    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(WANTestBase::createReceiver);
 
     vm2.invoke(() -> WANTestBase.startSender("ln"));
     vm2.invoke(() -> WANTestBase.startSender("ln2"));
@@ -90,42 +86,32 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ln2"));
 
-    AsyncInvocation asyncPuts = vm2.invokeAsync(() -> {
-      WANTestBase.doPuts(getTestMethodName() + "_PR", 1000);
-    });
+    AsyncInvocation<?> asyncPuts =
+        vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     // Guarantee some entries are in the queue even if the asyncPuts thread is slow
-    vm2.invoke(() -> {
-      WANTestBase.doPuts(getTestMethodName() + "_PR", 100);
-    });
+    vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));
     vm2.invoke(() -> await()
         .until(() -> WANTestBase.getSenderStats("ln", -1).get(3) > 0));
     vm2.invoke(() -> WANTestBase.stopSender("ln")); // Things have dispatched
     // Dispatch additional values
-    vm2.invoke(() -> {
-      WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 1000, 1100);
-    });
+    vm2.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 1000, 1100));
 
-    await().until(() -> asyncPuts.isDone());
+    await().until(asyncPuts::isDone);
 
     vm2.invoke(() -> await()
         .untilAsserted(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
     vm4.invoke(() -> await()
         .untilAsserted(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
 
-    vm3.invoke(() -> {
-      await()
-          .untilAsserted(
-              () -> assertTrue(WANTestBase.getQueueContentSize("ln2", true) + " was the size",
-                  WANTestBase.getQueueContentSize("ln2", true) == 0));
-    });
+    vm3.invoke(() -> await().untilAsserted(
+        () -> assertThat(WANTestBase.getQueueContentSize("ln2", true)).isEqualTo(0)));
   }
 
 
   // to test that when userPR is locally destroyed, shadow Pr is also locally
   // destroyed and on recreation userPr , shadow Pr is also recreated.
   @Test
-  public void testParallelGatewaySender_SingleNode_UserPR_localDestroy_RecreateRegion()
-      throws Exception {
+  public void testParallelGatewaySender_SingleNode_UserPR_localDestroy_RecreateRegion() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -144,7 +130,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-      vm2.invoke(() -> createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
 
       vm4.invoke(() -> doPuts(regionName, 10));
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -168,8 +154,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
 
   @Test
-  public void testParallelGatewaySender_SingleNode_UserPR_Destroy_RecreateRegion()
-      throws Exception {
+  public void testParallelGatewaySender_SingleNode_UserPR_Destroy_RecreateRegion() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -188,7 +173,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-      vm2.invoke(() -> createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
 
       vm4.invoke(() -> doPuts(regionName, 10));
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -232,7 +217,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-      vm2.invoke(() -> createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
 
       vm4.invoke(() -> doPuts(regionName, 10));
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -255,9 +240,10 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testParallelGatewaySender_SingleNode_UserPR_Destroy_SimultaneousPut_RecreateRegion()
-      throws Exception {
+      throws InterruptedException {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -271,28 +257,18 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       vm4.invoke(() -> resumeSender("ln"));
 
-      AsyncInvocation putAsync =
+      AsyncInvocation<?> putAsync =
           vm4.invokeAsync(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 10, 101));
-      try {
-        putAsync.join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        fail("Interrupted the async invocation.");
-      }
+      deprecatedJoin(putAsync); // throws exceptions that were ignored
 
       if (putAsync.getException() != null
           && !(putAsync.getException() instanceof RegionDestroyedException)) {
-        Assert.fail("Expected RegionDestroyedException but got", putAsync.getException());
+        fail("Expected RegionDestroyedException but got", putAsync.getException());
       }
 
-      // before destroy, there is wait for queue to drain, so data will be
-      // dispatched
-      vm2.invoke(() -> validateRegionSizeWithinRange(getTestMethodName() + "_PR", 10, 101)); // possible
-                                                                                             // size
-                                                                                             // is
-                                                                                             // more
-                                                                                             // than
-                                                                                             // 10
+      // before destroy, there is wait for queue to drain, so data will be dispatched
+      // possible size is more than 10
+      vm2.invoke(() -> validateRegionSizeWithinRange(getTestMethodName() + "_PR", 10, 101));
 
       vm4.invoke(
           () -> createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 10, isOffHeap()));
@@ -301,19 +277,17 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       vm4.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 10));
 
-      vm2.invoke(() -> validateRegionSizeWithinRange(getTestMethodName() + "_PR", 20, 101)); // possible
-                                                                                             // size
-                                                                                             // is
-                                                                                             // more
-                                                                                             // than
-                                                                                             // 20
+      // possible size is more than 20
+      vm2.invoke(() -> validateRegionSizeWithinRange(getTestMethodName() + "_PR", 20, 101));
     } finally {
-      vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
+      vm4.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
   @Test
-  public void testParallelGatewaySender_SingleNode_UserPR_Destroy_NodeDown() throws Exception {
+  public void testParallelGatewaySender_SingleNode_UserPR_Destroy_NodeDown()
+      throws InterruptedException {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Unexpected IOException");
@@ -332,31 +306,30 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm5.invoke(() -> WANTestBase.resumeSender("ln"));
       vm6.invoke(() -> WANTestBase.resumeSender("ln"));
 
-      Wait.pause(200);
-      AsyncInvocation localDestroyAsync =
+      deprecatedPause(200);
+      AsyncInvocation<?> localDestroyAsync =
           vm4.invokeAsync(() -> WANTestBase.destroyRegion(getTestMethodName() + "_PR"));
 
-      AsyncInvocation closeAsync = vm4.invokeAsync(() -> WANTestBase.closeCache());
-      try {
-        localDestroyAsync.join();
-        closeAsync.join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        fail("Interrupted the async invocation.");
-      }
+      AsyncInvocation<?> closeAsync = vm4.invokeAsync(WANTestBase::closeCache);
+
+      deprecatedJoin(localDestroyAsync); // throws exceptions that were ignored
+      closeAsync.await();
 
       vm2.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 10));
     } finally {
-      vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
-      vm5.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
-      vm6.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
+      vm4.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+      vm5.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+      vm6.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
 
   }
 
   @Test
   public void testParallelGatewaySender_SingleNode_UserPR_Close_SimultaneousPut_RecreateRegion()
-      throws Exception {
+      throws InterruptedException {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -375,25 +348,22 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
-      vm2.invoke(() -> createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
 
       vm4.invoke(() -> doPuts(regionName, 10));
       vm4.invoke(() -> validateRegionSize(regionName, 10));
 
       vm2.invoke(() -> validateRegionSize(regionName, 0));
 
-      AsyncInvocation putAsync =
+      AsyncInvocation<?> putAsync =
           vm4.invokeAsync(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 10, 2000));
-      AsyncInvocation localDestroyAsync =
+      AsyncInvocation<?> localDestroyAsync =
           vm4.invokeAsync(() -> ConcurrentParallelGatewaySenderOperation_2_DUnitTest
               .closeRegion(getTestMethodName() + "_PR"));
-      try {
-        putAsync.join();
-        localDestroyAsync.join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        fail("Interrupted the async invocation.");
-      }
+
+      deprecatedJoin(putAsync); // throws exceptions that were ignored
+      localDestroyAsync.await();
+
       vm2.invoke(() -> validateRegionSize(regionName, 0));
 
       vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 10, isOffHeap()));
@@ -409,25 +379,24 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
 
   @Test
-  public void testParallelGatewaySenders_SingleNode_UserPR_localDestroy_RecreateRegion()
-      throws Exception {
+  public void testParallelGatewaySenders_SingleNode_UserPR_localDestroy_RecreateRegion() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
-    Integer tkPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
-    Integer pnPort = (Integer) vm3.invoke(() -> createFirstRemoteLocator(4, lnPort));
+    Integer tkPort = vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
+    Integer pnPort = vm3.invoke(() -> createFirstRemoteLocator(4, lnPort));
 
     createCacheInVMs(nyPort, vm4);
-    vm4.invoke(() -> createReceiver());
+    vm4.invoke(WANTestBase::createReceiver);
     createCacheInVMs(tkPort, vm5);
-    vm5.invoke(() -> createReceiver());
+    vm5.invoke(WANTestBase::createReceiver);
     createCacheInVMs(pnPort, vm6);
-    vm6.invoke(() -> createReceiver());
+    vm6.invoke(WANTestBase::createReceiver);
 
     try {
       vm7.invoke(() -> createCache_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME(lnPort));
 
-      LogWriterUtils.getLogWriter().info("Created cache on local site");
+      getLogWriter().info("Created cache on local site");
 
       vm7.invoke(() -> createConcurrentSender("ln1", 2, true, 100, 10, false, false, null, true, 5,
           OrderPolicy.KEY));
@@ -443,7 +412,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       String regionName = getTestMethodName() + "_PR";
       vm7.invoke(() -> createPartitionedRegion(regionName, "ln1,ln2,ln3", 1, 10, isOffHeap()));
 
-      LogWriterUtils.getLogWriter().info("Created PRs on local site");
+      getLogWriter().info("Created PRs on local site");
 
       vm4.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
       vm5.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
@@ -465,19 +434,20 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       validateRegionSizes(regionName, 20, vm4, vm5, vm6);
     } finally {
-      vm7.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
+      vm7.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
   @Test
   public void testParallelGatewaySender_MultipleNode_UserPR_localDestroy_Recreate()
-      throws Exception {
+      throws InterruptedException {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     try {
       createAndStartSender(vm4, lnPort, 5, true, false);
@@ -486,17 +456,11 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       String regionName = getTestMethodName() + "_PR";
       vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
 
-      AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.doPuts(regionName, 10));
-      Wait.pause(1000);
+      AsyncInvocation<?> inv1 = vm4.invokeAsync(() -> WANTestBase.doPuts(regionName, 10));
+      deprecatedPause(1000);
       vm5.invoke(() -> localDestroyRegion(regionName));
 
-      try {
-        inv1.join();
-      } catch (InterruptedException ex) {
-        ex.printStackTrace();
-        fail("Interrupted the async invocation.");
-      }
-
+      inv1.await();
 
       validateRegionSizes(regionName, 10, vm4, vm2);
 
@@ -506,23 +470,25 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       validateRegionSizes(regionName, 20, vm4, vm2);
     } finally {
-      vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
-      vm5.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
+      vm4.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+      vm5.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
   @Test
   public void testParallelGatewaySenders_MultipleNode_UserPR_localDestroy_Recreate()
-      throws Exception {
+      throws InterruptedException {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
-    Integer tkPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
+    Integer tkPort = vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(nyPort, vm6);
-    vm6.invoke(() -> createReceiver());
+    vm6.invoke(WANTestBase::createReceiver);
     createCacheInVMs(tkPort, vm7);
-    vm7.invoke(() -> createReceiver());
+    vm7.invoke(WANTestBase::createReceiver);
 
     try {
       createAndStartTwoSenders(vm4, lnPort, 4);
@@ -532,17 +498,12 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm6.invoke(() -> WANTestBase.createPartitionedRegion(regionName, null, 1, 100, isOffHeap()));
       vm7.invoke(() -> WANTestBase.createPartitionedRegion(regionName, null, 1, 100, isOffHeap()));
 
-      AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.doPuts(regionName, 10));
+      AsyncInvocation<?> inv1 = vm4.invokeAsync(() -> WANTestBase.doPuts(regionName, 10));
 
-      Wait.pause(1000);
+      deprecatedPause(1000);
       vm5.invoke(() -> WANTestBase.localDestroyRegion(regionName));
 
-      try {
-        inv1.join();
-      } catch (InterruptedException ex) {
-        ex.printStackTrace();
-        fail("Interrupted the async invocation.");
-      }
+      inv1.await();
 
       validateRegionSizes(regionName, 10, vm4, vm6, vm7);
 
@@ -553,82 +514,77 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
       validateRegionSizes(regionName, 20, vm4, vm6, vm7);
     } finally {
-      vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
-      vm5.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
+      vm4.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+      vm5.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
   @Test
   public void testParallelGatewaySender_ColocatedPartitionedRegions_localDestroy()
-      throws Exception {
+      throws InterruptedException {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     try {
       createAndStartSenderWithCustomerOrderShipmentRegion(vm4, lnPort, 5, true);
       createAndStartSenderWithCustomerOrderShipmentRegion(vm5, lnPort, 5, true);
 
-      LogWriterUtils.getLogWriter().info("Created PRs on local site");
+      getLogWriter().info("Created PRs on local site");
 
       vm2.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, 1, 100, isOffHeap()));
 
-      AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.putcolocatedPartitionedRegion(10));
-      Wait.pause(1000);
+      AsyncInvocation<?> inv1 =
+          vm4.invokeAsync(() -> WANTestBase.putcolocatedPartitionedRegion(10));
+      deprecatedPause(1000);
 
-      try {
-        vm5.invoke(() -> localDestroyRegion(customerRegionName));
-      } catch (Exception ex) {
-        assertTrue(ex.getCause() instanceof UnsupportedOperationException);
-      }
+      assertThatThrownBy(() -> vm5.invoke(() -> localDestroyRegion(customerRegionName)))
+          .hasCauseInstanceOf(UnsupportedOperationException.class);
 
-      try {
-        inv1.join();
-      } catch (Exception e) {
-        Assert.fail("Unexpected exception", e);
-      }
+      inv1.await();
 
       validateRegionSizes(customerRegionName, 10, vm4, vm5, vm2);
     } finally {
-      vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
-      vm5.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
+      vm4.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+      vm5.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
   @Test
-  public void testParallelGatewaySender_ColocatedPartitionedRegions_destroy() throws Exception {
+  public void testParallelGatewaySender_ColocatedPartitionedRegions_destroy() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     try {
       createAndStartSenderWithCustomerOrderShipmentRegion(vm4, lnPort, 6, true);
       createAndStartSenderWithCustomerOrderShipmentRegion(vm5, lnPort, 6, true);
 
-      LogWriterUtils.getLogWriter().info("Created PRs on local site");
+      getLogWriter().info("Created PRs on local site");
 
       vm2.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion(null, 1, 100,
           isOffHeap()));
 
-      AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.putcolocatedPartitionedRegion(2000));
-      Wait.pause(1000);
+      vm4.invokeAsync(() -> WANTestBase.putcolocatedPartitionedRegion(2000));
+      deprecatedPause(1000);
 
-      try {
-        vm5.invoke(() -> WANTestBase.destroyRegion(customerRegionName));
-      } catch (Exception ex) {
-        assertTrue(ex.getCause() instanceof IllegalStateException);
-        return;
-      }
-      fail("Expected UnsupportedOperationException");
+      assertThatThrownBy(() -> vm5.invoke(() -> WANTestBase.destroyRegion(customerRegionName)))
+          .hasCauseInstanceOf(IllegalStateException.class);
     } finally {
-      vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
-      vm5.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
+      vm4.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+      vm5.invoke(
+          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
@@ -637,22 +593,20 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
 
   public static void closeRegion(String regionName) {
-    Region r = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
+    Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    assertThat(r).isNotNull();
     r.close();
   }
 
+  @SuppressWarnings("deprecation")
   public static void validateRegionSizeWithinRange(String regionName, final int min,
       final int max) {
-    final Region r = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
-    WaitCriterion wc = new WaitCriterion() {
+    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    assertThat(r).isNotNull();
+    org.apache.geode.test.dunit.WaitCriterion wc = new org.apache.geode.test.dunit.WaitCriterion() {
       @Override
       public boolean done() {
-        if (r.keySet().size() > min && r.keySet().size() <= max) {
-          return true;
-        }
-        return false;
+        return r.keySet().size() > min && r.keySet().size() <= max;
       }
 
       @Override
@@ -678,14 +632,14 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     if (pause) {
       vm.invoke(() -> pauseSender("ln"));
     }
-    LogWriterUtils.getLogWriter().info("Created PRs on local site");
+    getLogWriter().info("Created PRs on local site");
   }
 
   protected void createReceiverAndDoPutsInPausedSender(int port) {
     // Note: This is a test-specific method used by several tests to do puts from vm4 to vm2.
     String regionName = getTestMethodName() + "_PR";
     createCacheInVMs(port, vm2);
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     vm2.invoke(() -> createPartitionedRegion(regionName, null, 1, 10, isOffHeap()));
     vm4.invoke(() -> doPuts(regionName, 10));
     vm4.invoke(() -> validateRegionSize(regionName, 10));

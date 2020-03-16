@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.assertj.core.api.Assertions.fail;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,34 +28,24 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
 public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBase {
 
-  public ReplicatedRegion_ParallelWANPropagationDUnitTest() {
-    super();
-    // TODO Auto-generated constructor stub
-  }
-
-  final String expectedExceptions = null;
-
-
   private static final long serialVersionUID = 1L;
 
   @Test
-  public void test_DR_PGS_1Nodes_Put_Receiver() throws Exception {
+  public void test_DR_PGS_1Nodes_Put_Receiver() {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
       vm2.invoke(
           () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
@@ -111,28 +101,21 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_PGS_Started_DR_CREATED_NO_RECEIVER() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_PGS_Started_DR_CREATED_NO_RECEIVER() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      vm4.invoke(() -> WANTestBase.createCache(lnPort));
-      /*
-       * ExpectedException exp1 = addExpectedException(GatewaySenderException.class .getName(),
-       * vm4); ExpectedException exp2 = addExpectedException(InterruptedException.class .getName(),
-       * vm4); try {
-       */ vm4.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 1000));
-
-      /*
-       * } finally { exp1.remove(); exp2.remove(); }
-       */ } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    /*
+     * ExpectedException exp1 = addExpectedException(GatewaySenderException.class .getName(),
+     * vm4); ExpectedException exp2 = addExpectedException(InterruptedException.class .getName(),
+     * vm4); try {
+     */ vm4.invoke(
+        () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 1000));
   }
 
   /**
@@ -147,28 +130,22 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_CREATED_PGS_STARTED_NO_RECEIVER() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_CREATED_PGS_STARTED_NO_RECEIVER() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      vm4.invoke(() -> WANTestBase.createCache(lnPort));
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
-      /*
-       * ExpectedException exp1 = addExpectedException(GatewaySenderException.class .getName(),
-       * vm4); ExpectedException exp2 = addExpectedException(InterruptedException.class .getName(),
-       * vm4); try {
-       */
-      vm4.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 1000));
-      /*
-       * } finally { exp1.remove(); exp2.remove(); }
-       */ } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
+    /*
+     * ExpectedException exp1 = addExpectedException(GatewaySenderException.class .getName(),
+     * vm4); ExpectedException exp2 = addExpectedException(InterruptedException.class .getName(),
+     * vm4); try {
+     */
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 1000));
   }
 
   /**
@@ -181,34 +158,27 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_PGS_1Node_Put_ValidateQueue_No_Receiver() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_PGS_1Node_Put_ValidateQueue_No_Receiver() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
 
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
 
-      /*
-       * ExpectedException exp1 = addExpectedException(GatewaySenderException.class .getName(),
-       * vm4); ExpectedException exp2 = addExpectedException(InterruptedException.class .getName(),
-       * vm4); try {
-       */
-      vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
-      vm4.invoke(() -> WANTestBase.startSender("ln1"));
+    /*
+     * ExpectedException exp1 = addExpectedException(GatewaySenderException.class .getName(),
+     * vm4); ExpectedException exp2 = addExpectedException(InterruptedException.class .getName(),
+     * vm4); try {
+     */
+    vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.startSender("ln1"));
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 10000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 10000));
 
-      vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 10000));
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 10000));
-      /*
-       * } finally { exp1.remove(); exp2.remove(); }
-       */
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 10000));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 10000));
   }
 
   /**
@@ -221,43 +191,32 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_PGS_2Nodes_Put_ValidateQueue_No_Receiver() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_PGS_2Nodes_Put_ValidateQueue_No_Receiver() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      vm4.invoke(() -> WANTestBase.createCache(lnPort));
-      vm5.invoke(() -> WANTestBase.createCache(lnPort));
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort));
 
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
-      vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
 
-      /*
-       * ExpectedException exp1 = addExpectedException( GatewaySenderException.class.getName());
-       * ExpectedException exp2 = addExpectedException( InterruptedException.class.getName());
-       * ExpectedException exp3 = addExpectedException( CacheClosedException.class.getName()); try {
-       */ vm4.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
-      vm5.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
 
-      startSenderInVMs("ln1", vm4, vm5);
+    startSenderInVMs("ln1", vm4, vm5);
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 1000));
-      vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 1000));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 1000));
+    vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 1000));
 
-      /*
-       * } finally { exp1.remove(); exp2.remove(); exp3.remove(); }
-       */
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
   }
 
   // public void test_DR_PGS_ORDERPOLICY_PARTITION_EXPECTException(){
@@ -296,35 +255,31 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_PGS_1Nodes_Put_Receiver_2() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_PGS_1Nodes_Put_Receiver_2() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      createCacheInVMs(nyPort, vm2);
-      vm2.invoke(() -> WANTestBase.createReceiver());
-      vm2.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    createCacheInVMs(nyPort, vm2);
+    vm2.invoke(WANTestBase::createReceiver);
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
-      createCacheInVMs(lnPort, vm4);
+    createCacheInVMs(lnPort, vm4);
 
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
 
-      vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
 
-      vm4.invoke(() -> WANTestBase.startSender("ln1"));
+    vm4.invoke(() -> WANTestBase.startSender("ln1"));
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
 
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
   }
 
   /**
@@ -337,40 +292,36 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_PGS_2Nodes_Put_Receiver() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_PGS_2Nodes_Put_Receiver() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      createCacheInVMs(nyPort, vm2);
-      vm2.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
-      vm2.invoke(() -> WANTestBase.createReceiver());
+    createCacheInVMs(nyPort, vm2);
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm2.invoke(WANTestBase::createReceiver);
 
-      createCacheInVMs(lnPort, vm4, vm5);
+    createCacheInVMs(lnPort, vm4, vm5);
 
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
-      vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
 
-      vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
-      vm5.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
 
-      startSenderInVMs("ln1", vm4, vm5);
+    startSenderInVMs("ln1", vm4, vm5);
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
-      vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
 
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
   }
 
   /**
@@ -383,42 +334,38 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_PGS_2Nodes_EMPTY_Put_Receiver() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_PGS_2Nodes_EMPTY_Put_Receiver() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      vm2.invoke(() -> WANTestBase.createCache(nyPort));
-      vm2.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
-      vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm2.invoke(WANTestBase::createReceiver);
 
-      vm4.invoke(() -> WANTestBase.createCache(lnPort));
-      vm5.invoke(() -> WANTestBase.createCache(lnPort));
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort));
 
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          Scope.DISTRIBUTED_ACK, DataPolicy.EMPTY, isOffHeap()));
-      vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          Scope.DISTRIBUTED_ACK, DataPolicy.REPLICATE, isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        Scope.DISTRIBUTED_ACK, DataPolicy.EMPTY, isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        Scope.DISTRIBUTED_ACK, DataPolicy.REPLICATE, isOffHeap()));
 
-      vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
-      vm5.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
 
-      startSenderInVMs("ln1", vm4, vm5);
+    startSenderInVMs("ln1", vm4, vm5);
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
-      // vm4.invoke(() -> WANTestBase.validateRegionSize( testName + "_RR",
-      // 1000 ));
-      vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    // vm4.invoke(() -> WANTestBase.validateRegionSize( testName + "_RR",
+    // 1000 ));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
-      vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
 
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
   }
 
   /**
@@ -431,78 +378,69 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_PR_PGS_4Nodes_Put_Receiver_2Nodes() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_PR_PGS_4Nodes_Put_Receiver_2Nodes() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      createCacheInVMs(nyPort, vm2, vm3);
-      vm2.invoke(() -> WANTestBase.createReceiver());
-      vm3.invoke(() -> WANTestBase.createReceiver());
+    createCacheInVMs(nyPort, vm2, vm3);
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
-      vm2.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
-      vm3.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm3.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
-      vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1,
-          100, isOffHeap()));
-      vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1,
-          100, isOffHeap()));
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1,
+        100, isOffHeap()));
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1,
+        100, isOffHeap()));
 
-      createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-      vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1,
-          100, isOffHeap()));
-      vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1,
-          100, isOffHeap()));
-      vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1,
-          100, isOffHeap()));
-      vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1,
-          100, isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1,
+        100, isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1,
+        100, isOffHeap()));
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1,
+        100, isOffHeap()));
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1,
+        100, isOffHeap()));
 
-      vm4.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm5.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm6.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm7.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm4.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm5.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm6.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm7.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-      vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 10, 100, false, false, null, true));
-      vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 10, 100, false, false, null, true));
-      vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 10, 100, false, false, null, true));
-      vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 10, 100, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 10, 100, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 10, 100, false, false, null, true));
+    vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 10, 100, false, false, null, true));
+    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 10, 100, false, false, null, true));
 
-      startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-      vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-      vm5.invoke(() -> WANTestBase.doNextPuts(getTestMethodName() + "_PR", 1000, 2000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm5.invoke(() -> WANTestBase.doNextPuts(getTestMethodName() + "_PR", 1000, 2000));
 
-      vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
-      vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
-      vm5.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
+    vm5.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
-      /*
-       * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try {
-       */
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
-      vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
-      /*
-       * } finally { exp1.remove(); }
-       */ } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
   }
 
   /**
@@ -515,59 +453,49 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_PGS_NOMANUALSTART_4Nodes_Put_ValidateReceiver() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_PGS_NOMANUALSTART_4Nodes_Put_ValidateReceiver() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      createCacheInVMs(nyPort, vm2);
-      vm2.invoke(() -> WANTestBase.createReceiver());
-      vm2.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    createCacheInVMs(nyPort, vm2);
+    vm2.invoke(WANTestBase::createReceiver);
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
-      createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-      vm4.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
-      vm5.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
-      vm6.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
-      vm7.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
+    vm5.invoke(
+        () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
+    vm6.invoke(
+        () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
+    vm7.invoke(
+        () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
 
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
-      vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
-      vm6.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
-      vm7.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        isOffHeap()));
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      vm7.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm7.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
 
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
-      vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
-      vm6.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
-      vm7.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm6.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm7.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
 
-      /*
-       * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try {
-       */
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      /*
-       * } finally { exp1.remove(); }
-       */
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
   }
 
   /**
@@ -580,103 +508,92 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_PGS_4Nodes_Put_CLOSE4NODESCACHE_RECREATE_PUT_ValidateReceiver()
-      throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_PGS_4Nodes_Put_CLOSE4NODESCACHE_RECREATE_PUT_ValidateReceiver() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      createCacheInVMs(nyPort, vm2, vm3);
-      createReceiverInVMs(vm2, vm3);
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
-      createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-      vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-      vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-      vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-      vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
 
-      vm4.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm5.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm6.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm7.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm4.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm5.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm6.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm7.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-      startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-      vm2.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
-      vm3.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm3.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
-      // before doing any puts, let the senders be running in order to ensure
-      // that
-      // not a single event will be lost
-      vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    // before doing any puts, let the senders be running in order to ensure
+    // that
+    // not a single event will be lost
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
-      /*
-       * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try {
-       */
-      vm4.invoke(() -> WANTestBase.killSender());
-      vm5.invoke(() -> WANTestBase.killSender());
-      vm6.invoke(() -> WANTestBase.killSender());
-      vm7.invoke(() -> WANTestBase.killSender());
-      /*
-       * } finally { exp1.remove(); }
-       */
+    /*
+     * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try {
+     */
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm6.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm7.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    /*
+     * } finally { exp1.remove(); }
+     */
 
-      createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-      vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-      vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-      vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-      vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
 
-      vm4.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm5.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm6.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-      vm7.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm4.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm5.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm6.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm7.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-      startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-      vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
-      // ------------------------------------------------------------------------------------
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    // ------------------------------------------------------------------------------------
 
-      vm4.invoke(() -> WANTestBase.doNextPuts(getTestMethodName() + "_RR", 1000, 2000));
+    vm4.invoke(() -> WANTestBase.doNextPuts(getTestMethodName() + "_RR", 1000, 2000));
 
-      // verify all buckets drained on all sender nodes.
-      vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-      vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-      vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-      vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    // verify all buckets drained on all sender nodes.
+    vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
 
-      /*
-       * exp1 = addExpectedException(CacheClosedException.class.getName()); try {
-       */
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 2000));
-      vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 2000));
-      /*
-       * } finally { exp1.remove(); }
-       */
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 2000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 2000));
 
   }
 
@@ -690,40 +607,36 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
    */
   @Ignore
   @Test
-  public void test_DR_NO_ACK_PGS_2Nodes_Put_ValidateQueue_Receiver() throws Exception {
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void test_DR_NO_ACK_PGS_2Nodes_Put_ValidateQueue_Receiver() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      createCacheInVMs(nyPort, vm2);
-      vm2.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
-      vm2.invoke(() -> WANTestBase.createReceiver());
+    createCacheInVMs(nyPort, vm2);
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm2.invoke(WANTestBase::createReceiver);
 
-      createCacheInVMs(lnPort, vm4, vm5);
+    createCacheInVMs(lnPort, vm4, vm5);
 
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          Scope.DISTRIBUTED_NO_ACK, DataPolicy.REPLICATE, isOffHeap()));
-      vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
-          Scope.DISTRIBUTED_NO_ACK, DataPolicy.REPLICATE, isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        Scope.DISTRIBUTED_NO_ACK, DataPolicy.REPLICATE, isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
+        Scope.DISTRIBUTED_NO_ACK, DataPolicy.REPLICATE, isOffHeap()));
 
-      vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
-      vm5.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, true));
 
-      startSenderInVMs("ln1", vm4, vm5);
+    startSenderInVMs("ln1", vm4, vm5);
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
-      vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
-      vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm4.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
+    vm5.invoke(() -> WANTestBase.validateQueueContents("ln1", 0));
 
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception", e);
-    }
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
   }
 
   /**
@@ -738,8 +651,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_2NODES_1NODESDOWN_Validate_Receiver() throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -764,33 +677,23 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    Thread.sleep(60000);;
+    Thread.sleep(60000);
 
-    /*
-     * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try {
-     */
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+    AsyncInvocation<?> inv1 = vm4.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
         .doPuts0(getTestMethodName() + "_RR", 1000));
-    Wait.pause(1000);
-    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase.killSender());
-    try {
-      inv1.join();
-      inv2.join();
-    } catch (Exception e) {
-      Assert.fail("UnExpected Exception", e);
-    }
-    /*
-     * } finally { exp1.remove(); }
-     */
+    deprecatedPause(1000);
+    AsyncInvocation<?> inv2 = vm5.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
+    inv1.await();
+    inv2.await();
 
-    Integer size = (Integer) vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
-    LogWriterUtils.getLogWriter().info("The size of the queue is in vm4 " + size);
+    Integer size = vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
+    getLogWriter().info("The size of the queue is in vm4 " + size);
 
 
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
 
-    size = (Integer) vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
-    LogWriterUtils.getLogWriter().info("The size of the queue is in vm4 " + size);
+    size = vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
+    getLogWriter().info("The size of the queue is in vm4 " + size);
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
   }
@@ -807,8 +710,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_4NODES_2NODESDOWN_Validate_Receiver() throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -842,29 +745,24 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
     vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
     Thread.sleep(60000);
-    /*
-     * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try
-     */ {
-      AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
-          .doPuts0(getTestMethodName() + "_RR", 10000));
+    {
+      AsyncInvocation<?> inv1 =
+          vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+              .doPuts0(getTestMethodName() + "_RR", 10000));
       Thread.sleep(1000);
-      AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+      AsyncInvocation<?> inv2 = vm4.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
       Thread.sleep(2000);
-      AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
-          .doPuts1(getTestMethodName() + "_RR", 10000));
+      AsyncInvocation<?> inv3 =
+          vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+              .doPuts1(getTestMethodName() + "_RR", 10000));
       Thread.sleep(1500);
-      AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
-      try {
-        inv1.join();
-        inv2.join();
-        inv3.join();
-        inv4.join();
-      } catch (Exception e) {
-        Assert.fail("UnExpected Exception", e);
-      }
-    } /*
-       * finally { exp1.remove(); }
-       */
+      AsyncInvocation<?> inv4 = vm5.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
+
+      inv1.await();
+      inv2.await();
+      inv3.await();
+      inv4.await();
+    }
 
     vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -880,10 +778,10 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
 
-      Region r = cache.getRegion(SEPARATOR + regionName);
+      Region<Long, String> r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
-        LogWriterUtils.getLogWriter().info("Put : key : " + i);
+        getLogWriter().info("Put : key : " + i);
         r.put(i, "0_" + i);
       }
     } finally {
@@ -899,10 +797,10 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
 
-      Region r = cache.getRegion(SEPARATOR + regionName);
+      Region<Long, String> r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
-        LogWriterUtils.getLogWriter().info("Put : key : " + i);
+        getLogWriter().info("Put : key : " + i);
         r.put(i, "1_" + i);
       }
     } finally {
@@ -917,10 +815,10 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
-      Region r = cache.getRegion(SEPARATOR + regionName);
+      Region<Long, String> r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
-        LogWriterUtils.getLogWriter().info("Put : key : " + i);
+        getLogWriter().info("Put : key : " + i);
         r.put(i, "2_" + i);
       }
     } finally {
@@ -928,16 +826,5 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
       exp1.remove();
     }
   }
-
-  /**
-   * Test to validate that put on DR with no ack on multiple nodes are propagated to parallelQueue
-   * on multiple nodes
-   */
-
-  /**
-   * Test to validate that the single put in DR is propagated to remote site through
-   * parallelGatewaySender
-   */
-
 
 }

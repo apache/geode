@@ -22,8 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.LongAdder;
@@ -43,14 +42,11 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.SecurityTestUtils;
-import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({WanTest.class})
 public class NewWanAuthenticationDUnitTest extends WANTestBase {
@@ -117,7 +113,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     receiver.invoke(() -> createSecuredCache(receiverSecurityProps, receiverJavaProps, nyPort));
 
     sender.invoke(() -> createSender("ln", 2, false, 100, 10, false, false, null, true));
-    receiver.invoke(() -> createReceiverInSecuredCache());
+    receiver.invoke(WANTestBase::createReceiverInSecuredCache);
 
     sender.invoke(
         () -> createReplicatedRegion(regionName, "ln", isOffHeap()));
@@ -132,8 +128,8 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> doPuts(regionName, 1));
     receiver.invoke(() -> {
-      Region r = cache.getRegion(SEPARATOR + regionName);
-      await().untilAsserted(() -> assertTrue(r.size() > 0));
+      Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+      await().untilAsserted(() -> assertThat(r).hasSizeGreaterThan(0));
     });
   }
 
@@ -148,7 +144,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     receiver.invoke(() -> createSecuredCache(receiverSecurityProps, null, nyPort));
 
     sender.invoke(() -> createSender("ln", 2, false, 100, 10, false, false, null, true));
-    receiver.invoke(() -> createReceiverInSecuredCache());
+    receiver.invoke(WANTestBase::createReceiverInSecuredCache);
 
     sender.invoke(
         () -> createReplicatedRegion(regionName, "ln", isOffHeap()));
@@ -160,8 +156,8 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     sender.invoke(() -> doPuts(regionName, 1));
 
     receiver.invoke(() -> {
-      Region r = cache.getRegion(SEPARATOR + regionName);
-      await().untilAsserted(() -> assertTrue(r.size() > 0));
+      Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+      await().untilAsserted(() -> assertThat(r).hasSizeGreaterThan(0));
     });
   }
 
@@ -204,10 +200,9 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       createSender(senderId, 2, false, 100, 10, false, false, null, true);
     });
 
-    receiver.invoke(() -> {
-      createSecuredReceiver(nyPort, regionName, receiverSecurityPropsWithIncorrectSenderCreds,
-          receiverJavaProps);
-    });
+    receiver.invoke(() -> createSecuredReceiver(nyPort, regionName,
+        receiverSecurityPropsWithIncorrectSenderCreds,
+        receiverJavaProps));
 
     sender.invoke(() -> {
       startSender(senderId);
@@ -240,10 +235,9 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       createSender(senderId, 2, false, 100, 10, false, false, null, true);
     });
 
-    receiver.invoke(() -> {
-      createSecuredReceiver(nyPort, regionName, receiverSecurityPropsWithIncorrectSenderCreds,
-          null);
-    });
+    receiver.invoke(() -> createSecuredReceiver(nyPort, regionName,
+        receiverSecurityPropsWithIncorrectSenderCreds,
+        null));
 
     sender.invoke(() -> {
       startSender(senderId);
@@ -259,9 +253,8 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       createSecuredReceiver(nyPort, regionName, receiverSecurityPropsWithCorrectSenderCreds, null);
     });
 
-    sender.invoke(() -> {
-      doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, true, false, true);
-    });
+    sender.invoke(
+        () -> doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, true, false, true));
 
     receiver.invoke(() -> validateRegionSize(regionName, numPuts));
   }
@@ -270,8 +263,6 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
   public void testWanSecurityManagerWithValidThenInvalidThenValidCredentials() {
     final String securityJsonResource =
         "org/apache/geode/internal/cache/wan/misc/NewWanAuthenticationDUnitTest.testWanSecurityManagerWithInvalidCredentials.security.json";
-    final String gatewayConnectionRetryIntervalConfigParameter =
-        GeodeGlossary.GEMFIRE_PREFIX + "gateway-connection-retry-interval";
 
     final Properties senderSecurityProps = buildSecurityProperties("admin", "wrongPswd");
 
@@ -287,9 +278,8 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       createSender(senderId, 2, false, 100, 10, false, false, null, true);
     });
 
-    receiver.invoke(() -> {
-      createSecuredReceiver(nyPort, regionName, receiverSecurityPropsWithCorrectSenderCreds, null);
-    });
+    receiver.invoke(() -> createSecuredReceiver(nyPort, regionName,
+        receiverSecurityPropsWithCorrectSenderCreds, null));
 
     sender.invoke(() -> {
       startSender(senderId);
@@ -307,9 +297,8 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
           null);
     });
 
-    sender.invoke(() -> {
-      doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, false, true, true);
-    });
+    sender.invoke(
+        () -> doPutsAndVerifyQueueSizeAfterProcessing(regionName, numPuts, false, true, true));
 
     receiver.invoke(() -> validateRegionSize(regionName, 0));
 
@@ -368,7 +357,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> createSender("ln", 2, false, 100, 10, false, false, null, true));
 
-    receiver.invoke(() -> createReceiverInSecuredCache());
+    receiver.invoke(WANTestBase::createReceiverInSecuredCache);
 
     sender.invoke(() -> {
       startSender("ln");
@@ -376,7 +365,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       verifyDifferentServerInGetCredentialCall();
     });
 
-    receiver.invoke(() -> verifyDifferentServerInGetCredentialCall());
+    receiver.invoke(NewWanAuthenticationDUnitTest::verifyDifferentServerInGetCredentialCall);
   }
 
   @Test
@@ -392,7 +381,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> createSender("ln", 2, false, 100, 10, false, false, null, true));
 
-    receiver.invoke(() -> createReceiverInSecuredCache());
+    receiver.invoke(WANTestBase::createReceiverInSecuredCache);
 
     sender.invoke(() -> {
       startSender("ln");
@@ -473,6 +462,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     });
   }
 
+  @SuppressWarnings("deprecation")
   private static Properties buildProperties(String clientauthenticator, String clientAuthInit,
       String accessor, Properties extraAuthProps, Properties extraAuthzProps) {
     Properties authProps = new Properties();
@@ -510,12 +500,13 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
   private static Properties buildSecurityProperties() {
     final Properties props = new Properties();
-    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    props.put(SECURITY_MANAGER, org.apache.geode.security.TestSecurityManager.class.getName());
     props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswdAI.class.getName());
     props.put("security-json", securityJsonResource);
     return props;
   }
 
+  @SuppressWarnings("deprecation")
   private static void createSecuredCache(Properties authProps, Object javaProps, Integer locPort) {
     authProps.setProperty(MCAST_PORT, "0");
     authProps.setProperty(LOCATORS, "localhost[" + locPort + "]");
@@ -523,16 +514,18 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     logger.info("Set the server properties to: " + authProps);
     logger.info("Set the java properties to: " + javaProps);
 
-    SecurityTestUtils tmpInstance = new SecurityTestUtils();
+    org.apache.geode.security.SecurityTestUtils tmpInstance =
+        new org.apache.geode.security.SecurityTestUtils();
     DistributedSystem ds = tmpInstance.createSystem(authProps, (Properties) javaProps);
-    assertNotNull(ds);
-    assertTrue(ds.isConnected());
+    assertThat(ds).isNotNull();
+    assertThat(ds.isConnected()).isTrue();
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
   }
 
   public static class UserPasswdAI extends UserPasswordAuthInit {
 
+    @SuppressWarnings("unused")
     public static AuthInitialize createAI() {
       return new UserPasswdAI();
     }

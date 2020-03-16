@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,15 +52,15 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
   @Test
   public void testPrimarySendersOnDifferentVMsReplicated() throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCachesWith(Boolean.FALSE, nyPort, lnPort);
 
     createSerialSenders();
 
-    createReplicatedRegions(nyPort);
+    createReplicatedRegions();
 
     // get one primary sender on vm4 and another primary on vm5
     // the startup order matters here
@@ -69,65 +68,59 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 
     // exercise region and gateway operations with different messaging
     exerciseWANOperations();
-    AsyncInvocation invVM4transaction =
+    AsyncInvocation<?> invVM4transaction =
         vm4.invokeAsync("doTxPutsAsync", () -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
-    AsyncInvocation invVM5transaction =
+    AsyncInvocation<?> invVM5transaction =
         vm5.invokeAsync("doTxPutsAsync", () -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
-    AsyncInvocation invVM4 =
+    AsyncInvocation<?> invVM4 =
         vm4.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    AsyncInvocation invVM5 =
+    AsyncInvocation<?> invVM5 =
         vm5.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
     exerciseFunctions();
 
-    try {
-      invVM4transaction.join();
-      invVM5transaction.join();
-      invVM4.join();
-      invVM5.join();
-
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
-    }
+    invVM4transaction.await();
+    deprecatedJoin(invVM5transaction); // throws exceptions that were ignored
+    invVM4.await();
+    invVM5.await();
   }
 
   // Uses partitioned regions and conserve-sockets=false
   @Test
   public void testPrimarySendersOnDifferentVMsPR() throws Exception {
     Integer lnPort =
-        (Integer) vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
+        vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
 
-    Integer nyPort = (Integer) vm1.invoke("createFirstRemoteLocator",
+    Integer nyPort = vm1.invoke("createFirstRemoteLocator",
         () -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCachesWith(Boolean.FALSE, nyPort, lnPort);
 
     createSerialSenders();
 
-    createPartitionedRegions(nyPort);
+    createPartitionedRegions();
 
     startSerialSenders();
 
     exerciseWANOperations();
-    AsyncInvocation invVM4transaction =
-        vm4.invokeAsync("doTxPutsPRAsync", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-            .doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
-    AsyncInvocation invVM5transaction =
-        vm5.invokeAsync("doTxPutsPRAsync", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-            .doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
+    AsyncInvocation<?> invVM4transaction =
+        vm4.invokeAsync("doTxPutsPRAsync",
+            () -> doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
+    AsyncInvocation<?> invVM5transaction =
+        vm5.invokeAsync("doTxPutsPRAsync",
+            () -> doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
 
-    AsyncInvocation invVM4 =
+    AsyncInvocation<?> invVM4 =
         vm4.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    AsyncInvocation invVM5 =
+    AsyncInvocation<?> invVM5 =
         vm5.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
     exerciseFunctions();
 
-    invVM4transaction.join();
-    invVM5transaction.join();
-    invVM4.join();
-    invVM5.join();
+    invVM4transaction.await();
+    invVM5transaction.await();
+    invVM4.await();
+    invVM5.await();
   }
 
   // Uses replicated regions and conserve-sockets=true
@@ -135,16 +128,16 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
   public void testPrimarySendersOnDifferentVMsReplicatedSocketPolicy() throws Exception {
 
     Integer lnPort =
-        (Integer) vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
+        vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
 
-    Integer nyPort = (Integer) vm1.invoke("createFirstRemoteLocator",
+    Integer nyPort = vm1.invoke("createFirstRemoteLocator",
         () -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCachesWith(Boolean.TRUE, nyPort, lnPort);
 
     createSerialSenders();
 
-    createReplicatedRegions(nyPort);
+    createReplicatedRegions();
 
     // get one primary sender on vm4 and another primary on vm5
     // the startup order matters here
@@ -152,22 +145,22 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 
     // exercise region and gateway operations with messaging
     exerciseWANOperations();
-    AsyncInvocation invVM4transaction =
+    AsyncInvocation<?> invVM4transaction =
         vm4.invokeAsync("doTxPutsAsync", () -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
-    AsyncInvocation invVM5transaction =
+    AsyncInvocation<?> invVM5transaction =
         vm5.invokeAsync("doTxPutsAsync", () -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
 
-    AsyncInvocation invVM4 =
+    AsyncInvocation<?> invVM4 =
         vm4.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    AsyncInvocation invVM5 =
+    AsyncInvocation<?> invVM5 =
         vm5.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
     exerciseFunctions();
 
-    invVM4transaction.join();
-    invVM5transaction.join();
-    invVM4.join();
-    invVM5.join();
+    invVM4transaction.await();
+    deprecatedJoin(invVM5transaction); // throws exceptions that were ignored
+    invVM4.await();
+    invVM5.await();
   }
 
   // Uses partitioned regions and conserve-sockets=true
@@ -175,48 +168,48 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
   @Test
   public void testPrimarySendersOnDifferentVMsPRSocketPolicy() throws Exception {
     Integer lnPort =
-        (Integer) vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
+        vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
 
-    Integer nyPort = (Integer) vm1.invoke("createFirstRemoteLocator",
+    Integer nyPort = vm1.invoke("createFirstRemoteLocator",
         () -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCachesWith(Boolean.TRUE, nyPort, lnPort);
 
     createSerialSenders();
 
-    createPartitionedRegions(nyPort);
+    createPartitionedRegions();
 
     startSerialSenders();
 
     exerciseWANOperations();
-    AsyncInvocation invVM4transaction =
-        vm4.invokeAsync("doTxPutsPRAsync", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-            .doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
-    AsyncInvocation invVM5transaction =
-        vm5.invokeAsync("doTxPutsPRAsync", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-            .doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
+    AsyncInvocation<?> invVM4transaction =
+        vm4.invokeAsync("doTxPutsPRAsync",
+            () -> doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
+    AsyncInvocation<?> invVM5transaction =
+        vm5.invokeAsync("doTxPutsPRAsync",
+            () -> doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
 
-    AsyncInvocation invVM4 =
+    AsyncInvocation<?> invVM4 =
         vm4.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    AsyncInvocation invVM5 =
+    AsyncInvocation<?> invVM5 =
         vm5.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
     exerciseFunctions();
 
-    invVM4transaction.join();
-    invVM5transaction.join();
-    invVM4.join();
-    invVM5.join();
+    invVM4transaction.await();
+    invVM5transaction.await();
+    invVM4.await();
+    invVM5.await();
   }
 
   // **************************************************************************
   // Utility methods used by tests
   // **************************************************************************
-  private void createReplicatedRegions(Integer nyPort) throws Exception {
+  private void createReplicatedRegions() {
     // create receiver
     vm2.invoke("createReplicatedRegion",
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, false));
-    vm2.invoke("createReceiver", () -> WANTestBase.createReceiver());
+    vm2.invoke("createReceiver", WANTestBase::createReceiver);
 
     // create senders
     vm4.invoke("createReplicatedRegion",
@@ -237,32 +230,32 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         () -> WANTestBase.createCacheConserveSockets(socketPolicy, lnPort));
   }
 
-  private void exerciseFunctions() throws Exception {
+  private void exerciseFunctions() {
     // do function calls that use a shared connection
     for (int x = 0; x < 1000; x++) {
       // setting it to Boolean.TRUE it should pass the test
-      vm4.invoke("doFunctionPuts", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-          .doFunctionPuts(getTestMethodName() + "_RR", 1, Boolean.TRUE));
-      vm5.invoke("doFunctionPuts", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-          .doFunctionPuts(getTestMethodName() + "_RR", 1, Boolean.TRUE));
+      vm4.invoke("doFunctionPuts",
+          () -> doFunctionPuts(getTestMethodName() + "_RR", 1, Boolean.TRUE));
+      vm5.invoke("doFunctionPuts",
+          () -> doFunctionPuts(getTestMethodName() + "_RR", 1, Boolean.TRUE));
     }
     for (int x = 0; x < 1000; x++) {
       // setting the Boolean.FALSE below will cause a deadlock in some GFE versions
       // setting it to Boolean.TRUE as above it should pass the test
       // this is similar to the customer found distributed deadlock
-      vm4.invoke("doFunctionPuts2", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-          .doFunctionPuts(getTestMethodName() + "_RR", 1, Boolean.FALSE));
-      vm5.invoke("doFunctionPuts2", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-          .doFunctionPuts(getTestMethodName() + "_RR", 1, Boolean.FALSE));
+      vm4.invoke("doFunctionPuts2",
+          () -> doFunctionPuts(getTestMethodName() + "_RR", 1, Boolean.FALSE));
+      vm5.invoke("doFunctionPuts2",
+          () -> doFunctionPuts(getTestMethodName() + "_RR", 1, Boolean.FALSE));
     }
   }
 
-  private void createPartitionedRegions(Integer nyPort) throws Exception {
+  private void createPartitionedRegions() {
     // create remote receiver
     vm2.invoke("createPartitionedRegion",
         () -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_RR", "", 0, 113, false));
 
-    vm2.invoke("createReceiver", () -> WANTestBase.createReceiver());
+    vm2.invoke("createReceiver", WANTestBase::createReceiver);
 
     // create sender vms
     vm4.invoke("createPartitionedRegion",
@@ -274,7 +267,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
             113, false));
   }
 
-  private void exerciseWANOperations() throws Exception {
+  private void exerciseWANOperations() {
     // note - some of these should be made async to truly exercise the
     // messaging between the WAN gateways and members
 
@@ -305,8 +298,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         () -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 100));
 
     vm4.invoke("exerciseWANOperations.doInvalidates",
-        () -> SerialGatewaySenderDistributedDeadlockDUnitTest
-            .doInvalidates(getTestMethodName() + "_RR", 100, 100));
+        () -> doInvalidates(getTestMethodName() + "_RR", 100, 100));
     vm4.invoke("exerciseWANOperations.doPutAll",
         () -> WANTestBase.doPutAll(getTestMethodName() + "_RR", 100, 10));
     vm5.invoke("exerciseWANOperations.doPutAll",
@@ -331,7 +323,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         () -> WANTestBase.validateRegionSize_PDX(getTestMethodName() + "_RR", 100));
   }
 
-  private void startSerialSenders() throws Exception {
+  private void startSerialSenders() {
     // get one primary sender on vm4 and another primary on vm5
     // the startup order matters here so that primaries are
     // on different JVM's
@@ -345,7 +337,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
     vm4.invoke("start secondary sender", () -> WANTestBase.startSender("ln2"));
   }
 
-  private void createSerialSenders() throws Exception {
+  private void createSerialSenders() {
 
     vm4.invoke("create primary sender",
         () -> WANTestBase.createSender("ln1", 2, false, 100, 10, false, false, null, true));
@@ -360,19 +352,19 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         () -> WANTestBase.createSender("ln2", 2, false, 100, 10, false, false, null, true));
   }
 
-  public static void doFunctionPuts(String name, int num, Boolean useThreadOwnedSocket)
-      throws Exception {
-    Region region = CacheFactory.getAnyInstance().getRegion(name);
+  public static void doFunctionPuts(String name, int num, Boolean useThreadOwnedSocket) {
+    Region<?, ?> region = CacheFactory.getAnyInstance().getRegion(name);
     FunctionService.registerFunction(new TestFunction());
-    Execution exe = FunctionService.onRegion(region);
+    @SuppressWarnings("unchecked")
+    Execution<Boolean, ?, ?> exe = FunctionService.onRegion(region);
     for (int x = 0; x < num; x++) {
       exe.setArguments(useThreadOwnedSocket)
           .execute("org.apache.geode.internal.cache.wan.serial.TestFunction");
     }
   }
 
-  public static void doTxPutsPR(String regionName, int numPuts, int size) throws Exception {
-    Region r = cache.getRegion(SEPARATOR + regionName);
+  public static void doTxPutsPR(String regionName, int numPuts, int size) {
+    Region<Integer, Integer> r = cache.getRegion(SEPARATOR + regionName);
     CacheTransactionManager mgr = cache.getCacheTransactionManager();
     for (int x = 0; x < numPuts; x++) {
       int temp = (int) (Math.floor(Math.random() * size));
@@ -388,9 +380,8 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
     }
   }
 
-  public static void doInvalidates(String regionName, int numInvalidates, int size)
-      throws Exception {
-    Region r = cache.getRegion(SEPARATOR + regionName);
+  public static void doInvalidates(String regionName, int numInvalidates, int size) {
+    Region<Integer, ?> r = cache.getRegion(SEPARATOR + regionName);
     for (int x = 0; x < numInvalidates; x++) {
       int temp = (int) (Math.floor(Math.random() * size));
       try {
@@ -406,7 +397,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 }
 
 
-class TestFunction implements Function {
+class TestFunction implements Function<Boolean> {
 
   @Override
   public boolean hasResult() {
@@ -414,19 +405,19 @@ class TestFunction implements Function {
   }
 
   @Override
-  public void execute(FunctionContext fc) {
-    boolean option = (Boolean) fc.getArguments();
+  public void execute(FunctionContext<Boolean> fc) {
+    boolean option = fc.getArguments();
     if (option) {
       DistributedSystem.setThreadsSocketPolicy(false);
     }
     RegionFunctionContext context = (RegionFunctionContext) fc;
-    Region local = context.getDataSet();
+    Region<Integer, Integer> local = context.getDataSet();
     local.put(randKeyValue(10), randKeyValue(10000));
   }
 
   @Override
   public String getId() {
-    return this.getClass().getName();
+    return getClass().getName();
   }
 
   @Override

@@ -15,9 +15,9 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.wan.MyGatewaySenderEventListener;
 import org.apache.geode.internal.cache.wan.MyGatewaySenderEventListener2;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -78,7 +77,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm7.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-    final Map keyValues = new HashMap();
+    final Map<Object, Object> keyValues = new HashMap<>();
     for (int i = 0; i < 1000; i++) {
       keyValues.put(i, i);
     }
@@ -89,8 +88,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", keyValues.size()));
 
-    vm4.invoke(() -> WANTestBase.printEventListenerMap());
-    vm5.invoke(() -> WANTestBase.printEventListenerMap());
+    vm4.invoke(WANTestBase::printEventListenerMap);
+    vm5.invoke(WANTestBase::printEventListenerMap);
 
     fail("tried to invoke missing method");
     // vm4.invoke(() ->
@@ -103,8 +102,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    */
   @Test
   public void testGatewaySenderEventListenerInvocation() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
 
     createCacheInVMs(nyPort, vm2, vm3);
@@ -133,7 +132,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm7.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-    final Map keyValues = new HashMap();
+    final Map<Object, Object> keyValues = new HashMap<>();
     for (int i = 0; i < 1000; i++) {
       keyValues.put(i, i);
     }
@@ -157,8 +156,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    */
   @Test
   public void testGatewaySender2EventListenerInvocation() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
 
@@ -183,7 +182,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm5.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-    final Map keyValues = new HashMap();
+    final Map<Object, Object> keyValues = new HashMap<>();
     for (int i = 0; i < 1000; i++) {
       keyValues.put(i, i);
     }
@@ -205,8 +204,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    */
   @Test
   public void testGatewaySenderEventListenerPoolImpl() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -246,7 +245,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm7.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-    final Map initialKeyValues = new HashMap();
+    final Map<Object, Object> initialKeyValues = new HashMap<>();
     for (int i = 0; i < 1000; i++) {
       initialKeyValues.put(i, i);
     }
@@ -260,7 +259,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.stopSender("ln"));
 
-    final Map keyValues = new HashMap();
+    final Map<Object, Object> keyValues = new HashMap<>();
     for (int i = 1000; i < 2000; i++) {
       keyValues.put(i, i);
     }
@@ -274,7 +273,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.startSender("ln"));
 
-    final Map finalKeyValues = new HashMap();
+    final Map<Object, Object> finalKeyValues = new HashMap<>();
     for (int i = 2000; i < 3000; i++) {
       finalKeyValues.put(i, i);
     }
@@ -299,7 +298,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     }
   }
 
-  public static void validateReceivedEventsMapSizeListener1(final String senderId, final Map map) {
+  public static void validateReceivedEventsMapSizeListener1(final String senderId,
+      final Map<?, ?> map) {
 
     Set<GatewaySender> senders = cache.getGatewaySenders();
     GatewaySender sender = null;
@@ -315,29 +315,32 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     if (listeners.size() == 1) {
       final AsyncEventListener l = listeners.get(0);
 
-      WaitCriterion wc = new WaitCriterion() {
-        Map listenerMap;
+      @SuppressWarnings("deprecation")
+      org.apache.geode.test.dunit.WaitCriterion wc =
+          new org.apache.geode.test.dunit.WaitCriterion() {
+            Map<?, ?> listenerMap;
 
-        @Override
-        public boolean done() {
-          listenerMap = ((MyGatewaySenderEventListener) l).getEventsMap();
-          boolean sizeCorrect = map.size() == listenerMap.size();
-          boolean keySetCorrect = listenerMap.keySet().containsAll(map.keySet());
-          boolean valuesCorrect = listenerMap.values().containsAll(map.values());
-          return sizeCorrect && keySetCorrect && valuesCorrect;
-        }
+            @Override
+            public boolean done() {
+              listenerMap = ((MyGatewaySenderEventListener) l).getEventsMap();
+              boolean sizeCorrect = map.size() == listenerMap.size();
+              boolean keySetCorrect = listenerMap.keySet().containsAll(map.keySet());
+              boolean valuesCorrect = listenerMap.values().containsAll(map.values());
+              return sizeCorrect && keySetCorrect && valuesCorrect;
+            }
 
-        @Override
-        public String description() {
-          return "Waiting for all sites to get updated, the sizes are " + listenerMap.size()
-              + " and " + map.size();
-        }
-      };
+            @Override
+            public String description() {
+              return "Waiting for all sites to get updated, the sizes are " + listenerMap.size()
+                  + " and " + map.size();
+            }
+          };
       GeodeAwaitility.await().untilAsserted(wc);
     }
   }
 
-  public static void validateReceivedEventsMapSizeListener2(final String senderId, final Map map) {
+  public static void validateReceivedEventsMapSizeListener2(final String senderId,
+      final Map<?, ?> map) {
 
     Set<GatewaySender> senders = cache.getGatewaySenders();
     GatewaySender sender = null;
@@ -354,9 +357,9 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
       final AsyncEventListener l1 = listeners.get(0);
       final AsyncEventListener l2 = listeners.get(1);
       await().untilAsserted(() -> {
-        Map listenerMap1 = ((MyGatewaySenderEventListener) l1).getEventsMap();
+        Map<?, ?> listenerMap1 = ((MyGatewaySenderEventListener) l1).getEventsMap();
 
-        Map listenerMap2 = ((MyGatewaySenderEventListener2) l2).getEventsMap();
+        Map<?, ?> listenerMap2 = ((MyGatewaySenderEventListener2) l2).getEventsMap();
         int listener1MapSize = listenerMap1.size();
         int listener2MapSize = listenerMap1.size();
         int expectedMapSize = map.size();
@@ -368,12 +371,12 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
         boolean keySetCorrect2 = listenerMap2.keySet().containsAll(map.keySet());
         boolean valuesCorrect2 = listenerMap2.values().containsAll(map.values());
 
-        assertEquals(
+        assertTrue(
             "Failed while waiting for all sites to get updated with the correct events. \nThe "
                 + "size of listener 1's map = " + listener1MapSize
                 + "\n The size of listener 2's map = " + "" + listener2MapSize
                 + "\n The expected map size =" + expectedMapSize,
-            true, sizeCorrect && keySetCorrect && valuesCorrect && sizeCorrect2 && keySetCorrect2
+            sizeCorrect && keySetCorrect && valuesCorrect && sizeCorrect2 && keySetCorrect2
                 && valuesCorrect2);
       });
     }

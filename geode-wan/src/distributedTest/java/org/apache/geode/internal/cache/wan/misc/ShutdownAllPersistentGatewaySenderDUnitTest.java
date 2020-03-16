@@ -21,9 +21,6 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.admin.AdminDistributedSystemFactory;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
@@ -33,10 +30,8 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -51,7 +46,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
   }
 
   @Override
-  protected final void postSetUpWANTestBase() throws Exception {
+  protected final void postSetUpWANTestBase() {
     IgnoredException.addIgnoredException("Cache is being closed by ShutdownAll");
   }
 
@@ -61,13 +56,13 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
   public void testGatewaySender() throws Exception {
     IgnoredException.addIgnoredException("Cache is shutting down");
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
         "ln", 1, 100, isOffHeap()));
@@ -91,18 +86,21 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
         CacheObserverHolder.setInstance(new CacheObserverAdapter() {
           @Override
           public void beforeShutdownAll() {
-            final Region region = cache.getRegion(getTestMethodName() + "_PR");
-            GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-              @Override
-              public boolean done() {
-                return region.size() >= 2;
-              }
+            final Region<?, ?> region = cache.getRegion(getTestMethodName() + "_PR");
+            @SuppressWarnings("deprecation")
+            final org.apache.geode.test.dunit.WaitCriterion waitCriterion =
+                new org.apache.geode.test.dunit.WaitCriterion() {
+                  @Override
+                  public boolean done() {
+                    return region.size() >= 2;
+                  }
 
-              @Override
-              public String description() {
-                return "Wait for wan to have processed several events";
-              }
-            });
+                  @Override
+                  public String description() {
+                    return "Wait for wan to have processed several events";
+                  }
+                };
+            GeodeAwaitility.await().untilAsserted(waitCriterion);
           }
         });
       }
@@ -110,99 +108,97 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
     vm2.invoke(waitAtShutdownAll);
     vm3.invoke(waitAtShutdownAll);
 
-    AsyncInvocation vm4_future =
+    AsyncInvocation<?> vm4_future =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS));
 
     // ShutdownAll will be suspended at observer, so puts will continue
-    AsyncInvocation future = shutDownAllMembers(vm2, 2, MAX_WAIT);
-    future.join(MAX_WAIT);
+    AsyncInvocation<?> future = shutDownAllMembers(vm2, 2, MAX_WAIT);
+    future.await();
 
     // now restart vm1 with gatewayHub
-    LogWriterUtils.getLogWriter().info("restart in VM2");
+    getLogWriter().info("restart in VM2");
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
-    AsyncInvocation vm3_future = vm3.invokeAsync(() -> WANTestBase
+    AsyncInvocation<?> vm3_future = vm3.invokeAsync(() -> WANTestBase
         .createPersistentPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap()));
     vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
         "ln", 1, 100, isOffHeap()));
-    vm3_future.join(MAX_WAIT);
+    vm3_future.await();
 
     vm3.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        final Region region = cache.getRegion(getTestMethodName() + "_PR");
+        final Region<?, ?> region = cache.getRegion(getTestMethodName() + "_PR");
         cache.getLogger().info("vm1's region size before restart gatewayHub is " + region.size());
       }
     });
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // wait for vm0 to finish its work
-    vm4_future.join(MAX_WAIT);
+    vm4_future.await();
     vm4.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        Region region = cache.getRegion(getTestMethodName() + "_PR");
+        Region<?, ?> region = cache.getRegion(getTestMethodName() + "_PR");
         assertEquals(NUM_KEYS, region.size());
       }
     });
 
     // verify the other side (vm1)'s entries received from gateway
-    vm2.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        final Region region = cache.getRegion(getTestMethodName() + "_PR");
+    vm2.invoke(() -> {
+      final Region<?, ?> region = cache.getRegion(getTestMethodName() + "_PR");
 
-        cache.getLogger().info("vm1's region size after restart gatewayHub is " + region.size());
-        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-          @Override
-          public boolean done() {
-            Object lastValue = region.get(NUM_KEYS - 1);
-            if (lastValue != null && lastValue.equals(NUM_KEYS - 1)) {
-              region.getCache().getLogger()
-                  .info("Last key has arrived, its value is " + lastValue + ", end of wait.");
-              return true;
-            } else
-              return (region.size() == NUM_KEYS);
-          }
+      cache.getLogger().info("vm1's region size after restart gatewayHub is " + region.size());
+      @SuppressWarnings("deprecation")
+      org.apache.geode.test.dunit.WaitCriterion waitCriterion =
+          new org.apache.geode.test.dunit.WaitCriterion() {
+            @SuppressWarnings("deprecation")
+            @Override
+            public boolean done() {
+              Object lastValue = region.get(NUM_KEYS - 1);
+              if (lastValue != null && lastValue.equals(NUM_KEYS - 1)) {
+                region.getCache().getLogger()
+                    .info("Last key has arrived, its value is " + lastValue + ", end of wait.");
+                return true;
+              } else
+                return (region.size() == NUM_KEYS);
+            }
 
-          @Override
-          public String description() {
-            return "Waiting for destination region to reach size: " + NUM_KEYS + ", current is "
-                + region.size();
-          }
-        });
-        assertEquals(NUM_KEYS, region.size());
-      }
+            @Override
+            public String description() {
+              return "Waiting for destination region to reach size: " + NUM_KEYS + ", current is "
+                  + region.size();
+            }
+          };
+      GeodeAwaitility.await().untilAsserted(waitCriterion);
+      assertEquals(NUM_KEYS, region.size());
     });
 
   }
 
-  private AsyncInvocation shutDownAllMembers(VM vm, final int expectedNumber, final long timeout) {
-    AsyncInvocation future = vm.invokeAsync(new SerializableRunnable("Shutdown all the members") {
-
-      @Override
-      public void run() {
-        DistributedSystemConfig config;
-        AdminDistributedSystemImpl adminDS = null;
-        try {
-          config = AdminDistributedSystemFactory
-              .defineDistributedSystem(cache.getDistributedSystem(), "");
-          adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
-              .getDistributedSystem(config);
-          adminDS.connect();
-          Set members = adminDS.shutDownAllMembers(timeout);
-          int num = members == null ? 0 : members.size();
-          assertEquals(expectedNumber, num);
-        } catch (AdminException e) {
-          throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
+  @SuppressWarnings("deprecation")
+  private AsyncInvocation<?> shutDownAllMembers(VM vm, final int expectedNumber,
+      final long timeout) {
+    return vm.invokeAsync("Shutdown all the members", () -> {
+      org.apache.geode.admin.DistributedSystemConfig config;
+      AdminDistributedSystemImpl adminDS = null;
+      try {
+        config = org.apache.geode.admin.AdminDistributedSystemFactory
+            .defineDistributedSystem(cache.getDistributedSystem(), "");
+        adminDS = (AdminDistributedSystemImpl) org.apache.geode.admin.AdminDistributedSystemFactory
+            .getDistributedSystem(config);
+        adminDS.connect();
+        Set<?> members = adminDS.shutDownAllMembers(timeout);
+        int num = members == null ? 0 : members.size();
+        assertEquals(expectedNumber, num);
+      } catch (org.apache.geode.admin.AdminException e) {
+        throw new RuntimeException(e);
+      } finally {
+        if (adminDS != null) {
+          adminDS.disconnect();
         }
       }
     });
-    return future;
   }
 
 }

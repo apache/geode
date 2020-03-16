@@ -15,6 +15,7 @@
 package org.apache.geode.cache;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -121,6 +122,11 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     }
   }
 
+  @SuppressWarnings("deprecation")
+  private void setDeprecatedManualStart(GatewaySenderFactory factory, boolean value) {
+    factory.setManualStart(value);
+  }
+
   @Test
   public void testParallelGatewaySender() throws Exception {
     getSystem();
@@ -129,7 +135,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
     gatewaySenderFactory.setParallel(true);
     gatewaySenderFactory.setDispatcherThreads(13);
-    gatewaySenderFactory.setManualStart(true);
+    setDeprecatedManualStart(gatewaySenderFactory, true);
     gatewaySenderFactory.setSocketBufferSize(1234);
     gatewaySenderFactory.setSocketReadTimeout(1050);
     gatewaySenderFactory.setBatchConflationEnabled(false);
@@ -154,7 +160,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     assertNotNull(c);
     Set<GatewaySender> sendersOnCache = c.getGatewaySenders();
     for (GatewaySender sender : sendersOnCache) {
-      assertEquals(true, sender.isParallel());
+      assertTrue(sender.isParallel());
       validateGatewaySender(parallelGatewaySender, sender);
     }
   }
@@ -165,7 +171,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     CacheCreation cache = new CacheCreation();
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
     gatewaySenderFactory.setParallel(false);
-    gatewaySenderFactory.setManualStart(true);
+    setDeprecatedManualStart(gatewaySenderFactory, true);
     gatewaySenderFactory.setSocketBufferSize(124);
     gatewaySenderFactory.setSocketReadTimeout(1000);
     gatewaySenderFactory.setBatchConflationEnabled(false);
@@ -194,28 +200,30 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     assertNotNull(c);
     Set<GatewaySender> sendersOnCache = c.getGatewaySenders();
     for (GatewaySender sender : sendersOnCache) {
-      assertEquals(false, sender.isParallel());
+      assertFalse(sender.isParallel());
       validateGatewaySender(serialGatewaySender, sender);
     }
   }
 
   public static class MyGatewayEventFilter implements GatewayEventFilter, Declarable {
     @Override
-    public void afterAcknowledgement(GatewayQueueEvent event) {}
+    public void afterAcknowledgement(@SuppressWarnings("rawtypes") GatewayQueueEvent event) {}
 
     @Override
-    public boolean beforeEnqueue(GatewayQueueEvent event) {
+    public boolean beforeEnqueue(@SuppressWarnings("rawtypes") GatewayQueueEvent event) {
       return true;
     }
 
     @Override
-    public boolean beforeTransmit(GatewayQueueEvent event) {
+    public boolean beforeTransmit(@SuppressWarnings("rawtypes") GatewayQueueEvent event) {
       return true;
     }
 
     @Override
     public void close() {}
 
+    @SuppressWarnings("deprecation")
+    @Deprecated
     @Override
     public void init(Properties properties) {}
   }

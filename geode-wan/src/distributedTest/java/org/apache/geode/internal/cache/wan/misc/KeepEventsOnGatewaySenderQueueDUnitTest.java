@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -65,25 +64,25 @@ public class KeepEventsOnGatewaySenderQueueDUnitTest extends WANTestBase {
     vm1.invoke(() -> createPartitionedRegionWithPersistence(regionName, senderId, 0, 100));
 
     // Asynchronously do puts in sending site member
-    AsyncInvocation<Integer> putInvocation = vm1.invokeAsync(() -> doPuts(regionName, 60000l));
+    AsyncInvocation<Integer> putInvocation = vm1.invokeAsync(() -> doPuts(regionName, 60000L));
 
     // Repeatedly bounce a receiving site member which will cause PartitionOfflineExceptions
     AsyncInvocation<Integer> closeOpenInvocation =
         vm3.invokeAsync(() -> closeRecreateCache(nyPort, regionName, 3));
 
     // Once puts are complete, wait for sending site member queue to be empty
-    int numPuts = putInvocation.get(120, TimeUnit.SECONDS);
+    int numPuts = putInvocation.get();
     vm1.invoke(() -> validateQueueSizeStat(senderId, 0));
 
     // Once the receiving site member bounce has completed, verify region sizes in both sites
-    closeOpenInvocation.join(120000);
+    closeOpenInvocation.await();
     vm1.invoke(() -> validateRegionSize(regionName, numPuts));
     vm3.invoke(() -> validateRegionSize(regionName, numPuts));
     vm4.invoke(() -> validateRegionSize(regionName, numPuts));
   }
 
   @Test
-  public void testKeepEventsOnGatewaySenderQueueWithRegionDestroyedException() throws Exception {
+  public void testKeepEventsOnGatewaySenderQueueWithRegionDestroyedException() {
     // Start locators
     Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
     Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
@@ -93,7 +92,7 @@ public class KeepEventsOnGatewaySenderQueueDUnitTest extends WANTestBase {
 
     // Configure receiving site member
     vm3.invoke(() -> createCache(nyPort));
-    vm3.invoke(() -> createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     // Configure sending site member
     vm1.invoke(() -> createCache(lnPort));
@@ -125,13 +124,13 @@ public class KeepEventsOnGatewaySenderQueueDUnitTest extends WANTestBase {
   }
 
   private void assignBuckets(String regionName) {
-    Region region = cache.getRegion(regionName);
+    Region<?, ?> region = cache.getRegion(regionName);
     PartitionRegionHelper.assignBucketsToPartitions(region);
   }
 
   private int doPuts(String regionName, long timeToRun) throws Exception {
     int numPuts = 0;
-    Region region = cache.getRegion(regionName);
+    Region<UUID, Integer> region = cache.getRegion(regionName);
     long end = System.currentTimeMillis() + timeToRun;
     while (System.currentTimeMillis() < end) {
       region.put(UUID.randomUUID(), 0);

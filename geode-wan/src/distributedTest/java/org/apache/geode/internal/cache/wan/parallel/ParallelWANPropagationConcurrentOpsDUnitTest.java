@@ -43,8 +43,8 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationWithSingleBucketPR() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -71,25 +71,25 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    // pause the senders
+    // deprecatedPause the senders
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
 
-    AsyncInvocation async1 =
+    AsyncInvocation<?> async1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 700));
-    AsyncInvocation async2 =
+    AsyncInvocation<?> async2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    AsyncInvocation async3 =
+    AsyncInvocation<?> async3 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 800));
-    AsyncInvocation async4 =
+    AsyncInvocation<?> async4 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
-    async1.join();
-    async2.join();
-    async3.join();
-    async4.join();
+    async1.await();
+    async2.await();
+    async3.await();
+    async4.await();
 
-    int queueSize = (Integer) vm4.invoke(() -> WANTestBase.getQueueContentSize("ln", true));
+    int queueSize = vm4.invoke(() -> WANTestBase.getQueueContentSize("ln", true));
     assertEquals("Actual queue size is not matching with the expected", 3500, queueSize);
 
     // resume the senders now
@@ -106,8 +106,8 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationWithLowNumberOfBuckets() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -134,30 +134,30 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    AsyncInvocation async1 =
+    AsyncInvocation<?> async1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 700));
-    AsyncInvocation async2 =
+    AsyncInvocation<?> async2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    AsyncInvocation async3 =
+    AsyncInvocation<?> async3 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 800));
-    AsyncInvocation async4 =
+    AsyncInvocation<?> async4 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
-    async1.join();
-    async2.join();
-    async3.join();
-    async4.join();
+    async1.await();
+    async2.await();
+    async3.await();
+    async4.await();
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
   }
 
   @Test
-  public void testParallelQueueDrainInOrder_PR() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testParallelQueueDrainInOrder_PR() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 4,
         isOffHeap()));
@@ -207,24 +207,25 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
 
     vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
 
-    HashMap vm4BRUpdates =
-        (HashMap) vm4.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
-    HashMap vm5BRUpdates =
-        (HashMap) vm5.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
-    HashMap vm6BRUpdates =
-        (HashMap) vm6.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
-    HashMap vm7BRUpdates =
-        (HashMap) vm7.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
+    HashMap<String, List<?>> vm4BRUpdates =
+        vm4.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
+    vm5.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
+    vm6.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
+    vm7.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
 
-    List b0SenderUpdates = (List) vm4BRUpdates.get("Create0");
-    List b1SenderUpdates = (List) vm4BRUpdates.get("Create1");
-    List b2SenderUpdates = (List) vm4BRUpdates.get("Create2");
-    List b3SenderUpdates = (List) vm4BRUpdates.get("Create3");
+    List<?> b0SenderUpdates = vm4BRUpdates.get("Create0");
+    List<?> b1SenderUpdates = vm4BRUpdates.get("Create1");
+    List<?> b2SenderUpdates = vm4BRUpdates.get("Create2");
+    List<?> b3SenderUpdates = vm4BRUpdates.get("Create3");
 
-    HashMap vm4QueueBRUpdates = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
-    HashMap vm5QueueBRUpdates = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
-    HashMap vm6QueueBRUpdates = (HashMap) vm6.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
-    HashMap vm7QueueBRUpdates = (HashMap) vm7.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
+    HashMap<String, List<?>> vm4QueueBRUpdates =
+        vm4.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
+    HashMap<String, List<?>> vm5QueueBRUpdates =
+        vm5.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
+    HashMap<String, List<?>> vm6QueueBRUpdates =
+        vm6.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
+    HashMap<String, List<?>> vm7QueueBRUpdates =
+        vm7.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
 
     assertEquals(vm4QueueBRUpdates, vm5QueueBRUpdates);
     assertEquals(vm4QueueBRUpdates, vm6QueueBRUpdates);
@@ -235,13 +236,14 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.resumeSender("ln"));
     vm7.invoke(() -> WANTestBase.resumeSender("ln"));
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
-    HashMap receiverUpdates =
-        (HashMap) vm2.invoke(() -> WANTestBase.checkPR(getTestMethodName() + "_PR"));
-    List<Long> createList = (List) receiverUpdates.get("Create");
-    ArrayList<Long> b0ReceiverUpdates = new ArrayList<Long>();
-    ArrayList<Long> b1ReceiverUpdates = new ArrayList<Long>();
-    ArrayList<Long> b2ReceiverUpdates = new ArrayList<Long>();
-    ArrayList<Long> b3ReceiverUpdates = new ArrayList<Long>();
+    HashMap<String, List<?>> receiverUpdates =
+        vm2.invoke(() -> WANTestBase.checkPR(getTestMethodName() + "_PR"));
+    @SuppressWarnings("unchecked")
+    List<Long> createList = (List<Long>) receiverUpdates.get("Create");
+    ArrayList<Long> b0ReceiverUpdates = new ArrayList<>();
+    ArrayList<Long> b1ReceiverUpdates = new ArrayList<>();
+    ArrayList<Long> b2ReceiverUpdates = new ArrayList<>();
+    ArrayList<Long> b3ReceiverUpdates = new ArrayList<>();
     for (Long key : createList) {
       long mod = key % 4;
       if (mod == 0) {

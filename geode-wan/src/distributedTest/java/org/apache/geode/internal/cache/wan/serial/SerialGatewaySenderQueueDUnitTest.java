@@ -31,7 +31,6 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
@@ -54,7 +53,6 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -192,9 +190,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     assertEquals(primarySenderUpdates, secondarySenderUpdates);
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
-    Wait.pause(2000);
+    deprecatedPause(2000);
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
-    Wait.pause(2000);
+    deprecatedPause(2000);
     // We should wait till primarySenderUpdates and secondarySenderUpdates become same
     // If in 300000ms they don't then throw error.
     primarySenderUpdates = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue());
@@ -204,7 +202,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     // assertIndexDetailsEquals(primarySenderUpdates, secondarySenderUpdates);
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
-    Wait.pause(5000);
+    deprecatedPause(5000);
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
     primarySenderUpdates = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue());
     HashMap receiverUpdates = (HashMap) vm2.invoke(() -> WANTestBase.checkQueue());
@@ -216,7 +214,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     }
     assertEquals(primarySenderUpdates.get("Destroy"), receiverUpdates.get("Create"));
 
-    Wait.pause(5000);
+    deprecatedPause(5000);
     // We expect that after this much time secondary would have got batch removal message
     // removing all the keys.
     secondarySenderUpdates = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue());
@@ -272,21 +270,21 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
 
     vm6.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    Wait.pause(5000);
+    deprecatedPause(5000);
     HashMap primarySenderUpdates = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue());
     HashMap secondarySenderUpdates = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue());
     checkPrimarySenderUpdatesOnVM5(primarySenderUpdates);
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
-    Wait.pause(4000);
+    deprecatedPause(4000);
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
-    Wait.pause(15000);
+    deprecatedPause(15000);
     primarySenderUpdates = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue());
     secondarySenderUpdates = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue());
     assertEquals(primarySenderUpdates, secondarySenderUpdates);
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
-    Wait.pause(5000);
+    deprecatedPause(5000);
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
   }
 
@@ -306,7 +304,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
+    cache = createCache(ds);
 
     File directory =
         new File("TKSender" + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
@@ -366,7 +364,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
+    cache = createCache(ds);
 
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setBatchConflationEnabled(true);

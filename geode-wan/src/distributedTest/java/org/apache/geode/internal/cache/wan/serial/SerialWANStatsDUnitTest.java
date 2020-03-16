@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.Wait.pause;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -46,8 +45,8 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
   }
 
   @Override
-  protected final void postSetUpWANTestBase() throws Exception {
-    this.testName = getUniqueName();
+  protected final void postSetUpWANTestBase() {
+    testName = getUniqueName();
     addIgnoredException("java.net.ConnectException");
     addIgnoredException("java.net.SocketException");
     addIgnoredException("Unexpected IOException");
@@ -59,7 +58,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -79,7 +78,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 1000));
 
-    pause(2000);
+    deprecatedPause(2000);
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(100, 1000, 1000));
 
     vm4.invoke(() -> WANTestBase.checkQueueStats("ln", 0, 1000, 1000, 1000));
@@ -548,7 +547,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -570,7 +569,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 1000));
 
-    pause(2000);
+    deprecatedPause(2000);
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(100, 1000, 1000));
 
     vm4.invoke(() -> WANTestBase.checkQueueStats("ln", 0, 1000, 1000, 1000));
@@ -589,9 +588,9 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer tkPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     createCacheInVMs(tkPort, vm3);
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -625,7 +624,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 1000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 1000));
 
-    pause(2000);
+    deprecatedPause(2000);
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(100, 1000, 1000));
     vm3.invoke(() -> WANTestBase.checkGatewayReceiverStats(100, 1000, 1000));
 
@@ -640,6 +639,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationHA() throws Exception {
 
@@ -647,7 +647,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
     vm5.invoke(() -> WANTestBase.createCache(lnPort));
@@ -666,22 +666,22 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    AsyncInvocation inv1 = vm5.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR", 10000));
-    pause(2000);
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
+    AsyncInvocation<?> inv1 = vm5.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR", 10000));
+    deprecatedPause(2000);
+    AsyncInvocation<?> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
     Boolean isKilled = Boolean.FALSE;
     try {
       isKilled = (Boolean) inv2.getResult();
     } catch (Throwable e) {
       fail("Unexpected exception while killing a sender");
     }
-    AsyncInvocation inv3 = null;
+    AsyncInvocation<?> inv3;
     if (!isKilled) {
       inv3 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
-      inv3.join();
+      inv3.await();
     }
-    inv1.join();
-    inv2.join();
+    inv1.await();
+    inv2.await();
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 10000));
 
@@ -814,7 +814,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR_1", 1000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR_2", 500));
 
-    pause(2000);
+    deprecatedPause(2000);
     vm4.invoke(() -> WANTestBase.checkQueueStats("ln", 0, 1500, 1500, 1500));
     vm4.invoke(() -> WANTestBase.checkBatchStats("ln", 75));
     vm4.invoke(() -> WANTestBase.checkUnProcessedStats("ln", 0));
@@ -844,6 +844,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    *
    *
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() {
     int numEntries = 2000;
@@ -857,7 +858,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR_1", null, isOffHeap()));
 
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // This slows down the receiver
     vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getUniqueName() + "_RR_1"));
@@ -883,13 +884,13 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     startSenderInVMs("ln", vm4, vm5);
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR_1", numEntries));
     // destroy RR_1 in remote site
     vm2.invoke(() -> WANTestBase.destroyRegion(testName + "_RR_1", 5));
 
     try {
-      inv1.join();
+      inv1.await();
     } catch (InterruptedException e) {
       e.printStackTrace();
       fail();
@@ -946,7 +947,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName, 800));
 
-    pause(2000);
+    deprecatedPause(2000);
     vm4.invoke(() -> WANTestBase.checkQueueStats("ln", 0, 1000, 900, 800));
     vm4.invoke(() -> WANTestBase.checkEventFilteredStats("ln", 200));
     vm4.invoke(() -> WANTestBase.checkBatchStats("ln", 80));
@@ -982,8 +983,8 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(testName, null, 1, 100, isOffHeap()));
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(testName, null, 1, 100, isOffHeap()));
 
-    final Map keyValues = new HashMap();
-    final Map updateKeyValues = new HashMap();
+    final Map<Object, Object> keyValues = new HashMap<>();
+    final Map<Object, Object> updateKeyValues = new HashMap<>();
     for (int i = 0; i < 1000; i++) {
       keyValues.put(i, i);
     }
@@ -1014,7 +1015,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionContents(testName, keyValues));
     vm3.invoke(() -> WANTestBase.validateRegionContents(testName, keyValues));
 
-    pause(2000);
+    deprecatedPause(2000);
     vm4.invoke(() -> WANTestBase.checkQueueStats("ln", 0, 2000, 2000, 1500));
     vm4.invoke(() -> WANTestBase.checkConflatedStats("ln", 500));
   }

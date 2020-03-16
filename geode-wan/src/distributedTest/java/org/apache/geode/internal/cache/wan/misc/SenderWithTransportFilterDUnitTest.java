@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.wan.misc;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,6 @@ import java.util.zip.CheckedOutputStream;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -50,9 +49,9 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
   @Test
   public void testSerialSenderWithTransportFilter() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters(nyPort));
     vm2.invoke(
@@ -75,9 +74,9 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
   @Test
   public void testParallelSenderWithTransportFilter() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters(nyPort));
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 10,
@@ -105,12 +104,12 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
+    cache = createCache(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
-    ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+    ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
     transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
     if (!transportFilters.isEmpty()) {
       for (GatewayTransportFilter filter : transportFilters) {
@@ -141,7 +140,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
       ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
-      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
@@ -164,7 +163,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setBatchSize(batchSize);
       gateway.setManualStart(isManualStart);
       ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
-      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
@@ -195,7 +194,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
     @Override
     public String toString() {
-      return this.name;
+      return name;
     }
 
     @Override

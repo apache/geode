@@ -45,9 +45,7 @@ import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -84,10 +82,10 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     }
 
     GemFireCacheImpl gemCache = (GemFireCacheImpl) cache;
-    Set<?> regionSet = gemCache.rootRegions();
+    Set<Region<?, ?>> regionSet = gemCache.rootRegions();
 
-    for (Object r : regionSet) {
-      if (((Region<?, ?>) r).getName()
+    for (Region<?, ?> r : regionSet) {
+      if (r.getName()
           .equals(((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0]
               .getRegion().getName())) {
         fail("The shadowPR is exposed to the user");
@@ -327,14 +325,14 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
     // -------------------Close and rebuild local site ---------------------------------
 
-    vm4.invoke(() -> WANTestBase.killSender());
-    vm5.invoke(() -> WANTestBase.killSender());
-    vm6.invoke(() -> WANTestBase.killSender());
-    vm7.invoke(() -> WANTestBase.killSender());
+    vm4.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm5.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm6.invoke((SerializableRunnableIF) WANTestBase::killSender);
+    vm7.invoke((SerializableRunnableIF) WANTestBase::killSender);
 
     Integer regionSize =
         vm2.invoke(() -> WANTestBase.getRegionSize(getTestMethodName() + "_PR"));
-    LogWriterUtils.getLogWriter().info("Region size on remote is: " + regionSize);
+    getLogWriter().info("Region size on remote is: " + regionSize);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -658,6 +656,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
@@ -692,12 +691,12 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
 
     AsyncInvocation<Void> inv1 =
         vm7.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 5000));
-    Wait.pause(500);
-    AsyncInvocation<Void> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    deprecatedPause(500);
+    AsyncInvocation<Void> inv2 = vm4.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
     AsyncInvocation<Void> inv3 =
         vm6.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
-    Wait.pause(1500);
-    AsyncInvocation<Void> inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
+    deprecatedPause(1500);
+    AsyncInvocation<Void> inv4 = vm5.invokeAsync((SerializableRunnableIF) WANTestBase::killSender);
     inv1.await();
     inv2.await();
     inv3.await();
@@ -849,7 +848,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.pauseSender("ln"));
     vm7.invoke(() -> WANTestBase.pauseSender("ln"));
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
 
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     vm4.invoke(() -> WANTestBase.doDestroys(getTestMethodName() + "_PR", 500));
@@ -866,7 +865,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.resumeSender("ln"));
 
     // give some time for the queue to drain
-    Wait.pause(5000);
+    deprecatedPause(5000);
 
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -959,11 +958,12 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     /*
      * Remember pausing sender does not guarantee that peek will be paused immediately as its quite
      * possible event processor is already in peeking events and send them after peeking without a
-     * check for pause. hence below pause of 1 sec to allow dispatching to be paused
+     * check for deprecatedPause. hence below deprecatedPause of 1 sec to allow dispatching to be
+     * paused
      */
     // vm4.invoke(() -> WANTestBase.waitForSenderPausedState( "ln" ));
     // vm5.invoke(() -> WANTestBase.waitForSenderPausedState( "ln" ));
-    Wait.pause(1000);
+    deprecatedPause(1000);
 
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10));
 
@@ -974,58 +974,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     Integer localSize1 = vm4.invoke(() -> WANTestBase.getPRQLocalSize("ln"));
     Integer localSize2 = vm5.invoke(() -> WANTestBase.getPRQLocalSize("ln"));
     assertEquals(10, localSize1 + localSize2);
-  }
-
-
-
-  public void tParallelGatewaySenderQueueLocalSizeWithHA() {
-    IgnoredException.addIgnoredException("Broken pipe");
-    IgnoredException.addIgnoredException("Connection reset");
-    IgnoredException.addIgnoredException("Unexpected IOException");
-    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-
-    createCacheInVMs(nyPort, vm2);
-    createReceiverInVMs(vm2);
-    createCacheInVMs(lnPort, vm4, vm5);
-
-    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-
-    vm4.invoke(createPartitionedRegionRunnable("ln", 1));
-    vm5.invoke(createPartitionedRegionRunnable("ln", 1));
-
-    startSenderInVMs("ln", vm4, vm5);
-
-    vm4.invoke(waitForSenderRunnable());
-    vm5.invoke(waitForSenderRunnable());
-
-    vm4.invoke(() -> WANTestBase.pauseSender("ln"));
-    vm5.invoke(() -> WANTestBase.pauseSender("ln"));
-
-    /*
-     * Remember pausing sender does not guarantee that peek will be paused immediately as its quite
-     * possible event processor is already in peeking events and send them after peeking without a
-     * check for pause. hence below pause of 1 sec to allow dispatching to be paused
-     */
-    // vm4.invoke(() -> WANTestBase.waitForSenderPausedState( "ln" ));
-    // vm5.invoke(() -> WANTestBase.waitForSenderPausedState( "ln" ));
-    Wait.pause(1000);
-
-    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10));
-
-    vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 10));
-    vm5.invoke(() -> WANTestBase.validateQueueContents("ln", 10));
-
-    Integer localSize1 = vm4.invoke(() -> WANTestBase.getPRQLocalSize("ln"));
-    Integer localSize2 = vm5.invoke(() -> WANTestBase.getPRQLocalSize("ln"));
-    assertEquals(10, localSize1 + localSize2);
-
-    vm5.invoke(() -> WANTestBase.killSender());
-
-    vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 10));
-    vm4.invoke(() -> WANTestBase.checkPRQLocalSize("ln", 10));
-
   }
 
   /**

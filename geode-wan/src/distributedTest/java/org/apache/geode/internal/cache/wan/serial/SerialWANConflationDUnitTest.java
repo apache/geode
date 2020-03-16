@@ -38,7 +38,6 @@ import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
@@ -72,7 +71,12 @@ public class SerialWANConflationDUnitTest extends WANTestBase {
     props.setProperty(LOG_FILE, logFile);
 
     InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
+    getCache(ds);
+  }
+
+  @SuppressWarnings("deprecation")
+  private void getCache(InternalDistributedSystem ds) {
+    cache = createCache(ds);
   }
 
   private File createDirectory(String name) {
@@ -185,7 +189,7 @@ public class SerialWANConflationDUnitTest extends WANTestBase {
     vm7.invoke(() -> pauseSender("ln"));
 
 
-    final Map<Integer, Integer> keyValues = new HashMap<>();
+    final Map<Object, Object> keyValues = new HashMap<>();
 
     for (int i = 1; i <= 10; i++) {
       for (int j = 1; j <= 10; j++) {
@@ -249,7 +253,7 @@ public class SerialWANConflationDUnitTest extends WANTestBase {
     vm7.invoke(() -> pauseSender("ln"));
 
 
-    final Map<Integer, Integer> keyValues = new HashMap<>();
+    final Map<Object, Object> keyValues = new HashMap<>();
 
     for (int i = 1; i <= 10; i++) {
       for (int j = 1; j <= 10; j++) {

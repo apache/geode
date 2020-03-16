@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -94,8 +93,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 2));
     vm7.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 2));
 
-
-    Wait.pause(5000);
+    deprecatedPause(5000);
     vm4.invoke(() -> WANTestBase.verifyQueueSize("ln", 0));
     vm6.invoke(() -> WANTestBase.verifyQueueSize("ny", 0));
 
@@ -282,12 +280,12 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     }
     vm5.invoke(() -> WANTestBase.putGivenKeyValue(getTestMethodName() + "_RR", keyValues));
 
-    Wait.pause(2000);
+    deprecatedPause(2000);
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 3));
     vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 3));
     vm7.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 3));
 
-    Wait.pause(5000);
+    deprecatedPause(5000);
     vm6.invoke(() -> WANTestBase.verifyQueueSize("ln1", 0));
     vm7.invoke(() -> WANTestBase.verifyQueueSize("ny1", 0));
     vm5.invoke(() -> WANTestBase.verifyQueueSize("tk1", 0));
@@ -394,7 +392,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1));
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1));
 
-    Wait.pause(5000);
+    deprecatedPause(5000);
     vm3.invoke(() -> WANTestBase.verifyQueueSize("ln1", 0));
     vm4.invoke(() -> WANTestBase.verifyQueueSize("ny1", 0));
     vm5.invoke(() -> WANTestBase.verifyQueueSize("tk1", 0));
