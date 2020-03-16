@@ -105,7 +105,7 @@ public class ConnectionConnector {
     CacheClientUpdater updater = new CacheClientUpdater(clientUpdateName, endpoint.getLocation(),
         isPrimary, distributedSystem, new ClientSideHandshakeImpl(handshake), qManager,
         endpointManager,
-        endpoint, handshakeTimeout, socketCreator);
+        endpoint, handshakeTimeout, socketCreator, socketFactory);
 
     if (!updater.isConnected()) {
       return null;

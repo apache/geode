@@ -48,7 +48,8 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
   Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
       throws IOException {
-    return connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize, null);
+    return connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize,
+        TcpSocketFactory.DEFAULT);
   }
 
   Socket connect(HostAndPort addr, int timeout,

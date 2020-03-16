@@ -56,12 +56,6 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
     // create an SSL connection
 
     InetSocketAddress sockaddr = addr.getSocketInetAddress();
-    // TODO - code used to do this, but that doesn't let the proxy play
-    // games with unresolved addresses
-    // if (sockaddr.getAddress() == null) {
-    // InetAddress address = InetAddress.getByName(sockaddr.getHostString());
-    // sockaddr = new InetSocketAddress(address, sockaddr.getPort());
-    // }
 
     if (coreSocketCreator.getSslContext() == null) {
       throw new GemFireConfigException(

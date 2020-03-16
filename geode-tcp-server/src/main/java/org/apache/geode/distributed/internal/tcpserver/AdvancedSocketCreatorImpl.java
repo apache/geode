@@ -96,15 +96,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       }
       InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
       try {
-        // TODO - code used to do this, but that doesn't let the proxy play
-        // games with unresolved addresses
-        // InetAddress serverAddress = inetSocketAddress.getAddress();
-        // if (serverAddress == null) {
-        // serverAddress = InetAddress.getByName(inetSocketAddress.getHostString());
-        // }
-        socket.connect(
-            inetSocketAddress,
-            Math.max(timeout, 0));
+        socket.connect(inetSocketAddress, Math.max(timeout, 0));
       } finally {
         if (optionalWatcher != null) {
           optionalWatcher.afterConnect(socket);

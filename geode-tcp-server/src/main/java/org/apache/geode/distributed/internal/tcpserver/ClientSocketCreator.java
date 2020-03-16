@@ -40,12 +40,6 @@ public interface ClientSocketCreator {
    */
   Socket connect(HostAndPort addr, int connectTimeout) throws IOException;
 
-  /**
-   * Creates a connection to the given host/port
-   */
-  Socket connect(HostAndPort addr, int connectTimeout, int socketBufferSize)
-      throws IOException;
-
   Socket connect(HostAndPort addr, int connectTimeout, int socketBufferSize,
       TcpSocketFactory socketFactory)
       throws IOException;

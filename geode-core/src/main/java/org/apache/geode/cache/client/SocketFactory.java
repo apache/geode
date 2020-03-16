@@ -28,7 +28,7 @@ import org.apache.geode.annotations.Immutable;
 public interface SocketFactory {
 
   /**
-   * The default socket factory, which just calls {@link Socket#Socket()}
+   * The default socket factory
    */
   @Immutable
   SocketFactory DEFAULT = Socket::new;
