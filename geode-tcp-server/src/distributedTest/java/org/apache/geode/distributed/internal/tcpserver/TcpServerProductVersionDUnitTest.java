@@ -119,6 +119,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     return olderVersions.get(olderVersions.size() - 1);
   }
 
+  @SuppressWarnings("unused")
   private enum VersionConfiguration {
     OLD_CURRENT(oldProductVersion, currentProductVersion),
     CURRENT_OLD(currentProductVersion, oldProductVersion);
@@ -154,9 +155,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     clientVM.invoke("issue version request",
         createRequestResponseFunction(locatorPort, VersionRequest.class.getName(),
             VersionResponse.class.getName()));
-    clientVM.invoke("issue info request",
-        createRequestResponseFunction(locatorPort, InfoRequest.class.getName(),
-            InfoResponse.class.getName()));
+    testDeprecatedMessageTypes(clientVM, locatorPort);
     clientVM.invoke("issue shutdown request",
         createRequestResponseFunction(locatorPort, ShutdownRequest.class.getName(),
             ShutdownResponse.class.getName()));
@@ -164,9 +163,16 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
       Locator locator = Locator.getLocator();
       if (locator != null) {
         ((InternalLocator) locator).stop(false, false, false);
-        GeodeAwaitility.await().until(() -> ((InternalLocator) locator).isStopped());
+        GeodeAwaitility.await().until(((InternalLocator) locator)::isStopped);
       }
     });
+  }
+
+  @SuppressWarnings("deprecation")
+  private void testDeprecatedMessageTypes(VM clientVM, int locatorPort) {
+    clientVM.invoke("issue info request",
+        createRequestResponseFunction(locatorPort, InfoRequest.class.getName(),
+            InfoResponse.class.getName()));
   }
 
   private SerializableRunnableIF createRequestResponseFunction(
@@ -186,17 +192,19 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         tcpClient = getLegacyTcpClient();
       }
 
+      @SuppressWarnings("deprecation")
+      final InetAddress localHost = SocketCreator.getLocalHost();
       Object response;
       try {
         Method requestToServer =
             TcpClient.class.getMethod("requestToServer", InetAddress.class, int.class, Object.class,
                 int.class);
-        response = requestToServer.invoke(tcpClient, SocketCreator.getLocalHost(), locatorPort,
+        response = requestToServer.invoke(tcpClient, localHost, locatorPort,
             requestMessage, 1000);
       } catch (NoSuchMethodException e) {
         response = tcpClient
             .requestToServer(
-                new HostAndPort(SocketCreator.getLocalHost().getHostAddress(), locatorPort),
+                new HostAndPort(localHost.getHostAddress(), locatorPort),
                 requestMessage, 1000);
       }
 
@@ -255,7 +263,9 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     Properties properties = new Properties();
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
+    @SuppressWarnings("deprecation")
+    final int currentVMNum = VM.getCurrentVMNum();
+    properties.setProperty(NAME, "vm" + currentVMNum);
     return properties;
   }
 
