@@ -83,6 +83,7 @@ public class ClientSNIAcceptanceTest {
     gemFireProps.setProperty(SSL_KEYSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_TRUSTSTORE, trustStorePath);
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
+    // gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
     ClientCache cache = new ClientCacheFactory(gemFireProps)
         .addPoolLocator(

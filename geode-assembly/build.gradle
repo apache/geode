@@ -697,3 +697,7 @@ docker {
   name geodeDockerImageName
   copySpec.from(tasks.installDist.outputs).into('geode')
 }
+
+acceptanceTest {
+  dependsOn(tasks.docker)
+}
