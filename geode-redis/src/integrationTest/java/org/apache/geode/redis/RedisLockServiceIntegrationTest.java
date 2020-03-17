@@ -21,6 +21,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,6 +53,7 @@ public class RedisLockServiceIntegrationTest {
     cf.set(LOCATORS, "");
     cache = cf.create();
 
+    System.setProperty(GeodeRedisServer.DEFAULT_REGION_SYS_PROP_NAME, "REPLICATE");
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
     server.start();

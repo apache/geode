@@ -31,7 +31,7 @@ public class RedisLockService implements RedisLockServiceMBean {
 
   private static final int DEFAULT_TIMEOUT = 1000;
   private final int timeoutMS;
-  private final Map<KeyHashIdentifier, Lock> locks =
+  private final Map<KeyHashIdentifier, Lock> weakReferencesTolocks =
       Collections.synchronizedMap(new WeakHashMap<>());
 
   /**
@@ -52,7 +52,7 @@ public class RedisLockService implements RedisLockServiceMBean {
 
   @Override
   public int getLockCount() {
-    return locks.size();
+    return weakReferencesTolocks.size();
   }
 
   /**
@@ -72,21 +72,16 @@ public class RedisLockService implements RedisLockServiceMBean {
     }
 
     KeyHashIdentifier lockKey = new KeyHashIdentifier(key.toBytes());
-
     Lock lock = new ReentrantLock();
-    Lock oldLock = locks.putIfAbsent(lockKey, lock);
+    Lock oldLock = weakReferencesTolocks.putIfAbsent(lockKey, lock);
+
     if (oldLock != null) {
       lock = oldLock;
-      // we need to get a reference to the actual key object so that the backing WeakHashMap does
-      // not clean it up.
-      synchronized (locks) {
-        for (KeyHashIdentifier keyInSet : locks.keySet()) {
-          if (keyInSet.equals(lockKey)) {
-            lockKey = keyInSet;
-            break;
-          }
-        }
-      }
+
+      // we need to get a reference to the actual key object
+      // so that the backing WeakHashMap does not clean it up
+      // when garbage collection happens.
+      lockKey = getReferenceToLockKey(lockKey);
     }
 
     if (!lock.tryLock(timeoutMS, TimeUnit.MILLISECONDS)) {
@@ -94,6 +89,20 @@ public class RedisLockService implements RedisLockServiceMBean {
     }
 
     return new AutoCloseableLock(lockKey, lock);
+  }
+
+  private KeyHashIdentifier getReferenceToLockKey(KeyHashIdentifier lockKey) {
+    KeyHashIdentifier referenceToLockKey = null;
+
+    synchronized (weakReferencesTolocks) {
+      for (KeyHashIdentifier keyInSet : weakReferencesTolocks.keySet()) {
+        if (keyInSet.equals(lockKey)) {
+          referenceToLockKey = keyInSet;
+          break;
+        }
+      }
+    }
+    return referenceToLockKey;
   }
 
 }

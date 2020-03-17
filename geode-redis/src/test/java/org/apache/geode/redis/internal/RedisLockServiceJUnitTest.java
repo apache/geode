@@ -20,7 +20,12 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.Test;
 
@@ -165,4 +170,41 @@ public class RedisLockServiceJUnitTest {
     assertThat(lockService.getLockCount()).isEqualTo(1);
   }
 
+  @Test
+  public void lockingDoesNotCauseConcurrentModificationExceptions()
+      throws ExecutionException, InterruptedException {
+
+    RedisLockService lockService = new RedisLockService();
+
+    ExecutorService pool = Executors.newFixedThreadPool(5);
+    Callable<Void> callable = () -> {
+      ByteArrayWrapper key = new ByteArrayWrapper("key".getBytes());
+      for (int i = 0; i < 10000; i++) {
+        lockService.lock(key).close();
+      }
+      return null;
+    };
+
+    Callable<Void> lockMaker = () -> {
+      for (int i = 0; i < 10000; i++) {
+        lockService.lock(new ByteArrayWrapper(("key-" + i++).getBytes())).close();
+      }
+      return null;
+    };
+
+    Callable<Void> garbageCollection = () -> {
+      for (int i = 0; i < 100; i++) {
+        System.gc();
+        System.runFinalization();
+      }
+      return null;
+    };
+
+    Future<Void> future1 = pool.submit(callable);
+    Future<Void> future2 = pool.submit(lockMaker);
+    pool.submit(garbageCollection);
+
+    // The test passes if this does not throw an exception
+    future1.get();
+  }
 }
