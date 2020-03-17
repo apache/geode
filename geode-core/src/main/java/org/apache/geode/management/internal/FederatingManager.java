@@ -478,8 +478,6 @@ public class FederatingManager extends Manager {
               return;
             }
             proxyFactory.createAllProxies(member, proxyMonitoringRegion);
-
-            notifListener.markReady();
           } catch (Exception e) {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During GII Proxy creation", e);
