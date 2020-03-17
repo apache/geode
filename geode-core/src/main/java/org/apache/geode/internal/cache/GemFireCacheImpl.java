@@ -889,7 +889,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         TypeRegistry::new,
         HARegionQueue::setMessageSyncInterval,
         FunctionService::registerFunction,
-        object -> new SystemTimer(object, true),
+        object -> new SystemTimer((DistributedSystem) object),
         TombstoneService::initialize,
         ExpirationScheduler::new,
         DiskStoreMonitor::new,

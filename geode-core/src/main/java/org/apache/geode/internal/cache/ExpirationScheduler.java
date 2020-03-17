@@ -38,7 +38,7 @@ public class ExpirationScheduler {
       .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PENDING_CANCELS", 10000).intValue();
 
   public ExpirationScheduler(InternalDistributedSystem ds) {
-    this.timer = new SystemTimer(ds, true);
+    this.timer = new SystemTimer(ds);
   }
 
   public void forcePurge() {
