@@ -37,7 +37,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -77,11 +76,6 @@ public class TcpServerJUnitTest {
     assertThat(server.isShuttingDown()).isFalse();
     assertThat(server.getSocketAddress()).isNotNull();
     assertThat(server.isAlive()).isTrue();
-  }
-
-  @Before
-  public void setup() {
-    TcpClient.clearStaticData();
   }
 
   @Test
