@@ -290,17 +290,18 @@ public class TcpClient {
         // old locators will not recognize the version request and will close the connection
       }
     } finally {
-      try {
-        sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
-      } catch (Exception e) {
-        logger.error("Error aborting socket ", e);
+      if (!sock.isClosed()) {
+        try {
+          sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
+        } catch (Exception e) {
+          logger.error("Error aborting socket ", e);
+        }
+        try {
+          sock.close();
+        } catch (Exception e) {
+          logger.error("Error closing socket ", e);
+        }
       }
-      try {
-        sock.close();
-      } catch (Exception e) {
-        logger.error("Error closing socket ", e);
-      }
-
     }
     synchronized (serverVersions) {
       serverVersions.put(addr, Version.GFE_57.ordinal());
