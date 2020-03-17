@@ -21,6 +21,6 @@ import org.apache.geode.cache.RegionShortcut;
 public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegionClearDUnitTest {
 
   protected RegionShortcut getRegionShortCut() {
-    return RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
+    return RegionShortcut.PARTITION_REDUNDANT_PERSISTENT;
   }
 }
