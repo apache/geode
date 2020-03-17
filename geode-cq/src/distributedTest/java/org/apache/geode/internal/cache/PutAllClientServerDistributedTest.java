@@ -46,7 +46,6 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -324,7 +323,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     client2.invoke(() -> {
       Region<String, TickerData> region = getClientCache().getRegion(regionName);
-      Map<String, TickerData> map = new HashMap<>();
+      Map<String, TickerData> map = new LinkedHashMap<>();
       for (int i = 10; i < 20; i++) {
         map.put("key-" + i, new TickerData(i * 10));
       }
@@ -358,7 +357,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       region.localDestroyRegion();
 
-      Map<String, TickerData> puts = new HashMap<>();
+      Map<String, TickerData> puts = new LinkedHashMap<>();
       for (int i = 1; i < 21; i++) {
         puts.put("key-" + i, null);
       }
@@ -2002,9 +2001,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     client1.invoke(() -> new ClientBuilder()
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionAckInterval(1)
         .subscriptionEnabled(false)
-        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
         .prSingleHopEnabled(true)
@@ -2266,7 +2263,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * putAll test.
    */
   @Test
-  public void testEventIdMisorderInPRSingleHop() throws Exception {
+  public void testEventIdMisorderInPRSingleHop() {
     VM server3 = client2;
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
@@ -2285,30 +2282,20 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2, serverPort3)
         .subscriptionAckInterval(1)
+        .subscriptionEnabled(true)
         .subscriptionRedundancy(-1)
         .create());
 
-    // Create local client with region
-    Properties config = getDistributedSystemProperties();
-    config.setProperty(LOCATORS, "");
+    new ClientBuilder()
+        .concurrencyChecksEnabled(true)
+        .prSingleHopEnabled(true)
+        .serverPorts(serverPort1, serverPort2, serverPort3)
+        .subscriptionAckInterval(1)
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy(-1)
+        .create();
 
-    createClientCache(new ClientCacheFactory(config));
-
-    PoolFactory poolFactory = PoolManager.createFactory();
-    for (int port : asList(serverPort1, serverPort2, serverPort3)) {
-      poolFactory.addServer(hostName, port);
-    }
-
-    poolFactory
-        .setSubscriptionAckInterval(1)
-        .setSubscriptionEnabled(true)
-        .setSubscriptionRedundancy(-1)
-        .create(poolName);
-
-    Region<String, TickerData> myRegion = getClientCache()
-        .<String, TickerData>createClientRegionFactory(ClientRegionShortcut.LOCAL)
-        .setPoolName(poolName)
-        .create(regionName);
+    Region<String, TickerData> myRegion = getClientCache().getRegion(regionName);
 
     // do some putAll to get ClientMetaData for future putAll
     client1.invoke(() -> doPutAll(getClientCache().getRegion(regionName), "key-", ONE_HUNDRED));
@@ -2347,14 +2334,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     // client1 add listener and putAll
-    AsyncInvocation<Void> addListenerAndPutAllInClient1 = client1.invokeAsync(() -> {
+    client1.invoke(() -> {
       Region<String, TickerData> region = getClientCache().getRegion(regionName);
-      doPutAll(region, keyPrefix, ONE_HUNDRED);
+      doPutAll(region, keyPrefix, ONE_HUNDRED); // fails in GEODE-7812
     });
 
     // server1 and server2 will closeCache after created 10 keys
-
-    addListenerAndPutAllInClient1.await();
 
     // server3 print counter
     server3.invoke(() -> {
@@ -3276,6 +3261,10 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     private void create() {
       assertThat(serverPorts).isNotEmpty();
+      if (subscriptionAckInterval != DEFAULT_SUBSCRIPTION_ACK_INTERVAL ||
+          subscriptionRedundancy != DEFAULT_SUBSCRIPTION_REDUNDANCY) {
+        assertThat(subscriptionEnabled).isTrue();
+      }
 
       Properties config = getDistributedSystemProperties();
       config.setProperty(LOCATORS, "");
