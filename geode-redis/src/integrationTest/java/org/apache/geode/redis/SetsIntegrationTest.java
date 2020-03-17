@@ -46,12 +46,12 @@ import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class SetsIntegrationTest {
-  private static Jedis jedis;
+  static Jedis jedis;
+  static Jedis jedis2;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
   private static ThreePhraseGenerator generator = new ThreePhraseGenerator();
   private static int port = 6379;
-  private static int ITERATIONS = 1000;
 
   @BeforeClass
   public static void setUp() throws IOException {
@@ -65,11 +65,13 @@ public class SetsIntegrationTest {
 
     server.start();
     jedis = new Jedis("localhost", port, 10000000);
+    jedis2 = new Jedis("localhost", port, 10000000);
   }
 
   @AfterClass
   public static void tearDown() {
     jedis.close();
+    jedis2.close();
     cache.close();
     server.shutdown();
   }
@@ -100,7 +102,6 @@ public class SetsIntegrationTest {
   public void testConcurrentSAddSCard_sameKeyPerClient()
       throws InterruptedException, ExecutionException {
     int elements = 1000;
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
     Set<String> strings1 = new HashSet<String>();
     Set<String> strings2 = new HashSet<String>();
     String key = generator.generate('x');
@@ -128,7 +129,6 @@ public class SetsIntegrationTest {
   public void testConcurrentSAddSCard_differentKeyPerClient()
       throws InterruptedException, ExecutionException {
     int elements = 1000;
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
     Set<String> strings = new HashSet<String>();
     String key1 = generator.generate('x');
     String key2 = generator.generate('y');
@@ -242,7 +242,6 @@ public class SetsIntegrationTest {
   public void testConcurrentSMove() throws ExecutionException, InterruptedException {
     String source = generator.generate('x');
     String dest = generator.generate('y');
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
     int elements = 1000;
     Set<String> strings = new HashSet<String>();
     generateStrings(elements, strings, 'x');
@@ -335,7 +334,6 @@ public class SetsIntegrationTest {
   public void testConcurrentSDiffStore() throws InterruptedException {
     int ENTRIES = 100;
     int SUBSET_SIZE = 100;
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     Set<String> masterSet = new HashSet<>();
     for (int i = 0; i < ENTRIES; i++) {
@@ -448,7 +446,6 @@ public class SetsIntegrationTest {
   public void testConcurrentSInterStore() throws InterruptedException {
     int ENTRIES = 100;
     int SUBSET_SIZE = 100;
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     Set<String> masterSet = new HashSet<>();
     for (int i = 0; i < ENTRIES; i++) {
@@ -553,7 +550,6 @@ public class SetsIntegrationTest {
   public void testConcurrentSUnionStore() throws InterruptedException {
     int ENTRIES = 100;
     int SUBSET_SIZE = 100;
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     Set<String> masterSet = new HashSet<>();
     for (int i = 0; i < ENTRIES; i++) {
@@ -660,7 +656,6 @@ public class SetsIntegrationTest {
 
   @Test
   public void testConcurrentSPops() throws InterruptedException {
-    Jedis jedis2 = new Jedis("localhost", port, 100000);
     int ENTRIES = 1000;
 
     List<String> masterSet = new ArrayList<>();
@@ -716,7 +711,6 @@ public class SetsIntegrationTest {
 
   @Test
   public void testConcurrentSRems() throws InterruptedException {
-    Jedis jedis2 = new Jedis("localhost", port, 100000);
     int ENTRIES = 1000;
 
     List<String> masterSet = new ArrayList<>();

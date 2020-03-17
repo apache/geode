@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,10 +61,11 @@ import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class HashesIntegrationTest {
-  private static Jedis jedis;
+  static Random rand;
+  static Jedis jedis;
+  static Jedis jedis2;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
-  private static Random rand;
   private static int port = 6379;
   private static int ITERATION_COUNT = 4000;
 
@@ -83,6 +86,7 @@ public class HashesIntegrationTest {
 
     server.start();
     jedis = new Jedis("localhost", port, 10000000);
+    jedis2 = new Jedis("localhost", port, 10000000);
   }
 
   @Test
@@ -194,24 +198,27 @@ public class HashesIntegrationTest {
     String key = randString();
     String field = randString();
 
+    DecimalFormat decimalFormat = new DecimalFormat("#.#####");
     double incr = rand.nextDouble();
+    String incrAsString = decimalFormat.format(incr);
+    incr = Double.valueOf(incrAsString);
     if (incr == 0) {
       incr = incr + 1;
     }
 
     Double response1 = jedis.hincrByFloat(key, field, incr);
-    assertTrue(response1 == incr);
+    assertThat(response1).isEqualTo(incr, offset(.00001));
 
-    assertEquals(response1, Double.valueOf(jedis.hget(key, field)));
+    assertThat(response1).isEqualTo(Double.valueOf(jedis.hget(key, field)), offset(.00001));
 
     double response2 = jedis.hincrByFloat(randString(), randString(), incr);
 
-    assertTrue(response2 == incr);
+    assertThat(response2).isEqualTo(incr, offset(.00001));
 
     Double response3 = jedis.hincrByFloat(key, field, incr);
-    assertTrue(response3 + "=" + 2 * incr, response3 == 2 * incr);
+    assertThat(response3).isEqualTo(2 * incr, offset(.00001));
 
-    assertEquals(response3, Double.valueOf(jedis.hget(key, field)));
+    assertThat(response3).isEqualTo(Double.valueOf(jedis.hget(key, field)), offset(.00001));
 
   }
 
@@ -253,7 +260,7 @@ public class HashesIntegrationTest {
     ScanResult<Entry<String, String>> results = null;
 
     try {
-      results = jedis.hscan(key, "0");
+      results = jedis.hscan(key, "this cursor is non-numeric and so completely invalid");
       fail("Must throw exception for invalid cursor");
     } catch (Exception e) {
     }
@@ -473,7 +480,6 @@ public class HashesIntegrationTest {
     String key2 = "HMSET" + randString();
     Map<String, String> record1 = new HashMap<String, String>();
     Map<String, String> record2 = new HashMap<String, String>();
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     Runnable runnable1 = () -> doABunchOfHMSets(key1, record1, jedis);
     Runnable runnable2 = () -> doABunchOfHMSets(key2, record2, jedis2);
@@ -500,7 +506,6 @@ public class HashesIntegrationTest {
     String key = "HMSET" + randString();
     Map<String, String> record1 = new HashMap<String, String>();
     Map<String, String> record2 = new HashMap<String, String>();
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     Runnable runnable1 = () -> doABunchOfHMSets(key, record1, jedis);
     Runnable runnable2 = () -> doABunchOfHMSets(key, record2, jedis2);
@@ -529,7 +534,6 @@ public class HashesIntegrationTest {
       fields.add(randString());
     }
 
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     CountDownLatch latch = new CountDownLatch(1);
     ExecutorService pool = Executors.newFixedThreadPool(2);
@@ -564,7 +568,6 @@ public class HashesIntegrationTest {
     String key2 = "HSET" + randString();
     Map<String, String> record1 = new HashMap<String, String>();
     Map<String, String> record2 = new HashMap<String, String>();
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     Runnable runnable1 = () -> doABunchOfHSets(key1, record1, jedis);
     Runnable runnable2 = () -> doABunchOfHSets(key2, record2, jedis2);
@@ -591,7 +594,6 @@ public class HashesIntegrationTest {
     String key1 = "HSET" + randString();
     Map<String, String> record1 = new HashMap<String, String>();
     Map<String, String> record2 = new HashMap<String, String>();
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     Runnable runnable1 = () -> doABunchOfHSets(key1, record1, jedis);
     Runnable runnable2 = () -> doABunchOfHSets(key1, record2, jedis2);
@@ -615,7 +617,6 @@ public class HashesIntegrationTest {
     String key1 = "HSET" + randString();
     String field = "FIELD" + randString();
 
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     jedis.hset(key1, field, "0");
 
@@ -643,7 +644,6 @@ public class HashesIntegrationTest {
     String key = "HSET" + randString();
     String field = "FIELD" + randString();
 
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     jedis.hset(key, field, "0");
 
@@ -658,7 +658,7 @@ public class HashesIntegrationTest {
     thread2.join();
 
     String value = jedis.hget(key, field);
-    assertThat(value).isEqualTo(String.format("%.1f", ITERATION_COUNT * 0.75));
+    assertThat(value).isEqualTo(String.format("%.0f", ITERATION_COUNT * 0.75));
   }
 
   private void doABunchOfHIncrByFloats(String key, String field, int incrCount, double incrValue,
@@ -674,7 +674,6 @@ public class HashesIntegrationTest {
     String key1 = "HSET" + randString();
 
     ArrayBlockingQueue<String> blockingQueue = new ArrayBlockingQueue<>(ITERATION_COUNT);
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
 
     Runnable runnable1 = () -> doABunchOfHSetsWithBlockingQueue(key1, blockingQueue, jedis);
     Runnable runnable2 = () -> doABunchOfHDelsWithBlockingQueue(key1, blockingQueue, jedis2);
@@ -694,7 +693,6 @@ public class HashesIntegrationTest {
     String key1 = "HSET" + randString();
     HashMap<String, String> record = new HashMap<>();
 
-    Jedis jedis2 = new Jedis("localhost", port, 10000000);
     doABunchOfHSets(key1, record, jedis);
 
     ExecutorService pool = Executors.newFixedThreadPool(2);
@@ -788,11 +786,13 @@ public class HashesIntegrationTest {
   @After
   public void flushAll() {
     jedis.flushAll();
+    jedis2.flushAll();
   }
 
   @AfterClass
   public static void tearDown() {
     jedis.close();
+    jedis2.close();
     cache.close();
     server.shutdown();
   }
