@@ -816,8 +816,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     if (distributionConfig.getEnableManagementRestService()) {
       myCache.getOptionalService(HttpService.class).ifPresent(x -> {
+        ManagementService managementService = ManagementService.getManagementService(myCache);
+        if (!managementService.isManager()) {
+          managementService.startManager();
+        }
         try {
-          ManagementService.getManagementService(myCache).startManager();
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
           x.addWebApplication("/management", Paths.get(gemfireManagementWar), serviceAttributes);
