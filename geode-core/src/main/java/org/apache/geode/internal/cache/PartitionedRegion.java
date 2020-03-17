@@ -2189,7 +2189,7 @@ public class PartitionedRegion extends LocalRegion
         }
 
         // create ClearPRMessage per bucket
-        List<ClearPRMessage> clearMsgList = createClearPRMessages();
+        List<ClearPRMessage> clearMsgList = createClearPRMessages(regionEvent.getEventId());
         for (ClearPRMessage clearPRMessage : clearMsgList) {
           int bucketId = clearPRMessage.getBucketId();
           checkReadiness();
@@ -2361,10 +2361,10 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  List<ClearPRMessage> createClearPRMessages() {
+  List<ClearPRMessage> createClearPRMessages(EventID eventID) {
     ArrayList<ClearPRMessage> clearMsgList = new ArrayList<>();
-    for (int bucketId = 0; bucketId < this.totalNumberOfBuckets; bucketId++) {
-      ClearPRMessage clearPRMessage = new ClearPRMessage(bucketId);
+    for (int bucketId = 0; bucketId < getTotalNumberOfBuckets(); bucketId++) {
+      ClearPRMessage clearPRMessage = new ClearPRMessage(bucketId, eventID);
       clearMsgList.add(clearPRMessage);
     }
     return clearMsgList;
