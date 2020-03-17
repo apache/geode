@@ -381,7 +381,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String hintArgument = "data";
     String hintsProvided = gfshParserRule.getCommandManager().obtainHint(hintArgument);
     String[] hintsProvidedArray = hintsProvided.split(lineSeparator());
-    assertThat(hintsProvidedArray.length).isEqualTo(15);
+    assertThat(hintsProvidedArray.length).isEqualTo(16);
     assertThat(hintsProvidedArray[0])
         .isEqualTo("User data as stored in regions of the Geode distributed system.");
   }
