@@ -21,10 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -37,6 +40,7 @@ import static org.mockito.quality.Strictness.STRICT_STUBS;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,6 +57,7 @@ import org.mockito.junit.MockitoRule;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
@@ -69,6 +74,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.partitioned.ClearPRMessage;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 
 @RunWith(JUnitParamsRunner.class)
@@ -200,6 +206,66 @@ public class PartitionedRegionTest {
         .isEqualTo(cacheLoader != null);
     assertThat(verifyOurNode.isCacheWriterAttached())
         .isEqualTo(cacheWriter != null);
+  }
+
+  @Test
+  public void clearShouldNotThrowUnsupportedOperationException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    doNothing().when(spyPartitionedRegion).checkReadiness();
+    doCallRealMethod().when(spyPartitionedRegion).basicClear(any());
+    doNothing().when(spyPartitionedRegion).basicClear(any(), anyBoolean());
+    spyPartitionedRegion.clear();
+  }
+
+  @Test(expected = CacheClosedException.class)
+  public void clearShouldThrowCacheClosedExceptionIfShutdownAll() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    RegionEventImpl regionEvent =
+        new RegionEventImpl(spyPartitionedRegion, Operation.REGION_CLEAR, null, false,
+            spyPartitionedRegion.getMyId(), true);
+    when(cache.isCacheAtShutdownAll()).thenReturn(true);
+    when(cache.getCacheClosedException("Cache is shutting down"))
+        .thenReturn(new CacheClosedException("Cache is shutting down"));
+    DistributedLockService lockService = mock(DistributedLockService.class);
+    when(spyPartitionedRegion.getPartitionedRegionLockService()).thenReturn(lockService);
+    String lockName = "_clearOperation" + spyPartitionedRegion.getFullPath().replace('/', '_');
+    when(lockService.lock(lockName, -1, -1)).thenReturn(true);
+    spyPartitionedRegion.basicClear(regionEvent, true);
+  }
+
+  @Test
+  public void createClearPRMessagesShouldCreateMessagePerBucket() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    RegionEventImpl regionEvent =
+        new RegionEventImpl(spyPartitionedRegion, Operation.REGION_CLEAR, null, false,
+            spyPartitionedRegion.getMyId(), true);
+    when(spyPartitionedRegion.getTotalNumberOfBuckets()).thenReturn(3);
+    EventID eventID = new EventID(spyPartitionedRegion.getCache().getDistributedSystem());
+    List<ClearPRMessage> msgs = spyPartitionedRegion.createClearPRMessages(eventID);
+    assertThat(msgs.size()).isEqualTo(3);
+  }
+
+  @Test
+  public void sendEachMessagePerBucket() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    RegionEventImpl regionEvent =
+        new RegionEventImpl(spyPartitionedRegion, Operation.REGION_CLEAR, null, false,
+            spyPartitionedRegion.getMyId(), true);
+    when(cache.isCacheAtShutdownAll()).thenReturn(false);
+    DistributedLockService lockService = mock(DistributedLockService.class);
+    when(spyPartitionedRegion.getPartitionedRegionLockService()).thenReturn(lockService);
+    when(spyPartitionedRegion.getTotalNumberOfBuckets()).thenReturn(3);
+    String lockName = "_clearOperation" + spyPartitionedRegion.getFullPath().replace('/', '_');
+    when(lockService.lock(lockName, -1, -1)).thenReturn(true);
+    when(spyPartitionedRegion.hasListener()).thenReturn(true);
+    doNothing().when(spyPartitionedRegion).dispatchListenerEvent(any(), any());
+    doNothing().when(spyPartitionedRegion).notifyBridgeClients(eq(regionEvent));
+    doNothing().when(spyPartitionedRegion).checkReadiness();
+    doNothing().when(lockService).unlock(lockName);
+    spyPartitionedRegion.basicClear(regionEvent, true);
+    verify(spyPartitionedRegion, times(3)).sendClearMsgByBucket(any(), any());
+    verify(spyPartitionedRegion, times(1)).dispatchListenerEvent(any(), any());
+    verify(spyPartitionedRegion, times(1)).notifyBridgeClients(eq(regionEvent));
   }
 
   @Test
