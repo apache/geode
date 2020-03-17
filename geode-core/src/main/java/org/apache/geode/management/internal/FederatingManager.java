@@ -479,7 +479,6 @@ public class FederatingManager extends Manager {
             }
             proxyFactory.createAllProxies(member, proxyMonitoringRegion);
 
-            managementCacheListener.markReady();
             notifListener.markReady();
           } catch (Exception e) {
             if (logger.isDebugEnabled()) {
