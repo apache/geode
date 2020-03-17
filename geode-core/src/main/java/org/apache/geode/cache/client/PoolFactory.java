@@ -18,7 +18,7 @@ package org.apache.geode.cache.client;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.proxy.Proxies;
+import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
@@ -544,7 +544,7 @@ public interface PoolFactory {
    * configured using {@link #addLocator(String, int)}) and servers.
    *
    * see {@link SocketFactory}
-   * See {@link Proxies}
+   * See {@link ProxySocketFactories}
    *
    * @param socketFactory The {@link SocketFactory} to use
    * @return a reference to <code> this </code>

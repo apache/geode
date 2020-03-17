@@ -27,20 +27,16 @@ import org.apache.geode.net.SSLParameterExtension;
  *
  *
  * Sockets returned by this factory will have the rest of the configuration options
- * specified on this pool and on the {@link ClientCache} applied to them. In particular,
+ * specified on the {@link Pool} and on the {@link ClientCache} applied to them. In particular,
  * sockets returned by this factory will be wrapped with SSLSockets if ssl is enabled
- * for this client cache.
+ * for this client cache based on {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}.
+ * Sockets return by this factory should not be SSLSockets. For modifying SSL settings,
+ * see {@link SSLParameterExtension}
  *
  * Sockets returned by this factory should be in an unconnected state, similar to
  * {@link Socket#Socket()}
- * Sockets return by this factory should not be SSLSockets, because they may be wrapped in
- * SSLSockets
- * later, based on {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}. For modifying SSL
- * settings,
- * see {@link SSLParameterExtension}
  *
  * This factory can be used for configuring a proxy, or overriding various socket settings.
- *
  *
  * @see PoolFactory#setSocketFactory(SocketFactory)
  */

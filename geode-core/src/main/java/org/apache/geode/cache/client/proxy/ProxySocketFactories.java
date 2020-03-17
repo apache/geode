@@ -16,7 +16,7 @@ package org.apache.geode.cache.client.proxy;
 
 import org.apache.geode.cache.client.SocketFactory;
 
-public class Proxies {
+public class ProxySocketFactories {
 
   /**
    * Create a {@link SocketFactory} that will connect a geode client through

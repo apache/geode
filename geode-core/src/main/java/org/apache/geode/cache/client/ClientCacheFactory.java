@@ -27,7 +27,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.InternalClientCache;
-import org.apache.geode.cache.client.proxy.Proxies;
+import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
@@ -608,7 +608,7 @@ public class ClientCacheFactory {
    * This factory can be used for configuring a proxy, or overriding various socket settings.
    * For modifying SSL settings, see {@link SSLParameterExtension}
    *
-   * See {@link Proxies}
+   * See {@link ProxySocketFactories}
    *
    * @param socketFactory The {@link SocketFactory} to use
    * @return a reference to <code> this </code>
