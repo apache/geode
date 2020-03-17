@@ -50,8 +50,10 @@ public class SystemTimerTest {
   @Test
   public void cancelSwarm() {
     assertThat(systemTimer.isCancelled()).isFalse();
+    int initialSwarmCount = SystemTimer.swarmCount();
     SystemTimer.cancelSwarm(swarm);
     assertThat(systemTimer.isCancelled()).isTrue();
+    assertThat(SystemTimer.swarmCount()).isEqualTo(initialSwarmCount - 1);
   }
 
   @Test

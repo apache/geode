@@ -62,41 +62,49 @@ public class SystemTimer {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
-    sb.append("SystemTimer[");
-    sb.append("swarm = " + swarm);
-    sb.append("]");
-    return sb.toString();
+    return "SystemTimer["
+        + "swarm = " + swarm
+        + "]";
   }
 
   /**
    * List of all of the swarms in the system
    */
   @MakeNotStatic
-  private static final HashMap<DistributedSystem, List> allSwarms = new HashMap();
+  private static final HashMap<DistributedSystem, List<WeakReference<SystemTimer>>> allSwarms =
+      new HashMap<>();
 
   /**
    * Add the given timer is in the given swarm. Used only by constructors.
    *
    * @param swarm swarm to add the timer to
-   * @param t timer to add
+   * @param systemTimer timer to add
    */
-  private static void addToSwarm(DistributedSystem swarm, SystemTimer t) {
+  private static void addToSwarm(DistributedSystem swarm, SystemTimer systemTimer) {
     // Get or add list of timers for this swarm...
-    ArrayList /* ArrayList<WeakReference<SystemTimer>> */ swarmSet;
+    List<WeakReference<SystemTimer>> swarmSet;
     synchronized (allSwarms) {
-      swarmSet = (ArrayList) allSwarms.get(swarm);
+      swarmSet = allSwarms.get(swarm);
       if (swarmSet == null) {
-        swarmSet = new ArrayList();
+        swarmSet = new ArrayList<>();
         allSwarms.put(swarm, swarmSet);
       }
-    } // synchronized
+    }
 
     // Add the timer to the swarm's list
-    WeakReference /* WeakReference<SystemTimer> */ wr = new WeakReference(t);
+    WeakReference<SystemTimer> wr = new WeakReference<>(systemTimer);
     synchronized (swarmSet) {
       swarmSet.add(wr);
-    } // synchronized
+    }
+  }
+
+  /**
+   * Return the current number of swarms of timers
+   */
+  public static int swarmCount() {
+    synchronized (allSwarms) {
+      return allSwarms.size();
+    }
   }
 
   /**
@@ -126,35 +134,30 @@ public class SystemTimer {
     }
     final boolean isDebugEnabled = logger.isTraceEnabled();
     synchronized (allSwarms) {
-      Iterator it = allSwarms.entrySet().iterator();
-      while (it.hasNext()) { // iterate over allSwarms
-        Map.Entry entry = (Map.Entry) it.next();
-        ArrayList swarm = (ArrayList) entry.getValue();
+      Iterator<Map.Entry<DistributedSystem, List<WeakReference<SystemTimer>>>> allSwarmsIterator =
+          allSwarms.entrySet().iterator();
+      while (allSwarmsIterator.hasNext()) { // iterate over allSwarms
+        Map.Entry<DistributedSystem, List<WeakReference<SystemTimer>>> entry =
+            allSwarmsIterator.next();
+        List<WeakReference<SystemTimer>> swarm = entry.getValue();
         synchronized (swarm) {
-          Iterator it2 = swarm.iterator();
-          while (it2.hasNext()) { // iterate over current swarm
-            WeakReference wr = (WeakReference) it2.next();
-            SystemTimer st = (SystemTimer) wr.get();
-            if (st == null) {
-              // Remove stale reference
-              it2.remove();
-              continue;
-            }
-            // Get rid of a cancelled timer; it's not interesting.
-            if (st.cancelled) {
-              it2.remove();
-              continue;
+          Iterator<WeakReference<SystemTimer>> swarmIterator = swarm.iterator();
+          while (swarmIterator.hasNext()) { // iterate over current swarm
+            WeakReference<SystemTimer> wr = swarmIterator.next();
+            SystemTimer st = wr.get();
+            if (st == null || st.isCancelled()) {
+              swarmIterator.remove();
             }
           } // iterate over current swarm
           if (swarm.size() == 0) { // Remove unused swarm
-            it.remove();
+            allSwarmsIterator.remove();
             if (isDebugEnabled) {
               logger.trace("SystemTimer#sweepAllSwarms: removed unused swarm {}", entry.getKey());
             }
-          } // Remove unused swarm
-        } // synchronized swarm
-      } // iterate over allSwarms
-    } // synchronized allSwarms
+          }
+        }
+      }
+    }
 
     // Collect time at END of sweep. It means an extra call to the system
     // timer, but makes this potentially less active.
@@ -164,49 +167,41 @@ public class SystemTimer {
   /**
    * Remove given timer from the swarm.
    *
-   * @param t timer to remove
+   * @param timerToRemove timer to remove
    *
    * @see #cancel()
    */
-  private static void removeFromSwarm(SystemTimer t) {
+  private static void removeFromSwarm(SystemTimer timerToRemove) {
     synchronized (allSwarms) {
       // Get timer's swarm
-      List swarmSet = (ArrayList) allSwarms.get(t.swarm);
+      List<WeakReference<SystemTimer>> swarmSet = allSwarms.get(timerToRemove.swarm);
       if (swarmSet == null) {
         return; // already gone
       }
 
       // Remove timer from swarm
       synchronized (swarmSet) {
-        Iterator it = swarmSet.iterator();
-        while (it.hasNext()) {
-          WeakReference ref = (WeakReference) it.next();
-          SystemTimer t2 = (SystemTimer) ref.get();
-          if (t2 == null) {
-            // Since we've discovered an empty reference, we should remove it.
-            it.remove();
-            continue;
-          }
-          if (t2 == t) {
-            it.remove();
+        Iterator<WeakReference<SystemTimer>> swarmIterator = swarmSet.iterator();
+        while (swarmIterator.hasNext()) {
+          WeakReference<SystemTimer> ref = swarmIterator.next();
+          SystemTimer timer = ref.get();
+          if (timer == null || timer == timerToRemove) {
+            swarmIterator.remove();
             // Don't keep sweeping once we've found it; just quit.
             break;
           }
-          if (t2.cancelled) {
-            // But if we happen to run across a cancelled timer,
-            // remove it.
-            it.remove();
-            continue;
+          if (timer.isCancelled()) {
+            swarmIterator.remove();
           }
-        } // while
+        }
 
         // While we're here, if the swarm has gone to zero size,
         // we should remove it.
         if (swarmSet.size() == 0) {
-          allSwarms.remove(t.swarm); // last reference
+          allSwarms.remove(timerToRemove.swarm); // last reference
         }
-      } // synchronized swarmSet
-    } // synchronized allSwarms
+      }
+    }
 
     sweepAllSwarms(); // Occasionally check global list
   }
@@ -218,7 +213,7 @@ public class SystemTimer {
    */
   public static void cancelSwarm(DistributedSystem swarm) {
     // Find the swarmSet and remove it
-    List<WeakReference> swarmSet;
+    List<WeakReference<SystemTimer>> swarmSet;
     synchronized (allSwarms) {
       swarmSet = allSwarms.get(swarm);
       if (swarmSet == null) {
@@ -226,13 +221,13 @@ public class SystemTimer {
       }
       // Remove before releasing synchronization, so any fresh timer ends up
       // in a new set with same key
-      allSwarms.remove(swarmSet);
+      allSwarms.remove(swarm);
     } // synchronized
 
     // Empty the swarmSet
     synchronized (swarmSet) {
-      for (WeakReference wr : swarmSet) {
-        SystemTimer st = (SystemTimer) wr.get();
+      for (WeakReference<SystemTimer> wr : swarmSet) {
+        SystemTimer st = wr.get();
         // it.remove(); Not necessary, we're emptying the list...
         if (st != null) {
           st.cancelled = true; // for safety :-)
