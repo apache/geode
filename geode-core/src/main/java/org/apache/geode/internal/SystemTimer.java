@@ -185,12 +185,12 @@ public class SystemTimer {
         while (swarmIterator.hasNext()) {
           WeakReference<SystemTimer> ref = swarmIterator.next();
           SystemTimer timer = ref.get();
-          if (timer == null || timer == timerToRemove) {
+          if (timer == null) {
             swarmIterator.remove();
-            // Don't keep sweeping once we've found it; just quit.
+          } else if (timer == timerToRemove) {
+            swarmIterator.remove();
             break;
-          }
-          if (timer.isCancelled()) {
+          } else if (timer.isCancelled()) {
             swarmIterator.remove();
           }
         }
