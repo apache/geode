@@ -144,7 +144,7 @@ public abstract class TomcatTest extends CargoTestBase {
 
   private void doSetsAndVerifyGets(Client client, int maxNumberOfOperations, int operatingContainer)
       throws Exception {
-    HashMap<String, String> attributes = new HashMap();
+    HashMap<String, String> attributes = new HashMap<>();
     clientAttributesMap.put(client, attributes);
 
     int numberOfOperations = random.nextInt(maxNumberOfOperations) + 1;
