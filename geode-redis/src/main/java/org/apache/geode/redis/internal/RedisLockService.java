@@ -74,9 +74,8 @@ public class RedisLockService implements RedisLockServiceMBean {
     KeyHashIdentifier lockKey = new KeyHashIdentifier(key.toBytes());
     KeyHashIdentifier referencedKey = lockKey;
 
-    Lock lock;
+    Lock lock = new ReentrantLock();
     do {
-      lock = new ReentrantLock();
       Lock oldLock = weakReferencesTolocks.putIfAbsent(lockKey, lock);
 
       if (oldLock != null) {
