@@ -356,6 +356,9 @@ javadoc/org/apache/geode/cache/control/RebalanceFactory.html
 javadoc/org/apache/geode/cache/control/RebalanceOperation.html
 javadoc/org/apache/geode/cache/control/RebalanceResults.html
 javadoc/org/apache/geode/cache/control/ResourceManager.html
+javadoc/org/apache/geode/cache/control/RestoreRedundancyBuilder.html
+javadoc/org/apache/geode/cache/control/RestoreRedundancyResults.Status.html
+javadoc/org/apache/geode/cache/control/RestoreRedundancyResults.html
 javadoc/org/apache/geode/cache/control/package-frame.html
 javadoc/org/apache/geode/cache/control/package-summary.html
 javadoc/org/apache/geode/cache/control/package-tree.html
