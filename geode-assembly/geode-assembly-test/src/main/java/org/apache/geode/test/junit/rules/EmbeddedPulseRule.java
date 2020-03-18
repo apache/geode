@@ -28,7 +28,7 @@ public class EmbeddedPulseRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    repository = Repository.get();
+    repository = new Repository();
     cleanup();
     repository.setHost("localhost");
   }

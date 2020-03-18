@@ -19,6 +19,9 @@ package org.apache.geode.tools.pulse.internal.data;
 
 import java.util.ResourceBundle;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 /**
  * Class PulseVersion
  *
@@ -27,10 +30,16 @@ import java.util.ResourceBundle;
  *
  * @since GemFire version Helios
  */
-
+@Component
 public class PulseVersion {
 
+  private final Repository repository;
   private String pulseVersion;
+
+  @Autowired
+  public PulseVersion(Repository repository) {
+    this.repository = repository;
+  }
 
   public String getPulseVersion() {
     return pulseVersion;
@@ -91,10 +100,9 @@ public class PulseVersion {
   }
 
   public String getPulseVersionLogMessage() {
-    ResourceBundle resourceBundle = Repository.get().getResourceBundle();
-    String logMessage = resourceBundle.getString("LOG_MSG_PULSE_VERSION") + " "
+    ResourceBundle resourceBundle = repository.getResourceBundle();
+    return resourceBundle.getString("LOG_MSG_PULSE_VERSION") + " "
         + this.getPulseVersion() + " " + this.getPulseBuildId() + " " + this.getPulseBuildDate();
-    return logMessage;
   }
 
 }

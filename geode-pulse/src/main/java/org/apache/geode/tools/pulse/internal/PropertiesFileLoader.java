@@ -1,5 +1,4 @@
 /*
- *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -12,27 +11,13 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
-package org.apache.geode.tools.pulse.internal.data;
+package org.apache.geode.tools.pulse.internal;
 
-import javax.management.remote.JMXConnector;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-/**
- * Interface having updateData() function which is implemented by JMXDataUpdater
- *
- * @since GemFire version 7.0.Beta 2012-09-23
- *
- */
-public interface IClusterUpdater {
-  boolean updateData();
-
-  ObjectNode executeQuery(String queryText, String members, int limit);
-
-  default JMXConnector connect(Object credentials) {
-    return null;
-  }
+public interface PropertiesFileLoader {
+  Properties loadProperties(String propertyFile, ResourceBundle resourceBundle);
 }

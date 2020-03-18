@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,12 @@ public class ClusterRegionService implements PulseService {
 
   // String constants used for forming a json response
   private static final String ENTRY_SIZE = "entrySize";
+  private final Repository repository;
+
+  @Autowired
+  public ClusterRegionService(Repository repository) {
+    this.repository = repository;
+  }
 
   // Comparator based upon regions entry count
   private static Comparator<Cluster.Region> regionEntryCountComparator = (r1, r2) -> {
@@ -68,7 +75,7 @@ public class ClusterRegionService implements PulseService {
     String userName = request.getUserPrincipal().getName();
 
     // get cluster object
-    Cluster cluster = Repository.get().getCluster();
+    Cluster cluster = repository.getCluster();
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();

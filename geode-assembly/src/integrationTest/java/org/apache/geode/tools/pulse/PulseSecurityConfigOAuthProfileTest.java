@@ -46,6 +46,9 @@ public class PulseSecurityConfigOAuthProfileTest {
           .withSecurityManager(SimpleSecurityManager.class)
           .withProperty("security-auth-token-enabled-components", "pulse");
 
+  @Rule
+  public GeodeHttpClientRule client = new GeodeHttpClientRule(locator::getHttpPort);
+
   private static File pulsePropertyFile;
 
   @BeforeClass
@@ -54,7 +57,8 @@ public class PulseSecurityConfigOAuthProfileTest {
     // dir as classpath to search for this property file
     pulsePropertyFile = new File(locator.getWorkingDir(), "pulse.properties");
     Properties properties = new Properties();
-    properties.setProperty("pulse.oauth.provider", "uaa");
+    properties.setProperty("pulse.oauth.providerId", "uaa");
+    properties.setProperty("pulse.oauth.providerName", "UAA");
     properties.setProperty("pulse.oauth.clientId", "pulse");
     properties.setProperty("pulse.oauth.clientSecret", "secret");
     // have the authorization uri point to a known uri that locator itself can serve
@@ -69,9 +73,6 @@ public class PulseSecurityConfigOAuthProfileTest {
   public static void cleanup() {
     pulsePropertyFile.delete();
   }
-
-  @Rule
-  public GeodeHttpClientRule client = new GeodeHttpClientRule(locator::getHttpPort);
 
   @Test
   public void redirectToAuthorizationUriInPulseProperty() throws Exception {

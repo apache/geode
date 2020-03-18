@@ -17,19 +17,22 @@
 
 package org.apache.geode.tools.pulse.internal;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.function.BiFunction;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import javax.servlet.ServletContext;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.tools.pulse.internal.controllers.PulseController;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
@@ -39,47 +42,46 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
  * This class is used for checking the application running mode i.e. Embedded or not
  *
  * @since GemFire version 7.0.Beta 2012-09-23
- *
  */
-// @WebListener
-public class PulseAppListener implements ServletContextListener {
+@Component
+public class PulseAppListener implements ApplicationListener<ApplicationEvent> {
   private static final Logger logger = LogManager.getLogger();
   private static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
 
   private final boolean isEmbedded;
   private final Repository repository;
   private final ResourceBundle resourceBundle;
-  private final BiFunction<String, ResourceBundle, Properties> propertiesFileLoader;
+  private final PropertiesFileLoader propertiesFileLoader;
+  private final PulseController pulseController;
 
-  public PulseAppListener() {
-    this(Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED), Repository.get(),
-        PulseAppListener::loadPropertiesFromFile);
+  @Autowired
+  public PulseAppListener(PulseController pulseController, Repository repository,
+      PropertiesFileLoader propertiesLoader) {
+    this(Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED),
+        propertiesLoader, pulseController, repository);
   }
 
-  public PulseAppListener(boolean isEmbedded, Repository repository,
-      BiFunction<String, ResourceBundle, Properties> propertiesFileLoader) {
+  public PulseAppListener(boolean isEmbedded, PropertiesFileLoader propertiesFileLoader,
+      PulseController pulseController, Repository repository) {
     this.isEmbedded = isEmbedded;
-    this.repository = repository;
-    this.resourceBundle = repository.getResourceBundle();
     this.propertiesFileLoader = propertiesFileLoader;
+    this.pulseController = pulseController;
+    this.repository = repository;
+    resourceBundle = repository.getResourceBundle();
   }
 
   @Override
-  public void contextDestroyed(ServletContextEvent event) {
-
-    // Stop all running threads those are created in Pulse
-    // Stop cluster threads
-    repository.removeAllClusters();
-
-    logger.info("{}{}", resourceBundle.getString("LOG_MSG_CONTEXT_DESTROYED"),
-        event.getServletContext().getContextPath());
+  public void onApplicationEvent(ApplicationEvent event) {
+    if (event instanceof ContextRefreshedEvent) {
+      contextInitialized((ContextRefreshedEvent) event);
+    } else if (event instanceof ContextClosedEvent) {
+      contextDestroyed((ContextClosedEvent) event);
+    }
   }
 
-  @Override
-  public void contextInitialized(ServletContextEvent event) {
+  public void contextInitialized(ContextRefreshedEvent event) {
     logger.info(resourceBundle.getString("LOG_MSG_CONTEXT_INITIALIZED"));
 
-    // Load Pulse version details
     loadPulseVersionDetails();
 
     logger.info(resourceBundle.getString("LOG_MSG_CHECK_APP_RUNNING_MODE"));
@@ -94,12 +96,18 @@ public class PulseAppListener implements ServletContextListener {
           PulseConstants.GEMFIRE_DEFAULT_PORT));
 
       repository.setUseSSLManager(
-          Boolean.valueOf(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER)));
+          Boolean.parseBoolean(
+              System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER)));
       repository.setUseSSLLocator(
-          Boolean.valueOf(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR)));
+          Boolean.parseBoolean(
+              System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR)));
+
+      WebApplicationContext applicationContext =
+          (WebApplicationContext) event.getApplicationContext();
+      ServletContext servletContext = applicationContext.getServletContext();
 
       Object sslProperties =
-          event.getServletContext().getAttribute(GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM);
+          servletContext.getAttribute(GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM);
       if (sslProperties instanceof Properties) {
         repository.setJavaSslProperties((Properties) sslProperties);
       }
@@ -109,7 +117,7 @@ public class PulseAppListener implements ServletContextListener {
 
       // Load Pulse Properties
       Properties pulseProperties =
-          propertiesFileLoader.apply(PulseConstants.PULSE_PROPERTIES_FILE, resourceBundle);
+          propertiesFileLoader.loadProperties(PulseConstants.PULSE_PROPERTIES_FILE, resourceBundle);
 
       repository.setJmxUseLocator(Boolean.valueOf(
           pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_USELOCATOR)));
@@ -119,14 +127,15 @@ public class PulseAppListener implements ServletContextListener {
           PulseConstants.GEMFIRE_DEFAULT_PORT));
 
       // SSL
-      repository.setUseSSLManager(Boolean.valueOf(pulseProperties
+      repository.setUseSSLManager(Boolean.parseBoolean(pulseProperties
           .getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER, "false")));
-      repository.setUseSSLLocator(Boolean.valueOf(pulseProperties
+      repository.setUseSSLLocator(Boolean.parseBoolean(pulseProperties
           .getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR, "false")));
 
       // load pulse security properties
       Properties pulseSecurityProperties =
-          propertiesFileLoader.apply(PulseConstants.PULSE_SECURITY_PROPERTIES_FILE, resourceBundle);
+          propertiesFileLoader
+              .loadProperties(PulseConstants.PULSE_SECURITY_PROPERTIES_FILE, resourceBundle);
 
       // set the ssl related properties found in pulsesecurity.properties
       if (!pulseSecurityProperties.isEmpty()) {
@@ -144,38 +153,36 @@ public class PulseAppListener implements ServletContextListener {
     }
   }
 
-  // Function to load pulse version details from properties file
-  private void loadPulseVersionDetails() {
-    Properties properties =
-        propertiesFileLoader.apply(PulseConstants.PULSE_VERSION_PROPERTIES_FILE, resourceBundle);
-    // Set pulse version details in common object
-    PulseController.pulseVersion
-        .setPulseVersion(properties.getProperty(PulseConstants.PROPERTY_PULSE_VERSION, ""));
-    PulseController.pulseVersion
-        .setPulseBuildId(properties.getProperty(PulseConstants.PROPERTY_BUILD_ID, ""));
-    PulseController.pulseVersion
-        .setPulseBuildDate(properties.getProperty(PulseConstants.PROPERTY_BUILD_DATE, ""));
-    PulseController.pulseVersion
-        .setPulseSourceDate(properties.getProperty(PulseConstants.PROPERTY_SOURCE_DATE, ""));
-    PulseController.pulseVersion.setPulseSourceRevision(
-        properties.getProperty(PulseConstants.PROPERTY_SOURCE_REVISION, ""));
-    PulseController.pulseVersion.setPulseSourceRepository(
-        properties.getProperty(PulseConstants.PROPERTY_SOURCE_REPOSITORY, ""));
-    logger.info(PulseController.pulseVersion.getPulseVersionLogMessage());
+  public void contextDestroyed(ContextClosedEvent event) {
+
+    // Stop all running threads those are created in Pulse
+    // Stop cluster threads
+    repository.removeAllClusters();
+
+    WebApplicationContext applicationContext =
+        (WebApplicationContext) event.getApplicationContext();
+    ServletContext servletContext = applicationContext.getServletContext();
+
+    logger.info("{}{}", resourceBundle.getString("LOG_MSG_CONTEXT_DESTROYED"),
+        servletContext.getContextPath());
   }
 
-  // Function to load pulse properties from pulse.properties file
-  private static Properties loadPropertiesFromFile(String propertyFile,
-      ResourceBundle resourceBundle) {
-    final Properties properties = new Properties();
-    try (final InputStream stream =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFile)) {
-      logger.info(propertyFile + " " + resourceBundle.getString("LOG_MSG_FILE_FOUND"));
-      properties.load(stream);
-    } catch (IOException e) {
-      logger.error(resourceBundle.getString("LOG_MSG_EXCEPTION_LOADING_PROPERTIES_FILE"), e);
-    }
-
-    return properties;
+  private void loadPulseVersionDetails() {
+    Properties properties =
+        propertiesFileLoader
+            .loadProperties(PulseConstants.PULSE_VERSION_PROPERTIES_FILE, resourceBundle);
+    pulseController.getPulseVersion()
+        .setPulseVersion(properties.getProperty(PulseConstants.PROPERTY_PULSE_VERSION, ""));
+    pulseController.getPulseVersion()
+        .setPulseBuildId(properties.getProperty(PulseConstants.PROPERTY_BUILD_ID, ""));
+    pulseController.getPulseVersion()
+        .setPulseBuildDate(properties.getProperty(PulseConstants.PROPERTY_BUILD_DATE, ""));
+    pulseController.getPulseVersion()
+        .setPulseSourceDate(properties.getProperty(PulseConstants.PROPERTY_SOURCE_DATE, ""));
+    pulseController.getPulseVersion().setPulseSourceRevision(
+        properties.getProperty(PulseConstants.PROPERTY_SOURCE_REVISION, ""));
+    pulseController.getPulseVersion().setPulseSourceRepository(
+        properties.getProperty(PulseConstants.PROPERTY_SOURCE_REPOSITORY, ""));
+    logger.info(pulseController.getPulseVersion().getPulseVersionLogMessage());
   }
 }

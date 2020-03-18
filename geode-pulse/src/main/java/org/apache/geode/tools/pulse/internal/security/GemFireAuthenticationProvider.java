@@ -39,8 +39,11 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 public class GemFireAuthenticationProvider implements AuthenticationProvider {
 
   private static final Logger logger = LogManager.getLogger();
+  private final Repository repository;
 
-  public GemFireAuthenticationProvider() {}
+  public GemFireAuthenticationProvider(Repository repository) {
+    this.repository = repository;
+  }
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -54,7 +57,8 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
     String password = authentication.getCredentials().toString();
 
     logger.debug("Connecting to GemFire with user=" + name);
-    JMXConnector jmxc = Repository.get().getCluster(name, password).getJMXConnector();
+    JMXConnector jmxc =
+        repository.getClusterWithUserNameAndPassword(name, password).getJMXConnector();
     if (jmxc == null) {
       throw new BadCredentialsException("Error connecting to GemFire JMX Server");
     }
@@ -70,5 +74,4 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
   public boolean supports(Class<?> authentication) {
     return authentication.equals(UsernamePasswordAuthenticationToken.class);
   }
-
 }

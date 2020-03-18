@@ -196,6 +196,7 @@ public class ManagementAgent {
       }
     } else {
       String pwFile = this.config.getJmxManagerPasswordFile();
+      String springActiveProfile = "spring.profiles.active";
       if (securityService.isIntegratedSecurity()) {
         String[] authTokenEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
         boolean pulseOauth = Arrays.stream(authTokenEnabledComponents)

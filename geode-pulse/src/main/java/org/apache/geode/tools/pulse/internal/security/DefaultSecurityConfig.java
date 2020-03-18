@@ -18,7 +18,6 @@ package org.apache.geode.tools.pulse.internal.security;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -32,20 +31,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.default")
 public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
-  @Bean
-  public LogoutHandler logoutHandler() {
-    return new LogoutHandler("/login.html");
-  }
 
   @Bean
-  public ExceptionMappingAuthenticationFailureHandler failureHandler() {
+  public AuthenticationFailureHandler failureHandler() {
     ExceptionMappingAuthenticationFailureHandler exceptionMappingAuthenticationFailureHandler =
         new ExceptionMappingAuthenticationFailureHandler();
     Map<String, String> exceptionMappings = new HashMap<>();
@@ -58,11 +55,10 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
     return exceptionMappingAuthenticationFailureHandler;
   }
 
-  @Autowired
-  private LogoutHandler logoutHandler;
-
-  @Autowired
-  private ExceptionMappingAuthenticationFailureHandler failureHandler;
+  @Bean
+  public LogoutSuccessHandler logoutHandler() {
+    return new LogoutHandler("/login.html");
+  }
 
   @Override
   protected void configure(HttpSecurity httpSecurity) throws Exception {
@@ -78,11 +74,11 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
         .formLogin(form -> form
             .loginPage("/login.html")
             .loginProcessingUrl("/login")
-            .failureHandler(failureHandler)
+            .failureHandler(failureHandler())
             .defaultSuccessUrl("/clusterDetail.html", true))
         .logout(logout -> logout
             .logoutUrl("/clusterLogout")
-            .logoutSuccessHandler(logoutHandler))
+            .logoutSuccessHandler(logoutHandler()))
         .exceptionHandling(exception -> exception
             .accessDeniedPage("/accessDenied.html"))
         .headers(header -> header
