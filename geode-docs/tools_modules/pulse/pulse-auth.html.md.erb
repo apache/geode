@@ -118,14 +118,55 @@ You can configure Pulse to use any Authentication Provider that supports OpenID 
 - Register with the authentication provider, obtaining a valid client ID and client secret for Pulse.
 - Configure the scopes with `CLUSTER:READ`, `CLUSTER:WRITE`, `DATA:READ` or `DATA:WRITE`.
 
+**Pulse Properties for OAuth Configuration**
+
 After you set up the authentication provider properly, create (or edit, if it already exists) a property file named `pulse.properties` with the following configuration:
 
-**Example pulse.properties for OAuth configuration**
+Pulse defines the following required properties to configure its interaction with your OAuth provider:
+
+-   **pulse.oauth.providerId**
+
+    An ID for Spring to use internally to identify your OAuth provider.
+
+-   **pulse.oauth.providerName**
+
+    A name for Pulse display on the login page to link to your OAuth provider. 
+
+-   **pulse.oauth.clientId**
+  
+    The ID with which Pulse is registered with your OAuth provider.
+
+-   **pulse.oauth.clientSecret**
+  
+    The secret with which Pulse is registered with your OAuth provider.
+
+-   **pulse.oauth.authorizationUri**
+  
+    The URI for your OAuth provider's authorization endpoint.
+
+-   **pulse.oauth.tokenUri**
+  
+    The URI for your OAuth provider's token endpoint.
+
+-   **pulse.oauth.userInfoUri=http**
+  
+    The URI for your OAuth provider's user info endpoint.
+
+-   **pulse.oauth.jwkSetUri**
+  
+    The URI for your OAuth provider's JSON Web Key (JWK) Set endpoint.
+
+-   **pulse.oauth.userNameAttributeName**
+
+    The attribute name used to access the user's name from your OAuth provider's user info response.
+
+**Example pulse.properties for OAuth Configuration**
 
 ``` pre
-pulse.oauth.provider=uaa
-pulse.oauth.clientId=<client id>
-pulse.oauth.clientSecret=<client secret>
+pulse.oauth.providerId=uaa
+pulse.oauth.providerName=UAA
+pulse.oauth.clientId=pulse
+pulse.oauth.clientSecret=example-pulse-client-secret
 pulse.oauth.authorizationUri=http://example.com/uaa/oauth/authorize
 pulse.oauth.tokenUri=http://example.com/uaa/oauth/token
 pulse.oauth.userInfoUri=http://example.com/uaa/userinfo
