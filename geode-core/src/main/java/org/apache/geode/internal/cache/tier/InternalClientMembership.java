@@ -31,6 +31,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
@@ -318,7 +319,7 @@ public class InternalClientMembership {
       Iterator it = eps.entrySet().iterator();
       while (it.hasNext()) {
         Map.Entry entry = (Map.Entry) it.next();
-        ServerLocation loc = (ServerLocation) entry.getKey();
+        ServerLocation loc = ((Endpoint) entry.getValue()).getLocation();
         org.apache.geode.cache.client.internal.Endpoint ep =
             (org.apache.geode.cache.client.internal.Endpoint) entry.getValue();
         String server = loc.getHostName() + "[" + loc.getPort() + "]";
