@@ -38,6 +38,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -771,6 +772,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
   private void setServerNames(SSLParameters modifiedParams, HostAndPort addr) {
     List<SNIServerName> oldNames = modifiedParams.getServerNames();
+    oldNames = oldNames == null ? Collections.emptyList() : oldNames;
     final List<SNIServerName> serverNames = new ArrayList<>(oldNames);
     serverNames.add(new SNIHostName(addr.getHostName()));
     modifiedParams.setServerNames(serverNames);
