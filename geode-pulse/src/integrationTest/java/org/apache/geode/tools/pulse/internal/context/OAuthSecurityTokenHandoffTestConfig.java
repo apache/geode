@@ -13,33 +13,31 @@
  * the License.
  */
 
-package org.apache.geode.tools.pulse.internal.security;
+package org.apache.geode.tools.pulse.internal.context;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import static org.mockito.Mockito.mock;
+
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 
+import org.apache.geode.tools.pulse.internal.data.ClusterFactory;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
 @Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-@Profile("pulse.authentication.gemfire")
-public class GemfireSecurityConfig extends DefaultSecurityConfig {
-
-  private final Repository repository;
-
-  @Autowired
-  public GemfireSecurityConfig(Repository repository) {
-    this.repository = repository;
+@Primary
+@Profile("pulse.oauth.security.token.test")
+public class OAuthSecurityTokenHandoffTestConfig {
+  @Bean
+  public ClusterFactory clusterFactory() {
+    return mock(ClusterFactory.class);
   }
 
-  @Override
-  protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
-    authenticationManagerBuilder
-        .authenticationProvider(new GemFireAuthenticationProvider(repository));
+  @Bean
+  public Repository repository(OAuth2AuthorizedClientService authorizedClientService,
+      ClusterFactory clusterFactory) {
+    return new Repository(authorizedClientService, clusterFactory);
   }
 }

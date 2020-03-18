@@ -71,12 +71,23 @@ public class PulseController {
   private static final String EMPTY_JSON = "{}";
 
   // Shared object to hold pulse version details
-  public static PulseVersion pulseVersion = new PulseVersion();
+  private final PulseVersion pulseVersion;
 
   private final ObjectMapper mapper = new ObjectMapper();
+  private final PulseServiceFactory pulseServiceFactory;
+  private final Repository repository;
 
   @Autowired
-  PulseServiceFactory pulseServiceFactory;
+  public PulseController(PulseServiceFactory pulseServiceFactory, Repository repository,
+      PulseVersion pulseVersion) {
+    this.pulseServiceFactory = pulseServiceFactory;
+    this.repository = repository;
+    this.pulseVersion = pulseVersion;
+  }
+
+  public PulseVersion getPulseVersion() {
+    return pulseVersion;
+  }
 
   @RequestMapping(value = "/pulseUpdate", method = RequestMethod.POST)
   public void getPulseUpdate(HttpServletRequest request, HttpServletResponse response)
@@ -141,12 +152,12 @@ public class PulseController {
 
     try {
       // Response
-      responseJSON.put("pulseVersion", PulseController.pulseVersion.getPulseVersion());
-      responseJSON.put("buildId", PulseController.pulseVersion.getPulseBuildId());
-      responseJSON.put("buildDate", PulseController.pulseVersion.getPulseBuildDate());
-      responseJSON.put("sourceDate", PulseController.pulseVersion.getPulseSourceDate());
-      responseJSON.put("sourceRevision", PulseController.pulseVersion.getPulseSourceRevision());
-      responseJSON.put("sourceRepository", PulseController.pulseVersion.getPulseSourceRepository());
+      responseJSON.put("pulseVersion", pulseVersion.getPulseVersion());
+      responseJSON.put("buildId", pulseVersion.getPulseBuildId());
+      responseJSON.put("buildDate", pulseVersion.getPulseBuildDate());
+      responseJSON.put("sourceDate", pulseVersion.getPulseSourceDate());
+      responseJSON.put("sourceRevision", pulseVersion.getPulseSourceRevision());
+      responseJSON.put("sourceRepository", pulseVersion.getPulseSourceRepository());
 
     } catch (Exception e) {
       logger.debug("Exception Occurred : ", e);
@@ -174,7 +185,7 @@ public class PulseController {
     try {
       boolean isClearAll = Boolean.parseBoolean(request.getParameter("clearAll"));
       // get cluster object
-      Cluster cluster = Repository.get().getCluster();
+      Cluster cluster = repository.getCluster();
       cluster.clearAlerts(alertType, isClearAll);
       responseJSON.put("status", "deleted");
       responseJSON.set("systemAlerts",
@@ -213,7 +224,7 @@ public class PulseController {
 
     try {
       // get cluster object
-      Cluster cluster = Repository.get().getCluster();
+      Cluster cluster = repository.getCluster();
 
       // set alert is acknowledged
       cluster.acknowledgeAlert(alertId);
@@ -231,7 +242,7 @@ public class PulseController {
       HttpServletResponse response)
       throws IOException {
     // get cluster object
-    Cluster cluster = Repository.get().getCluster();
+    Cluster cluster = repository.getCluster();
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();
@@ -322,7 +333,7 @@ public class PulseController {
 
     try {
       // get cluster object
-      Cluster cluster = Repository.get().getCluster();
+      Cluster cluster = repository.getCluster();
       String userName = request.getUserPrincipal().getName();
 
       // get query string
@@ -388,7 +399,7 @@ public class PulseController {
 
     ObjectNode responseJSON = mapper.createObjectNode();
     // get cluster object
-    Cluster cluster = Repository.get().getCluster();
+    Cluster cluster = repository.getCluster();
     String userName = request.getUserPrincipal().getName();
 
     try {
@@ -431,7 +442,7 @@ public class PulseController {
 
       if (StringUtils.isNotBlank(query)) {
         // get cluster object
-        Cluster cluster = Repository.get().getCluster();
+        Cluster cluster = repository.getCluster();
         String userName = request.getUserPrincipal().getName();
 
         // Add html escaped query to history
