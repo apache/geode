@@ -18,6 +18,7 @@ package org.apache.geode.tools.pulse.internal.security;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -33,13 +34,19 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.default")
 public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
+
+  private final RepositoryLogoutHandler repositoryLogoutHandler;
+
+  @Autowired
+  DefaultSecurityConfig(RepositoryLogoutHandler repositoryLogoutHandler) {
+    this.repositoryLogoutHandler = repositoryLogoutHandler;
+  }
 
   @Bean
   public AuthenticationFailureHandler failureHandler() {
@@ -53,11 +60,6 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
     exceptionMappings.put(DisabledException.class.getName(), "/login.html?error=ACC_DISABLED");
     exceptionMappingAuthenticationFailureHandler.setExceptionMappings(exceptionMappings);
     return exceptionMappingAuthenticationFailureHandler;
-  }
-
-  @Bean
-  public LogoutSuccessHandler logoutHandler() {
-    return new LogoutHandler("/login.html");
   }
 
   @Override
@@ -78,7 +80,8 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
             .defaultSuccessUrl("/clusterDetail.html", true))
         .logout(logout -> logout
             .logoutUrl("/clusterLogout")
-            .logoutSuccessHandler(logoutHandler()))
+            .addLogoutHandler(repositoryLogoutHandler)
+            .logoutSuccessUrl("/login.html"))
         .exceptionHandling(exception -> exception
             .accessDeniedPage("/accessDenied.html"))
         .headers(header -> header

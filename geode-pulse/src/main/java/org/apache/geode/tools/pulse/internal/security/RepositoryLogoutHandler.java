@@ -14,49 +14,35 @@
  */
 package org.apache.geode.tools.pulse.internal.security;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.stereotype.Component;
 
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
- * Handler is used to close jmx connection maintained at user-level
+ * Closes the user's JMX connection and releases the user's resources in the Repository.
  */
-public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements
-    ApplicationContextAware {
+@Component
+public class RepositoryLogoutHandler implements LogoutHandler {
   private static final Logger logger = LogManager.getLogger();
-  private ApplicationContext applicationContext;
+  private final Repository repository;
 
-  public LogoutHandler(String logoutTargetURL) {
-    setDefaultTargetUrl(logoutTargetURL);
+  RepositoryLogoutHandler(Repository repository) {
+    this.repository = repository;
   }
 
   @Override
-  public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
-      Authentication authentication) throws IOException, ServletException {
-
+  public void logout(HttpServletRequest request, HttpServletResponse response,
+      Authentication authentication) {
     if (authentication != null) {
-      Repository repository = applicationContext.getBean("repository", Repository.class);
       repository.logoutUser(authentication.getName());
-      logger.info("#LogoutHandler: GemFireAuthentication JMX Connection Closed.");
+      logger.info("#RepositoryLogoutHandler: GemFireAuthentication JMX Connection Closed.");
     }
-
-    super.onLogoutSuccess(request, response, authentication);
-  }
-
-  @Override
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    this.applicationContext = applicationContext;
   }
 }
