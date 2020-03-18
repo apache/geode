@@ -37,7 +37,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class EndpointManagerImpl implements EndpointManager {
   private static final Logger logger = LogService.getLogger();
 
-  private volatile Map<ServerLocation, Endpoint> endpointMap = Collections.emptyMap();
+  private volatile Map<DistributedMember, Endpoint> endpointMap = Collections.emptyMap();
   private final Map<ServerLocation, ConnectionStats> statMap = new HashMap<>();
   private final DistributedSystem ds;
   private final String poolName;
@@ -56,17 +56,17 @@ public class EndpointManagerImpl implements EndpointManager {
 
   @Override
   public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
-    Endpoint endpoint = endpointMap.get(server);
+    Endpoint endpoint = endpointMap.get(memberId);
     boolean addedEndpoint = false;
     if (endpoint == null || endpoint.isClosed()) {
       synchronized (this) {
-        endpoint = endpointMap.get(server);
+        endpoint = endpointMap.get(memberId);
         if (endpoint == null || endpoint.isClosed()) {
           ConnectionStats stats = getStats(server);
-          Map<ServerLocation, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
+          Map<DistributedMember, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
           endpoint = new Endpoint(this, ds, server, stats, memberId);
           listener.clearPdxRegistry(endpoint);
-          endpointMapTemp.put(server, endpoint);
+          endpointMapTemp.put(memberId, endpoint);
           endpointMap = Collections.unmodifiableMap(endpointMapTemp);
           addedEndpoint = true;
           poolStats.setServerCount(endpointMap.size());
@@ -97,8 +97,8 @@ public class EndpointManagerImpl implements EndpointManager {
     endpoint.close();
     boolean removedEndpoint = false;
     synchronized (this) {
-      Map<ServerLocation, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
-      endpoint = endpointMapTemp.remove(endpoint.getLocation());
+      Map<DistributedMember, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
+      endpoint = endpointMapTemp.remove(endpoint.getMemberId());
       if (endpoint != null) {
         endpointMap = Collections.unmodifiableMap(endpointMapTemp);
         removedEndpoint = true;
@@ -152,7 +152,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
 
   @Override
-  public Map<ServerLocation, Endpoint> getEndpointMap() {
+  public Map<DistributedMember, Endpoint> getEndpointMap() {
     return endpointMap;
   }
 

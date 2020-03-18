@@ -28,6 +28,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -581,6 +582,8 @@ public class QueueManagerJUnitTest {
    */
   private class DummyFactory implements ConnectionFactory {
 
+    protected volatile Map<ServerLocation, Integer> locationAndMemberPortMap = new HashMap<>();
+
     LinkedList<DummyConnection> nextConnections = new LinkedList<>();
 
     void addError() {
@@ -588,7 +591,8 @@ public class QueueManagerJUnitTest {
     }
 
     void addConnection(int endpointType, int queueSize, int port) {
-      nextConnections.add(new DummyConnection(endpointType, queueSize, port));
+      nextConnections
+          .add(new DummyConnection(endpointType, queueSize, port, locationAndMemberPortMap));
     }
 
     @Override
@@ -699,10 +703,18 @@ public class QueueManagerJUnitTest {
     private ServerLocation location;
     private Endpoint endpoint;
 
-    DummyConnection(int endpointType, int queueSize, int port) {
-      InternalDistributedMember member = new InternalDistributedMember("localhost", 555);
-      this.status = new ServerQueueStatus((byte) endpointType, queueSize, member, 0);
+    DummyConnection(int endpointType, int queueSize, int port,
+        Map<ServerLocation, Integer> locationAndMemberPortMap) {
       this.location = new ServerLocation("localhost", port);
+      int memberPort = 0;
+      if (locationAndMemberPortMap.get(location) == null) {
+        memberPort = locationAndMemberPortMap.size() + 1;
+      } else {
+        memberPort = locationAndMemberPortMap.get(location);
+      }
+      locationAndMemberPortMap.put(location, memberPort);
+      InternalDistributedMember member = new InternalDistributedMember("localhost", memberPort);
+      this.status = new ServerQueueStatus((byte) endpointType, queueSize, member, 0);
       this.endpoint = endpoints.referenceEndpoint(location, member);
     }
 
