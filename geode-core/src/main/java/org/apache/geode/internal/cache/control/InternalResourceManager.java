@@ -42,6 +42,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.control.RestoreRedundancyBuilder;
+import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -80,15 +82,19 @@ public class InternalResourceManager implements ResourceManager {
     }
   }
 
-  private Map<ResourceType, Set<ResourceListener>> listeners =
-      new HashMap<ResourceType, Set<ResourceListener>>();
+  private Map<ResourceType, Set<ResourceListener>> listeners = new HashMap<>();
 
   private final ScheduledExecutorService scheduledExecutor;
   private final ExecutorService notifyExecutor;
 
   // The set of in progress rebalance operations.
-  private final Set<RebalanceOperation> inProgressOperations = new HashSet<RebalanceOperation>();
-  private final Object inProgressOperationsLock = new Object();
+  private final Set<RebalanceOperation> inProgressRebalanceOperations = new HashSet<>();
+  private final Object inProgressRebalanceOperationsLock = new Object();
+
+  // The set of in progress restore redundancy completable futures.
+  private final Set<CompletableFuture<RestoreRedundancyResults>> inProgressRedundancyOperations =
+      new HashSet<>();
+  private final Object inProgressRedundancyOperationsLock = new Object();
 
   final InternalCache cache;
 
@@ -288,20 +294,20 @@ public class InternalResourceManager implements ResourceManager {
 
   @Override
   public Set<RebalanceOperation> getRebalanceOperations() {
-    synchronized (this.inProgressOperationsLock) {
-      return new HashSet<RebalanceOperation>(this.inProgressOperations);
+    synchronized (this.inProgressRebalanceOperationsLock) {
+      return new HashSet<>(this.inProgressRebalanceOperations);
     }
   }
 
   void addInProgressRebalance(RebalanceOperation op) {
-    synchronized (this.inProgressOperationsLock) {
-      this.inProgressOperations.add(op);
+    synchronized (this.inProgressRebalanceOperationsLock) {
+      this.inProgressRebalanceOperations.add(op);
     }
   }
 
   void removeInProgressRebalance(RebalanceOperation op) {
-    synchronized (this.inProgressOperationsLock) {
-      this.inProgressOperations.remove(op);
+    synchronized (this.inProgressRebalanceOperationsLock) {
+      this.inProgressRebalanceOperations.remove(op);
     }
   }
 
@@ -339,7 +345,32 @@ public class InternalResourceManager implements ResourceManager {
       this.includedRegions = regions;
       return this;
     }
+  }
 
+  @Override
+  public RestoreRedundancyBuilder createRestoreRedundancyBuilder() {
+    return new RestoreRedundancyBuilderImpl(cache);
+  }
+
+  @Override
+  public Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyOperations() {
+    synchronized (this.inProgressRedundancyOperationsLock) {
+      return new HashSet<>(this.inProgressRedundancyOperations);
+    }
+  }
+
+  void addInProgressRestoreRedundancy(
+      CompletableFuture<RestoreRedundancyResults> completableFuture) {
+    synchronized (this.inProgressRedundancyOperationsLock) {
+      this.inProgressRedundancyOperations.add(completableFuture);
+    }
+  }
+
+  void removeInProgressRestoreRedundancy(
+      CompletableFuture<RestoreRedundancyResults> completableFuture) {
+    synchronized (this.inProgressRedundancyOperationsLock) {
+      this.inProgressRedundancyOperations.remove(completableFuture);
+    }
   }
 
   void stopExecutor(ExecutorService executor) {
@@ -379,7 +410,6 @@ public class InternalResourceManager implements ResourceManager {
    * For testing only, an observer which is called when rebalancing is started and finished for a
    * particular region. This observer is called even the "rebalancing" is actually redundancy
    * recovery for a particular region.
-   *
    */
   public static void setResourceObserver(ResourceObserver observer) {
     if (observer == null) {
@@ -402,25 +432,21 @@ public class InternalResourceManager implements ResourceManager {
   public interface ResourceObserver {
     /**
      * Indicates that rebalancing has started on a given region.
-     *
      */
     void rebalancingStarted(Region region);
 
     /**
      * Indicates that rebalancing has finished on a given region.
-     *
      */
     void rebalancingFinished(Region region);
 
     /**
      * Indicates that recovery has started on a given region.
-     *
      */
     void recoveryStarted(Region region);
 
     /**
      * Indicates that recovery has finished on a given region.
-     *
      */
     void recoveryFinished(Region region);
 
@@ -428,7 +454,6 @@ public class InternalResourceManager implements ResourceManager {
      * Indicated that a membership event triggered a recovery operation, but the recovery operation
      * will not be executed because there is already an existing recovery operation waiting to
      * happen on this region.
-     *
      */
     void recoveryConflated(PartitionedRegion region);
 

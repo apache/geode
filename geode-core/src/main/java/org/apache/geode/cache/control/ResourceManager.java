@@ -16,6 +16,7 @@
 package org.apache.geode.cache.control;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EvictionAttributes;
@@ -76,6 +77,21 @@ public interface ResourceManager {
    * @return a set of all active RebalanceOperations started locally
    */
   Set<RebalanceOperation> getRebalanceOperations();
+
+  /**
+   * Creates a class for defining and starting restore redundancy operations.
+   *
+   * @return a class for defining and starting restore redundancy operations
+   */
+  RestoreRedundancyBuilder createRestoreRedundancyBuilder();
+
+  /**
+   * Returns a set of all active restore redundancy operations that were started locally on this
+   * member.
+   *
+   * @return a set of all active restore redundancy operations started locally.
+   */
+  Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyOperations();
 
   /**
    * Set the percentage of heap at or above which the cache is considered in danger of becoming
