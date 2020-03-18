@@ -325,6 +325,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     setSubscriptionAckInterval(cp.getSubscriptionAckInterval());
     setServerGroup(cp.getServerGroup());
     setMultiuserAuthentication(cp.getMultiuserAuthentication());
+    setSocketFactory(cp.getSocketFactory());
     for (InetSocketAddress address : cp.getLocators()) {
       addLocator(address.getHostString(), address.getPort());
     }
@@ -668,7 +669,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
               retryAttempts, pingInterval, statisticInterval, queueEnabled, prSingleHopEnabled,
               queueRedundancyLevel, queueMessageTrackingTimeout, queueAckInterval,
               subscriptionTimeoutMultipler, serverGroup, multiuserSecureModeEnabled, locators,
-              servers, startDisabled, locatorCallback, gatewaySender, gateway);
+              servers, startDisabled, locatorCallback, gatewaySender, gateway, socketFactory);
     }
 
     @Override
@@ -699,7 +700,8 @@ public class PoolFactoryImpl implements InternalPoolFactory {
           && Objects.equals(new HashSet<>(locators), new HashSet<>(that.locators))
           && Objects.equals(new HashSet<>(servers), new HashSet<>(that.servers))
           && Objects.equals(locatorCallback, that.locatorCallback)
-          && Objects.equals(gatewaySender, that.gatewaySender);
+          && Objects.equals(gatewaySender, that.gatewaySender)
+          && Objects.equals(socketFactory, that.socketFactory);
     }
 
     @Override
