@@ -76,7 +76,6 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
         .mvcMatchers("/*")
         .hasRole("CLUSTER:READ")
         .anyRequest().authenticated())
-        .oauth2Login(Customizer.withDefaults())
         .formLogin(form -> form
             .loginPage("/login.html")
             .loginProcessingUrl("/login")
