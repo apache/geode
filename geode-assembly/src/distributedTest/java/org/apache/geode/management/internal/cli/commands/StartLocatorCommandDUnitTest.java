@@ -122,7 +122,8 @@ public class StartLocatorCommandDUnitTest {
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, pidFile.getParentFile().getCanonicalPath())
-        .addOption(START_LOCATOR__PORT, "0");
+        .addOption(START_LOCATOR__PORT, "0")
+        .addOption("J", "-Dgemfire.enable-management-rest-service=false");
 
 
 
@@ -148,7 +149,9 @@ public class StartLocatorCommandDUnitTest {
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
-        .addOption(START_LOCATOR__PROPERTIES, missingPropertiesPath);
+        .addOption(START_LOCATOR__PROPERTIES, missingPropertiesPath)
+        .addOption("J", "-Dgemfire.enable-management-rest-service=false");
+
 
     gfsh.executeAndAssertThat(command.getCommandString()).statusIsError()
         .containsOutput(expectedError);
@@ -167,7 +170,8 @@ public class StartLocatorCommandDUnitTest {
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
-        .addOption(START_LOCATOR__SECURITY_PROPERTIES, missingSecurityPropertiesPath);
+        .addOption(START_LOCATOR__SECURITY_PROPERTIES, missingSecurityPropertiesPath)
+        .addOption("J", "-Dgemfire.enable-management-rest-service=false");
 
     gfsh.executeAndAssertThat(command.getCommandString()).statusIsError()
         .containsOutput(expectedError);
@@ -189,7 +193,8 @@ public class StartLocatorCommandDUnitTest {
           .addOption(START_LOCATOR__MEMBER_NAME, memberName)
           .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
           .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
-          .addOption(START_LOCATOR__PORT, Integer.toString(locatorPort));
+          .addOption(START_LOCATOR__PORT, Integer.toString(locatorPort))
+          .addOption("J", "-Dgemfire.enable-management-rest-service=false");
 
       gfsh.executeAndAssertThat(command.getCommandString()).statusIsError()
           .containsOutput(expectedMessage).doesNotContainOutput(unexpectedMessage);
@@ -208,7 +213,8 @@ public class StartLocatorCommandDUnitTest {
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
-        .addOption(START_LOCATOR__PORT, String.valueOf(locatorPort));
+        .addOption(START_LOCATOR__PORT, String.valueOf(locatorPort))
+        .addOption("J", "-Dgemfire.enable-management-rest-service=false");
 
     gfsh.executeAndAssertThat(command.getCommandString()).statusIsSuccess()
         .containsOutput(expectedMessage);
@@ -225,7 +231,8 @@ public class StartLocatorCommandDUnitTest {
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
-        .addOption(START_LOCATOR__PORT, "0");
+        .addOption(START_LOCATOR__PORT, "0")
+        .addOption("J", "-Dgemfire.enable-management-rest-service=false");
 
     gfsh.executeAndAssertThat(command.getCommandString()).statusIsSuccess()
         .hasOutput()
@@ -243,6 +250,7 @@ public class StartLocatorCommandDUnitTest {
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
         .addOption(START_LOCATOR__PORT, "10339")
         .addOption(START_LOCATOR__HOSTNAME_FOR_CLIENTS, "fakeLocatorName")
+        .addOption("J", "-Dgemfire.enable-management-rest-service=false")
         .addOption(START_LOCATOR__CONNECT, "true").getCommandString();
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
