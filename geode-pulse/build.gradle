@@ -58,6 +58,9 @@ dependencies {
   implementation('org.apache.commons:commons-lang3')
   implementation('org.apache.commons:commons-text')
   implementation('org.springframework.ldap:spring-ldap-core')
+  implementation('org.springframework.security:spring-security-oauth2-core')
+  implementation('org.springframework.security:spring-security-oauth2-client')
+  implementation('org.springframework.security:spring-security-oauth2-jose')
 
   implementation('org.springframework.security:spring-security-config') {
     exclude module: 'aopalliance'

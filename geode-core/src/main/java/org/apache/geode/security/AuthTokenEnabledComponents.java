@@ -25,9 +25,18 @@ public enum AuthTokenEnabledComponents {
    * This determines that management rest service will use token based authentication. <U>Since</U>:
    * Geode 1.11
    */
-  MANAGEMENT;
+  MANAGEMENT,
+  /**
+   * This determines if Pulse will use token based authentication. <U>Since</U>:
+   * Geode 1.13
+   */
+  PULSE;
 
   public static boolean hasManagement(String value) {
     return ALL.name().equalsIgnoreCase(value) || MANAGEMENT.name().equalsIgnoreCase(value);
+  }
+
+  public static boolean hasPulse(String value) {
+    return ALL.name().equalsIgnoreCase(value) || PULSE.name().equalsIgnoreCase(value);
   }
 }
