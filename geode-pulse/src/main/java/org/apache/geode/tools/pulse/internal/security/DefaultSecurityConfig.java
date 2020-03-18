@@ -26,6 +26,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -75,6 +76,7 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
         .mvcMatchers("/*")
         .hasRole("CLUSTER:READ")
         .anyRequest().authenticated())
+        .oauth2Login(Customizer.withDefaults())
         .formLogin(form -> form
             .loginPage("/login.html")
             .loginProcessingUrl("/login")

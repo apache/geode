@@ -60,6 +60,6 @@ public class OAuthSecurityConfigTest {
 
     mvc.perform(get("http://localhost/oauth2/authorization/uaa"))
         .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrlPattern("http://example.com/uaa/oauth/**"));
+        .andExpect(redirectedUrlPattern("http://xyz.com/uaa/oauth/**"));
   }
 }
