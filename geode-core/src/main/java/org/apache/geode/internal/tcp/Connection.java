@@ -154,7 +154,7 @@ public class Connection implements Runnable {
   /**
    * The idle timeout timer task for this connection
    */
-  private SystemTimerTask idleTask;
+  private volatile SystemTimerTask idleTask;
 
   /**
    * If true then readers for thread owned sockets will send all messages on thread owned senders.
@@ -285,7 +285,7 @@ public class Connection implements Runnable {
   /**
    * task for detecting ack timeouts and issuing alerts
    */
-  private SystemTimer.SystemTimerTask ackTimeoutTask;
+  private volatile SystemTimer.SystemTimerTask ackTimeoutTask;
 
   /**
    * millisecond clock at the time message transmission started, if doing forced-disconnect
@@ -1909,7 +1909,13 @@ public class Connection implements Runnable {
       ackTimeoutTask = new SystemTimer.SystemTimerTask() {
         @Override
         public void run2() {
+          if (isSocketClosed()) {
+            // Connection is closing - nothing to do anymore
+            cancel();
+            return;
+          }
           if (owner.isClosed()) {
+            cancel();
             return;
           }
           byte connState;

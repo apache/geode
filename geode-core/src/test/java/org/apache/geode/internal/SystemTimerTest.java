@@ -31,13 +31,13 @@ import org.apache.geode.distributed.DistributedSystem;
 
 public class SystemTimerTest {
 
-  private DistributedSystem swarm;
+  private DistributedSystem distributedSystem;
   private SystemTimer systemTimer;
 
   @Before
   public void setup() {
-    this.swarm = mock(DistributedSystem.class);
-    this.systemTimer = new SystemTimer(swarm);
+    this.distributedSystem = mock(DistributedSystem.class);
+    this.systemTimer = new SystemTimer(distributedSystem);
   }
 
   @After
@@ -48,12 +48,12 @@ public class SystemTimerTest {
   }
 
   @Test
-  public void cancelSwarm() {
+  public void cancelTimer() {
     assertThat(systemTimer.isCancelled()).isFalse();
-    int initialSwarmCount = SystemTimer.swarmCount();
-    SystemTimer.cancelSwarm(swarm);
+    int initialSystemCount = SystemTimer.distributedSystemCount();
+    SystemTimer.cancelTimers(distributedSystem);
     assertThat(systemTimer.isCancelled()).isTrue();
-    assertThat(SystemTimer.swarmCount()).isEqualTo(initialSwarmCount - 1);
+    assertThat(SystemTimer.distributedSystemCount()).isEqualTo(initialSystemCount - 1);
   }
 
   @Test

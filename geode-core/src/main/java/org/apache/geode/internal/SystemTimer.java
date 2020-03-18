@@ -15,12 +15,12 @@
 package org.apache.geode.internal;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,8 +32,9 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * Instances of this class are like {@link Timer}, but are associated with a "swarm", which can be
- * cancelled as a group with {@link #cancelSwarm(DistributedSystem)}.
+ * Instances of this class are like {@link Timer}, but are associated with a DistributedSystem,
+ * which can be
+ * cancelled as a group with {@link #cancelTimers(DistributedSystem)}.
  *
  * @see Timer
  * @see TimerTask
@@ -56,104 +57,99 @@ public class SystemTimer {
   private volatile boolean cancelled = false;
 
   /**
-   * the swarm to which this timer belongs
+   * the DistributedSystem to which this timer belongs
    */
-  private final DistributedSystem swarm;
+  private final DistributedSystem distributedSystem;
 
   @Override
   public String toString() {
     return "SystemTimer["
-        + "swarm = " + swarm
+        + "system = " + distributedSystem
         + "]";
   }
 
   /**
-   * List of all of the swarms in the system
+   * Map of all of the timers in the system
    */
   @MakeNotStatic
-  private static final HashMap<DistributedSystem, List<WeakReference<SystemTimer>>> allSwarms =
+  private static final HashMap<DistributedSystem, Set<WeakReference<SystemTimer>>> distributedSystemTimers =
       new HashMap<>();
 
   /**
-   * Add the given timer is in the given swarm. Used only by constructors.
+   * Add the given timer is in the given DistributedSystem. Used only by constructors.
    *
-   * @param swarm swarm to add the timer to
+   * @param system DistributedSystem to add the timer to
    * @param systemTimer timer to add
    */
-  private static void addToSwarm(DistributedSystem swarm, SystemTimer systemTimer) {
-    // Get or add list of timers for this swarm...
-    List<WeakReference<SystemTimer>> swarmSet;
-    synchronized (allSwarms) {
-      swarmSet = allSwarms.get(swarm);
-      if (swarmSet == null) {
-        swarmSet = new ArrayList<>();
-        allSwarms.put(swarm, swarmSet);
+  private static void addTimer(DistributedSystem system, SystemTimer systemTimer) {
+    Set<WeakReference<SystemTimer>> timers;
+    synchronized (distributedSystemTimers) {
+      timers = distributedSystemTimers.get(system);
+      if (timers == null) {
+        timers = new HashSet<>();
+        distributedSystemTimers.put(system, timers);
       }
     }
 
-    // Add the timer to the swarm's list
     WeakReference<SystemTimer> wr = new WeakReference<>(systemTimer);
-    synchronized (swarmSet) {
-      swarmSet.add(wr);
+    synchronized (timers) {
+      timers.add(wr);
     }
   }
 
   /**
-   * Return the current number of swarms of timers
+   * Return the current number of DistributedSystems with timers
    */
-  public static int swarmCount() {
-    synchronized (allSwarms) {
-      return allSwarms.size();
+  public static int distributedSystemCount() {
+    synchronized (distributedSystemTimers) {
+      return distributedSystemTimers.size();
     }
   }
 
   /**
    * time that the last sweep was done
    *
-   * @see #sweepAllSwarms
+   * @see #sweepAllTimers
    */
   @MakeNotStatic
   private static long lastSweepAllTime = 0;
 
   /**
-   * Interval, in milliseconds, to sweep all swarms, measured from when the last sweep finished
+   * Interval, in milliseconds, to sweep all timers, measured from when the last sweep finished
    *
-   * @see #sweepAllSwarms
+   * @see #sweepAllTimers
    */
   private static final long SWEEP_ALL_INTERVAL = 2 * 60 * 1000; // 2 minutes
 
   /**
-   * Manually garbage collect {@link #allSwarms}, if it hasn't happened in a while.
+   * Manually garbage collect {@link #distributedSystemTimers}, if it hasn't happened in a while.
    *
    * @see #lastSweepAllTime
    */
-  private static void sweepAllSwarms() {
+  private static void sweepAllTimers() {
     if (System.currentTimeMillis() < lastSweepAllTime + SWEEP_ALL_INTERVAL) {
       // Too soon.
       return;
     }
     final boolean isDebugEnabled = logger.isTraceEnabled();
-    synchronized (allSwarms) {
-      Iterator<Map.Entry<DistributedSystem, List<WeakReference<SystemTimer>>>> allSwarmsIterator =
-          allSwarms.entrySet().iterator();
-      while (allSwarmsIterator.hasNext()) { // iterate over allSwarms
-        Map.Entry<DistributedSystem, List<WeakReference<SystemTimer>>> entry =
-            allSwarmsIterator.next();
-        List<WeakReference<SystemTimer>> swarm = entry.getValue();
-        synchronized (swarm) {
-          Iterator<WeakReference<SystemTimer>> swarmIterator = swarm.iterator();
-          while (swarmIterator.hasNext()) { // iterate over current swarm
-            WeakReference<SystemTimer> wr = swarmIterator.next();
+    synchronized (distributedSystemTimers) {
+      Iterator<Map.Entry<DistributedSystem, Set<WeakReference<SystemTimer>>>> allSystemsIterator =
+          distributedSystemTimers.entrySet().iterator();
+      while (allSystemsIterator.hasNext()) {
+        Map.Entry<DistributedSystem, Set<WeakReference<SystemTimer>>> entry =
+            allSystemsIterator.next();
+        Set<WeakReference<SystemTimer>> timers = entry.getValue();
+        synchronized (timers) {
+          Iterator<WeakReference<SystemTimer>> timersIterator = timers.iterator();
+          while (timersIterator.hasNext()) {
+            WeakReference<SystemTimer> wr = timersIterator.next();
             SystemTimer st = wr.get();
             if (st == null || st.isCancelled()) {
-              swarmIterator.remove();
+              timersIterator.remove();
             }
-          } // iterate over current swarm
-          if (swarm.size() == 0) { // Remove unused swarm
-            allSwarmsIterator.remove();
-            if (isDebugEnabled) {
-              logger.trace("SystemTimer#sweepAllSwarms: removed unused swarm {}", entry.getKey());
-            }
+          }
+          if (timers.size() == 0) {
+            allSystemsIterator.remove();
           }
         }
       }
@@ -165,76 +161,72 @@ public class SystemTimer {
   }
 
   /**
-   * Remove given timer from the swarm.
+   * Remove given timer.
    *
    * @param timerToRemove timer to remove
    *
    * @see #cancel()
    */
-  private static void removeFromSwarm(SystemTimer timerToRemove) {
-    synchronized (allSwarms) {
-      // Get timer's swarm
-      List<WeakReference<SystemTimer>> swarmSet = allSwarms.get(timerToRemove.swarm);
-      if (swarmSet == null) {
+  private static void removeTimer(SystemTimer timerToRemove) {
+    synchronized (distributedSystemTimers) {
+      // Get the timers for the distributed system
+      Set<WeakReference<SystemTimer>> timers =
+          distributedSystemTimers.get(timerToRemove.distributedSystem);
+      if (timers == null) {
         return; // already gone
       }
 
-      // Remove timer from swarm
-      synchronized (swarmSet) {
-        Iterator<WeakReference<SystemTimer>> swarmIterator = swarmSet.iterator();
-        while (swarmIterator.hasNext()) {
-          WeakReference<SystemTimer> ref = swarmIterator.next();
+      synchronized (timers) {
+        Iterator<WeakReference<SystemTimer>> timersIterator = timers.iterator();
+        while (timersIterator.hasNext()) {
+          WeakReference<SystemTimer> ref = timersIterator.next();
           SystemTimer timer = ref.get();
           if (timer == null) {
-            swarmIterator.remove();
+            timersIterator.remove();
           } else if (timer == timerToRemove) {
-            swarmIterator.remove();
+            timersIterator.remove();
             break;
           } else if (timer.isCancelled()) {
-            swarmIterator.remove();
+            timersIterator.remove();
           }
         }
-
-        // While we're here, if the swarm has gone to zero size,
-        // we should remove it.
-        if (swarmSet.size() == 0) {
-          allSwarms.remove(timerToRemove.swarm); // last reference
+        if (timers.size() == 0) {
+          distributedSystemTimers.remove(timerToRemove.distributedSystem); // last reference
         }
       }
     }
 
-    sweepAllSwarms(); // Occasionally check global list
+    sweepAllTimers(); // Occasionally check global list
   }
 
   /**
    * Cancel all outstanding timers
    *
-   * @param swarm the swarm to cancel
+   * @param system the DistributedSystem whose timers should be cancelled
    */
-  public static void cancelSwarm(DistributedSystem swarm) {
-    // Find the swarmSet and remove it
-    List<WeakReference<SystemTimer>> swarmSet;
-    synchronized (allSwarms) {
-      swarmSet = allSwarms.get(swarm);
-      if (swarmSet == null) {
+  public static void cancelTimers(DistributedSystem system) {
+    Set<WeakReference<SystemTimer>> timers;
+    synchronized (distributedSystemTimers) {
+      timers = distributedSystemTimers.get(system);
+      if (timers == null) {
         return; // already cancelled
       }
       // Remove before releasing synchronization, so any fresh timer ends up
       // in a new set with same key
-      allSwarms.remove(swarm);
+      distributedSystemTimers.remove(system);
     } // synchronized
 
-    // Empty the swarmSet
-    synchronized (swarmSet) {
-      for (WeakReference<SystemTimer> wr : swarmSet) {
+    // cancel all of the timers
+    synchronized (timers) {
+      for (WeakReference<SystemTimer> wr : timers) {
         SystemTimer st = wr.get();
         // it.remove(); Not necessary, we're emptying the list...
         if (st != null) {
           st.cancelled = true; // for safety :-)
           st.timer.cancel(); // st.cancel() would just search for it again
         }
-      } // while
-    } // synchronized
+      }
+    }
   }
 
   public int timerPurge() {
@@ -247,12 +239,12 @@ public class SystemTimer {
 
   /**
    * @see Timer#Timer(boolean)
-   * @param swarm the swarm this timer belongs to, currently must be a DistributedSystem
+   * @param distributedSystem the DistributedSystem to which this timer belongs
    */
-  public SystemTimer(DistributedSystem swarm) {
+  public SystemTimer(DistributedSystem distributedSystem) {
     this.timer = new Timer(true);
-    this.swarm = swarm;
-    addToSwarm(swarm, this);
+    this.distributedSystem = distributedSystem;
+    addTimer(distributedSystem, this);
   }
 
   private void checkCancelled() throws IllegalStateException {
@@ -299,7 +291,7 @@ public class SystemTimer {
   public void cancel() {
     this.cancelled = true;
     timer.cancel();
-    removeFromSwarm(this);
+    removeTimer(this);
   }
 
   /**
