@@ -80,7 +80,7 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
       socket.connect(sockaddr, Math.max(timeout, 0));
       SSLSocketFactory sf = coreSocketCreator.getSslContext().getSocketFactory();
       socket = sf.createSocket(socket, addr.getHostName(), addr.getPort(), true);
-      coreSocketCreator.configureClientSSLSocket(socket, timeout);
+      coreSocketCreator.configureClientSSLSocket(socket, addr, timeout);
       return socket;
 
     } finally {
