@@ -104,6 +104,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.12.0')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '3.4.1')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
+        api(group: 'commons-codec', name: 'commons-codec', version: '1.14')
         api(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
         api(group: 'commons-configuration', name: 'commons-configuration', version: '1.10')
         api(group: 'commons-digester', name: 'commons-digester', version: '2.1')

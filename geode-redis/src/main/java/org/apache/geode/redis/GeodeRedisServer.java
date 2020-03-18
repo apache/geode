@@ -62,6 +62,7 @@ import io.netty.util.concurrent.Future;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -81,6 +82,8 @@ import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
 import org.apache.geode.redis.internal.Coder;
@@ -504,9 +507,17 @@ public class GeodeRedisServer {
     registerLockServiceMBean();
   }
 
+  @VisibleForTesting
+  public RedisLockService getLockService() {
+    return hashLockService;
+  }
+
   private void registerLockServiceMBean() {
+    ManagementService sms = SystemManagementService.getManagementService(cache);
+
     try {
       ObjectName mbeanON = new ObjectName(OBJECTNAME__REDISLOCKSERVICE_MBEAN);
+      sms.registerMBean(hashLockService, mbeanON);
       MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
 
       Set<ObjectName> names = platformMBeanServer.queryNames(mbeanON, null);
