@@ -174,26 +174,27 @@ public class RedisLockServiceJUnitTest {
   public void lockingDoesNotCauseConcurrentModificationExceptions()
       throws ExecutionException, InterruptedException {
 
+    int ITERATIONS = 10000;
     RedisLockService lockService = new RedisLockService();
 
     ExecutorService pool = Executors.newFixedThreadPool(5);
     Callable<Void> callable = () -> {
       ByteArrayWrapper key = new ByteArrayWrapper("key".getBytes());
-      for (int i = 0; i < 10000; i++) {
+      for (int i = 0; i < ITERATIONS; i++) {
         lockService.lock(key).close();
       }
       return null;
     };
 
     Callable<Void> lockMaker = () -> {
-      for (int i = 0; i < 10000; i++) {
+      for (int i = 0; i < ITERATIONS; i++) {
         lockService.lock(new ByteArrayWrapper(("key-" + i++).getBytes())).close();
       }
       return null;
     };
 
     Callable<Void> garbageCollection = () -> {
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < ITERATIONS / 100; i++) {
         System.gc();
         System.runFinalization();
       }

@@ -72,37 +72,40 @@ public class RedisLockService implements RedisLockServiceMBean {
     }
 
     KeyHashIdentifier lockKey = new KeyHashIdentifier(key.toBytes());
-    Lock lock = new ReentrantLock();
-    Lock oldLock = weakReferencesTolocks.putIfAbsent(lockKey, lock);
+    KeyHashIdentifier referencedKey = lockKey;
 
-    if (oldLock != null) {
-      lock = oldLock;
+    Lock lock;
+    do {
+      lock = new ReentrantLock();
+      Lock oldLock = weakReferencesTolocks.putIfAbsent(lockKey, lock);
 
-      // we need to get a reference to the actual key object
-      // so that the backing WeakHashMap does not clean it up
-      // when garbage collection happens.
-      lockKey = getReferenceToLockKey(lockKey);
-    }
+      if (oldLock != null) {
+        lock = oldLock;
+
+        // we need to get a reference to the actual key object
+        // so that the backing WeakHashMap does not clean it up
+        // when garbage collection happens.
+        referencedKey = getReferenceToLockKey(lockKey);
+      }
+    } while (referencedKey == null);
 
     if (!lock.tryLock(timeoutMS, TimeUnit.MILLISECONDS)) {
       throw new TimeoutException("Couldn't get lock for " + lockKey.toString());
     }
 
-    return new AutoCloseableLock(lockKey, lock);
+    return new AutoCloseableLock(referencedKey, lock);
   }
 
   private KeyHashIdentifier getReferenceToLockKey(KeyHashIdentifier lockKey) {
-    KeyHashIdentifier referenceToLockKey = null;
-
     synchronized (weakReferencesTolocks) {
       for (KeyHashIdentifier keyInSet : weakReferencesTolocks.keySet()) {
         if (keyInSet.equals(lockKey)) {
-          referenceToLockKey = keyInSet;
-          break;
+          return keyInSet;
         }
       }
     }
-    return referenceToLockKey;
+
+    return null;
   }
 
 }
