@@ -122,3 +122,12 @@ springfox-swagger-common
 springfox-swagger-ui
 swagger-annotations
 swagger-models
+activation
+javax.mail
+jcip-annotations
+lang-tag
+nimbus-jose-jwt
+oauth2-oidc-sdk
+spring-security-oauth2-client
+spring-security-oauth2-core
+spring-security-oauth2-jose
