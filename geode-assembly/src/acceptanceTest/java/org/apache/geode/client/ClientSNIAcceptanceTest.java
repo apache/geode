@@ -17,6 +17,7 @@ package org.apache.geode.client;
 import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
 import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
@@ -83,12 +84,12 @@ public class ClientSNIAcceptanceTest {
     gemFireProps.setProperty(SSL_KEYSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_TRUSTSTORE, trustStorePath);
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
-    // gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
+    gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
     ClientCache cache = new ClientCacheFactory(gemFireProps)
         .addPoolLocator(
-            "localhost",
-            55221)
+            "locator",
+            10334)
         .create();
     Region<String, String> region =
         cache.<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)

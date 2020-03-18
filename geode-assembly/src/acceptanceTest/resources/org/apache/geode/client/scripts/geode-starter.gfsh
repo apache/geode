@@ -15,9 +15,9 @@
 # limitations under the License.
 #
 
-start locator --name=locator --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties
+start locator --name=locator --hostname-for-clients=locator --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties
 start server --name=server --hostname-for-clients=server --locators=localhost[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties
-connect --locator=localhost[10334]
+connect --locator=localhost[10334] --use-ssl=true --security-properties-file=/geode/config/gfsecurity.properties
 create region --name=jellyfish --type=REPLICATE
 put --key=foo --value=bar --region=jellyfish
 get --key=foo --region=jellyfish
