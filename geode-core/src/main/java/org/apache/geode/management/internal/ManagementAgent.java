@@ -194,20 +194,21 @@ public class ManagementAgent {
         logger.debug(message);
       }
     } else {
-      String[] authTokenEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
-      boolean pulseOauth = Arrays.stream(authTokenEnabledComponents)
-          .anyMatch(AuthTokenEnabledComponents::hasPulse);
       String pwFile = this.config.getJmxManagerPasswordFile();
+      String springActiveProfile = "spring.profiles.active";
       if (securityService.isIntegratedSecurity()) {
+        String[] authTokenEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
+        boolean pulseOauth = Arrays.stream(authTokenEnabledComponents)
+            .anyMatch(AuthTokenEnabledComponents::hasPulse);
         if (pulseOauth) {
-          System.setProperty("spring.profiles.active", "pulse.authentication.oauth");
+          System.setProperty(springActiveProfile, "pulse.authentication.oauth");
         } else {
-          System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+          System.setProperty(springActiveProfile, "pulse.authentication.gemfire");
         }
       } else if (StringUtils.isNotBlank(pwFile)) {
-        System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+        System.setProperty(springActiveProfile, "pulse.authentication.gemfire");
       } else {
-        System.setProperty("spring.profiles.active", "pulse.authentication.default");
+        System.setProperty(springActiveProfile, "pulse.authentication.default");
       }
     }
 

@@ -67,7 +67,7 @@ public class OauthSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Bean
   public ClientRegistrationRepository clientRegistrationRepository() {
-    return new InMemoryClientRegistrationRepository(this.uaaClientRegistration());
+    return new InMemoryClientRegistrationRepository(this.cientRegistration());
   }
 
   @Bean
@@ -82,7 +82,7 @@ public class OauthSecurityConfig extends WebSecurityConfigurerAdapter {
     return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService);
   }
 
-  private ClientRegistration uaaClientRegistration() {
+  private ClientRegistration cientRegistration() {
     return ClientRegistration.withRegistrationId(providerId)
         .clientId(clientId)
         .clientSecret(clientSecret)
