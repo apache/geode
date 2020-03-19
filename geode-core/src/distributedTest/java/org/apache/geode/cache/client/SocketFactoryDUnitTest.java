@@ -83,7 +83,7 @@ public class SocketFactoryDUnitTest {
   }
 
 
-  public static class TestFunction implements Function, DataSerializable {
+  public static class TestFunction implements Function<Void>, DataSerializable {
     @Override
     public void toData(DataOutput out) throws IOException {
 
@@ -95,7 +95,7 @@ public class SocketFactoryDUnitTest {
     }
 
     @Override
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<Void> context) {
       context.getResultSender().lastResult("test");
 
     }
@@ -111,7 +111,7 @@ public class SocketFactoryDUnitTest {
     }
 
     @Override
-    public Socket createSocket() throws IOException {
+    public Socket createSocket() {
       return new ChangeHostSocket();
     }
 
