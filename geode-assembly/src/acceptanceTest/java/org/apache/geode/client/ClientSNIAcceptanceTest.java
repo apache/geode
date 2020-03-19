@@ -92,7 +92,7 @@ public class ClientSNIAcceptanceTest {
             10334)
         .create();
     Region<String, String> region =
-        cache.<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+        cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
             .create("jellyfish");
     region.destroy("hello");
     region.put("hello", "world");
