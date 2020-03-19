@@ -2759,10 +2759,9 @@ public class Cluster extends Thread {
     return getDataBrowser().deleteQueryById(userId, queryId);
   }
 
-  public void connectToGemFire(String password) {
-    jmxConnector = updater.connect(getJmxUserName(), password);
+  public void connectToGemFire(Object credentials) {
+    jmxConnector = updater.connect(credentials);
 
-    // if connected
     if (jmxConnector != null) {
       // Start Thread
       start();

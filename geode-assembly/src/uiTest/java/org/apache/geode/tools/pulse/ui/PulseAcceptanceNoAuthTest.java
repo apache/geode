@@ -72,7 +72,7 @@ public class PulseAcceptanceNoAuthTest extends PulseAcceptanceTestBase {
   @Before
   public void before() {
     pulseRule.useJmxManager("localhost", locator.getJmxPort());
-    cluster = pulseRule.getRepository().getCluster("admin", null);
+    cluster = pulseRule.getRepository().getClusterWithUserNameAndPassword("admin", null);
   }
 
   @Override

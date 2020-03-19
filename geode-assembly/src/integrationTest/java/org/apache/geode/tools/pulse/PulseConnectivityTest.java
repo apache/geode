@@ -70,7 +70,7 @@ public class PulseConnectivityTest {
   @Test
   public void testConnectToJmx() throws Exception {
     pulse.useJmxManager(jmxBindAddress, locator.getJmxPort());
-    Cluster cluster = pulse.getRepository().getCluster("admin", null);
+    Cluster cluster = pulse.getRepository().getClusterWithUserNameAndPassword("admin", null);
     assertThat(cluster.isConnectedFlag()).isTrue();
     assertThat(cluster.getServerCount()).isEqualTo(0);
   }
@@ -78,7 +78,7 @@ public class PulseConnectivityTest {
   @Test
   public void testConnectToLocator() throws Exception {
     pulse.useLocatorPort(locator.getPort());
-    Cluster cluster = pulse.getRepository().getCluster("admin", null);
+    Cluster cluster = pulse.getRepository().getClusterWithUserNameAndPassword("admin", null);
     assertThat(cluster.isConnectedFlag()).isTrue();
     assertThat(cluster.getServerCount()).isEqualTo(0);
     assertThat(cluster.isAlive()).isTrue();

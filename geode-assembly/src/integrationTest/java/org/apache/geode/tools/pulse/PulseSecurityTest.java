@@ -101,12 +101,12 @@ public class PulseSecurityTest {
   public void queryUsingEmbededPulseWillHaveAuthorizationEnabled() throws Exception {
     pulse.useJmxPort(server.getJmxPort());
     // using "cluster" to connect to jmx manager will not get authorized to execute query
-    Cluster cluster = pulse.getRepository().getCluster("cluster", "cluster");
+    Cluster cluster = pulse.getRepository().getClusterWithUserNameAndPassword("cluster", "cluster");
     ObjectNode result = cluster.executeQuery("select * from /regionA a order by a", null, 0);
     assertThat(result.toString()).contains("cluster not authorized for DATA:READ");
 
     // using "data" to connect to jmx manager will succeeed
-    cluster = pulse.getRepository().getCluster("data", "data");
+    cluster = pulse.getRepository().getClusterWithUserNameAndPassword("data", "data");
     result = cluster.executeQuery("select * from /regionA a order by a", null, 0);
     assertThat(result.toString()).contains("No Data Found");
   }

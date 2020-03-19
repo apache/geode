@@ -164,12 +164,11 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
     return null;
   }
 
-
   /**
    * Get the jmx connection
    */
   @Override
-  public JMXConnector connect(String username, String password) {
+  public JMXConnector connect(Object credentials) {
     // Reference to repository
     Repository repository = Repository.get();
     try {
@@ -203,9 +202,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       if (StringUtils.isNotBlank(jmxSerURL)) {
         JMXServiceURL url = new JMXServiceURL(jmxSerURL);
-        String[] creds = {username, password};
         Map<String, Object> env = new HashMap<>();
-        env.put(JMXConnector.CREDENTIALS, creds);
+        env.put(JMXConnector.CREDENTIALS, credentials);
 
         Properties originalProperties = System.getProperties();
         try {

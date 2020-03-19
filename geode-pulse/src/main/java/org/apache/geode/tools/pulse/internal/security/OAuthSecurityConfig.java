@@ -17,13 +17,11 @@ package org.apache.geode.tools.pulse.internal.security;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -64,12 +62,22 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http.authorizeRequests(authorize -> authorize
         .anyRequest().authenticated())
-        .oauth2Login(withDefaults());
+        .oauth2Login(withDefaults())
+        .exceptionHandling(exception -> exception
+            .accessDeniedPage("/accessDenied.html"))
+        .logout(logout -> logout.logoutUrl("/clusterLogout"))
+        .headers(header -> header
+            .frameOptions().deny()
+            .xssProtection(xss -> xss
+                .xssProtectionEnabled(true)
+                .block(true))
+            .contentTypeOptions())
+        .csrf().disable();
   }
 
   @Bean
   public ClientRegistrationRepository clientRegistrationRepository() {
-    return new InMemoryClientRegistrationRepository(this.cientRegistration());
+    return new InMemoryClientRegistrationRepository(clientRegistration());
   }
 
   @Bean
@@ -84,7 +92,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
     return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService);
   }
 
-  private ClientRegistration cientRegistration() {
+  private ClientRegistration clientRegistration() {
     return ClientRegistration.withRegistrationId(providerId)
         .clientId(clientId)
         .clientSecret(clientSecret)
@@ -98,18 +106,5 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
         .clientName("Pulse")
         .userNameAttributeName(userNameAttributeName)
         .build();
-  }
-
-  @Bean
-  public OauthAuthenticationProvider gemAuthenticationProvider() {
-    return new OauthAuthenticationProvider();
-  }
-
-  @Autowired
-  OauthAuthenticationProvider oauthAuthenticationProvider;
-
-  @Override
-  protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
-    authenticationManagerBuilder.authenticationProvider(oauthAuthenticationProvider);
   }
 }

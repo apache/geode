@@ -28,6 +28,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
 /**
  * A Singleton instance of the memory cache for clusters.
@@ -38,7 +40,7 @@ public class Repository {
   private static final Logger logger = LogManager.getLogger();
 
   private static Repository instance = new Repository();
-  private HashMap<String, Cluster> clusterMap = new HashMap<>();
+  private final HashMap<String, Cluster> clusterMap = new HashMap<>();
   private Boolean jmxUseLocator;
   private String host;
   private String port;
@@ -119,16 +121,27 @@ public class Repository {
    * request
    *
    * But for multi-user connections to gemfireJMX, i.e pulse that uses gemfire integrated security,
-   * we will need to get the username form the context
+   * we will need to get the username from the context
    */
   public Cluster getCluster() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth == null)
       return null;
-    return getCluster(auth.getName(), null);
+
+    if (auth instanceof OAuth2AuthenticationToken) {
+      OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) auth;
+      return getClusterWithCredentials(token.getPrincipal().getName(),
+          ((DefaultOidcUser) token.getPrincipal()).getIdToken().getTokenValue());
+    }
+
+    return getClusterWithUserNameAndPassword(auth.getName(), auth.getCredentials().toString());
   }
 
-  public Cluster getCluster(String username, String password) {
+  public Cluster getClusterWithUserNameAndPassword(String userName, String password) {
+    return getClusterWithCredentials(userName, new String[]{userName, password});
+  }
+
+  public Cluster getClusterWithCredentials(String username, Object credentials) {
     synchronized (this.clusterMap) {
       Cluster data = clusterMap.get(username);
       if (data == null) {
@@ -136,7 +149,7 @@ public class Repository {
         data = new Cluster(this.host, this.port, username);
         // Assign name to thread created
         data.setName(PulseConstants.APP_NAME + "-" + this.host + ":" + this.port + ":" + username);
-        data.connectToGemFire(password);
+        data.connectToGemFire(credentials);
         if (data.isConnectedFlag()) {
           this.clusterMap.put(username, data);
         }
