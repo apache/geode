@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -54,8 +56,21 @@ public class MSetExecutor extends StringExecutor {
       byte[] value = commandElems.get(i + 1);
       map.put(key, new ByteArrayWrapper(value));
     }
-    region.putAll(map);
 
+    ByteArrayWrapper key = command.getKey();
+    checkAndSetDataType(key, context);
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      region.putAll(map);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+      return;
+    } catch (TimeoutException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          "Timeout acquiring lock. Please try again."));
+      return;
+    }
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
   }
 

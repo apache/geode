@@ -54,6 +54,7 @@ public class IncrExecutorJUnitTest {
   private RegionProvider regionProvider;
   private ByteBuf buffer;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     context = mock(ExecutionHandlerContext.class);
@@ -64,6 +65,7 @@ public class IncrExecutorJUnitTest {
 
     regionProvider = mock(RegionProvider.class);
     when(context.getRegionProvider()).thenReturn(regionProvider);
+
     region = mock(Region.class);
     when(regionProvider.getStringsRegion()).thenReturn(region);
 

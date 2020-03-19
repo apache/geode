@@ -53,6 +53,7 @@ public class GetSetExecutorJUnitTest {
   private RegionProvider regionProvider;
   private RedisLockService lockService;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setup() {
     command = mock(Command.class);

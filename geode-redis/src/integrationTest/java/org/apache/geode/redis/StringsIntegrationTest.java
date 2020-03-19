@@ -404,7 +404,7 @@ public class StringsIntegrationTest {
     List<String> actualVals = jedis.mget(keys);
     expectedVals = DetermineWhichMSetWonTheRace(vals1, vals2, actualVals);
 
-    assertThat(expectedVals).contains(actualVals.toArray(new String[] {}));
+    assertThat(actualVals.toArray(new String[] {})).contains(expectedVals);
   }
 
   private void SetUpArraysForConcurrentMSet(String keyBaseName, String val1BaseName,
