@@ -138,7 +138,6 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
-  @Ignore("DEBUG")
   public void stoppedLocatorIsStopped() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
