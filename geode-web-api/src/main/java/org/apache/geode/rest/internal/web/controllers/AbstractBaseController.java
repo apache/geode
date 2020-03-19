@@ -42,6 +42,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -99,6 +100,11 @@ public abstract class AbstractBaseController implements InitializingBean {
   private static final String DEFAULT_ENCODING = UTF_8;
   private static final Logger logger = LogService.getLogger();
   private static final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
+
+  @SuppressWarnings("deprecation")
+  protected static final String APPLICATION_JSON_UTF8_VALUE = MediaType.APPLICATION_JSON_UTF8_VALUE;
+  @SuppressWarnings("deprecation")
+  protected static final MediaType APPLICATION_JSON_UTF8 = MediaType.APPLICATION_JSON_UTF8;
 
   @Autowired
   protected RestSecurityService securityService;

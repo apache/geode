@@ -41,6 +41,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class RestSecurityIntegrationTest {
 
   protected static final String REGION_NAME = "AuthRegion";
+  @SuppressWarnings("deprecation")
+  private static final String APPLICATION_JSON_UTF8_VALUE = MediaType.APPLICATION_JSON_UTF8_VALUE;
 
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule()
@@ -64,7 +66,7 @@ public class RestSecurityIntegrationTest {
     assertResponse(restClient.doGet("/functions", "user", "user")).hasStatusCode(403);
     assertResponse(restClient.doGet("/functions", "dataRead", "dataRead"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_VALUE);
+        .hasContentType(APPLICATION_JSON_UTF8_VALUE);
   }
 
   @Test
@@ -83,7 +85,7 @@ public class RestSecurityIntegrationTest {
         .hasStatusCode(403);
     restClient.doGetAndAssert("/queries", "dataRead", "dataRead")
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_VALUE);
+        .hasContentType(APPLICATION_JSON_UTF8_VALUE);
   }
 
   @Test
@@ -146,7 +148,7 @@ public class RestSecurityIntegrationTest {
         .hasStatusCode(403);
     assertResponse(restClient.doGet("/servers", "cluster", "cluster"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_VALUE);
+        .hasContentType(APPLICATION_JSON_UTF8_VALUE);
   }
 
   /**
@@ -172,7 +174,7 @@ public class RestSecurityIntegrationTest {
   @Test
   public void getRegions() throws IOException {
     JsonNode jsonObject = assertResponse(restClient.doGet("", "dataRead", "dataRead"))
-        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_VALUE)
+        .hasStatusCode(200).hasContentType(APPLICATION_JSON_UTF8_VALUE)
         .getJsonObject();
 
     JsonNode regions = jsonObject.get("regions");
@@ -207,7 +209,7 @@ public class RestSecurityIntegrationTest {
 
     // Test an authorized user - 200
     assertResponse(restClient.doGet("/" + REGION_NAME, "data", "data"))
-        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_VALUE);
+        .hasStatusCode(200).hasContentType(APPLICATION_JSON_UTF8_VALUE);
   }
 
   /**
@@ -249,7 +251,7 @@ public class RestSecurityIntegrationTest {
   public void getRegionKeys() {
     // Test an authorized user
     assertResponse(restClient.doGet("/" + REGION_NAME + "/keys", "data", "data"))
-        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_VALUE);
+        .hasStatusCode(200).hasContentType(APPLICATION_JSON_UTF8_VALUE);
     // Test an unauthorized user
     assertResponse(restClient.doGet("/" + REGION_NAME + "/keys", "dataWrite", "dataWrite"))
         .hasStatusCode(403);
@@ -263,7 +265,7 @@ public class RestSecurityIntegrationTest {
     // Test an authorized user
     assertResponse(restClient.doGet("/" + REGION_NAME + "/key1", "dataReadAuthRegionKey1",
         "dataReadAuthRegionKey1"))
-            .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_VALUE);
+            .hasStatusCode(200).hasContentType(APPLICATION_JSON_UTF8_VALUE);
 
     // Test an unauthorized user
     assertResponse(restClient.doGet("/" + REGION_NAME + "/key1", "dataWrite", "dataWrite"))

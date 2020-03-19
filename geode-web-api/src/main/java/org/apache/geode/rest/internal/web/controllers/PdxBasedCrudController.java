@@ -25,7 +25,6 @@ import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -76,7 +75,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{region}",
-      consumes = MediaType.APPLICATION_JSON_VALUE, produces = {MediaType.APPLICATION_JSON_VALUE})
+      consumes = APPLICATION_JSON_UTF8_VALUE, produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region")
   @ApiResponses({@ApiResponse(code = 201, message = "Created."),
       @ApiResponse(code = 400,
@@ -112,7 +111,7 @@ public class PdxBasedCrudController extends CommonCrudController {
     if (existingPdxObj != null) {
       final RegionEntryData<Object> data = new RegionEntryData<>(region);
       data.add(existingPdxObj);
-      headers.setContentType(MediaType.APPLICATION_JSON);
+      headers.setContentType(APPLICATION_JSON_UTF8);
       return new ResponseEntity<RegionEntryData<?>>(data, headers, HttpStatus.CONFLICT);
     } else {
       return new ResponseEntity<String>(headers, HttpStatus.CREATED);
@@ -127,7 +126,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
-      produces = MediaType.APPLICATION_JSON_VALUE)
+      produces = APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read all data for region",
       notes = "Read all data for region. Use limit param to get fixed or limited number of entries.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -201,7 +200,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",
-      produces = MediaType.APPLICATION_JSON_VALUE)
+      produces = APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read data for specific keys",
       notes = "Read data for specific set of keys in region.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -279,7 +278,8 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.PUT, value = "/{region}/{keys}",
-      consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+      consumes = {APPLICATION_JSON_UTF8_VALUE}, produces = {
+          APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "update data for key",
       notes = "Update or insert (put) data for key in region."
           + "op=REPLACE, update (replace) data with key if and only if the key exists in region"
@@ -312,7 +312,7 @@ public class PdxBasedCrudController extends CommonCrudController {
   }
 
   @RequestMapping(method = RequestMethod.HEAD, value = "/{region}",
-      produces = MediaType.APPLICATION_JSON_VALUE)
+      produces = APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "Get total number of entries",
       notes = "Get total number of entries into the specified region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
