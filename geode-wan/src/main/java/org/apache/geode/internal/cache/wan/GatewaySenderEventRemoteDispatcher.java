@@ -200,7 +200,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       SenderProxy sp = new SenderProxy(this.sender.getProxy());
       this.connectionLifeCycleLock.readLock().lock();
       try {
-        if (connection != null) {
+        if (connection != null && !connection.isDestroyed()) {
           sp.dispatchBatch_NewWAN(connection, events, currentBatchId,
               sender.isRemoveFromQueueOnException(), isRetry);
           if (logger.isDebugEnabled()) {
@@ -563,6 +563,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       synchronized (runningStateLock) {
         while (!this.ackReaderThreadRunning) {
           try {
+            if (shutdown)
+              break;
             this.runningStateLock.wait();
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

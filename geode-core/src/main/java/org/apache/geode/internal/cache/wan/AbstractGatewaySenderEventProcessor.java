@@ -442,6 +442,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         for (;;) {
           // check before sleeping
           if (stopped()) {
+            this.resetLastPeekedEvents = true;
             if (isDebugEnabled) {
               logger.debug(
                   "GatewaySenderEventProcessor is stopped. Returning without peeking events.");
@@ -654,6 +655,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
             }
             // check again, don't do post-processing if we're stopped.
             if (stopped()) {
+              this.resetLastPeekedEvents = true;
               break;
             }
 
@@ -687,7 +689,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                           "During normal processing, unsuccessfully dispatched {} events (batch #{})",
                           conflatedEventsToBeDispatched.size(), getBatchId());
                     }
-                    if (stopped() || resetLastPeekedEvents) {
+                    if (stopped()) {
+                      this.resetLastPeekedEvents = true;
+                      break;
+                    }
+                    if (resetLastPeekedEvents) {
                       break;
                     }
                     try {
@@ -699,7 +705,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                       Thread.currentThread().interrupt();
                     }
                   }
-                  incrementBatchId();
+                  if (!resetLastPeekedEvents) {
+                    incrementBatchId();
+                  }
                 }
               }
             } // unsuccessful batch
