@@ -40,6 +40,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.LoggingSession;
+import org.apache.geode.management.ManagementService;
 
 public class InternalLocatorIntegrationTest {
 
@@ -125,6 +126,53 @@ public class InternalLocatorIntegrationTest {
     port = internalLocator.getPort();
 
     assertThat(internalLocator.isStopped()).isFalse();
+  }
+
+  @Test
+  public void startLocatorAlsoStartsJmxManager() throws IOException {
+    distributedSystemProperties = new Properties();
+    distributedSystemProperties.setProperty("enable-management-rest-service", "true");
+    distributedSystemProperties.setProperty("jmx-manager", "true");
+    distributedSystemProperties.setProperty("jmx-manager-start", "false");
+
+    internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
+        securityLogWriter, bindAddress, true,
+        distributedSystemProperties, hostnameForClients, workingDirectory);
+    port = internalLocator.getPort();
+
+    ManagementService managementService =
+        ManagementService.getManagementService(internalLocator.getCache());
+    assertThat(managementService.isManager()).isTrue();
+  }
+
+  @Test
+  public void startLocatorWithEnabledRestServiceFailsIfJmxManagerDisabled() throws IOException {
+    distributedSystemProperties = new Properties();
+    distributedSystemProperties.setProperty("enable-management-rest-service", "true");
+    distributedSystemProperties.setProperty("jmx-manager", "false");
+
+    assertThatThrownBy(() -> InternalLocator.startLocator(port, logFile, logWriter,
+        securityLogWriter, bindAddress, true,
+        distributedSystemProperties, hostnameForClients, workingDirectory))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Cannot start cluster configuration without jmx-manager=true");
+  }
+
+  @Test
+  public void startLocatorWithDisabledRestServiceDoesNotStartJmxManager() throws IOException {
+    distributedSystemProperties = new Properties();
+    distributedSystemProperties.setProperty("enable-management-rest-service", "false");
+    distributedSystemProperties.setProperty("jmx-manager", "true");
+    distributedSystemProperties.setProperty("jmx-manager-start", "false");
+
+    internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
+        securityLogWriter, bindAddress, true,
+        distributedSystemProperties, hostnameForClients, workingDirectory);
+    port = internalLocator.getPort();
+
+    ManagementService managementService =
+        ManagementService.getManagementService(internalLocator.getCache());
+    assertThat(managementService.isManager()).isFalse();
   }
 
   @Test
