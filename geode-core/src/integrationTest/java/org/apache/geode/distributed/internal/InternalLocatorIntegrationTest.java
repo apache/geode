@@ -41,6 +41,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.LoggingSession;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class InternalLocatorIntegrationTest {
 
@@ -133,7 +134,7 @@ public class InternalLocatorIntegrationTest {
     distributedSystemProperties = new Properties();
     distributedSystemProperties.setProperty("enable-management-rest-service", "true");
     distributedSystemProperties.setProperty("jmx-manager", "true");
-    distributedSystemProperties.setProperty("jmx-manager-start", "true");
+    distributedSystemProperties.setProperty("jmx-manager-start", "false");
 
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
@@ -142,7 +143,9 @@ public class InternalLocatorIntegrationTest {
 
     ManagementService managementService =
         ManagementService.getManagementService(internalLocator.getCache());
-    assertThat(managementService.isManager()).isTrue();
+    GeodeAwaitility.await().untilAsserted(() -> {
+      assertThat(managementService.isManager()).isTrue();
+    });;
   }
 
   @Test
