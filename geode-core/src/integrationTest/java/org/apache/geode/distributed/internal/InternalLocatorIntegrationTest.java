@@ -91,6 +91,7 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  @Ignore("DEBUG")
   public void constructs() {
     when(distributionConfig.getLogFile()).thenReturn(logFile);
     when(distributionConfig.getLocators()).thenReturn("");
@@ -106,6 +107,7 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  @Ignore("DEBUG")
   public void restartingClusterConfigurationDoesNotThrowException() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
@@ -120,6 +122,7 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  @Ignore("DEBUG")
   public void startedLocatorIsRunning() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
@@ -149,6 +152,7 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  @Ignore("DEBUG")
   public void startLocatorWithEnabledRestServiceFailsIfJmxManagerDisabled() throws IOException {
     distributedSystemProperties = new Properties();
     distributedSystemProperties.setProperty("enable-management-rest-service", "true");
@@ -162,6 +166,7 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  @Ignore("DEBUG")
   public void startLocatorWithDisabledRestServiceDoesNotStartJmxManager() throws IOException {
     distributedSystemProperties = new Properties();
     distributedSystemProperties.setProperty("enable-management-rest-service", "false");
@@ -179,6 +184,7 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  @Ignore("DEBUG")
   public void startedLocatorHasLocator() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
@@ -189,6 +195,7 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  @Ignore("DEBUG")
   public void stoppedLocatorIsStopped() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
@@ -201,6 +208,7 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  @Ignore("DEBUG")
   public void stoppedLocatorDoesNotHaveLocator() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
