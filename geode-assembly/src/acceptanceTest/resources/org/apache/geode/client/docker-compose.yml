@@ -22,8 +22,6 @@ services:
     expose:
       - '10334'
       - '40404'
-#   entrypoint: gfsh
-#   command: 'run --file=/geode/scripts/geode-starter.gfsh'
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:
@@ -35,10 +33,7 @@ services:
     container_name: 'haproxy'
     image: 'haproxy:2.1'
     ports:
-      - "15443:15443"
-#   depends_on:
-#     - 'geode'
-#   command: '-c -f /usr/local/etc/haproxy/haproxy.cfg'
+      - "15443"
     networks:
       geode-sni-test:
     volumes:

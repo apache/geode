@@ -81,9 +81,14 @@ public class ClientSNIAcceptanceTest {
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
+    int proxyPort = docker.containers()
+        .container("haproxy")
+        .port(15443)
+        .getExternalPort();
     ClientCache cache = new ClientCacheFactory(gemFireProps)
         .addPoolLocator("locator", 10334)
-        .setPoolSocketFactory(ProxySocketFactories.sni("localhost", 15443))
+        .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
+            proxyPort))
         .create();
     Region<String, String> region =
         cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
