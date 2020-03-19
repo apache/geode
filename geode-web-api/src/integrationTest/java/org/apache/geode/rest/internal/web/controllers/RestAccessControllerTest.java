@@ -968,10 +968,14 @@ public class RestAccessControllerTest {
   }
 
   private static class StandardRequestPostProcessor implements RequestPostProcessor {
+
+    @SuppressWarnings("deprecation")
+    private static final MediaType APPLICATION_JSON_UTF8 = MediaType.APPLICATION_JSON_UTF8;
+
     @Override
     public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-      request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-      request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+      request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON_UTF8);
+      request.addHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_UTF8);
       return request;
     }
   }

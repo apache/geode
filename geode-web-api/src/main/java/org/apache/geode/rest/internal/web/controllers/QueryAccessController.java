@@ -23,7 +23,6 @@ import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -58,7 +57,8 @@ import org.apache.geode.rest.internal.web.util.ValidationUtils;
  * @since GemFire 8.0
  */
 @Controller("queryController")
-@Api(value = "queries", produces = MediaType.APPLICATION_JSON_VALUE, tags = "queries")
+@Api(value = "queries", produces = AbstractBaseController.APPLICATION_JSON_UTF8_VALUE,
+    tags = "queries")
 @RequestMapping(QueryAccessController.REST_API_VERSION + "/queries")
 @SuppressWarnings("unused")
 public class QueryAccessController extends AbstractBaseController {
@@ -87,7 +87,7 @@ public class QueryAccessController extends AbstractBaseController {
    *
    * @return result as a JSON document.
    */
-  @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+  @RequestMapping(method = RequestMethod.GET, produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "list all parametrized queries",
       notes = "List all parametrized queries by id/name")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -143,7 +143,7 @@ public class QueryAccessController extends AbstractBaseController {
     headers.setLocation(toUri("queries", queryId));
 
     if (existingOql != null) {
-      headers.setContentType(MediaType.APPLICATION_JSON);
+      headers.setContentType(APPLICATION_JSON_UTF8);
       return new ResponseEntity<>(JSONUtils.formulateJsonForExistingQuery(queryId, existingOql),
           headers, HttpStatus.CONFLICT);
     } else {
@@ -158,7 +158,7 @@ public class QueryAccessController extends AbstractBaseController {
    * @return query result as a JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/adhoc",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+      produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "run an adhoc query",
       notes = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -216,7 +216,7 @@ public class QueryAccessController extends AbstractBaseController {
    * @return query result as a JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{query}",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+      produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "run parametrized query",
       notes = "run the specified named query passing in scalar values for query parameters in the GemFire cluster")
   @ApiResponses({@ApiResponse(code = 200, message = "Query successfully executed."),

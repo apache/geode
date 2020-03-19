@@ -25,7 +25,6 @@ import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,7 +61,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    *
    * @return JSON document containing result
    */
-  @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+  @RequestMapping(method = RequestMethod.GET, produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "list all resources (Regions)",
       notes = "List all available resources (Regions) in the Geode cluster")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -89,7 +88,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/keys",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+      produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "list all keys", notes = "List all keys in region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -118,7 +117,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/{keys}",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+      produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "delete data for key(s)",
       notes = "Delete data for single key or specific keys in region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
@@ -174,7 +173,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
   }
 
   @RequestMapping(method = {RequestMethod.GET}, value = "/servers",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+      produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "fetch all REST enabled servers in the DS",
       notes = "Find all gemfire node where developer REST service is up and running!")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),

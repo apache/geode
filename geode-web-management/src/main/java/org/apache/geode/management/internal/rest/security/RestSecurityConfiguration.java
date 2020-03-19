@@ -112,13 +112,17 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   private class AuthenticationFailedHandler implements AuthenticationEntryPoint {
+
+    @SuppressWarnings("deprecation")
+    private static final String CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
         AuthenticationException authException)
         throws IOException, ServletException {
       response.addHeader("WWW-Authenticate", "Basic realm=\"GEODE\"");
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      response.setContentType(CONTENT_TYPE);
       ClusterManagementResult result =
           new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHENTICATED,
               authException.getMessage());
