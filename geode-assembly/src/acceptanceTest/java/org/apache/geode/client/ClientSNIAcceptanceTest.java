@@ -18,8 +18,6 @@ import static com.palantir.docker.compose.execution.DockerComposeExecArgument.ar
 import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
@@ -57,10 +55,6 @@ public class ClientSNIAcceptanceTest {
 
   @Before
   public void before() throws IOException, InterruptedException {
-    keyStorePath =
-        createTempFileFromResource(ClientSNIAcceptanceTest.class,
-            "geode-config/client-keystore.jks")
-                .getAbsolutePath();
     trustStorePath =
         createTempFileFromResource(ClientSNIAcceptanceTest.class, "geode-config/truststore.jks")
             .getAbsolutePath();
@@ -75,8 +69,6 @@ public class ClientSNIAcceptanceTest {
     gemFireProps.setProperty(SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
 
-    gemFireProps.setProperty(SSL_KEYSTORE, keyStorePath);
-    gemFireProps.setProperty(SSL_KEYSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_TRUSTSTORE, trustStorePath);
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
