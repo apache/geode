@@ -17,11 +17,13 @@ package org.apache.geode.tools.pulse.internal.security;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -96,5 +98,18 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
         .clientName("Pulse")
         .userNameAttributeName(userNameAttributeName)
         .build();
+  }
+
+  @Bean
+  public OauthAuthenticationProvider gemAuthenticationProvider() {
+    return new OauthAuthenticationProvider();
+  }
+
+  @Autowired
+  GemFireAuthenticationProvider gemAuthenticationProvider;
+
+  @Override
+  protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
+    authenticationManagerBuilder.authenticationProvider(gemAuthenticationProvider);
   }
 }
