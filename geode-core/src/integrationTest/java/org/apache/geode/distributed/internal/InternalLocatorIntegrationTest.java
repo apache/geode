@@ -133,7 +133,7 @@ public class InternalLocatorIntegrationTest {
     distributedSystemProperties = new Properties();
     distributedSystemProperties.setProperty("enable-management-rest-service", "true");
     distributedSystemProperties.setProperty("jmx-manager", "true");
-    distributedSystemProperties.setProperty("jmx-manager-start", "false");
+    distributedSystemProperties.setProperty("jmx-manager-start", "true");
 
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
