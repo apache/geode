@@ -640,6 +640,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String QUEUE_SIZE = "queue-size";
 
   public static final String MULTIUSER_SECURE_MODE_ENABLED = "multiuser-authentication";
+  public static final String SOCKET_FACTORY = "socket-factory";
   // end constants for connection pool
 
   /** Size of the disk dir in megabytes **/

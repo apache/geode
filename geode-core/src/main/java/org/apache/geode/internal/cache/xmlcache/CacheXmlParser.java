@@ -87,6 +87,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.cache.query.IndexType;
@@ -2781,6 +2782,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else if (qName.equals(PDX_SERIALIZER)) {
       // do nothing
     } else if (qName.equals(COMPRESSOR)) {
+    } else if (qName.equals(SOCKET_FACTORY)) {
     } else {
       final XmlParser delegate = getDelegate(namespaceURI);
       if (null == delegate) {
@@ -3129,6 +3131,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         endPdxSerializer();
       } else if (qName.equals(COMPRESSOR)) {
         endCompressor();
+      } else if (qName.equals(SOCKET_FACTORY)) {
+        endSocketFactory();
       } else {
         final XmlParser delegate = getDelegate(namespaceURI);
         if (null == delegate) {
@@ -3143,6 +3147,24 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
           "A CacheException was thrown while parsing XML.",
           ex);
     }
+  }
+
+  private void endSocketFactory() {
+    Declarable d = createDeclarable();
+    if (!(d instanceof SocketFactory)) {
+      throw new CacheXmlException(String.format("A %s is not an instance of a %s",
+          d.getClass().getName(), "SocketFactory"));
+
+    }
+    Object a = stack.peek();
+    if (a instanceof PoolFactory) {
+      PoolFactory poolFactory = (PoolFactory) a;
+      poolFactory.setSocketFactory((SocketFactory) d);
+    } else {
+      throw new CacheXmlException(String.format("A %s must be defined in the context of a pool.",
+          SOCKET_FACTORY));
+    }
+
   }
 
   private void endGatewayTransportFilter() {

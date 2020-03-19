@@ -42,6 +42,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBui
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -128,7 +129,7 @@ public class MembershipOnlyTest {
     MemberIdentifierFactoryImpl memberIdFactory = new MemberIdentifierFactoryImpl();
 
     TcpClient locatorClient = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
-        dsfidSerializer.getObjectDeserializer());
+        dsfidSerializer.getObjectDeserializer(), TcpSocketFactory.DEFAULT);
 
     LifecycleListener<MemberIdentifier> lifeCycleListener = mock(LifecycleListener.class);
 

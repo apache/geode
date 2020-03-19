@@ -62,5 +62,6 @@ public interface ClusterSocketCreator {
    * This method ignores any custom client-side socket factory that may be installed.
    */
   Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher) throws IOException;
+      ConnectionWatcher optionalWatcher,
+      TcpSocketFactory socketFactory) throws IOException;
 }
