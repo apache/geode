@@ -58,8 +58,9 @@ public class ClientSNIAcceptanceTest {
   @Before
   public void before() throws IOException, InterruptedException {
     keyStorePath =
-        createTempFileFromResource(ClientSNIAcceptanceTest.class, "geode-config/keystore.jks")
-            .getAbsolutePath();
+        createTempFileFromResource(ClientSNIAcceptanceTest.class,
+            "geode-config/client-keystore.jks")
+                .getAbsolutePath();
     trustStorePath =
         createTempFileFromResource(ClientSNIAcceptanceTest.class, "geode-config/truststore.jks")
             .getAbsolutePath();
