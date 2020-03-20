@@ -199,7 +199,7 @@ public class ConnectionTable {
   private ConnectionTable(TCPConduit conduit) {
     owner = conduit;
     idleConnTimer = owner.idleConnectionTimeout != 0
-        ? new SystemTimer(conduit.getDM().getSystem(), true) : null;
+        ? new SystemTimer(conduit.getDM().getSystem()) : null;
     threadConnMaps = new ArrayList();
     threadConnectionMap = new ConcurrentHashMap();
     p2pReaderThreadPool = createThreadPoolForIO(conduit.getDM().getSystem().isShareSockets());
@@ -519,8 +519,12 @@ public class ConnectionTable {
           if (!closed) {
             IdleConnTT task = new IdleConnTT(conn);
             conn.setIdleTimeoutTask(task);
-            getIdleConnTimer().scheduleAtFixedRate(task, owner.idleConnectionTimeout,
-                owner.idleConnectionTimeout);
+            synchronized (task) {
+              if (!task.isCancelled()) {
+                getIdleConnTimer().scheduleAtFixedRate(task, owner.idleConnectionTimeout,
+                    owner.idleConnectionTimeout);
+              }
+            }
           }
         }
       } catch (IllegalStateException e) {
@@ -620,7 +624,7 @@ public class ConnectionTable {
       return null;
     }
     if (idleConnTimer == null) {
-      idleConnTimer = new SystemTimer(getDM().getSystem(), true);
+      idleConnTimer = new SystemTimer(getDM().getSystem());
     }
     return idleConnTimer;
   }
@@ -1216,25 +1220,25 @@ public class ConnectionTable {
 
   private static class IdleConnTT extends SystemTimer.SystemTimerTask {
 
-    private Connection c;
+    private Connection connection;
 
     private IdleConnTT(Connection c) {
-      this.c = c;
+      this.connection = c;
     }
 
     @Override
     public boolean cancel() {
-      Connection con = c;
+      Connection con = connection;
       if (con != null) {
         con.cleanUpOnIdleTaskCancel();
       }
-      c = null;
+      connection = null;
       return super.cancel();
     }
 
     @Override
     public void run2() {
-      Connection con = c;
+      Connection con = connection;
       if (con != null) {
         if (con.checkForIdleTimeout()) {
           cancel();
