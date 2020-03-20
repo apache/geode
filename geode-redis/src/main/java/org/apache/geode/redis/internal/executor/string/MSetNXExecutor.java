@@ -37,7 +37,8 @@ public class MSetNXExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
+    Region<ByteArrayWrapper, ByteArrayWrapper> region =
+        context.getRegionProvider().getStringsRegion();
 
     if (commandElems.size() < 3 || commandElems.size() % 2 == 0) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.MSETNX));
@@ -58,7 +59,7 @@ public class MSetNXExecutor extends StringExecutor {
       }
       byte[] value = commandElems.get(i + 1);
       map.put(key, new ByteArrayWrapper(value));
-      if (r.containsKey(key)) {
+      if (region.containsKey(key)) {
         hasEntry = true;
         break;
       }
@@ -74,7 +75,7 @@ public class MSetNXExecutor extends StringExecutor {
           break;
         }
       }
-      r.putAll(map);
+      region.putAll(map);
     }
     if (successful) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
