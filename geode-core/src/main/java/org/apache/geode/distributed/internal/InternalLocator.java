@@ -779,6 +779,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   @VisibleForTesting
+  void setInternalCache(InternalCache value) {
+    internalCache = value;
+  }
+
+
+  @VisibleForTesting
   void startClusterManagementService() throws IOException {
     startConfigurationPersistenceService();
 
