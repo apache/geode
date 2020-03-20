@@ -124,7 +124,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
       int sanityCheckInterval = Integer
           .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000).intValue();
       if (sanityCheckInterval != 0) {
-        final SystemTimer tm = new SystemTimer(dm.getSystem(), true);
+        final SystemTimer tm = new SystemTimer(dm.getSystem());
         SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
           @Override
           public void run2() {
