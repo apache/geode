@@ -325,11 +325,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
         if (connectionAccounting.tryCreate()) {
           try {
             connection = createPooledConnection(server);
-
-            if (null != connection) {
-              return connection;
-            }
-            throw new NoAvailableServersException();
+          } catch (GemFireSecurityException e) {
+            throw new ServerOperationException(e);
           } finally {
             if (connection == null) {
               connectionAccounting.cancelTryCreate();
@@ -338,6 +335,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
               }
             }
           }
+          if (null != connection) {
+            return connection;
+          }
+          throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
         }
 
         if (!onlyUseExistingCnx) {
