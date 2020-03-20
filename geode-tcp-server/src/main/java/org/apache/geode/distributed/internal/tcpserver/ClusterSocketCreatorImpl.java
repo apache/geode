@@ -90,10 +90,11 @@ public class ClusterSocketCreatorImpl implements ClusterSocketCreator {
 
   @Override
   public final Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher)
+      ConnectionWatcher optionalWatcher,
+      TcpSocketFactory socketFactory)
       throws IOException {
     return socketCreator.advancedSocketCreator.connect(addr, timeout, optionalWatcher, false, -1,
-        useSSL());
+        useSSL(), socketFactory);
   }
 
 

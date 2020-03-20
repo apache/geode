@@ -15,17 +15,17 @@
 package org.apache.geode.internal.net;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.tcpserver.AdvancedSocketCreatorImpl;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 
 class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
   final SocketCreator coreSocketCreator;
@@ -43,31 +43,25 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
   @Override
   public Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory, int socketBufferSize,
-      boolean useSSL) throws IOException {
+      boolean useSSL, TcpSocketFactory socketFactory) throws IOException {
 
     coreSocketCreator.printConfig();
 
     if (!useSSL) {
       return super.connect(addr, timeout, optionalWatcher, allowClientSocketFactory,
           socketBufferSize,
-          useSSL);
+          useSSL, socketFactory);
     }
 
     // create an SSL connection
 
-    Socket socket;
     InetSocketAddress sockaddr = addr.getSocketInetAddress();
-    if (sockaddr.getAddress() == null) {
-      InetAddress address = InetAddress.getByName(sockaddr.getHostString());
-      sockaddr = new InetSocketAddress(address, sockaddr.getPort());
-    }
 
     if (coreSocketCreator.getSslContext() == null) {
       throw new GemFireConfigException(
           "SSL not configured correctly, Please look at previous error");
     }
-    SocketFactory sf = coreSocketCreator.getSslContext().getSocketFactory();
-    socket = sf.createSocket();
+    Socket socket = socketFactory.createSocket();
 
     // Optionally enable SO_KEEPALIVE in the OS network protocol.
     socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
@@ -84,7 +78,9 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
         optionalWatcher.beforeConnect(socket);
       }
       socket.connect(sockaddr, Math.max(timeout, 0));
-      coreSocketCreator.configureClientSSLSocket(socket, timeout);
+      SSLSocketFactory sf = coreSocketCreator.getSslContext().getSocketFactory();
+      socket = sf.createSocket(socket, addr.getHostName(), addr.getPort(), true);
+      coreSocketCreator.configureClientSSLSocket(socket, addr, timeout);
       return socket;
 
     } finally {

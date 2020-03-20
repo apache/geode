@@ -29,6 +29,7 @@ import org.apache.geode.cache.client.internal.locator.wan.RemoteLocatorResponse;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.InternalCache;
@@ -83,7 +84,8 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
             (RemoteLocatorResponse) new TcpClient(SocketCreatorFactory
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
+                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+                TcpSocketFactory.DEFAULT)
                     .requestToServer(locatorID.getHost(), request,
                         WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
 

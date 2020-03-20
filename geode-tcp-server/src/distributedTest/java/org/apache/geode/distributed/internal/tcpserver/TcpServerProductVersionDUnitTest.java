@@ -237,7 +237,8 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         SocketCreatorFactory
             .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        TcpSocketFactory.DEFAULT);
   }
 
   private int createLocator(VM memberVM, boolean usingOldVersion) {

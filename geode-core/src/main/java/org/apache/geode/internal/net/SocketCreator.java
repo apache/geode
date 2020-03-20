@@ -37,6 +37,8 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -44,6 +46,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SNIHostName;
+import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
@@ -69,6 +73,7 @@ import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.tcpserver.AdvancedSocketCreatorImpl;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -707,7 +712,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * When a socket is accepted from a server socket, it should be passed to this method for SSL
    * configuration.
    */
-  void configureClientSSLSocket(Socket socket, int timeout) throws IOException {
+  void configureClientSSLSocket(Socket socket, HostAndPort addr, int timeout) throws IOException {
     if (socket instanceof SSLSocket) {
       SSLSocket sslSocket = (SSLSocket) socket;
 
@@ -716,6 +721,8 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
       SSLParameters modifiedParams =
           checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+
+      setServerNames(modifiedParams, addr);
 
       SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
       if (sslParameterExtension != null) {
@@ -761,6 +768,14 @@ public class SocketCreator extends TcpSocketCreatorImpl {
         }
       }
     }
+  }
+
+  private void setServerNames(SSLParameters modifiedParams, HostAndPort addr) {
+    List<SNIServerName> oldNames = modifiedParams.getServerNames();
+    oldNames = oldNames == null ? Collections.emptyList() : oldNames;
+    final List<SNIServerName> serverNames = new ArrayList<>(oldNames);
+    serverNames.add(new SNIHostName(addr.getHostName()));
+    modifiedParams.setServerNames(serverNames);
   }
 
   /**

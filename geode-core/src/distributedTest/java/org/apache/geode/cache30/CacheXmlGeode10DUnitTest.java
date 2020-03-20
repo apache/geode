@@ -15,12 +15,15 @@
 package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,9 +36,14 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.ResourceManagerCreation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -296,6 +304,20 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     c.close();
   }
 
+  @Test
+  public void testPoolSocketFactory() throws IOException {
+    getSystem();
+    CacheCreation cache = new CacheCreation();
+    PoolFactory f = cache.createPoolFactory();
+    f.setSocketFactory(new TestSocketFactory());
+    f.addServer("localhost", 443);
+    f.create("mypool");
+
+    testXml(cache);
+    Pool cp = PoolManager.find("mypool");
+    assertThat(cp.getSocketFactory()).isInstanceOf(TestSocketFactory.class);
+  }
+
   public static class MyAsyncEventListenerGeode10 implements AsyncEventListener, Declarable {
 
     @Override
@@ -310,4 +332,20 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     public void init(Properties properties) {}
   }
 
+  public static class TestSocketFactory implements SocketFactory, Declarable2 {
+    @Override
+    public Socket createSocket() throws IOException {
+      return new Socket();
+    }
+
+    @Override
+    public Properties getConfig() {
+      return new Properties();
+    }
+
+    @Override
+    public void initialize(Cache cache, Properties properties) {
+
+    }
+  }
 }
