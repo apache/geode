@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -39,11 +40,13 @@ public class ConnectionConnector {
   private final InternalDistributedSystem distributedSystem;
   private final EndpointManager endpointManager;
   private final GatewaySender gatewaySender;
+  private final SocketFactory socketFactory;
 
   public ConnectionConnector(EndpointManager endpointManager,
       InternalDistributedSystem distributedSystem,
       int socketBufferSize, int handshakeTimeout, int readTimeout, boolean usedByGateway,
-      GatewaySender gatewaySender, SocketCreator socketCreator, ClientSideHandshakeImpl handshake) {
+      GatewaySender gatewaySender, SocketCreator socketCreator, ClientSideHandshakeImpl handshake,
+      SocketFactory socketFactory) {
     this.handshake = handshake;
     this.handshake.setClientReadTimeout(readTimeout);
     this.endpointManager = endpointManager;
@@ -54,6 +57,7 @@ public class ConnectionConnector {
     this.usedByGateway = usedByGateway;
     this.gatewaySender = gatewaySender;
     this.socketCreator = socketCreator;
+    this.socketFactory = socketFactory;
     if (this.socketCreator != null && (this.usedByGateway || (gatewaySender != null))) {
       if (gatewaySender != null && !gatewaySender.getGatewayTransportFilters().isEmpty()) {
         this.socketCreator.initializeTransportFilterClientSocketFactory(gatewaySender);
@@ -69,7 +73,8 @@ public class ConnectionConnector {
       connection = getConnection(distributedSystem);
       ClientSideHandshake connHandShake = getClientSideHandshake(handshake);
       connection.connect(endpointManager, location, connHandShake, socketBufferSize,
-          handshakeTimeout, readTimeout, getCommMode(forQueue), gatewaySender, socketCreator);
+          handshakeTimeout, readTimeout, getCommMode(forQueue), gatewaySender, socketCreator,
+          socketFactory);
       connection.setHandshake(connHandShake);
       initialized = true;
       return connection;
@@ -100,7 +105,7 @@ public class ConnectionConnector {
     CacheClientUpdater updater = new CacheClientUpdater(clientUpdateName, endpoint.getLocation(),
         isPrimary, distributedSystem, new ClientSideHandshakeImpl(handshake), qManager,
         endpointManager,
-        endpoint, handshakeTimeout, socketCreator);
+        endpoint, handshakeTimeout, socketCreator, socketFactory);
 
     if (!updater.isConnected()) {
       return null;

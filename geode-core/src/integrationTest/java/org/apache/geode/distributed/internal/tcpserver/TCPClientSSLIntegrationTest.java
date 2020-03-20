@@ -101,7 +101,8 @@ public class TCPClientSSLIntegrationTest {
         SSLConfigurationFactory.getSSLConfigForComponent(clientProperties,
             SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        TcpSocketFactory.DEFAULT);
   }
 
   private void startTcpServer(Properties sslProperties) throws IOException {

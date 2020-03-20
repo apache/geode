@@ -15,8 +15,10 @@
 
 package org.apache.geode.cache.client;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
@@ -210,6 +212,14 @@ public interface PoolFactory {
    * @since GemFire 6.5
    */
   boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
+
+  /**
+   * The default value for the socket factory
+   *
+   * Current value {@link SocketFactory#DEFAULT}
+   */
+  @Immutable
+  SocketFactory DEFAULT_SOCKET_FACTORY = SocketFactory.DEFAULT;
 
   /**
    * Sets the socket connect timeout for this pool. The number of milli seconds specified as socket
@@ -528,5 +538,18 @@ public interface PoolFactory {
    * @since GemFire 6.5
    */
   PoolFactory setMultiuserAuthentication(boolean enabled);
+
+  /**
+   * Set the socket factory used by this pool to create connections to both locators (if
+   * configured using {@link #addLocator(String, int)}) and servers.
+   *
+   * see {@link SocketFactory}
+   * See {@link ProxySocketFactories}
+   *
+   * @param socketFactory The {@link SocketFactory} to use
+   * @return a reference to <code> this </code>
+   * @since Geode 1.13
+   */
+  PoolFactory setSocketFactory(SocketFactory socketFactory);
 
 }

@@ -1229,6 +1229,11 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           handler.startElement("", SERVER, SERVER, sAtts);
           handler.endElement("", SERVER, SERVER);
         }
+        if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+          if (cp.getSocketFactory() != PoolFactory.DEFAULT_SOCKET_FACTORY) {
+            generate(SOCKET_FACTORY, cp.getSocketFactory());
+          }
+        }
       }
       handler.endElement("", "", CONNECTION_POOL);
     }

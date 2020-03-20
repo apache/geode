@@ -114,7 +114,7 @@ public class TcpServerJUnitTest {
     TcpSocketCreator socketCreator = new TcpSocketCreatorImpl();
     return new TcpClient(socketCreator,
         serializer.getObjectSerializer(),
-        serializer.getObjectDeserializer());
+        serializer.getObjectDeserializer(), TcpSocketFactory.DEFAULT);
   }
 
   @Test

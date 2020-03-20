@@ -43,6 +43,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
@@ -544,6 +545,11 @@ public class QueueManagerJUnitTest {
     @Override
     public int getSubscriptionTimeoutMultiplier() {
       return 0;
+    }
+
+    @Override
+    public SocketFactory getSocketFactory() {
+      return null;
     }
 
     @Override
