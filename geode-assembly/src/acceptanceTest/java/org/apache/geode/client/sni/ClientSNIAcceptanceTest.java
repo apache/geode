@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.client;
+package org.apache.geode.client.sni;
 
 import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
 import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
@@ -64,8 +64,9 @@ public class ClientSNIAcceptanceTest {
   @Before
   public void before() throws IOException, InterruptedException {
     trustStorePath =
-        createTempFileFromResource(ClientSNIAcceptanceTest.class, "geode-config/truststore.jks")
-            .getAbsolutePath();
+        createTempFileFromResource(ClientSNIAcceptanceTest.class,
+            "geode-config/truststore.jks")
+                .getAbsolutePath();
     docker.exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
   }
