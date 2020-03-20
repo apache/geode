@@ -93,7 +93,8 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
+@SuppressWarnings("serial")
 public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
   private static final String PR_NAME = "single_hop_pr";
@@ -578,8 +579,8 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     });
 
     await()
-        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-            .size() == totalNumberOfBuckets));
+        .until(() -> prMetaData.getBucketServerLocationsMap_TEST_ONLY()
+            .size() == totalNumberOfBuckets);
   }
 
   @Test
@@ -596,14 +597,14 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     Map<String, ClientPartitionAdvisor> regionMetaData =
         clientMetadataService.getClientPRMetadata_TEST_ONLY();
 
-    await().until(() -> (regionMetaData.size() == 1));
+    await().until(() -> regionMetaData.size() == 1);
     assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
 
     ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
 
     await()
-        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-            .size() == totalNumberOfBuckets));
+        .until(() -> prMetaData.getBucketServerLocationsMap_TEST_ONLY()
+            .size() == totalNumberOfBuckets);
   }
 
   @Test
@@ -732,7 +733,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     Map<Integer, List<BucketServerLocation66>> clientMap3 =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
 
-    await().until(() -> (clientMap3.size() == totalNumberOfBuckets));
+    await().until(() -> clientMap3.size() == totalNumberOfBuckets);
     for (Entry entry : clientMap.entrySet()) {
       assertThat(((List) entry.getValue()).size()).isEqualTo(2);
     }
@@ -767,7 +768,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     Map<String, ClientPartitionAdvisor> regionMetaData =
         clientMetadataService.getClientPRMetadata_TEST_ONLY();
 
-    await().until(() -> (regionMetaData.size() == 1));
+    await().until(() -> regionMetaData.size() == 1);
 
     assertThat(regionMetaData.size()).isEqualTo(1);
     assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
@@ -791,7 +792,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
     Map<Integer, List<BucketServerLocation66>> clientMap =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    await().until(() -> (clientMap.size() == totalNumberOfBuckets));
+    await().until(() -> clientMap.size() == totalNumberOfBuckets);
     for (Entry entry : clientMap.entrySet()) {
       assertThat(((List) entry.getValue()).size()).isEqualTo(2);
     }
@@ -881,7 +882,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
   private boolean fetchAndValidateMetadata() {
     ClientMetadataService service = cache.getClientMetadataService();
     service.getClientPRMetadata((LocalRegion) testRegion);
-    HashMap<ServerLocation, HashSet<Integer>> servers =
+    Map<ServerLocation, Set<Integer>> servers =
         service.groupByServerToAllBuckets(testRegion, true);
     if (servers == null) {
       return false;
@@ -1415,12 +1416,12 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
       Customer customer = new Customer("name" + i, "Address" + i);
       customerRegion.put(custid, customer);
       for (int j = 1; j <= 10; j++) {
-        int oid = (i * 10) + j;
+        int oid = i * 10 + j;
         OrderId orderId = new OrderId(oid, custid);
         Order order = new Order("Order" + oid);
         orderRegion.put(orderId, order);
         for (int k = 1; k <= 10; k++) {
-          int sid = (oid * 10) + k;
+          int sid = oid * 10 + k;
           ShipmentId shipmentId = new ShipmentId(sid, orderId);
           Shipment shipment = new Shipment("Shipment" + sid);
           shipmentRegion.put(shipmentId, shipment);
@@ -1551,12 +1552,12 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
       Customer customer = new Customer("name" + i, "Address" + i);
       customerRegion.get(custid, customer);
       for (int j = 1; j <= 10; j++) {
-        int oid = (i * 10) + j;
+        int oid = i * 10 + j;
         OrderId orderId = new OrderId(oid, custid);
         Order order = new Order("Order" + oid);
         orderRegion.get(orderId, order);
         for (int k = 1; k <= 10; k++) {
-          int sid = (oid * 10) + k;
+          int sid = oid * 10 + k;
           ShipmentId shipmentId = new ShipmentId(sid, orderId);
           Shipment shipment = new Shipment("Shipment" + sid);
           shipmentRegion.get(shipmentId, shipment);
@@ -1633,163 +1634,164 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     await()
         .until(() -> clientMetadataService.getRefreshTaskCount_TEST_ONLY() == 0);
   }
-}
 
+  private static class Customer implements DataSerializable {
+    private String name;
+    private String address;
 
-class Customer implements DataSerializable {
-  private String name;
-
-  String address;
-
-  public Customer() {}
-
-  public Customer(String name, String address) {
-    this.name = name;
-    this.address = address;
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException {
-    this.name = DataSerializer.readString(in);
-    this.address = DataSerializer.readString(in);
-
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeString(this.address, out);
-  }
-
-  @Override
-  public String toString() {
-    return "Customer { name=" + this.name + " address=" + this.address + "}";
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    public Customer() {
+      // nothing
     }
 
-    if (!(o instanceof Customer)) {
+    public Customer(String name, String address) {
+      this.name = name;
+      this.address = address;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException {
+      name = DataSerializer.readString(in);
+      address = DataSerializer.readString(in);
+
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(name, out);
+      DataSerializer.writeString(address, out);
+    }
+
+    @Override
+    public String toString() {
+      return "Customer { name=" + name + " address=" + address + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+
+      if (!(o instanceof Customer)) {
+        return false;
+      }
+
+      Customer cust = (Customer) o;
+      return cust.name.equals(name) && cust.address.equals(address);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, address);
+    }
+  }
+
+  private static class Order implements DataSerializable {
+    private String orderName;
+
+    public Order() {
+      // nothing
+    }
+
+    private Order(String orderName) {
+      this.orderName = orderName;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException {
+      orderName = DataSerializer.readString(in);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(orderName, out);
+    }
+
+    @Override
+    public String toString() {
+      return orderName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+
+      if (obj instanceof Order) {
+        Order other = (Order) obj;
+        return other.orderName != null && other.orderName.equals(orderName);
+      }
       return false;
     }
 
-    Customer cust = (Customer) o;
-    return (cust.name.equals(name) && cust.address.equals(address));
+    @Override
+    public int hashCode() {
+      if (orderName == null) {
+        return super.hashCode();
+      }
+      return orderName.hashCode();
+    }
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, address);
-  }
-}
+  private static class Shipment implements DataSerializable {
+    private String shipmentName;
 
-
-class Order implements DataSerializable {
-  String orderName;
-
-  public Order() {}
-
-  public Order(String orderName) {
-    this.orderName = orderName;
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException {
-    this.orderName = DataSerializer.readString(in);
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.orderName, out);
-  }
-
-  @Override
-  public String toString() {
-    return this.orderName;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+    public Shipment() {
+      // nothing
     }
 
-    if (obj instanceof Order) {
-      Order other = (Order) obj;
-      return other.orderName != null && other.orderName.equals(this.orderName);
-    }
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    if (orderName == null) {
-      return super.hashCode();
-    }
-    return orderName.hashCode();
-  }
-}
-
-
-class Shipment implements DataSerializable {
-  String shipmentName;
-
-  public Shipment() {}
-
-  public Shipment(String shipmentName) {
-    this.shipmentName = shipmentName;
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.shipmentName = DataSerializer.readString(in);
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.shipmentName, out);
-  }
-
-  @Override
-  public String toString() {
-    return this.shipmentName;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+    private Shipment(String shipmentName) {
+      this.shipmentName = shipmentName;
     }
 
-    if (obj instanceof Shipment) {
-      Shipment other = (Shipment) obj;
-      return other.shipmentName != null && other.shipmentName.equals(this.shipmentName);
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      shipmentName = DataSerializer.readString(in);
     }
-    return false;
-  }
 
-  @Override
-  public int hashCode() {
-    if (shipmentName == null) {
-      return super.hashCode();
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(shipmentName, out);
     }
-    return shipmentName.hashCode();
+
+    @Override
+    public String toString() {
+      return shipmentName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+
+      if (obj instanceof Shipment) {
+        Shipment other = (Shipment) obj;
+        return other.shipmentName != null && other.shipmentName.equals(shipmentName);
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      if (shipmentName == null) {
+        return super.hashCode();
+      }
+      return shipmentName.hashCode();
+    }
   }
 
-}
+  private static class MyMembershipListenerImpl extends UniversalMembershipListenerAdapter {
+    private final AtomicReference<CountDownLatch> latch;
 
+    private MyMembershipListenerImpl(AtomicReference<CountDownLatch> latch) {
+      this.latch = latch;
+    }
 
-class MyMembershipListenerImpl extends UniversalMembershipListenerAdapter {
-  private AtomicReference<CountDownLatch> latch;
-
-  public MyMembershipListenerImpl(AtomicReference<CountDownLatch> latch) {
-    this.latch = latch;
-  }
-
-  public void memberCrashed(MembershipEvent event) {
-    latch.get().countDown();
+    @Override
+    public void memberCrashed(MembershipEvent event) {
+      latch.get().countDown();
+    }
   }
 }

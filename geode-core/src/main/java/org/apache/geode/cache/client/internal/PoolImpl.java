@@ -1104,9 +1104,7 @@ public class PoolImpl implements InternalPool {
     return result;
   }
 
-  /**
-   * Test hook to find out current number of connections this pool has.
-   */
+  @Override
   public int getConnectionCount() {
     return manager.getConnectionCount();
   }

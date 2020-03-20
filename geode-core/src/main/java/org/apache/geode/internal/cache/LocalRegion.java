@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.AFTER_INITIAL_IMAGE;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
@@ -8945,7 +8946,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         txState.getRealDeal(null, this);
       }
       try {
-        proxyResult = getServerProxy().putAll(map, eventId, !event.isGenerateCallbacks(),
+        proxyResult = getServerProxy().putAll(cast(map), eventId, !event.isGenerateCallbacks(),
             event.getCallbackArgument());
         if (isDebugEnabled) {
           logger.debug("PutAll received response from server: {}", proxyResult);
