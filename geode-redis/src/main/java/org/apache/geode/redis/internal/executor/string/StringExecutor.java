@@ -14,14 +14,24 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public abstract class StringExecutor extends AbstractExecutor {
 
   public void checkAndSetDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
     context.getKeyRegistrar().register(key, RedisDataType.REDIS_STRING);
+  }
+
+  protected AutoCloseableLock withRegionLock(ExecutionHandlerContext context, ByteArrayWrapper key)
+      throws InterruptedException, TimeoutException {
+    RedisLockService lockService = context.getLockService();
+
+    return lockService.lock(key);
   }
 }

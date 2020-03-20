@@ -89,7 +89,7 @@ public class KeyRegistrar {
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
     } else {
       throw new RedisDataTypeMismatchException(
-          "The key name \"" + key + "\" is already used by a " + dataType.toString());
+          RedisConstants.ERROR_WRONG_TYPE);
     }
   }
 }
