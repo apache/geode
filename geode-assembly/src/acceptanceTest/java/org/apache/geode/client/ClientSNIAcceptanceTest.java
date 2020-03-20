@@ -50,7 +50,6 @@ public class ClientSNIAcceptanceTest {
       .file(DOCKER_COMPOSE_PATH.getPath())
       .build();
 
-  private String keyStorePath;
   private String trustStorePath;
 
   @Before

@@ -19,6 +19,7 @@ import java.net.Socket;
 
 import org.apache.geode.annotations.Immutable;
 
+@FunctionalInterface
 public interface TcpSocketFactory {
 
   @Immutable

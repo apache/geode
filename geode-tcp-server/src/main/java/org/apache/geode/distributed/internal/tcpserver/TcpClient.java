@@ -59,7 +59,7 @@ public class TcpClient {
   private final TcpSocketCreator socketCreator;
   private final ObjectSerializer objectSerializer;
   private final ObjectDeserializer objectDeserializer;
-  private TcpSocketFactory socketFactory;
+  private final TcpSocketFactory socketFactory;
 
   /**
    * Constructs a new TcpClient

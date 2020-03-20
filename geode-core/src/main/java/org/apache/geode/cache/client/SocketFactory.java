@@ -40,6 +40,7 @@ import org.apache.geode.net.SSLParameterExtension;
  *
  * @see PoolFactory#setSocketFactory(SocketFactory)
  */
+@FunctionalInterface
 public interface SocketFactory {
 
   /**
