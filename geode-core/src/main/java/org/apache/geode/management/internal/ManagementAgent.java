@@ -88,6 +88,7 @@ import org.apache.geode.security.AuthTokenEnabledComponents;
 public class ManagementAgent {
 
   private static final Logger logger = LogService.getLogger();
+  public static final String SPRING_PROFILES_ACTIVE = "spring.profiles.active";
 
   /**
    * True if running. Protected by synchronizing on this Manager instance. I used synchronization
@@ -195,20 +196,19 @@ public class ManagementAgent {
       }
     } else {
       String pwFile = this.config.getJmxManagerPasswordFile();
-      String springActiveProfile = "spring.profiles.active";
       if (securityService.isIntegratedSecurity()) {
         String[] authTokenEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
         boolean pulseOauth = Arrays.stream(authTokenEnabledComponents)
             .anyMatch(AuthTokenEnabledComponents::hasPulse);
         if (pulseOauth) {
-          System.setProperty(springActiveProfile, "pulse.authentication.oauth");
+          System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.oauth");
         } else {
-          System.setProperty(springActiveProfile, "pulse.authentication.gemfire");
+          System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.gemfire");
         }
       } else if (StringUtils.isNotBlank(pwFile)) {
-        System.setProperty(springActiveProfile, "pulse.authentication.gemfire");
+        System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.gemfire");
       } else {
-        System.setProperty(springActiveProfile, "pulse.authentication.default");
+        System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.default");
       }
     }
 

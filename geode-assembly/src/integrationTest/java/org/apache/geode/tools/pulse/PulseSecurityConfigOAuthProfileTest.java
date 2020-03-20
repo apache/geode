@@ -35,10 +35,11 @@ import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category({PulseTest.class})
+/**
+ * this test just makes sure the property file in the locator's working dir
+ * gets properly read and used in the oauth security configuration
+ */
 public class PulseSecurityConfigOAuthProfileTest {
-  // this test just makes sure the property file in the locator's working dir
-  // gets properly read and used in the oauth security configuration
-
   @ClassRule
   public static LocatorStarterRule locator =
       new LocatorStarterRule().withHttpService()
@@ -48,8 +49,8 @@ public class PulseSecurityConfigOAuthProfileTest {
   private static File pulsePropertyFile;
 
   @BeforeClass
-  public static void setup() throws Exception {
-    // copy the pulse.properties to the locator's working dir. Pulse will use the locator's working
+  public static void setupPulsePropertyFile() throws Exception {
+    // put the pulse.properties to the locator's working dir. Pulse will use the locator's working
     // dir as classpath to search for this property file
     pulsePropertyFile = new File(locator.getWorkingDir(), "pulse.properties");
     Properties properties = new Properties();
@@ -73,7 +74,7 @@ public class PulseSecurityConfigOAuthProfileTest {
   public GeodeHttpClientRule client = new GeodeHttpClientRule(locator::getHttpPort);
 
   @Test
-  public void testLogin() throws Exception {
+  public void redirectToAuthorizationUriInPulseProperty() throws Exception {
     HttpResponse response = client.get("/pulse/login.html");
     // the request is redirect to the authorization uri configured before
     assertResponse(response).hasStatusCode(200).hasResponseBody()
