@@ -175,7 +175,7 @@ public class StatAlertsManager {
           "This manager has been cancelled");
     }
     // start and schedule new timer
-    timer = new SystemTimer(system /* swarm */, true);
+    timer = new SystemTimer(system /* swarm */);
 
     EvaluateAlertDefnsTask task = new EvaluateAlertDefnsTask();
     if (refreshAtFixedRate) {

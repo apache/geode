@@ -1625,7 +1625,7 @@ public class InternalDistributedSystem extends DistributedSystem
           // bug 38501: this has to happen *after*
           // the DM is closed :-(
           if (!preparingForReconnect) {
-            SystemTimer.cancelSwarm(this);
+            SystemTimer.cancelTimers(this);
           }
         } // finally timer cancelled
       } // finally dm closed
