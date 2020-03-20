@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category({PulseTest.class})
-public class PulseSecurityConfigOauthProfileTest {
+public class PulseSecurityConfigOAuthProfileTest {
   // this test just makes sure the property file in the locator's working dir
   // gets properly read and used in the oauth security configuration
 

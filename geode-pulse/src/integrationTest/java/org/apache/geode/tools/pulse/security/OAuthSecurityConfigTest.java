@@ -39,7 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
     loader = GenericXmlWebContextLoader.class)
 @WebAppConfiguration
 @ActiveProfiles({"pulse.authentication.oauth"})
-public class OauthSecurityConfigTest {
+public class OAuthSecurityConfigTest {
   @Autowired
   private WebApplicationContext context;
 
@@ -60,6 +60,6 @@ public class OauthSecurityConfigTest {
 
     mvc.perform(get("http://localhost/oauth2/authorization/uaa"))
         .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrlPattern("http://xyz.com/uaa/oauth/**"));
+        .andExpect(redirectedUrlPattern("http://example.com/uaa/oauth/**"));
   }
 }

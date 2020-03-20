@@ -40,7 +40,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.oauth")
 @PropertySource("classpath:pulse.properties")
-public class OauthSecurityConfig extends WebSecurityConfigurerAdapter {
+public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
   @Value("${pulse.oauth.provider}")
   private String providerId;
   @Value("${pulse.oauth.clientId}")
@@ -67,7 +67,7 @@ public class OauthSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Bean
   public ClientRegistrationRepository clientRegistrationRepository() {
-    return new InMemoryClientRegistrationRepository(this.cientRegistration());
+    return new InMemoryClientRegistrationRepository(this.clientRegistration());
   }
 
   @Bean
@@ -82,7 +82,7 @@ public class OauthSecurityConfig extends WebSecurityConfigurerAdapter {
     return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService);
   }
 
-  private ClientRegistration cientRegistration() {
+  private ClientRegistration clientRegistration() {
     return ClientRegistration.withRegistrationId(providerId)
         .clientId(clientId)
         .clientSecret(clientSecret)
