@@ -77,7 +77,7 @@ public class PulseSecurityConfigOAuthProfileTest {
     HttpResponse response = client.get("/pulse/login.html");
     // the request is redirect to the authorization uri configured before
     assertResponse(response).hasStatusCode(200).hasResponseBody()
-        .containsOnlyOnce("latest")
-        .containsOnlyOnce("supported");
+        .contains("latest")
+        .contains("supported");
   }
 }
