@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -47,10 +46,9 @@ public class ListsIntegrationTest {
   private static int port = 6379;
 
   @BeforeClass
-  public static void setUp() throws IOException {
+  public static void setUp() {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -237,7 +235,6 @@ public class ListsIntegrationTest {
     StringBuilder rString = new StringBuilder();
     for (int i = 0; i < length; i++)
       rString.append((char) (rand.nextInt(57) + 65));
-    // return rString.toString();
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }
 

@@ -54,7 +54,6 @@ public class StringsIntegrationTest {
   public static void setUp() throws IOException {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -92,7 +91,6 @@ public class StringsIntegrationTest {
     int num1 = 100;
     int num2 = -100;
     jedis.set(key1, "" + num1);
-    // jedis.set(key3, "-100");
     jedis.set(key2, "" + num2);
 
     jedis.decr(key1);
@@ -111,7 +109,6 @@ public class StringsIntegrationTest {
     int num1 = 100;
     int num2 = -100;
     jedis.set(key1, "" + num1);
-    // jedis.set(key3, "-100");
     jedis.set(key2, "" + num2);
 
     jedis.incr(key1);
@@ -201,7 +198,6 @@ public class StringsIntegrationTest {
     String newContents = randString();
     String oldContents = jedis.getSet(key, newContents);
     assertTrue(oldContents.equals(contents));
-    contents = newContents;
   }
 
   @Test
@@ -274,7 +270,6 @@ public class StringsIntegrationTest {
       return;
     }
     String result = jedis.get(key);
-    // System.out.println(result);
     assertNull(result);
 
     int psetex = r.nextInt(5000);
