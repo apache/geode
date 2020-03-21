@@ -30,6 +30,8 @@ import java.net.URL;
 import java.util.Properties;
 
 import com.palantir.docker.compose.DockerComposeRule;
+import org.apache.commons.lang3.SystemUtils;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -51,6 +53,12 @@ public class ClientSNIAcceptanceTest {
       .build();
 
   private String trustStorePath;
+
+  @Before
+  public void ignoreOnWindows() {
+    // Docker compose does not work on windows in CI
+    Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
+  }
 
   @Before
   public void before() throws IOException, InterruptedException {
