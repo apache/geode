@@ -1,0 +1,59 @@
+---
+title:  Restoring Redundancy in Partitioned Regions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+Restoring redundancy is a member operation. It affects all partitioned regions defined by the member, regardless of whether the member hosts data for the regions.
+
+Restoring redundancy will create new redundant copies of buckets on members hosting the region and by default reassign which members host the primary buckets to give better load balancing. It will not move buckets from one member to another. The reassignment of primary hosts can be prevented using the appropriate flags, as described below. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html) for further detail on redundancy.
+
+For efficiency, when starting multiple members, trigger the restore redundancy a single time, after you have added all members.
+
+Initiate a restore redundancy operation using one of the following:
+
+-   `gfsh` command. First, starting a `gfsh` prompt and connect to the cluster. Then type the following command:
+
+    ``` pre
+    gfsh>restore redundancy
+    ```
+
+    Optionally, you can specify regions to include or exclude from restoring redundancy, and prevent the operation from reassigning which members host primary copies. Type `help restore redundancy` or see [restore redundancy](../../tools_modules/gfsh/command-pages/restore.html) for more information.
+
+-   API call:
+
+    ``` pre
+    ResourceManager manager = cache.getResourceManager();
+    CompletableFuture<RestoreRedundancyResults> future = manager.createRestoreRedundancyOperation()
+      .includeRegions(regionsToInclude)
+      .excludeRegions(regionsToExclude)
+      .shouldReassignPrimaries(false)
+      .start();
+    //Get the results
+    RestoreRedundancyResults results = future.get();
+    //These are some of the details we can get about the run from the API
+    System.out.println("Restore redundancy operation status is " + results.getStatus());
+    System.out.println("Results for each included region: " + results.getMessage());
+    System.out.println("Number of regions with no redundant copies: " + results.getZeroRedundancyRegionResults().size();
+    System.out.println("Results for region " + regionName + ": " + results.getRegionResult(regionName).getMessage();
+    ```
+
+If you have `start-recovery-delay=-1` configured for your partitioned region, you will need to perform a restore redundancy operation on your region after you restart any members in your cluster in order to recover any lost redundancy.
+
+If you have `start-recovery-delay` set to a low number, you may need to wait extra time until the region has recovered redundancy.
+
+

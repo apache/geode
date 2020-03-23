@@ -1,0 +1,64 @@
+---
+title:  restore redundancy
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Restore redundancy to partitioned regions and optionally reassign which members host the primary copies.
+
+The default is for all partitioned regions to have redundancy restored and to reassign primary hosts. If any region that would have redundancy restored is a member of a colocated group, all other regions that are part of that group will also have their redundancy restored. This behaviour takes precedence over any included or excluded regions specified as part of the command. See [Data Colocation Between Regions](../../../developing/partitioned_regions/custom_partitioning_and_data_colocation.html#custom_partitioning_and_data_colocation__section_D2C66951FE38426F9C05050D2B9028D8)
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+restore redundancy [--include-region=value(,value)*] [--exclude-region=value(,value)*] [--reassign-primaries(=value)]
+```
+
+| Name | Description | Default Value |
+|------|-------------|---------------|
+| &#8209;&#8209;include&#8209;region | Partitioned Region paths to be included for restore redundancy operation. Includes take precedence over excludes. | |
+| &#8209;&#8209;exclude&#8209;region | Partitioned Region paths to be excluded for restore redundancy operation. | |
+| &#8209;&#8209;reassign&#8209;primaries | If false, this operation will not attempt to reassign which members host primary buckets. | true |
+
+**Example Commands:**
+
+``` pre
+restore redundancy
+restore redundancy --include-region=/region3,/region2 --exclude-region=/region1
+```
+
+**Sample Output:**
+
+``` pre
+restore redundancy --include-region=/region3,/region2 --exclude-region=/region1
+
+Number of regions with zero redundant copies = 0
+Number of regions with partially satisfied redundancy = 0
+Number of regions with fully satisfied redundancy = 2
+
+Redundancy is fully satisfied for regions:
+  region3 redundancy status: SATISFIED. Desired redundancy is 2 and actual redundancy is 2.
+  region2 redundancy status: SATISFIED. Desired redundancy is 1 and actual redundancy is 1.
+
+Total primary transfers completed = 224
+Total primary transfer time (ms) = 4134
+```
+
+

@@ -33,6 +33,8 @@ Here are the main steps for configuring high availability for a partitioned regi
 5.  Decide how many buckets <%=vars.product_name%> should attempt to recover in parallel when performing redundancy recovery. By default, the system recovers up to 8 buckets in parallel. Use the `gemfire.MAX_PARALLEL_BUCKET_RECOVERIES` system property to increase or decrease the maximum number of buckets to recover in parallel any time redundancy recovery is performed.
 6.  For all but fixed partitioned regions, review the points at which you kick off rebalancing. Redundancy recovery is done automatically at the start of any rebalancing. This is most important if you run with no automated recovery after member crashes or joins. See [Rebalancing Partitioned Region Data](rebalancing_pr_data.html#rebalancing_pr_data). 
 
+For all partitioned regions, redundancy can be restored without moving buckets between members using a restore redundancy operation. See [Restoring Redundancy in Partitioned Regions](restoring_region_redundancy.html).
+
 During runtime, you can add capacity by adding new members for the region. For regions that do not use fixed partitioning, you can also kick off a rebalancing operation to spread the region buckets among all members.
 
 -   **[Set the Number of Redundant Copies](set_pr_redundancy.html)**
