@@ -780,12 +780,13 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
   @VisibleForTesting
   void startClusterManagementService() throws IOException {
-    startClusterManagementService(internalCache);
+    startConfigurationPersistenceService();
+    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
+    startClusterManagementService(internalCache, agentUtil);
   }
 
   @VisibleForTesting
-  void startClusterManagementService(InternalCache myCache) throws IOException {
-    startConfigurationPersistenceService();
+  void startClusterManagementService(InternalCache myCache, AgentUtil agentUtil) {
 
     if (myCache == null) {
       return;
@@ -793,9 +794,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     clusterManagementService = new LocatorClusterManagementService(myCache,
         configurationPersistenceService);
-
-    // start management rest service
-    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
 
     // Find the V2 Management rest WAR file
     URI gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
