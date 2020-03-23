@@ -58,10 +58,9 @@ public class InternalLocatorTest {
     when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     BaseManagementService managementService = mock(BaseManagementService.class);
     BaseManagementService.setManagementService(cache, managementService);
-    internalLocator.setInternalCache(cache);
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
 
-    internalLocator.startClusterManagementService();
+    internalLocator.startClusterManagementService(cache);
 
     verify(managementService).startManager();
   }
@@ -86,11 +85,10 @@ public class InternalLocatorTest {
     when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     BaseManagementService managementService = mock(BaseManagementService.class);
     BaseManagementService.setManagementService(cache, managementService);
-    internalLocator.setInternalCache(cache);
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
     when(managementService.isManager()).thenReturn(true);
 
-    internalLocator.startClusterManagementService();
+    internalLocator.startClusterManagementService(cache);
 
     verify(managementService, never()).startManager();
   }
@@ -115,17 +113,15 @@ public class InternalLocatorTest {
     when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     BaseManagementService managementService = mock(BaseManagementService.class);
     BaseManagementService.setManagementService(cache, managementService);
-    internalLocator.setInternalCache(cache);
     when(distributionConfig.getEnableManagementRestService()).thenReturn(false);
 
-    internalLocator.startClusterManagementService();
+    internalLocator.startClusterManagementService(cache);
 
     verify(managementService, never()).startManager();
   }
 
   @Test
-  public void startClusterManagementServiceWithRestServiceEnabledThrowsWhatStartManagerThrows()
-      throws IOException {
+  public void startClusterManagementServiceWithRestServiceEnabledThrowsWhatStartManagerThrows() {
     LoggingSession loggingSession = mock(LoggingSession.class);
     DistributionConfigImpl distributionConfig = mock(DistributionConfigImpl.class);
     when(distributionConfig.getJmxManager()).thenReturn(true);
@@ -143,13 +139,12 @@ public class InternalLocatorTest {
     when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     BaseManagementService managementService = mock(BaseManagementService.class);
     BaseManagementService.setManagementService(cache, managementService);
-    internalLocator.setInternalCache(cache);
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
     RuntimeException startManagerEx = new RuntimeException("startManager failed");
     doThrow(startManagerEx).when(managementService).startManager();
 
     Throwable throwable =
-        catchThrowable(() -> internalLocator.startClusterManagementService());
+        catchThrowable(() -> internalLocator.startClusterManagementService(cache));
 
     assertThat(throwable).isSameAs(startManagerEx);
   }

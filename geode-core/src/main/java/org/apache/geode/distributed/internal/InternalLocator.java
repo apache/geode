@@ -779,16 +779,13 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   @VisibleForTesting
-  void setInternalCache(InternalCache value) {
-    internalCache = value;
+  void startClusterManagementService() throws IOException {
+    startClusterManagementService(internalCache);
   }
 
-
   @VisibleForTesting
-  void startClusterManagementService() throws IOException {
+  void startClusterManagementService(InternalCache myCache) throws IOException {
     startConfigurationPersistenceService();
-
-    InternalCache myCache = this.internalCache;
 
     if (myCache == null) {
       return;
