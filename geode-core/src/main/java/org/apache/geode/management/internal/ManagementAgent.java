@@ -207,8 +207,6 @@ public class ManagementAgent {
         }
       } else if (StringUtils.isNotBlank(pwFile)) {
         System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.gemfire");
-      } else {
-        System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.default");
       }
     }
 
