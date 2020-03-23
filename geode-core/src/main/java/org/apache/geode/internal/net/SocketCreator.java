@@ -56,6 +56,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLProtocolException;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.StandardConstants;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
@@ -774,6 +775,14 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     List<SNIServerName> oldNames = modifiedParams.getServerNames();
     oldNames = oldNames == null ? Collections.emptyList() : oldNames;
     final List<SNIServerName> serverNames = new ArrayList<>(oldNames);
+
+    if (serverNames.stream()
+        .mapToInt(SNIServerName::getType)
+        .anyMatch(type -> type == StandardConstants.SNI_HOST_NAME)) {
+      // we already have a SNI hostname set. Do nothing.
+      return;
+    }
+
     serverNames.add(new SNIHostName(addr.getHostName()));
     modifiedParams.setServerNames(serverNames);
   }
