@@ -40,29 +40,19 @@ import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.BaseManagementService;
 
 public class InternalLocatorTest {
+  private InternalLocator internalLocator; // the instance under test
+  private DistributionConfigImpl distributionConfig = mock(DistributionConfigImpl.class);
+  private InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
+  private BaseManagementService managementService = mock(BaseManagementService.class);
+  private AgentUtil agentUtil = mock(AgentUtil.class);
+
+
   @Test
   public void startClusterManagementServiceWithRestServiceEnabledInvokesStartManager()
       throws URISyntaxException {
-    LoggingSession loggingSession = mock(LoggingSession.class);
-    DistributionConfigImpl distributionConfig = mock(DistributionConfigImpl.class);
-    when(distributionConfig.getJmxManager()).thenReturn(true);
-    when(distributionConfig.getLocators()).thenReturn("");
-    when(distributionConfig.getSecurableCommunicationChannels())
-        .thenReturn(new SecurableCommunicationChannel[] {});
-    when(distributionConfig.getSecurityAuthTokenEnabledComponents()).thenReturn(new String[] {});
-    InternalLocator internalLocator = new InternalLocator(0, loggingSession, null, null, null, null,
-        null, null, distributionConfig, null);
-    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
-    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
-    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
-    when(cache.getOptionalService(HttpService.class))
-        .thenReturn(Optional.of(mock(HttpService.class)));
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
-    BaseManagementService managementService = mock(BaseManagementService.class);
-    BaseManagementService.setManagementService(cache, managementService);
+    createInternalLocator();
+    setupForStartClusterManagementService();
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
-    AgentUtil agentUtil = mock(AgentUtil.class);
-    when(agentUtil.findWarLocation("geode-web-management")).thenReturn(new URI("management.war"));
 
     internalLocator.startClusterManagementService(cache, agentUtil);
 
@@ -72,27 +62,10 @@ public class InternalLocatorTest {
   @Test
   public void startClusterManagementServiceWithRunningManagerNeverInvokesStartManager()
       throws URISyntaxException {
-    LoggingSession loggingSession = mock(LoggingSession.class);
-    DistributionConfigImpl distributionConfig = mock(DistributionConfigImpl.class);
-    when(distributionConfig.getJmxManager()).thenReturn(true);
-    when(distributionConfig.getLocators()).thenReturn("");
-    when(distributionConfig.getSecurableCommunicationChannels())
-        .thenReturn(new SecurableCommunicationChannel[] {});
-    when(distributionConfig.getSecurityAuthTokenEnabledComponents()).thenReturn(new String[] {});
-    InternalLocator internalLocator = new InternalLocator(0, loggingSession, null, null, null, null,
-        null, null, distributionConfig, null);
-    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
-    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
-    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
-    when(cache.getOptionalService(HttpService.class))
-        .thenReturn(Optional.of(mock(HttpService.class)));
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
-    BaseManagementService managementService = mock(BaseManagementService.class);
-    BaseManagementService.setManagementService(cache, managementService);
+    createInternalLocator();
+    setupForStartClusterManagementService();
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
     when(managementService.isManager()).thenReturn(true);
-    AgentUtil agentUtil = mock(AgentUtil.class);
-    when(agentUtil.findWarLocation("geode-web-management")).thenReturn(new URI("management.war"));
 
     internalLocator.startClusterManagementService(cache, agentUtil);
 
@@ -103,26 +76,9 @@ public class InternalLocatorTest {
   @Test
   public void startClusterManagementServiceWithRestServiceDisabledNeverInvokesStartManager()
       throws URISyntaxException {
-    LoggingSession loggingSession = mock(LoggingSession.class);
-    DistributionConfigImpl distributionConfig = mock(DistributionConfigImpl.class);
-    when(distributionConfig.getJmxManager()).thenReturn(true);
-    when(distributionConfig.getLocators()).thenReturn("");
-    when(distributionConfig.getSecurableCommunicationChannels())
-        .thenReturn(new SecurableCommunicationChannel[] {});
-    when(distributionConfig.getSecurityAuthTokenEnabledComponents()).thenReturn(new String[] {});
-    InternalLocator internalLocator = new InternalLocator(0, loggingSession, null, null, null, null,
-        null, null, distributionConfig, null);
-    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
-    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
-    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
-    when(cache.getOptionalService(HttpService.class))
-        .thenReturn(Optional.of(mock(HttpService.class)));
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
-    BaseManagementService managementService = mock(BaseManagementService.class);
-    BaseManagementService.setManagementService(cache, managementService);
+    createInternalLocator();
+    setupForStartClusterManagementService();
     when(distributionConfig.getEnableManagementRestService()).thenReturn(false);
-    AgentUtil agentUtil = mock(AgentUtil.class);
-    when(agentUtil.findWarLocation("geode-web-management")).thenReturn(new URI("management.war"));
 
     internalLocator.startClusterManagementService(cache, agentUtil);
 
@@ -133,33 +89,37 @@ public class InternalLocatorTest {
   @Test
   public void startClusterManagementServiceWithRestServiceEnabledThrowsWhatStartManagerThrows()
       throws URISyntaxException {
-    LoggingSession loggingSession = mock(LoggingSession.class);
-    DistributionConfigImpl distributionConfig = mock(DistributionConfigImpl.class);
-    when(distributionConfig.getJmxManager()).thenReturn(true);
-    when(distributionConfig.getLocators()).thenReturn("");
-    when(distributionConfig.getSecurableCommunicationChannels())
-        .thenReturn(new SecurableCommunicationChannel[] {});
-    when(distributionConfig.getSecurityAuthTokenEnabledComponents()).thenReturn(new String[] {});
-    InternalLocator internalLocator = new InternalLocator(0, loggingSession, null, null, null, null,
-        null, null, distributionConfig, null);
-    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
-    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
-    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
-    when(cache.getOptionalService(HttpService.class))
-        .thenReturn(Optional.of(mock(HttpService.class)));
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
-    BaseManagementService managementService = mock(BaseManagementService.class);
-    BaseManagementService.setManagementService(cache, managementService);
+    createInternalLocator();
+    setupForStartClusterManagementService();
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
     RuntimeException startManagerEx = new RuntimeException("startManager failed");
     doThrow(startManagerEx).when(managementService).startManager();
-    AgentUtil agentUtil = mock(AgentUtil.class);
-    when(agentUtil.findWarLocation("geode-web-management")).thenReturn(new URI("management.war"));
 
     Throwable throwable =
         catchThrowable(() -> internalLocator.startClusterManagementService(cache, agentUtil));
 
     assertThat(throwable).isSameAs(startManagerEx);
+  }
+
+  private void createInternalLocator() {
+    LoggingSession loggingSession = mock(LoggingSession.class);
+    when(distributionConfig.getJmxManager()).thenReturn(true);
+    when(distributionConfig.getLocators()).thenReturn("");
+    when(distributionConfig.getSecurableCommunicationChannels())
+        .thenReturn(new SecurableCommunicationChannel[] {});
+    when(distributionConfig.getSecurityAuthTokenEnabledComponents()).thenReturn(new String[] {});
+    internalLocator = new InternalLocator(0, loggingSession, null, null, null, null,
+        null, null, distributionConfig, null);
+  }
+
+  private void setupForStartClusterManagementService() throws URISyntaxException {
+    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
+    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
+    when(cache.getOptionalService(HttpService.class))
+        .thenReturn(Optional.of(mock(HttpService.class)));
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
+    BaseManagementService.setManagementService(cache, managementService);
+    when(agentUtil.findWarLocation("geode-web-management")).thenReturn(new URI("management.war"));
   }
 
 }
