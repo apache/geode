@@ -32,8 +32,9 @@ import java.util.Properties;
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -47,15 +48,16 @@ public class ClientSNIAcceptanceTest {
   private static final URL DOCKER_COMPOSE_PATH =
       ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
-  public static DockerComposeRule docker = DockerComposeRule.builder()
-      .file(DOCKER_COMPOSE_PATH.getPath())
-      .build();
-
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static RuleChain ruleChain = RuleChain.outerRule(new IgnoreOnWindowsRule())
-      .around(docker);
+  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
+
+  @Rule
+  public DockerComposeRule docker = DockerComposeRule.builder()
+      .file(DOCKER_COMPOSE_PATH.getPath())
+      .build();
+
 
   private String trustStorePath;
 
