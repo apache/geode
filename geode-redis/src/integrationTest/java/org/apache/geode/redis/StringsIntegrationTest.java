@@ -281,7 +281,7 @@ public class StringsIntegrationTest {
 
     latch.countDown();
 
-    Integer getSetSum = future2.get(5, TimeUnit.SECONDS);
+    Integer getSetSum = future2.get(60, TimeUnit.SECONDS);
     Integer incrSum = future1.get();
 
     assertThat(getSetSum).isEqualTo(incrSum);
