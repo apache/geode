@@ -74,7 +74,8 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
         .access("hasRole('CLUSTER:READ') and hasRole('DATA:READ')")
         .mvcMatchers("/*")
         .hasRole("CLUSTER:READ")
-        .anyRequest().authenticated()).formLogin(form -> form
+        .anyRequest().authenticated())
+        .formLogin(form -> form
             .loginPage("/login.html")
             .loginProcessingUrl("/login")
             .failureHandler(failureHandler)
