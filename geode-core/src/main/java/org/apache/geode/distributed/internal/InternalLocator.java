@@ -819,6 +819,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       myCache.getOptionalService(HttpService.class).ifPresent(x -> {
         ManagementService managementService = ManagementService.getManagementService(myCache);
         if (!managementService.isManager()) {
+          // The management rest service requires the jmx-manager
+          // since some of the things the rest service does need
+          // the jmx-manager in the same JVM. For example the
+          // rebalance operation needs mxbeans that are hosted
+          // by the jmx-manager.
           managementService.startManager();
         }
         try {
