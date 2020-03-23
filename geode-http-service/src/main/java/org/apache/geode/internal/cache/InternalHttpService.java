@@ -186,6 +186,8 @@ public class InternalHttpService implements HttpService {
     webapp.getSystemClasspathPattern().add("com.fasterxml.jackson.annotation.");
     webapp.getServerClasspathPattern().add("com.fasterxml.jackson.",
         "-com.fasterxml.jackson.annotation.");
+    // add the member's working dir as the extra classpath
+    webapp.setExtraClasspath(new File(".").getAbsolutePath());
 
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
     webapp.addAliasCheck(new AllowSymLinkAliasChecker());
