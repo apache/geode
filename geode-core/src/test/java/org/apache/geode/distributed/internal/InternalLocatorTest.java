@@ -16,8 +16,8 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -45,11 +45,11 @@ public class InternalLocatorTest {
   private InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
   private BaseManagementService managementService = mock(BaseManagementService.class);
   private AgentUtil agentUtil = mock(AgentUtil.class);
-
+  private HttpService httpService = mock(HttpService.class);
 
   @Test
   public void startClusterManagementServiceWithRestServiceEnabledInvokesStartManager()
-      throws URISyntaxException {
+      throws Exception {
     createInternalLocator();
     setupForStartClusterManagementService();
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
@@ -57,11 +57,12 @@ public class InternalLocatorTest {
     internalLocator.startClusterManagementService(cache, agentUtil);
 
     verify(managementService).startManager();
+    verify(httpService).addWebApplication(eq("/management"), any(), any());
   }
 
   @Test
   public void startClusterManagementServiceWithRunningManagerNeverInvokesStartManager()
-      throws URISyntaxException {
+      throws Exception {
     createInternalLocator();
     setupForStartClusterManagementService();
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
@@ -71,11 +72,12 @@ public class InternalLocatorTest {
 
     verify(managementService).isManager();
     verify(managementService, never()).startManager();
+    verify(httpService).addWebApplication(eq("/management"), any(), any());
   }
 
   @Test
   public void startClusterManagementServiceWithRestServiceDisabledNeverInvokesStartManager()
-      throws URISyntaxException {
+      throws Exception {
     createInternalLocator();
     setupForStartClusterManagementService();
     when(distributionConfig.getEnableManagementRestService()).thenReturn(false);
@@ -84,21 +86,22 @@ public class InternalLocatorTest {
 
     verify(distributionConfig).getEnableManagementRestService();
     verify(managementService, never()).startManager();
+    verify(httpService, never()).addWebApplication(eq("/management"), any(), any());
   }
 
   @Test
-  public void startClusterManagementServiceWithRestServiceEnabledThrowsWhatStartManagerThrows()
-      throws URISyntaxException {
+  public void startClusterManagementServiceWithRestServiceEnabledDoesNotThrowWhenStartManagerThrows()
+      throws Exception {
     createInternalLocator();
     setupForStartClusterManagementService();
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
     RuntimeException startManagerEx = new RuntimeException("startManager failed");
     doThrow(startManagerEx).when(managementService).startManager();
 
-    Throwable throwable =
-        catchThrowable(() -> internalLocator.startClusterManagementService(cache, agentUtil));
+    internalLocator.startClusterManagementService(cache, agentUtil);
 
-    assertThat(throwable).isSameAs(startManagerEx);
+    verify(managementService).startManager();
+    verify(httpService, never()).addWebApplication(eq("/management"), any(), any());
   }
 
   private void createInternalLocator() {
@@ -116,10 +119,11 @@ public class InternalLocatorTest {
     InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
     when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
     when(cache.getOptionalService(HttpService.class))
-        .thenReturn(Optional.of(mock(HttpService.class)));
+        .thenReturn(Optional.of(httpService));
     when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     BaseManagementService.setManagementService(cache, managementService);
-    when(agentUtil.findWarLocation("geode-web-management")).thenReturn(new URI("management.war"));
+    URI uri = new URI("file", "/management.war", null);
+    when(agentUtil.findWarLocation("geode-web-management")).thenReturn(uri);
   }
 
 }
