@@ -282,10 +282,16 @@ javadoc/org/apache/geode/cache/client/PoolManager.html
 javadoc/org/apache/geode/cache/client/ServerConnectivityException.html
 javadoc/org/apache/geode/cache/client/ServerOperationException.html
 javadoc/org/apache/geode/cache/client/ServerRefusedConnectionException.html
+javadoc/org/apache/geode/cache/client/SocketFactory.html
 javadoc/org/apache/geode/cache/client/SubscriptionNotEnabledException.html
 javadoc/org/apache/geode/cache/client/package-frame.html
 javadoc/org/apache/geode/cache/client/package-summary.html
 javadoc/org/apache/geode/cache/client/package-tree.html
+javadoc/org/apache/geode/cache/client/proxy/ProxySocketFactories.html
+javadoc/org/apache/geode/cache/client/proxy/SniSocketFactory.html
+javadoc/org/apache/geode/cache/client/proxy/package-frame.html
+javadoc/org/apache/geode/cache/client/proxy/package-summary.html
+javadoc/org/apache/geode/cache/client/proxy/package-tree.html
 javadoc/org/apache/geode/cache/configuration/CacheConfig.AsyncEventQueue.html
 javadoc/org/apache/geode/cache/configuration/CacheConfig.CacheServer.html
 javadoc/org/apache/geode/cache/configuration/CacheConfig.GatewayHub.Gateway.GatewayEndpoint.html
@@ -963,7 +969,7 @@ lib/LatencyUtils-2.0.3.jar
 lib/antlr-2.7.7.jar
 lib/classgraph-4.8.52.jar
 lib/commons-beanutils-1.9.4.jar
-lib/commons-codec-1.11.jar
+lib/commons-codec-1.14.jar
 lib/commons-collections-3.2.2.jar
 lib/commons-digester-2.1.jar
 lib/commons-io-2.6.jar

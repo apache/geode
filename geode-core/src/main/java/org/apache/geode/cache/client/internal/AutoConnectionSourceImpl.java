@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
@@ -113,7 +114,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private final Map<InetSocketAddress, Exception> locatorState = new HashMap<>();
 
   public AutoConnectionSourceImpl(List<HostAndPort> contacts, String serverGroup,
-      int handshakeTimeout) {
+      int handshakeTimeout,
+      SocketFactory socketFactory) {
     this.locators.set(new LocatorList(new ArrayList<>(contacts)));
     this.onlineLocators.set(new LocatorList(Collections.emptyList()));
     this.initialLocators = Collections.unmodifiableList(this.locators.get().getLocatorAddresses());
@@ -122,7 +124,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     this.tcpClient = new TcpClient(SocketCreatorFactory
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        socketFactory::createSocket);
   }
 
   @Override

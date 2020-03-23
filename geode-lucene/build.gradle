@@ -23,7 +23,9 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
 
-  implementation(project(':geode-core'))
+  api(project(':geode-core'))
+  api('org.apache.lucene:lucene-core')
+
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
@@ -32,7 +34,6 @@ dependencies {
   implementation('org.apache.lucene:lucene-queryparser') {
     exclude module: 'lucene-sandbox'
   }
-  implementation('org.apache.lucene:lucene-core')
   implementation('org.apache.commons:commons-lang3')
   implementation('mx4j:mx4j')
   implementation('org.apache.logging.log4j:log4j-api')

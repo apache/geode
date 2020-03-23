@@ -20,7 +20,12 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.Test;
 
@@ -60,7 +65,7 @@ public class RedisLockServiceJUnitTest {
 
     // start thread with locking
     t1.start();
-    await().until(() -> lockService.getMapSize() == 1);
+    await().until(() -> lockService.getLockCount() == 1);
 
     // test current thread cannot lock the same key
     assertThatExceptionOfType(TimeoutException.class).isThrownBy(() -> lockService.lock(key1));
@@ -76,7 +81,7 @@ public class RedisLockServiceJUnitTest {
     assertThat(lockService.lock(key1)).isNotNull();
     assertThat(lockService.lock(key2)).isNotNull();
 
-    assertThat(lockService.getMapSize()).isEqualTo(1);
+    assertThat(lockService.getLockCount()).isEqualTo(1);
   }
 
   /**
@@ -103,7 +108,7 @@ public class RedisLockServiceJUnitTest {
 
     // start thread with locking
     t1.start();
-    await().until(() -> lockService1.getMapSize() == 1);
+    await().until(() -> lockService1.getLockCount() == 1);
 
     assertThatExceptionOfType(TimeoutException.class).isThrownBy(() -> lockService1.lock(key));
 
@@ -126,7 +131,7 @@ public class RedisLockServiceJUnitTest {
     ByteArrayWrapper obj = new ByteArrayWrapper(new byte[] {1});
 
     AutoCloseableLock autoLock = lockService.lock(obj);
-    assertThat(lockService.getMapSize()).isEqualTo(1);
+    assertThat(lockService.getLockCount()).isEqualTo(1);
 
     autoLock.close();
     autoLock = null;
@@ -136,8 +141,8 @@ public class RedisLockServiceJUnitTest {
     System.runFinalization();
 
     // check lock removed
-    await().until(() -> lockService.getMapSize() == 0);
-    assertThat(lockService.getMapSize()).isEqualTo(0);
+    await().until(() -> lockService.getLockCount() == 0);
+    assertThat(lockService.getLockCount()).isEqualTo(0);
   }
 
   @Test
@@ -147,12 +152,12 @@ public class RedisLockServiceJUnitTest {
     ByteArrayWrapper obj1 = new ByteArrayWrapper(new byte[] {77});
     AutoCloseableLock lock1 = lockService.lock(obj1);
 
-    assertThat(lockService.getMapSize()).isEqualTo(1);
+    assertThat(lockService.getLockCount()).isEqualTo(1);
 
     ByteArrayWrapper obj2 = new ByteArrayWrapper(new byte[] {77});
     AutoCloseableLock lock2 = lockService.lock(obj2);
 
-    assertThat(lockService.getMapSize()).isEqualTo(1);
+    assertThat(lockService.getLockCount()).isEqualTo(1);
 
     obj1 = null;
     lock1 = null;
@@ -161,8 +166,46 @@ public class RedisLockServiceJUnitTest {
     System.runFinalization();
 
     // check lock removed
-    await().until(() -> lockService.getMapSize() == 1);
-    assertThat(lockService.getMapSize()).isEqualTo(1);
+    await().until(() -> lockService.getLockCount() == 1);
+    assertThat(lockService.getLockCount()).isEqualTo(1);
   }
 
+  @Test
+  public void lockingDoesNotCauseConcurrentModificationExceptions()
+      throws ExecutionException, InterruptedException {
+
+    int ITERATIONS = 10000;
+    RedisLockService lockService = new RedisLockService();
+
+    ExecutorService pool = Executors.newFixedThreadPool(5);
+    Callable<Void> callable = () -> {
+      ByteArrayWrapper key = new ByteArrayWrapper("key".getBytes());
+      for (int i = 0; i < ITERATIONS; i++) {
+        lockService.lock(key).close();
+      }
+      return null;
+    };
+
+    Callable<Void> lockMaker = () -> {
+      for (int i = 0; i < ITERATIONS; i++) {
+        lockService.lock(new ByteArrayWrapper(("key-" + i++).getBytes())).close();
+      }
+      return null;
+    };
+
+    Callable<Void> garbageCollection = () -> {
+      for (int i = 0; i < ITERATIONS / 100; i++) {
+        System.gc();
+        System.runFinalization();
+      }
+      return null;
+    };
+
+    Future<Void> future1 = pool.submit(callable);
+    Future<Void> future2 = pool.submit(lockMaker);
+    pool.submit(garbageCollection);
+
+    // The test passes if this does not throw an exception
+    future1.get();
+  }
 }

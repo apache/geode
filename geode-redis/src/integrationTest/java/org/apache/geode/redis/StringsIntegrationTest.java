@@ -14,13 +14,12 @@
  */
 package org.apache.geode.redis;
 
+import static java.lang.Integer.parseInt;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,6 +27,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -35,26 +42,29 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class StringsIntegrationTest {
 
   private static Jedis jedis;
+  private static Jedis jedis2;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
   private static Random rand;
   private static int port = 6379;
+  private static int ITERATION_COUNT = 4000;
 
   @BeforeClass
   public static void setUp() throws IOException {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -64,66 +74,560 @@ public class StringsIntegrationTest {
 
     server.start();
     jedis = new Jedis("localhost", port, 10000000);
+    jedis2 = new Jedis("localhost", port, 10000000);
+  }
+
+  @After
+  public void flushAll() {
+    jedis.flushAll();
+    jedis2.flushAll();
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    jedis.close();
+    jedis2.close();
+    cache.close();
+    server.shutdown();
   }
 
   @Test
-  public void testAppendAndStrlen() {
+  public void testAppend_shouldAppendValueWithInputStringAndReturnResultingLength() {
+    String key = "key";
+    String value = randString();
+    int originalValueLength = value.length();
+
+    // @todo: for jedis this is bool, redis docs state int value...
+    boolean result = jedis.exists(key);
+    assertThat(result).isFalse();
+
+    Long output = jedis.append(key, value);
+    assertThat(output).isEqualTo(originalValueLength);
+
+    String randomString = randString();
+
+    output = jedis.append(key, randomString);
+    assertThat(output).isEqualTo(originalValueLength + randomString.length());
+
+    String finalValue = jedis.get(key);
+    assertThat(finalValue).isEqualTo(value.concat(randomString));
+  }
+
+
+  @Test
+  public void testGetRange_whenWholeRangeSpecified_returnsEntireValue() {
+    String key = "key";
+    String valueWith19Characters = "abc123babyyouknowme";
+
+    jedis.set(key, valueWith19Characters);
+
+    String everything = jedis.getrange(key, 0, -1);
+    assertThat(everything).isEqualTo(valueWith19Characters);
+
+    String alsoEverything = jedis.getrange(key, 0, 18);
+    assertThat(alsoEverything).isEqualTo(valueWith19Characters);
+
+  }
+
+  @Test
+  public void testGetRange_whenMoreThanWholeRangeSpecified_returnsEntireValue() {
+    String key = "key";
+    String valueWith19Characters = "abc123babyyouknowme";
+
+    jedis.set(key, valueWith19Characters);
+
+    String fromStartToWayPastEnd = jedis.getrange(key, 0, 5000);
+    assertThat(fromStartToWayPastEnd).isEqualTo(valueWith19Characters);
+
+    String wayBeforeStartAndJustToEnd = jedis.getrange(key, -50000, -1);
+    assertThat(wayBeforeStartAndJustToEnd).isEqualTo(valueWith19Characters);
+
+    String wayBeforeStartAndWayAfterEnd = jedis.getrange(key, -50000, 5000);
+    assertThat(wayBeforeStartAndWayAfterEnd).isEqualTo(valueWith19Characters);
+  }
+
+  @Test
+  public void testGetRange_whenValidSubrangeSpecified_returnsAppropriateSubstring() {
+    String key = "key";
+    String valueWith19Characters = "abc123babyyouknowme";
+
+    jedis.set(key, valueWith19Characters);
+
+    String fromStartToBeforeEnd = jedis.getrange(key, 0, 16);
+    assertThat(fromStartToBeforeEnd).isEqualTo("abc123babyyouknow");
+
+    String fromStartByNegativeOffsetToBeforeEnd = jedis.getrange(key, -19, 16);
+    assertThat(fromStartByNegativeOffsetToBeforeEnd).isEqualTo("abc123babyyouknow");
+
+    String fromStartToBeforeEndByNegativeOffset = jedis.getrange(key, 0, -3);
+    assertThat(fromStartToBeforeEndByNegativeOffset).isEqualTo("abc123babyyouknow");
+
+    String fromAfterStartToBeforeEnd = jedis.getrange(key, 2, 16);
+    assertThat(fromAfterStartToBeforeEnd).isEqualTo("c123babyyouknow");
+
+    String fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset = jedis.getrange(key, -16, -2);
+    assertThat(fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset)
+        .isEqualTo("123babyyouknowm");
+
+    String fromAfterStartToEnd = jedis.getrange(key, 2, 18);
+    assertThat(fromAfterStartToEnd).isEqualTo("c123babyyouknowme");
+
+    String fromAfterStartToEndByNegativeOffset = jedis.getrange(key, 2, -1);
+    assertThat(fromAfterStartToEndByNegativeOffset).isEqualTo("c123babyyouknowme");
+  }
+
+  @Test
+  public void testGetRange_rangeIsInvalid_returnsEmptyString() {
+    String key = "key";
+    String valueWith19Characters = "abc123babyyouknowme";
+
+    jedis.set(key, valueWith19Characters);
+
+    String range1 = jedis.getrange(key, -2, -16);
+    assertThat(range1).isEqualTo("");
+
+    String range2 = jedis.getrange(key, 2, 0);
+    assertThat(range2).isEqualTo("");
+  }
+
+  @Test
+  public void testGetRange_nonexistentKey_returnsEmptyString() {
+    String key = "nonexistent";
+
+    String range = jedis.getrange(key, 0, -1);
+    assertThat(range).isEqualTo("");
+  }
+
+  @Test
+  public void testGetRange_rangePastEndOfValue_returnsEmptyString() {
+    String key = "key";
+    String value = "value";
+
+    jedis.set(key, value);
+
+    String range = jedis.getrange(key, 7, 14);
+    assertThat(range).isEqualTo("");
+  }
+
+  @Test
+  public void testGetSet_updatesKeyWithNewValue_returnsOldValue() {
     String key = randString();
-    int len = key.length();
-    String full = key;
-    jedis.set(key, key);
-    for (int i = 0; i < 15; i++) {
-      String rand = randString();
-      jedis.append(key, rand);
-      len += rand.length();
-      full += rand;
+    String contents = randString();
+    jedis.set(key, contents);
+
+    String newContents = randString();
+    String oldContents = jedis.getSet(key, newContents);
+    assertThat(oldContents).isEqualTo(contents);
+
+    contents = newContents;
+    newContents = jedis.get(key);
+    assertThat(newContents).isEqualTo(contents);
+  }
+
+  @Test
+  public void testGetSet_setsNonexistentKeyToNewValue_returnsNull() {
+    String key = randString();
+    String newContents = randString();
+
+    String oldContents = jedis.getSet(key, newContents);
+    assertThat(oldContents).isNull();
+
+    String contents = jedis.get(key);
+    assertThat(newContents).isEqualTo(contents);
+  }
+
+  @Test
+  public void testGetSet_shouldWorkWith_INCR_Command() {
+    String key = "key";
+    Long resultLong;
+    String resultString;
+
+    jedis.set(key, "0");
+
+    resultLong = jedis.incr(key);
+    assertThat(resultLong).isEqualTo(1);
+
+    resultString = jedis.getSet(key, "0");
+    assertThat(parseInt(resultString)).isEqualTo(1);
+
+    resultString = jedis.get(key);
+    assertThat(parseInt(resultString)).isEqualTo(0);
+
+    resultLong = jedis.incr(key);
+    assertThat(resultLong).isEqualTo(1);
+  }
+
+  @Test
+  public void testGetSet_whenWrongType_shouldReturnError() {
+    String key = "key";
+    jedis.hset(key, "field", "some hash value");
+
+    assertThatThrownBy(() -> jedis.getSet(key, "this value doesn't matter"))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testGetSet_shouldBeAtomic()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    jedis.set("contestedKey", "0");
+    assertThat(jedis.get("contestedKey")).isEqualTo("0");
+    CountDownLatch latch = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    Callable<Integer> callable1 = () -> doABunchOfIncrs(jedis, latch);
+    Callable<Integer> callable2 = () -> doABunchOfGetSets(jedis2, latch);
+    Future<Integer> future1 = pool.submit(callable1);
+    Future<Integer> future2 = pool.submit(callable2);
+
+    latch.countDown();
+
+    Integer getSetSum = future2.get(5, TimeUnit.SECONDS);
+    Integer incrSum = future1.get();
+
+    assertThat(getSetSum).isEqualTo(incrSum);
+    assertThat(incrSum + getSetSum).isEqualTo(2 * ITERATION_COUNT);
+  }
+
+  private Integer doABunchOfIncrs(Jedis jedis, CountDownLatch latch) throws InterruptedException {
+    latch.await();
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      jedis.incr("contestedKey");
     }
-    String ret = jedis.get(key);
-    assertTrue(ret.length() == len);
-    assertTrue(full.equals(ret));
-    assertTrue(full.length() == jedis.strlen(key));
+    return ITERATION_COUNT;
+  }
+
+  private Integer doABunchOfGetSets(Jedis jedis, CountDownLatch latch) throws InterruptedException {
+    int sum = 0;
+    latch.await();
+
+    while (sum < ITERATION_COUNT) {
+      sum += Integer.parseInt(jedis.getSet("contestedKey", "0"));
+    }
+    return sum;
+  }
+
+  @Test
+  public void testDel_deletingOneKey_removesKeyAndReturnsOne() {
+    String key1 = "firstKey";
+    jedis.set(key1, randString());
+
+    Long deletedCount = jedis.del(key1);
+
+    assertThat(deletedCount).isEqualTo(1L);
+    assertThat(jedis.get(key1)).isNull();
+  }
+
+  @Test
+  public void testDel_deletingNonexistentKey_returnsZero() {
+    assertThat(jedis.del("ceci nest pas un clavier")).isEqualTo(0L);
+  }
+
+  @Test
+  public void testDel_deletingMultipleKeys_returnsCountOfOnlyDeletedKeys() {
+    String key1 = "firstKey";
+    String key2 = "secondKey";
+    String key3 = "thirdKey";
+
+    jedis.set(key1, randString());
+    jedis.set(key2, randString());
+
+    assertThat(jedis.del(key1, key2, key3)).isEqualTo(2L);
+    assertThat(jedis.get(key1)).isNull();
+    assertThat(jedis.get(key2)).isNull();
+  }
+
+  @Test
+  public void testMSetAndMGet_forHappyPath_setsKeysAndReturnsCorrectValues() {
+    int keyCount = 5;
+    String[] keyvals = new String[(keyCount * 2)];
+    String[] keys = new String[keyCount];
+    String[] vals = new String[keyCount];
+    for (int i = 0; i < keyCount; i++) {
+      String key = randString();
+      String val = randString();
+      keyvals[2 * i] = key;
+      keyvals[2 * i + 1] = val;
+      keys[i] = key;
+      vals[i] = val;
+    }
+
+    String resultString = jedis.mset(keyvals);
+    assertThat(resultString).isEqualTo("OK");
+
+    List<String> ret = jedis.mget(keys);
+    Object[] retArray = ret.toArray();
+
+    assertThat(Arrays.equals(vals, retArray)).isTrue();
+  }
+
+  @Test
+  public void testMGet_requestNonexistentKey_respondsWithNil() {
+    String key1 = "existingKey";
+    String key2 = "notReallyAKey";
+    String value1 = "theRealValue";
+    String[] keys = new String[2];
+    String[] expectedVals = new String[2];
+    keys[0] = key1;
+    keys[1] = key2;
+    expectedVals[0] = value1;
+    expectedVals[1] = null;
+
+    jedis.set(key1, value1);
+
+    List<String> ret = jedis.mget(keys);
+    Object[] retArray = ret.toArray();
+
+    assertThat(Arrays.equals(expectedVals, retArray)).isTrue();
+  }
+
+  @Test
+  public void testMGet_concurrentInstances_mustBeAtomic()
+      throws InterruptedException, ExecutionException {
+    String keyBaseName = "MSETBASE";
+    String val1BaseName = "FIRSTVALBASE";
+    String val2BaseName = "SECONDVALBASE";
+    String[] keysAndVals1 = new String[(ITERATION_COUNT * 2)];
+    String[] keysAndVals2 = new String[(ITERATION_COUNT * 2)];
+    String[] keys = new String[ITERATION_COUNT];
+    String[] vals1 = new String[ITERATION_COUNT];
+    String[] vals2 = new String[ITERATION_COUNT];
+    String[] expectedVals;
+
+    SetUpArraysForConcurrentMSet(keyBaseName,
+        val1BaseName, val2BaseName,
+        keysAndVals1, keysAndVals2,
+        keys,
+        vals1, vals2);
+
+    RunTwoMSetsInParallelThreadsAndVerifyReturnValue(keysAndVals1, keysAndVals2);
+
+    List<String> actualVals = jedis.mget(keys);
+    expectedVals = DetermineWhichMSetWonTheRace(vals1, vals2, actualVals);
+
+    assertThat(actualVals.toArray(new String[] {})).contains(expectedVals);
+  }
+
+  private void SetUpArraysForConcurrentMSet(String keyBaseName, String val1BaseName,
+      String val2BaseName, String[] keysAndVals1,
+      String[] keysAndVals2, String[] keys, String[] vals1,
+      String[] vals2) {
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      String key = keyBaseName + i;
+      String value1 = val1BaseName + i;
+      String value2 = val2BaseName + i;
+      keysAndVals1[2 * i] = key;
+      keysAndVals1[2 * i + 1] = value1;
+      keysAndVals2[2 * i] = key;
+      keysAndVals2[2 * i + 1] = value2;
+      keys[i] = key;
+      vals1[i] = value1;
+      vals2[i] = value2;
+    }
+  }
+
+  private void RunTwoMSetsInParallelThreadsAndVerifyReturnValue(String[] keysAndVals1,
+      String[] keysAndVals2)
+      throws InterruptedException, ExecutionException {
+    CountDownLatch latch = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    Callable<String> callable1 = () -> jedis.mset(keysAndVals1);
+    Callable<String> callable2 = () -> jedis2.mset(keysAndVals2);
+    Future<String> future1 = pool.submit(callable1);
+    Future<String> future2 = pool.submit(callable2);
+
+    latch.countDown();
+
+    assertThat(future1.get()).isEqualTo("OK");
+    assertThat(future2.get()).isEqualTo("OK");
+  }
+
+  private String[] DetermineWhichMSetWonTheRace(String[] vals1, String[] vals2,
+      List<String> actualVals) {
+    String[] expectedVals;
+    if (actualVals.get(0).equals("FIRSTVALBASE0")) {
+      expectedVals = vals1;
+    } else {
+      expectedVals = vals2;
+    }
+    return expectedVals;
+  }
+
+  @Test
+  public void testConcurrentDel_differentClients()
+      throws InterruptedException, ExecutionException {
+    String keyBaseName = "DELBASE";
+
+    doABunchOfSets(keyBaseName, jedis);
+
+    CountDownLatch latch = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    Callable<Integer> callable1 = () -> doABunchOfDels(keyBaseName, 0, jedis, latch);
+    Callable<Integer> callable2 = () -> doABunchOfDels(keyBaseName, 1, jedis2, latch);
+    Future<Integer> future1 = pool.submit(callable1);
+    Future<Integer> future2 = pool.submit(callable2);
+
+    latch.countDown();
+
+    assertThat(future1.get() + future2.get()).isEqualTo(ITERATION_COUNT);
+
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      assertThat(jedis.get(keyBaseName + i)).isNull();
+    }
+
+    pool.shutdown();
+  }
+
+  private void doABunchOfSets(String keyBaseName, Jedis jedis) {
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      jedis.set(keyBaseName + i, "value" + i);
+    }
+  }
+
+  private int doABunchOfDels(String keyBaseName, int start, Jedis jedis, CountDownLatch latch)
+      throws InterruptedException {
+    int delCount = 0;
+    latch.await();
+
+    for (int i = start; i < ITERATION_COUNT; i += 2) {
+      delCount += jedis.del(keyBaseName + i);
+      Thread.yield();
+    }
+    return delCount;
+  }
+
+  @Test
+  public void testMSetNX() {
+    Set<String> keysAndVals = new HashSet<String>();
+    for (int i = 0; i < 2 * 5; i++) {
+      keysAndVals.add(randString());
+    }
+    String[] keysAndValsArray = keysAndVals.toArray(new String[0]);
+    long response = jedis.msetnx(keysAndValsArray);
+
+    assertThat(response).isEqualTo(1);
+
+    long response2 = jedis.msetnx(keysAndValsArray[0], randString());
+
+    assertThat(response2).isEqualTo(0);
+    assertThat(keysAndValsArray[1]).isEqualTo(jedis.get(keysAndValsArray[0]));
   }
 
   @Test
   public void testDecr() {
-    String key1 = randString();
-    String key2 = randString();
-    String key3 = randString();
-    int num1 = 100;
-    int num2 = -100;
-    jedis.set(key1, "" + num1);
-    // jedis.set(key3, "-100");
-    jedis.set(key2, "" + num2);
+    String oneHundredKey = randString();
+    String negativeOneHundredKey = randString();
+    String unsetKey = randString();
+    final int oneHundredValue = 100;
+    final int negativeOneHundredValue = -100;
+    jedis.set(oneHundredKey, Integer.toString(oneHundredValue));
+    jedis.set(negativeOneHundredKey, Integer.toString(negativeOneHundredValue));
 
-    jedis.decr(key1);
-    jedis.decr(key3);
-    jedis.decr(key2);
-    assertTrue(jedis.get(key1).equals("" + (num1 - 1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 - 1)));
-    assertTrue(jedis.get(key3).equals("" + (-1)));
+    jedis.decr(oneHundredKey);
+    jedis.decr(negativeOneHundredKey);
+    jedis.decr(unsetKey);
+
+    assertThat(jedis.get(oneHundredKey)).isEqualTo(Integer.toString(oneHundredValue - 1));
+    assertThat(jedis.get(negativeOneHundredKey))
+        .isEqualTo(Integer.toString(negativeOneHundredValue - 1));
+    assertThat(jedis.get(unsetKey)).isEqualTo(Integer.toString(-1));
+  }
+
+  @Test
+  public void testDecr_shouldBeAtomic() throws ExecutionException, InterruptedException {
+    jedis.set("contestedKey", "0");
+
+    CountDownLatch latch = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    Callable<Integer> callable1 = () -> doABunchOfDecrs(jedis, latch);
+    Callable<Integer> callable2 = () -> doABunchOfDecrs(jedis2, latch);
+    Future<Integer> future1 = pool.submit(callable1);
+    Future<Integer> future2 = pool.submit(callable2);
+
+    latch.countDown();
+
+    future1.get();
+    future2.get();
+
+    assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(-2 * ITERATION_COUNT));
+  }
+
+  private Integer doABunchOfDecrs(Jedis jedis, CountDownLatch latch) throws InterruptedException {
+    latch.await();
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      jedis.decr("contestedKey");
+    }
+    return ITERATION_COUNT;
   }
 
   @Test
   public void testIncr() {
-    String key1 = randString();
-    String key2 = randString();
-    String key3 = randString();
-    int num1 = 100;
-    int num2 = -100;
-    jedis.set(key1, "" + num1);
-    // jedis.set(key3, "-100");
-    jedis.set(key2, "" + num2);
+    String oneHundredKey = randString();
+    String negativeOneHundredKey = randString();
+    String unsetKey = randString();
+    final int oneHundredValue = 100;
+    final int negativeOneHundredValue = -100;
+    jedis.set(oneHundredKey, Integer.toString(oneHundredValue));
+    jedis.set(negativeOneHundredKey, Integer.toString(negativeOneHundredValue));
 
-    jedis.incr(key1);
-    jedis.incr(key3);
-    jedis.incr(key2);
+    jedis.incr(oneHundredKey);
+    jedis.incr(negativeOneHundredKey);
+    jedis.incr(unsetKey);
 
-    assertTrue(jedis.get(key1).equals("" + (num1 + 1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 + 1)));
-    assertTrue(jedis.get(key3).equals("" + (+1)));
+    assertThat(jedis.get(oneHundredKey)).isEqualTo(Integer.toString(oneHundredValue + 1));
+    assertThat(jedis.get(negativeOneHundredKey))
+        .isEqualTo(Integer.toString(negativeOneHundredValue + 1));
+    assertThat(jedis.get(unsetKey)).isEqualTo(Integer.toString(1));
   }
 
   @Test
+  public void testIncr_whenOverflow_shouldReturnError() {
+    String key = "key";
+    String max64BitIntegerValue = "9223372036854775807";
+    jedis.set(key, max64BitIntegerValue);
+
+    try {
+      jedis.incr(key);
+    } catch (JedisDataException e) {
+      assertThat(e.getMessage()).contains("value is not an integer or out of range");
+    }
+    assertThat(jedis.get(key)).isEqualTo(max64BitIntegerValue);
+  }
+
+  @Test
+  public void testIncr_whenWrongType_shouldReturnError() {
+    String key = "key";
+    String nonIntegerValue = "I am not a number! I am a free man!";
+    jedis.set(key, nonIntegerValue);
+
+    try {
+      jedis.incr(key);
+    } catch (JedisDataException e) {
+      assertThat(e.getMessage()).contains(RedisConstants.ERROR_WRONG_TYPE);
+    }
+    assertThat(jedis.get(key)).isEqualTo(nonIntegerValue);
+  }
+
+  @Test
+  public void testIncr_shouldBeAtomic() throws ExecutionException, InterruptedException {
+    jedis.set("contestedKey", "0");
+
+    CountDownLatch latch = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    Callable<Integer> callable1 = () -> doABunchOfIncrs(jedis, latch);
+    Callable<Integer> callable2 = () -> doABunchOfIncrs(jedis2, latch);
+    Future<Integer> future1 = pool.submit(callable1);
+    Future<Integer> future2 = pool.submit(callable2);
+
+    latch.countDown();
+
+    future1.get();
+    future2.get();
+
+    assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(2 * ITERATION_COUNT));
+  }
+
+  @Test
+  // @todo: not looked over for current release
   public void testDecrBy() {
     String key1 = randString();
     String key2 = randString();
@@ -140,8 +644,8 @@ public class StringsIntegrationTest {
     jedis.decrBy(key1, decr1);
     jedis.decrBy(key2, decr2);
 
-    assertTrue(jedis.get(key1).equals("" + (num1 - decr1 * 1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 - decr2 * 1)));
+    assertThat(jedis.get(key1)).isEqualTo("" + (num1 - decr1 * 1));
+    assertThat(jedis.get(key2)).isEqualTo("" + (num2 - decr2 * 1));
 
     Exception ex = null;
     try {
@@ -149,11 +653,67 @@ public class StringsIntegrationTest {
     } catch (Exception e) {
       ex = e;
     }
-    assertNotNull(ex);
+    assertThat(ex).isNotNull();
 
   }
 
+  // @todo: not looked over for current release
   @Test
+  public void testSetNX() {
+    String key1 = randString();
+    String key2;
+    do {
+      key2 = randString();
+    } while (key2.equals(key1));
+
+    long response1 = jedis.setnx(key1, key1);
+    long response2 = jedis.setnx(key2, key2);
+    long response3 = jedis.setnx(key1, key2);
+
+    assertThat(response1).isEqualTo(1);
+    assertThat(response2).isEqualTo(1);
+    assertThat(response3).isEqualTo(0);
+  }
+
+  // @todo: not looked over for current release
+  @Test
+  public void testPAndSetex() {
+    Random r = new Random();
+    int setex = r.nextInt(5);
+    if (setex == 0) {
+      setex = 1;
+    }
+    String key = randString();
+    jedis.setex(key, setex, randString());
+    try {
+      Thread.sleep((setex + 5) * 1000);
+    } catch (InterruptedException e) {
+      return;
+    }
+    String result = jedis.get(key);
+    // System.out.println(result);
+    assertThat(result).isNull();
+
+    int psetex = r.nextInt(5000);
+    if (psetex == 0) {
+      psetex = 1;
+    }
+    key = randString();
+    jedis.psetex(key, psetex, randString());
+    long start = System.currentTimeMillis();
+    try {
+      Thread.sleep(psetex + 5000);
+    } catch (InterruptedException e) {
+      return;
+    }
+    long stop = System.currentTimeMillis();
+    result = jedis.get(key);
+    assertThat(stop - start).isGreaterThanOrEqualTo(psetex);
+    assertThat(result).isNull();
+  }
+
+  @Test
+  // @todo: not looked over for current release
   public void testIncrBy() {
     String key1 = randString();
     String key2 = randString();
@@ -169,8 +729,8 @@ public class StringsIntegrationTest {
 
     jedis.incrBy(key1, incr1);
     jedis.incrBy(key2, incr2);
-    assertTrue(jedis.get(key1).equals("" + (num1 + incr1 * 1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 + incr2 * 1)));
+    assertThat(jedis.get(key1)).isEqualTo("" + (num1 + incr1 * 1));
+    assertThat(jedis.get(key2)).isEqualTo("" + (num2 + incr2 * 1));
 
     Exception ex = null;
     try {
@@ -178,135 +738,36 @@ public class StringsIntegrationTest {
     } catch (Exception e) {
       ex = e;
     }
-    assertNotNull(ex);
+    assertThat(ex).isNotNull();
   }
 
   @Test
-  public void testGetRange() {
-    String sent = randString();
-    String contents = randString();
-    jedis.set(sent, contents);
-    for (int i = 0; i < sent.length(); i++) {
-      String range = jedis.getrange(sent, i, -1);
-      assertTrue(contents.substring(i).equals(range));
-    }
-    assertNull(jedis.getrange(sent, 2, 0));
+  public void testStrlen_requestNonexistentKey_returnsZero() {
+    Long result = jedis.strlen("Nohbdy");
+    assertThat(result).isEqualTo(0);
   }
 
   @Test
-  public void testGetSet() {
-    String key = randString();
-    String contents = randString();
-    jedis.set(key, contents);
-    String newContents = randString();
-    String oldContents = jedis.getSet(key, newContents);
-    assertTrue(oldContents.equals(contents));
-    contents = newContents;
+  public void testStrlen_requestKey_returnsLengthOfStringValue() {
+    String value = "byGoogle";
+
+    jedis.set("golang", value);
+
+    Long result = jedis.strlen("golang");
+    assertThat(result).isEqualTo(value.length());
   }
 
   @Test
-  public void testMSetAndGet() {
-    int r = 5;
-    String[] keyvals = new String[(r * 2)];
-    String[] keys = new String[r];
-    String[] vals = new String[r];
-    for (int i = 0; i < r; i++) {
-      String key = randString();
-      String val = randString();
-      keyvals[2 * i] = key;
-      keyvals[2 * i + 1] = val;
-      keys[i] = key;
-      vals[i] = val;
-    }
+  public void testStrlen_requestWrongType_shouldReturnError() {
+    String key = "hashKey";
+    jedis.hset(key, "field", "this value doesn't matter");
 
-    jedis.mset(keyvals);
-
-    List<String> ret = jedis.mget(keys);
-    Object[] retArray = ret.toArray();
-
-    assertTrue(Arrays.equals(vals, retArray));
-  }
-
-  @Test
-  public void testMSetNX() {
-    Set<String> strings = new HashSet<String>();
-    for (int i = 0; i < 2 * 5; i++)
-      strings.add(randString());
-    String[] array = strings.toArray(new String[0]);
-    long response = jedis.msetnx(array);
-
-    assertTrue(response == 1);
-
-    long response2 = jedis.msetnx(array[0], randString());
-
-    assertTrue(response2 == 0);
-    assertEquals(array[1], jedis.get(array[0]));
-  }
-
-  @Test
-  public void testSetNX() {
-    String key1 = randString();
-    String key2;
-    do {
-      key2 = randString();
-    } while (key2.equals(key1));
-
-    long response1 = jedis.setnx(key1, key1);
-    long response2 = jedis.setnx(key2, key2);
-    long response3 = jedis.setnx(key1, key2);
-
-    assertTrue(response1 == 1);
-    assertTrue(response2 == 1);
-    assertTrue(response3 == 0);
-  }
-
-  @Test
-  public void testPAndSetex() {
-    Random r = new Random();
-    int setex = r.nextInt(5);
-    if (setex == 0)
-      setex = 1;
-    String key = randString();
-    jedis.setex(key, setex, randString());
-    try {
-      Thread.sleep((setex + 5) * 1000);
-    } catch (InterruptedException e) {
-      return;
-    }
-    String result = jedis.get(key);
-    // System.out.println(result);
-    assertNull(result);
-
-    int psetex = r.nextInt(5000);
-    if (psetex == 0)
-      psetex = 1;
-    key = randString();
-    jedis.psetex(key, psetex, randString());
-    long start = System.currentTimeMillis();
-    try {
-      Thread.sleep(psetex + 5000);
-    } catch (InterruptedException e) {
-      return;
-    }
-    long stop = System.currentTimeMillis();
-    result = jedis.get(key);
-    assertTrue(stop - start >= psetex);
-    assertNull(result);
+    assertThatThrownBy(() -> jedis.strlen(key))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   private String randString() {
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
-  }
-
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-    cache.close();
-    server.shutdown();
   }
 }

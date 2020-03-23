@@ -28,7 +28,6 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.cache30.RegionTestCase;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.DiskStoreObserver;
 import org.apache.geode.internal.cache.InitialImageOperation;
@@ -243,7 +242,6 @@ public class DistributedRule extends AbstractDistributedRule {
       RegionTestCase.preSnapshotRegion = null;
       SocketCreator.resetHostNameCache();
       SocketCreator.resolve_dns = true;
-      TcpClient.clearStaticData();
 
       // clear system properties -- keep alphabetized
       System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "log-level");

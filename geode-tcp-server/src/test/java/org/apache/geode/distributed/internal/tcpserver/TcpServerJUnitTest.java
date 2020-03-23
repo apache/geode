@@ -37,7 +37,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -79,11 +78,6 @@ public class TcpServerJUnitTest {
     assertThat(server.isAlive()).isTrue();
   }
 
-  @Before
-  public void setup() {
-    TcpClient.clearStaticData();
-  }
-
   @Test
   public void testConnectToUnknownHost() {
     final TcpClient tcpClient = createTcpClient();
@@ -120,7 +114,7 @@ public class TcpServerJUnitTest {
     TcpSocketCreator socketCreator = new TcpSocketCreatorImpl();
     return new TcpClient(socketCreator,
         serializer.getObjectSerializer(),
-        serializer.getObjectDeserializer());
+        serializer.getObjectDeserializer(), TcpSocketFactory.DEFAULT);
   }
 
   @Test

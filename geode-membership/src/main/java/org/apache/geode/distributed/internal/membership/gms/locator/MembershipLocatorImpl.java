@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -88,7 +89,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
 
     locatorClient = new TcpClient(socketCreator,
         objectSerializer,
-        objectDeserializer);
+        objectDeserializer, Socket::new);
     gmsLocator =
         new GMSLocator<>(bindAddress, config.getLocators(), locatorsAreCoordinators,
             config.isNetworkPartitionDetectionEnabled(),

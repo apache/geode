@@ -36,7 +36,7 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   /**
    * The data portion of ValueWrapper
    */
-  private byte[] value;
+  protected byte[] value;
 
   /**
    * Hash of {@link #value}, this value is cached for performance
@@ -128,7 +128,6 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   @Override
   public int compareTo(ByteArrayWrapper other) {
     return arrayCmp(value, other.value);
-
   }
 
   /**

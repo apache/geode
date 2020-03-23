@@ -35,6 +35,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.QueryService;
@@ -213,6 +214,12 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     return this;
   }
 
+  @Override
+  public PoolFactory setSocketFactory(SocketFactory socketFactory) {
+    attributes.socketFactory = socketFactory;
+    return this;
+  }
+
   public PoolFactory setStartDisabled(boolean disable) {
     attributes.startDisabled = disable;
     return this;
@@ -318,6 +325,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     setSubscriptionAckInterval(cp.getSubscriptionAckInterval());
     setServerGroup(cp.getServerGroup());
     setMultiuserAuthentication(cp.getMultiuserAuthentication());
+    setSocketFactory(cp.getSocketFactory());
     for (InetSocketAddress address : cp.getLocators()) {
       addLocator(address.getHostString(), address.getPort());
     }
@@ -397,6 +405,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     private static final long serialVersionUID = 1L; // for findbugs
 
     int socketConnectTimeout = DEFAULT_SOCKET_CONNECT_TIMEOUT;
+    SocketFactory socketFactory = DEFAULT_SOCKET_FACTORY;
     int connectionTimeout = DEFAULT_FREE_CONNECTION_TIMEOUT;
     int connectionLifetime = DEFAULT_LOAD_CONDITIONING_INTERVAL;
     public int socketBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
@@ -549,6 +558,11 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     }
 
     @Override
+    public SocketFactory getSocketFactory() {
+      return socketFactory;
+    }
+
+    @Override
     public List<InetSocketAddress> getLocators() {
       if (locators.size() == 0 && servers.size() == 0) {
         throw new IllegalStateException(
@@ -655,7 +669,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
               retryAttempts, pingInterval, statisticInterval, queueEnabled, prSingleHopEnabled,
               queueRedundancyLevel, queueMessageTrackingTimeout, queueAckInterval,
               subscriptionTimeoutMultipler, serverGroup, multiuserSecureModeEnabled, locators,
-              servers, startDisabled, locatorCallback, gatewaySender, gateway);
+              servers, startDisabled, locatorCallback, gatewaySender, gateway, socketFactory);
     }
 
     @Override
@@ -686,7 +700,8 @@ public class PoolFactoryImpl implements InternalPoolFactory {
           && Objects.equals(new HashSet<>(locators), new HashSet<>(that.locators))
           && Objects.equals(new HashSet<>(servers), new HashSet<>(that.servers))
           && Objects.equals(locatorCallback, that.locatorCallback)
-          && Objects.equals(gatewaySender, that.gatewaySender);
+          && Objects.equals(gatewaySender, that.gatewaySender)
+          && Objects.equals(socketFactory, that.socketFactory);
     }
 
     @Override

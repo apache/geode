@@ -64,8 +64,17 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
 
   @Override
   public Socket connect(HostAndPort addr, int timeout,
+      ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory, int socketBufferSize,
+      boolean useSSL) throws IOException {
+    return connect(addr, timeout, optionalWatcher, allowClientSocketFactory, socketBufferSize,
+        useSSL, Socket::new);
+  }
+
+  @Override
+  public Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory,
-      int socketBufferSize, boolean useSSL) throws IOException {
+      int socketBufferSize, boolean useSSL, TcpSocketFactory socketFactory)
+      throws IOException {
     if (useSSL) {
       throw new IllegalArgumentException();
     }
@@ -74,7 +83,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       socket = createCustomClientSocket(addr);
     }
     if (socket == null) {
-      socket = new Socket();
+      socket = socketFactory.createSocket();
 
       // Optionally enable SO_KEEPALIVE in the OS network protocol.
       socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
@@ -87,13 +96,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       }
       InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
       try {
-        InetAddress serverAddress = inetSocketAddress.getAddress();
-        if (serverAddress == null) {
-          serverAddress = InetAddress.getByName(inetSocketAddress.getHostString());
-        }
-        socket.connect(
-            new InetSocketAddress(serverAddress, inetSocketAddress.getPort()),
-            Math.max(timeout, 0));
+        socket.connect(inetSocketAddress, Math.max(timeout, 0));
       } finally {
         if (optionalWatcher != null) {
           optionalWatcher.afterConnect(socket);

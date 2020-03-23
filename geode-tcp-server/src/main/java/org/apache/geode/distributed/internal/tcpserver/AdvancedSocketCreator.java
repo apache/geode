@@ -58,4 +58,9 @@ public interface AdvancedSocketCreator {
       ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory,
       int socketBufferSize,
       boolean useSSL) throws IOException;
+
+  Socket connect(HostAndPort addr, int timeout,
+      ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory,
+      int socketBufferSize, boolean useSSL, TcpSocketFactory socketFactory)
+      throws IOException;
 }

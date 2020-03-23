@@ -42,8 +42,8 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
       return;
     }
-    ByteArrayWrapper wKey = command.getKey();
-    RegionProvider rC = context.getRegionProvider();
+    ByteArrayWrapper key = command.getKey();
+    RegionProvider regionProvider = context.getRegionProvider();
     byte[] delayByteArray = commandElems.get(SECONDS_INDEX);
     long delay;
     try {
@@ -64,15 +64,15 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
       delay = delay * millisInSecond;
     }
 
-    boolean expirationSet = false;
+    boolean expirationSucessfullySet = false;
 
-    if (rC.hasExpiration(wKey)) {
-      expirationSet = rC.modifyExpiration(wKey, delay);
+    if (regionProvider.hasExpiration(key)) {
+      expirationSucessfullySet = regionProvider.modifyExpiration(key, delay);
     } else {
-      expirationSet = rC.setExpiration(wKey, delay);
+      expirationSucessfullySet = regionProvider.setExpiration(key, delay);
     }
 
-    if (expirationSet) {
+    if (expirationSucessfullySet) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
     } else {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));

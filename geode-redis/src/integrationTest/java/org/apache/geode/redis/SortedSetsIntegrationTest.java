@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,10 +55,9 @@ public class SortedSetsIntegrationTest {
   private static int port = 6379;
 
   @BeforeClass
-  public static void setUp() throws IOException {
+  public static void setUp() {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -75,7 +73,7 @@ public class SortedSetsIntegrationTest {
   public void testZAddZRange() {
     int numMembers = 10;
     String key = randString();
-    Map<String, Double> scoreMembers = new HashMap<String, Double>();
+    Map<String, Double> scoreMembers = new HashMap<>();
 
     for (int i = 0; i < numMembers; i++)
       scoreMembers.put(randString(), rand.nextDouble());
@@ -197,6 +195,7 @@ public class SortedSetsIntegrationTest {
     assertEquals(infResult, Double.valueOf(Double.POSITIVE_INFINITY));
   }
 
+  @Test
   public void testZRangeByScore() {
     Double min;
     Double max;
@@ -228,6 +227,7 @@ public class SortedSetsIntegrationTest {
     }
   }
 
+  @Test
   public void testZRevRangeByScore() {
     Double min;
     Double max;

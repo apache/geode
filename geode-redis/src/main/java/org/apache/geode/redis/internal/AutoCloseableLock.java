@@ -22,9 +22,9 @@ import java.util.concurrent.locks.Lock;
  */
 public class AutoCloseableLock implements AutoCloseable {
   private final Lock lock;
-  private final ByteArrayWrapper key;
+  private final KeyHashIdentifier key;
 
-  public AutoCloseableLock(ByteArrayWrapper key, Lock lock) {
+  public AutoCloseableLock(KeyHashIdentifier key, Lock lock) {
     this.key = key;
     this.lock = lock;
   }

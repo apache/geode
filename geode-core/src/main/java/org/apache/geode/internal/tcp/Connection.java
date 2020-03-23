@@ -154,7 +154,7 @@ public class Connection implements Runnable {
   /**
    * The idle timeout timer task for this connection
    */
-  private SystemTimerTask idleTask;
+  private volatile SystemTimerTask idleTask;
 
   /**
    * If true then readers for thread owned sockets will send all messages on thread owned senders.
@@ -285,7 +285,7 @@ public class Connection implements Runnable {
   /**
    * task for detecting ack timeouts and issuing alerts
    */
-  private SystemTimer.SystemTimerTask ackTimeoutTask;
+  private volatile SystemTimer.SystemTimerTask ackTimeoutTask;
 
   /**
    * millisecond clock at the time message transmission started, if doing forced-disconnect
@@ -1411,11 +1411,15 @@ public class Connection implements Runnable {
     // This cancels the idle timer task, but it also removes the tasks reference to this connection,
     // freeing up the connection (and it's buffers for GC sooner.
     if (idleTask != null) {
-      idleTask.cancel();
+      synchronized (idleTask) {
+        idleTask.cancel();
+      }
     }
 
     if (ackTimeoutTask != null) {
-      ackTimeoutTask.cancel();
+      synchronized (ackTimeoutTask) {
+        ackTimeoutTask.cancel();
+      }
     }
   }
 
@@ -1905,7 +1909,13 @@ public class Connection implements Runnable {
       ackTimeoutTask = new SystemTimer.SystemTimerTask() {
         @Override
         public void run2() {
+          if (isSocketClosed()) {
+            // Connection is closing - nothing to do anymore
+            cancel();
+            return;
+          }
           if (owner.isClosed()) {
+            cancel();
             return;
           }
           byte connState;
@@ -1950,10 +1960,14 @@ public class Connection implements Runnable {
       synchronized (owner) {
         SystemTimer timer = owner.getIdleConnTimer();
         if (timer != null) {
-          if (msSA > 0) {
-            timer.scheduleAtFixedRate(ackTimeoutTask, msAW, Math.min(msAW, msSA));
-          } else {
-            timer.schedule(ackTimeoutTask, msAW);
+          synchronized (ackTimeoutTask) {
+            if (!ackTimeoutTask.isCancelled()) {
+              if (msSA > 0) {
+                timer.scheduleAtFixedRate(ackTimeoutTask, msAW, Math.min(msAW, msSA));
+              } else {
+                timer.schedule(ackTimeoutTask, msAW);
+              }
+            }
           }
         }
       }
