@@ -50,3 +50,95 @@ When the `http` SSL component is enabled, all HTTP services become
 SSL-enabled and you must configure your client applications
 accordingly. For SSL-enabled Pulse, you will need to configure your
 browsers with proper certificates.
+
+# Configuring Pulse to Use Geode Security Manager for Authentication/Authorization
+
+**Embedded Mode (Jetty)**
+
+You don't need to do anything for this setup. Pulse will automatically be configured by Geode to send the credentials entered in Pulse login page to the Security Manager for authentication and authorization.
+
+**Non-Embedded (Standalone Web Server) Mode (Tomcat)**
+
+You need to configure the Pulse web app to use a geode specific security profile by activating the geode profile at startup with the system property:
+
+``` pre
+-Dspring.profiles.active=pulse.authentication.gemfire
+```
+
+# Configuring Pulse to use Custom Security Profile
+
+This would only work if you are NOT using a security manager to in your cluster. The custom security profile only controls who can access Pulse web page. You will need to create a xml file named `pulse-authentication-custom.xml` that defines the credentials and roles of the users of Pulse.
+
+**Example pulse-authentication-custom.xml for Spring simple in-memory User Details Service**
+
+``` pre
+<beans:beans >
+  <authentication-manager>
+    <authentication-provider>
+      <user-service id="userDetailsService">
+        <user name="john" password="johnspassword" authorities="ROLE_USER " />
+        <user name="bob" password="bobspassword" authorities="ROLE_USER" />
+      </user-service>
+    </authentication-provider>
+  </authentication-manager>
+</beans:beans>
+```
+
+**Embedded Mode (Jetty)**
+
+put `pulse-authentication-custom.xml` in the locator's working directory. When you start Geode members, specify the custom authentication profile using the `-Dspring.profiles.active=pulse.authentication.custom` system property. For example:
+
+``` pre
+gfsh> start locator --name=locator --J=-Dspring.profiles.active=pulse.authentication.custom
+```
+
+Start Pulse and log in using credentials that are authorized in the custom configuration.
+
+
+**Non-Embedded (Standalone Web Server) Mode (Tomcat)**
+
+put `pulse-authentication-custom.xml` in the Pulse web app's classpath, and start the app with the system property:
+
+``` pre
+-Dspring.profiles.active=pulse.authentication.custom
+```
+
+Start Pulse and log in using credentials that are authorized in the custom configuration.
+
+# Configuring Pulse to Use OAuth Authentication Provider
+
+You can configure Pulse to use any Authentication Provider that supports OpenID and custom scopes. You will need to register with the authentication provider and get a valid client ID and client secret for pulse, and configure the scopes with "CLUSTER:READ", "CLUSTER:WRITE", "DATA:READ", "DATA:WRITE".
+
+After you set up the authentication provider properly, you will need to create/edit a property file named `pulse.properties` with the following configuration:
+
+**Example pulse.properties for OAuth configuration**
+
+``` pre
+pulse.oauth.provider=uaa
+pulse.oauth.clientId=<client id>
+pulse.oauth.clientSecret=<client secret>
+pulse.oauth.authorizationUri=http://example.com/uaa/oauth/authorize
+pulse.oauth.tokenUri=http://example.com/uaa/oauth/token
+pulse.oauth.userInfoUri=http://example.com/uaa/userinfo
+pulse.oauth.jwkSetUri=http://example.com/uaa/token_keys
+pulse.oauth.userNameAttributeName=user_name
+```
+
+**Embedded Mode (Jetty)**
+
+1.  Create the above `pulse.properties` file and put it in the member's working dir.
+2.  start up the member with a geode property (either specify it in `gemfire.proeprties` file or pass it in at start up) `security-auth-token-enabled-components=pulse`
+``` pre
+    gfsh> start locator --name=locator --J=-Dgemfire.security-auth-token-enabled-components=pulse (or all)
+```
+Start pulse and you will see login page being redirected to the configured authentication provider.
+
+**Non-Embedded (Standalone Web Server) Mode (Tomcat)**
+
+1.  Edit the existing `pulse.properties` file and add the above content, make sure the file is in the web app's classpath
+2.  start the app with the system property:
+
+``` pre
+-Dspring.profiles.active=pulse.authentication.oauth
+```
+Start pulse and you will see login page being redirected to the configured authentication provider.
