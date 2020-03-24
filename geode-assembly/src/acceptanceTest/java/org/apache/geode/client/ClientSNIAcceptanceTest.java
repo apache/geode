@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.net.URL;
@@ -88,7 +89,7 @@ public class ClientSNIAcceptanceTest {
     ClientCache cache = new ClientCacheFactory(gemFireProps)
         .addPoolLocator("locator", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
-            proxyPort))
+            proxyPort, gemFireProps))
         .create();
     Region<String, String> region =
         cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
@@ -96,5 +97,29 @@ public class ClientSNIAcceptanceTest {
     region.destroy("hello");
     region.put("hello", "world");
     assertThat(region.get("hello")).isEqualTo("world");
+  }
+
+  @Test
+  public void connectToSNIProxyWithoutSSLDocker() {
+    Properties gemFireProps = new Properties();
+    gemFireProps.setProperty(SSL_KEYSTORE_TYPE, "jks");
+    // NOTICE: we are not enablind any SSL_COMPONENTS
+    gemFireProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
+
+    gemFireProps.setProperty(SSL_TRUSTSTORE, trustStorePath);
+    gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
+    gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
+
+    int proxyPort = docker.containers()
+        .container("haproxy")
+        .port(15443)
+        .getExternalPort();
+    assertThatThrownBy(() -> new ClientCacheFactory(gemFireProps)
+        .addPoolLocator("locator", 10334)
+        .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
+            proxyPort, gemFireProps))
+        .create()).isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("SNI requires SSL");
+
   }
 }

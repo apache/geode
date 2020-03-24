@@ -14,7 +14,13 @@
  */
 package org.apache.geode.cache.client.proxy;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+
+import java.util.Properties;
+
 import org.apache.geode.cache.client.SocketFactory;
+import org.apache.geode.security.SecurableCommunicationChannels;
+
 
 public class ProxySocketFactories {
 
@@ -22,11 +28,15 @@ public class ProxySocketFactories {
    * Create a {@link SocketFactory} that will connect a geode client through
    * the configured SNI proxy.
    *
-   *
    * @param hostname the hostname of the sni proxy
    * @param port the port of the sni proxy
    */
-  public static SocketFactory sni(String hostname, int port) {
+  public static SocketFactory sni(String hostname, int port, Properties geodeProperties) {
+    String sslProperty = geodeProperties.getProperty(SSL_ENABLED_COMPONENTS);
+    if (sslProperty != SecurableCommunicationChannels.ALL
+        && sslProperty != SecurableCommunicationChannels.SERVER) {
+      throw new IllegalArgumentException("SNI requires SSL");
+    }
     return new SniSocketFactory(hostname, port);
   }
 }
