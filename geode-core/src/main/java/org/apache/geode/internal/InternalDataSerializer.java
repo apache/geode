@@ -1506,7 +1506,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
+      t.printStackTrace();
       throw new ToDataException("toData failed on dsfid=" + dsfid + " msg:" + t.getMessage(), t);
+
     }
   }
 
