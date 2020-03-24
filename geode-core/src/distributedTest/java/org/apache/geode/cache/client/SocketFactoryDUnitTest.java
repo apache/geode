@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.Arrays;
 
 import org.junit.Before;

@@ -15,7 +15,6 @@
 package org.apache.geode.cache.client.proxy;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.apache.geode.cache.client.SocketFactory;
