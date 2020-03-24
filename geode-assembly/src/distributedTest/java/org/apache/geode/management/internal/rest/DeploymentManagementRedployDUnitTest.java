@@ -124,7 +124,8 @@ public class DeploymentManagementRedployDUnitTest {
   }
 
   @Test
-  public void redeployJarsWithNewVersionsOfFunctionsAndMultipleLocators() {
+  public void redeployJarsWithNewVersionsOfFunctionsAndMultipleLocators()
+      throws InterruptedException {
     Properties props = new Properties();
     props.setProperty("locators", "localhost[" + locator.getPort() + "]");
     lsRule.startLocatorVM(2, props);
@@ -134,13 +135,15 @@ public class DeploymentManagementRedployDUnitTest {
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
-
     deployment.setFile(jarAVersion2);
     assertManagementResult(client.create(deployment)).isSuccessful();
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
     server.stop(false);
+
+    // GEODE-7902: wait for a while for new jars to settle in the file system
+    Thread.sleep(1000);
 
     lsRule.startServerVM(1, locator.getPort());
 
