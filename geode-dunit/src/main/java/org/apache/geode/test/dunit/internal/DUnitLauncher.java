@@ -16,6 +16,7 @@ package org.apache.geode.test.dunit.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
@@ -297,6 +298,7 @@ public class DUnitLauncher {
         // I never want this locator to end up starting a jmx manager
         // since it is part of the unit test framework
         p.setProperty(JMX_MANAGER, "false");
+        p.setProperty(ENABLE_MANAGEMENT_REST_SERVICE, "false");
         // Disable the shared configuration on this locator.
         // Shared configuration tests create their own locator
         p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
