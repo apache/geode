@@ -82,8 +82,8 @@ You can use a custom security profile only if you are NOT using a Security Manag
   <authentication-manager>
     <authentication-provider>
       <user-service id="userDetailsService">
-        <user name="john" password="johnspassword" authorities="ROLE_USER " />
-        <user name="bob" password="bobspassword" authorities="ROLE_USER" />
+        <user name="john" password="johnspassword" authorities="ROLE_CLUSTER:READ" />
+        <user name="bob" password="bobspassword" authorities="ROLE_CLUSTER:READ" />
       </user-service>
     </authentication-provider>
   </authentication-manager>
