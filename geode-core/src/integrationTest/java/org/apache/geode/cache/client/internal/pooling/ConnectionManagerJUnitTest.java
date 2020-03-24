@@ -385,7 +385,7 @@ public class ConnectionManagerJUnitTest {
 
     long startNanos = nowNanos();
     try {
-      manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+      manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     } catch (AllConnectionsInUseException e) {
       fail("Didn't get connection");
     }
@@ -401,7 +401,7 @@ public class ConnectionManagerJUnitTest {
    * so after expire (and pool size is reduced to 4) it can be seized.
    */
   @Test
-  public void test_borrow_connection_toward_specific_server_no_freeConnection_wait_idleTimeout_to_expire()
+  public void test_borrow_connection_toward_specific_server_no_freeConnection_wait_for_timeout()
       throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
     final long idleTimeoutMillis = 300;
     final long BORROW_TIMEOUT_MILLIS = 500;
@@ -418,11 +418,11 @@ public class ConnectionManagerJUnitTest {
 
     // Seize connection toward this specific server
     Connection ping1 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     Connection ping2 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     Connection ping3 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
 
     // Return some connections, let them idle expire
     manager.returnConnection(conn1);
@@ -431,13 +431,13 @@ public class ConnectionManagerJUnitTest {
     long startNanos = nowNanos();
     try {
       manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+      fail("We should not get connection");
     } catch (AllConnectionsInUseException e) {
-      fail("Didn't get connection");
     }
 
     long elapsedMillis = elapsedMillis(startNanos);
     Assert.assertTrue("Elapsed = " + elapsedMillis,
-        elapsedMillis >= idleTimeoutMillis - ALLOWABLE_ERROR_IN_MILLIS);
+        elapsedMillis >= BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
   }
 
   /*
@@ -464,11 +464,11 @@ public class ConnectionManagerJUnitTest {
 
     // Seize connection toward this specific server
     Connection ping1 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     Connection ping2 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     Connection ping3 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
 
     // Return some connections, let them idle expire
     manager.returnConnection(ping1);
@@ -480,9 +480,7 @@ public class ConnectionManagerJUnitTest {
     } catch (AllConnectionsInUseException e) {
       fail("Didn't get connection");
     }
-    long elapsedMillis = elapsedMillis(startNanos);
-    Assert.assertTrue("Elapsed = " + elapsedMillis,
-        elapsedMillis < idleTimeoutMillis - ALLOWABLE_ERROR_IN_MILLIS);
+
   }
 
 

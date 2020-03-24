@@ -322,25 +322,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
           return connection;
         }
 
-        if (connectionAccounting.tryCreate()) {
-          try {
-            connection = createPooledConnection(server);
-          } catch (GemFireSecurityException e) {
-            throw new ServerOperationException(e);
-          } finally {
-            if (connection == null) {
-              connectionAccounting.cancelTryCreate();
-              if (connectionAccounting.isUnderMinimum()) {
-                startBackgroundPrefill();
-              }
-            }
-          }
-          if (null != connection) {
-            return connection;
-          }
-          throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
-        }
-
         if (!onlyUseExistingCnx) {
           connection = forceCreateConnection(server);
           if (null != connection) {
