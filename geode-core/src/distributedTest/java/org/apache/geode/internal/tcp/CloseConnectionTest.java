@@ -22,6 +22,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 
@@ -62,6 +64,17 @@ public class CloseConnectionTest extends CacheTestCase {
     vm1.invoke(() -> {
       ConnectionTable conTable = getConnectionTable();
       assertThat(conTable.getNumberOfReceivers()).isEqualTo(2);
+    });
+
+    // Make sure the Sender connection has a reader thread
+    vm1.invoke(() -> {
+      ConnectionTable conTable = getConnectionTable();
+      InternalDistributedSystem distributedSystem = getCache().getInternalDistributedSystem();
+      InternalDistributedMember otherMember = distributedSystem.getDistributionManager()
+          .getOtherNormalDistributionManagerIds().iterator().next();
+      Connection connection = conTable.getConduit().getConnection(otherMember, true, false,
+          System.currentTimeMillis(), 15000, 0);
+      assertThat(connection.hasResidualReaderThread()).isTrue();
     });
   }
 
