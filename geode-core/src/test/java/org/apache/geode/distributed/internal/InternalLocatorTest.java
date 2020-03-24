@@ -28,10 +28,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
+import org.junit.After;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.internal.HttpService;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -46,6 +48,16 @@ public class InternalLocatorTest {
   private BaseManagementService managementService = mock(BaseManagementService.class);
   private AgentUtil agentUtil = mock(AgentUtil.class);
   private HttpService httpService = mock(HttpService.class);
+
+  @After
+  public void cleanup() {
+    if (internalLocator != null) {
+      try {
+        internalLocator.stop();
+      } catch (RuntimeException ignore) {
+      }
+    }
+  }
 
   @Test
   public void startClusterManagementServiceWithRestServiceEnabledInvokesStartManager()
@@ -107,6 +119,8 @@ public class InternalLocatorTest {
   private void createInternalLocator() {
     LoggingSession loggingSession = mock(LoggingSession.class);
     when(distributionConfig.getJmxManager()).thenReturn(true);
+    when(distributionConfig.getJmxManagerPort())
+        .thenReturn(AvailablePortHelper.getRandomAvailableTCPPort());
     when(distributionConfig.getLocators()).thenReturn("");
     when(distributionConfig.getSecurableCommunicationChannels())
         .thenReturn(new SecurableCommunicationChannel[] {});
