@@ -816,14 +816,17 @@ public class ClientMetadataService {
     this.colocatedPRAdvisors.clear();
   }
 
+  @VisibleForTesting
   public boolean isRefreshMetadataTestOnly() {
     return isMetadataRefreshed_TEST_ONLY;
   }
 
+  @VisibleForTesting
   public void satisfyRefreshMetadata_TEST_ONLY(boolean isRefreshMetadataTestOnly) {
     isMetadataRefreshed_TEST_ONLY = isRefreshMetadataTestOnly;
   }
 
+  @VisibleForTesting
   public Map<String, ClientPartitionAdvisor> getClientPRMetadata_TEST_ONLY() {
     return clientPRAdvisors;
   }
@@ -845,6 +848,7 @@ public class ClientMetadataService {
   }
 
   /** For Testing */
+  @VisibleForTesting
   public int getRefreshTaskCount_TEST_ONLY() {
     synchronized (fetchTaskCountLock) {
       return refreshTaskCount;
@@ -852,6 +856,7 @@ public class ClientMetadataService {
   }
 
   /** for testing */
+  @VisibleForTesting
   public long getTotalRefreshTaskCount_TEST_ONLY() {
     synchronized (fetchTaskCountLock) {
       return totalRefreshTaskCount;

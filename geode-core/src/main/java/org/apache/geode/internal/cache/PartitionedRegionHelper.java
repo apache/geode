@@ -574,7 +574,7 @@ public class PartitionedRegionHelper {
         resolveKey = resolver.getRoutingObject(event);
         if (resolveKey == null) {
           throw new IllegalStateException(
-              "The RoutingObject returned by PartitionResolver is null.");
+              "The RoutingObject returned by PartitionResolver is null. Resolver: " + resolver);
         }
       }
       // Finally, calculate the hash.

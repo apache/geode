@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
@@ -268,6 +269,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     return bucketToServerLocations;
   }
 
+  @VisibleForTesting
   public ConcurrentHashMap<Integer, Set<ServerBucketProfile>> getAllClientBucketProfilesTest() {
     ConcurrentHashMap<Integer, Set<ServerBucketProfile>> map = new ConcurrentHashMap<>();
     Map<Integer, List<BucketServerLocation66>> testMap =
