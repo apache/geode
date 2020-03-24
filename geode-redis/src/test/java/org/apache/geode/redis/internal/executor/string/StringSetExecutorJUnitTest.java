@@ -42,6 +42,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.KeyRegistrar;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class StringSetExecutorJUnitTest {
@@ -84,13 +85,6 @@ public class StringSetExecutorJUnitTest {
   }
 
   @Test
-  public void testTooFewOptions() {
-    executor.executeCommand(command, context);
-
-    assertThat(getBuffer()).startsWith("-ERR");
-  }
-
-  @Test
   public void testBasicSet() {
     List<byte[]> args = Arrays.asList("SET".getBytes(), "key".getBytes(), "value".getBytes());
     when(command.getProcessedCommand()).thenReturn(args);
@@ -105,6 +99,164 @@ public class StringSetExecutorJUnitTest {
     assertThat(keyCaptor.getValue()).isEqualTo("key");
     assertThat(valueCaptor.getValue()).isEqualTo("value");
     assertThat(getBuffer()).startsWith("+OK");
+  }
+
+  @Test
+  public void testSET_TooFewArgumentsReturnsError() {
+    List<byte[]> commandArgumentWithTooFewArgs = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    when(command.getProcessedCommand()).thenReturn(commandArgumentWithTooFewArgs);
+    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
+    executor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void testSET_EXargument_withoutParameterReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "EX".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
+    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
+    executor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
+  public void testSET_EXargument_withNonNumericParameter_returnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "EX".getBytes(),
+        "NotANumberAtAll".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
+    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
+    executor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .contains(RedisConstants.ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void testSET_EXargument_withZeroExpireTime_returnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "EX".getBytes(),
+        "0".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
+    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
+    executor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .contains(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
+  }
+
+  @Test
+  public void testSET_PXargument_withoutParameterReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "PX".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
+    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
+    executor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
+  public void testSET_PXandEX_inSameCommand_ReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "PX".getBytes(),
+        "30000".getBytes(),
+        "EX".getBytes(),
+        "30".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
+    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
+    executor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
+  public void testSET_NXandXX_inSameCommand_ReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "NX".getBytes(),
+        "XX".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
+    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
+    executor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .contains(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
@@ -216,5 +368,29 @@ public class StringSetExecutorJUnitTest {
     assertThat(expireKey.getValue()).isEqualTo("key");
     assertThat(expireValue.getValue()).isEqualTo(5000);
     assertThat(getBuffer()).startsWith("+OK");
+  }
+
+  @Test
+  public void testSet_withKEEPTTL() {
+    List<byte[]> args = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "KEEPTTL".getBytes());
+    when(command.getProcessedCommand()).thenReturn(args);
+    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
+    executor.executeCommand(command, context);
+
+    ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
+    ArgumentCaptor<ByteArrayWrapper> valueCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
+    verify(region).put(keyCaptor.capture(), valueCaptor.capture());
+
+    assertThat(keyCaptor.getValue()).isEqualTo("key");
+    assertThat(valueCaptor.getValue()).isEqualTo("value");
+    assertThat(getBuffer()).startsWith("+OK");
+
+    ByteArrayWrapper keyWrapper = new ByteArrayWrapper("key".getBytes());
+    verify(regionProvider, never()).cancelKeyExpiration(keyWrapper);
   }
 }
