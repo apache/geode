@@ -52,10 +52,7 @@ public class InternalLocatorTest {
   @After
   public void cleanup() {
     if (internalLocator != null) {
-      try {
-        internalLocator.stop();
-      } catch (RuntimeException ignore) {
-      }
+      internalLocator.stop();
     }
   }
 
