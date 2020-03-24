@@ -146,6 +146,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       executeCommand(ctx, command);
     } catch (Exception e) {
       logger.error(e);
+      e.printStackTrace();
       throw e;
     }
 

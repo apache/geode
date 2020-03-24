@@ -199,3 +199,5 @@ org/apache/geode/redis/internal/executor/SortedSetQuery$9,false
 org/apache/geode/redis/internal/executor/list/ListExecutor$ListDirection,false
 org/apache/geode/redis/internal/executor/sortedset/GeoRadiusParameters$CommandType,false
 org/apache/geode/redis/internal/executor/sortedset/GeoRadiusParameters$SortOrder,false
+org/apache/geode/redis/internal/executor/set/DeltaSet,false
+org/apache/geode/redis/internal/ByteArrayWrapper,false

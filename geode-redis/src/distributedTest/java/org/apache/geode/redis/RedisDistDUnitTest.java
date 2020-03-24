@@ -14,11 +14,16 @@
  */
 package org.apache.geode.redis;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -75,6 +80,7 @@ public class RedisDistDUnitTest implements Serializable {
     Properties redisProps = new Properties();
     redisProps.setProperty("redis-bind-address", LOCALHOST);
     redisProps.setProperty("redis-port", Integer.toString(ports[0]));
+    redisProps.setProperty("log-level", "warn");
     cluster.startServerVM(1, redisProps, locator.getPort());
 
     redisProps.setProperty("redis-port", Integer.toString(ports[1]));
@@ -121,6 +127,7 @@ public class RedisDistDUnitTest implements Serializable {
 
   @Test
   public void testConcCreateDestroy() throws Exception {
+
     IgnoredException.addIgnoredException("RegionDestroyedException");
     IgnoredException.addIgnoredException("IndexInvalidException");
     final int ops = 40;
@@ -135,7 +142,7 @@ public class RedisDistDUnitTest implements Serializable {
       }
 
       @Override
-      public void run() {
+      public void run() throws InterruptedException {
         Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
@@ -228,6 +235,92 @@ public class RedisDistDUnitTest implements Serializable {
     client2.invoke(new ConcOps(server2Port));
     i.await();
   }
+
+  /**
+   * Just make sure there are no unexpected server crashes
+   */
+  @Test
+  public void testConcurrentSadd() throws Exception {
+    List<String> set1 = new ArrayList<>();
+    List<String> set2 = new ArrayList<>();
+    int setSize = 5000;
+    for (int i = 0; i < setSize; i++) {
+      set1.add("SETA-" + i);
+      set2.add("SETB-" + i);
+    }
+
+    final String sKey = TEST_KEY + "set";
+
+    class ConcOps extends ClientTestBase {
+
+      private final Collection<String> strings;
+
+      protected ConcOps(int port, Collection<String> strings) {
+        super(port);
+        this.strings = strings;
+      }
+
+      @Override
+      public void run() {
+        Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
+        for (String member : strings) {
+          jedis.sadd(sKey, member);
+        }
+      }
+    }
+
+    // Expect to run with no exception
+    AsyncInvocation<Void> i = client1.invokeAsync(new ConcOps(server1Port, set1));
+    client2.invoke(new ConcOps(server2Port, set2));
+    i.await();
+
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+    Set<String> smembers = jedis.smembers(sKey);
+    assertThat(smembers).hasSize(setSize * 2);
+    assertThat(smembers).contains(set1.toArray(new String[] {}));
+    assertThat(smembers).contains(set2.toArray(new String[] {}));
+  }
+
+  // @Test
+  // public void testConcurrentHset() throws Exception {
+  // HashMap<String, String> hashMapA = new HashMap<>();
+  // HashMap<String, String> hashMapB = new HashMap<>();
+  // int setSize = 100;
+  // for (int i = 0; i < setSize; i++) {
+  // hashMapA.put("KEY-A-" + i, "VALUE-A-" + i);
+  // hashMapB.put("KEY-B-" + i, "VALUE-B-" + i);
+  // }
+  //
+  // class ConcurrentOperations extends ClientTestBase {
+  //
+  // private final HashMap<String, String> hashMap;
+  //
+  // protected ConcurrentOperations(int port, HashMap<String, String> hashMap) {
+  // super(port);
+  // this.hashMap = hashMap;
+  // }
+  //
+  // @Override
+  // public void run() {
+  // Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
+  // for (String key : hashMap.keySet()) {
+  // jedis.hset("theSet", key, hashMap.get(key));
+  // }
+  // }
+  // }
+  //
+  // // Expect to run with no exception
+  // AsyncInvocation<Void> i = client1.invokeAsync(new ConcurrentOperations(server1Port, hashMapA));
+  // client2.invoke(new ConcurrentOperations(server2Port, hashMapB));
+  // i.await();
+  //
+  // Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+  // Map<String, String> resultHash = jedis.hgetAll("theSet");
+  //// assertThat(resultHash).hasSize(setSize * 2);
+  //// assertThat(resultHash).contains(set1.toArray(new String[] {}));
+  //// assertThat(resultHash).contains(set2.toArray(new String[] {}));
+  // }
+
 
   private String randString() {
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
