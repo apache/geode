@@ -14,23 +14,23 @@
  */
 package org.apache.geode.cache.client.proxy;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 import org.apache.geode.cache.client.SocketFactory;
 
-public class ProxySocketFactories {
+public class PlainTextGatewaySocketFactory implements SocketFactory {
+  private final String hostname;
 
-  /**
-   * Create a {@link SocketFactory} that will connect a geode client through
-   * the configured SNI proxy.
-   *
-   *
-   * @param hostname the hostname of the sni proxy
-   * @param port the port of the sni proxy
-   */
-  public static SocketFactory sni(String hostname, int port) {
-    return new SniSocketFactory(hostname, port);
+  public PlainTextGatewaySocketFactory(String hostname) {
+    this.hostname = hostname;
   }
 
-  public static SocketFactory plainText(String hostname) {
-    return new PlainTextGatewaySocketFactory(hostname);
+  @Override
+  public Socket createSocket() throws IOException {
+    return new PlainTextProxySocket(hostname);
   }
+
+
 }

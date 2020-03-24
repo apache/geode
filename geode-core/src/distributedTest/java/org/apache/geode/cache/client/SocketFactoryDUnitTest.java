@@ -29,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
@@ -37,7 +38,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 public class SocketFactoryDUnitTest {
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public ClusterStartupRule cluster = new ClusterStartupRule(2);
   private int locatorPort;
   private int serverPort;
 
@@ -53,7 +54,7 @@ public class SocketFactoryDUnitTest {
         // Add a locator with the wrong hostname
         .addPoolLocator("notarealhostname", locatorPort)
         // Set a socket factory that switches the hostname back
-        .setPoolSocketFactory(new ChangeHostSocketFactory("localhost"))
+        .setPoolSocketFactory(ProxySocketFactories.plainText("localhost"))
         .create();
 
     // Verify the socket factory switched the hostname so we can connect
@@ -66,7 +67,7 @@ public class SocketFactoryDUnitTest {
         // Add a locator with the wrong hostname
         .addPoolServer("notarealhostname", serverPort)
         // Set a socket factory that switches the hostname back
-        .setPoolSocketFactory(new ChangeHostSocketFactory("localhost"))
+        .setPoolSocketFactory(ProxySocketFactories.plainText("localhost"))
         .create();
 
 
@@ -100,29 +101,4 @@ public class SocketFactoryDUnitTest {
 
     }
   }
-
-
-  private static class ChangeHostSocketFactory implements SocketFactory {
-
-    private final String newHost;
-
-    private ChangeHostSocketFactory(String newHost) {
-      this.newHost = newHost;
-    }
-
-    @Override
-    public Socket createSocket() {
-      return new ChangeHostSocket();
-    }
-
-    private class ChangeHostSocket extends Socket {
-
-      @Override
-      public void connect(SocketAddress endpoint, int timeout) throws IOException {
-        InetSocketAddress oldEndpoint = (InetSocketAddress) endpoint;
-        super.connect(new InetSocketAddress(newHost, oldEndpoint.getPort()), timeout);
-      }
-    }
-  }
-
 }
