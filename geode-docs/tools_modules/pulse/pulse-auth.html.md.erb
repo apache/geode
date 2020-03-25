@@ -23,16 +23,16 @@ Pulse requires all users to authenticate themselves before they can use the Puls
 
 If you run Pulse in embedded mode, the Pulse application runs on the JMX Manager node and no JMX authentication is required. You do not need to specify valid JMX credentials to start an embedded Pulse application.
 
-If you host Pulse on a Web Application server (non-embedded mode) and you configure JMX authentication on the <%=vars.product_name%> manager node, then the Pulse Web application must authenticate itself with the manager node when it starts. Specify the credentials of a valid JMX user account in the `pulse.properties` file, as described in [Hosting Pulse on a Web Application Server](pulse-hosted.html).
+If you host Pulse on a web application server (non-embedded mode) and you configure JMX authentication on the <%=vars.product_name%> manager node, then the Pulse Web application must authenticate itself with the manager node when it starts. Specify the credentials of a valid JMX user account in the `pulse.properties` file, as described in [Hosting Pulse on a Web Application Server](pulse-hosted.html).
 
 **Note:**
 The credentials that you specify must have both read and write privileges in the JMX Manager node. See [Configuring a JMX Manager](../../managing/management/jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6).
 
-# Configuring Pulse to Use HTTPS
+## <a id="pulse-auth-https"></a>Configuring Pulse to use HTTPS
 
 You can configure Pulse to use HTTPS in either embedded or non-embedded mode.
 
-In non-embedded mode where you are running Pulse on a standalone Web application server, you must use the Web server's SSL configuration to make the HTTP requests secure.
+**Embedded Mode**
 
 In embedded mode, <%=vars.product_name%> uses an embedded Jetty server to host the
 Pulse Web application. To make the embedded server use HTTPS, you must
@@ -50,3 +50,105 @@ When the `http` SSL component is enabled, all HTTP services become
 SSL-enabled and you must configure your client applications
 accordingly. For SSL-enabled Pulse, you will need to configure your
 browsers with proper certificates.
+
+**Non-Embedded (Standalone Web Server) Mode**
+
+In non-embedded mode where you are running Pulse on a standalone web application server, such as Tomcat, you must use the web server's SSL configuration to make the HTTP requests secure.
+
+## <a id="pulse-auth-geode-security-manager"></a>Configuring Pulse to use Security Manager
+
+You can configure Pulse to use the <%=vars.product_name%> Security Manager in either embedded or non-embedded mode.
+
+**Embedded Mode**
+
+To use Security Manager with Pulse running in embedded mode, you do not need to specify additional credentials. Pulse will automatically be configured by <%=vars.product_name%> to send the credentials entered in the Pulse login page to the Security Manager for authentication and authorization.
+
+**Non-Embedded (Standalone Web Server) Mode**
+
+When running Pulse on a standalone web application server, such as Tomcat, you need to configure the Pulse Web app to use a <%=vars.product_name%>-specific security profile.  Activate the <%=vars.product_name%> profile at startup with the system property:
+
+``` pre
+-Dspring.profiles.active=pulse.authentication.gemfire
+```
+
+## <a id="pulse-auth-custom"></a>Configuring Pulse to use a Custom Security Profile
+
+You can use a custom security profile only if you are NOT using a Security Manager in your cluster. A custom security profile only controls who can access the Pulse Web page. You will need to create an XML file named `pulse-authentication-custom.xml` that defines the credentials and roles of the users of Pulse.
+
+**Example pulse-authentication-custom.xml for Spring simple in-memory User Details Service**
+
+``` pre
+<beans:beans >
+  <authentication-manager>
+    <authentication-provider>
+      <user-service id="userDetailsService">
+        <user name="john" password="johnspassword" authorities="ROLE_CLUSTER:READ" />
+        <user name="bob" password="bobspassword" authorities="ROLE_CLUSTER:READ" />
+      </user-service>
+    </authentication-provider>
+  </authentication-manager>
+</beans:beans>
+```
+
+**Embedded Mode**
+
+Put `pulse-authentication-custom.xml` in the locator's working directory. When you start <%=vars.product_name%>  members, specify the custom authentication profile using the `-Dspring.profiles.active=pulse.authentication.custom` system property. For example:
+
+``` pre
+gfsh> start locator --name=locator --J=-Dspring.profiles.active=pulse.authentication.custom
+```
+
+Start Pulse and log in using credentials that are authorized in the custom configuration.
+
+
+**Non-Embedded (Standalone Web Server) Mode**
+
+Put `pulse-authentication-custom.xml` in the Pulse Web app's classpath, and start the app with the system property:
+
+``` pre
+-Dspring.profiles.active=pulse.authentication.custom
+```
+
+Start Pulse and log in using credentials that are authorized in the custom configuration.
+
+## <a id="pulse-auth-oauth"></a>Configuring Pulse to use an OAuth Authentication Provider
+
+You can configure Pulse to use any Authentication Provider that supports OpenID and custom scopes. You will need to:
+
+- Register with the authentication provider, obtaining a valid client ID and client secret for Pulse.
+- Configure the scopes with `CLUSTER:READ`, `CLUSTER:WRITE`, `DATA:READ` or `DATA:WRITE`.
+
+After you set up the authentication provider properly, create (or edit, if it already exists) a property file named `pulse.properties` with the following configuration:
+
+**Example pulse.properties for OAuth configuration**
+
+``` pre
+pulse.oauth.provider=uaa
+pulse.oauth.clientId=<client id>
+pulse.oauth.clientSecret=<client secret>
+pulse.oauth.authorizationUri=http://example.com/uaa/oauth/authorize
+pulse.oauth.tokenUri=http://example.com/uaa/oauth/token
+pulse.oauth.userInfoUri=http://example.com/uaa/userinfo
+pulse.oauth.jwkSetUri=http://example.com/uaa/token_keys
+pulse.oauth.userNameAttributeName=user_name
+```
+
+**Embedded Mode**
+
+1.  Create the above `pulse.properties` file and put it in the member's working directory.
+2.  Start up the member with a <%=vars.product_name%> property (either specify it in `gemfire.properties` file or pass it in at startup) `security-auth-token-enabled-components=pulse` or  `security-auth-token-enabled-components=all`.
+
+``` pre
+gfsh> start locator --name=locator --J=-Dgemfire.security-auth-token-enabled-components=pulse
+```
+Start pulse and you will see login page being redirected to the configured authentication provider.
+
+**Non-Embedded (Standalone Web Server) Mode**
+
+1.  Edit the existing `pulse.properties` file and add the above content, make sure the file is in the web app's classpath
+2.  Start the app with the system property:
+
+``` pre
+-Dspring.profiles.active=pulse.authentication.oauth
+```
+Start Pulse and you will see login page being redirected to the configured authentication provider.

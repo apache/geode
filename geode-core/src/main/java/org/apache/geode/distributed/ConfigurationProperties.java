@@ -2022,8 +2022,10 @@ public interface ConfigurationProperties {
    * authentication.
    * </p>
    * <U>Componant names</U>: "all","management" <U>Since</U>: Geode 1.11
+   * "pulse" <U>Since</U>: Geode 1.13
    * "all": shorthand for all the security components that support token authentication.
    * "management": the {@link #ENABLE_MANAGEMENT_REST_SERVICE Management REST Service}
+   * "pulse": the Pulse web app
    *
    * Note: listing components that are not enabled does nothing.
    *
