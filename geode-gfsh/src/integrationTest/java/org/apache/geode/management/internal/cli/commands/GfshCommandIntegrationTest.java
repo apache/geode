@@ -51,6 +51,7 @@ public class GfshCommandIntegrationTest {
         .setMemberName(LOCATOR_NAME)
         .setWorkingDirectory(locatorFolder.toString())
         .setPort(locatorPort)
+        .set("jmx-manager-port", String.valueOf(AvailablePortHelper.getRandomAvailableTCPPort()))
         .build();
     locatorLauncher.start();
   }
