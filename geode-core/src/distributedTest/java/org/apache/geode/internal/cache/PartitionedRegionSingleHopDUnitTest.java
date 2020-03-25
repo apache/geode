@@ -14,16 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
+import static org.apache.geode.management.ManagementService.getExistingManagementService;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
-import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
@@ -34,19 +37,15 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,9 +54,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
@@ -70,21 +70,14 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
-import org.apache.geode.internal.cache.execute.data.CustId;
-import org.apache.geode.internal.cache.execute.data.OrderId;
-import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.membership.MembershipEvent;
 import org.apache.geode.management.membership.UniversalMembershipListenerAdapter;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -92,27 +85,28 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
+@SuppressWarnings("serial")
 public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
   private static final String PR_NAME = "single_hop_pr";
   private static final String ORDER = "ORDER";
   private static final String CUSTOMER = "CUSTOMER";
   private static final String SHIPMENT = "SHIPMENT";
-  private static final AtomicReference<CountDownLatch> LATCH = new AtomicReference<>();
   private static final int LOCAL_MAX_MEMORY_DEFAULT = -1;
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
 
-  private static Region<Object, Object> testRegion = null;
-  private static Region<Object, Object> customerRegion = null;
-  private static Region<Object, Object> orderRegion = null;
-  private static Region<Object, Object> shipmentRegion = null;
-  private static Region<Object, Object> replicatedRegion = null;
-  private static InternalCache cache;
-  private static Locator locator = null;
+  private static final AtomicReference<CountDownLatch> LATCH = new AtomicReference<>();
+
+  private static volatile Region<Object, Object> testRegion;
+  private static volatile Region<Object, Object> customerRegion;
+  private static volatile Region<Object, Object> orderRegion;
+  private static volatile Region<Object, Object> shipmentRegion;
+  private static volatile Region<Object, Object> replicatedRegion;
+  private static volatile InternalCache cache;
+  private static volatile Locator locator;
 
   private String diskStoreName;
+
   private VM vm0;
   private VM vm1;
   private VM vm2;
@@ -120,20 +114,16 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
-
   @Rule
   public CacheRule cacheRule = new CacheRule();
-
   @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
-
+  public DistributedRestoreSystemProperties restoreProps = new DistributedRestoreSystemProperties();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Before
   public void setUp() {
-    IgnoredException.addIgnoredException("Connection refused");
+    addIgnoredException("Connection refused");
 
     diskStoreName = "disk";
 
@@ -145,8 +135,17 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
   @After
   public void tearDown() {
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(() -> cacheRule.closeAndNullCache());
+    for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> {
+        cacheRule.closeAndNullCache();
+        locator = null;
+        cache = null;
+        testRegion = null;
+        customerRegion = null;
+        orderRegion = null;
+        shipmentRegion = null;
+        replicatedRegion = null;
+      });
     }
 
     disconnectAllFromDS();
@@ -156,39 +155,34 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
    * 2 peers 2 servers 1 accessor.No client.Should work without any exceptions.
    */
   @Test
-  public void testNoClient() {
+  public void testNoClient() throws Exception {
     vm0.invoke(() -> createServer(1, 4));
     vm1.invoke(() -> createServer(1, 4));
 
-    vm2.invoke(this::createPeer);
-    vm3.invoke(this::createPeer);
+    vm2.invoke(() -> createPeer());
+    vm3.invoke(() -> createPeer());
 
     createAccessorServer();
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(this::clearMetadata);
+    for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> clearMetadata());
     }
-    clearMetadata();
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(this::putIntoPartitionedRegions);
+    for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> putIntoPartitionedRegions());
     }
-    putIntoPartitionedRegions();
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(this::getFromPartitionedRegions);
+    for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> getFromPartitionedRegions());
     }
-    getFromPartitionedRegions();
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(this::verifyEmptyMetadata);
+    for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> verifyEmptyMetadata());
     }
-    verifyEmptyMetadata();
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(this::verifyEmptyStaticData);
+    for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> verifyEmptyStaticData());
     }
-    verifyEmptyStaticData();
   }
 
   /**
@@ -197,12 +191,11 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
    */
   @Test
   public void testClientConnectedToAccessors() {
-    int port0 = vm0.invoke(this::createAccessorServer);
-    int port1 = vm1.invoke(this::createAccessorServer);
+    int port0 = vm0.invoke(() -> createAccessorServer());
+    int port1 = vm1.invoke(() -> createAccessorServer());
 
-    vm2.invoke(this::createPeer);
-
-    vm3.invoke(this::createPeer);
+    vm2.invoke(() -> createPeer());
+    vm3.invoke(() -> createPeer());
 
     createClient(port0, port1);
 
@@ -223,10 +216,10 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
   public void testClientConnectedTo1Server() {
     int port0 = vm0.invoke(() -> createServer(1, 4));
 
-    vm1.invoke(this::createPeer);
-    vm2.invoke(this::createPeer);
+    vm1.invoke(() -> createPeer());
+    vm2.invoke(() -> createPeer());
 
-    vm3.invoke(this::createAccessorServer);
+    vm3.invoke(() -> createAccessorServer());
 
     createClient(port0);
 
@@ -250,6 +243,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     int port1 = vm1.invoke(() -> createServer(1, 4));
     int port2 = vm2.invoke(() -> createServer(1, 4));
     int port3 = vm3.invoke(() -> createServer(1, 4));
+
     createClient(port0, port1, port2, port3);
 
     putIntoPartitionedRegions();
@@ -273,7 +267,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     vm2.invoke(() -> createClient(port0));
     createClient(port1);
 
-    vm2.invoke(this::putIntoSinglePR);
+    vm2.invoke(() -> putIntoSinglePR());
 
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
@@ -283,18 +277,25 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     testRegion.put(2, "create2");
     testRegion.put(3, "create3");
 
-    await().until(clientMetadataService::isRefreshMetadataTestOnly);
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isTrue();
+    });
 
     // make sure all fetch tasks are completed
-    await().until(() -> clientMetadataService.getRefreshTaskCount_TEST_ONLY() == 0);
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.getRefreshTaskCount_TEST_ONLY()).isZero();
+    });
 
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
+
     testRegion.put(0, "create0");
     testRegion.put(1, "create1");
     testRegion.put(2, "create2");
     testRegion.put(3, "create3");
 
-    await().until(() -> !clientMetadataService.isRefreshMetadataTestOnly());
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isFalse();
+    });
   }
 
   @Test
@@ -305,7 +306,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     vm2.invoke(() -> createClient(port0));
     createClient(port1);
 
-    vm2.invoke(this::putIntoSinglePR);
+    vm2.invoke(() -> putIntoSinglePR());
 
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
@@ -315,7 +316,9 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     testRegion.destroy(2);
     testRegion.destroy(3);
 
-    await().until(clientMetadataService::isRefreshMetadataTestOnly);
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isTrue();
+    });
   }
 
   @Test
@@ -326,7 +329,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     vm2.invoke(() -> createClient(port0));
     createClient(port1);
 
-    vm2.invoke(this::putIntoSinglePR);
+    vm2.invoke(() -> putIntoSinglePR());
 
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
@@ -336,14 +339,20 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     testRegion.get(2);
     testRegion.get(3);
 
-    await().until(clientMetadataService::isRefreshMetadataTestOnly);
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isTrue();
+    });
+
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
+
     testRegion.get(0);
     testRegion.get(1);
     testRegion.get(2);
     testRegion.get(3);
 
-    await().until(() -> !clientMetadataService.isRefreshMetadataTestOnly());
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isFalse();
+    });
   }
 
   @Test
@@ -352,7 +361,9 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     int port1 = vm1.invoke(() -> createServer(0, 8));
     int port2 = vm2.invoke(() -> createServer(0, 8));
     int port3 = vm3.invoke(() -> createServer(0, 8));
+
     createClient(port0, port1, port2, port3);
+
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
 
@@ -366,10 +377,12 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
       testRegion.put(i, i + 1);
     }
 
-    await().until(clientMetadataService::isRefreshMetadataTestOnly);
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isTrue();
+    });
 
     // kill server
-    vm0.invoke(this::stopServer);
+    vm0.invoke(() -> stopServer());
 
     // again update
     for (int i = 1; i <= 16; i++) {
@@ -380,8 +393,8 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
   @Test
   public void testSingleHopWithHAWithLocator() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    String host0 = NetworkUtils.getServerHostName();
-    String locator = host0 + "[" + port3 + "]";
+    String locator = "localhost[" + port3 + "]";
+
     vm3.invoke(() -> startLocatorInVM(port3));
 
     try {
@@ -389,7 +402,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
       vm1.invoke(() -> createServerWithLocator(locator));
       vm2.invoke(() -> createServerWithLocator(locator));
 
-      createClientWithLocator(host0, port3);
+      createClientWithLocator("localhost", port3);
 
       // put
       for (int i = 1; i <= 16; i++) {
@@ -402,7 +415,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
       }
 
       // kill server
-      vm0.invoke(this::stopServer);
+      vm0.invoke(() -> stopServer());
 
       // again update
       for (int i = 1; i <= 16; i++) {
@@ -410,7 +423,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
       }
 
     } finally {
-      vm3.invoke(this::stopLocator);
+      vm3.invoke(() -> stopLocator());
     }
   }
 
@@ -421,22 +434,31 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
     vm2.invoke(() -> createClientWithoutPRSingleHopEnabled(port0));
     createClientWithoutPRSingleHopEnabled(port1);
+
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
-    vm2.invoke(this::putIntoSinglePR);
+
+    vm2.invoke(() -> putIntoSinglePR());
 
     testRegion.get(0);
     testRegion.get(1);
     testRegion.get(2);
     testRegion.get(3);
-    await().until(() -> !clientMetadataService.isRefreshMetadataTestOnly());
+
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isFalse();
+    });
 
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
+
     testRegion.get(0);
     testRegion.get(1);
     testRegion.get(2);
     testRegion.get(3);
-    await().until(() -> !clientMetadataService.isRefreshMetadataTestOnly());
+
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isFalse();
+    });
   }
 
   @Test
@@ -447,10 +469,11 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     vm2.invoke(() -> createClientWithoutPRSingleHopEnabled(port0));
     createClientWithoutPRSingleHopEnabled(port1);
 
-    vm2.invoke(this::putIntoSinglePR);
-    ClientMetadataService clientMetadataService = cache.getClientMetadataService();
-    clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
+    vm2.invoke(() -> putIntoSinglePR());
 
+    ClientMetadataService clientMetadataService = cache.getClientMetadataService();
+
+    clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
     testRegion.put(0, "create0");
     boolean metadataRefreshed_get1 = clientMetadataService.isRefreshMetadataTestOnly();
 
@@ -466,17 +489,23 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     testRegion.put(3, "create3");
     boolean metadataRefreshed_get4 = clientMetadataService.isRefreshMetadataTestOnly();
 
-    await().until(() -> !(metadataRefreshed_get1
-        || metadataRefreshed_get2 || metadataRefreshed_get3
-        || metadataRefreshed_get4));
+    await().untilAsserted(() -> {
+      assertThat(metadataRefreshed_get1).isFalse();
+      assertThat(metadataRefreshed_get2).isFalse();
+      assertThat(metadataRefreshed_get3).isFalse();
+      assertThat(metadataRefreshed_get4).isFalse();
+    });
 
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
+
     testRegion.put(0, "create0");
     testRegion.put(1, "create1");
     testRegion.put(2, "create2");
     testRegion.put(3, "create3");
 
-    await().until(() -> !clientMetadataService.isRefreshMetadataTestOnly());
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isFalse();
+    });
   }
 
   @Test
@@ -487,16 +516,19 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     vm2.invoke(() -> createClientWithoutPRSingleHopEnabled(port0));
     createClientWithoutPRSingleHopEnabled(port1);
 
-    vm2.invoke(this::putIntoSinglePR);
+    vm2.invoke(() -> putIntoSinglePR());
 
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
     clientMetadataService.satisfyRefreshMetadata_TEST_ONLY(false);
+
     testRegion.destroy(0);
     testRegion.destroy(1);
     testRegion.destroy(2);
     testRegion.destroy(3);
 
-    await().until(() -> !clientMetadataService.isRefreshMetadataTestOnly());
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.isRefreshMetadataTestOnly()).isFalse();
+    });
   }
 
   @Test
@@ -504,438 +536,423 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     LATCH.set(new CountDownLatch(2));
     int redundantCopies = 3;
     int totalNumberOfBuckets = 4;
+
     int port0 = vm0.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port1 = vm1.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port2 = vm2.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port3 = vm3.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
+
     createClient(port0, port1, port2, port3);
 
-    ManagementService service = ManagementService.getExistingManagementService(cache);
-    MyMembershipListenerImpl listener = new MyMembershipListenerImpl(LATCH);
-    listener.registerMembershipListener(service);
+    ManagementService managementService = getExistingManagementService(cache);
+    new MemberCrashedListener(LATCH.get()).registerMembershipListener(managementService);
 
     putIntoPartitionedRegions();
     getFromPartitionedRegions();
 
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
-    Map<String, ClientPartitionAdvisor> regionMetaData =
+    Map<String, ClientPartitionAdvisor> clientPRMetadata =
         clientMetadataService.getClientPRMetadata_TEST_ONLY();
 
-    await().until(() -> regionMetaData.size() == 4);
-    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
-    assertThat(regionMetaData.containsKey(customerRegion.getFullPath())).isTrue();
-    assertThat(regionMetaData.containsKey(orderRegion.getFullPath())).isTrue();
-    assertThat(regionMetaData.containsKey(shipmentRegion.getFullPath())).isTrue();
+    await().untilAsserted(() -> {
+      assertThat(clientPRMetadata)
+          .hasSize(4)
+          .containsKey(testRegion.getFullPath())
+          .containsKey(customerRegion.getFullPath())
+          .containsKey(orderRegion.getFullPath())
+          .containsKey(shipmentRegion.getFullPath());
+    });
 
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
-    assertThat(prMetaData.getBucketServerLocationsMap_TEST_ONLY().size())
-        .isEqualTo(totalNumberOfBuckets);
+    ClientPartitionAdvisor prMetadata = clientPRMetadata.get(testRegion.getFullPath());
+    assertThat(prMetadata.getBucketServerLocationsMap_TEST_ONLY()).hasSize(totalNumberOfBuckets);
 
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      assertThat(((List) entry.getValue()).size()).isEqualTo(totalNumberOfBuckets);
+    for (Entry entry : prMetadata.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      assertThat((Iterable<?>) entry.getValue()).hasSize(totalNumberOfBuckets);
     }
-    vm0.invoke(this::stopServer);
-    vm1.invoke(this::stopServer);
 
-    LATCH.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+    vm0.invoke(() -> stopServer());
+    vm1.invoke(() -> stopServer());
+
+    LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
 
     getFromPartitionedRegions();
-    verifyDeadServer(regionMetaData, customerRegion, port0, port1);
-    verifyDeadServer(regionMetaData, testRegion, port0, port1);
+
+    verifyDeadServer(clientPRMetadata, customerRegion, port0, port1);
+    verifyDeadServer(clientPRMetadata, testRegion, port0, port1);
   }
 
   @Test
   public void testMetadataFetchOnlyThroughFunctions() {
     // Workaround for 52004
-    IgnoredException.addIgnoredException("InternalFunctionInvocationTargetException");
+    addIgnoredException("InternalFunctionInvocationTargetException");
     int redundantCopies = 3;
     int totalNumberOfBuckets = 4;
+
     int port0 = vm0.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port1 = vm1.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port2 = vm2.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port3 = vm3.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
+
     createClient(port0, port1, port2, port3);
+
     executeFunctions();
+
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
-    Map<String, ClientPartitionAdvisor> regionMetaData =
+    Map<String, ClientPartitionAdvisor> clientPRMetadata =
         clientMetadataService.getClientPRMetadata_TEST_ONLY();
 
-    await().until(() -> regionMetaData.size() == 1);
-
-    assertThat(regionMetaData.size()).isEqualTo(1);
-    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
-
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
-
-    await().pollDelay(1000, TimeUnit.MILLISECONDS).until(() -> {
-      if (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() != totalNumberOfBuckets) {
-        // waiting if there is another thread holding the lock
-        clientMetadataService.getClientPRMetadata((LocalRegion) testRegion);
-        return false;
-      } else {
-        return true;
-      }
+    await().untilAsserted(() -> {
+      assertThat(clientPRMetadata).hasSize(1);
     });
 
-    await()
-        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-            .size() == totalNumberOfBuckets));
+    assertThat(clientPRMetadata).containsKey(testRegion.getFullPath());
+
+    ClientPartitionAdvisor prMetadata = clientPRMetadata.get(testRegion.getFullPath());
+
+    await().untilAsserted(() -> {
+      assertThat(prMetadata.getBucketServerLocationsMap_TEST_ONLY()).hasSize(totalNumberOfBuckets);
+      clientMetadataService.getClientPRMetadata((InternalRegion) testRegion);
+    });
   }
 
   @Test
   public void testMetadataFetchOnlyThroughputAll() {
     int redundantCopies = 3;
     int totalNumberOfBuckets = 4;
+
     int port0 = vm0.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port1 = vm1.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port2 = vm2.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port3 = vm3.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
+
     createClient(port0, port1, port2, port3);
+
     putAll();
+
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
-    Map<String, ClientPartitionAdvisor> regionMetaData =
+    Map<String, ClientPartitionAdvisor> clientPRMetadata =
         clientMetadataService.getClientPRMetadata_TEST_ONLY();
 
-    await().until(() -> (regionMetaData.size() == 1));
-    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
+    await().untilAsserted(() -> {
+      assertThat(clientPRMetadata).hasSize(1);
+    });
 
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
+    assertThat(clientPRMetadata).containsKey(testRegion.getFullPath());
 
-    await()
-        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-            .size() == totalNumberOfBuckets));
+    ClientPartitionAdvisor prMetadata = clientPRMetadata.get(testRegion.getFullPath());
+
+    await().untilAsserted(() -> {
+      assertThat(prMetadata.getBucketServerLocationsMap_TEST_ONLY()).hasSize(totalNumberOfBuckets);
+    });
   }
 
   @Test
   public void testMetadataIsSameOnAllServersAndClients() {
     int redundantCopies = 3;
     int totalNumberOfBuckets = 4;
+
     int port0 = vm0.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port1 = vm1.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port2 = vm2.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     int port3 = vm3.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
+
     createClient(port0, port1, port2, port3);
+
     put();
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(this::waitForLocalBucketsCreation);
+    for (VM vm : asList(vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> waitForLocalBucketsCreation());
     }
 
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
-    clientMetadataService.getClientPRMetadata((LocalRegion) testRegion);
+    clientMetadataService.getClientPRMetadata((InternalRegion) testRegion);
 
-    Map<String, ClientPartitionAdvisor> regionMetaData =
+    Map<String, ClientPartitionAdvisor> clientPRMetadata =
         clientMetadataService.getClientPRMetadata_TEST_ONLY();
-    assertThat(regionMetaData.size()).isEqualTo(1);
-    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
 
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
-    Map<Integer, List<BucketServerLocation66>> clientMap =
-        prMetaData.getBucketServerLocationsMap_TEST_ONLY();
+    assertThat(clientPRMetadata)
+        .hasSize(1)
+        .containsKey(testRegion.getFullPath());
 
-    await().alias("expected no metadata to be refreshed")
-        .until(() -> clientMap.size() == totalNumberOfBuckets);
+    ClientPartitionAdvisor prMetadata = clientPRMetadata.get(testRegion.getFullPath());
+    Map<Integer, List<BucketServerLocation66>> clientBucketMap =
+        prMetadata.getBucketServerLocationsMap_TEST_ONLY();
 
-    for (Entry entry : clientMap.entrySet()) {
-      assertThat(((List) entry.getValue()).size()).isEqualTo(4);
+    await().alias("expected no metadata to be refreshed").untilAsserted(() -> {
+      assertThat(clientBucketMap).hasSize(totalNumberOfBuckets);
+    });
+
+    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+      assertThat(entry.getValue()).hasSize(4);
     }
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(() -> verifyMetadata(clientMap));
+    for (VM vm : asList(vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> verifyMetadata(clientBucketMap));
     }
-    vm0.invoke(this::stopServer);
-    vm1.invoke(this::stopServer);
+
+    vm0.invoke(() -> stopServer());
+    vm1.invoke(() -> stopServer());
 
     vm0.invoke(() -> startServerOnPort(port0));
     vm1.invoke(() -> startServerOnPort(port1));
+
     put();
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(this::waitForLocalBucketsCreation);
+    for (VM vm : asList(vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> waitForLocalBucketsCreation());
     }
 
-    cache.getClientMetadataService();
-    await().alias("bucket copies are not created").until(() -> {
-      ClientMetadataService lambdaclientMetadataService1 = cache.getClientMetadataService();
-      Map<String, ClientPartitionAdvisor> lambdaRegionMetaData =
-          lambdaclientMetadataService1.getClientPRMetadata_TEST_ONLY();
-      assertThat(lambdaRegionMetaData.size()).isEqualTo(1);
-      assertThat(lambdaRegionMetaData.containsKey(testRegion.getFullPath())).isTrue();
-      ClientPartitionAdvisor lambdaPartitionMetaData =
-          lambdaRegionMetaData.get(testRegion.getFullPath());
-      Map<Integer, List<BucketServerLocation66>> lambdaClientMap =
-          lambdaPartitionMetaData.getBucketServerLocationsMap_TEST_ONLY();
-      assertThat(lambdaClientMap.size()).isEqualTo(totalNumberOfBuckets);
-      boolean finished = true;
-      for (Entry entry : lambdaClientMap.entrySet()) {
-        List list = (List) entry.getValue();
-        if (list.size() < totalNumberOfBuckets) {
-          finished = false;
-          break;
-        }
+    await().alias("bucket copies are not created").untilAsserted(() -> {
+      Map<String, ClientPartitionAdvisor> clientPRMetadata_await =
+          clientMetadataService.getClientPRMetadata_TEST_ONLY();
+
+      assertThat(clientPRMetadata_await)
+          .hasSize(1)
+          .containsKey(testRegion.getFullPath());
+
+      ClientPartitionAdvisor prMetadata_await =
+          clientPRMetadata_await.get(testRegion.getFullPath());
+      Map<Integer, List<BucketServerLocation66>> clientBucketMap_await =
+          prMetadata_await.getBucketServerLocationsMap_TEST_ONLY();
+
+      assertThat(clientBucketMap_await).hasSize(totalNumberOfBuckets);
+
+      for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap_await.entrySet()) {
+        assertThat(entry.getValue()).hasSize(totalNumberOfBuckets);
       }
-      return finished;
     });
 
-    clientMetadataService = cache.getClientMetadataService();
-    clientMetadataService.getClientPRMetadata((LocalRegion) testRegion);
+    clientMetadataService.getClientPRMetadata((InternalRegion) testRegion);
 
-    regionMetaData = clientMetadataService.getClientPRMetadata_TEST_ONLY();
-    assertThat(regionMetaData.size()).isEqualTo(1);
-    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
+    clientPRMetadata = clientMetadataService.getClientPRMetadata_TEST_ONLY();
 
-    prMetaData = regionMetaData.get(testRegion.getFullPath());
-    Map<Integer, List<BucketServerLocation66>> clientMap2 =
-        prMetaData.getBucketServerLocationsMap_TEST_ONLY();
+    assertThat(clientPRMetadata)
+        .hasSize(1)
+        .containsKey(testRegion.getFullPath());
 
-    await().alias("expected no metadata to be refreshed")
-        .until(() -> clientMap2.size() == totalNumberOfBuckets);
-    for (Entry entry : clientMap.entrySet()) {
-      assertThat(((List) entry.getValue()).size()).isEqualTo(totalNumberOfBuckets);
+    prMetadata = clientPRMetadata.get(testRegion.getFullPath());
+
+    Map<Integer, List<BucketServerLocation66>> clientBucketMap2 =
+        prMetadata.getBucketServerLocationsMap_TEST_ONLY();
+
+    await().alias("expected no metadata to be refreshed").untilAsserted(() -> {
+      assertThat(clientBucketMap2).hasSize(totalNumberOfBuckets);
+    });
+
+    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+      assertThat(entry.getValue()).hasSize(totalNumberOfBuckets);
     }
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(() -> verifyMetadata(clientMap));
+    for (VM vm : asList(vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> verifyMetadata(clientBucketMap));
     }
 
     vm0.invoke(() -> cacheRule.closeAndNullCache());
     vm1.invoke(() -> cacheRule.closeAndNullCache());
 
     put();
-    vm2.invoke("aba", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        PartitionedRegion pr = (PartitionedRegion) testRegion;
-        pr.getRegionAdvisor().getAllClientBucketProfilesTest();
-      }
+
+    vm2.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) testRegion;
+      pr.getRegionAdvisor().getAllClientBucketProfilesTest();
     });
 
-    vm3.invoke("aba", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        PartitionedRegion pr = (PartitionedRegion) testRegion;
-        pr.getRegionAdvisor().getAllClientBucketProfilesTest();
-      }
+    vm3.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) testRegion;
+      pr.getRegionAdvisor().getAllClientBucketProfilesTest();
     });
 
-    vm2.invoke(this::waitForLocalBucketsCreation);
-    vm3.invoke(this::waitForLocalBucketsCreation);
+    vm2.invoke(() -> waitForLocalBucketsCreation());
+    vm3.invoke(() -> waitForLocalBucketsCreation());
 
-    clientMetadataService = cache.getClientMetadataService();
-    clientMetadataService.getClientPRMetadata((LocalRegion) testRegion);
+    clientMetadataService.getClientPRMetadata((InternalRegion) testRegion);
 
-    regionMetaData = clientMetadataService.getClientPRMetadata_TEST_ONLY();
-    assertThat(regionMetaData.size()).isEqualTo(1);
-    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
+    clientPRMetadata = clientMetadataService.getClientPRMetadata_TEST_ONLY();
 
-    prMetaData = regionMetaData.get(testRegion.getFullPath());
-    Map<Integer, List<BucketServerLocation66>> clientMap3 =
-        prMetaData.getBucketServerLocationsMap_TEST_ONLY();
+    assertThat(clientPRMetadata)
+        .hasSize(1)
+        .containsKey(testRegion.getFullPath());
 
-    await().until(() -> (clientMap3.size() == totalNumberOfBuckets));
-    for (Entry entry : clientMap.entrySet()) {
-      assertThat(((List) entry.getValue()).size()).isEqualTo(2);
+    prMetadata = clientPRMetadata.get(testRegion.getFullPath());
+    Map<Integer, List<BucketServerLocation66>> clientBucketMap3 =
+        prMetadata.getBucketServerLocationsMap_TEST_ONLY();
+
+    await().untilAsserted(() -> {
+      assertThat(clientBucketMap3).hasSize(totalNumberOfBuckets);
+    });
+
+    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+      assertThat(entry.getValue()).hasSize(2);
     }
 
-    await().alias("verification of metadata on all members").until(() -> {
-      try {
-        vm2.invoke(() -> verifyMetadata(clientMap));
-        vm3.invoke(() -> verifyMetadata(clientMap));
-      } catch (Exception e) {
-        return false;
-      }
-      return true;
+    await().alias("verification of metadata on all members").untilAsserted(() -> {
+      vm2.invoke(() -> verifyMetadata(clientBucketMap));
+      vm3.invoke(() -> verifyMetadata(clientBucketMap));
     });
   }
 
   @Test
   public void testMetadataIsSameOnAllServersAndClientsHA() {
     int totalNumberOfBuckets = 4;
-    int port0 =
-        vm0.invoke(() -> createServer(2,
-            totalNumberOfBuckets));
-    int port1 =
-        vm1.invoke(() -> createServer(2,
-            totalNumberOfBuckets));
+
+    int port0 = vm0.invoke(() -> createServer(2, totalNumberOfBuckets));
+    int port1 = vm1.invoke(() -> createServer(2, totalNumberOfBuckets));
 
     createClient(port0, port1, port0, port1);
+
     put();
 
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
-    clientMetadataService.getClientPRMetadata((LocalRegion) testRegion);
+    clientMetadataService.getClientPRMetadata((InternalRegion) testRegion);
 
-    Map<String, ClientPartitionAdvisor> regionMetaData =
+    Map<String, ClientPartitionAdvisor> clientPRMetadata =
         clientMetadataService.getClientPRMetadata_TEST_ONLY();
 
-    await().until(() -> (regionMetaData.size() == 1));
-
-    assertThat(regionMetaData.size()).isEqualTo(1);
-    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
-
-    vm0.invoke("aba", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        PartitionedRegion pr = (PartitionedRegion) testRegion;
-        pr.getRegionAdvisor().getAllClientBucketProfilesTest();
-      }
+    await().untilAsserted(() -> {
+      assertThat(clientPRMetadata).hasSize(1);
     });
 
-    vm1.invoke("aba", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        PartitionedRegion pr = (PartitionedRegion) testRegion;
-        pr.getRegionAdvisor().getAllClientBucketProfilesTest();
-      }
+    assertThat(clientPRMetadata).containsKey(testRegion.getFullPath());
+
+    vm0.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) testRegion;
+      pr.getRegionAdvisor().getAllClientBucketProfilesTest();
     });
 
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
-    Map<Integer, List<BucketServerLocation66>> clientMap =
-        prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    await().until(() -> (clientMap.size() == totalNumberOfBuckets));
-    for (Entry entry : clientMap.entrySet()) {
-      assertThat(((List) entry.getValue()).size()).isEqualTo(2);
+    vm1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) testRegion;
+      pr.getRegionAdvisor().getAllClientBucketProfilesTest();
+    });
+
+    ClientPartitionAdvisor prMetadata = clientPRMetadata.get(testRegion.getFullPath());
+    Map<Integer, List<BucketServerLocation66>> clientBucketMap =
+        prMetadata.getBucketServerLocationsMap_TEST_ONLY();
+
+    await().untilAsserted(() -> {
+      assertThat(clientBucketMap).hasSize(totalNumberOfBuckets);
+    });
+
+    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+      assertThat(entry.getValue()).hasSize(2);
     }
-    vm0.invoke(() -> verifyMetadata(clientMap));
-    vm1.invoke(() -> verifyMetadata(clientMap));
 
-    vm0.invoke(this::stopServer);
+    vm0.invoke(() -> verifyMetadata(clientBucketMap));
+    vm1.invoke(() -> verifyMetadata(clientBucketMap));
+
+    vm0.invoke(() -> stopServer());
 
     put();
 
-    clientMetadataService = cache.getClientMetadataService();
-    clientMetadataService.getClientPRMetadata((LocalRegion) testRegion);
+    clientMetadataService.getClientPRMetadata((InternalRegion) testRegion);
 
-    assertThat(clientMap.size()).isEqualTo(totalNumberOfBuckets/* numBuckets */);
-    for (Entry entry : clientMap.entrySet()) {
-      assertThat(((List) entry.getValue()).size()).isEqualTo(1);
+    assertThat(clientBucketMap).hasSize(totalNumberOfBuckets);
+
+    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+      assertThat(entry.getValue()).hasSize(1);
     }
 
-    assertThat(regionMetaData.size()).isEqualTo(1);
-    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
-    assertThat(clientMap.size()).isEqualTo(totalNumberOfBuckets/* numBuckets */);
-    await().until(() -> {
-      int bucketId;
-      int size;
-      List globalList;
-      boolean finished = true;
-      for (Entry entry : clientMap.entrySet()) {
-        List list = (List) entry.getValue();
-        if (list.size() != 1) {
-          size = list.size();
-          globalList = list;
-          bucketId = (Integer) entry.getKey();
-          finished = false;
-          System.out.println("bucket copies are not created, the locations size for bucket id : "
-              + bucketId + " size : " + size + " the list is " + globalList);
-        }
+    assertThat(clientPRMetadata)
+        .hasSize(1)
+        .containsKey(testRegion.getFullPath());
+
+    assertThat(clientBucketMap).hasSize(totalNumberOfBuckets);
+
+    await().untilAsserted(() -> {
+      for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+        assertThat(entry.getValue()).hasSize(1);
       }
-      return finished;
     });
   }
 
   @Test
   public void testClientMetadataForPersistentPrs() throws Exception {
     LATCH.set(new CountDownLatch(4));
-    int port0 = vm0
-        .invoke(this::createPersistentPrsAndServer);
-    int port1 = vm1
-        .invoke(this::createPersistentPrsAndServer);
-    int port2 = vm2
-        .invoke(this::createPersistentPrsAndServer);
-    int port3 = vm3
-        .invoke(this::createPersistentPrsAndServer);
 
-    vm3.invoke(this::putIntoPartitionedRegions);
+    int port0 = vm0.invoke(() -> createPersistentPrsAndServer());
+    int port1 = vm1.invoke(() -> createPersistentPrsAndServer());
+    int port2 = vm2.invoke(() -> createPersistentPrsAndServer());
+    int port3 = vm3.invoke(() -> createPersistentPrsAndServer());
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
-      vm.invoke(this::waitForLocalBucketsCreation);
+    vm3.invoke(() -> putIntoPartitionedRegions());
+
+    for (VM vm : asList(vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> waitForLocalBucketsCreation());
     }
 
     createClient(port0, port1, port2, port3);
 
-    ManagementService service = ManagementService.getExistingManagementService(cache);
-    MyMembershipListenerImpl listener = new MyMembershipListenerImpl(LATCH);
-    listener.registerMembershipListener(service);
+    ManagementService managementService = getExistingManagementService(cache);
+    MemberCrashedListener listener = new MemberCrashedListener(LATCH.get());
+    listener.registerMembershipListener(managementService);
 
-    await().until(this::fetchAndValidateMetadata);
+    await().until(() -> fetchAndValidateMetadata());
 
-    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
+    for (VM vm : asList(vm0, vm1, vm2, vm3)) {
       vm.invoke(() -> cacheRule.closeAndNullCache());
     }
 
-    LATCH.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+    LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
 
-    AsyncInvocation m3 = vm3.invokeAsync(() -> createPersistentPrsAndServerOnPort(port3));
-    AsyncInvocation m2 = vm2.invokeAsync(() -> createPersistentPrsAndServerOnPort(port2));
-    AsyncInvocation m1 = vm1.invokeAsync(() -> createPersistentPrsAndServerOnPort(port1));
-    AsyncInvocation m0 = vm0.invokeAsync(() -> createPersistentPrsAndServerOnPort(port0));
+    AsyncInvocation<Void> createServerOnVM3 =
+        vm3.invokeAsync(() -> createPersistentPrsAndServerOnPort(port3));
+    AsyncInvocation<Void> createServerOnVM2 =
+        vm2.invokeAsync(() -> createPersistentPrsAndServerOnPort(port2));
+    AsyncInvocation<Void> createServerOnVM1 =
+        vm1.invokeAsync(() -> createPersistentPrsAndServerOnPort(port1));
+    AsyncInvocation<Void> createServerOnVM0 =
+        vm0.invokeAsync(() -> createPersistentPrsAndServerOnPort(port0));
 
-    m3.await();
-    m2.await();
-    m1.await();
-    m0.await();
+    createServerOnVM3.await();
+    createServerOnVM2.await();
+    createServerOnVM1.await();
+    createServerOnVM0.await();
 
     fetchAndValidateMetadata();
   }
 
   private boolean fetchAndValidateMetadata() {
-    ClientMetadataService service = cache.getClientMetadataService();
-    service.getClientPRMetadata((LocalRegion) testRegion);
-    HashMap<ServerLocation, HashSet<Integer>> servers =
-        service.groupByServerToAllBuckets(testRegion, true);
-    if (servers == null) {
-      return false;
-    } else if (servers.size() == 4) {
-      if (servers.size() < 4) {
-        return false;
-      }
-    }
-    return true;
+    ClientMetadataService clientMetadataService = cache.getClientMetadataService();
+    clientMetadataService.getClientPRMetadata((InternalRegion) testRegion);
+
+    Map<ServerLocation, Set<Integer>> serverBucketMap =
+        clientMetadataService.groupByServerToAllBuckets(testRegion, true);
+
+    return serverBucketMap != null;
   }
 
   private void stopServer() {
-    Iterator<CacheServer> iterator = cache.getCacheServers().iterator();
-    if (iterator.hasNext()) {
-      CacheServer server = iterator.next();
-      server.stop();
+    for (CacheServer cacheServer : cache.getCacheServers()) {
+      cacheServer.stop();
     }
   }
 
-  private void startLocatorInVM(final int locatorPort) {
+  private void startLocatorInVM(int locatorPort) throws IOException {
+    Properties properties = new Properties();
+    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     File logFile = new File("locator-" + locatorPort + ".log");
 
-    Properties props = new Properties();
-    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-
-    try {
-      locator = Locator.startLocatorAndDS(locatorPort, logFile, null, props);
-    } catch (IOException e) {
-      Assertions.fail("failed to startLocatorInVM", e);
-    }
+    locator = Locator.startLocatorAndDS(locatorPort, logFile, null, properties);
   }
 
   private void stopLocator() {
     locator.stop();
   }
 
-  private int createServerWithLocator(String locString) {
-
+  private int createServerWithLocator(String locators) throws IOException {
     Properties properties = new Properties();
-    properties.setProperty(LOCATORS, locString);
+    properties.setProperty(LOCATORS, locators);
+
     cache = cacheRule.getOrCreateCache(properties);
 
-    CacheServer server = cache.addCacheServer();
-    int redundantCopies = 0;
-    server.setPort(0);
-    server.setHostnameForClients("localhost");
-    try {
-      server.start();
-    } catch (IOException e) {
-      Assertions.fail("Failed to start server ", e);
-    }
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setHostnameForClients("localhost");
+    cacheServer.setPort(0);
+    cacheServer.start();
 
+    int redundantCopies = 0;
     int totalNumberOfBuckets = 8;
+
     testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets,
         LOCAL_MAX_MEMORY_DEFAULT);
 
@@ -948,7 +965,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     shipmentRegion = createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets,
         LOCAL_MAX_MEMORY_DEFAULT);
 
-    return server.getPort();
+    return cacheServer.getPort();
   }
 
   private void clearMetadata() {
@@ -957,99 +974,107 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     clientMetadataService.getClientPRMetadata_TEST_ONLY().clear();
   }
 
-  private void verifyMetadata(Map<Integer, List<BucketServerLocation66>> clientMap) {
+  private void verifyMetadata(Map<Integer, List<BucketServerLocation66>> clientBucketMap) {
     PartitionedRegion pr = (PartitionedRegion) testRegion;
-    ConcurrentHashMap<Integer, Set<ServerBucketProfile>> serverMap =
+    Map<Integer, Set<ServerBucketProfile>> serverBucketMap =
         pr.getRegionAdvisor().getAllClientBucketProfilesTest();
-    assertThat(serverMap.size()).isEqualTo(clientMap.size());
-    assertThat(clientMap.keySet().containsAll(serverMap.keySet())).isTrue();
-    for (Map.Entry<Integer, List<BucketServerLocation66>> entry : clientMap.entrySet()) {
+
+    assertThat(serverBucketMap).hasSize(clientBucketMap.size());
+    assertThat(clientBucketMap.keySet()).containsAll(serverBucketMap.keySet());
+
+    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
       int bucketId = entry.getKey();
-      List<BucketServerLocation66> list = entry.getValue();
-      BucketServerLocation66 primaryBSL = null;
-      int primaryCnt = 0;
-      for (BucketServerLocation66 bsl : list) {
-        if (bsl.isPrimary()) {
-          primaryBSL = bsl;
-          primaryCnt++;
+      List<BucketServerLocation66> bucketLocations = entry.getValue();
+
+      BucketServerLocation66 primaryBucketLocation = null;
+      int countOfPrimaries = 0;
+      for (BucketServerLocation66 bucketLocation : bucketLocations) {
+        if (bucketLocation.isPrimary()) {
+          primaryBucketLocation = bucketLocation;
+          countOfPrimaries++;
         }
       }
-      assertThat(primaryCnt).isEqualTo(1);
-      Set<ServerBucketProfile> set = serverMap.get(bucketId);
-      assertThat(set.size()).isEqualTo(list.size());
-      primaryCnt = 0;
-      for (ServerBucketProfile bp : set) {
-        ServerLocation sl = (ServerLocation) bp.bucketServerLocations.toArray()[0];
-        assertThat(list.contains(sl)).isTrue();
+
+      assertThat(countOfPrimaries).isEqualTo(1);
+
+      Set<ServerBucketProfile> bucketProfiles = serverBucketMap.get(bucketId);
+      assertThat(bucketProfiles).hasSize(bucketLocations.size());
+
+      countOfPrimaries = 0;
+      for (ServerBucketProfile bucketProfile : bucketProfiles) {
+        ServerLocation sl = (ServerLocation) bucketProfile.getBucketServerLocations().toArray()[0];
+        assertThat(bucketLocations.contains(sl)).isTrue();
         // should be only one primary
-        if (bp.isPrimary) {
-          primaryCnt++;
-          assertThat(sl).isEqualTo(primaryBSL);
+        if (bucketProfile.isPrimary) {
+          countOfPrimaries++;
+          assertThat(sl).isEqualTo(primaryBucketLocation);
         }
       }
-      assertThat(primaryCnt).isEqualTo(1);
+      assertThat(countOfPrimaries).isEqualTo(1);
     }
   }
 
   private void waitForLocalBucketsCreation() {
     PartitionedRegion pr = (PartitionedRegion) testRegion;
 
-    await().alias("bucket copies are not created, the total number of buckets expected are "
-        + 4 + " but the total num of buckets are "
-        + pr.getDataStore().getAllLocalBuckets().size())
-        .until(() -> pr.getDataStore().getAllLocalBuckets().size() == 4);
+    await().untilAsserted(() -> assertThat(pr.getDataStore().getAllLocalBuckets()).hasSize(4));
   }
 
   private void verifyDeadServer(Map<String, ClientPartitionAdvisor> regionMetaData, Region region,
       int port0, int port1) {
 
-    ServerLocation sl0 = new ServerLocation("localhost", port0);
-    ServerLocation sl1 = new ServerLocation("localhost", port1);
-
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
 
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      List servers = (List) entry.getValue();
-      assertThat(servers.contains(sl0)).isFalse();
-      assertThat(servers.contains(sl1)).isFalse();
+    for (Entry<Integer, List<BucketServerLocation66>> entry : prMetaData
+        .getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      for (BucketServerLocation66 bsl : entry.getValue()) {
+        assertThat(bsl.getPort())
+            .isNotEqualTo(port0)
+            .isNotEqualTo(port1);
+      }
     }
   }
 
   private void createClientWithoutPRSingleHopEnabled(int port0) {
     Properties properties = new Properties();
-    properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
+
     cache = cacheRule.getOrCreateCache(properties);
 
     System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
 
-    Pool p;
+    Pool pool;
     try {
-      p = PoolManager.createFactory().addServer("localhost", port0).setPingInterval(250)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
-          .setPRSingleHopEnabled(false).create(PR_NAME);
+      pool = PoolManager.createFactory()
+          .addServer("localhost", port0)
+          .setPingInterval(250)
+          .setSubscriptionEnabled(true)
+          .setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000)
+          .setSocketBufferSize(1000)
+          .setMinConnections(6)
+          .setMaxConnections(10)
+          .setRetryAttempts(3)
+          .setPRSingleHopEnabled(false)
+          .create(PR_NAME);
     } finally {
       System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "false");
     }
 
-    createRegionsInClientCache(p.getName());
+    createRegionsInClientCache(pool.getName());
   }
 
-  private int createAccessorServer() {
+  private int createAccessorServer() throws IOException {
+    cache = cacheRule.getOrCreateCache();
+
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.setHostnameForClients("localhost");
+    cacheServer.start();
+
     int redundantCopies = 1;
     int totalNumberOfBuckets = 4;
     int localMaxMemory = 0;
-    cache = cacheRule.getOrCreateCache();
-    CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server.setPort(port);
-    server.setHostnameForClients("localhost");
-    try {
-      server.start();
-    } catch (IOException e) {
-      Assertions.fail("Failed to start server ", e);
-    }
 
     testRegion =
         createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, localMaxMemory);
@@ -1069,68 +1094,53 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     replicatedRegion = regionFactory.create("rr");
 
-    return port;
+    return cacheServer.getPort();
   }
 
   private <K, V> Region<K, V> createBasicPartitionedRegion(int redundantCopies,
       int totalNumberOfBuckets,
       int localMaxMemory) {
-    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets);
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<K, V>()
+        .setRedundantCopies(redundantCopies)
+        .setTotalNumBuckets(totalNumberOfBuckets);
 
     if (localMaxMemory > -1) {
       paf.setLocalMaxMemory(localMaxMemory);
     }
 
-    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
-
-    regionFactory.setPartitionAttributes(paf.create());
-    regionFactory.setConcurrencyChecksEnabled(true);
-
-    Region<K, V> region = regionFactory.create(PartitionedRegionSingleHopDUnitTest.PR_NAME);
-    assertThat(region).isNotNull();
-
-    return region;
+    return cache.<K, V>createRegionFactory()
+        .setPartitionAttributes(paf.create())
+        .setConcurrencyChecksEnabled(true)
+        .create(PR_NAME);
   }
 
-  private <K, V> Region<K, V> createColocatedRegion(String regionName,
-      String colocatedRegionName,
-      int redundantCopies,
-      int totalNumberOfBuckets,
-      int localMaxMemory) {
-
-    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets)
-        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
+  private <K, V> Region<K, V> createColocatedRegion(String regionName, String colocatedRegionName,
+      int redundantCopies, int totalNumberOfBuckets, int localMaxMemory) {
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<K, V>()
+        .setRedundantCopies(redundantCopies)
+        .setTotalNumBuckets(totalNumberOfBuckets)
+        .setPartitionResolver(new CustomerIdPartitionResolver<>("CustomerIDPartitionResolver"));
 
     if (colocatedRegionName != null) {
       paf.setColocatedWith(colocatedRegionName);
     }
-
     if (localMaxMemory > -1) {
       paf.setLocalMaxMemory(localMaxMemory);
     }
 
-    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
-    regionFactory.setPartitionAttributes(paf.create());
-    regionFactory.setConcurrencyChecksEnabled(true);
-    Region<K, V> region = regionFactory.create(regionName);
-    assertThat(region).isNotNull();
-
-    return region;
+    return cache.<K, V>createRegionFactory()
+        .setPartitionAttributes(paf.create())
+        .setConcurrencyChecksEnabled(true)
+        .create(regionName);
   }
 
-  private int createServer(int redundantCopies, int totalNumberOfBuckets) {
+  private int createServer(int redundantCopies, int totalNumberOfBuckets) throws IOException {
     cache = cacheRule.getOrCreateCache();
-    CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server.setPort(port);
-    server.setHostnameForClients("localhost");
-    try {
-      server.start();
-    } catch (IOException e) {
-      Assertions.fail("Failed to start server ", e);
-    }
+
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.setHostnameForClients("localhost");
+    cacheServer.start();
 
     testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, -1);
 
@@ -1147,17 +1157,18 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
         createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets,
             LOCAL_MAX_MEMORY_DEFAULT);
 
-    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-    replicatedRegion = regionFactory.create("rr");
+    replicatedRegion = cache.createRegionFactory().create("rr");
 
-    return port;
+    return cacheServer.getPort();
   }
 
-  private int createPersistentPrsAndServer() {
+  private int createPersistentPrsAndServer() throws IOException {
     cache = cacheRule.getOrCreateCache();
+
     if (cache.findDiskStore(diskStoreName) == null) {
       cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create(diskStoreName);
     }
+
     testRegion = createBasicPersistentPartitionRegion();
 
     // creating colocated Regions
@@ -1175,121 +1186,101 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
         totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+
     replicatedRegion = regionFactory.create("rr");
-    CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server.setPort(port);
-    server.setHostnameForClients("localhost");
-    try {
-      server.start();
-    } catch (IOException e) {
-      Assertions.fail("Failed to start server ", e);
-    }
-    return port;
+
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.setHostnameForClients("localhost");
+    cacheServer.start();
+
+    return cacheServer.getPort();
   }
 
   private <K, V> Region<K, V> createBasicPersistentPartitionRegion() {
-    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(3).setTotalNumBuckets(4);
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<K, V>()
+        .setRedundantCopies(3)
+        .setTotalNumBuckets(4);
 
-    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
-    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    regionFactory.setDiskStoreName("disk");
-    regionFactory.setPartitionAttributes(paf.create());
-
-    Region<K, V> region = regionFactory.create(PartitionedRegionSingleHopDUnitTest.PR_NAME);
-    assertThat(region).isNotNull();
-
-    return region;
+    return cache.<K, V>createRegionFactory()
+        .setDataPolicy(DataPolicy.PERSISTENT_PARTITION)
+        .setDiskStoreName("disk")
+        .setPartitionAttributes(paf.create())
+        .create(PR_NAME);
   }
 
-  private <K, V> Region<K, V> createColocatedPersistentRegionForTest(final String regionName,
-      String colocatedRegionName,
-      int redundantCopies,
-      int totalNumberOfBuckets,
+  private <K, V> Region<K, V> createColocatedPersistentRegionForTest(String regionName,
+      String colocatedRegionName, int redundantCopies, int totalNumberOfBuckets,
       int localMaxMemory) {
 
-    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets)
-        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<K, V>()
+        .setRedundantCopies(redundantCopies)
+        .setTotalNumBuckets(totalNumberOfBuckets)
+        .setPartitionResolver(new CustomerIdPartitionResolver<>("CustomerIDPartitionResolver"));
 
     if (localMaxMemory > -1) {
       paf.setLocalMaxMemory(localMaxMemory);
     }
-
     if (colocatedRegionName != null) {
       paf.setColocatedWith(colocatedRegionName);
     }
 
-    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+    RegionFactory<K, V> regionFactory = cache.<K, V>createRegionFactory()
+        .setDataPolicy(DataPolicy.PERSISTENT_PARTITION)
+        .setDiskStoreName("disk")
+        .setPartitionAttributes(paf.create());
 
-    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    regionFactory.setDiskStoreName("disk");
-    regionFactory.setPartitionAttributes(paf.create());
-    Region<K, V> region = regionFactory.create(regionName);
-
-    assertThat(region).isNotNull();
-
-    return region;
+    return regionFactory.create(regionName);
   }
 
-  private int createPersistentPrsAndServerOnPort(int port) {
+  private void createPersistentPrsAndServerOnPort(int port) throws IOException {
     cache = cacheRule.getOrCreateCache();
 
     if (cache.findDiskStore(diskStoreName) == null) {
       cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create(diskStoreName);
     }
+
     testRegion = createBasicPersistentPartitionRegion();
 
     // creating colocated Regions
     int redundantCopies = 3;
     int totalNumberOfBuckets = 4;
+
     customerRegion =
         createColocatedPersistentRegionForTest(CUSTOMER, null, redundantCopies,
-            totalNumberOfBuckets,
-            LOCAL_MAX_MEMORY_DEFAULT);
+            totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
 
     orderRegion =
         createColocatedPersistentRegionForTest(ORDER, CUSTOMER, redundantCopies,
-            totalNumberOfBuckets,
-            LOCAL_MAX_MEMORY_DEFAULT);
+            totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
 
     shipmentRegion =
         createColocatedPersistentRegionForTest(SHIPMENT, ORDER, redundantCopies,
-            totalNumberOfBuckets,
-            LOCAL_MAX_MEMORY_DEFAULT);
+            totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
 
-    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-    replicatedRegion = regionFactory.create("rr");
-    CacheServer server = cache.addCacheServer();
-    server.setPort(port);
-    server.setHostnameForClients("localhost");
-    try {
-      server.start();
-    } catch (IOException e) {
-      Assertions.fail("Failed to start server ", e);
-    }
+    replicatedRegion = cache.createRegionFactory()
+        .create("rr");
 
-    return port;
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(port);
+    cacheServer.setHostnameForClients("localhost");
+    cacheServer.start();
   }
 
-  private void startServerOnPort(int port) {
+  private void startServerOnPort(int port) throws IOException {
     cache = cacheRule.getOrCreateCache();
-    CacheServer server = cache.addCacheServer();
-    server.setPort(port);
-    server.setHostnameForClients("localhost");
-    try {
-      server.start();
-    } catch (IOException e) {
-      Assertions.fail("Failed to start server ", e);
-    }
+
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(port);
+    cacheServer.setHostnameForClients("localhost");
+    cacheServer.start();
   }
 
   private void createPeer() {
+    cache = cacheRule.getOrCreateCache();
+
     int redundantCopies = 1;
     int totalNumberOfBuckets = 4;
-    cache = cacheRule.getOrCreateCache();
 
     testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, -1);
 
@@ -1302,125 +1293,165 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     shipmentRegion =
         createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets, -1);
 
-    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-    replicatedRegion = regionFactory.create("rr");
+    replicatedRegion = cache.createRegionFactory().create("rr");
   }
 
   private void createClient(int port) {
     Properties properties = new Properties();
-    properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
+
     cache = cacheRule.getOrCreateCache(properties);
+
     System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
-    Pool p;
+    Pool pool;
     try {
-      p = PoolManager.createFactory().addServer("localhost", port).setPingInterval(250)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
+      pool = PoolManager.createFactory()
+          .addServer("localhost", port)
+          .setPingInterval(250)
+          .setSubscriptionEnabled(true)
+          .setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000)
+          .setSocketBufferSize(1000)
+          .setMinConnections(6)
+          .setMaxConnections(10)
+          .setRetryAttempts(3)
           .create(PR_NAME);
     } finally {
       System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "false");
     }
 
-    createRegionsInClientCache(p.getName());
+    createRegionsInClientCache(pool.getName());
   }
 
   private void createClient(int port0, int port1) {
     Properties properties = new Properties();
-    properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
+
     cache = cacheRule.getOrCreateCache(properties);
+
     System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
-    Pool p;
+    Pool pool;
     try {
-      p = PoolManager.createFactory().addServer("localhost", port0).addServer("localhost", port1)
-          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
-          .setRetryAttempts(3).create(PR_NAME);
+      pool = PoolManager.createFactory()
+          .addServer("localhost", port0)
+          .addServer("localhost", port1)
+          .setPingInterval(250)
+          .setSubscriptionEnabled(true)
+          .setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000)
+          .setSocketBufferSize(1000)
+          .setMinConnections(6)
+          .setMaxConnections(10)
+          .setRetryAttempts(3)
+          .create(PR_NAME);
     } finally {
-      System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "false");
+      System.clearProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
     }
 
-    createRegionsInClientCache(p.getName());
+    createRegionsInClientCache(pool.getName());
   }
 
   private void createClientWithLocator(String host, int port0) {
     Properties properties = new Properties();
-    properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
+
     cache = cacheRule.getOrCreateCache(properties);
+
     System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
-    Pool p;
+    Pool pool;
     try {
-      p = PoolManager.createFactory().addLocator(host, port0).setPingInterval(250)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
+      pool = PoolManager.createFactory()
+          .addLocator(host, port0)
+          .setPingInterval(250)
+          .setSubscriptionEnabled(true)
+          .setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000)
+          .setSocketBufferSize(1000)
+          .setMinConnections(6)
+          .setMaxConnections(10)
+          .setRetryAttempts(3)
           .create(PR_NAME);
     } finally {
-      System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "false");
+      System.clearProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
     }
 
-    createRegionsInClientCache(p.getName());
+    createRegionsInClientCache(pool.getName());
   }
 
   private void createClient(int port0, int port1, int port2, int port3) {
     Properties properties = new Properties();
-    properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
+
     cache = cacheRule.getOrCreateCache(properties);
+
     System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
-    Pool p;
+    Pool pool;
     try {
-      p = PoolManager.createFactory().addServer("localhost", port0).addServer("localhost", port1)
-          .addServer("localhost", port2).addServer("localhost", port3).setPingInterval(100)
-          .setSubscriptionEnabled(false).setReadTimeout(2000).setSocketBufferSize(1000)
-          .setMinConnections(6).setMaxConnections(10).setRetryAttempts(3).create(PR_NAME);
+      pool = PoolManager.createFactory()
+          .addServer("localhost", port0)
+          .addServer("localhost", port1)
+          .addServer("localhost", port2)
+          .addServer("localhost", port3)
+          .setPingInterval(100)
+          .setSubscriptionEnabled(false)
+          .setReadTimeout(2000)
+          .setSocketBufferSize(1000)
+          .setMinConnections(6)
+          .setMaxConnections(10)
+          .setRetryAttempts(3)
+          .create(PR_NAME);
     } finally {
-      System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "false");
+      System.clearProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
     }
 
-    createRegionsInClientCache(p.getName());
+    createRegionsInClientCache(pool.getName());
   }
 
   private void createRegionsInClientCache(String poolName) {
-    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-    regionFactory.setPoolName(poolName);
-    regionFactory.setDataPolicy(DataPolicy.EMPTY);
-    testRegion = regionFactory.create(PR_NAME);
-    assertThat(testRegion).isNotNull();
+    testRegion = cache.createRegionFactory()
+        .setDataPolicy(DataPolicy.EMPTY)
+        .setPoolName(poolName)
+        .create(PR_NAME);
 
-    regionFactory = cache.createRegionFactory();
-    regionFactory.setPoolName(poolName);
-    regionFactory.setScope(Scope.LOCAL);
-    regionFactory.setConcurrencyChecksEnabled(true);
-    customerRegion = regionFactory.create(CUSTOMER);
-    assertThat(customerRegion).isNotNull();
+    customerRegion = cache.createRegionFactory()
+        .setConcurrencyChecksEnabled(true)
+        .setPoolName(poolName)
+        .setScope(Scope.LOCAL)
+        .create(CUSTOMER);
 
-    orderRegion = regionFactory.create(ORDER);
-    assertThat(orderRegion).isNotNull();
+    orderRegion = cache.createRegionFactory()
+        .setConcurrencyChecksEnabled(true)
+        .setPoolName(poolName)
+        .setScope(Scope.LOCAL)
+        .create(ORDER);
 
-    shipmentRegion = regionFactory.create(SHIPMENT);
-    assertThat(shipmentRegion).isNotNull();
+    shipmentRegion = cache.createRegionFactory()
+        .setConcurrencyChecksEnabled(true)
+        .setPoolName(poolName)
+        .setScope(Scope.LOCAL)
+        .create(SHIPMENT);
 
-    regionFactory = cache.createRegionFactory();
-    regionFactory.setScope(Scope.LOCAL);
-    regionFactory.setConcurrencyChecksEnabled(true);
-    regionFactory.setPoolName(poolName);
-    replicatedRegion = regionFactory.create("rr");
+    replicatedRegion = cache.createRegionFactory()
+        .setConcurrencyChecksEnabled(true)
+        .setPoolName(poolName)
+        .setScope(Scope.LOCAL)
+        .create("rr");
   }
 
   private void putIntoPartitionedRegions() {
     for (int i = 0; i <= 3; i++) {
-      CustId custid = new CustId(i);
+      CustomerId custid = new CustomerId(i);
       Customer customer = new Customer("name" + i, "Address" + i);
       customerRegion.put(custid, customer);
+
       for (int j = 1; j <= 10; j++) {
-        int oid = (i * 10) + j;
+        int oid = i * 10 + j;
         OrderId orderId = new OrderId(oid, custid);
         Order order = new Order("Order" + oid);
         orderRegion.put(orderId, order);
+
         for (int k = 1; k <= 10; k++) {
-          int sid = (oid * 10) + k;
+          int sid = oid * 10 + k;
           ShipmentId shipmentId = new ShipmentId(sid, orderId);
           Shipment shipment = new Shipment("Shipment" + sid);
           shipmentRegion.put(shipmentId, shipment);
@@ -1442,6 +1473,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     testRegion.put(1, "update11");
     testRegion.put(2, "update22");
     testRegion.put(3, "update33");
+
     Map<Object, Object> map = new HashMap<>();
     map.put(1, 1);
     replicatedRegion.putAll(map);
@@ -1463,64 +1495,19 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     return new File[] {getDiskDir()};
   }
 
-  static class MyFunctionAdapter extends FunctionAdapter implements DataSerializable {
-    public MyFunctionAdapter() {}
-
-    @Override
-    public String getId() {
-      return "fid";
-    }
-
-    @Override
-    public void execute(FunctionContext context) {
-      System.out.println("YOGS function called");
-      RegionFunctionContext rc = (RegionFunctionContext) context;
-      Region<Object, Object> r = rc.getDataSet();
-      Set filter = rc.getFilter();
-      if (rc.getFilter() == null) {
-        for (int i = 0; i < 200; i++) {
-          r.put(i, i);
-        }
-      } else {
-        for (Object key : filter) {
-          r.put(key, key);
-        }
-      }
-      context.getResultSender().lastResult(Boolean.TRUE);
-    }
-
-    @Override
-    public boolean isHA() {
-      return false;
-    }
-
-    @Override
-    public boolean optimizeForWrite() {
-      return true;
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {}
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-
-    }
-  }
-
   private void executeFunctions() {
     Set<Object> filter = new HashSet<>();
     filter.add(0);
-    FunctionService.onRegion(testRegion).withFilter(filter).execute(new MyFunctionAdapter())
+    FunctionService.onRegion(testRegion).withFilter(filter).execute(new PutFunction())
         .getResult();
     filter.add(1);
-    FunctionService.onRegion(testRegion).withFilter(filter).execute(new MyFunctionAdapter())
+    FunctionService.onRegion(testRegion).withFilter(filter).execute(new PutFunction())
         .getResult();
     filter.add(2);
     filter.add(3);
-    FunctionService.onRegion(testRegion).withFilter(filter).execute(new MyFunctionAdapter())
+    FunctionService.onRegion(testRegion).withFilter(filter).execute(new PutFunction())
         .getResult();
-    FunctionService.onRegion(testRegion).execute(new MyFunctionAdapter()).getResult();
+    FunctionService.onRegion(testRegion).execute(new PutFunction()).getResult();
   }
 
   private void putAll() {
@@ -1547,16 +1534,18 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
   private void getFromPartitionedRegions() {
     for (int i = 0; i <= 3; i++) {
-      CustId custid = new CustId(i);
+      CustomerId custid = new CustomerId(i);
       Customer customer = new Customer("name" + i, "Address" + i);
       customerRegion.get(custid, customer);
+
       for (int j = 1; j <= 10; j++) {
-        int oid = (i * 10) + j;
+        int oid = i * 10 + j;
         OrderId orderId = new OrderId(oid, custid);
         Order order = new Order("Order" + oid);
         orderRegion.get(orderId, order);
+
         for (int k = 1; k <= 10; k++) {
-          int sid = (oid * 10) + k;
+          int sid = oid * 10 + k;
           ShipmentId shipmentId = new ShipmentId(sid, orderId);
           Shipment shipment = new Shipment("Shipment" + sid);
           shipmentRegion.get(shipmentId, shipment);
@@ -1619,177 +1608,446 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
   private void verifyEmptyMetadata() {
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
-    assertThat(clientMetadataService.getClientPRMetadata_TEST_ONLY().isEmpty()).isTrue();
+    assertThat(clientMetadataService.getClientPRMetadata_TEST_ONLY()).isEmpty();
   }
 
   private void verifyEmptyStaticData() {
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
-    assertThat(clientMetadataService.getClientPartitionAttributesMap().isEmpty()).isTrue();
+    assertThat(clientMetadataService.getClientPartitionAttributesMap()).isEmpty();
   }
 
   private void verifyMetadata() {
     ClientMetadataService clientMetadataService = cache.getClientMetadataService();
     // make sure all fetch tasks are completed
-    await()
-        .until(() -> clientMetadataService.getRefreshTaskCount_TEST_ONLY() == 0);
-  }
-}
-
-
-class Customer implements DataSerializable {
-  private String name;
-
-  String address;
-
-  public Customer() {}
-
-  public Customer(String name, String address) {
-    this.name = name;
-    this.address = address;
+    await().untilAsserted(() -> {
+      assertThat(clientMetadataService.getRefreshTaskCount_TEST_ONLY()).isZero();
+    });
   }
 
-  @Override
-  public void fromData(DataInput in) throws IOException {
-    this.name = DataSerializer.readString(in);
-    this.address = DataSerializer.readString(in);
+  private static class PutFunction extends FunctionAdapter implements DataSerializable {
 
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeString(this.address, out);
-  }
-
-  @Override
-  public String toString() {
-    return "Customer { name=" + this.name + " address=" + this.address + "}";
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    public PutFunction() {
+      // required
     }
 
-    if (!(o instanceof Customer)) {
+    @Override
+    public String getId() {
+      return "fid";
+    }
+
+    @Override
+    public void execute(FunctionContext context) {
+      RegionFunctionContext rc = (RegionFunctionContext) context;
+      Region<Object, Object> r = rc.getDataSet();
+      Set filter = rc.getFilter();
+      if (rc.getFilter() == null) {
+        for (int i = 0; i < 200; i++) {
+          r.put(i, i);
+        }
+      } else {
+        for (Object key : filter) {
+          r.put(key, key);
+        }
+      }
+      context.getResultSender().lastResult(Boolean.TRUE);
+    }
+
+    @Override
+    public boolean isHA() {
       return false;
     }
 
-    Customer cust = (Customer) o;
-    return (cust.name.equals(name) && cust.address.equals(address));
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, address);
-  }
-}
-
-
-class Order implements DataSerializable {
-  String orderName;
-
-  public Order() {}
-
-  public Order(String orderName) {
-    this.orderName = orderName;
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException {
-    this.orderName = DataSerializer.readString(in);
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.orderName, out);
-  }
-
-  @Override
-  public String toString() {
-    return this.orderName;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+    @Override
+    public boolean optimizeForWrite() {
       return true;
     }
 
-    if (obj instanceof Order) {
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      // nothing
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      // nothing
+    }
+  }
+
+  private static class Customer implements DataSerializable {
+
+    private String name;
+    private String address;
+
+    public Customer() {
+      // nothing
+    }
+
+    private Customer(String name, String address) {
+      this.name = name;
+      this.address = address;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException {
+      name = DataSerializer.readString(in);
+      address = DataSerializer.readString(in);
+
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(name, out);
+      DataSerializer.writeString(address, out);
+    }
+
+    @Override
+    public String toString() {
+      return "Customer{name='" + name + "', address='" + address + "'}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Customer)) {
+        return false;
+      }
+      Customer other = (Customer) o;
+      return other.name.equals(name) && other.address.equals(address);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, address);
+    }
+  }
+
+  private static class Order implements DataSerializable {
+
+    private String name;
+
+    public Order() {
+      // nothing
+    }
+
+    private Order(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException {
+      name = DataSerializer.readString(in);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(name, out);
+    }
+
+    @Override
+    public String toString() {
+      return "Order{name='" + name + "'}";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj instanceof Order) {
+        return false;
+      }
       Order other = (Order) obj;
-      return other.orderName != null && other.orderName.equals(this.orderName);
-    }
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    if (orderName == null) {
-      return super.hashCode();
-    }
-    return orderName.hashCode();
-  }
-}
-
-
-class Shipment implements DataSerializable {
-  String shipmentName;
-
-  public Shipment() {}
-
-  public Shipment(String shipmentName) {
-    this.shipmentName = shipmentName;
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.shipmentName = DataSerializer.readString(in);
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.shipmentName, out);
-  }
-
-  @Override
-  public String toString() {
-    return this.shipmentName;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+      return other.name != null && other.name.equals(name);
     }
 
-    if (obj instanceof Shipment) {
+    @Override
+    public int hashCode() {
+      if (name == null) {
+        return super.hashCode();
+      }
+      return name.hashCode();
+    }
+  }
+
+  private static class Shipment implements DataSerializable {
+
+    private String name;
+
+    public Shipment() {
+      // nothing
+    }
+
+    private Shipment(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      name = DataSerializer.readString(in);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(name, out);
+    }
+
+    @Override
+    public String toString() {
+      return "Shipment{name='" + name + "'}";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof Shipment)) {
+        return false;
+      }
       Shipment other = (Shipment) obj;
-      return other.shipmentName != null && other.shipmentName.equals(this.shipmentName);
+      return other.name != null && other.name.equals(name);
     }
-    return false;
-  }
 
-  @Override
-  public int hashCode() {
-    if (shipmentName == null) {
-      return super.hashCode();
+    @Override
+    public int hashCode() {
+      if (name == null) {
+        return super.hashCode();
+      }
+      return name.hashCode();
     }
-    return shipmentName.hashCode();
   }
 
-}
+  private static class MemberCrashedListener extends UniversalMembershipListenerAdapter {
 
+    private final CountDownLatch latch;
 
-class MyMembershipListenerImpl extends UniversalMembershipListenerAdapter {
-  private AtomicReference<CountDownLatch> latch;
+    private MemberCrashedListener(CountDownLatch latch) {
+      this.latch = latch;
+    }
 
-  public MyMembershipListenerImpl(AtomicReference<CountDownLatch> latch) {
-    this.latch = latch;
+    @Override
+    public void memberCrashed(MembershipEvent event) {
+      latch.countDown();
+    }
+
+    @Override
+    public String toString() {
+      return "MemberCrashedListener{latch=" + latch + '}';
+    }
   }
 
-  public void memberCrashed(MembershipEvent event) {
-    latch.get().countDown();
+  private static class CustomerId implements DataSerializable {
+
+    private int id;
+
+    public CustomerId() {
+      // required
+    }
+
+    private CustomerId(int id) {
+      this.id = id;
+    }
+
+    private int getId() {
+      return id;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      id = DataSerializer.readInteger(in);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeInteger(id, out);
+    }
+
+    @Override
+    public String toString() {
+      return "CustId{id=" + id + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof CustomerId)) {
+        return false;
+      }
+      CustomerId other = (CustomerId) o;
+      return other.id == id;
+    }
+
+    @Override
+    public int hashCode() {
+      return id;
+    }
+  }
+
+  private static class OrderId implements DataSerializable {
+
+    private int id;
+    private CustomerId customerId;
+
+    public OrderId() {
+      // required
+    }
+
+    private OrderId(int id, CustomerId customerId) {
+      this.id = id;
+      this.customerId = customerId;
+    }
+
+    private CustomerId getCustomerId() {
+      return customerId;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      id = DataSerializer.readInteger(in);
+      customerId = DataSerializer.readObject(in);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeInteger(id, out);
+      DataSerializer.writeObject(customerId, out);
+    }
+
+    @Override
+    public String toString() {
+      return "OrderId{id=" + id + ", custId=" + customerId + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof OrderId)) {
+        return false;
+      }
+      OrderId other = (OrderId) o;
+      return other.id == id && other.customerId.equals(customerId);
+
+    }
+
+    @Override
+    public int hashCode() {
+      return customerId.hashCode();
+    }
+  }
+
+  private static class ShipmentId implements DataSerializable {
+
+    private int id;
+    private OrderId orderId;
+
+    public ShipmentId() {
+      // required
+    }
+
+    private ShipmentId(int id, OrderId orderId) {
+      this.id = id;
+      this.orderId = orderId;
+    }
+
+    public OrderId getOrderId() {
+      return orderId;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      id = DataSerializer.readInteger(in);
+      orderId = DataSerializer.readObject(in);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeInteger(id, out);
+      DataSerializer.writeObject(orderId, out);
+    }
+
+    @Override
+    public String toString() {
+      return "ShipmentId{id=" + id + ", orderId=" + orderId + '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof ShipmentId)) {
+        return false;
+      }
+      ShipmentId other = (ShipmentId) obj;
+      return orderId.equals(other.orderId) && id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+      return orderId.getCustomerId().hashCode();
+    }
+  }
+
+  public static class CustomerIdPartitionResolver<K, V> implements PartitionResolver<K, V> {
+
+    private String id;
+
+    public CustomerIdPartitionResolver() {
+      // required
+    }
+
+    public CustomerIdPartitionResolver(String id) {
+      this.id = id;
+    }
+
+    @Override
+    public String getName() {
+      return null;
+    }
+
+    @Override
+    public Serializable getRoutingObject(EntryOperation opDetails) {
+      Serializable routingObject = null;
+      if (opDetails.getKey() instanceof ShipmentId) {
+        ShipmentId shipmentId = (ShipmentId) opDetails.getKey();
+        routingObject = shipmentId.getOrderId().getCustomerId();
+      }
+      if (opDetails.getKey() instanceof OrderId) {
+        OrderId orderId = (OrderId) opDetails.getKey();
+        routingObject = orderId.getCustomerId();
+      } else if (opDetails.getKey() instanceof CustomerId) {
+        CustomerId customerId = (CustomerId) opDetails.getKey();
+        routingObject = customerId.getId();
+      }
+      return routingObject;
+    }
+
+    @Override
+    public String toString() {
+      return "CustomerIdPartitionResolver{id='" + id + "'}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof CustomerIdPartitionResolver)) {
+        return false;
+      }
+      CustomerIdPartitionResolver other = (CustomerIdPartitionResolver) o;
+      return other.id.equals(id);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(id);
+    }
   }
 }

@@ -476,6 +476,11 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     @Override
+    public int getConnectionCount() {
+      return 0;
+    }
+
+    @Override
     public EndpointManager getEndpointManager() {
       return null;
     }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -153,8 +154,7 @@ public class FunctionExecutionNodePruner {
 
     InternalDistributedMember node = null;
     int max = -1;
-    ArrayList<InternalDistributedMember> nodesOfEqualSize =
-        new ArrayList<InternalDistributedMember>();
+    List<InternalDistributedMember> nodesOfEqualSize = new ArrayList<>();
 
     for (Map.Entry<InternalDistributedMember, int[]> entry : entrySet) {
       int[] buckets = entry.getValue();
@@ -177,7 +177,7 @@ public class FunctionExecutionNodePruner {
         ? nodesOfEqualSize.get(PartitionedRegion.RANDOM.nextInt(nodesOfEqualSize.size())) : null);
   }
 
-  public static HashMap<Integer, HashSet> groupByBucket(PartitionedRegion pr, Set routingKeys,
+  public static Map<Integer, Set> groupByBucket(PartitionedRegion pr, Set routingKeys,
       final boolean primaryMembersNeeded, final boolean hasRoutingObjects,
       final boolean isBucketSetAsFilter) {
     HashMap bucketToKeysMap = new HashMap();

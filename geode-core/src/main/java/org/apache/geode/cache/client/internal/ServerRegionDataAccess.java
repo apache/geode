@@ -110,7 +110,8 @@ public interface ServerRegionDataAccess {
    */
   Set keySet();
 
-  VersionedObjectList putAll(Map map, EventID eventId, boolean skipCallbacks, Object callbackArg);
+  VersionedObjectList putAll(Map<Object, Object> map, EventID eventId, boolean skipCallbacks,
+      Object callbackArg);
 
   VersionedObjectList removeAll(Collection<Object> keys, EventID eventId, Object callbackArg);
 

@@ -65,7 +65,7 @@ public class ExecuteRegionFunctionSingleHopOp {
   public static void execute(ExecutablePool pool, Region region,
       ServerRegionFunctionExecutor serverRegionExecutor,
       ResultCollector resultCollector,
-      Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      Map<ServerLocation, ? extends Set> serverToFilterMap,
       boolean isHA,
       final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction,
       final Supplier<AbstractOp> executeRegionFunctionOpSupplier) {
@@ -113,7 +113,7 @@ public class ExecuteRegionFunctionSingleHopOp {
 
   private static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(
       ServerRegionFunctionExecutor serverRegionExecutor,
-      final Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      final Map<ServerLocation, ? extends Set> serverToFilterMap,
       final PoolImpl pool,
       ClientMetadataService cms,
       final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> opFactory) {

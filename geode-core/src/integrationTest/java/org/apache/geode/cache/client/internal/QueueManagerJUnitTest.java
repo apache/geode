@@ -317,6 +317,11 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
+    public int getConnectionCount() {
+      return 0;
+    }
+
+    @Override
     public Object execute(Op op, int retryAttempts) {
       return null;
     }

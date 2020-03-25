@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +56,7 @@ public class GetAllOpJUnitTest {
     for (int i = 1; i <= 10; i++) {
       keys.add(i);
     }
-    Map<ServerLocation, HashSet> serverToFilterMap = new HashMap<>();
+    Map<ServerLocation, Set> serverToFilterMap = new HashMap<>();
     when(cms.getServerToFilterMap(keys, region, true)).thenReturn(serverToFilterMap);
     ServerLocation serverLocation = new ServerLocation("localhost", 12345);
     serverToFilterMap.put(serverLocation, new HashSet(keys));

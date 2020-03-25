@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
@@ -203,6 +204,7 @@ public class ClientPartitionAdvisor {
     }
   }
 
+  @VisibleForTesting
   public Map<Integer, List<BucketServerLocation66>> getBucketServerLocationsMap_TEST_ONLY() {
     return this.bucketServerLocationsMap;
   }

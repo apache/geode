@@ -22,10 +22,13 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -34,6 +37,8 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -46,7 +51,6 @@ import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.ClientPartitionAdvisor;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.OrderId;
@@ -62,16 +66,17 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
+@SuppressWarnings("serial")
 public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
+
   private static final String PR_NAME = "single_hop_pr";
   private static final String PR_NAME2 = "single_hop_pr_2";
   private static final String PR_NAME3 = "single_hop_pr_3";
   private static final String CUSTOMER = "CUSTOMER";
   private static final String ORDER = "ORDER";
   private static final String SHIPMENT = "SHIPMENT";
-  protected static InternalDistributedSystem system;
 
   private static final String CUSTOMER2 = "CUSTOMER2";
   private static final String ORDER2 = "ORDER2";
@@ -1222,5 +1227,152 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
   private static void setHonourServerGroupsInPRSingleHop() {
     System.setProperty(
         GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "True");
+  }
+
+  private static class Customer implements DataSerializable {
+    private String name;
+    private String address;
+
+    public Customer() {
+      // nothing
+    }
+
+    public Customer(String name, String address) {
+      this.name = name;
+      this.address = address;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException {
+      name = DataSerializer.readString(in);
+      address = DataSerializer.readString(in);
+
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(name, out);
+      DataSerializer.writeString(address, out);
+    }
+
+    @Override
+    public String toString() {
+      return "Customer { name=" + name + " address=" + address + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+
+      if (!(o instanceof Customer)) {
+        return false;
+      }
+
+      Customer cust = (Customer) o;
+      return cust.name.equals(name) && cust.address.equals(address);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, address);
+    }
+  }
+
+  private static class Order implements DataSerializable {
+    private String orderName;
+
+    public Order() {
+      // nothing
+    }
+
+    private Order(String orderName) {
+      this.orderName = orderName;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException {
+      orderName = DataSerializer.readString(in);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(orderName, out);
+    }
+
+    @Override
+    public String toString() {
+      return orderName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+
+      if (obj instanceof Order) {
+        Order other = (Order) obj;
+        return other.orderName != null && other.orderName.equals(orderName);
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      if (orderName == null) {
+        return super.hashCode();
+      }
+      return orderName.hashCode();
+    }
+  }
+
+  private static class Shipment implements DataSerializable {
+    private String shipmentName;
+
+    public Shipment() {
+      // nothing
+    }
+
+    private Shipment(String shipmentName) {
+      this.shipmentName = shipmentName;
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      shipmentName = DataSerializer.readString(in);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(shipmentName, out);
+    }
+
+    @Override
+    public String toString() {
+      return shipmentName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+
+      if (obj instanceof Shipment) {
+        Shipment other = (Shipment) obj;
+        return other.shipmentName != null && other.shipmentName.equals(shipmentName);
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      if (shipmentName == null) {
+        return super.hashCode();
+      }
+      return shipmentName.hashCode();
+    }
   }
 }

@@ -3578,7 +3578,7 @@ public class PartitionedRegion extends LocalRegion
       boolean isBucketSetAsFilter) {
     final Set routingKeys = execution.getFilter();
     final boolean primaryMembersNeeded = function.optimizeForWrite();
-    HashMap<Integer, HashSet> bucketToKeysMap = FunctionExecutionNodePruner.groupByBucket(this,
+    Map<Integer, Set> bucketToKeysMap = FunctionExecutionNodePruner.groupByBucket(this,
         routingKeys, primaryMembersNeeded, false, isBucketSetAsFilter);
     HashMap<InternalDistributedMember, HashSet> memberToKeysMap =
         new HashMap<InternalDistributedMember, HashSet>();

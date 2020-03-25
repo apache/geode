@@ -15,7 +15,6 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -296,12 +295,12 @@ public class SingleHopClientExecutor {
   }
 
   static Map<ServerLocation, Object> submitGetAll(
-      Map<ServerLocation, HashSet> serverToFilterMap,
+      Map<ServerLocation, Set> serverToFilterMap,
       List callableTasks, ClientMetadataService cms,
       LocalRegion region) {
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
-      Map<ServerLocation, Object> resultMap = new HashMap<ServerLocation, Object>();
+      Map<ServerLocation, Object> resultMap = new HashMap<>();
       List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);

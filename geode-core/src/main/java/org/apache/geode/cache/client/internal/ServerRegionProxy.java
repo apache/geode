@@ -18,8 +18,6 @@ package org.apache.geode.cache.client.internal;
 import static java.util.Collections.emptySet;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -584,7 +582,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   @Override
-  public VersionedObjectList putAll(Map map, EventID eventId, boolean skipCallbacks,
+  public VersionedObjectList putAll(Map<Object, Object> map, EventID eventId, boolean skipCallbacks,
       Object callbackArg) {
     recordTXOperation(ServerRegionOperation.PUT_ALL, null, map, eventId);
     int txID = TXManagerImpl.getCurrentTXUniqueId();
@@ -679,7 +677,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       if (cms.isMetadataStable()) {
 
         if (serverRegionExecutor.getFilter().isEmpty()) {
-          HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
+          Map<ServerLocation, Set<Integer>> serverToBuckets =
               cms.groupByServerToAllBuckets(region, function.optimizeForWrite());
 
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
@@ -704,7 +702,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           }
         } else {
           boolean isBucketFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
-          Map<ServerLocation, HashSet> serverToFilterMap =
+          Map<ServerLocation, Set> serverToFilterMap =
               cms.getServerToFilterMap(serverRegionExecutor.getFilter(), region,
                   function.optimizeForWrite(), isBucketFilter);
 
@@ -769,7 +767,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       if (cms.isMetadataStable()) {
 
         if (serverRegionExecutor.getFilter().isEmpty()) {
-          HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
+          Map<ServerLocation, Set<Integer>> serverToBuckets =
               cms.groupByServerToAllBuckets(region, optimizeForWrite);
 
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
@@ -792,7 +790,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
         } else {
           boolean isBucketsAsFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
-          Map<ServerLocation, HashSet> serverToFilterMap = cms.getServerToFilterMap(
+          Map<ServerLocation, Set> serverToFilterMap = cms.getServerToFilterMap(
               serverRegionExecutor.getFilter(), region, optimizeForWrite, isBucketsAsFilter);
 
           if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
