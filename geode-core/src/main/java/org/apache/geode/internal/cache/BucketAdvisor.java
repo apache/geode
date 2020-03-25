@@ -2303,7 +2303,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    */
   public static class ServerBucketProfile extends BucketProfile {
 
-    public Set<BucketServerLocation66> bucketServerLocations;
+    private Set<BucketServerLocation66> bucketServerLocations;
 
     private int bucketId;
 

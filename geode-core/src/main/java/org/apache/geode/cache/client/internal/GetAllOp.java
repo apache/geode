@@ -15,7 +15,6 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
@@ -63,9 +63,9 @@ public class GetAllOp {
   public static VersionedObjectList execute(ExecutablePool pool, Region region, List keys,
       int retryAttempts, Object callback) {
     AbstractOp op = new GetAllOpImpl(region.getFullPath(), keys, callback);
-    ClientMetadataService cms = ((LocalRegion) region).getCache().getClientMetadataService();
+    ClientMetadataService cms = ((InternalRegion) region).getCache().getClientMetadataService();
 
-    Map<ServerLocation, HashSet> serverToFilterMap = cms.getServerToFilterMap(keys, region, true);
+    Map<ServerLocation, Set> serverToFilterMap = cms.getServerToFilterMap(keys, region, true);
 
     if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
       op.initMessagePart();
@@ -116,10 +116,10 @@ public class GetAllOp {
   }
 
   static List constructGetAllTasks(String region,
-      final Map<ServerLocation, HashSet> serverToFilterMap, final PoolImpl pool,
+      final Map<ServerLocation, Set> serverToFilterMap, final PoolImpl pool,
       final Object callback) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
-    ArrayList<ServerLocation> servers = new ArrayList<ServerLocation>(serverToFilterMap.keySet());
+    final List<SingleHopOperationCallable> tasks = new ArrayList<>();
+    ArrayList<ServerLocation> servers = new ArrayList<>(serverToFilterMap.keySet());
 
     if (logger.isDebugEnabled()) {
       logger.debug("Constructing tasks for the servers {}", servers);
@@ -138,7 +138,7 @@ public class GetAllOp {
 
   static class GetAllOpImpl extends AbstractOp {
 
-    private List keyList;
+    private final List keyList;
     private final Object callback;
 
     /**
