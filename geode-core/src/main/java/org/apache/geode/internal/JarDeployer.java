@@ -20,7 +20,6 @@ import static java.util.stream.Collectors.toSet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,7 +93,7 @@ public class JarDeployer implements Serializable {
 
       verifyWritableDeployDirectory();
       Path deployedFile = getNextVersionedJarFile(stagedJarName).toPath();
-      Files.copy(stagedJar.toPath(), deployedFile);
+      FileUtils.copyFile(stagedJar, deployedFile.toFile());
 
       return new DeployedJar(deployedFile.toFile());
     } finally {
