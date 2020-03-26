@@ -624,6 +624,7 @@ tasks.named('srcDistTar').configure {
 
 [tasks.named('distZip'),
  tasks.named('srcDistZip'),
+ tasks.named('dockerfileZip'),
  ]*.configure {
   enabled = false
 }

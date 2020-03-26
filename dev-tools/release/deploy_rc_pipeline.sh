@@ -376,6 +376,13 @@ jobs:
               tar xzf src.tgz
               cd apache-geode-benchmarks-${VERSION}-src
               java -version
+              mkdir -p ~/.ssh
+              ssh-keygen -m PEM -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
+              cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+              apt-get update
+              apt-get install openssh-server --no-install-recommends -y
+              echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+              service ssh start
               ./gradlew build test
   - name: verify-keys
     serial: true

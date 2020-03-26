@@ -69,6 +69,14 @@ else
 fi
 
 
+function failMsg {
+  errln=$1
+  echo "ERROR: script did NOT complete successfully"
+  echo "Comment out any steps that already succeeded (approximately lines 80-$(( errln - 1 ))) and try again"
+}
+trap 'failMsg $LINENO' ERR
+
+
 echo ""
 echo "============================================================"
 echo "Publishing artifacts to apache release location..."
@@ -102,7 +110,7 @@ echo "============================================================"
 echo "Pushing tags..."
 echo "============================================================"
 
-for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS }; do
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git push origin rel/v${FULL_VERSION}

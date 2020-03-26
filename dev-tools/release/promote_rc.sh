@@ -83,6 +83,14 @@ else
 fi
 
 
+function failMsg {
+  errln=$1
+  echo "ERROR: script did NOT complete successfully"
+  echo "Comment out any steps that already succeeded (approximately lines 94-$(( errln - 1 ))) and try again"
+}
+trap 'failMsg $LINENO' ERR
+
+
 echo ""
 echo "============================================================"
 echo "Releasing artifacts to mirror sites..."
