@@ -455,7 +455,7 @@ public class ExpireIntegrationTest {
 
   @Test
   @Ignore("this test needs to pass to have feature parity with native redis")
-  public void SettingExiprationToNegativeValue_ShouldDeleteKey() throws InterruptedException {
+  public void SettingExiprationToNegativeValue_ShouldDeleteKey() {
 
     String key = "key";
     String value = "value";
@@ -464,8 +464,8 @@ public class ExpireIntegrationTest {
     Long expirationWasSet = jedis.expire(key, -5);
     assertThat(expirationWasSet).isEqualTo(1);
 
-    String actualValue = jedis.get(key);
-    assertThat(actualValue).isNull();
+    Boolean keyExists = jedis.exists(key);
+    assertThat(keyExists).isTrue();
   }
 
 
