@@ -138,64 +138,7 @@ jobs:
               cd apache-geode-${VERSION}-src
               java -version
               ./gradlew test
-  - name: run-geode-examples
-    serial: true
-    plan:
-      - aggregate:
-          - get: geode-examples
-            trigger: true
-      - task: validate
-        timeout: 1h
-        config:
-          image_resource:
-            type: docker-image
-            source:
-              repository: openjdk
-              tag: 8
-          inputs:
-            - name: geode-examples
-          platform: linux
-          run:
-            path: /bin/sh
-            args:
-            - -ec
-            - |
-              set -ex
-              cd geode-examples
-              java -version
-              ./gradlew runAll
-  - name: run-geode-examples-from-src-tar-gz
-    serial: true
-    plan:
-      - aggregate:
-          - get: geode-examples
-            trigger: true
-      - task: validate
-        timeout: 1h
-        config:
-          image_resource:
-            type: docker-image
-            source:
-              repository: openjdk
-              tag: 8
-          inputs:
-            - name: geode-examples
-          platform: linux
-          run:
-            path: /bin/sh
-            args:
-            - -ec
-            - |
-              set -ex
-              FULL_VERSION=$(cat geode-examples/gradle.properties | grep geodeReleaseUrl | sed -e 's#.*/geode/##')
-              VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
-              STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}.tar.gz > src.tgz
-              tar xzf src.tgz
-              cd apache-geode-examples-${VERSION}
-              java -version
-              ./gradlew -PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN} build runAll
-  - name: run-geode-examples-from-src-zip-11
+  - name: run-geode-examples-jdk11
     serial: true
     plan:
       - aggregate:
@@ -218,11 +161,37 @@ jobs:
             - -ec
             - |
               set -ex
-              FULL_VERSION=$(cat geode-examples/gradle.properties | grep geodeReleaseUrl | sed -e 's#.*/geode/##')
+              cd geode-examples
+              java -version
+              ./gradlew runAll
+  - name: run-geode-examples-from-src-tar-gz-jdk8
+    serial: true
+    plan:
+      - aggregate:
+          - get: geode-examples
+            trigger: true
+      - task: validate
+        timeout: 1h
+        config:
+          image_resource:
+            type: docker-image
+            source:
+              repository: openjdk
+              tag: 8
+          inputs:
+            - name: geode-examples
+          platform: linux
+          run:
+            path: /bin/sh
+            args:
+            - -ec
+            - |
+              set -ex
+              FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}.zip > src.zip
-              unzip src.zip
+              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}.tar.gz > src.tgz
+              tar xzf src.tgz
               cd apache-geode-examples-${VERSION}
               java -version
               ./gradlew -PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN} build runAll
@@ -284,6 +253,7 @@ jobs:
               repository: openjdk
               tag: 8
           inputs:
+            - name: geode-native
             - name: geode
           platform: linux
           run:
@@ -292,7 +262,7 @@ jobs:
             - -ec
             - |
               set -ex
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               # build geode from source
               cd geode
@@ -331,6 +301,7 @@ jobs:
               repository: openjdk
               tag: 8
           inputs:
+            - name: geode
             - name: upthewaterspout-tests
             - name: geode-examples
           platform: linux
@@ -340,7 +311,7 @@ jobs:
             - -ec
             - |
               set -ex
-              FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
               cd upthewaterspout-tests
