@@ -28,8 +28,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
 /**
  * A Singleton instance of the memory cache for clusters.
@@ -47,6 +48,7 @@ public class Repository {
   private boolean useSSLLocator = false;
   private boolean useSSLManager = false;
   private Properties javaSslProperties;
+  private OAuth2AuthorizedClientService authorizedClientService;
 
   Locale locale =
       new Locale(PulseConstants.APPLICATION_LANGUAGE, PulseConstants.APPLICATION_COUNTRY);
@@ -56,9 +58,7 @@ public class Repository {
 
   private PulseConfig pulseConfig = new PulseConfig();
 
-  private Repository() {
-
-  }
+  private Repository() {}
 
   public static Repository get() {
     return instance;
@@ -130,15 +130,19 @@ public class Repository {
 
     if (auth instanceof OAuth2AuthenticationToken) {
       OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) auth;
+      OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
+          token.getAuthorizedClientRegistrationId(),
+          token.getName());
+
       return getClusterWithCredentials(token.getPrincipal().getName(),
-          ((DefaultOidcUser) token.getPrincipal()).getIdToken().getTokenValue());
+          client.getAccessToken().getTokenValue());
     }
 
-    return getClusterWithUserNameAndPassword(auth.getName(), auth.getCredentials().toString());
+    return getClusterWithUserNameAndPassword(auth.getName(), null);
   }
 
   public Cluster getClusterWithUserNameAndPassword(String userName, String password) {
-    return getClusterWithCredentials(userName, new String[]{userName, password});
+    return getClusterWithCredentials(userName, new String[] {userName, password});
   }
 
   public Cluster getClusterWithCredentials(String username, Object credentials) {
@@ -189,5 +193,7 @@ public class Repository {
     return this.resourceBundle;
   }
 
-
+  public void setAuthorizedClientService(OAuth2AuthorizedClientService authorizedClientService) {
+    this.authorizedClientService = authorizedClientService;
+  }
 }

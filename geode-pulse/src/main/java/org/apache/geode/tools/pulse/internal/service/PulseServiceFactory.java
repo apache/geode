@@ -43,6 +43,10 @@ public class PulseServiceFactory implements ApplicationContextAware {
     return null;
   }
 
+  public ApplicationContext getApplicationContext() {
+    return applicationContext;
+  }
+
   @Override
   public void setApplicationContext(final ApplicationContext applicationContext)
       throws BeansException {

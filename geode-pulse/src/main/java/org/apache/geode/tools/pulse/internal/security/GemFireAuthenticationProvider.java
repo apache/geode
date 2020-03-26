@@ -54,7 +54,8 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
     String password = authentication.getCredentials().toString();
 
     logger.debug("Connecting to GemFire with user=" + name);
-    JMXConnector jmxc = Repository.get().getClusterWithUserNameAndPassword(name, password).getJMXConnector();
+    JMXConnector jmxc =
+        Repository.get().getClusterWithUserNameAndPassword(name, password).getJMXConnector();
     if (jmxc == null) {
       throw new BadCredentialsException("Error connecting to GemFire JMX Server");
     }
