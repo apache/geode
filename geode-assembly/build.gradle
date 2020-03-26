@@ -114,14 +114,6 @@ publishing {
 }
 
 gradle.taskGraph.whenReady( { graph ->
-  tasks.withType(Zip).each { zip ->
-    if ( "task ':geode-assembly:dockerfileZip'" == "${zip}") {
-      zip.enabled = false
-    }
-  }
-})
-
-gradle.taskGraph.whenReady( { graph ->
   tasks.withType(AbstractArchiveTask).findAll {
     it.name.toLowerCase().contains("dist")
   }.each { archive ->
@@ -653,6 +645,7 @@ tasks.named('srcDistTar').configure {
 
 [tasks.named('distZip'),
  tasks.named('srcDistZip'),
+ tasks.named('dockerfileZip'),
  ]*.configure {
   enabled = false
 }
