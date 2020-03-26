@@ -102,7 +102,7 @@ echo "============================================================"
 echo "Pushing tags..."
 echo "============================================================"
 
-for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS }; do
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git push origin rel/v${FULL_VERSION}
