@@ -114,6 +114,12 @@ publishing {
 }
 
 gradle.taskGraph.whenReady( { graph ->
+  tasks.withType(Zip).each { zip ->
+    zip.enabled = false
+  }
+})
+
+gradle.taskGraph.whenReady( { graph ->
   tasks.withType(AbstractArchiveTask).findAll {
     it.name.toLowerCase().contains("dist")
   }.each { archive ->
