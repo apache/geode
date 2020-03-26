@@ -203,4 +203,29 @@ public class RestoreRedundancyOperationImplTest {
     verify(manager, times(1)).removeInProgressRestoreRedundancy(resultsFuture);
     verify(stats, times(1)).endRestoreRedundancy(startTime);
   }
+
+  @Test
+  public void redundancyStatusReturnsResultsForAllIncludedRegions() {
+    RegionFilter filter = mock(RegionFilter.class);
+    doReturn(filter).when(operation).getRegionFilter();
+
+    PartitionedRegion includeRegion = mock(PartitionedRegion.class);
+    PartitionedRegion excludeRegion = mock(PartitionedRegion.class);
+    Set<PartitionedRegion> regions = new HashSet<>();
+    regions.add(includeRegion);
+    regions.add(excludeRegion);
+    when(cache.getPartitionedRegions()).thenReturn(regions);
+
+    when(filter.include(includeRegion)).thenReturn(true);
+    when(filter.include(excludeRegion)).thenReturn(false);
+
+    RegionRedundancyStatus regionResult = mock(RegionRedundancyStatus.class);
+    doReturn(regionResult).when(operation).getRegionResult(any());
+
+    operation.redundancyStatus();
+
+    verify(operation, times(1)).getRegionResult(includeRegion);
+    verify(operation, times(0)).getRegionResult(excludeRegion);
+    verify(emptyResults, times(1)).addRegionResult(regionResult);
+  }
 }
