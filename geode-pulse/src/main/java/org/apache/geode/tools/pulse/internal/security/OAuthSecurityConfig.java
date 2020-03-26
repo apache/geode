@@ -31,8 +31,6 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 
 @Configuration
@@ -86,19 +84,13 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
     return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository);
   }
 
-  @Bean
-  public OAuth2AuthorizedClientRepository authorizedClientRepository(
-      OAuth2AuthorizedClientService authorizedClientService) {
-    return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService);
-  }
-
   private ClientRegistration clientRegistration() {
     return ClientRegistration.withRegistrationId(providerId)
         .clientId(clientId)
         .clientSecret(clientSecret)
         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
         .redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
-        .scope("openid", "CLUSTER:READ", "CLUSTER:WRITE", "DATA:READ", "DATA:WRITE")
+        .scope("CLUSTER:READ", "CLUSTER:WRITE", "DATA:READ", "DATA:WRITE", "openid")
         .authorizationUri(authorizationUri)
         .tokenUri(tokenUri)
         .userInfoUri(userInfoUri)

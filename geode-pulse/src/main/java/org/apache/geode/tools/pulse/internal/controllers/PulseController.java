@@ -33,8 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -80,14 +78,7 @@ public class PulseController {
 
   public PulseController(PulseServiceFactory pulseServiceFactory) {
     this.pulseServiceFactory = pulseServiceFactory;
-    ApplicationContext applicationContext = pulseServiceFactory.getApplicationContext();
-    try {
-      OAuth2AuthorizedClientService authorizedClientService = applicationContext.getBean(
-          "authorizedClientService", OAuth2AuthorizedClientService.class);
-      Repository.get().setAuthorizedClientService(authorizedClientService);
-    } catch (Exception bie) {
-      logger.info("authorizedClientService bean not in applicationContext: {}", bie.toString());
-    }
+    Repository.get().setApplicationContext(pulseServiceFactory.getApplicationContext());
   }
 
   @RequestMapping(value = "/pulseUpdate", method = RequestMethod.POST)

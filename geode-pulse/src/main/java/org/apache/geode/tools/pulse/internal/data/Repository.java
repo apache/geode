@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -48,7 +49,7 @@ public class Repository {
   private boolean useSSLLocator = false;
   private boolean useSSLManager = false;
   private Properties javaSslProperties;
-  private OAuth2AuthorizedClientService authorizedClientService;
+  private ApplicationContext applicationContext;
 
   Locale locale =
       new Locale(PulseConstants.APPLICATION_LANGUAGE, PulseConstants.APPLICATION_COUNTRY);
@@ -130,6 +131,8 @@ public class Repository {
 
     if (auth instanceof OAuth2AuthenticationToken) {
       OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) auth;
+      OAuth2AuthorizedClientService authorizedClientService =
+          applicationContext.getBean(OAuth2AuthorizedClientService.class);
       OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
           token.getAuthorizedClientRegistrationId(),
           token.getName());
@@ -193,7 +196,7 @@ public class Repository {
     return this.resourceBundle;
   }
 
-  public void setAuthorizedClientService(OAuth2AuthorizedClientService authorizedClientService) {
-    this.authorizedClientService = authorizedClientService;
+  public void setApplicationContext(ApplicationContext applicationContext) {
+    this.applicationContext = applicationContext;
   }
 }
