@@ -22,8 +22,8 @@ import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionRes
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFERS_COMPLETED;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFER_TIME;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.REDUNDANCY_FAILED_FOR_REGIONS;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.REDUNDANCY_RESTORED_FOR_REGIONS;
+import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.REDUNDANCY_NOT_SATISFIED_FOR_REGIONS;
+import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.REDUNDANCY_SATISFIED_FOR_REGIONS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
@@ -105,9 +105,9 @@ public class RestoreRedundancyResultsImplTest {
 
     assertThat(messageLines, contains(NO_REDUNDANT_COPIES_FOR_REGIONS,
         zeroRedundancyRegionResult.toString(),
-        REDUNDANCY_FAILED_FOR_REGIONS,
+        REDUNDANCY_NOT_SATISFIED_FOR_REGIONS,
         underRedundancyRegionResult.toString(),
-        REDUNDANCY_RESTORED_FOR_REGIONS,
+        REDUNDANCY_SATISFIED_FOR_REGIONS,
         successfulRegionResult.toString(),
         PRIMARY_TRANSFERS_COMPLETED + transfersCompleted,
         PRIMARY_TRANSFER_TIME + transferTime));

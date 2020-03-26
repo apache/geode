@@ -173,7 +173,7 @@ public class RebalanceOperationPerformer {
     }
   }
 
-  private static DistributedMember getAssociatedMembers(String region, final InternalCache cache) {
+  public static DistributedMember getAssociatedMembers(String region, final InternalCache cache) {
     DistributedRegionMXBean bean =
         ManagementService.getManagementService(cache).getDistributedRegionMXBean(region);
 
@@ -204,7 +204,7 @@ public class RebalanceOperationPerformer {
     return member;
   }
 
-  private static List<MemberPRInfo> getMemberRegionList(ManagementService managementService,
+  public static List<MemberPRInfo> getMemberRegionList(ManagementService managementService,
       InternalCache cache,
       List<String> listExcludedRegion) {
     List<MemberPRInfo> listMemberPRInfo = new ArrayList<>();
@@ -460,11 +460,11 @@ public class RebalanceOperationPerformer {
     return result;
   }
 
-  private static class MemberPRInfo {
-    ArrayList<DistributedMember> dsMemberList;
+  public static class MemberPRInfo {
+    public ArrayList<DistributedMember> dsMemberList;
     public String region;
 
-    MemberPRInfo() {
+    public MemberPRInfo() {
       region = "";
       dsMemberList = new ArrayList<>();
     }

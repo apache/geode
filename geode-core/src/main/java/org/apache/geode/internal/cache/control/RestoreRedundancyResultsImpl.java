@@ -30,10 +30,10 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
   private static final long serialVersionUID = -2558652878831737255L;
   public static final String NO_REDUNDANT_COPIES_FOR_REGIONS =
       "The following regions have redundancy configured but zero redundant copies: ";
-  public static final String REDUNDANCY_FAILED_FOR_REGIONS =
-      "Redundancy was partially restored for regions: ";
-  public static final String REDUNDANCY_RESTORED_FOR_REGIONS =
-      "Redundancy was fully restored for regions: ";
+  public static final String REDUNDANCY_NOT_SATISFIED_FOR_REGIONS =
+      "Redundancy is partially satisfied for regions: ";
+  public static final String REDUNDANCY_SATISFIED_FOR_REGIONS =
+      "Redundancy is fully satisfied for regions: ";
   public static final String PRIMARY_TRANSFERS_COMPLETED = "Total primary transfers completed = ";
   public static final String PRIMARY_TRANSFER_TIME = "Total primary transfer time (ms) = ";
 
@@ -94,20 +94,21 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
 
   @Override
   public String getMessage() {
-    // List regions with redundancy configured but no redundant copies first
     List<String> messages = new ArrayList<>();
+
+    // List regions with redundancy configured but no redundant copies first
     if (zeroRedundancyRegions.size() != 0) {
       messages.add(getResultsMessage(zeroRedundancyRegions, NO_REDUNDANT_COPIES_FOR_REGIONS));
     }
 
     // List failures
     if (underRedundancyRegions.size() != 0) {
-      messages.add(getResultsMessage(underRedundancyRegions, REDUNDANCY_FAILED_FOR_REGIONS));
+      messages.add(getResultsMessage(underRedundancyRegions, REDUNDANCY_NOT_SATISFIED_FOR_REGIONS));
     }
 
     // List successes
     if (satisfiedRedundancyRegions.size() != 0) {
-      messages.add(getResultsMessage(satisfiedRedundancyRegions, REDUNDANCY_RESTORED_FOR_REGIONS));
+      messages.add(getResultsMessage(satisfiedRedundancyRegions, REDUNDANCY_SATISFIED_FOR_REGIONS));
     }
 
     // Add info about primaries

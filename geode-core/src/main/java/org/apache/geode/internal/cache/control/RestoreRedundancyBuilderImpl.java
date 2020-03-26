@@ -104,6 +104,19 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
     }
   }
 
+  @Override
+  public RestoreRedundancyResults redundancyStatus() {
+    if (hasMemberOlderThanGeode_1_13_0()) {
+      return getErrorRestoreRedundancyResult();
+    } else {
+      RegionFilter filter = getRegionFilter();
+      RestoreRedundancyResults results = getEmptyRestoreRedundancyResults();
+      cache.getPartitionedRegions().stream().filter(filter::include)
+          .forEach(region -> results.addRegionResult(getRegionResult(region)));
+      return results;
+    }
+  }
+
   private boolean hasMemberOlderThanGeode_1_13_0() {
     return cache.getMembers().stream()
         .map(InternalDistributedMember.class::cast)

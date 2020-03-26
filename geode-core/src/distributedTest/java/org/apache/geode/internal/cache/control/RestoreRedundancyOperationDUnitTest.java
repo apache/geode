@@ -319,7 +319,7 @@ public class RestoreRedundancyOperationDUnitTest {
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
     int primariesOnServer = region.getLocalPrimaryBucketsListTestOnly().size();
     // Add one to account for integer rounding errors when dividing
-    int expectedPrimaries = 1 + numBuckets / numberOfServers;
+    int expectedPrimaries = 1 + (numBuckets / numberOfServers);
     // Because of the way reassigning primaries works, it is sometimes only possible to get the
     // difference between the most loaded member and the least loaded member to be 2, not 1 as would
     // be the case for perfect balance

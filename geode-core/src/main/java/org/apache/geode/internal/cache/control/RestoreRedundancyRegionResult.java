@@ -28,14 +28,14 @@ public class RestoreRedundancyRegionResult implements Serializable {
    * The message prefix to be applied when redundancy was successfully restored for the region used
    * to create this object.
    */
-  public static final String SATISFIED_MESSAGE = "Redundancy was successfully restored for region ";
+  public static final String SATISFIED_MESSAGE = "Redundancy satisfied for region ";
 
   /**
    * The message prefix to be applied when redundancy was not successfully restored for the region
    * used to create this object.
    */
   public static final String NOT_SATISFIED_MESSAGE =
-      "Redundancy was NOT successfully restored for region ";
+      "Redundancy NOT satisfied for region ";
 
   /**
    * The name of the region used to create this object.
