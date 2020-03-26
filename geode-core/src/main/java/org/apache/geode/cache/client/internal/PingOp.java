@@ -72,7 +72,6 @@ public class PingOp {
     protected void sendMessage(Connection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
       getMessage().setNumberOfParts(1);
-      getMessage().send(false);
       getMessage().addObjPart(serverID);
       getMessage().send(true);
       Message.MESSAGE_TYPE.set(MessageType.PING);
