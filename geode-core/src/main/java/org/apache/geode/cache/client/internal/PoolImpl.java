@@ -824,13 +824,6 @@ public class PoolImpl implements InternalPool {
     return executor.executeOn(server, op, accessed, onlyUseExistingCnx);
   }
 
-  @Override
-  public Object executeOn(Endpoint endpoint, Op op, boolean accessed,
-      boolean onlyUseExistingCnx) {
-    authenticateIfRequired(endpoint.getLocation(), op);
-    return executor.executeOn(endpoint, op, accessed, onlyUseExistingCnx);
-  }
-
   /**
    * Execute the given op on the given connection.
    *

@@ -91,17 +91,6 @@ public interface ExecutablePool {
   Object executeOn(ServerLocation server, Op op, boolean accessed, boolean onlyUseExistingCnx);
 
   /**
-   * Execute the given op on the given endpoint.
-   *
-   * @param ep the endpoint to do the execution on
-   * @param op the operation to execute
-   * @param accessed true if the connection is accessed by this execute
-   * @return the result of execution if any; null if not
-   */
-  Object executeOn(Endpoint ep, Op op, boolean accessed, boolean onlyUseExistingCnx);
-
-
-  /**
    * Execute the given op on the given connection.
    *
    * @param con the connection to do the execution on

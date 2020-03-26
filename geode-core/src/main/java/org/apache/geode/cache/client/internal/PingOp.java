@@ -36,11 +36,6 @@ public class PingOp {
     pool.executeOn(server, op, false, false);
   }
 
-  public static void execute(ExecutablePool pool, Endpoint endpoint) {
-    AbstractOp op = new PingOpImpl();
-    pool.executeOn(endpoint, op, false, false);
-  }
-
   private PingOp() {
     // no instances allowed
   }

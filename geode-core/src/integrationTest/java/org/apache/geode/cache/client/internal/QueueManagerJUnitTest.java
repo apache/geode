@@ -354,12 +354,6 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public Object executeOn(Endpoint endpoint, Op op, boolean accessed,
-        boolean onlyUseExistingCnx) {
-      return null;
-    }
-
-    @Override
     public void executeOnAllQueueServers(Op op)
         throws NoSubscriptionServersAvailableException, SubscriptionNotEnabledException {}
 
