@@ -131,19 +131,19 @@ public class CommandServlet extends HttpServlet {
     if (logQueues) {
       for (Object object : list) {
         for (Object queue : ((Map) object).keySet()) {
-          manager.getLogger().info("client cache has queue: " + queue);
+          System.out.println("client cache has queue: " + queue);
         }
       }
     }
     for (Object object : list) {
       for (Object size : ((Map) object).values()) {
         if ((Integer) size != 0) {
-          manager.getLogger().info("checkQueueDrained not drained with size " + size);
+          System.out.println("checkQueueDrained not drained with size " + size);
           return false;
         }
       }
     }
-    manager.getLogger().info("checkQueueDrained drained");
+    System.out.println("checkQueueDrained drained");
     return true;
   }
 

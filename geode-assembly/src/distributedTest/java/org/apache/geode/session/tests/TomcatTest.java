@@ -59,7 +59,12 @@ public abstract class TomcatTest extends CargoTestBase {
       executorServiceRule.submit(() -> doSessionOps(20));
     }
     if (isCachingClient()) {
-      waitUntilHARegionQueueAreDrainedOnAllServers();
+      try {
+        waitUntilHARegionQueueAreDrainedOnAllServers();
+      } catch (Exception e) {
+        dumpLogs = true;
+        throw e;
+      }
     }
     finishLatch.await();
   }

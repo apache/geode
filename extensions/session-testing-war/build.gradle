@@ -28,8 +28,6 @@ dependencies {
     exclude module: 'geode-core'
   }
   implementation('org.apache.tomcat:catalina:' + DependencyConstraints.get('tomcat6.version'))
-  implementation('org.apache.tomcat:juli:' + DependencyConstraints.get('tomcat6.version'))
-
   compileOnly(project(':extensions:geode-modules'))
   compileOnly(project(':geode-assembly:geode-assembly-test'))
 }
