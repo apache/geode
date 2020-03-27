@@ -15,40 +15,27 @@
  * limitations under the License.
  */
 
-buildscript {
-  repositories {
-    maven { url "https://plugins.gradle.org/m2/" }
-    maven { url "https://dl.bintray.com/palantir/releases" }
-    jcenter()
-  }
-
-  dependencies {
-    classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.21.1'
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
-    classpath 'com.netflix.nebula:gradle-lint-plugin:11.4.4'
-    classpath 'com.netflix.nebula:nebula-project-plugin:6.0.2'
-    classpath 'gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1'
-    classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE'
-    classpath 'org.ajoberstar.grgit:grgit-gradle:3.1.1'
-    classpath 'org.nosphere.apache:creadur-rat-gradle:0.4.0'
-    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
-  }
+plugins {
+  id "wrapper"
+  id "nebula.facet" version "6.0.2" apply false
+  id "base"
+  id "idea"
+  id "eclipse"
+  id "com.diffplug.gradle.spotless" version "3.28.0" apply false
+  id "com.github.ben-manes.versions" version "0.28.0" apply false
+  id "nebula.lint" version "16.4.0" apply false
+  id "com.palantir.docker" version "0.22.1" apply false
+  id "io.spring.dependency-management" version "1.0.9.RELEASE" apply false
+  id "org.ajoberstar.grgit" version "4.0.1" apply false
+  id "org.nosphere.apache.rat" version "0.6.0" apply false
+  id "org.sonarqube" version "2.8" apply false
 }
 
-apply plugin: 'wrapper'
-apply plugin: 'nebula.facet'
-apply plugin: 'java-library'
-apply plugin: 'idea'
-apply plugin: 'eclipse'
 
 apply from: "${scriptDir}/lint.gradle"
 apply from: "${scriptDir}/resolve-dependencies.gradle"
 apply from: "${scriptDir}/sonar.gradle"
 apply from: "${scriptDir}/rat.gradle"
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileJava.options.encoding = 'UTF-8'
 
 wrapper {
   gradleVersion = minimumGradleVersion
@@ -124,6 +111,9 @@ tasks.register('writeBuildInfo') {
       scmInfo.store(fos, '')
     }
   }
+}
+tasks.register('test') {
+  description "An all-project target for unit tests"
 }
 
 tasks.register('devBuild') {
