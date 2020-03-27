@@ -246,7 +246,7 @@ public abstract class AbstractOp implements Op {
    */
   protected void processAck(Message msg, String opName) throws Exception {
     final int msgType = msg.getMessageType();
-    if (msgType != MessageType.REPLY || msgType == MessageType.PING) {
+    if (msgType != MessageType.REPLY && msgType != MessageType.PING) {
       Part part = msg.getPart(0);
       if (msgType == MessageType.EXCEPTION) {
         String s = ": While performing a remote " + opName;
