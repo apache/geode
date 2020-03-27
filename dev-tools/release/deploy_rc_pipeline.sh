@@ -355,7 +355,7 @@ jobs:
               echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
               service ssh start
               ./gradlew build test
-  - name: verify-keys
+  - name: verify-expected-files-and-keys
     serial: true
     plan:
       - aggregate:
@@ -394,12 +394,32 @@ jobs:
                 curl -s $url/$sha > $sha
                 gpg --verify $asc
                 $sum -c $sha
+                echo $file >> exp
+                echo $asc >> exp
+                echo $sha >> exp
               }
               verifyArtifactSignature apache-geode-${VERSION}-src.tgz 256
               verifyArtifactSignature apache-geode-${VERSION}.tgz 256
               verifyArtifactSignature apache-geode-examples-${VERSION}.tar.gz 256
               verifyArtifactSignature apache-geode-native-${VERSION}-src.tar.gz 512
               verifyArtifactSignature apache-geode-benchmarks-${VERSION}-src.tgz 256
+              curl -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
+              sort < exp > expected-file-list
+              set +x
+              echo ""
+              if diff -q expected-file-list actual-file-list ; then
+                echo "The file list at $url matches what is expected and all signatures were verified :)"
+              else
+                echo "Expected:"
+                cat expected-file-list
+                echo ""
+                echo "Actual:"
+                cat actual-file-list
+                echo ""
+                echo "Diff:"
+                diff expected-file-list actual-file-list
+                exit 1
+              fi
   - name: verify-no-binaries
     serial: true
     plan:
