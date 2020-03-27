@@ -68,7 +68,8 @@ public class GeoIntegrationTest {
 
   @After
   public void cleanup() {
-    // TODO: GEODE-7909 Correct implementation of flushAll so it deletes Geo* keys properly and this zrem is
+    // TODO: GEODE-7909 Correct implementation of flushAll so it deletes Geo* keys properly and this
+    // zrem is
     // not needed
     jedis.zrem("Sicily", "Palermo", "Catania");
     jedis.flushAll();

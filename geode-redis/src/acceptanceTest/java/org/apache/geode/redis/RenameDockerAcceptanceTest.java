@@ -62,6 +62,5 @@ public class RenameDockerAcceptanceTest extends RenameIntegrationTest {
 
   @Test
   @Ignore("Test only applies to Geode Redis, ignored for native Redis")
-  public void testProtectedString() {
-  }
+  public void testProtectedString() {}
 }
