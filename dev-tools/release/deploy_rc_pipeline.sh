@@ -400,6 +400,53 @@ jobs:
               verifyArtifactSignature apache-geode-examples-${VERSION}.tar.gz 256
               verifyArtifactSignature apache-geode-native-${VERSION}-src.tar.gz 512
               verifyArtifactSignature apache-geode-benchmarks-${VERSION}-src.tgz 256
+  - name: verify-no-binaries
+    serial: true
+    plan:
+      - aggregate:
+          - get: geode
+            trigger: true
+      - task: validate
+        timeout: 1h
+        config:
+          image_resource:
+            type: docker-image
+            source:
+              repository: openjdk
+              tag: 8
+          inputs:
+            - name: geode
+          platform: linux
+          run:
+            path: /bin/bash
+            args:
+            - -ec
+            - |
+              set -e
+              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
+              url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
+              BINARY_EXTENSIONS="jar|war|class|exe|dll|o|so|obj|bin|out|pyc"
+              echo "Source artifacts should not contain any files ending in$(echo "|${BINARY_EXTENSIONS}"|sed 's/[^a-z]/ ./g')"
+              echo ""
+              function verifyNoBinaries {
+                file=$1
+                echo ""
+                echo Checking $file...
+                curl -s $url/$file | tar tvzf - | egrep '\.('"${BINARY_EXTENSIONS}"')$' | tee -a bins
+              }
+              verifyNoBinaries apache-geode-${VERSION}-src.tgz
+              verifyNoBinaries apache-geode-examples-${VERSION}.tar.gz
+              verifyNoBinaries apache-geode-native-${VERSION}-src.tar.gz
+              verifyNoBinaries apache-geode-benchmarks-${VERSION}-src.tgz
+              echo ""
+              echo ""
+              if grep -q . bins ; then
+                echo Binary files were found!
+                exit 1
+              else
+                echo All good
+              fi
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-release-${VERSION//./-}-rc -c $PIPEYML
