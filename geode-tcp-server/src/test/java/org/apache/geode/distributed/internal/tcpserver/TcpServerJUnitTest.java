@@ -84,7 +84,9 @@ public class TcpServerJUnitTest {
     @SuppressWarnings("deprecation")
     InfoRequest testInfoRequest = new InfoRequest();
     assertThatThrownBy(() -> tcpClient.requestToServer(new HostAndPort("unknown host name", port),
-        testInfoRequest, TIMEOUT)).isInstanceOf(UnknownHostException.class);
+        testInfoRequest, TIMEOUT))
+            .as("Hostname resolved unexpectedly. Check for DNS hijacking in addition to code errors.")
+            .isInstanceOf(UnknownHostException.class);
   }
 
   @SuppressWarnings("deprecation")
