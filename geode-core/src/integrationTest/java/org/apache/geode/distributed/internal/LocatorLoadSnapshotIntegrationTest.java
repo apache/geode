@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -35,13 +34,6 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  */
 @Category({MembershipTest.class})
 public class LocatorLoadSnapshotIntegrationTest {
-
-  private final InternalDistributedMember dummyMember1 =
-      new InternalDistributedMember(new ServerLocation("localhost", 1234));
-  private final InternalDistributedMember dummyMember2 =
-      new InternalDistributedMember(new ServerLocation("localhost", 2345));
-  private final InternalDistributedMember dummyMember3 =
-      new InternalDistributedMember(new ServerLocation("localhost", 3456));
 
   /**
    * A basic test of concurrent functionality. Starts a number of threads making requests and
@@ -64,9 +56,9 @@ public class LocatorLoadSnapshotIntegrationTest {
     int initialLoad2 = (int) (Math.random() * (NUM_REQUESTS / 2));
     int initialLoad3 = (int) (Math.random() * (NUM_REQUESTS / 2));
 
-    sn.addServer(l1, dummyMember1, new String[0], new ServerLoad(initialLoad1, 1, 0, 1));
-    sn.addServer(l2, dummyMember2, new String[0], new ServerLoad(initialLoad2, 1, 0, 1));
-    sn.addServer(l3, dummyMember3, new String[0], new ServerLoad(initialLoad3, 1, 0, 1));
+    sn.addServer(l1, new String[0], new ServerLoad(initialLoad1, 1, 0, 1));
+    sn.addServer(l2, new String[0], new ServerLoad(initialLoad2, 1, 0, 1));
+    sn.addServer(l3, new String[0], new ServerLoad(initialLoad3, 1, 0, 1));
 
     final Map loadCounts = new HashMap();
     loadCounts.put(l1, new AtomicInteger(initialLoad1));
