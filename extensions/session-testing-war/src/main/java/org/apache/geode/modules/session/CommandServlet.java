@@ -95,7 +95,6 @@ public class CommandServlet extends HttpServlet {
       }
     } catch (Exception e) {
       out.write("Error in servlet: " + e.toString());
-      e.printStackTrace(out);
     }
   }
 }
