@@ -35,7 +35,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 @SuppressWarnings("serial")
 public class DistributedExecutorServiceRuleTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
 
   private static final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
   private static final AtomicReference<CountDownLatch> latch = new AtomicReference<>();

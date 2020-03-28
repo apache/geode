@@ -82,7 +82,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @SuppressWarnings("serial")
 public class JMXMBeanReconnectDUnitTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
   private static final LocatorLauncher DUMMY_LOCATOR = mock(LocatorLauncher.class);
   private static final ServerLauncher DUMMY_SERVER = mock(ServerLauncher.class);
 

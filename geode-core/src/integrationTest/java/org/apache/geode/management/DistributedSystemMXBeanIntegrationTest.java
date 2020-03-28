@@ -75,7 +75,7 @@ public class DistributedSystemMXBeanIntegrationTest {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final long TIMEOUT = getTimeout().toMillis();
   private static final NotificationFilter SYSTEM_ALERT_FILTER =
       notification -> notification.getType().equals(SYSTEM_ALERT);
 

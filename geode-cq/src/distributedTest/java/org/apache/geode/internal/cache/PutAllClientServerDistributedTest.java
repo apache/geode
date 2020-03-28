@@ -122,7 +122,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @SuppressWarnings("serial")
 public class PutAllClientServerDistributedTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
 
   private static final int ONE_HUNDRED = 100;
   private static final int ONE_THOUSAND = 1000;

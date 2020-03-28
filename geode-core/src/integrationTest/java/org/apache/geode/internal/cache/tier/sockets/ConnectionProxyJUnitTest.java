@@ -26,11 +26,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -79,8 +78,8 @@ public class ConnectionProxyJUnitTest {
 
   SequenceIdAndExpirationObject seo = null;
 
-  final Duration timeoutToVerifyExpiry = new Duration(30, TimeUnit.SECONDS);
-  final Duration timeoutToVerifyAckSend = new Duration(30, TimeUnit.SECONDS);
+  final Duration timeoutToVerifyExpiry = Duration.ofSeconds(30);
+  final Duration timeoutToVerifyAckSend = Duration.ofSeconds(30);
 
   @Before
   public void setUp() throws Exception {

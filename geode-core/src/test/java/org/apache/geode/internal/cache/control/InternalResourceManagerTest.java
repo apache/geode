@@ -75,7 +75,7 @@ public class InternalResourceManagerTest {
     ScheduledExecutorService executor = resourceManager.getExecutor();
 
     Future<Boolean> submittedTask =
-        executor.submit(() -> hangLatch.await(getTimeout().getValue(), SECONDS));
+        executor.submit(() -> hangLatch.await(getTimeout().getSeconds(), SECONDS));
 
     resourceManager.close();
 

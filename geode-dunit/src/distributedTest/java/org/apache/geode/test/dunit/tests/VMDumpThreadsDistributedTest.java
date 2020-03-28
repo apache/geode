@@ -40,7 +40,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 @SuppressWarnings("serial")
 public class VMDumpThreadsDistributedTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
 
   // Oracle: "pool-2-thread-1" Id=20 WAITING on
   // java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4efca67d

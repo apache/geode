@@ -1057,7 +1057,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       switch (spot) {
         case BEFORE_QUERY_EXECUTION:
           try {
-            if (!latch.await(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS)) {
+            if (!latch.await(GeodeAwaitility.getTimeout().toMillis(), MILLISECONDS)) {
               fail("doTestHook: query was not unlatched in time");
             }
           } catch (InterruptedException e) {

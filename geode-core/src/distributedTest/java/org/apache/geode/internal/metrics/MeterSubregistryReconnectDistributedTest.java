@@ -55,7 +55,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 
 public class MeterSubregistryReconnectDistributedTest implements Serializable {
 
-  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final long TIMEOUT = getTimeout().toMillis();
 
   private static LocatorLauncher locatorLauncher;
 

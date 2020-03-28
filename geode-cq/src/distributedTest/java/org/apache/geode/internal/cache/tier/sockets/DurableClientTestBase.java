@@ -28,15 +28,13 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Arrays;
+import java.time.Duration;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Duration;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -71,9 +69,9 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   protected static final Logger logger = LogService.getLogger();
-  private static final Duration VERY_LONG_DURABLE_CLIENT_TIMEOUT = new Duration(10, MINUTES);
+  private static final Duration VERY_LONG_DURABLE_CLIENT_TIMEOUT = Duration.ofMinutes(10);
   static final int VERY_LONG_DURABLE_TIMEOUT_SECONDS =
-      (int) VERY_LONG_DURABLE_CLIENT_TIMEOUT.getValueInMS() / 1000;
+      (int) VERY_LONG_DURABLE_CLIENT_TIMEOUT.getSeconds();
   static final int HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER = 10;
 
   VM server1VM;
@@ -241,7 +239,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     if (value.getClass().isArray()) {
 
       sb.append("{");
-      sb.append(Arrays.toString((Object[]) value));
+      sb.append(java.util.Arrays.toString((Object[]) value));
       sb.append("}");
     } else {
       sb.append(value);
@@ -418,7 +416,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
     // Get the CacheClientProxy or not (if proxy set is empty)
     CacheClientProxy proxy = null;
-    Iterator<CacheClientProxy> i = notifier.getClientProxies().iterator();
+    java.util.Iterator<CacheClientProxy> i = notifier.getClientProxies().iterator();
     if (i.hasNext()) {
       proxy = i.next();
     }
@@ -430,7 +428,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     CacheClientNotifier notifier = getBridgeServer().getAcceptor().getCacheClientNotifier();
 
     // Get the CacheClientProxy or not (if proxy set is empty)
-    Iterator<CacheClientProxy> i = notifier.getClientProxies().iterator();
+    java.util.Iterator<CacheClientProxy> i = notifier.getClientProxies().iterator();
     StringBuilder sb = new StringBuilder();
     while (i.hasNext()) {
       sb.append(" [");
@@ -648,7 +646,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
           ClientProxyMembershipID proxyId = clientProxy.getProxyID();
           CqService cqService = ((InternalCache) CacheServerTestUtil.getCache()).getCqService();
           cqService.start();
-          List<String> cqNames = cqService.getAllDurableClientCqs(proxyId);
+          java.util.List<String> cqNames = cqService.getAllDurableClientCqs(proxyId);
           assertThat(expectedNumber).isEqualTo(cqNames.size());
         } catch (Exception e) {
           throw new CacheException(e) {};

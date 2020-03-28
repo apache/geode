@@ -158,8 +158,8 @@ public class GeoCoder {
       double radiusMeters) {
     HashArea boundingBox = boundingBox(longitude, latitude, radiusMeters);
     int steps =
-        Math.max(1, GeoHash.hashLengthToCoverBoundingBox(boundingBox.maxlat, boundingBox.maxlon,
-            boundingBox.minlat, boundingBox.minlon));
+        Math.max(1, GeoHash.hashLengthToCoverBoundingBox(boundingBox.minlat, boundingBox.maxlon,
+            boundingBox.maxlat, boundingBox.minlon));
 
     List<String> extra = new ArrayList<>();
     // Large distance boundary condition
@@ -167,8 +167,8 @@ public class GeoCoder {
       extra.addAll(GeoHash.neighbours(GeoHash.encodeHash(latitude, longitude, steps)));
     }
 
-    Set<String> areas = GeoHash.coverBoundingBox(boundingBox.maxlat, boundingBox.maxlon,
-        boundingBox.minlat, boundingBox.minlon, steps).getHashes();
+    Set<String> areas = GeoHash.coverBoundingBox(boundingBox.maxlat, boundingBox.minlon,
+        boundingBox.minlat, boundingBox.maxlon, steps).getHashes();
     if (!extra.isEmpty()) {
       extra.forEach(ex -> areas.add(ex));
     }

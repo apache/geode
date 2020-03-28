@@ -48,7 +48,7 @@ import org.apache.geode.test.process.ProcessWrapper;
 
 public class DeprecatedAgentLauncherIntegrationTest {
 
-  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final long TIMEOUT = getTimeout().toMillis();
 
   private String classpath;
 

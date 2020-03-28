@@ -147,7 +147,7 @@ public class TXDetectReadConflictJUnitTest {
   private void readTransactionAfterReservation() {
     allowWriteTransactionToCommitLatch.countDown();
     try {
-      allowReadTransactionToProceedLatch.await(GeodeAwaitility.getTimeout().getValueInMS(),
+      allowReadTransactionToProceedLatch.await(GeodeAwaitility.getTimeout().toMillis(),
           TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
@@ -158,7 +158,7 @@ public class TXDetectReadConflictJUnitTest {
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
     txManager.begin();
     region.put(key, newValue); // expect commit conflict
-    allowWriteTransactionToCommitLatch.await(GeodeAwaitility.getTimeout().getValueInMS(),
+    allowWriteTransactionToCommitLatch.await(GeodeAwaitility.getTimeout().toMillis(),
         TimeUnit.MILLISECONDS);
     assertThatThrownBy(() -> txManager.commit()).isExactlyInstanceOf(CommitConflictException.class);
     allowReadTransactionToProceedLatch.countDown();
@@ -214,7 +214,7 @@ public class TXDetectReadConflictJUnitTest {
   private void putTransactionAfterReservation() {
     allowReadTransactionToProceedLatch.countDown();
     try {
-      allowWriteTransactionToCommitLatch.await(GeodeAwaitility.getTimeout().getValueInMS(),
+      allowWriteTransactionToCommitLatch.await(GeodeAwaitility.getTimeout().toMillis(),
           TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
@@ -226,7 +226,7 @@ public class TXDetectReadConflictJUnitTest {
     txManager.begin();
     assertEquals(regionPR.get(key1), value1);
     try {
-      allowReadTransactionToProceedLatch.await(GeodeAwaitility.getTimeout().getValueInMS(),
+      allowReadTransactionToProceedLatch.await(GeodeAwaitility.getTimeout().toMillis(),
           TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);

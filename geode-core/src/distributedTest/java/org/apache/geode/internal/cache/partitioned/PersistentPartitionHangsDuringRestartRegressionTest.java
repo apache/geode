@@ -66,7 +66,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @SuppressWarnings("serial,unused")
 public class PersistentPartitionHangsDuringRestartRegressionTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
 
   /** WAIT_TO_BOUNCE latch is never counted down -- it prevents responding to RequestImageMessage */
   private static final CountDownLatch WAIT_TO_BOUNCE = new CountDownLatch(99);
