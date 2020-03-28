@@ -19,6 +19,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 public class QueryTestObject implements Serializable {
   public int id = -1;
@@ -68,4 +69,10 @@ public class QueryTestObject implements Serializable {
     QueryTestObject qto = (QueryTestObject) obj;
     return (this.id == qto.id && this.name.equals(qto.getName()));
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, name);
+  }
+
 }
