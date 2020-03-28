@@ -74,7 +74,7 @@ import org.apache.geode.test.junit.rules.DiskDirRule;
 public class IncrementalBackupIntegrationTest {
   private static final Logger logger = LogService.getLogger();
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
   private static final int DATA_INCREMENT = 10_000;
   private static final IOFileFilter OPLOG_FILTER = new RegexFileFilter(".*\\.[kdc]rf$");
 

@@ -1010,7 +1010,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
     clientVM.invoke(() -> {
       // Step 5
-      LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
+      LATCH.get().await(getTimeout().toMillis(), MILLISECONDS);
 
       // Step 6
       new ClientFactory().create(new ClientCacheFactory(clientProperties));
@@ -1627,7 +1627,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     @Override
     public void run() {
       try {
-        LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
+        LATCH.get().await(getTimeout().toMillis(), MILLISECONDS);
       } catch (InterruptedException ignore) {
         // ignored
       }

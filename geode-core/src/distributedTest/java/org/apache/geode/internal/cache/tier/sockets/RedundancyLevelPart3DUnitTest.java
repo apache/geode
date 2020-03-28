@@ -71,7 +71,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class RedundancyLevelPart3DUnitTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
   private static final String K1 = "k1";
   private static final String K2 = "k2";
   private static final String REGION_NAME = "RedundancyLevelTestBase_region";

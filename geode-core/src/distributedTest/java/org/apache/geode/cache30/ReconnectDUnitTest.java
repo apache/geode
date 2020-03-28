@@ -405,7 +405,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             System.out.println("ds.isReconnecting() = " + ds.isReconnecting());
             boolean failure = true;
             try {
-              ds.waitUntilReconnected(getTimeout().getValueInMS(), MILLISECONDS);
+              ds.waitUntilReconnected(getTimeout().toMillis(), MILLISECONDS);
               savedSystem = ds.getReconnectedSystem();
               locator = (InternalLocator) getLocator();
               assertTrue("Expected system to be restarted", ds.getReconnectedSystem() != null);
@@ -1157,7 +1157,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         return "waiting for cache to begin reconnecting";
       }
     });
-    assertThatThrownBy(() -> cache.waitUntilReconnected(getTimeout().getValueInMS(), MILLISECONDS))
+    assertThatThrownBy(() -> cache.waitUntilReconnected(getTimeout().toMillis(), MILLISECONDS))
         .isInstanceOf(CacheClosedException.class)
         .hasMessageContaining("Cache could not be recreated")
         .hasCauseExactlyInstanceOf(DistributedSystemDisconnectedException.class);

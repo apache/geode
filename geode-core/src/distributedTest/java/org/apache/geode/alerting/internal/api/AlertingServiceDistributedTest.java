@@ -80,7 +80,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category({AlertingTest.class, ManagementTest.class})
 public class AlertingServiceDistributedTest implements Serializable {
 
-  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final long TIMEOUT = getTimeout().toMillis();
   private static final NotificationFilter SYSTEM_ALERT_FILTER =
       notification -> notification.getType().equals(SYSTEM_ALERT);
 

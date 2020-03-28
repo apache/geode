@@ -44,7 +44,7 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 @RunWith(JUnitParamsRunner.class)
 public class VMEventNotifierTest {
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
 
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();

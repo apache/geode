@@ -617,7 +617,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     vm0.invoke(() -> stopServer());
     vm1.invoke(() -> stopServer());
 
-    LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
+    LATCH.get().await(getTimeout().toMillis(), MILLISECONDS);
 
     doGets();
 
@@ -952,7 +952,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
       });
     }
 
-    LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
+    LATCH.get().await(getTimeout().toMillis(), MILLISECONDS);
 
     AsyncInvocation<Integer> createServerOnVM3 =
         vm3.invokeAsync(() -> createServer("disk", -1, 3, 4));

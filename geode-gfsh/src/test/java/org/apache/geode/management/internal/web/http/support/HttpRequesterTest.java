@@ -94,7 +94,7 @@ public class HttpRequesterTest {
     response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
     Object result = requester.extractResponse(response);
     Path fileResult = (Path) result;
-    assertThat(fileResult).hasSameContentAs(responseFile.toPath());
+    assertThat(fileResult).hasSameTextualContentAs(responseFile.toPath());
   }
 
   @Test
@@ -104,6 +104,7 @@ public class HttpRequesterTest {
         .isEqualTo("http://test.org/abc");
     assertThat(requester.createURI("http://test.org", "abc", "key", "value").toString())
         .isEqualTo("http://test.org/abc?key=value");
+
 
     assertThat(requester.createURI("http://test.org", "abc", "a-b", "c d").toString())
         .isEqualTo("http://test.org/abc?a-b=c%20d");

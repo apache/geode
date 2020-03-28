@@ -54,7 +54,7 @@ public class RedisDistDUnitTest implements Serializable {
   private static int server2Port;
 
   private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().getValueInMS());
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private abstract static class ClientTestBase extends SerializableRunnable {
     int port;

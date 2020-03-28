@@ -63,7 +63,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category(LoggingTest.class)
 public class LoggingWithReconnectDistributedTest implements Serializable {
 
-  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final long TIMEOUT = getTimeout().toMillis();
 
   private static LocatorLauncher locatorLauncher;
   private static ServerLauncher serverLauncher;

@@ -109,8 +109,8 @@ public class LogExporterFileIntegrationTest {
     List<File> exportedFiles = Stream.of(unzippedExportDir.listFiles())
         .sorted(Comparator.comparing(File::getName)).collect(toList());
 
-    assertThat(exportedFiles.get(0)).hasSameContentAs(logFile1);
-    assertThat(exportedFiles.get(1)).hasSameContentAs(logFile2);
+    assertThat(exportedFiles.get(0)).hasSameTextualContentAs(logFile1);
+    assertThat(exportedFiles.get(1)).hasSameTextualContentAs(logFile2);
   }
 
   @Test

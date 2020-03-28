@@ -175,7 +175,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
     AsyncInvocation[] waiters = new AsyncInvocation[NUM_VMS];
     for (int i = NUM_VMS - 1; i >= 0; i--) {
       waiters[i] = VM.getVM(i).invokeAsync("wait for reconnect", () -> {
-        system.waitUntilReconnected(GeodeAwaitility.getTimeout().getValueInMS(),
+        system.waitUntilReconnected(GeodeAwaitility.getTimeout().toMillis(),
             TimeUnit.MILLISECONDS);
         system = system.getReconnectedSystem();
         cache = cache.getReconnectedCache();
