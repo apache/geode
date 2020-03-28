@@ -548,7 +548,6 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
         }
       } else if (rfContext.getArguments() instanceof Set) {
         Set origKeys = (Set) rfContext.getArguments();
-        ArrayList vals = new ArrayList();
         for (Iterator i = origKeys.iterator(); i.hasNext();) {
           Object val;
           if (context instanceof RegionFunctionContext) {
@@ -563,9 +562,6 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
           else
             rfContext.getResultSender().lastResult(val);
 
-          if (val != null) {
-            vals.add(val);
-          }
         }
       } else if (rfContext.getArguments() instanceof HashMap) {
         HashMap putData = (HashMap) rfContext.getArguments();
