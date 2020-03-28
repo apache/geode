@@ -55,8 +55,8 @@ public class HostAndPortTest {
     InetSocketAddress actual = locator1.getSocketInetAddress();
 
     assertThat(actual.isUnresolved())
-            .as("Hostname resolved unexpectedly. Check for DNS hijacking in addition to code errors.")
-            .isTrue();
+        .as("Hostname resolved unexpectedly. Check for DNS hijacking in addition to code errors.")
+        .isTrue();
   }
 
   /**
@@ -146,8 +146,8 @@ public class HostAndPortTest {
     assertThat(hostAndPort1).isEqualTo(hostAndPort2);
     assertThat(hostAndPort2).isEqualTo(hostAndPort1);
     assertThat(hostAndPort1.getAddress())
-            .as("Hostname resolved unexpectedly. Check for DNS hijacking in addition to code errors.")
-            .isNull();
+        .as("Hostname resolved unexpectedly. Check for DNS hijacking in addition to code errors.")
+        .isNull();
     assertThat(hostAndPort2.getAddress()).isNull();
     assertThat(hostAndPort2.getSocketInetAddress()).isNotNull();
     assertThat(hostAndPort1.getSocketInetAddress().isUnresolved()).isTrue();
