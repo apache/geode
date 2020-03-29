@@ -2711,7 +2711,7 @@ public class HARegionQueue implements RegionQueue {
             boolean interrupted = Thread.interrupted();
             try {
               synchronized (this) {
-                this.wait(messageSyncInterval * 1000);
+                this.wait(1000 * (long) messageSyncInterval);
               }
             } catch (InterruptedException e) {
               interrupted = true;
