@@ -465,7 +465,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
       }
       this.lastLogTime = now;
 
-      int queues = 0;
+      float queues = 0f;
       int connections = 0;
       for (ServerLoad l : loadMap.values()) {
         queues += l.getSubscriptionConnectionLoad();

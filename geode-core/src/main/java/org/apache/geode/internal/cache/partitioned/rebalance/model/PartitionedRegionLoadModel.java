@@ -753,8 +753,8 @@ public class PartitionedRegionLoadModel {
   /**
    * For testing only, calculate the total variance of the members
    */
-  public float getVarianceForTest() {
-    float variance = 0;
+  public double getVarianceForTest() {
+    double variance = 0;
 
     for (Member member : this.members.values()) {
       variance += variance(member.getTotalLoad(), member.getWeight(), getAverageLoad());
@@ -766,8 +766,8 @@ public class PartitionedRegionLoadModel {
   /**
    * For testing only, calculate the total variance of the members
    */
-  public float getPrimaryVarianceForTest() {
-    float variance = 0;
+  public double getPrimaryVarianceForTest() {
+    double variance = 0;
 
     for (Member member : this.members.values()) {
       variance += variance(member.getPrimaryLoad(), member.getWeight(), getPrimaryAverage());
