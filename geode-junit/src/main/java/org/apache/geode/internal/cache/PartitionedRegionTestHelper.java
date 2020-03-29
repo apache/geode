@@ -302,6 +302,9 @@ class SerializableObject implements Serializable {
   }
 
   public boolean equals(Object obj) {
+    if (!(obj instanceof SerializableObject)) {
+      return false;
+    }
     if (obj == null)
       return false;
     if (this.str.equals(((SerializableObject) obj).str) && this.i == ((SerializableObject) obj).i)
