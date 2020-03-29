@@ -19,16 +19,16 @@ set -e
 
 usage() {
     echo "Usage: deploy_rc_pipeline -v version_number"
-    echo "  -v   The #.#.# version number"
+    echo "  -v   The #.# version number"
     exit 1
 }
 
-VERSION=""
+VERSION_MM=""
 
 while getopts ":v:" opt; do
   case ${opt} in
     v )
-      VERSION=$OPTARG
+      VERSION_MM=$OPTARG
       ;;
     \? )
       usage
@@ -36,44 +36,44 @@ while getopts ":v:" opt; do
   esac
 done
 
-if [[ ${VERSION} == "" ]]; then
+if [[ ${VERSION_MM} == "" ]]; then
     usage
 fi
 
-if [[ $VERSION =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+if [[ $VERSION_MM =~ ^([0-9]+\.[0-9]+)$ ]]; then
     true
 else
-    echo "Malformed version number ${VERSION}. Example valid version: 1.9.0"
+    echo "Malformed version number ${VERSION_MM}. Example valid version: 1.9"
     exit 1
 fi
 
 PIPEYML=$PWD/rc-pipeline.yml
-cat << "EOF" | sed -e "s/<VERSION>/${VERSION}/" > $PIPEYML
+cat << "EOF" | sed -e "s/<VERSION_MM>/${VERSION_MM}/" > $PIPEYML
 ---
 
 resources:
 - name: geode
   type: git
   source:
-    branch: release/<VERSION>
-    tag_filter: rel/v<VERSION>.RC*
+    branch: support/<VERSION_MM>
+    tag_filter: rel/v<VERSION_MM>.*.RC*
     uri: https://github.com/apache/geode.git
 - name: geode-examples
   type: git
   source:
-    branch: release/<VERSION>
+    branch: support/<VERSION_MM>
     uri: https://github.com/apache/geode-examples.git
 - name: geode-native
   type: git
   source:
-    branch: release/<VERSION>
-    tag_filter: rel/v<VERSION>.RC*
+    branch: support/<VERSION_MM>
+    tag_filter: rel/v<VERSION_MM>.*.RC*
     uri: https://github.com/apache/geode-native.git
 - name: geode-benchmarks
   type: git
   source:
-    branch: release/<VERSION>
-    tag_filter: rel/v<VERSION>.RC*
+    branch: support/<VERSION_MM>
+    tag_filter: rel/v<VERSION_MM>.*.RC*
     uri: https://github.com/apache/geode-benchmarks.git
 - name: upthewaterspout-tests
   type: git
@@ -469,5 +469,5 @@ jobs:
               fi
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
-fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-release-${VERSION//./-}-rc -c $PIPEYML
+fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML
 rm $PIPEYML

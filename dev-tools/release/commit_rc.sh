@@ -52,6 +52,8 @@ else
     exit 1
 fi
 
+VERSION_MM=${VERSION%.*}
+
 set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
@@ -123,8 +125,8 @@ echo "============================================================"
 echo "Done publishing the release candidate!  Next steps:"
 echo "============================================================"
 cd ${GEODE}/../..
-echo "1. ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION}"
-echo "2. Monitor https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-rc until all green"
+echo "1. ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION_MM}"
+echo "2. Monitor https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-rc until all green"
 echo "3. Send the following email to announce the RC:"
 echo "To: dev@geode.apache.org"
 echo "Subject: [VOTE] Apache Geode ${FULL_VERSION}"

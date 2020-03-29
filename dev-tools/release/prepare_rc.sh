@@ -72,6 +72,8 @@ else
     exit 1
 fi
 
+VERSION_MM=${VERSION%.*}
+
 checkCommand gpg
 checkCommand cmake
 checkCommand svn
@@ -104,6 +106,13 @@ BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
 
+
+function failMsg1 {
+  echo "ERROR: script did NOT complete successfully.  Please try again."
+}
+trap failMsg1 ERR
+
+
 echo ""
 echo "============================================================"
 echo "Cleaning workspace directory..."
@@ -115,25 +124,17 @@ cd $WORKSPACE
 set +x
 
 
-function failMsg {
-  errln=$1
-  echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 124-$(( errln - 1 ))) and try again"
-}
-trap 'failMsg $LINENO' ERR
-
-
 echo ""
 echo "============================================================"
 echo "Cloning repositories..."
 echo "============================================================"
 set -x
-git clone --branch release/${VERSION} git@github.com:apache/geode.git
-git clone --branch develop git@github.com:apache/geode.git geode-develop
-git clone --branch release/${VERSION} git@github.com:apache/geode-examples.git
-git clone --branch release/${VERSION} git@github.com:apache/geode-native.git
-git clone --branch release/${VERSION} git@github.com:apache/geode-benchmarks.git
-git clone --branch master git@github.com:Homebrew/homebrew-core.git
+git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode.git
+git clone --single-branch --branch develop git@github.com:apache/geode.git geode-develop
+git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-examples.git
+git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-native.git
+git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-benchmarks.git
+git clone --single-branch --branch master git@github.com:Homebrew/homebrew-core.git
 
 svn checkout https://dist.apache.org/repos/dist --depth empty
 svn update --set-depth immediates --parents dist/release/geode
@@ -151,7 +152,7 @@ git clean -fdx && ./gradlew build -x test publishToMavenLocal -Paskpass -Psignin
 set +x
 
 
-if [ "${VERSION##*.RC}" -gt 1 ] ; then
+if [ "${FULL_VERSION##*.RC}" -gt 1 ] ; then
     echo ""
     echo "============================================================"
     echo "Removing previous RC's temporary commit from geode-examples..."
@@ -237,6 +238,14 @@ else
 fi
 ${SHASUM} ${SHASUM_OPTS} ${BMTAR} > ${BMTAR}.sha256
 set +x
+
+
+function failMsg2 {
+  errln=$1
+  echo "ERROR: script did NOT complete successfully"
+  echo "Comment out any steps that already succeeded (approximately lines 116-$(( errln - 1 ))) and try again"
+}
+trap 'failMsg2 $LINENO' ERR
 
 
 echo ""

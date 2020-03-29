@@ -65,9 +65,12 @@ else
     exit 1
 fi
 
+VERSION_MM=${VERSION%.*}
+
 set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
+GEODE_DEVELOP=$WORKSPACE/geode-develop
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
@@ -75,7 +78,7 @@ BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
@@ -89,6 +92,23 @@ function failMsg {
   echo "Comment out any steps that already succeeded (approximately lines 94-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
+
+
+echo ""
+echo "============================================================"
+echo "Checking for later versions..."
+echo "============================================================"
+cd ${GEODE_DEVELOP}
+latestnv=$(git tag| grep '^rel/v' | grep -v RC | cut -c6- | egrep '^[0-9]+\.[0-9]+\.[0-9]+$' | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}' | sort -n | tail -1)
+latestn=$(echo $latestnv | awk '{print $1}')
+latestv=$(echo $latestnv | awk '{print $2}')
+thisre=$(echo $VERSION | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3}')
+if [ $latestn -gt $thisre ] ; then
+  LATER=$latestv
+  echo "Later version $LATER found; $VERSION will not be merged to master or tagged as 'latest' in docker."
+else
+  echo "No later versions found; $VERSION will be tagged as 'latest' in docker and merged to master"
+fi
 
 
 echo ""
@@ -140,33 +160,38 @@ done
 
 echo ""
 echo "============================================================"
-echo "Updating brew"
-echo "============================================================"
-set -x
-cd ${BREW_DIR}/Formula
-git pull
-git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git || true
-if ! git fetch myfork ; then
-    echo "Please fork https://github.com/Homebrew/homebrew-core"
-    exit 1
+if [ -n "$LATER" ] ; then
+  echo "NOT updating brew to avoid overwriting newer version $LATER"
+  echo "============================================================"
+else
+  echo "Updating brew"
+  echo "============================================================"
+  set -x
+  cd ${BREW_DIR}/Formula
+  git pull
+  git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git || true
+  if ! git fetch myfork ; then
+      echo "Please fork https://github.com/Homebrew/homebrew-core"
+      exit 1
+  fi
+  git checkout -b apache-geode-${VERSION}
+  GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-geode-${VERSION}.tgz.sha256)
+  set +x
+  sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.cgi?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+      -e '/ *mirror ".*www.*/d' \
+      -e '/ *mirror ".*downloads.*/d' \
+      -e 's# *mirror ".*archive.*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"\
+    mirror "https://downloads.apache.org/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+      -e 's/ *sha256 ".*/  sha256 "'"${GEODE_SHA}"'"/' \
+      -i.bak apache-geode.rb
+  rm apache-geode.rb.bak
+  set -x
+  git add apache-geode.rb
+  git diff --staged
+  git commit -m "apache-geode ${VERSION}"
+  git push -u myfork
+  set +x
 fi
-git checkout -b apache-geode-${VERSION}
-GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-geode-${VERSION}.tgz.sha256)
-set +x
-sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.cgi?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
-    -e '/ *mirror ".*www.*/d' \
-    -e '/ *mirror ".*downloads.*/d' \
-    -e 's# *mirror ".*archive.*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"\
-  mirror "https://downloads.apache.org/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
-    -e 's/ *sha256 ".*/  sha256 "'"${GEODE_SHA}"'"/' \
-    -i.bak apache-geode.rb
-rm apache-geode.rb.bak
-set -x
-git add apache-geode.rb
-git diff --staged
-git commit -m "apache-geode ${VERSION}"
-git push -u myfork
-set +x
 
 
 echo ""
@@ -219,7 +244,7 @@ set -x
 cd ${GEODE}/docker
 docker build .
 docker build -t apachegeode/geode:${VERSION} .
-docker build -t apachegeode/geode:latest .
+[ -n "$LATER" ] || docker build -t apachegeode/geode:latest .
 set +x
 
 
@@ -231,7 +256,7 @@ set -x
 cd ${GEODE_NATIVE}/docker
 docker build .
 docker build -t apachegeode/geode-native-build:${VERSION} .
-docker build -t apachegeode/geode-native-build:latest .
+[ -n "$LATER" ] || docker build -t apachegeode/geode-native-build:latest .
 set +x
 
 
@@ -243,7 +268,7 @@ set -x
 cd ${GEODE}/docker
 docker login
 docker push apachegeode/geode:${VERSION}
-docker push apachegeode/geode:latest
+[ -n "$LATER" ] || docker push apachegeode/geode:latest
 set +x
 
 
@@ -254,8 +279,114 @@ echo "============================================================"
 set -x
 cd ${GEODE_NATIVE}/docker
 docker push apachegeode/geode-native-build:${VERSION}
-docker push apachegeode/geode-native-build:latest
+[ -n "$LATER" ] || docker push apachegeode/geode-native-build:latest
 set +x
+
+
+echo ""
+echo "============================================================"
+echo "Removing temporary commit from geode-examples..."
+echo "============================================================"
+set -x
+cd ${GEODE_EXAMPLES}
+git pull
+set +x
+sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl =#' \
+    -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl =#' -i.bak gradle.properties
+rm gradle.properties.bak
+set -x
+git add gradle.properties
+git diff --staged
+git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+git push
+set +x
+
+
+echo ""
+echo "============================================================"
+if [ -n "$LATER" ] ; then
+  echo "NOT merging to master to avoid overwriting newer version $LATER"
+  echo "============================================================"
+else
+  echo "Merging to master"
+  echo "============================================================"
+  for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
+      set -x
+      cd ${DIR}
+      git fetch origin
+      git checkout support/${VERSION_MM}
+      #this creates a merge commit that will then be ff-merged to master, so word it from that perspective
+      git merge -s ours origin/master -m "Replacing master with contents of support/${VERSION_MM} (${VERSION)"
+      git checkout master
+      git merge support/${VERSION_MM}
+      git push origin master
+      set +x
+  done
+fi
+
+
+echo ""
+echo "============================================================"
+echo "Updating 'old' versions"
+echo "============================================================"
+set -x
+cd ${GEODE_DEVELOP}
+git pull
+git remote add myfork git@github.com:${GITHUB_USER}/geode.git || true
+git checkout -b add-${VERSION}-to-old-versions
+set +x
+PATCH=${VERSION##*.}
+PREV=${VERSION%.*}.$(( PATCH - 1 ))
+#add at the end if this is a new minor or a patch to the latest minor, otherwise add after it's predecessor
+if [ $PATCH -eq 0 ] || grep -q "'${PREV}'].each" settings.gradle ; then
+  #before:
+  # '1.9.0'].each {
+  #after:
+  # '1.9.0',
+  # '1.10.0'].each {
+  sed -e "s/].each/,\\
+ '${VERSION}'].each/" \
+    -i.bak settings.gradle
+else
+  #before:
+  # '1.9.0',
+  #after:
+  # '1.9.0',
+  # '1.9.1',
+  sed -e "s/'${PREV}',/'${PREV}',\\
+ '${VERSION}'/" \
+    -i.bak settings.gradle
+fi
+rm settings.gradle.bak
+set -x
+git add settings.gradle
+git diff --staged
+git commit -m "add ${VERSION} to old versions"
+git push -u myfork
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Removing old versions from mirrors"
+echo "============================================================"
+set -x
+cd $SVN_RELEASE_DIR
+svn update --set-depth immediates
+#identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
+RELEASES_TO_KEEP=3
+set +x
+ls | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
+echo Keeping releases: $(cat ../keep)
+(ls | grep -v KEYS; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
+    set -x
+    svn rm $oldVersion
+    svn commit -m "remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
+    set +x
+    [ -z "$DID_REMOVE" ] || DID_REMOVE="${DID_REMOVE} and "
+    DID_REMOVE="${DID_REMOVE}${oldVersion}"
+done
+rm ../keep
 
 
 echo ""
@@ -266,8 +397,15 @@ cd ${GEODE}/../..
 echo "Next steps:"
 echo "1. Click 'Release' in http://repository.apache.org/ (if you haven't already)"
 echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
-echo "3. Validate docker image: docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode"
-echo "4. Bulk-transition JIRA issues fixed in this release to Closed"
-echo "5. Wait overnight for apache mirror sites to sync"
-echo "6. Confirm that your homebrew PR passed its PR checks and was merged to master"
-echo "7. Run ${0%/*}/finalize_release.sh -v ${VERSION}"
+echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
+echo "4. Validate docker image: docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode"
+echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
+echo "6. Wait overnight for apache mirror sites to sync"
+echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
+echo "8. Check that documentation has been published to https://geode.apache.org/docs/"
+PATCH="${VERSION##*.}"
+[ "${PATCH}" -ne 0 ] || echo "9. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop"
+M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "9 months from now")
+[ "${PATCH}" -ne 0 ] || echo "10. Mark your calendar for $M to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
+echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 ))"
+echo "Finally, send announce email!"
