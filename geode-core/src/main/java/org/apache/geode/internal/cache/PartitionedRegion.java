@@ -1874,7 +1874,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public long getLastModifiedTime() {
+  public synchronized long getLastModifiedTime() {
     if (!this.canStoreDataLocally()) {
       return 0;
     }

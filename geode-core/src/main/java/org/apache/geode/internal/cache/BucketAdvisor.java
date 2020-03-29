@@ -541,7 +541,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @see #adviseProfileUpdate()
    */
   @Override
-  public boolean putProfile(Profile profile, boolean forceProfile) {
+  public synchronized boolean putProfile(Profile profile, boolean forceProfile) {
     assert profile instanceof BucketProfile;
     BucketProfile bp = (BucketProfile) profile;
 

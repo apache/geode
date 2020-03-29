@@ -276,7 +276,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
     }
 
     @Override
-    protected void processException(ReplyException ex) {
+    protected synchronized void processException(ReplyException ex) {
       // retry on ForceReattempt in case the region is still being initialized
       if (ex.getRootCause() instanceof ForceReattemptException) {
         super.processException(ex);

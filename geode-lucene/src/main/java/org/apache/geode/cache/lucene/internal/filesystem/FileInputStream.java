@@ -83,7 +83,7 @@ class FileInputStream extends SeekableInputStream {
   }
 
   @Override
-  public void reset() throws IOException {
+  public synchronized void reset() throws IOException {
     seek(0);
   }
 
