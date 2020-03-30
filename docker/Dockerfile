@@ -52,8 +52,7 @@ RUN set -eux; \
 		for url in \
 # https://issues.apache.org/jira/browse/INFRA-8753?focusedCommentId=14735394#comment-14735394
 			"https://www.apache.org/dyn/closer.cgi?action=download&filename=$file" \
-			"https://www-us.apache.org/dist/$file" \
-			"https://www.apache.org/dist/$file" \
+			"https://downloads.apache.org/dist/$file" \
 			"https://archive.apache.org/dist/$file" \
 		; do \
 			if wget -O "$target" "$url"; then \
