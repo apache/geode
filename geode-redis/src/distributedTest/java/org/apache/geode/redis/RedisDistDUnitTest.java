@@ -22,6 +22,7 @@ import java.util.Random;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -37,6 +38,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
+@Ignore("GEODE-7905")
 public class RedisDistDUnitTest implements Serializable {
 
   @ClassRule

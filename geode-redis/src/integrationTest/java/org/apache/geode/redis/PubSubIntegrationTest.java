@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -40,6 +41,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
+@Ignore("GEODE-7870")
 public class PubSubIntegrationTest {
   private static final int REDIS_CLIENT_TIMEOUT = 100000;
   private static GeodeRedisServer server;
