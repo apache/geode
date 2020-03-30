@@ -91,6 +91,8 @@ public class ConnectionManagerJUnitTest {
     Properties properties = new Properties();
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
+
+
     ds = DistributedSystem.connect(properties);
     background = Executors.newSingleThreadScheduledExecutor();
     poolStats = new PoolStats(ds, "connectionManagerJUnitTest");
@@ -341,9 +343,9 @@ public class ConnectionManagerJUnitTest {
 
     // Ok, now get some connections that fill our queue
     Connection ping1 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), false);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     Connection ping2 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), false);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     manager.returnConnection(ping1);
     manager.returnConnection(ping2);
 
@@ -360,6 +362,127 @@ public class ConnectionManagerJUnitTest {
     Assert.assertTrue("Elapsed = " + elapsedMillis,
         elapsedMillis >= BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
   }
+
+  /*
+   * Test borrow connection toward specific server. Max connection is 5, and there are free
+   * connections in pool.
+   */
+  @Test
+  public void test_borrow_connection_toward_specific_server_freeConnections()
+      throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
+    final long idleTimeoutMillis = 300;
+    final long BORROW_TIMEOUT_MILLIS = 500;
+    manager =
+        new ConnectionManagerImpl("pool", factory, endpointManager, 5, 1, idleTimeoutMillis, -1,
+            logger, 60 * 1000, cancelCriterion, poolStats);
+    manager.start(background);
+
+    await().until(() -> manager.getConnectionCount() == 1);
+
+    // seize connection toward any server
+    Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+
+    long startNanos = nowNanos();
+    try {
+      manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+    } catch (AllConnectionsInUseException e) {
+      fail("Didn't get connection");
+    }
+
+  }
+
+
+  /*
+   * Test borrow connection toward specific server. Max connection is 5, and there is no free
+   * connections in pool.
+   * After connection is returned to pool, since is not toward this specific server, wait for
+   * idleTimeoutMillis,
+   * so after expire (and pool size is reduced to 4) it can be seized.
+   */
+  @Test
+  public void test_borrow_connection_toward_specific_server_no_freeConnection_wait_for_timeout()
+      throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
+    final long idleTimeoutMillis = 300;
+    final long BORROW_TIMEOUT_MILLIS = 500;
+    manager =
+        new ConnectionManagerImpl("pool", factory, endpointManager, 5, 1, idleTimeoutMillis, -1,
+            logger, 60 * 1000, cancelCriterion, poolStats);
+    manager.start(background);
+
+    await().until(() -> manager.getConnectionCount() == 1);
+
+    // seize connection toward any server
+    Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+
+    // Seize connection toward this specific server
+    Connection ping1 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+    Connection ping2 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+    Connection ping3 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+
+    // Return some connections, let them idle expire
+    manager.returnConnection(conn1);
+    manager.returnConnection(conn2);
+
+    long startNanos = nowNanos();
+    try {
+      manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+      fail("We should not get connection");
+    } catch (AllConnectionsInUseException e) {
+    }
+
+    long elapsedMillis = elapsedMillis(startNanos);
+    Assert.assertTrue("Elapsed = " + elapsedMillis,
+        elapsedMillis >= BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
+  }
+
+  /*
+   * Test borrow connection toward specific server (use). Max connection is 5, and there is no free
+   * connections in pool.
+   * We are waiting for returnConnection for connection toward this specific server.
+   * After it is returned, we will reuse it.
+   */
+  @Test
+  public void test_borrow_connection_toward_specific_server_no_freeConnection_wait_returnConnection_toward_this_server()
+      throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
+    final long idleTimeoutMillis = 800;
+    final long BORROW_TIMEOUT_MILLIS = 500;
+    manager =
+        new ConnectionManagerImpl("pool", factory, endpointManager, 5, 1, idleTimeoutMillis, -1,
+            logger, 60 * 1000, cancelCriterion, poolStats);
+    manager.start(background);
+
+    await().until(() -> manager.getConnectionCount() == 1);
+
+    // seize connection toward any server
+    Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+
+    // Seize connection toward this specific server
+    Connection ping1 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+    Connection ping2 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+    Connection ping3 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+
+    // Return some connections, let them idle expire
+    manager.returnConnection(ping1);
+    manager.returnConnection(ping2);
+
+    long startNanos = nowNanos();
+    try {
+      manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+    } catch (AllConnectionsInUseException e) {
+      fail("Didn't get connection");
+    }
+
+  }
+
 
   @Test
   public void testLifetimeExpiration() throws InterruptedException, AllConnectionsInUseException,
@@ -692,7 +815,7 @@ public class ConnectionManagerJUnitTest {
       // do nothing
     }
 
-    Connection conn3 = manager.borrowConnection(new ServerLocation("localhost", -2), false);
+    Connection conn3 = manager.borrowConnection(new ServerLocation("localhost", -2), 10, false);
     Assert.assertEquals(2, factory.creates);
     Assert.assertEquals(0, factory.destroys);
     Assert.assertEquals(0, factory.closes);

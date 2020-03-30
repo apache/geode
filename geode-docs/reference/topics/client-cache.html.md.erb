@@ -152,7 +152,7 @@ Use for client caches. Defines a client's server pool used to communicate with s
 </tr>
 <tr>
 <td>max-connections</td>
-<td>Maximum number of pool connections the pool can create. If the maximum connections are in use, an operation requiring a client-to-server connection blocks until a connection becomes available or the <code class="ph codeph">free-connection-timeout</code> is reached. If set to -1, there is no maximum. The setting must indicate a cap greater than <code class="ph codeph">min-connections</code>.
+<td>Maximum number of pool connections the pool can create. If the maximum connections are in use, an operation requiring a client-to-server connection blocks until a connection becomes available or the <code class="ph codeph">free-connection-timeout</code> or <code class="ph codeph">server-connection-timeout</code> is reached. If set to -1, there is no maximum. The setting must indicate a cap greater than <code class="ph codeph">min-connections</code>.
 <div class="note note">
 **Note:**
 <p>If you need to use this to cap your pool connections, you should disable the pool attribute <code class="ph codeph">pr-single-hop-enabled</code>. Leaving single hop enabled can increase thrashing and lower performance.</p>
@@ -201,6 +201,11 @@ Use for client caches. Defines a client's server pool used to communicate with s
 <td>retry-attempts</td>
 <td>Number of times to retry a client request before giving up. If one server fails, the pool moves to the next, and so on until it is successful or it hits this limit. If the available servers are fewer than this setting, the pool will retry servers that have already failed until it reaches the limit. If this is set to -1, the pool tries every available server once.</td>
 <td>-1</td>
+</tr>
+<tr>
+<td>server-connection-timeout</td>
+<td>Amount of time a thread will wait to get a pool connection towards specific server, before timing out with an exception. This timeout keeps threads from waiting indefinitely when the pool’s <code class="ph codeph">max-connections</code> has been reached and all connections in the pool are in use by other threads.</td>
+<td>0</td>
 </tr>
 <tr>
 <td>server-group</td>

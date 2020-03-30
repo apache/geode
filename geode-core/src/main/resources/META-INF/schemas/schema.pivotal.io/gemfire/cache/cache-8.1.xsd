@@ -1240,6 +1240,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
       </xsd:element>
     </xsd:choice>
     <xsd:attribute name="free-connection-timeout" type="xsd:string" use="optional" />
+    <xsd:attribute name="server-connection-timeout" type="xsd:string" use="optional" />
     <xsd:attribute name="load-conditioning-interval" type="xsd:string" use="optional" />
     <xsd:attribute name="min-connections" type="xsd:string" use="optional" />
     <xsd:attribute name="max-connections" type="xsd:string" use="optional" />
