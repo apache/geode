@@ -113,7 +113,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     }
     factory.create(REGION_NAME);
     clearsByRegion = new HashMap<>();
-    destroyesByRegion = new HashMap<>();
+    destroysByRegion = new HashMap<>();
   }
 
   private void initAccessor(boolean withListener, boolean withWriter) {
@@ -143,7 +143,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     }
     factory.create(REGION_NAME);
     clearsByRegion = new HashMap<>();
-    destroyesByRegion = new HashMap<>();
+    destroysByRegion = new HashMap<>();
   }
 
   private void feed(boolean isClient) {
@@ -191,7 +191,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
   SerializableCallableIF<Integer> getWriterDestroys = () -> {
     int destroys =
-        destroyesByRegion.get(REGION_NAME) == null ? 0 : destroyesByRegion.get(REGION_NAME).get();
+        destroysByRegion.get(REGION_NAME) == null ? 0 : destroysByRegion.get(REGION_NAME).get();
     return destroys;
   };
 
@@ -221,7 +221,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(NUM_ENTRIES);
     dataStore3.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
-    // verifyCacheListenerTriggerCount(dataStore1);
+    verifyCacheListenerTriggerCount(dataStore3);
 
     assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
     assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
@@ -248,7 +248,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(NUM_ENTRIES);
     dataStore1.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
-    // verifyCacheListenerTriggerCount(dataStore1);
+    verifyCacheListenerTriggerCount(dataStore1);
 
     assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
     assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
@@ -275,7 +275,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(NUM_ENTRIES);
     accessor.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
-    // verifyCacheListenerTriggerCount(accessor);
+    verifyCacheListenerTriggerCount(accessor);
     assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
     assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
     assertThat(dataStore3.invoke(getWriterClears)).isEqualTo(0);
@@ -301,7 +301,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(NUM_ENTRIES);
     accessor.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
-    // verifyCacheListenerTriggerCount(accessor);
+    verifyCacheListenerTriggerCount(accessor);
     assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
     assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
     assertThat(dataStore3.invoke(getWriterClears)).isEqualTo(1);
@@ -330,7 +330,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client1.invoke(() -> getRegion(true).clear());
     verifyServerRegionSize(0);
     verifyClientRegionSize(0);
-    // verifyCacheListenerTriggerCount(null);
+    verifyCacheListenerTriggerCount(null);
     assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
     assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
     assertThat(dataStore3.invoke(getWriterClears)).isEqualTo(1);
@@ -374,7 +374,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   }
 
   public static HashMap<String, AtomicInteger> clearsByRegion = new HashMap<>();
-  public static HashMap<String, AtomicInteger> destroyesByRegion = new HashMap<>();
+  public static HashMap<String, AtomicInteger> destroysByRegion = new HashMap<>();
 
   private static class CountingCacheWriter extends CacheWriterAdapter {
     @Override
@@ -394,10 +394,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     @Override
     public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
       Region region = event.getRegion();
-      AtomicInteger destroys = destroyesByRegion.get(region.getName());
+      AtomicInteger destroys = destroysByRegion.get(region.getName());
       if (destroys == null) {
         destroys = new AtomicInteger(1);
-        destroyesByRegion.put(region.getName(), destroys);
+        destroysByRegion.put(region.getName(), destroys);
       } else {
         destroys.incrementAndGet();
       }
