@@ -241,9 +241,6 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-ldap')
       entry('spring-security-test')
       entry('spring-security-web')
-      entry('spring-security-oauth2-core')
-      entry('spring-security-oauth2-client')
-      entry('spring-security-oauth2-jose')
     }
 
     dependencySet(group: 'org.springframework', version: '5.2.1.RELEASE') {
