@@ -166,6 +166,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.arakelian', name: 'java-jq', version: '0.10.1')
         api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.9.8')
         api(group: 'joda-time', name: 'joda-time', version: '2.9.8')
+        api(group: 'com.nimbusds', name:'nimbus-jose-jwt', version:'8.11')
       }
     }
 
