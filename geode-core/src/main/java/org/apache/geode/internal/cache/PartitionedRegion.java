@@ -4431,7 +4431,8 @@ public class PartitionedRegion extends LocalRegion
     return null;
   }
 
-  boolean triggerWriter(RegionEventImpl event) {
+  boolean triggerWriter(RegionEventImpl event, SearchLoadAndWriteProcessor processor, int paction,
+      String theKey) {
     CacheWriter localWriter = basicGetWriter();
     Set netWriteRecipients = localWriter == null ? this.distAdvisor.adviseNetWrite() : null;
 
@@ -4441,16 +4442,6 @@ public class PartitionedRegion extends LocalRegion
 
     final long start = getCachePerfStats().startCacheWriterCall();
     try {
-      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
-      String theKey = "preDestroyRegion";
-      int paction = 0;
-      if (event.getOperation().isRegionDestroy()) {
-        theKey = "preDestroyRegion";
-        paction = SearchLoadAndWriteProcessor.BEFOREREGIONDESTROY;
-      } else if (event.getOperation().isClear()) {
-        theKey = "preClearRegion";
-        paction = SearchLoadAndWriteProcessor.BEFOREREGIONCLEAR;
-      }
       processor.initialize(this, theKey, null);
       processor.doNetWrite(event, netWriteRecipients, localWriter, paction);
       processor.release();
@@ -4471,7 +4462,9 @@ public class PartitionedRegion extends LocalRegion
       throws CacheWriterException, TimeoutException {
     if (event.getOperation().isDistributed()) {
       serverRegionDestroy(event);
-      return triggerWriter(event);
+      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      return triggerWriter(event, processor, SearchLoadAndWriteProcessor.BEFOREREGIONDESTROY,
+          "preDestroyRegion");
     }
     return false;
   }
@@ -4481,7 +4474,9 @@ public class PartitionedRegion extends LocalRegion
       throws CacheWriterException, TimeoutException {
     if (event.getOperation().isDistributed()) {
       serverRegionClear(event);
-      triggerWriter(event);
+      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      triggerWriter(event, processor, SearchLoadAndWriteProcessor.BEFOREREGIONCLEAR,
+          "preClearRegion");
     }
   }
 

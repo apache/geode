@@ -39,7 +39,6 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -102,12 +101,9 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
-  private void initDataStore(boolean withListener, boolean withWriter) {
+  private void initDataStore(boolean withWriter) {
     RegionFactory factory = getCache().createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create());
-    if (withListener) {
-      factory.addCacheListener(new CountingCacheListener());
-    }
     if (withWriter) {
       factory.setCacheWriter(new CountingCacheWriter());
     }
@@ -116,7 +112,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     destroysByRegion = new HashMap<>();
   }
 
-  private void initAccessor(boolean withListener, boolean withWriter) {
+  private void initAccessor(boolean withWriter) {
     RegionShortcut shortcut = getRegionShortCut();
     if (shortcut.isPersistent()) {
       if (shortcut == RegionShortcut.PARTITION_PERSISTENT) {
@@ -135,9 +131,6 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         .setPartitionAttributes(
             new PartitionAttributesFactory().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create());
-    if (withListener) {
-      factory.addCacheListener(new CountingCacheListener());
-    }
     if (withWriter) {
       factory.setCacheWriter(new CountingCacheWriter());
     }
@@ -164,25 +157,6 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     // client2.invoke(()->verifyRegionSize(true, expectedNum));
   }
 
-  private void verifyCacheListenerTriggerCount(MemberVM serverVM) {
-    SerializableCallableIF<Integer> getListenerTriggerCount = () -> {
-      CountingCacheListener countingCacheListener =
-          (CountingCacheListener) getRegion(false).getAttributes()
-              .getCacheListeners()[0];
-      return countingCacheListener.getClears();
-    };
-
-    int count = accessor.invoke(getListenerTriggerCount)
-        + dataStore1.invoke(getListenerTriggerCount)
-        + dataStore2.invoke(getListenerTriggerCount)
-        + dataStore3.invoke(getListenerTriggerCount);
-    assertThat(count).isEqualTo(1);
-
-    if (serverVM != null) {
-      assertThat(serverVM.invoke(getListenerTriggerCount)).isEqualTo(1);
-    }
-  }
-
   SerializableCallableIF<Integer> getWriterClears = () -> {
     int clears =
         clearsByRegion.get(REGION_NAME) == null ? 0 : clearsByRegion.get(REGION_NAME).get();
@@ -196,10 +170,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   };
 
   void configureServers(boolean dataStoreWithWriter, boolean accessorWithWriter) {
-    dataStore1.invoke(() -> initDataStore(true, dataStoreWithWriter));
-    dataStore2.invoke(() -> initDataStore(true, dataStoreWithWriter));
-    dataStore3.invoke(() -> initDataStore(true, dataStoreWithWriter));
-    accessor.invoke(() -> initAccessor(true, accessorWithWriter));
+    dataStore1.invoke(() -> initDataStore(dataStoreWithWriter));
+    dataStore2.invoke(() -> initDataStore(dataStoreWithWriter));
+    dataStore3.invoke(() -> initDataStore(dataStoreWithWriter));
+    accessor.invoke(() -> initAccessor(accessorWithWriter));
     // make sure only datastore3 has cacheWriter
     dataStore1.invoke(() -> {
       Region region = getRegion(false);
@@ -221,21 +195,21 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(NUM_ENTRIES);
     dataStore3.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
-    verifyCacheListenerTriggerCount(dataStore3);
 
-    assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterClears)).isEqualTo(1);
-    assertThat(accessor.invoke(getWriterClears)).isEqualTo(0);
-
+    // do the region destroy to compare that the same callbacks will be triggered
     dataStore3.invoke(() -> {
       Region region = getRegion(false);
       region.destroyRegion();
     });
-    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(1);
-    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(0);
+
+    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(dataStore1.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(dataStore2.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(dataStore3.invoke(getWriterClears))
+        .isEqualTo(1);
+    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
+        .isEqualTo(0);
   }
 
   @Test
@@ -248,21 +222,21 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(NUM_ENTRIES);
     dataStore1.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
-    verifyCacheListenerTriggerCount(dataStore1);
 
-    assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(accessor.invoke(getWriterClears)).isEqualTo(1);
-
+    // do the region destroy to compare that the same callbacks will be triggered
     dataStore1.invoke(() -> {
       Region region = getRegion(false);
       region.destroyRegion();
     });
-    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(1);
+
+    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(dataStore1.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(dataStore2.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(dataStore3.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
+        .isEqualTo(1);
   }
 
   @Test
@@ -275,20 +249,21 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(NUM_ENTRIES);
     accessor.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
-    verifyCacheListenerTriggerCount(accessor);
-    assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(accessor.invoke(getWriterClears)).isEqualTo(1);
 
+    // do the region destroy to compare that the same callbacks will be triggered
     accessor.invoke(() -> {
       Region region = getRegion(false);
       region.destroyRegion();
     });
-    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(1);
+
+    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(dataStore1.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(dataStore2.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(dataStore3.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
+        .isEqualTo(1);
   }
 
   @Test
@@ -301,20 +276,21 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(NUM_ENTRIES);
     accessor.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
-    verifyCacheListenerTriggerCount(accessor);
-    assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterClears)).isEqualTo(1);
-    assertThat(accessor.invoke(getWriterClears)).isEqualTo(0);
 
+    // do the region destroy to compare that the same callbacks will be triggered
     accessor.invoke(() -> {
       Region region = getRegion(false);
       region.destroyRegion();
     });
-    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(1);
-    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(0);
+
+    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(dataStore1.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(dataStore2.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(dataStore3.invoke(getWriterClears))
+        .isEqualTo(1);
+    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
+        .isEqualTo(0);
   }
 
   @Test
@@ -330,47 +306,21 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client1.invoke(() -> getRegion(true).clear());
     verifyServerRegionSize(0);
     verifyClientRegionSize(0);
-    verifyCacheListenerTriggerCount(null);
-    assertThat(dataStore1.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterClears)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterClears)).isEqualTo(1);
-    assertThat(accessor.invoke(getWriterClears)).isEqualTo(0);
 
+    // do the region destroy to compare that the same callbacks will be triggered
     client1.invoke(() -> {
       Region region = getRegion(true);
       region.destroyRegion();
     });
-    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(1);
-    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(0);
-  }
 
-  private static class CountingCacheListener extends CacheListenerAdapter {
-    private final AtomicInteger clears = new AtomicInteger();
-    private final AtomicInteger destroyes = new AtomicInteger();
-
-    @Override
-    public void afterRegionClear(RegionEvent event) {
-      Region region = event.getRegion();
-      logger.info("Region " + region.getFullPath() + " is cleared.");
-      clears.incrementAndGet();
-    }
-
-    @Override
-    public void afterRegionDestroy(RegionEvent event) {
-      Region region = event.getRegion();
-      logger.info("Region " + region.getFullPath() + " is destroyed.");
-      destroyes.incrementAndGet();
-    }
-
-    int getClears() {
-      return clears.get();
-    }
-
-    int getDestroys() {
-      return destroyes.get();
-    }
+    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(dataStore1.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(dataStore2.invoke(getWriterClears))
+        .isEqualTo(0);
+    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(dataStore3.invoke(getWriterClears))
+        .isEqualTo(1);
+    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
+        .isEqualTo(0);
   }
 
   public static HashMap<String, AtomicInteger> clearsByRegion = new HashMap<>();
