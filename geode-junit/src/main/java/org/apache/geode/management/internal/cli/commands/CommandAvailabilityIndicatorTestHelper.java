@@ -47,7 +47,7 @@ public class CommandAvailabilityIndicatorTestHelper {
 
         CliMetaData cliMetaData = method.getAnnotation(CliMetaData.class);
         // all the online commands have availability indicator defined in the commandManager
-        if (cliMetaData == null || cliMetaData != null && !cliMetaData.shellOnly()) {
+        if (cliMetaData == null || !cliMetaData.shellOnly()) {
           assertThat(manager.getHelper().hasAvailabilityIndicator(cliCommand.value()[0]))
               .describedAs(cliCommand.value()[0] + " in " + commandMarker.getClass()
                   + " has no availability indicator defined. "
