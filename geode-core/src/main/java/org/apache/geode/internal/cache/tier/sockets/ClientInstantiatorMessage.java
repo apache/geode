@@ -204,7 +204,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("ClientInstantiatorMessage[value=")
-        .append(Arrays.toString(this.serializedInstantiators))
+        .append(Arrays.deepToString(this.serializedInstantiators))
         .append(";memberId=")
         .append(getMembershipId()).append(";eventId=").append(getEventId())
         .append("]");
