@@ -1968,8 +1968,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
      * call with synchronized(this)
      */
     private void checkIfDone() {
-      if (notRepliedYet.isEmpty()
-          || (pendingRemovals != null && pendingRemovals.containsAll(notRepliedYet))) {
+      if (notRepliedYet.isEmpty() || pendingRemovals.containsAll(notRepliedYet)) {
         logger.debug("All anticipated view responses received - notifying waiting thread");
         waiting = false;
         notifyAll();

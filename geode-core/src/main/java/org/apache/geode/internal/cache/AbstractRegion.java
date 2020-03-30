@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -112,6 +113,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   private static final Logger logger = LogService.getLogger();
   private final ReentrantReadWriteLock readWriteLockForCacheLoader = new ReentrantReadWriteLock();
   private final ReentrantReadWriteLock readWriteLockForCacheWriter = new ReentrantReadWriteLock();
+  protected final ConcurrentHashMap<RegionEntry, EntryExpiryTask> entryExpiryTasks =
+      new ConcurrentHashMap<>();
   /**
    * Identifies the static order in which this region was created in relation to other regions or
    * other instances of this region during the life of this JVM.

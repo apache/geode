@@ -261,15 +261,6 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
     services.getMessenger().setPublicKey(findRequest.getMyPublicKey(),
         findRequest.getMemberID());
 
-    // at this level we want to return the coordinator known to membership services,
-    // which may be more up-to-date than the one known by the membership manager
-    if (view == null) {
-      if (services == null) {
-        // we must know this process's identity in order to respond
-        return null;
-      }
-    }
-
     GMSMembershipView<ID> responseView = view;
     if (responseView == null) {
       responseView = recoveredView;
