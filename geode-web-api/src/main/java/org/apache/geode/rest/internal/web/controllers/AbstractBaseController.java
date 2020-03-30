@@ -126,7 +126,7 @@ public abstract class AbstractBaseController implements InitializingBean {
 
   URI toUri(final String... pathSegments) {
     return ServletUriComponentsBuilder.fromCurrentContextPath().path(getRestApiVersion())
-        .pathSegment(pathSegments).build().toUri();
+        .pathSegment(pathSegments).encode().build().toUri();
   }
 
   protected abstract String getRestApiVersion();
@@ -145,6 +145,17 @@ public abstract class AbstractBaseController implements InitializingBean {
     }
 
     return decode(value, DEFAULT_ENCODING);
+  }
+
+  String[] decode(String[] values) {
+    if (values == null) {
+      throw new GemfireRestException("could not process null value specified in query String");
+    }
+    ArrayList<String> decodedValues = new ArrayList<>(values.length);
+    for (String value : values) {
+      decodedValues.add(decode(value));
+    }
+    return decodedValues.toArray(new String[values.length]);
   }
 
   protected PdxInstance convert(final String json) {
@@ -572,7 +583,7 @@ public abstract class AbstractBaseController implements InitializingBean {
     String newKey;
 
     if (StringUtils.hasText(existingKey)) {
-      newKey = existingKey;
+      newKey = decode(existingKey);
       if (NumberUtils.isNumeric(newKey) && domainObjectId == null) {
         final Long newId = IdentifiableUtils.createId(NumberUtils.parseLong(newKey));
         if (newKey.equals(newId.toString())) {

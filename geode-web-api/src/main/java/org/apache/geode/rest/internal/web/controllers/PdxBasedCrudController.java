@@ -211,12 +211,13 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('READ', #region, #keys)")
   public ResponseEntity<?> read(@PathVariable("region") String region,
-      @PathVariable("keys") final String[] keys,
+      @PathVariable("keys") String[] keys,
       @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
     logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
 
     final HttpHeaders headers = new HttpHeaders();
     region = decode(region);
+    keys = decode(keys);
 
     if (keys.length == 1) {
       /* GET op on single key */
@@ -295,12 +296,13 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
   public ResponseEntity<?> update(@PathVariable("region") String region,
-      @PathVariable("keys") final String[] keys,
+      @PathVariable("keys") String[] keys,
       @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
       @RequestBody final String json) {
     logger.debug("updating key(s) for region ({}) ", region);
 
     region = decode(region);
+    keys = decode(keys);
 
     if (keys.length > 1) {
       // putAll case

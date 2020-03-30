@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -180,6 +181,26 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  public void postEntryWithSlashKey() throws Exception {
+    String decodedKey = "1/2";
+    String key = URLEncoder.encode(decodedKey, "UTF-8");
+    mockMvc.perform(post("/v1/orders?key=" + key)
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isCreated())
+        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+
+    mockMvc.perform(post("/v1/orders?key=" + key)
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isConflict());
+
+    Order order = (Order) ((PdxInstance) orderRegion.get(decodedKey)).getObject();
+    assertThat(order).as("order should not be null").isNotNull();
+  }
+
+  @Test
+  @WithMockUser
   public void postEntryWithJsonArrayOfOrders() throws Exception {
     mockMvc.perform(post("/v1/orders?key=1")
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
@@ -194,6 +215,28 @@ public class RestAccessControllerTest {
 
     @SuppressWarnings("unchecked")
     List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get("1");
+    Order order = (Order) entries.get(0).getObject();
+    assertThat(order).as("order should not be null").isNotNull();
+  }
+
+  @Test
+  @WithMockUser
+  public void postEntryWithSlashKeysAndJsonArrayOfOrders() throws Exception {
+    String decodedKey = "1/2";
+    String key = URLEncoder.encode(decodedKey, "UTF-8");
+    mockMvc.perform(post("/v1/orders?key=" + key)
+        .content(jsonResources.get(ORDER1_ARRAY_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isCreated())
+        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+
+    mockMvc.perform(post("/v1/orders?key=" + key)
+        .content(jsonResources.get(ORDER1_ARRAY_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isConflict());
+
+    @SuppressWarnings("unchecked")
+    List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get(decodedKey);
     Order order = (Order) entries.get(0).getObject();
     assertThat(order).as("order should not be null").isNotNull();
   }
@@ -267,6 +310,23 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(header().string("Location", BASE_URL + "/orders/2"));
+  }
+
+  @Test
+  @WithMockUser
+  public void putEntryWithSlashKey() throws Exception {
+    String key = URLEncoder.encode("1/2", "UTF-8");
+    mockMvc.perform(put("/v1/orders/" + key)
+        .content(jsonResources.get(ORDER2_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+
+    mockMvc.perform(put("/v1/orders/" + key)
+        .content(jsonResources.get(ORDER2_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
   }
 
   @Test
