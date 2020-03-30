@@ -127,11 +127,12 @@ public abstract class CommonCrudController extends AbstractBaseController {
       @ApiResponse(code = 500, message = "GemFire throws an error or exception")})
   @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
   public ResponseEntity<?> delete(@PathVariable("region") String region,
-      @PathVariable("keys") final String[] keys) {
+      @PathVariable("keys") String[] keys) {
     logger.debug("Delete data for key {} on region {}", ArrayUtils.toString((Object[]) keys),
         region);
 
     region = decode(region);
+    keys = decode(keys);
 
     deleteValues(region, keys);
     return new ResponseEntity<>(HttpStatus.OK);

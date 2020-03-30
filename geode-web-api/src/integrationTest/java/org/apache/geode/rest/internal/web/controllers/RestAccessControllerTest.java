@@ -107,7 +107,7 @@ public class RestAccessControllerTest {
   private MockMvc mockMvc;
 
   private static Region<?, ?> orderRegion;
-  private static Region<?, ?> customerRegion;
+  private static Region<String, PdxInstance> customerRegion;
 
   @ClassRule
   public static ServerStarterRule rule = new ServerStarterRule()
@@ -366,13 +366,49 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void putAll() throws Exception {
+    StringBuilder keysBuilder = new StringBuilder();
+    for (int i = 1; i < 60; i++) {
+      keysBuilder.append(i).append(',');
+    }
+    keysBuilder.append(60);
+    String keys = keysBuilder.toString();
     mockMvc.perform(
-        put("/v1/customers/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60")
+        put("/v1/customers/" + keys)
             .content(jsonResources.get(CUSTOMER_LIST_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL
-            + "/customers/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60"));
+        .andExpect(header().string("Location", BASE_URL + "/customers/" + keys));
+    assertThat(customerRegion.size()).isEqualTo(60);
+    for (int i = 1; i <= 60; i++) {
+      PdxInstance customer = customerRegion.get(String.valueOf(i));
+      assertThat(customer.getField("customerId").toString())
+          .isEqualTo(Integer.valueOf(100 + i).toString());
+    }
+  }
+
+  @Test
+  @WithMockUser
+  public void putAllWithSlashes() throws Exception {
+    StringBuilder keysBuilder = new StringBuilder();
+    String decodedSlash = "/";
+    String encodedSlash = URLEncoder.encode(decodedSlash, "UTF-8");
+    for (int i = 1; i < 60; i++) {
+      keysBuilder.append(i).append(encodedSlash).append(',');
+    }
+    keysBuilder.append(60).append(encodedSlash);
+    String keys = keysBuilder.toString();
+    mockMvc.perform(
+        put("/v1/customers/" + keys)
+            .content(jsonResources.get(CUSTOMER_LIST_JSON))
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/customers/" + keys));
+    assertThat(customerRegion.size()).isEqualTo(60);
+    for (int i = 1; i <= 60; i++) {
+      PdxInstance customer = customerRegion.get(String.valueOf(i) + decodedSlash);
+      assertThat(customer.getField("customerId").toString())
+          .isEqualTo(Integer.valueOf(100 + i).toString());
+    }
   }
 
   @Test
@@ -659,6 +695,20 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  public void getSpecificKeysWithSlashes() throws Exception {
+    putAllWithSlashes();
+    String decodedSlash = "/";
+    String encodedSlash = URLEncoder.encode(decodedSlash, "UTF-8");
+    mockMvc.perform(get("/v1/customers/1" + encodedSlash + ",2" + encodedSlash + ",3" + encodedSlash
+        + ",4" + encodedSlash + ",5" + encodedSlash)
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.customers[*].customerId", containsInAnyOrder(101, 102, 103, 104, 105)));
+  }
+
+  @Test
+  @WithMockUser
   public void getSpecificKeysFromUnknownRegion() throws Exception {
     mockMvc.perform(get("/v1/unknown/1,2,3,4,5")
         .with(POST_PROCESSOR))
@@ -690,6 +740,18 @@ public class RestAccessControllerTest {
     putAll();
     mockMvc.perform(delete("/v1/customers/2,3,4,5")
         .with(POST_PROCESSOR))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser
+  public void deleteMultipleKeysWithSlashes() throws Exception {
+    putAllWithSlashes();
+    String decodedSlash = "/";
+    String encodedSlash = URLEncoder.encode(decodedSlash, "UTF-8");
+    mockMvc.perform(delete("/v1/customers/1" + encodedSlash + ",2" + encodedSlash + ",3"
+        + encodedSlash + ",4" + encodedSlash + ",5" + encodedSlash)
+            .with(POST_PROCESSOR))
         .andExpect(status().isOk());
   }
 
