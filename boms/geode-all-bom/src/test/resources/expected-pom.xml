@@ -38,18 +38,6 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.sun.xml.bind</groupId>
-        <artifactId>jaxb-impl</artifactId>
-        <version>2.3.2</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>javax.xml.bind</groupId>
-        <artifactId>jaxb-api</artifactId>
-        <version>2.3.1</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>antlr</groupId>
         <artifactId>antlr</artifactId>
         <version>2.7.7</version>
@@ -62,9 +50,21 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>com.arakelian</groupId>
+        <artifactId>java-jq</artifactId>
+        <version>0.10.1</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>com.carrotsearch.randomizedtesting</groupId>
         <artifactId>randomizedtesting-runner</artifactId>
         <version>2.7.3</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>2.9.8</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -137,6 +137,12 @@
         <groupId>com.sun.istack</groupId>
         <artifactId>istack-commons-runtime</artifactId>
         <version>3.0.9</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>2.3.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -230,6 +236,12 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-annotations</artifactId>
+        <version>1.5.23</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
         <version>8.3.0</version>
@@ -269,6 +281,18 @@
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
         <version>3.1.0</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.1</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>2.9.8</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -399,13 +423,13 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-webapp</artifactId>
+        <artifactId>jetty-server</artifactId>
         <version>9.4.21.v20190926</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-server</artifactId>
+        <artifactId>jetty-webapp</artifactId>
         <version>9.4.21.v20190926</version>
         <scope>compile</scope>
       </dependency>
@@ -470,12 +494,6 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
-        <groupId>io.swagger</groupId>
-        <artifactId>swagger-annotations</artifactId>
-        <version>1.5.23</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>org.springframework.hateoas</groupId>
         <artifactId>spring-hateoas</artifactId>
         <version>1.0.1.RELEASE</version>
@@ -494,6 +512,12 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>1.13.0</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>pl.pragmatists</groupId>
         <artifactId>JUnitParams</artifactId>
         <version>1.1.0</version>
@@ -509,30 +533,6 @@
         <groupId>xerces</groupId>
         <artifactId>xercesImpl</artifactId>
         <version>2.12.0</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.arakelian</groupId>
-        <artifactId>java-jq</artifactId>
-        <version>0.10.1</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.datatype</groupId>
-        <artifactId>jackson-datatype-joda</artifactId>
-        <version>2.9.8</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>joda-time</groupId>
-        <artifactId>joda-time</artifactId>
-        <version>2.9.8</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.nimbusds</groupId>
-        <artifactId>nimbus-jose-jwt</artifactId>
-        <version>8.11</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -563,6 +563,12 @@
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path</artifactId>
         <version>2.4.0</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.nimbusds</groupId>
+        <artifactId>nimbus-jose-jwt</artifactId>
+        <version>8.11</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
