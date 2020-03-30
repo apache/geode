@@ -1452,64 +1452,64 @@ public class QueryTestUtils implements Serializable {
 
 
     // Queries used for Equi-join tests
-    queries.put("1199", "select * from /region1 r1, /region2 r2 where" + "r1.ID = r2.id");
+    queries.put("1199", "select * from /region1 r1, /region2 r2 where r1.ID = r2.id");
     queries.put("1200",
-        "select * from /region1 r1, /region2 r2 where" + "r1.ID = r2.id AND r1.ID > 5");
+        "select * from /region1 r1, /region2 r2 where r1.ID = r2.id AND r1.ID > 5");
     queries.put("1201",
-        "select * from /region1 r1, /region2 r2 where" + "r1.ID = r2.id AND r1.status = 'active'");
+        "select * from /region1 r1, /region2 r2 where r1.ID = r2.id AND r1.status = 'active'");
     queries.put("1202",
-        "select distinct * from /region1 r1, /region2 r2 where" + "r1.ID = r2.id ORDER BY r1.ID");
+        "select distinct * from /region1 r1, /region2 r2 where r1.ID = r2.id ORDER BY r1.ID");
     queries.put("1203",
-        "select distinct * from /region1 r1, /region2 r2 where" + "r1.ID = r2.id ORDER BY r2.id");
-    queries.put("1204", "select distinct * from /region1 r1, /region2 r2 where"
+        "select distinct * from /region1 r1, /region2 r2 where r1.ID = r2.id ORDER BY r2.id");
+    queries.put("1204", "select distinct * from /region1 r1, /region2 r2 where "
         + "r1.ID = r2.id ORDER BY r2.status");
-    queries.put("1205", "select * from /region1 r1, /region2 r2 where"
+    queries.put("1205", "select * from /region1 r1, /region2 r2 where "
         + "r1.ID = r2.id AND r1.status != r2.status");
     queries.put("1206",
-        "select * from /region1 r1, /region2 r2 where" + "r1.ID = r2.id AND r1.status = r2.status");
-    queries.put("1207", "select * from /region1 r1, /region2 r2 where"
+        "select * from /region1 r1, /region2 r2 where r1.ID = r2.id AND r1.status = r2.status");
+    queries.put("1207", "select * from /region1 r1, /region2 r2 where "
         + "r1.ID = r2.id AND r1.positions.size = r2.positions.size");
-    queries.put("1208", "select * from /region1 r1, /region2 r2 where"
+    queries.put("1208", "select * from /region1 r1, /region2 r2 where "
         + "r1.ID = r2.id AND r1.positions.size > r2.positions.size");
-    queries.put("1209", "select * from /region1 r1, /region2 r2 where"
+    queries.put("1209", "select * from /region1 r1, /region2 r2 where "
         + "r1.ID = r2.id AND r1.positions.size < r2.positions.size");
-    queries.put("1210", "select * from /region1 r1, /region2 r2 where"
+    queries.put("1210", "select * from /region1 r1, /region2 r2 where "
         + "r1.ID = r2.id AND r1.positions.size = r2.positions.size AND r2.positions.size > 0");
-    queries.put("1211", "select * from /region1 r1, /region2 r2 where"
+    queries.put("1211", "select * from /region1 r1, /region2 r2 where "
         + "r1.ID = r2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)");
-    queries.put("1212", "select * from /region1 r1, /region2 r2 where"
+    queries.put("1212", "select * from /region1 r1, /region2 r2 where "
         + "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)");
 
-    queries.put("1199", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1199", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id");
-    queries.put("1200", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1200", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND r1.ID > 5");
-    queries.put("1201", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1201", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND r1.status = 'active'");
     queries.put("1202",
-        "select distinct * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+        "select distinct * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
             + "r1.ID = pos2.id ORDER BY r1.ID");
     queries.put("1203",
-        "select distinct * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+        "select distinct * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
             + "r1.ID = pos2.id ORDER BY pos2.id");
     queries.put("1204",
-        "select distinct * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+        "select distinct * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
             + "r1.ID = pos2.id ORDER BY r2.status");
-    queries.put("1205", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1205", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND r1.status != r2.status");
-    queries.put("1206", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1206", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND r1.status = r2.status");
-    queries.put("1207", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1207", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND r1.positions.size = r2.positions.size");
-    queries.put("1208", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1208", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND r1.positions.size > r2.positions.size");
-    queries.put("1209", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1209", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND r1.positions.size < r2.positions.size");
-    queries.put("1210", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1210", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND r1.positions.size = r2.positions.size AND r2.positions.size > 0");
-    queries.put("1211", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1211", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)");
-    queries.put("1212", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where"
+    queries.put("1212", "select * from /region1 r1, /region2 r2, r2.positions.values pos2 where "
         + "r1.ID = pos2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)");
   }
 
