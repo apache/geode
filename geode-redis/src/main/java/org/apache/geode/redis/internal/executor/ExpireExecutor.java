@@ -38,10 +38,11 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() < 3) {
+    if (commandElems.size() != 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
       return;
     }
+
     ByteArrayWrapper key = command.getKey();
     RegionProvider regionProvider = context.getRegionProvider();
     byte[] delayByteArray = commandElems.get(SECONDS_INDEX);
