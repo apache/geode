@@ -18,6 +18,8 @@ package org.apache.geode.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +29,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -46,13 +49,13 @@ public class PubSubDUnitTest {
   public static void beforeClass() {
     ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     Properties redisProps = new Properties();
-    redisProps.put("redis-bind-address", "localhost");
+    redisProps.put(DistributionConfig.REDIS_BIND_ADDRESS_NAME, "localhost");
 
     MemberVM locator = cluster.startLocatorVM(0);
 
-    redisProps.put("redis-port", Integer.toString(ports[0]));
+    redisProps.put(DistributionConfig.REDIS_PORT_NAME, Integer.toString(ports[0]));
     server1 = cluster.startServerVM(1, redisProps, locator.getPort());
-    redisProps.put("redis-port", Integer.toString(ports[1]));
+    redisProps.put(DistributionConfig.REDIS_PORT_NAME, Integer.toString(ports[1]));
     server2 = cluster.startServerVM(2, redisProps, locator.getPort());
   }
 
@@ -86,6 +89,62 @@ public class PubSubDUnitTest {
 
     GeodeAwaitility.await().untilAsserted(subscriberThread1::join);
     GeodeAwaitility.await().untilAsserted(subscriberThread2::join);
+  }
+
+  @Test
+  public void testConcurrentPubSub() throws Exception {
+    Jedis subscriber1 = new Jedis("localhost", ports[0]);
+    Jedis subscriber2 = new Jedis("localhost", ports[1]);
+
+    CountDownLatch latch = new CountDownLatch(2);
+    MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
+    MockSubscriber mockSubscriber2 = new MockSubscriber(latch);
+
+    Runnable runnable1 = () -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME);
+    Thread subscriberThread1 = new Thread(runnable1);
+    subscriberThread1.start();
+
+    Runnable runnable2 = () -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME);
+    Thread subscriberThread2 = new Thread(runnable2);
+    subscriberThread2.start();
+
+    assertThat(latch.await(2, TimeUnit.SECONDS))
+        .as("channel subscription was not received")
+        .isTrue();
+
+    int CLIENT_COUNT = 10;
+    int ITERATIONS = 1000;
+
+    List<Jedis> clients = new ArrayList<>();
+    List<Thread> threads = new ArrayList<>();
+
+    for (int i = 0; i < CLIENT_COUNT; i++) {
+      Jedis client = new Jedis("localhost", ports[i % 2]);
+      clients.add(client);
+
+      Runnable runnable = () -> {
+        for (int j = 0; j < ITERATIONS; j++) {
+          client.publish(CHANNEL_NAME, "hello");
+        }
+      };
+
+      threads.add(new Thread(runnable));
+    }
+
+    threads.forEach(Thread::start);
+
+    for (Thread thread : threads) {
+      thread.join();
+    }
+
+    mockSubscriber1.unsubscribe(CHANNEL_NAME);
+    mockSubscriber2.unsubscribe(CHANNEL_NAME);
+
+    GeodeAwaitility.await().untilAsserted(subscriberThread1::join);
+    GeodeAwaitility.await().untilAsserted(subscriberThread2::join);
+
+    assertThat(mockSubscriber1.getReceivedMessages().size()).isEqualTo(CLIENT_COUNT * ITERATIONS);
+    assertThat(mockSubscriber2.getReceivedMessages().size()).isEqualTo(CLIENT_COUNT * ITERATIONS);
   }
 
 }
