@@ -38,16 +38,14 @@ import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class ListsIntegrationTest {
-
-  private static Jedis jedis;
+  static Jedis jedis;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
-  private static Random rand;
+  private static Random rand = new Random();
   private static int port = 6379;
 
   @BeforeClass
   public static void setUp() {
-    rand = new Random();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");

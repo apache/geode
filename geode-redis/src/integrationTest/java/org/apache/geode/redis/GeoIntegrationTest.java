@@ -17,6 +17,7 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -40,14 +41,12 @@ import redis.clients.jedis.params.GeoRadiusParam;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class GeoIntegrationTest {
-  private static Jedis jedis;
+  static Jedis jedis;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
   private static int port = 6379;
@@ -69,9 +68,19 @@ public class GeoIntegrationTest {
 
   @After
   public void cleanup() {
+    // TODO: GEODE-7909 Correct implementation of flushAll so it deletes Geo* keys properly and this
+    // zrem is
+    // not needed
     jedis.zrem("Sicily", "Palermo", "Catania");
+    jedis.flushAll();
   }
 
+  @AfterClass
+  public static void tearDown() {
+    jedis.close();
+    cache.close();
+    server.shutdown();
+  }
 
   @Test
   public void testGeoAdd() {
@@ -80,17 +89,18 @@ public class GeoIntegrationTest {
     memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
     Long l = jedis.geoadd("Sicily", memberCoordinateMap);
     assertTrue(l == 2L);
-
-    Region<ByteArrayWrapper, ByteArrayWrapper> sicilyRegion = cache.getRegion("Sicily");
-    assertNotNull("Expected region to be not NULL", sicilyRegion);
-
-    // Check GeoHash
-    String hash =
-        sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString();
-    assertEquals("sqc8b49rnyte", hash);
-
-    hash = sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString();
-    assertEquals("sqdtr74hyu5n", hash);
+    // TODO: make sure GEOADD is tested sufficiently without needing to get the region/Geode
+    // internals and properly implemented
+    // Region<ByteArrayWrapper, ByteArrayWrapper> sicilyRegion = cache.getRegion("Sicily");
+    // assertNotNull("Expected region to be not NULL", sicilyRegion);
+    //
+    // // Check GeoHash
+    // String hash =
+    // sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString();
+    // assertEquals("sqc8b49rnyte", hash);
+    //
+    // hash = sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString();
+    // assertEquals("sqdtr74hyu5n", hash);
   }
 
   @Test
@@ -154,11 +164,12 @@ public class GeoIntegrationTest {
 
   @Test
   public void testGeoRadiusBasic() {
+    // jedis.flushAll();
     Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
     memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
     Long l = jedis.geoadd("Sicily", memberCoordinateMap);
-    assertTrue(l == 2L);
+    assertThat(l).isEqualTo(2L);
 
     List<GeoRadiusResponse> gr = jedis.georadius("Sicily", 15.0, 37.0, 100000, GeoUnit.M);
     assertEquals(1, gr.size());
@@ -408,17 +419,5 @@ public class GeoIntegrationTest {
 
     assertNotNull(ex);
     assertTrue(ex.getMessage().contains("could not decode requested zset member"));
-  }
-
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-    cache.close();
-    server.shutdown();
   }
 }

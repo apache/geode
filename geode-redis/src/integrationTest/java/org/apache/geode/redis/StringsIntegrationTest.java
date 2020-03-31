@@ -18,6 +18,7 @@ import static java.lang.Integer.parseInt;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.redis.GeodeRedisServer.REDIS_META_DATA_REGION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -53,11 +54,11 @@ import org.apache.geode.test.junit.categories.RedisTest;
 @Category({RedisTest.class})
 public class StringsIntegrationTest {
 
-  private static Jedis jedis;
-  private static Jedis jedis2;
+  static Jedis jedis;
+  static Jedis jedis2;
+  static Random rand;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
-  private static Random rand;
   private static int port = 6379;
   private static int ITERATION_COUNT = 4000;
 
@@ -265,6 +266,23 @@ public class StringsIntegrationTest {
     assertThatThrownBy(() -> jedis.getSet(key, "this value doesn't matter"))
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testSet_keyExistsWithDifferentDataType_returnsRedisDataTypeMismatchException() {
+    jedis.hset("key", "field", "value");
+
+    assertThatThrownBy(
+        () -> jedis.set("key", "something else")).isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void testSet_protectedRedisDataType_throwsRedisDataTypeMismatchException() {
+    assertThatThrownBy(
+        () -> jedis.set(REDIS_META_DATA_REGION, "something else"))
+            .isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("protected");
   }
 
   @Test
@@ -585,7 +603,7 @@ public class StringsIntegrationTest {
     try {
       jedis.incr(key);
     } catch (JedisDataException e) {
-      assertThat(e.getMessage()).contains("value is not an integer or out of range");
+      assertThat(e.getMessage()).contains(RedisConstants.ERROR_OVERFLOW);
     }
     assertThat(jedis.get(key)).isEqualTo(max64BitIntegerValue);
   }
@@ -599,7 +617,7 @@ public class StringsIntegrationTest {
     try {
       jedis.incr(key);
     } catch (JedisDataException e) {
-      assertThat(e.getMessage()).contains(RedisConstants.ERROR_WRONG_TYPE);
+      assertThat(e.getMessage()).contains(RedisConstants.ERROR_NOT_INTEGER);
     }
     assertThat(jedis.get(key)).isEqualTo(nonIntegerValue);
   }

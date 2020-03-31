@@ -27,8 +27,6 @@ import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class IncrExecutor extends StringExecutor {
-  private final String ERROR_OVERFLOW = "value is not an integer or out of range";
-
   private final int INIT_VALUE_INT = 1;
 
   @Override
@@ -72,12 +70,14 @@ public class IncrExecutor extends StringExecutor {
         value = Long.parseLong(stringValue);
       } catch (NumberFormatException e) {
         command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_WRONG_TYPE));
+            Coder.getErrorResponse(context.getByteBufAllocator(),
+                RedisConstants.ERROR_NOT_INTEGER));
         return;
       }
 
       if (value == Long.MAX_VALUE) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
+        command.setResponse(
+            Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_OVERFLOW));
         return;
       }
 

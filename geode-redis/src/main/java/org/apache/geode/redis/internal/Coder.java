@@ -475,7 +475,11 @@ public class Coder {
       return "-Infinity";
     }
 
-    return String.valueOf(d);
+    String stringValue = String.valueOf(d);
+    if (stringValue.endsWith(".0")) {
+      return (stringValue.substring(0, stringValue.length() - 2));
+    }
+    return stringValue;
   }
 
   public static byte[] stringToBytes(String string) {
