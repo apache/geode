@@ -323,6 +323,25 @@ public class ClientCacheFactory {
   }
 
   /**
+   * Sets the server connection timeout for this pool. If the pool has a max connections setting,
+   * operations will block if there is no free connections toward designated server. The server
+   * connection timeout
+   * specifies how long those operations will block waiting for a connection toward server before
+   * receiving an {@link AllConnectionsInUseException}. If max connections is not set this setting
+   * has no effect.
+   *
+   * @param connectionTimeout the connection timeout in milliseconds
+   * @return a reference to <code>this</code>
+   * @throws IllegalArgumentException if <code>connectionTimeout</code> is less than
+   *         <code>0</code>.
+   * @see #setPoolMaxConnections(int)
+   */
+  public ClientCacheFactory setPoolServerConnectionTimeout(int connectionTimeout) {
+    getPoolFactory().setServerConnectionTimeout(connectionTimeout);
+    return this;
+  }
+
+  /**
    * Sets the load conditioning interval for this pool. This interval controls how frequently the
    * pool will check to see if a connection to a given server should be moved to a different server
    * to improve the load balance.
@@ -415,6 +434,7 @@ public class ClientCacheFactory {
    * @throws IllegalArgumentException if <code>maxConnections</code> is less than
    *         <code>minConnections</code>.
    * @see #setPoolFreeConnectionTimeout(int)
+   * @see #setPoolServerConnectionTimeout(int)
    */
   public ClientCacheFactory setPoolMaxConnections(int maxConnections) {
     getPoolFactory().setMaxConnections(maxConnections);

@@ -4238,9 +4238,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     // Return the QueryMonitor service if MAX_QUERY_EXECUTION_TIME is set or it is required by the
     // ResourceManager and not overridden by system property.
-    if (queryMonitor == null) {
+    QueryMonitor tempQueryMonitor = queryMonitor;
+    if (tempQueryMonitor == null) {
       synchronized (queryMonitorLock) {
-        if (queryMonitor == null) {
+        if (tempQueryMonitor == null) {
           int maxTime = MAX_QUERY_EXECUTION_TIME;
 
           if (monitorRequired && maxTime < 0) {
@@ -4251,7 +4252,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             maxTime = FIVE_HOURS_MILLIS;
           }
 
-          queryMonitor =
+          tempQueryMonitor =
               new QueryMonitor((ScheduledThreadPoolExecutor) newScheduledThreadPool(
                   QUERY_MONITOR_THREAD_POOL_SIZE,
                   runnable -> new LoggingThread("QueryMonitor Thread", runnable)),
@@ -4260,10 +4261,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           if (logger.isDebugEnabled()) {
             logger.debug("QueryMonitor thread started.");
           }
+          queryMonitor = tempQueryMonitor;
         }
       }
     }
-    return queryMonitor;
+    return tempQueryMonitor;
   }
 
   private void sendAddCacheServerProfileMessage() {

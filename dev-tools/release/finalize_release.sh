@@ -69,6 +69,14 @@ else
 fi
 
 
+function failMsg {
+  errln=$1
+  echo "ERROR: script did NOT complete successfully"
+  echo "Comment out any steps that already succeeded (approximately lines 80-$(( errln - 1 ))) and try again"
+}
+trap 'failMsg $LINENO' ERR
+
+
 echo ""
 echo "============================================================"
 echo "Destroying pipelines"
@@ -166,8 +174,8 @@ echo "============================================================"
 set -x
 cd $SVN_RELEASE_DIR
 svn update --set-depth immediates
-#identify the latest patch release for the latest 2 major.minor releases, remove anything else from mirrors (all releases remain available on non-mirrored archive site)
-RELEASES_TO_KEEP=2
+#identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
+RELEASES_TO_KEEP=3
 set +x
 ls | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
 echo Keeping releases: $(cat ../keep)

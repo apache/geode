@@ -115,6 +115,14 @@ cd $WORKSPACE
 set +x
 
 
+function failMsg {
+  errln=$1
+  echo "ERROR: script did NOT complete successfully"
+  echo "Comment out any steps that already succeeded (approximately lines 124-$(( errln - 1 ))) and try again"
+}
+trap 'failMsg $LINENO' ERR
+
+
 echo ""
 echo "============================================================"
 echo "Cloning repositories..."

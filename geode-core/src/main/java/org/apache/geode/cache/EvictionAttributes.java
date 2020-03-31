@@ -516,7 +516,7 @@ public abstract class EvictionAttributes {
     EvictionAlgorithm algorithm = getAlgorithm();
     Optional<String> objectSizerClass = Optional.ofNullable(getObjectSizer())
         .map(c -> c.getClass().toString());
-    Integer maximum = getMaximum();
+    String maximum = Integer.toString(getMaximum());
 
     if (algorithm.isLRUHeap()) {
       RegionAttributesType.EvictionAttributes.LruHeapPercentage heapPercentage =
@@ -529,13 +529,13 @@ public abstract class EvictionAttributes {
           new RegionAttributesType.EvictionAttributes.LruMemorySize();
       memorySize.setAction(action);
       objectSizerClass.ifPresent(o -> memorySize.setClassName(o));
-      memorySize.setMaximum(maximum.toString());
+      memorySize.setMaximum(maximum);
       configAttributes.setLruMemorySize(memorySize);
     } else {
       RegionAttributesType.EvictionAttributes.LruEntryCount entryCount =
           new RegionAttributesType.EvictionAttributes.LruEntryCount();
       entryCount.setAction(action);
-      entryCount.setMaximum(maximum.toString());
+      entryCount.setMaximum(maximum);
       configAttributes.setLruEntryCount(entryCount);
     }
 

@@ -297,7 +297,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public String toString() {
-    return "[ ServerRegionExecutor:" + "args=" + args + " ;filter=" + filter + " ;region="
+    return "[ ServerRegionExecutor: args=" + args + " ;filter=" + filter + " ;region="
         + region.getName() + "]";
   }
 

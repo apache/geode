@@ -480,7 +480,7 @@ public class DiskStoreImpl implements DiskStore {
       if (dirSizes[i] == DiskStoreFactory.DEFAULT_DISK_DIR_SIZE) {
         this.totalDiskStoreSpace = ManagementConstants.NOT_AVAILABLE_LONG;
       } else if (this.totalDiskStoreSpace != ManagementConstants.NOT_AVAILABLE_LONG) {
-        this.totalDiskStoreSpace += dirSizes[i] * (1024 * 1024);
+        this.totalDiskStoreSpace += (1024 * 1024) * ((long) dirSizes[i]);
       }
     }
     // stored in bytes

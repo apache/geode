@@ -33,7 +33,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.After;
@@ -48,6 +47,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
@@ -281,11 +281,8 @@ public class StringsIntegrationTest {
 
     latch.countDown();
 
-    Integer getSetSum = future2.get(5, TimeUnit.SECONDS);
-    Integer incrSum = future1.get();
-
-    assertThat(getSetSum).isEqualTo(incrSum);
-    assertThat(incrSum + getSetSum).isEqualTo(2 * ITERATION_COUNT);
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(future2.get()).isEqualTo(future1.get()));
+    assertThat(future1.get() + future2.get()).isEqualTo(2 * ITERATION_COUNT);
   }
 
   private Integer doABunchOfIncrs(Jedis jedis, CountDownLatch latch) throws InterruptedException {

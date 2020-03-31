@@ -99,6 +99,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     ClientCacheFactory ccf = new ClientCacheFactory(dsProperties);
     if (poolAttr != null) {
       ccf.setPoolFreeConnectionTimeout(poolAttr.getFreeConnectionTimeout())
+          .setPoolServerConnectionTimeout(poolAttr.getServerConnectionTimeout())
           .setPoolLoadConditioningInterval(poolAttr.getLoadConditioningInterval())
           .setPoolSocketBufferSize(poolAttr.getSocketBufferSize())
           .setPoolMinConnections(poolAttr.getMinConnections())
