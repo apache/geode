@@ -120,7 +120,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/**",
       produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "delete data for key(s)",
-      notes = "Delete data for single key or specific keys in region")
+      notes = "Delete data for one or more keys in a region. The keys, ** in the endpoint, are a comma separated list.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),

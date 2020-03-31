@@ -203,7 +203,7 @@ public class PdxBasedCrudController extends CommonCrudController {
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/**",
       produces = APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read data for specific keys",
-      notes = "Read data for specific set of keys in region.")
+      notes = "Read data for specific set of keys in a region. The keys, ** in the endpoint, are a comma separated list.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad Request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -282,9 +282,10 @@ public class PdxBasedCrudController extends CommonCrudController {
       consumes = {APPLICATION_JSON_UTF8_VALUE}, produces = {
           APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "update data for key",
-      notes = "Update or insert (put) data for key in region."
-          + "op=REPLACE, update (replace) data with key if and only if the key exists in region"
-          + "op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in region")
+      notes = "Update or insert (put) data for keys in a region."
+          + " The keys, ** in the endpoint, are a comma separated list."
+          + " If op=REPLACE, update (replace) data with key if and only if the key exists in the region."
+          + " If op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad Request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
