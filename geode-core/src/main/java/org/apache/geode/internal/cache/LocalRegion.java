@@ -3009,7 +3009,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @since GemFire 5.7
    */
-  private void serverRegionClear(RegionEventImpl regionEvent) {
+  protected void serverRegionClear(RegionEventImpl regionEvent) {
     if (regionEvent.getOperation().isDistributed()) {
       ServerRegionProxy mySRP = getServerProxy();
       if (mySRP != null) {
@@ -3128,7 +3128,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
-  private void cacheWriteBeforeRegionClear(RegionEventImpl event)
+  void cacheWriteBeforeRegionClear(RegionEventImpl event)
       throws CacheWriterException, TimeoutException {
     // copy into local var to prevent race condition
     CacheWriter writer = basicGetWriter();

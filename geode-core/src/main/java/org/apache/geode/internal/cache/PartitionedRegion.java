@@ -2188,6 +2188,9 @@ public class PartitionedRegion extends LocalRegion
           throw cache.getCacheClosedException("Cache is shutting down");
         }
 
+        // do cacheWrite
+        cacheWriteBeforeRegionClear(regionEvent);
+
         // create ClearPRMessage per bucket
         List<ClearPRMessage> clearMsgList = createClearPRMessages(regionEvent.getEventId());
         for (ClearPRMessage clearPRMessage : clearMsgList) {
@@ -4457,6 +4460,26 @@ public class PartitionedRegion extends LocalRegion
     return null;
   }
 
+  boolean triggerWriter(RegionEventImpl event, SearchLoadAndWriteProcessor processor, int paction,
+      String theKey) {
+    CacheWriter localWriter = basicGetWriter();
+    Set netWriteRecipients = localWriter == null ? this.distAdvisor.adviseNetWrite() : null;
+
+    if (localWriter == null && (netWriteRecipients == null || netWriteRecipients.isEmpty())) {
+      return false;
+    }
+
+    final long start = getCachePerfStats().startCacheWriterCall();
+    try {
+      processor.initialize(this, theKey, null);
+      processor.doNetWrite(event, netWriteRecipients, localWriter, paction);
+      processor.release();
+    } finally {
+      getCachePerfStats().endCacheWriterCall(start);
+    }
+    return true;
+  }
+
   /**
    * This invokes a cache writer before a destroy operation. Although it has the same method
    * signature as the method in LocalRegion, it is invoked in a different code path. LocalRegion
@@ -4466,29 +4489,24 @@ public class PartitionedRegion extends LocalRegion
   @Override
   boolean cacheWriteBeforeRegionDestroy(RegionEventImpl event)
       throws CacheWriterException, TimeoutException {
-
     if (event.getOperation().isDistributed()) {
       serverRegionDestroy(event);
-      CacheWriter localWriter = basicGetWriter();
-      Set netWriteRecipients = localWriter == null ? this.distAdvisor.adviseNetWrite() : null;
-
-      if (localWriter == null && (netWriteRecipients == null || netWriteRecipients.isEmpty())) {
-        return false;
-      }
-
-      final long start = getCachePerfStats().startCacheWriterCall();
-      try {
-        SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
-        processor.initialize(this, "preDestroyRegion", null);
-        processor.doNetWrite(event, netWriteRecipients, localWriter,
-            SearchLoadAndWriteProcessor.BEFOREREGIONDESTROY);
-        processor.release();
-      } finally {
-        getCachePerfStats().endCacheWriterCall(start);
-      }
-      return true;
+      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      return triggerWriter(event, processor, SearchLoadAndWriteProcessor.BEFOREREGIONDESTROY,
+          "preDestroyRegion");
     }
     return false;
+  }
+
+  @Override
+  void cacheWriteBeforeRegionClear(RegionEventImpl event)
+      throws CacheWriterException, TimeoutException {
+    if (event.getOperation().isDistributed()) {
+      serverRegionClear(event);
+      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      triggerWriter(event, processor, SearchLoadAndWriteProcessor.BEFOREREGIONCLEAR,
+          "preClearRegion");
+    }
   }
 
   /**
