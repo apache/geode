@@ -41,7 +41,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-@Ignore("GEODE-7870")
 public class PubSubIntegrationTest {
   static Jedis publisher;
   static Jedis subscriber;
@@ -53,7 +52,7 @@ public class PubSubIntegrationTest {
   @BeforeClass
   public static void setUp() {
     CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "warn");
+    cf.set(LOG_LEVEL, "info");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cache = cf.create();
@@ -253,11 +252,14 @@ public class PubSubIntegrationTest {
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    Long result = publisher.publish("salutations", "hello");
+    String message = "hello-" + System.currentTimeMillis();
+
+    Long result = publisher.publish("salutations", message);
     assertThat(result).isEqualTo(1);
 
     assertThat(mockSubscriber.getReceivedMessages()).isEmpty();
-    assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
+    GeodeAwaitility.await().until(() -> mockSubscriber.getReceivedPMessages().size() != 0);
+    assertThat(mockSubscriber.getReceivedPMessages()).containsExactly(message);
 
     mockSubscriber.punsubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
