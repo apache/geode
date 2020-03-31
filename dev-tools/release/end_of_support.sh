@@ -78,10 +78,10 @@ echo "============================================================"
 echo "Cloning repositories..."
 echo "============================================================"
 set -x
-git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode.git
-git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-examples.git
-git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-native.git
-git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-benchmarks.git
+git clone --branch support/${VERSION_MM} git@github.com:apache/geode.git
+git clone --branch support/${VERSION_MM} git@github.com:apache/geode-examples.git
+git clone --branch support/${VERSION_MM} git@github.com:apache/geode-native.git
+git clone --branch support/${VERSION_MM} git@github.com:apache/geode-benchmarks.git
 set +x
 
 
@@ -113,6 +113,7 @@ echo "============================================================"
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
+    git checkout develop
     git push origin --delete support/${VERSION_MM}
     git branch -D support/${VERSION_MM}
     set +x
