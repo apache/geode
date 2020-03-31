@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -196,10 +198,9 @@ public class PdxBasedCrudController extends CommonCrudController {
    * Reading data for set of keys
    *
    * @param region gemfire region name
-   * @param keys string containing comma separated keys
    * @return JSON document
    */
-  @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",
+  @RequestMapping(method = RequestMethod.GET, value = "/{region}/**",
       produces = APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read data for specific keys",
       notes = "Read data for specific set of keys in region.")
@@ -209,15 +210,15 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
       @ApiResponse(code = 404, message = "Region does not exist."),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('READ', #region, #keys)")
   public ResponseEntity<?> read(@PathVariable("region") String region,
-      @PathVariable("keys") String[] keys,
-      @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
+      @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey,
+      HttpServletRequest request) {
+    String[] keys = parseKeys(request, region);
+    securityService.authorize("READ", region, keys);
     logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
 
     final HttpHeaders headers = new HttpHeaders();
     region = decode(region);
-    keys = decode(keys);
 
     if (keys.length == 1) {
       /* GET op on single key */
@@ -273,12 +274,11 @@ public class PdxBasedCrudController extends CommonCrudController {
    * Update data for a key or set of keys
    *
    * @param region gemfire data region
-   * @param keys keys for which update operation is requested
    * @param opValue type of update (put, replace, cas etc)
    * @param json new data for the key(s)
    * @return JSON document
    */
-  @RequestMapping(method = RequestMethod.PUT, value = "/{region}/{keys}",
+  @RequestMapping(method = RequestMethod.PUT, value = "/{region}/**",
       consumes = {APPLICATION_JSON_UTF8_VALUE}, produces = {
           APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "update data for key",
@@ -294,15 +294,14 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(code = 409,
           message = "For CAS, @old value does not match to the current value in region"),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
   public ResponseEntity<?> update(@PathVariable("region") String region,
-      @PathVariable("keys") String[] keys,
       @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
-      @RequestBody final String json) {
+      @RequestBody final String json, HttpServletRequest request) {
+    String[] keys = parseKeys(request, region);
+    securityService.authorize("WRITE", region, keys);
     logger.debug("updating key(s) for region ({}) ", region);
 
     region = decode(region);
-    keys = decode(keys);
 
     if (keys.length > 1) {
       // putAll case

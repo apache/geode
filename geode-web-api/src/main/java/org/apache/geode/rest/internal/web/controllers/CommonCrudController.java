@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -113,10 +115,9 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * Delete data for single key or specific keys in region
    *
    * @param region gemfire region
-   * @param keys for which data is requested
    * @return JSON document containing result
    */
-  @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/{keys}",
+  @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/**",
       produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "delete data for key(s)",
       notes = "Delete data for single key or specific keys in region")
@@ -125,14 +126,14 @@ public abstract class CommonCrudController extends AbstractBaseController {
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
       @ApiResponse(code = 404, message = "Region or key(s) does not exist"),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception")})
-  @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
   public ResponseEntity<?> delete(@PathVariable("region") String region,
-      @PathVariable("keys") String[] keys) {
+      HttpServletRequest request) {
+    String[] keys = parseKeys(request, region);
+    securityService.authorize("WRITE", region, keys);
     logger.debug("Delete data for key {} on region {}", ArrayUtils.toString((Object[]) keys),
         region);
 
     region = decode(region);
-    keys = decode(keys);
 
     deleteValues(region, keys);
     return new ResponseEntity<>(HttpStatus.OK);
