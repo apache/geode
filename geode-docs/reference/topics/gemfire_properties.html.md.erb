@@ -197,7 +197,13 @@ This setting must be the same for every member of a given cluster and unique to 
 </tr>
 <tr>
 <td>enable-cluster-configuration</td>
-<td>A value of &quot;true&quot; causes the creation of cluster configuration on dedicated locators. The cluster configuration service on dedicated locator(s) with this property set to &quot;true&quot; would serve the configuration to new members joining the cluster and also save the configuration changes caused by the <code class="ph codeph">gfsh</code> commands. This property is only applicable to dedicated locators..</td>
+<td>A value of &quot;true&quot; causes the creation of cluster configuration on dedicated locators. The cluster configuration service on dedicated locator(s) with this property set to &quot;true&quot; would serve the configuration to new members joining the cluster and also save the configuration changes caused by the <code class="ph codeph">gfsh</code> commands. This property is only applicable to dedicated locators.</td>
+<td>L</td>
+<td>true</td>
+</tr>
+<tr>
+<td>enable-management-rest-service</td>
+<td>A value of &quot;true&quot; causes the cluster management rest service to be enabled. This service requires the cluster configuration service to be enabled. If <code class="ph codeph">enable-cluster-configuration</code> is false and this is true, the management rest service would do nothing but report an error if you attempt to use it. Also, even if this property is set to true, The management rest service will only be started if <code class="ph codeph">http-service-port</code> is not &quot;0&quot;.</td>
 <td>L</td>
 <td>true</td>
 </tr>
