@@ -27,8 +27,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -778,9 +776,6 @@ public class ConnectionManagerJUnitTest {
     protected volatile int closes;
     protected volatile int finds;
 
-    // This map ensures that fake members created are different for each ServerLocation
-    protected volatile Map<ServerLocation, Integer> locationAndMemberPortMap = new HashMap<>();
-
     /**
      * Wait as long as "whileCondition" is true.
      * The wait will timeout after TIMEOUT_MILLIS has elapsed.
@@ -838,15 +833,7 @@ public class ConnectionManagerJUnitTest {
         this.notifyAll();
       }
       DistributedMember fakeMember = null;
-      int memberPort = 0;
-      if (this.locationAndMemberPortMap.get(location) == null) {
-        memberPort = locationAndMemberPortMap.size() + 1;
-      } else {
-        memberPort = locationAndMemberPortMap.get(location);
-      }
-      locationAndMemberPortMap.put(location, memberPort);
-      fakeMember = new InternalDistributedMember("localhost", memberPort);
-
+      fakeMember = new InternalDistributedMember("localhost", 555);
       final DistributedMember member = fakeMember;
 
       return new Connection() {

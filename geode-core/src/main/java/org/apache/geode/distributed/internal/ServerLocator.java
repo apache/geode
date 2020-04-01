@@ -49,7 +49,6 @@ import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
@@ -406,9 +405,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
       CacheServerProfile bp = (CacheServerProfile) profile;
       ServerLocation location = buildServerLocation(bp);
       String[] groups = bp.getGroups();
-      loadSnapshot.addServer(
-          location, bp.getDistributedMember(), groups,
-          bp.getInitialLoad(), bp.getLoadPollInterval());
+      loadSnapshot.addServer(location, groups, bp.getInitialLoad(), bp.getLoadPollInterval());
       if (logger.isDebugEnabled()) {
         logger.debug("ServerLocator: Received load from a new server {}, {}", location,
             bp.getInitialLoad());
@@ -426,7 +423,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
       CacheServerProfile bp = (CacheServerProfile) profile;
       // InternalDistributedMember id = bp.getDistributedMember();
       ServerLocation location = buildServerLocation(bp);
-      loadSnapshot.removeServer(bp.getDistributedMember());
+      loadSnapshot.removeServer(location);
       if (logger.isDebugEnabled()) {
         logger.debug("ServerLocator: server departed {}", location);
       }
@@ -444,15 +441,12 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
         .warning("ServerLocator - unexpected profile update.");
   }
 
-  public void updateLoad(ServerLocation location, InternalDistributedMember memberId,
-      ServerLoad load,
-      List clientIds) {
+  public void updateLoad(ServerLocation location, ServerLoad load, List clientIds) {
     if (getLogWriter().fineEnabled()) {
       getLogWriter()
-          .fine("ServerLocator: Received a load update from " + location + " at " + memberId + " , "
-              + load);
+          .fine("ServerLocator: Received a load update from " + location + ", " + load);
     }
-    loadSnapshot.updateLoad(location, memberId, load, clientIds);
+    loadSnapshot.updateLoad(location, load, clientIds);
     this.stats.incServerLoadUpdates();
     logServers();
   }

@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -43,12 +42,12 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.EndpointManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -176,9 +175,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
    */
   private boolean hasEndPointWithPort(final PoolImpl pool, final int port) {
     EndpointManager endpointManager = pool.getEndpointManager();
-    final Set<Endpoint> endpoints = new HashSet<>(endpointManager.getEndpointMap().values());
-    return endpoints.stream()
-        .anyMatch(endpoint -> endpoint.getLocation().getPort() == port);
+    final Set<ServerLocation> servers = endpointManager.getEndpointMap().keySet();
+    return servers.stream().anyMatch(location -> location.getPort() == port);
   }
 
   private void acquireConnectionsAndPutonK1andK2(String host) {

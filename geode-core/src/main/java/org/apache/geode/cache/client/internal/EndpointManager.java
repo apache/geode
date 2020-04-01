@@ -44,9 +44,9 @@ public interface EndpointManager {
   /**
    * Get the map of all endpoints currently in use.
    *
-   * @return a map for DistributedMember->Endpoint
+   * @return a map for ServerLocation->Endpoint
    */
-  Map<DistributedMember, Endpoint> getEndpointMap();
+  Map<ServerLocation, Endpoint> getEndpointMap();
 
   void close();
 
