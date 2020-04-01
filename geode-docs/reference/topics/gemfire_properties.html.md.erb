@@ -190,12 +190,6 @@ This setting must be the same for every member of a given cluster and unique to 
 <td>300</td>
 </tr>
 <tr>
-<td>enable-network-partition-detection</td>
-<td>Boolean instructing the system to detect and handle splits in the cluster, typically caused by a partitioning of the network (split brain) where the cluster is running. You must set this property to the same value across all your cluster members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
-<td>S, L</td>
-<td>true</td>
-</tr>
-<tr>
 <td>enable-cluster-configuration</td>
 <td>A value of &quot;true&quot; causes the creation of cluster configuration on dedicated locators. The cluster configuration service on dedicated locator(s) with this property set to &quot;true&quot; serves the configuration to new members joining the cluster and also saves the configuration changes caused by the <code class="ph codeph">gfsh</code> commands. This property is applicable only to dedicated locators.</td>
 <td>L</td>
@@ -203,8 +197,14 @@ This setting must be the same for every member of a given cluster and unique to 
 </tr>
 <tr>
 <td>enable-management-rest-service</td>
-<td>A value of &quot;true&quot; enables the cluster management rest service. This service requires that the cluster configuration service also be enabled. If <code class="ph codeph">enable-cluster-configuration</code> is false and this is true, the management rest service would do nothing but report an error if you attempt to use it. Also, even if this property is set to true, The management rest service will be started only if <code class="ph codeph">http-service-port</code> is not &quot;0&quot;.</td>
+<td>A value of &quot;true&quot; enables the cluster management REST service. This service requires that the cluster configuration service also be enabled. If <code class="ph codeph">enable-cluster-configuration</code> is false and this is true, the management REST service would do nothing but report an error if you attempt to use it. Also, even if this property is set to true, The management REST service will be started only if <code class="ph codeph">http-service-port</code> is not &quot;0&quot;.</td>
 <td>L</td>
+<td>true</td>
+</tr>
+<tr>
+<td>enable-network-partition-detection</td>
+<td>Boolean instructing the system to detect and handle splits in the cluster, typically caused by a partitioning of the network (split brain) where the cluster is running. You must set this property to the same value across all your cluster members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
+<td>S, L</td>
 <td>true</td>
 </tr>
 <tr>
