@@ -14,11 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
@@ -58,13 +55,13 @@ public class GMSMemberDataJUnitTest {
   @Test
   public void testEqualsNotSameType() {
     GMSMemberData member = new GMSMemberData();
-    assertFalse(member.equals("Not a GMSMemberData"));
+    assertThat(member).isNotEqualTo("Not a GMSMemberData");
   }
 
   @Test
   public void testEqualsIsSame() {
     GMSMemberData member = new GMSMemberData();
-    assertTrue(member.equals(member));
+    assertThat(member).isEqualTo(member);
   }
 
   @Test
@@ -72,7 +69,7 @@ public class GMSMemberDataJUnitTest {
     GMSMemberData member = new GMSMemberData();
     UUID uuid = new UUID(0, 0);
     member.setUUID(uuid);
-    assertEquals(0, member.compareTo(member));
+    assertThat(member.compareTo(member)).isZero();
   }
 
   private GMSMemberData createGMSMember(byte[] inetAddress, int viewId, long msb, long lsb) {
@@ -89,7 +86,7 @@ public class GMSMemberDataJUnitTest {
   public void testCompareToInetAddressIsLongerThan() {
     GMSMemberData member1 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1, 1, 1, 1}, 1, 1, 1);
-    assertEquals(1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isGreaterThan(0);
   }
 
   @Test
@@ -100,7 +97,7 @@ public class GMSMemberDataJUnitTest {
             member1.getVersionOrdinal(),
             member1.getUuidMostSignificantBits(), member1.getUuidLeastSignificantBits(),
             member1.getVmViewId());
-    assertEquals(0, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isZero();
   }
 
   @Test
@@ -109,70 +106,70 @@ public class GMSMemberDataJUnitTest {
     GMSMemberData member2 = new GMSMemberData(member1.getInetAddress(), member1.getMembershipPort(),
         member1.getVersionOrdinal(), member1.getUuidMostSignificantBits(),
         member1.getUuidLeastSignificantBits(), 100);
-    assertEquals(false, member1.equals(member2));
+    assertThat(member1).isNotEqualTo(member2);
   }
 
   @Test
   public void testCompareToInetAddressIsShorterThan() {
     GMSMemberData member1 = createGMSMember(new byte[] {1, 1, 1, 1}, 1, 1, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
-    assertEquals(-1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isLessThan(0);
   }
 
   @Test
   public void testCompareToInetAddressIsGreater() {
     GMSMemberData member1 = createGMSMember(new byte[] {1, 2, 1, 1, 1}, 1, 1, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
-    assertEquals(1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isGreaterThan(0);
   }
 
   @Test
   public void testCompareToInetAddressIsLessThan() {
     GMSMemberData member1 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1, 2, 1, 1, 1}, 1, 1, 1);
-    assertEquals(-1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isLessThan(0);
   }
 
   @Test
   public void testCompareToMyViewIdLarger() {
     GMSMemberData member1 = createGMSMember(new byte[] {1}, 2, 1, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1}, 1, 1, 1);
-    assertEquals(1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isGreaterThan(0);
   }
 
   @Test
   public void testCompareToTheirViewIdLarger() {
     GMSMemberData member1 = createGMSMember(new byte[] {1}, 1, 1, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1}, 2, 1, 1);
-    assertEquals(-1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isLessThan(0);
   }
 
   @Test
   public void testCompareToMyMSBLarger() {
     GMSMemberData member1 = createGMSMember(new byte[] {1}, 1, 2, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1}, 1, 1, 1);
-    assertEquals(1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isGreaterThan(0);
   }
 
   @Test
   public void testCompareToTheirMSBLarger() {
     GMSMemberData member1 = createGMSMember(new byte[] {1}, 1, 1, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1}, 1, 2, 1);
-    assertEquals(-1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isLessThan(0);
   }
 
   @Test
   public void testCompareToMyLSBLarger() {
     GMSMemberData member1 = createGMSMember(new byte[] {1}, 1, 1, 2);
     GMSMemberData member2 = createGMSMember(new byte[] {1}, 1, 1, 1);
-    assertEquals(1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isGreaterThan(0);
   }
 
   @Test
   public void testCompareToTheirLSBLarger() {
     GMSMemberData member1 = createGMSMember(new byte[] {1}, 1, 1, 1);
     GMSMemberData member2 = createGMSMember(new byte[] {1}, 1, 1, 2);
-    assertEquals(-1, member1.compareTo(member2));
+    assertThat(member1.compareTo(member2)).isLessThan(0);
   }
 
   @Test
@@ -180,7 +177,7 @@ public class GMSMemberDataJUnitTest {
     GMSMemberData member = new GMSMemberData();
     UUID uuid = new UUID(0, 0);
     member.setUUID(uuid);
-    assertNull(member.getUUID());
+    assertThat(member.getUUID()).isNull();
   }
 
   @Test
@@ -188,7 +185,7 @@ public class GMSMemberDataJUnitTest {
     GMSMemberData member = new GMSMemberData();
     UUID uuid = new UUID(1, 1);
     member.setUUID(uuid);
-    assertNotNull(member.getUUID());
+    assertThat(member.getUUID()).isNotNull();
   }
 
   /**
@@ -204,6 +201,7 @@ public class GMSMemberDataJUnitTest {
   public void testGMSMemberBackwardCompatibility() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     GMSMemberData member = new GMSMemberData();
+    member.setInetAddr(LocalHostUtil.getLocalHost());
     DataOutput dataOutput = new DataOutputStream(baos);
     SerializationContext serializationContext = dsfidSerializer
         .createSerializationContext(dataOutput);
@@ -216,7 +214,10 @@ public class GMSMemberDataJUnitTest {
         .createDeserializationContext(dataInput);
     GMSMemberData newMember = new GMSMemberData();
     newMember.readEssentialData(dataInput, deserializationContext);
-    assertEquals(member.getVmKind(), newMember.getVmKind());
+    assertThat(newMember.getVmKind()).isEqualTo(member.getVmKind());
+    assertThat(newMember.getInetAddress()).isNotNull();
+    assertThat(newMember.getInetAddress().getHostAddress()).isEqualTo(newMember.getHostName());
+
 
     // vmKind should not be transmitted to a member with version GFE_90 or earlier
     dataOutput = new BufferDataOutputStream(Version.GFE_90);
@@ -227,7 +228,7 @@ public class GMSMemberDataJUnitTest {
     dataInput = new VersionedDataInputStream(stream, Version.GFE_90);
     newMember = new GMSMemberData();
     newMember.readEssentialData(dataInput, deserializationContext);
-    assertEquals(0, newMember.getVmKind());
+    assertThat(newMember.getVmKind()).isZero();
   }
 
 
