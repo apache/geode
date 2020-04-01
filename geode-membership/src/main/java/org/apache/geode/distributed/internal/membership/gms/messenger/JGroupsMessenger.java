@@ -82,6 +82,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
@@ -178,7 +179,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
    * The JGroupsReceiver is handed messages by the JGroups Channel. It is responsible
    * for deserializating and dispatching those messages to the appropriate handler
    */
-  private JGroupsReceiver jgroupsReceiver;
+  protected JGroupsReceiver jgroupsReceiver;
 
   public static void setChannelReceiver(JChannel channel, Receiver r) {
     try {
@@ -1266,7 +1267,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       receive(jgmsg, false);
     }
 
-    private void receive(org.jgroups.Message jgmsg, boolean fromQuorumChecker) {
+    protected void receive(org.jgroups.Message jgmsg, boolean fromQuorumChecker) {
       long startTime = services.getStatistics().startUDPDispatchRequest();
       try {
         if (services.getManager().shutdownInProgress()) {
@@ -1320,9 +1321,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           }
           filterIncomingMessage(msg);
           MessageHandler<Message<ID>> handler = getMessageHandler(msg);
-          if (fromQuorumChecker && handler instanceof HealthMonitor) {
+          if (fromQuorumChecker
+              && (handler instanceof HealthMonitor || handler instanceof Manager)) {
             // ignore suspect / heartbeat messages that happened during
-            // auto-reconnect because they very likely have old member IDs in them
+            // auto-reconnect because they very likely have old member IDs in them.
+            // Also ignore non-membership messages because we weren't a member when we received
+            // them.
           } else {
             handler.processMessage(msg);
           }
