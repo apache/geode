@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -68,7 +69,7 @@ public class MembershipIntegrationTest {
 
   @Test
   public void oneMembershipCanStartWithALocator()
-      throws Throwable {
+      throws IOException, MemberStartupException {
 
     final MembershipLocator<MemberIdentifier> locator = createLocator(0);
     locator.start();
@@ -85,7 +86,7 @@ public class MembershipIntegrationTest {
 
   @Test
   public void twoMembershipsCanStartWithOneLocator()
-      throws Throwable {
+      throws IOException, MemberStartupException {
 
     final MembershipLocator<MemberIdentifier> locator = createLocator(0);
     locator.start();
@@ -98,8 +99,11 @@ public class MembershipIntegrationTest {
     final Membership<MemberIdentifier> membership2 = createMembership(null, locatorPort);
     start(membership2);
 
-    assertThat(membership1.getView().getMembers()).hasSize(2);
-    assertThat(membership2.getView().getMembers()).hasSize(2);
+    await().untilAsserted(
+        () -> assertThat(membership1.getView().getMembers()).hasSize(2));
+
+    await().untilAsserted(
+        () -> assertThat(membership2.getView().getMembers()).hasSize(2));
 
     stop(membership1, membership2);
     stop(locator);
@@ -107,7 +111,7 @@ public class MembershipIntegrationTest {
 
   @Test
   public void twoLocatorsCanStartSequentially()
-      throws Throwable {
+      throws IOException, MemberStartupException {
 
     final MembershipLocator<MemberIdentifier> locator1 = createLocator(0);
     locator1.start();
@@ -120,15 +124,16 @@ public class MembershipIntegrationTest {
     final MembershipLocator<MemberIdentifier> locator2 = createLocator(0, locatorPort1);
     locator2.start();
 
-    locator2.start();
     final int locatorPort2 = locator2.getPort();
 
     Membership<MemberIdentifier> membership2 =
         createMembership(locator2, locatorPort1, locatorPort2);
     start(membership2);
 
-    assertThat(membership1.getView().getMembers()).hasSize(2);
-    assertThat(membership2.getView().getMembers()).hasSize(2);
+    await().untilAsserted(
+        () -> assertThat(membership1.getView().getMembers()).hasSize(2));
+    await().untilAsserted(
+        () -> assertThat(membership2.getView().getMembers()).hasSize(2));
 
     stop(membership2, membership1);
     stop(locator2, locator1);
@@ -136,7 +141,7 @@ public class MembershipIntegrationTest {
 
   @Test
   public void secondMembershipCanJoinUsingTheSecondLocatorToStart()
-      throws Throwable {
+      throws IOException, MemberStartupException {
 
     final MembershipLocator<MemberIdentifier> locator1 = createLocator(0);
     locator1.start();
@@ -152,14 +157,16 @@ public class MembershipIntegrationTest {
     int locatorPort2 = locator2.getPort();
 
     // Force the next membership to use locator2 by stopping locator1
-    locator1.stop();
+    stop(locator1);
 
     Membership<MemberIdentifier> membership2 =
         createMembership(locator2, locatorPort1, locatorPort2);
     start(membership2);
 
-    assertThat(membership1.getView().getMembers()).hasSize(2);
-    assertThat(membership2.getView().getMembers()).hasSize(2);
+    await().untilAsserted(
+        () -> assertThat(membership1.getView().getMembers()).hasSize(2));
+    await().untilAsserted(
+        () -> assertThat(membership2.getView().getMembers()).hasSize(2));
 
     stop(membership2, membership1);
     stop(locator2, locator1);
@@ -238,11 +245,11 @@ public class MembershipIntegrationTest {
         .create();
   }
 
-  private void stop(final Membership<MemberIdentifier> ... memberships) {
-    Arrays.stream(memberships).forEach( membership -> membership.disconnect(false));
+  private void stop(final Membership<MemberIdentifier>... memberships) {
+    Arrays.stream(memberships).forEach(membership -> membership.disconnect(false));
   }
 
-  private void stop(final MembershipLocator<MemberIdentifier> ... locators) {
-    Arrays.stream(locators).forEach( locator -> locator.stop());
+  private void stop(final MembershipLocator<MemberIdentifier>... locators) {
+    Arrays.stream(locators).forEach(locator -> locator.stop());
   }
 }
