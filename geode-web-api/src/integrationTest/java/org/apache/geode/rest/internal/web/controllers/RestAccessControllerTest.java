@@ -99,6 +99,8 @@ public class RestAccessControllerTest {
   private static final String ORDER_CAS_NEW_JSON = "order-cas-new.json";
   private static final String ORDER_CAS_WRONG_OLD_JSON = "order-cas-wrong-old.json";
 
+  private static final String SLASH = "/";
+
   private static Map<String, String> jsonResources = new HashMap<>();
 
   private static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
@@ -106,7 +108,7 @@ public class RestAccessControllerTest {
   private MockMvc mockMvc;
 
   private static Region<?, ?> orderRegion;
-  private static Region<?, ?> customerRegion;
+  private static Region<String, PdxInstance> customerRegion;
 
   @ClassRule
   public static ServerStarterRule rule = new ServerStarterRule()
@@ -180,6 +182,25 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  public void postEntryWithSlashKey() throws Exception {
+    String key = "1" + SLASH + "2";
+    mockMvc.perform(post("/v1/orders?key=" + key)
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isCreated())
+        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+
+    mockMvc.perform(post("/v1/orders?key=" + key)
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isConflict());
+
+    Order order = (Order) ((PdxInstance) orderRegion.get(key)).getObject();
+    assertThat(order).as("order should not be null").isNotNull();
+  }
+
+  @Test
+  @WithMockUser
   public void postEntryWithJsonArrayOfOrders() throws Exception {
     mockMvc.perform(post("/v1/orders?key=1")
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
@@ -194,6 +215,27 @@ public class RestAccessControllerTest {
 
     @SuppressWarnings("unchecked")
     List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get("1");
+    Order order = (Order) entries.get(0).getObject();
+    assertThat(order).as("order should not be null").isNotNull();
+  }
+
+  @Test
+  @WithMockUser
+  public void postEntryWithSlashKeysAndJsonArrayOfOrders() throws Exception {
+    String key = "1" + SLASH + "2";
+    mockMvc.perform(post("/v1/orders?key=" + key)
+        .content(jsonResources.get(ORDER1_ARRAY_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isCreated())
+        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+
+    mockMvc.perform(post("/v1/orders?key=" + key)
+        .content(jsonResources.get(ORDER1_ARRAY_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isConflict());
+
+    @SuppressWarnings("unchecked")
+    List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get(key);
     Order order = (Order) entries.get(0).getObject();
     assertThat(order).as("order should not be null").isNotNull();
   }
@@ -271,6 +313,23 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  public void putEntryWithSlashKey() throws Exception {
+    String key = "1" + SLASH + "2";
+    mockMvc.perform(put("/v1/orders/" + key)
+        .content(jsonResources.get(ORDER2_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+
+    mockMvc.perform(put("/v1/orders/" + key)
+        .content(jsonResources.get(ORDER2_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+  }
+
+  @Test
+  @WithMockUser
   public void failPutEntryWithInvalidJson() throws Exception {
     mockMvc.perform(put("/v1/orders/1")
         .content(jsonResources.get(MALFORMED_JSON))
@@ -306,13 +365,47 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void putAll() throws Exception {
+    StringBuilder keysBuilder = new StringBuilder();
+    for (int i = 1; i < 60; i++) {
+      keysBuilder.append(i).append(',');
+    }
+    keysBuilder.append(60);
+    String keys = keysBuilder.toString();
     mockMvc.perform(
-        put("/v1/customers/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60")
+        put("/v1/customers/" + keys)
             .content(jsonResources.get(CUSTOMER_LIST_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL
-            + "/customers/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60"));
+        .andExpect(header().string("Location", BASE_URL + "/customers/" + keys));
+    assertThat(customerRegion.size()).isEqualTo(60);
+    for (int i = 1; i <= 60; i++) {
+      PdxInstance customer = customerRegion.get(String.valueOf(i));
+      assertThat(customer.getField("customerId").toString())
+          .isEqualTo(Integer.valueOf(100 + i).toString());
+    }
+  }
+
+  @Test
+  @WithMockUser
+  public void putAllWithSlashes() throws Exception {
+    StringBuilder keysBuilder = new StringBuilder();
+    for (int i = 1; i < 60; i++) {
+      keysBuilder.append(i).append(SLASH).append(',');
+    }
+    keysBuilder.append(60).append(SLASH);
+    String keys = keysBuilder.toString();
+    mockMvc.perform(
+        put("/v1/customers/" + keys)
+            .content(jsonResources.get(CUSTOMER_LIST_JSON))
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/customers/" + keys));
+    assertThat(customerRegion.size()).isEqualTo(60);
+    for (int i = 1; i <= 60; i++) {
+      PdxInstance customer = customerRegion.get(String.valueOf(i) + SLASH);
+      assertThat(customer.getField("customerId").toString())
+          .isEqualTo(Integer.valueOf(100 + i).toString());
+    }
   }
 
   @Test
@@ -590,8 +683,20 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void getSpecificKeys() throws Exception {
     putAll();
-    mockMvc.perform(get("/v1/customers/1,2,3,4,5")
+    mockMvc.perform(get("/v1/customers/1,2,3,4,5?ignoreMissingKey=false")
         .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.customers[*].customerId", containsInAnyOrder(101, 102, 103, 104, 105)));
+  }
+
+  @Test
+  @WithMockUser
+  public void getSpecificKeysWithSlashes() throws Exception {
+    putAllWithSlashes();
+    mockMvc.perform(get("/v1/customers/1" + SLASH + ",2" + SLASH + ",3" + SLASH
+        + ",4" + SLASH + ",5" + SLASH)
+            .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.customers[*].customerId", containsInAnyOrder(101, 102, 103, 104, 105)));
@@ -630,6 +735,16 @@ public class RestAccessControllerTest {
     putAll();
     mockMvc.perform(delete("/v1/customers/2,3,4,5")
         .with(POST_PROCESSOR))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser
+  public void deleteMultipleKeysWithSlashes() throws Exception {
+    putAllWithSlashes();
+    mockMvc.perform(delete("/v1/customers/1" + SLASH + ",2" + SLASH + ",3"
+        + SLASH + ",4" + SLASH + ",5" + SLASH)
+            .with(POST_PROCESSOR))
         .andExpect(status().isOk());
   }
 

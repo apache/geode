@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -971,5 +973,17 @@ public abstract class AbstractBaseController implements InitializingBean {
     // Add the local node to list
     targetedMembers.add(cache.getDistributedSystem().getDistributedMember());
     return targetedMembers;
+  }
+
+  protected String[] parseKeys(HttpServletRequest request, String region) {
+    String uri = request.getRequestURI();
+    int regionIndex = uri.indexOf("/" + region + "/");
+    if (regionIndex == -1) {
+      throw new IllegalStateException(
+          String.format("Could not find the region (%1$s) in the URI (%2$s)", region, uri));
+    }
+    int keysIndex = regionIndex + region.length() + 2;
+    String keysString = uri.substring(keysIndex);
+    return keysString.split(",");
   }
 }
