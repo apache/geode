@@ -512,14 +512,14 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <td><em>not set</em></td>
 </tr>
 <tr>
-<td>security-auth-token</td>
+<td>security-client-accessor</td>
 <td><b>Deprecated.</b> Used for authorization. Static creation method returning an <code class="ph codeph">AccessControl</code> object, which determines authorization of client-server cache operations. This specifies the callback that should be invoked in the pre-operation phase, which is when the request for the operation is received from the client.</td>
 <td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr>
 <td>security-auth-token-enabled-components</td>
-<td>A comma delimited list of component names which works in conjunction with the <code class="ph codeph">security-manager</code> property. if security manager is enabled, this property will determine what rest end point will use token based authentication instead of basic (username/password) authentication.
+<td>A comma delimited list of component names which works in conjunction with the <code class="ph codeph">security-manager</code> property. if security manager is enabled, this property will determine what components will use token based authentication instead of basic (username/password) authentication.
 <p>Valid values are: "all", "management", "pulse"</p>
 <p>"all": shorthand for all the security components that support token authentication.</p>
 <p>"management": the management rest service.</p>
