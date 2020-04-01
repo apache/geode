@@ -107,12 +107,7 @@ sed -e 's/^SEMVER_PRERELEASE_TOKEN=.*/SEMVER_PRERELEASE_TOKEN=""/' -i.bak ci/pip
 #  initial_version: 1.12.0
 sed -e "s/^  initial_version:.*/  initial_version: ${VERSION}/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
 
-#"/lib/geode-modules-" + currentVersion + "-SNAPSHOT.jar",
-#"/lib/geode-modules-tomcat8-" + currentVersion + "-SNAPSHOT.jar",
-TCTEST=geode-assembly/src/upgradeTest/java/org/apache/geode/session/tests/Tomcat8ClientServerRollingUpgradeTest.java
-sed -e "s/-SNAPSHOT//" -i.bak $TCTEST
-
-rm gradle.properties.bak ci/pipelines/meta/meta.properties.bak ci/pipelines/shared/jinja.variables.yml.bak $TCTEST.bak
+rm gradle.properties.bak ci/pipelines/meta/meta.properties.bak ci/pipelines/shared/jinja.variables.yml.bak
 set -x
 git add .
 git diff --staged
