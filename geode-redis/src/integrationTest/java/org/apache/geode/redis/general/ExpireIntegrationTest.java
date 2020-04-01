@@ -37,7 +37,8 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class ExpireIntegrationTest {
 
-  private static Jedis jedis;
+  public static Jedis jedis;
+  public static int REDIS_CLIENT_TIMEOUT = 10000000;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
   private static Random rand;
@@ -55,7 +56,7 @@ public class ExpireIntegrationTest {
     server = new GeodeRedisServer("localhost", port);
 
     server.start();
-    jedis = new Jedis("localhost", port, 10000000);
+    jedis = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -64,7 +65,7 @@ public class ExpireIntegrationTest {
   }
 
   @AfterClass
-  public static void tearDown() {
+  public static void classLevelTearDown() {
     jedis.close();
     cache.close();
     server.shutdown();

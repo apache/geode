@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -26,8 +28,6 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 public class ExpireExecutor extends AbstractExecutor implements Extendable {
 
-  private final String ERROR_SECONDS_NOT_USABLE = "The number of seconds specified must be numeric";
-
   private final int SECONDS_INDEX = 2;
 
   private final int SET = 1;
@@ -39,7 +39,9 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() != 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
+      command.setResponse(
+          Coder.getErrorResponse(
+              context.getByteBufAllocator(), getArgsError()));
       return;
     }
 
@@ -51,7 +53,7 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
       delay = Coder.bytesToLong(delayByteArray);
     } catch (NumberFormatException e) {
       command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_SECONDS_NOT_USABLE));
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INTEGER));
       return;
     }
 

@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.executor.general;
 
 import static java.nio.charset.Charset.defaultCharset;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -27,6 +26,7 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -34,26 +34,27 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
-import org.apache.geode.redis.internal.executor.ExpireExecutor;
+import org.apache.geode.redis.internal.executor.ExpireAtExecutor;
 
-public class ExpireExecutorJUnitTest {
+public class ExpireAtExecutorJUnitTest {
 
   private ExecutionHandlerContext context;
   private Command command;
   private UnpooledByteBufAllocator byteBuf;
+  Executor subject;
 
   @Before
   public void setUp() {
     context = mock(ExecutionHandlerContext.class);
     command = mock(Command.class);
     byteBuf = new UnpooledByteBufAllocator(false);
+    subject = new ExpireAtExecutor();
   }
 
   @Test
   public void calledWithTooFewCommandArguments_returnsError() {
-    Executor executor = new ExpireExecutor();
     List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
-    commandsAsBytesWithTooFewArguments.add("EXPIRE".getBytes());
+    commandsAsBytesWithTooFewArguments.add("EXPIREAT".getBytes());
     commandsAsBytesWithTooFewArguments.add("key".getBytes());
 
     ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
@@ -61,54 +62,52 @@ public class ExpireExecutorJUnitTest {
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
     when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooFewArguments);
 
-    executor.executeCommand(command, context);
+    subject.executeCommand(command, context);
     verify(command, times(1)).setResponse(argsErrorCaptor.capture());
 
     List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(defaultCharset()))
+    AssertionsForClassTypes.assertThat(capturedErrors.get(0).toString(defaultCharset()))
         .startsWith("-ERR The wrong number of arguments");
   }
 
   @Test
-  public void calledWithTooManyCommandArguments_returnsErrorMessage() {
-    Executor executor = new ExpireExecutor();
-    List<byte[]> commandsAsBytesWithTooManyArguments = new ArrayList<>();
-    commandsAsBytesWithTooManyArguments.add("EXPIRE".getBytes());
-    commandsAsBytesWithTooManyArguments.add("key".getBytes());
-    commandsAsBytesWithTooManyArguments.add("100".getBytes());
-    commandsAsBytesWithTooManyArguments.add("Bonus!".getBytes());
+  public void calledWithTooManyCommandArguments_returnsError() {
+    List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
+    commandsAsBytesWithTooFewArguments.add("EXPIREAT".getBytes());
+    commandsAsBytesWithTooFewArguments.add("key".getBytes());
+    commandsAsBytesWithTooFewArguments.add("1".getBytes());
+    commandsAsBytesWithTooFewArguments.add("extra-argument".getBytes());
 
     ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooManyArguments);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooFewArguments);
 
-    executor.executeCommand(command, context);
+    subject.executeCommand(command, context);
     verify(command, times(1)).setResponse(argsErrorCaptor.capture());
 
     List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(defaultCharset()))
+    AssertionsForClassTypes.assertThat(capturedErrors.get(0).toString(defaultCharset()))
         .startsWith("-ERR The wrong number of arguments");
   }
 
   @Test
-  public void calledWithInvalidCommandArguments_returnsErrorMessage() {
-    Executor executor = new ExpireExecutor();
-    List<byte[]> commandsAsBytesWithTooManyArguments = new ArrayList<>();
-    commandsAsBytesWithTooManyArguments.add("EXPIRE".getBytes());
-    commandsAsBytesWithTooManyArguments.add("key".getBytes());
-    commandsAsBytesWithTooManyArguments.add("not a number".getBytes());
+  public void calledWithInvalidTimeStamp_returnsError() {
+    List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
+    commandsAsBytesWithTooFewArguments.add("EXPIREAT".getBytes());
+    commandsAsBytesWithTooFewArguments.add("key".getBytes());
+    commandsAsBytesWithTooFewArguments.add("not-a-timestamp".getBytes());
 
     ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooManyArguments);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooFewArguments);
 
-    executor.executeCommand(command, context);
+    subject.executeCommand(command, context);
     verify(command, times(1)).setResponse(argsErrorCaptor.capture());
 
     List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(defaultCharset()))
+    AssertionsForClassTypes.assertThat(capturedErrors.get(0).toString(defaultCharset()))
         .startsWith("-ERR value is not an integer or out of range");
   }
 }
