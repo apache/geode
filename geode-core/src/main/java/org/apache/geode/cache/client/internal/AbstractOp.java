@@ -246,24 +246,23 @@ public abstract class AbstractOp implements Op {
    */
   protected void processAck(Message msg, String opName) throws Exception {
     final int msgType = msg.getMessageType();
-    if (msgType == MessageType.REPLY || msgType == MessageType.PING) {
-      return;
-    }
-    Part part = msg.getPart(0);
-    if (msgType == MessageType.EXCEPTION) {
-      String s = ": While performing a remote " + opName;
-      Throwable t = (Throwable) part.getObject();
-      if (t instanceof PutAllPartialResultException) {
-        throw (PutAllPartialResultException) t;
+    if (msgType != MessageType.REPLY) {
+      Part part = msg.getPart(0);
+      if (msgType == MessageType.EXCEPTION) {
+        String s = ": While performing a remote " + opName;
+        Throwable t = (Throwable) part.getObject();
+        if (t instanceof PutAllPartialResultException) {
+          throw (PutAllPartialResultException) t;
+        } else {
+          throw new ServerOperationException(s, t);
+        }
+        // Get the exception toString part.
+        // This was added for c++ thin client and not used in java
+      } else if (isErrorResponse(msgType)) {
+        throw new ServerOperationException(part.getString());
       } else {
-        throw new ServerOperationException(s, t);
+        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
       }
-      // Get the exception toString part.
-      // This was added for c++ thin client and not used in java
-    } else if (isErrorResponse(msgType)) {
-      throw new ServerOperationException(part.getString());
-    } else {
-      throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
     }
   }
 
