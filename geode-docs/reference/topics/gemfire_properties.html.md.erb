@@ -524,6 +524,17 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <td><em>not set</em></td>
 </tr>
 <tr>
+<td>security-auth-token-enabled-components</td>
+<td>A comma delimited list of component names which works in conjunction with the <code class="ph codeph">security-manager</code> property. if security manager is enabled, this property will determine what components will use token based authentication instead of basic (username/password) authentication.
+<p>Valid values are: "all", "management", "pulse"</p>
+<p>"all": shorthand for all the security components that support token authentication.</p>
+<p>"management": the management rest service.</p>
+<p>"pulse": the Pulse web app</p>
+</td>
+<td>L</td>
+<td><em>""</em></td>
+</tr>
+<tr>
 <td>security-client-accessor-pp</td>
 <td><b>Deprecated.</b> Used for authorization. The callback that should be invoked in the post-operation phase, which is when the operation has completed on the server but before the result is sent to the client. The post-operation callback is also invoked for the updates that are sent from server to client through the notification channel.</td>
 <td>S, L</td>
