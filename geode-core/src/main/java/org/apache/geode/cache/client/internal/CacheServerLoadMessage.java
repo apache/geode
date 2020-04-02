@@ -67,7 +67,7 @@ public class CacheServerLoadMessage extends SerialDistributionMessage {
       InternalLocator l = (InternalLocator) locators.get(i);
       ServerLocator serverLocator = l.getServerLocatorAdvisee();
       if (serverLocator != null) {
-        serverLocator.updateLoad(location, this.getSender().getId(), load, this.clientIds);
+        serverLocator.updateLoad(location, this.getSender().getUniqueId(), load, this.clientIds);
       }
     }
   }

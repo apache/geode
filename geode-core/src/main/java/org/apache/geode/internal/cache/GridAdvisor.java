@@ -418,7 +418,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     public int hashCode() {
       final String thisHost = this.gp.getHost();
       final int thisPort = this.gp.getPort();
-      final String thisMemberId = this.getMemberId().getId();
+      final String thisMemberId = this.getMemberId().getUniqueId();
       final int thisMemberIdHashCode = (thisMemberId != null) ? thisMemberId.hashCode() : 0;
       return thisHost != null ? (thisHost.hashCode() ^ thisPort) + thisMemberIdHashCode
           : thisPort + thisMemberIdHashCode;

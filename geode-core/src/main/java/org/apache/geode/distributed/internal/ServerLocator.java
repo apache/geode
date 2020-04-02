@@ -406,7 +406,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
       ServerLocation location = buildServerLocation(bp);
       String[] groups = bp.getGroups();
       loadSnapshot.addServer(
-          location, bp.getDistributedMember().getId(), groups,
+          location, bp.getDistributedMember().getUniqueId(), groups,
           bp.getInitialLoad(), bp.getLoadPollInterval());
       if (logger.isDebugEnabled()) {
         logger.debug("ServerLocator: Received load from a new server {}, {}", location,
@@ -425,7 +425,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
       CacheServerProfile bp = (CacheServerProfile) profile;
       // InternalDistributedMember id = bp.getDistributedMember();
       ServerLocation location = buildServerLocation(bp);
-      loadSnapshot.removeServer(location, bp.getDistributedMember().getId());
+      loadSnapshot.removeServer(location, bp.getDistributedMember().getUniqueId());
       if (logger.isDebugEnabled()) {
         logger.debug("ServerLocator: server departed {}", location);
       }
