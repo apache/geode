@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal;
 
+import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.ExecutionException;
 
 import io.netty.buffer.ByteBuf;
@@ -81,7 +82,14 @@ public abstract class AbstractSubscription implements Subscription {
 
     try {
       channelFuture.get();
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (ExecutionException e) {
+      if (e.getCause() instanceof ClosedChannelException) {
+        logger.warn("Unable to write to channel: {}", e.getMessage());
+      } else {
+        logger.warn("Unable to write to channel", e);
+      }
+      return false;
+    } catch (InterruptedException e) {
       logger.warn("Unable to write to channel", e);
       return false;
     }
