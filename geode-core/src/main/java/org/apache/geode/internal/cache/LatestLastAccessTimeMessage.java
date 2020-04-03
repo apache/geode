@@ -62,17 +62,23 @@ public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage
   @Override
   protected void process(ClusterDistributionManager dm) {
     long latestLastAccessTime = 0L;
+    InternalCache cache = dm.getCache();
+    if (cache == null) {
+      return;
+    }
     InternalDistributedRegion region =
-        (InternalDistributedRegion) dm.getCache().getRegion(this.regionName);
-    if (region != null) {
-      RegionEntry entry = region.getRegionEntry(this.key);
-      if (entry != null) {
-        try {
-          latestLastAccessTime = entry.getLastAccessed();
-        } catch (InternalStatisticsDisabledException ignored) {
-          // last access time is not available
-        }
-      }
+        (InternalDistributedRegion) cache.getRegion(this.regionName);
+    if (region == null) {
+      return;
+    }
+    RegionEntry entry = region.getRegionEntry(this.key);
+    if (entry == null) {
+      return;
+    }
+    try {
+      latestLastAccessTime = entry.getLastAccessed();
+    } catch (InternalStatisticsDisabledException ignored) {
+      // last access time is not available
     }
     ReplyMessage.send(getSender(), this.processorId, latestLastAccessTime, dm);
   }
