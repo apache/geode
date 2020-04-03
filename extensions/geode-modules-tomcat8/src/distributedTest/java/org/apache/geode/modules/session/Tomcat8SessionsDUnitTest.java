@@ -22,7 +22,6 @@ import javax.security.auth.message.config.AuthConfigFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
-import org.springframework.util.SocketUtils;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;

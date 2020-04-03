@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.beans.PropertyChangeEvent;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.security.SecureRandom;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpSession;
 
@@ -57,7 +54,7 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
   DeltaSessionManager sessionManager;
 
   public void checkSanity() throws Exception {
-      testSanity();
+    testSanity();
   }
 
   /**
