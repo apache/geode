@@ -817,7 +817,6 @@ public abstract class AbstractBaseController implements InitializingBean {
       default:
         if (JSONTypes.JSON_ARRAY.equals(jsonType)) {
           putValue(region, key, convertJsonArrayIntoPdxCollection(json));
-          // putValue(region, key, convertJsonIntoPdxCollection(json));
         } else {
           putValue(region, key, convert(json));
         }

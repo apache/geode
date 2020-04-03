@@ -387,6 +387,29 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  public void putAllWithQueryParam() throws Exception {
+    StringBuilder keysBuilder = new StringBuilder();
+    for (int i = 1; i < 60; i++) {
+      keysBuilder.append(i).append(',');
+    }
+    keysBuilder.append(60);
+    String keys = keysBuilder.toString();
+    mockMvc.perform(
+        put("/v1/customers?keys=" + keys)
+            .content(jsonResources.get(CUSTOMER_LIST_JSON))
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/customers/" + keys));
+    assertThat(customerRegion.size()).isEqualTo(60);
+    for (int i = 1; i <= 60; i++) {
+      PdxInstance customer = customerRegion.get(String.valueOf(i));
+      assertThat(customer.getField("customerId").toString())
+          .isEqualTo(Integer.valueOf(100 + i).toString());
+    }
+  }
+
+  @Test
+  @WithMockUser
   public void putAllWithSlashes() throws Exception {
     StringBuilder keysBuilder = new StringBuilder();
     for (int i = 1; i < 60; i++) {
@@ -692,6 +715,17 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  public void getSpecificKeysUsingQueryParam() throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?keys=1,2,3,4,5&ignoreMissingKey=false")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.customers[*].customerId", containsInAnyOrder(101, 102, 103, 104, 105)));
+  }
+
+  @Test
+  @WithMockUser
   public void getSpecificKeysWithSlashes() throws Exception {
     putAllWithSlashes();
     mockMvc.perform(get("/v1/customers/1" + SLASH + ",2" + SLASH + ",3" + SLASH
@@ -736,6 +770,25 @@ public class RestAccessControllerTest {
     mockMvc.perform(delete("/v1/customers/2,3,4,5")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser
+  public void deleteMultipleKeysWithQueryParam() throws Exception {
+    putAll();
+    assertThat(customerRegion.size()).isEqualTo(60);
+    assertThat(customerRegion.containsKey("2")).isTrue();
+    assertThat(customerRegion.containsKey("3")).isTrue();
+    assertThat(customerRegion.containsKey("4")).isTrue();
+    assertThat(customerRegion.containsKey("5")).isTrue();
+    mockMvc.perform(delete("/v1/customers?keys=2,3,4,5")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk());
+    assertThat(customerRegion.size()).isEqualTo(60 - 4);
+    assertThat(customerRegion.containsKey("2")).isFalse();
+    assertThat(customerRegion.containsKey("3")).isFalse();
+    assertThat(customerRegion.containsKey("4")).isFalse();
+    assertThat(customerRegion.containsKey("5")).isFalse();
   }
 
   @Test

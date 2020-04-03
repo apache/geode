@@ -32,6 +32,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
@@ -129,20 +130,23 @@ public abstract class CommonCrudController extends AbstractBaseController {
   public ResponseEntity<?> delete(@PathVariable("region") String region,
       HttpServletRequest request) {
     String[] keys = parseKeys(request, region);
-    securityService.authorize("WRITE", region, keys);
-    logger.debug("Delete data for key {} on region {}", ArrayUtils.toString((Object[]) keys),
-        region);
-
     region = decode(region);
+    return deleteRegionKeys(region, keys);
+  }
 
+  private ResponseEntity<?> deleteRegionKeys(String region, String[] keys) {
+    securityService.authorize("WRITE", region, keys);
+    logger.debug("Delete data for keys {} on region {}", ArrayUtils.toString((Object[]) keys),
+        region);
     deleteValues(region, keys);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
   /**
-   * Delete all data in region
+   * Delete all data in region or just the given keys
    *
    * @param region gemfire region
+   * @param keys optional comma separated list of keys
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}")
@@ -152,12 +156,19 @@ public abstract class CommonCrudController extends AbstractBaseController {
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
       @ApiResponse(code = 404, message = "Region does not exist"),
       @ApiResponse(code = 500, message = "if GemFire throws an error or exception")})
-  @PreAuthorize("@securityService.authorize('DATA', 'WRITE', #region)")
-  public ResponseEntity<?> delete(@PathVariable("region") String region) {
-    logger.debug("Deleting all data in Region ({})...", region);
-
+  public ResponseEntity<?> delete(@PathVariable("region") String region,
+      @RequestParam(value = "keys", required = false) final String[] keys) {
     region = decode(region);
+    if (keys == null || keys.length == 0) {
+      return deleteAllRegionData(region);
+    } else {
+      return deleteRegionKeys(region, keys);
+    }
+  }
 
+  private ResponseEntity<?> deleteAllRegionData(String region) {
+    securityService.authorize("DATA", "WRITE", region);
+    logger.debug("Deleting all data in Region ({})...", region);
     deleteValues(region);
     return new ResponseEntity<>(HttpStatus.OK);
   }

@@ -121,10 +121,13 @@ public class PdxBasedCrudController extends CommonCrudController {
   }
 
   /**
-   * Read all or fixed number of data in a given Region
+   * For the given region either gets all the region's data (with an optional limit),
+   * or gets the region's data for the given keys (optionally ignoring missing keys).
    *
    * @param region gemfire region name
    * @param limit total number of entries requested
+   * @param keys a comma separated list of keys to read
+   * @param ignoreMissingKey if true then if a key is missing ignore it
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
@@ -137,14 +140,22 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
       @ApiResponse(code = 404, message = "Region does not exist."),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
   public ResponseEntity<?> read(@PathVariable("region") String region,
       @RequestParam(value = "limit",
-          defaultValue = DEFAULT_GETALL_RESULT_LIMIT) final String limit) {
-    logger.debug("Reading all data in Region ({})...", region);
-
+          defaultValue = DEFAULT_GETALL_RESULT_LIMIT) final String limit,
+      @RequestParam(value = "keys", required = false) final String[] keys,
+      @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
     region = decode(region);
+    if (keys == null || keys.length == 0) {
+      return getAllRegionData(region, limit);
+    } else {
+      return getRegionKeys(region, ignoreMissingKey, keys);
+    }
+  }
 
+  private ResponseEntity<?> getAllRegionData(String region, String limit) {
+    securityService.authorize("DATA", "READ", region);
+    logger.debug("Reading all data in Region ({})...", region);
     Map<Object, Object> valueObjs = null;
     final RegionData<Object> data = new RegionData<>(region);
 
@@ -214,12 +225,14 @@ public class PdxBasedCrudController extends CommonCrudController {
       @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey,
       HttpServletRequest request) {
     String[] keys = parseKeys(request, region);
-    securityService.authorize("READ", region, keys);
-    logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
-
-    final HttpHeaders headers = new HttpHeaders();
     region = decode(region);
+    return getRegionKeys(region, ignoreMissingKey, keys);
+  }
 
+  private ResponseEntity<?> getRegionKeys(String region, String ignoreMissingKey, String[] keys) {
+    logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
+    securityService.authorize("READ", region, keys);
+    final HttpHeaders headers = new HttpHeaders();
     if (keys.length == 1) {
       /* GET op on single key */
       Object value = getValue(region, keys[0]);
@@ -301,6 +314,50 @@ public class PdxBasedCrudController extends CommonCrudController {
     String[] keys = parseKeys(request, region);
     securityService.authorize("WRITE", region, keys);
     logger.debug("updating key(s) for region ({}) ", region);
+
+    region = decode(region);
+
+    if (keys.length > 1) {
+      // putAll case
+      return updateMultipleKeys(region, keys, json);
+    } else {
+      // put case
+      return updateSingleKey(region, keys[0], json, opValue);
+    }
+  }
+
+  /**
+   * Update data for a key or set of keys
+   *
+   * @param region gemfire data region
+   * @param keys comma separated list of keys
+   * @param opValue type of update (put, replace, cas etc)
+   * @param json new data for the key(s)
+   * @return JSON document
+   */
+  @RequestMapping(method = RequestMethod.PUT, value = "/{region}",
+      consumes = {APPLICATION_JSON_UTF8_VALUE}, produces = {
+          APPLICATION_JSON_UTF8_VALUE})
+  @ApiOperation(value = "update data for key(s)",
+      notes = "Update or insert (put) data for keys in a region."
+          + " The keys are a comma separated list."
+          + " If op=REPLACE, update (replace) data with key if and only if the key exists in the region."
+          + " If op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
+  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
+      @ApiResponse(code = 400, message = "Bad Request."),
+      @ApiResponse(code = 401, message = "Invalid Username or Password."),
+      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
+      @ApiResponse(code = 404,
+          message = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
+      @ApiResponse(code = 409,
+          message = "For CAS, @old value does not match to the current value in region"),
+      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  public ResponseEntity<?> updateKeys(@PathVariable("region") String region,
+      @RequestParam(value = "keys") final String[] keys,
+      @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
+      @RequestBody final String json) {
+    securityService.authorize("WRITE", region, keys);
+    logger.debug("updating keys ({}) for region ({}) op={}", keys, region, opValue);
 
     region = decode(region);
 
