@@ -53,14 +53,7 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
   Region<String, HttpSession> region;
   DeltaSessionManager sessionManager;
 
-  public void checkSanity() throws Exception {
-    testSanity();
-  }
-
-  /**
-   * Check that the basics are working
-   */
-  public void testSanity() throws Exception {
+  public void basicConnectivityCheck() throws Exception {
     WebConversation wc = new WebConversation();
     assertThat(wc).describedAs("WebConversation was").isNotNull();
     logger.debug("Sending request to http://localhost:{}/test", port);
@@ -407,7 +400,7 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
 
     WebResponse response = wc.getResponse(req);
     assertThat(response.getText()).isEqualTo("done");
-    assertThat(region.size()).as("The region should be empty").isEqualTo(1);
+    assertThat(region.size()).as("The region should contain one entry").isEqualTo(1);
   }
 
   /**

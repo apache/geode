@@ -53,7 +53,7 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
 
     sessionManager.getTheContext().setSessionTimeout(30);
     region.clear();
-    checkSanity();
+    basicConnectivityCheck();
   }
 
   @After

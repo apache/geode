@@ -99,7 +99,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     sessionManager.getTheContext().setSessionTimeout(30);
     await().until(() -> sessionManager.getState() == LifecycleState.STARTED);
 
-    checkSanity();
+    basicConnectivityCheck();
   }
 
   @After
