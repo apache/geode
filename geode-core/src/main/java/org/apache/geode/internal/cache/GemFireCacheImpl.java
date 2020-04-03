@@ -2995,12 +2995,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           } finally {
             // clean up if initialize fails for any reason
             setRegionByPath(region.getFullPath(), null);
-
-            Region rootRegion = rootRegions.get(name);
-            if (rootRegion == region) {
-              rootRegions.remove(name);
-            }
-
+            rootRegions.remove(name, region);
           }
         }
       }
@@ -3438,13 +3433,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public boolean removeRoot(InternalRegion rootRgn) {
 
     String regionName = rootRgn.getName();
-    InternalRegion found = rootRegions.get(regionName);
-    if (found == rootRgn) {
-      InternalRegion previous = rootRegions.remove(regionName);
-      Assert.assertTrue(previous == rootRgn);
-      return true;
-    }
-    return false;
+    return rootRegions.remove(regionName, rootRgn);
 
   }
 
