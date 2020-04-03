@@ -589,7 +589,9 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
     this.inetAddr = StaticSerialization.readInetAddress(in);
     if (this.inetAddr != null) {
-      this.hostName = inetAddr.getHostName();
+      // use address as hostname at this level. getHostName() will do a reverse-dns lookup,
+      // which is very expensive
+      this.hostName = inetAddr.getHostAddress();
     }
     this.udpPort = in.readInt();
     this.vmViewId = in.readInt();
