@@ -19,8 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -113,23 +111,23 @@ public abstract class CommonCrudController extends AbstractBaseController {
   }
 
   /**
-   * Delete data for single key or specific keys in region
+   * Delete data for one or more keys from a region
    *
    * @param region gemfire region
+   * @param keys comma separated list of keys
    * @return JSON document containing result
    */
-  @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/**",
+  @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/{keys}",
       produces = {APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "delete data for key(s)",
-      notes = "Delete data for one or more keys in a region. The keys, ** in the endpoint, are a comma separated list.")
+      notes = "Delete data for one or more keys in a region. Deprecated in favor of /{region}?keys=.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
       @ApiResponse(code = 404, message = "Region or key(s) does not exist"),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception")})
   public ResponseEntity<?> delete(@PathVariable("region") String region,
-      HttpServletRequest request) {
-    String[] keys = parseKeys(request, region);
+      @PathVariable("keys") String[] keys) {
     region = decode(region);
     return deleteRegionKeys(region, keys);
   }
@@ -156,13 +154,14 @@ public abstract class CommonCrudController extends AbstractBaseController {
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
       @ApiResponse(code = 404, message = "Region does not exist"),
       @ApiResponse(code = 500, message = "if GemFire throws an error or exception")})
-  public ResponseEntity<?> delete(@PathVariable("region") String region,
-      @RequestParam(value = "keys", required = false) final String[] keys) {
+  public ResponseEntity<?> deleteAllOrGivenKeys(@PathVariable("region") String region,
+      @RequestParam(value = "keys", required = false) final String[] encodedKeys) {
     region = decode(region);
-    if (keys == null || keys.length == 0) {
+    if (encodedKeys == null || encodedKeys.length == 0) {
       return deleteAllRegionData(region);
     } else {
-      return deleteRegionKeys(region, keys);
+      String[] decodedKeys = decode(encodedKeys);
+      return deleteRegionKeys(region, decodedKeys);
     }
   }
 
