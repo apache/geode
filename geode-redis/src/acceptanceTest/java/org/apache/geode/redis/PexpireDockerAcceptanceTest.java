@@ -31,7 +31,7 @@ public class PexpireDockerAcceptanceTest extends PexpireIntegrationTest {
 
   @BeforeClass
   public static void setUp() {
-    redisContainer = new GenericContainer("redis:5.0.6").withExposedPorts(6379);
+    redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
     jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
   }

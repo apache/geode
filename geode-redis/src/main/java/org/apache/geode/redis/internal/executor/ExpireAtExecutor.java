@@ -29,17 +29,12 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
 
-  private final String ERROR_TIMESTAMP_NOT_USABLE = "The timestamp specified must be numeric";
-
-  private final int TIMESTAMP_INDEX = 2;
-
-  private final int SET = 1;
-
-  private final int NOT_SET = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    int SET = 1;
+    int NOT_SET = 0;
+    int TIMESTAMP_INDEX = 2;
 
     if (commandElems.size() != 3) {
       command.setResponse(
@@ -85,7 +80,7 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
 
     long delayMillis = timestamp - currentTimeMillis;
 
-    boolean expirationSet = false;
+    boolean expirationSet;
 
     if (regionProvider.hasExpiration(wKey)) {
       expirationSet = regionProvider.modifyExpiration(wKey, delayMillis);

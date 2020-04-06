@@ -41,18 +41,15 @@ public class ExpireIntegrationTest {
   public static int REDIS_CLIENT_TIMEOUT = 10000000;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
-  private static Random rand;
-  private static int port = 6379;
 
   @BeforeClass
   public static void setUp() {
-    rand = new Random();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cache = cf.create();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
 
     server.start();

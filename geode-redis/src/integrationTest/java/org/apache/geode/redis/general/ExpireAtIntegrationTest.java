@@ -34,7 +34,7 @@ public class ExpireAtIntegrationTest {
   public static int REDIS_CLIENT_TIMEOUT = 10000000;
   private static GeodeRedisServer server;
   private long unixTimeStampInTheFutureInSeconds;
-  private long unixTimeStampFromThePast = 0l;
+  private long unixTimeStampFromThePast = 0L;
   String key = "key";
   String value = "value";
 

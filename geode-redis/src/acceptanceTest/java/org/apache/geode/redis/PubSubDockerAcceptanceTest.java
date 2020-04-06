@@ -40,7 +40,7 @@ public class PubSubDockerAcceptanceTest extends PubSubIntegrationTest {
 
   @BeforeClass
   public static void setUp() {
-    redisContainer = new GenericContainer("redis:5.0.6").withExposedPorts(6379);
+    redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
     subscriber = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
     publisher = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);

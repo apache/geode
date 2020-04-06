@@ -51,7 +51,7 @@ public class PexpireIntegrationTest {
 
     String key = "key";
     String value = "value";
-    long millisecondsToLive = 20000l;
+    long millisecondsToLive = 20000L;
 
     jedis.set(key, value);
     Long timeToLive = jedis.ttl(key);

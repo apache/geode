@@ -28,15 +28,12 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 public class ExpireExecutor extends AbstractExecutor implements Extendable {
 
-  private final int SECONDS_INDEX = 2;
-
-  private final int SET = 1;
-
-  private final int NOT_SET = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    int NOT_SET = 0;
+    int SET = 1;
+    int SECONDS_INDEX = 2;
 
     if (commandElems.size() != 3) {
       command.setResponse(
@@ -67,7 +64,7 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
       delay = delay * millisInSecond;
     }
 
-    boolean expirationSucessfullySet = false;
+    boolean expirationSucessfullySet;
 
     if (regionProvider.hasExpiration(key)) {
       expirationSucessfullySet = regionProvider.modifyExpiration(key, delay);
