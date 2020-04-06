@@ -20,8 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Random;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
