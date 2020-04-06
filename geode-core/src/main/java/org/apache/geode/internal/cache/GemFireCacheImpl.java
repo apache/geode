@@ -206,7 +206,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
