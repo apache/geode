@@ -76,15 +76,16 @@ See the [Cluster Management Service Java Client topic on the Geode Wiki](https:/
 
 ## <a id='cms-security'>Authentication and Authorization</a>
 
-The cluster management service REST API is secured by the <code class="ph codeph">security-manager</code> of your cluster. If a security-manager is specified, by default, you will
-need to pass in a username/password pair in order to invoke the rest api.
+The cluster management service REST API is secured by the <code class="ph codeph">security-manager</code> of your cluster. If a security-manager is specified, you must provide authorization in order to invoke the REST api.
+
+By default, the security manager accepts authorization for REST API access in the form of a username/password pair:
 
 ```
 curl --user username:password http://example.com/management/regions
 ```
 
-When <code class="ph codeph">security-auth-token-enabled-components</code> is set to "all" or "management", you will
-need to pass in a valid bearer token in your request header in order to invoke the rest api.
+When <code class="ph codeph">security-auth-token-enabled-components</code> is set to "all" or "management", 
+you must provide REST API authorization in the form of a valid bearer token (instead of username/password):
 
 ```
 curl -H "Authorization: Bearer YWhhbWlsdG9uQGFwaWdlZS5jb206bXlwYXNzdzByZAo" http://example.com/management/regions
