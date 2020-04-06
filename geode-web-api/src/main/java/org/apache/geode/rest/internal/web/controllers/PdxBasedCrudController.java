@@ -127,8 +127,9 @@ public class PdxBasedCrudController extends CommonCrudController {
    *
    * @param region gemfire region name
    * @param limit total number of entries requested
-   * @param keys a comma separated list of keys to read
-   * @param ignoreMissingKey if true then if a key is missing ignore it
+   * @param keys an optional comma separated list of encodeded keys to read
+   * @param ignoreMissingKey if true and reading more than on ekey then if a key is missing ignore
+   *        it
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
@@ -177,7 +178,7 @@ public class PdxBasedCrudController extends CommonCrudController {
 
     if ("ALL".equalsIgnoreCase(limit)) {
       data.add(values);
-      keyList = StringUtils.collectionToDelimitedString(keys, ",");
+      keyList = StringUtils.collectionToCommaDelimitedString(keys);
     } else {
       try {
         int maxLimit = Integer.parseInt(limit);
@@ -193,7 +194,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         }
         data.add(values.subList(0, maxLimit));
 
-        keyList = StringUtils.collectionToDelimitedString(keys.subList(0, maxLimit), ",");
+        keyList = StringUtils.collectionToCommaDelimitedString(keys.subList(0, maxLimit));
 
       } catch (NumberFormatException e) {
         // limit param is not specified in proper format. set the HTTPHeader
@@ -223,7 +224,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
       @ApiResponse(code = 404, message = "Region does not exist."),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
-  public ResponseEntity<?> read(@PathVariable("region") String region,
+  public ResponseEntity<?> readKeys(@PathVariable("region") String region,
       @PathVariable("keys") final String[] keys,
       @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
     region = decode(region);
@@ -267,37 +268,49 @@ public class PdxBasedCrudController extends CommonCrudController {
         return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
       }
 
+      final Map<Object, Object> valueObjs = getValues(region, keys);
+      // valueObjs will have as its keys all of "keys".
+      // valueObjs will have a null value if the key did not exist.
+      // So if ignoreMissingKey is false we can use "null" values to detect the missing keys.
       if (!("true".equalsIgnoreCase(ignoreMissingKey))) {
-        List<String> unknownKeys = checkForMultipleKeysExist(region, keys);
-        if (unknownKeys.size() > 0) {
-          String unknownKeysAsStr = StringUtils.collectionToDelimitedString(unknownKeys, ",");
+        List<String> unknownKeys = new ArrayList<>();
+        // use "keys" to iterate so that we get the original key ordering from user.
+        for (String key : keys) {
+          if (valueObjs.get(key) == null) {
+            unknownKeys.add(key);
+          }
+        }
+        if (!unknownKeys.isEmpty()) {
+          String unknownKeysAsStr = StringUtils.collectionToCommaDelimitedString(unknownKeys);
           String errorString = String.format("Requested keys (%1$s) not exist in region (%2$s)",
-              StringUtils.collectionToDelimitedString(unknownKeys, ","), region);
+              unknownKeysAsStr, region);
           return new ResponseEntity<>(convertErrorAsJson(errorString), headers,
               HttpStatus.BAD_REQUEST);
         }
       }
 
-      final Map<Object, Object> valueObjs = getValues(region, keys);
+      // The dev rest api was already released with null values being returned
+      // for non-existent keys.
+      // Order the keys in the result after the array of keys given to this method.
+      // Previous code returned them in random order which made the result harder to test and use.
 
-      // Do we need to remove null values from Map..?
-      // To Remove null value entries from map.
-      // valueObjs.values().removeAll(Collections.singleton(null));
-
-      // currently we are not removing keys having value null from the result.
-      String keyList = StringUtils.collectionToDelimitedString(valueObjs.keySet(), ",");
       URI uri;
       if (keysInQueryParam) {
         String[] encodedKeys = encode(keys);
         String encodedRegion = encode(region);
         uri = this.toUriWithKeys(encodedKeys, encodedRegion);
       } else {
-        uri = toUri(region, keys[0]);
+        String keyList = StringUtils.arrayToCommaDelimitedString(keys);
+        uri = toUri(region, keyList);
       }
 
-      headers.set(HttpHeaders.CONTENT_LOCATION, toUri(region, keyList).toASCIIString());
+      headers.set(HttpHeaders.CONTENT_LOCATION, uri.toASCIIString());
       final RegionData<Object> data = new RegionData<>(region);
-      data.add(valueObjs.values());
+      // add the values in the same order as the original keys
+      // the code used to use valueObj.values() which used "hash" ordering.
+      for (String key : keys) {
+        data.add(valueObjs.get(key));
+      }
       return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
     }
   }

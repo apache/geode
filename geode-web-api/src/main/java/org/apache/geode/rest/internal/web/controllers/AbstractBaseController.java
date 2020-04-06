@@ -660,16 +660,6 @@ public abstract class AbstractBaseController implements InitializingBean {
     }
   }
 
-  List<String> checkForMultipleKeysExist(String region, String... keys) {
-    List<String> unknownKeys = new ArrayList<>();
-    for (String key : keys) {
-      if (!getRegion(region).containsKey(key)) {
-        unknownKeys.add(key);
-      }
-    }
-    return unknownKeys;
-  }
-
   protected Object[] getKeys(final String regionNamePath, Object[] keys) {
     return (!(keys == null || keys.length == 0) ? keys
         : getRegion(regionNamePath).keySet().toArray());
