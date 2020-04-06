@@ -263,7 +263,6 @@ public class TcpClient {
       } else {
         throw new IllegalStateException("Unable to form SSL connection", e);
       }
-
     } catch (SSLException e) {
       throw new IllegalStateException("Unable to form SSL connection", e);
     }

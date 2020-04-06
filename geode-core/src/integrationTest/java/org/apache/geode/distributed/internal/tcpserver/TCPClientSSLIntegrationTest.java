@@ -51,7 +51,6 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-
 @Category({MembershipTest.class})
 public class TCPClientSSLIntegrationTest {
 
@@ -98,7 +97,6 @@ public class TCPClientSSLIntegrationTest {
 
     startTcpServer(serverProperties);
   }
-
 
   private void startServerAndClient(CertificateMaterial serverCertificate,
       CertificateMaterial clientCertificate, boolean enableHostNameValidation)
@@ -244,10 +242,8 @@ public class TCPClientSSLIntegrationTest {
 
     startServerWithCertificate();
 
-
     SocketCreator socketCreator = Mockito.mock(SocketCreator.class);
     ClusterSocketCreator ssc = Mockito.mock(ClusterSocketCreator.class);
-
 
     Exception eofexc = new EOFException("SSL peer shut down incorrectly");
     Exception sslexc = new SSLHandshakeException("Remote host terminated the handshake");
@@ -255,7 +251,6 @@ public class TCPClientSSLIntegrationTest {
 
     when(socketCreator.forCluster())
         .thenReturn(ssc);
-
     when(ssc.connect(any(), anyInt(), any(), any()))
         .thenThrow(sslexc);
 
@@ -269,7 +264,5 @@ public class TCPClientSSLIntegrationTest {
             Boolean.valueOf(false), 5 * 1000))
         .withCauseInstanceOf(SSLHandshakeException.class)
         .withStackTraceContaining("Remote host terminated the handshake");
-
   }
-
 }
