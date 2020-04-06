@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -22,27 +24,26 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
 
-  private final String ERROR_TIMESTAMP_NOT_USABLE = "The timestamp specified must be numeric";
-
-  private final int TIMESTAMP_INDEX = 2;
-
-  private final int SET = 1;
-
-  private final int NOT_SET = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    int SET = 1;
+    int NOT_SET = 0;
+    int TIMESTAMP_INDEX = 2;
 
-    if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
+    if (commandElems.size() != 3) {
+      command.setResponse(
+          Coder.getErrorResponse(
+              context.getByteBufAllocator(),
+              getArgsError()));
       return;
     }
-    RegionProvider rC = context.getRegionProvider();
+    RegionProvider regionProvider = context.getRegionProvider();
     ByteArrayWrapper wKey = command.getKey();
 
     byte[] timestampByteArray = commandElems.get(TIMESTAMP_INDEX);
@@ -51,7 +52,7 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
       timestamp = Coder.bytesToLong(timestampByteArray);
     } catch (NumberFormatException e) {
       command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_TIMESTAMP_NOT_USABLE));
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INTEGER));
       return;
     }
 
@@ -62,18 +63,29 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
     long currentTimeMillis = System.currentTimeMillis();
 
     if (timestamp <= currentTimeMillis) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
+      int result = NOT_SET;
+      RedisDataType redisDataType = context.getKeyRegistrar().getType(wKey);
+
+      if (redisDataType != null) {
+        regionProvider.getRegionForType(redisDataType).remove(wKey);
+        result = SET;
+      }
+
+      command.setResponse(
+          Coder.getIntegerResponse(
+              context.getByteBufAllocator(),
+              result));
       return;
     }
 
     long delayMillis = timestamp - currentTimeMillis;
 
-    boolean expirationSet = false;
+    boolean expirationSet;
 
-    if (rC.hasExpiration(wKey)) {
-      expirationSet = rC.modifyExpiration(wKey, delayMillis);
+    if (regionProvider.hasExpiration(wKey)) {
+      expirationSet = regionProvider.modifyExpiration(wKey, delayMillis);
     } else {
-      expirationSet = rC.setExpiration(wKey, delayMillis);
+      expirationSet = regionProvider.setExpiration(wKey, delayMillis);
     }
 
     if (expirationSet) {

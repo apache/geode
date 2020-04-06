@@ -27,31 +27,31 @@ import org.apache.geode.redis.GeodeRedisServer;
 
 public class PexpireIntegrationTest {
 
-  private static Jedis jedis;
+  public static Jedis jedis;
+  public static int REDIS_CLIENT_TIMEOUT = 10000000;
   private static GeodeRedisServer server;
 
   @BeforeClass
   public static void setUp() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    int TIMEOUT = 10000000;
 
     server = new GeodeRedisServer("localhost", port);
     server.start();
-    jedis = new Jedis("localhost", port, TIMEOUT);
+    jedis = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
-  public static void tearDown() {
+  public static void classLevelTearDown() {
     jedis.close();
     server.shutdown();
   }
 
   @Test
-  public void Should_SetExpiration_givenKeyTo_StringValueInMilliSeconds() {
+  public void should_SetExpiration_givenKeyTo_StringValueInMilliSeconds() {
 
     String key = "key";
     String value = "value";
-    long millisecondsToLive = 20000l;
+    long millisecondsToLive = 20000L;
 
     jedis.set(key, value);
     Long timeToLive = jedis.ttl(key);

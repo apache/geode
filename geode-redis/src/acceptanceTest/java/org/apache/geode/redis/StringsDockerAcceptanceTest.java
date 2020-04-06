@@ -38,7 +38,7 @@ public class StringsDockerAcceptanceTest extends StringsIntegrationTest {
 
   @BeforeClass
   public static void setUp() {
-    GenericContainer redisContainer = new GenericContainer("redis:5.0.6").withExposedPorts(6379);
+    GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
     rand = new Random();
     jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);

@@ -20,8 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Random;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -37,25 +35,23 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class ExpireIntegrationTest {
 
-  private static Jedis jedis;
+  public static Jedis jedis;
+  public static int REDIS_CLIENT_TIMEOUT = 10000000;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
-  private static Random rand;
-  private static int port = 6379;
 
   @BeforeClass
   public static void setUp() {
-    rand = new Random();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cache = cf.create();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
 
     server.start();
-    jedis = new Jedis("localhost", port, 10000000);
+    jedis = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -64,7 +60,7 @@ public class ExpireIntegrationTest {
   }
 
   @AfterClass
-  public static void tearDown() {
+  public static void classLevelTearDown() {
     jedis.close();
     cache.close();
     server.shutdown();
