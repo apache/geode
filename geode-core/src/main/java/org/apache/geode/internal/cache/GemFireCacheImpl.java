@@ -2903,46 +2903,46 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         getCancelCriterion().checkCancelInProgress(null);
 
         Future<InternalRegion> future = null;
+        synchronized (rootRegions) {
+          region = rootRegions.get(name);
+          if (region != null) {
+            throw new RegionExistsException(region);
+          }
+          // check for case where a root region is being reinitialized
+          // and we didn't find a region, i.e. the new region is about to be created
 
-        region = rootRegions.get(name);
-        if (region != null) {
-          throw new RegionExistsException(region);
-        }
-        // check for case where a root region is being reinitialized
-        // and we didn't find a region, i.e. the new region is about to be created
-
-        if (!isReInitCreate) {
-          String fullPath = Region.SEPARATOR + name;
-          future = reinitializingRegions.get(fullPath);
-        }
-        if (future == null) {
-          if (internalRegionArgs.getInternalMetaRegion() != null) {
-            region = internalRegionArgs.getInternalMetaRegion();
-          } else if (isPartitionedRegion) {
-            region = new PartitionedRegion(name, attrs, null, this, internalRegionArgs,
-                statisticsClock, ColocationLoggerFactory.create());
-          } else {
-            // Abstract region depends on the default pool existing so lazily initialize it
-            // if necessary.
-            if (Objects.equals(attrs.getPoolName(), DEFAULT_POOL_NAME)) {
-              determineDefaultPool();
-            }
-            if (attrs.getScope().isLocal()) {
-              region =
-                  new LocalRegion(name, attrs, null, this, internalRegionArgs, statisticsClock);
+          if (!isReInitCreate) {
+            String fullPath = Region.SEPARATOR + name;
+            future = reinitializingRegions.get(fullPath);
+          }
+          if (future == null) {
+            if (internalRegionArgs.getInternalMetaRegion() != null) {
+              region = internalRegionArgs.getInternalMetaRegion();
+            } else if (isPartitionedRegion) {
+              region = new PartitionedRegion(name, attrs, null, this, internalRegionArgs,
+                  statisticsClock, ColocationLoggerFactory.create());
             } else {
-              region = new DistributedRegion(name, attrs, null, this, internalRegionArgs,
-                  statisticsClock);
+              // Abstract region depends on the default pool existing so lazily initialize it
+              // if necessary.
+              if (Objects.equals(attrs.getPoolName(), DEFAULT_POOL_NAME)) {
+                determineDefaultPool();
+              }
+              if (attrs.getScope().isLocal()) {
+                region =
+                    new LocalRegion(name, attrs, null, this, internalRegionArgs, statisticsClock);
+              } else {
+                region = new DistributedRegion(name, attrs, null, this, internalRegionArgs,
+                    statisticsClock);
+              }
             }
-          }
 
-          rootRegions.put(name, region);
-          if (isReInitCreate) {
-            regionReinitialized(region);
+            rootRegions.put(name, region);
+            if (isReInitCreate) {
+              regionReinitialized(region);
+            }
+            break;
           }
-          break;
         }
-
         boolean interrupted = Thread.interrupted();
         try {
           throw new RegionExistsException(future.get());
