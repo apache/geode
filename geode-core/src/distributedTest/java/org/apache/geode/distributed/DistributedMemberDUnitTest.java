@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -205,6 +206,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           // disconnectFromDS();
           Properties config = new Properties();
           config.setProperty(ROLES, vmRoles[vm]);
+          config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
           getSystem(config);
         }
       });
