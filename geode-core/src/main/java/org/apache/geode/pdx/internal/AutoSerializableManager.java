@@ -2417,9 +2417,9 @@ public class AutoSerializableManager {
     final int prime = 31;
     int result = 1;
     result = prime * result + (checkPortability ? 1231 : 1237);
-    result = prime * result + ((classPatterns == null) ? 0 : classPatterns.hashCode());
-    result = prime * result + ((excludePatterns == null) ? 0 : excludePatterns.hashCode());
-    result = prime * result + ((identityPatterns == null) ? 0 : identityPatterns.hashCode());
+    result = prime * result + classPatterns.hashCode();
+    result = prime * result + excludePatterns.hashCode();
+    result = prime * result + identityPatterns.hashCode();
     return result;
   }
 
@@ -2434,20 +2434,11 @@ public class AutoSerializableManager {
     AutoSerializableManager other = (AutoSerializableManager) obj;
     if (checkPortability != other.checkPortability)
       return false;
-    if (classPatterns == null) {
-      if (other.classPatterns != null)
-        return false;
-    } else if (!classPatterns.equals(other.classPatterns))
+    if (!classPatterns.equals(other.classPatterns))
       return false;
-    if (excludePatterns == null) {
-      if (other.excludePatterns != null)
-        return false;
-    } else if (!excludePatterns.equals(other.excludePatterns))
+    if (!excludePatterns.equals(other.excludePatterns))
       return false;
-    if (identityPatterns == null) {
-      if (other.identityPatterns != null)
-        return false;
-    } else if (!identityPatterns.equals(other.identityPatterns))
+    if (!identityPatterns.equals(other.identityPatterns))
       return false;
     return true;
   }

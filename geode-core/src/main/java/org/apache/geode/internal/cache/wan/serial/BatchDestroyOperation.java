@@ -138,7 +138,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
             ConcurrentSerialGatewaySenderEventProcessor csgep =
                 (ConcurrentSerialGatewaySenderEventProcessor) rgn.getSerialGatewaySender()
                     .getEventProcessor();
-            if (csgep != null && csgep.processors != null) {
+            if (csgep != null) {
               ep = csgep.processors.get(index);
             }
           }
