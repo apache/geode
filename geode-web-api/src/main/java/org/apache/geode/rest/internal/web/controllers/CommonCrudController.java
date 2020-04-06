@@ -144,11 +144,12 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * Delete all data in region or just the given keys
    *
    * @param region gemfire region
-   * @param keys optional comma separated list of keys
+   * @param encodedKeys optional comma separated list of keys
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}")
-  @ApiOperation(value = "delete all data", notes = "Delete all data in the region")
+  @ApiOperation(value = "delete all data or the specified keys",
+      notes = "Delete all data in the region or just the specified keys.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),

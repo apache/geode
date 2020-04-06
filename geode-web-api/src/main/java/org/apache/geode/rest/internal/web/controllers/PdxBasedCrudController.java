@@ -127,15 +127,16 @@ public class PdxBasedCrudController extends CommonCrudController {
    *
    * @param region gemfire region name
    * @param limit total number of entries requested
-   * @param keys an optional comma separated list of encodeded keys to read
+   * @param encodedKeys an optional comma separated list of encoded keys to read
    * @param ignoreMissingKey if true and reading more than on ekey then if a key is missing ignore
    *        it
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
       produces = APPLICATION_JSON_UTF8_VALUE)
-  @ApiOperation(value = "read all data for region",
-      notes = "Read all data for region. Use limit param to get fixed or limited number of entries.")
+  @ApiOperation(value = "read all data for region or the specified keys",
+      notes = "If reading all data for region then the limit parameter can be used to give the maximum number of values to return."
+          + "If reading specific keys then the ignoreMissingKey parameter can be used to not fail if a key is missing.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
