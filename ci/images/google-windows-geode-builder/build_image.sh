@@ -18,7 +18,7 @@
 
 PACKER=${PACKER:-packer}
 PACKER_ARGS="${*}"
-INTERNAL=${INTERNAL:-true}
+INTERNAL=${INTERNAL:-false}
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
@@ -46,6 +46,7 @@ if [[ -n "${MY_NAME}" ]]; then
   GCP_NETWORK=${GCP_NETWORK##*/}
   GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
   GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
+  INTERNAL=true
 fi
 
 if [[ -z "${GCP_PROJECT}" ]]; then
