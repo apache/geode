@@ -355,7 +355,6 @@ dependencies {
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
-
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
 
@@ -389,6 +388,24 @@ dependencies {
     exclude module: 'geode-core'
   }
   performanceTestImplementation(project(':geode-log4j'))
+
+  //concurrentTestImplementation(project(':geode-gfsh'))
+  concurrentTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  concurrentTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  concurrentTestImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
+  concurrentTestImplementation(project(':geode-concurrency-test'))
+  concurrentTestImplementation('com.tngtech.archunit:archunit-junit4')
+  concurrentTestImplementation('org.apache.logging.log4j:log4j-core')
+  concurrentTestImplementation('pl.pragmatists:JUnitParams')
+
+  concurrentTestRuntimeOnly('org.apache.derby:derby')
+  concurrentTestRuntimeOnly('xerces:xercesImpl')
 }
 
 jmh {
@@ -417,6 +434,11 @@ jmhJar {
 tasks.eclipse.dependsOn(generateGrammarSource)
 
 distributedTest {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}
+
+concurrentTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
 }

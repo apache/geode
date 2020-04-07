@@ -22,9 +22,25 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  implementation('junit:junit')
+  implementation('junit:junit') {
+    exclude module: 'hamcrest-core'
+  }
   implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.awaitility:awaitility')
+
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('com.github.stefanbirkner:system-rules') {
+    exclude module: 'junit-dep'
+  }
+  testImplementation('org.hamcrest:hamcrest-all')
+  testImplementation('pl.pragmatists:JUnitParams')
+
   integrationTestImplementation('org.assertj:assertj-core')
+}
+
+test {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
 }
 
 integrationTest {

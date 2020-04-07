@@ -45,17 +45,9 @@ public class LoopRunner implements Runner {
     try {
       ParallelExecutor executor = new DelegatingExecutor(executorService);
       for (int i = 0; i < count; i++) {
-        try {
-          Object test = child.getDeclaringClass().newInstance();
-          child.invoke(test, executor);
-        } catch (InvocationTargetException ex) {
-          Throwable exceptionToReturn = ex.getCause();
-          if (exceptionToReturn == null) {
-            exceptionToReturn = ex;
-          }
-          return Collections.singletonList(ex.getCause());
-        } catch (Exception e) {
-          return Collections.singletonList(e);
+        List<Throwable> ex = invokeTest(child, executor);
+        if (ex != null) {
+          return ex;
         }
       }
     } finally {
@@ -63,6 +55,23 @@ public class LoopRunner implements Runner {
     }
 
     return Collections.emptyList();
+  }
+
+  private List<Throwable> invokeTest(Method child, ParallelExecutor executor) {
+    try {
+      Object test = child.getDeclaringClass().newInstance();
+      child.invoke(test, executor);
+    } catch (InvocationTargetException ex) {
+      Throwable exceptionToReturn = ex.getCause();
+      if (exceptionToReturn == null) {
+        // TODO: exceptionToReturn is never used
+        exceptionToReturn = ex;
+      }
+      return Collections.singletonList(ex.getCause());
+    } catch (Exception e) {
+      return Collections.singletonList(e);
+    }
+    return null;
   }
 
   private int getCount(Method child) {
@@ -76,7 +85,7 @@ public class LoopRunner implements Runner {
 
   private static class DelegatingExecutor implements ParallelExecutor {
     private final ExecutorService executorService;
-    private List<Future<?>> futures;
+    private final List<Future<?>> futures;
     private final AtomicInteger callablesStarting = new AtomicInteger(0);
     private final CountDownLatch start = new CountDownLatch(1);
 
@@ -99,7 +108,9 @@ public class LoopRunner implements Runner {
 
     @Override
     public void execute() throws ExecutionException, InterruptedException {
-      while (callablesStarting.get() > 0);
+      while (callablesStarting.get() > 0) {
+        Thread.sleep(100);
+      }
 
       start.countDown();
       for (Future future : futures) {
