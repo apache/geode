@@ -85,12 +85,12 @@ public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
   }
 
   @Override
-  public void mark(int limit) {
+  public synchronized void mark(int limit) {
     // unsupported but exception thrown by reset
   }
 
   @Override
-  public void reset() {
+  public synchronized void reset() {
     throw new UnsupportedOperationException();
   }
 }

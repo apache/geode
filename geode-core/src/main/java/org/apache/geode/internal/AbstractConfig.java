@@ -421,7 +421,7 @@ public abstract class AbstractConfig implements Config {
     private static final long serialVersionUID = 7156507110684631135L;
 
     @Override
-    public Enumeration keys() {
+    public synchronized Enumeration keys() {
       // the TreeSet gets the sorting we desire but is only safe
       // because the keys in this context are always String which is Comparable
       return Collections.enumeration(new TreeSet(keySet()));
