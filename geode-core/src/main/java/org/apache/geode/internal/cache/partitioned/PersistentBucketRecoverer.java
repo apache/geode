@@ -347,7 +347,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
       loggedDoneMessage = true;
       startupStatus.startup(
           String.format(
-              "Region %s has successfully completed waiting for other members to recover the latest data.My persistent member information:%s",
+              "Region %s has successfully completed waiting for other members to recover the latest data. My persistent member information:%s",
               region,
               TransformUtils.persistentMemberIdToLogEntryTransformer.transform(thisMember)));
     }
@@ -374,7 +374,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
 
         startupStatus.startup(
             String.format(
-                "Region %s (and any colocated sub-regions) has potentially stale data.  Buckets %s are waiting for another offline member to recover the latest data.My persistent id is:%sOffline members with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
+                "Region %s (and any colocated sub-regions) has potentially stale data.  Buckets %s are waiting for another offline member to recover the latest data. My persistent id is:%sOffline members with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
                 region, missingBuckets,
                 TransformUtils.persistentMemberIdToLogEntryTransformer.transform(thisMember),
                 membersToWaitForLogEntries));
@@ -393,7 +393,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
 
         startupStatus.startup(
             String.format(
-                "Region %s (and any colocated sub-regions) has potentially stale data.  Buckets %s are waiting for another online member to recover the latest data.My persistent id is:%sOnline members with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
+                "Region %s (and any colocated sub-regions) has potentially stale data.  Buckets %s are waiting for another online member to recover the latest data. My persistent id is:%sOnline members with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
                 region, missingBuckets,
                 TransformUtils.persistentMemberIdToLogEntryTransformer.transform(thisMember),
                 membersToWaitForLogEntries));
