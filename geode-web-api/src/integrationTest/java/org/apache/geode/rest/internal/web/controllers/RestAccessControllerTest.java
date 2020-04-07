@@ -405,7 +405,7 @@ public class RestAccessControllerTest {
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(header().string("Location", BASE_URL + "/customers/" + keys));
-    assertThat(customerRegion.size()).isEqualTo(60);
+    assertThat(customerRegion).hasSize(60);
     for (int i = 1; i <= 60; i++) {
       PdxInstance customer = customerRegion.get(String.valueOf(i));
       assertThat(customer.getField("customerId").toString())
@@ -428,7 +428,7 @@ public class RestAccessControllerTest {
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(header().string("Location", BASE_URL + "/customers?keys=" + keys));
-    assertThat(customerRegion.size()).isEqualTo(60);
+    assertThat(customerRegion).hasSize(60);
     for (int i = 1; i <= 60; i++) {
       PdxInstance customer = customerRegion.get(String.valueOf(i));
       assertThat(customer.getField("customerId").toString())
@@ -451,7 +451,7 @@ public class RestAccessControllerTest {
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(header().string("Location", BASE_URL + "/customers?keys=" + keys));
-    assertThat(customerRegion.size()).isEqualTo(60);
+    assertThat(customerRegion).hasSize(60);
     for (int i = 1; i <= 60; i++) {
       PdxInstance customer = customerRegion.get(createKey(i));
       assertThat(customer.getField("customerId").toString())
@@ -472,7 +472,7 @@ public class RestAccessControllerTest {
         .andExpect(status().isOk())
         .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
 
-    assertThat(orderRegion.size()).isEqualTo(1);
+    assertThat(orderRegion).hasSize(1);
     PdxInstance customer = customerRegion.get(createKey(32));
     assertThat(orderRegion.containsKey(decodedKey)).isTrue();
     Order order = (Order) ((PdxInstance) orderRegion.get(decodedKey)).getObject();
@@ -968,15 +968,10 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void deleteMultipleKeysWithQueryParam() throws Exception {
     putAll();
-    assertThat(customerRegion.size()).isEqualTo(60);
-    assertThat(customerRegion.containsKey("2")).isTrue();
-    assertThat(customerRegion.containsKey("3")).isTrue();
-    assertThat(customerRegion.containsKey("4")).isTrue();
-    assertThat(customerRegion.containsKey("5")).isTrue();
     mockMvc.perform(delete("/v1/customers?keys=2,3,4,5")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk());
-    assertThat(customerRegion.size()).isEqualTo(60 - 4);
+    assertThat(customerRegion).hasSize(60 - 4);
     assertThat(customerRegion.containsKey("2")).isFalse();
     assertThat(customerRegion.containsKey("3")).isFalse();
     assertThat(customerRegion.containsKey("4")).isFalse();
@@ -1032,7 +1027,7 @@ public class RestAccessControllerTest {
     mockMvc.perform(delete("/v1/customers?keys=" + keys)
         .with(POST_PROCESSOR))
         .andExpect(status().isOk());
-    assertThat(customerRegion.size()).isEqualTo(60 - 4);
+    assertThat(customerRegion).hasSize(60 - 4);
     for (int i = 2; i <= 5; i++) {
       assertThat(customerRegion.containsKey(createKey(i))).isFalse();
     }
