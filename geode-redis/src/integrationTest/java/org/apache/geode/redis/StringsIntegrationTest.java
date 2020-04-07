@@ -539,10 +539,10 @@ public class StringsIntegrationTest {
 
   @Test
   public void testSet_keyExistsWithDifferentDataType_returnsRedisDataTypeMismatchException() {
-    jedis.hset("key", "field", "value");
+    jedis.set("key", "value");
 
     assertThatThrownBy(
-        () -> jedis.set("key", "something else")).isInstanceOf(JedisDataException.class)
+        () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
             .hasMessageContaining("WRONGTYPE");
   }
 

@@ -53,6 +53,10 @@ public class SetExecutor extends StringExecutor {
     ByteArrayWrapper key = command.getKey();
     ByteArrayWrapper value = getValue(commandElems);
 
+    if (context.getKeyRegistrar().isProtected(key)) {
+      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
+    }
+
     String parseError = parseCommandElems(commandElems);
     if (parseError != null) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), parseError));
