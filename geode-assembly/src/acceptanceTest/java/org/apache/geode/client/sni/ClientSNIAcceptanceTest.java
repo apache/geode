@@ -185,7 +185,7 @@ public class ClientSNIAcceptanceTest {
         .port(15443)
         .getExternalPort();
     return new ClientCacheFactory(properties)
-        .addPoolLocator("locator", 10334)
+        .addPoolLocator("locator-maeve", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
         .create();
