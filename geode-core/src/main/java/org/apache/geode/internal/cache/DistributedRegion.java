@@ -1259,7 +1259,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         if (!isDestroyed()) {
           if (recoverFromDisk) {
             logger.info(
-                "Region {} recovered from the local disk. Old persistent ID: {}, new persistent ID {}",
+                "Region {} will be recovered from the local disk. Old persistent ID: {}, new persistent ID {}",
                 getFullPath(), persistentId, getPersistentID());
             if (persistentId != null) {
               RegionLogger.logRecovery(getFullPath(), persistentId,
