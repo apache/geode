@@ -16,11 +16,12 @@ package org.apache.geode.rest.internal.web.controllers;
 
 import static org.apache.geode.test.matchers.JsonEquivalence.jsonEquals;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
@@ -44,7 +45,6 @@ import java.util.Properties;
 import java.util.stream.IntStream;
 
 import com.jayway.jsonpath.JsonPath;
-import org.hamcrest.core.StringStartsWith;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -722,7 +722,7 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(
-            header().string("Content-Location", new StringStartsWith(BASE_URL + "/customers/")))
+            header().string("Content-Location", startsWith(BASE_URL + "/customers/")))
         .andExpect(jsonPath("$.customers", jsonEquals(jsonResources.get(CUSTOMER_LIST_JSON))));
   }
 
@@ -745,7 +745,7 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(
-            header().string("Content-Location", new StringStartsWith(BASE_URL + "/customers/")))
+            header().string("Content-Location", startsWith(BASE_URL + "/customers/")))
         .andExpect(jsonPath("$.customers.length()", is(10)));
   }
 
@@ -757,7 +757,7 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(
-            header().string("Content-Location", new StringStartsWith(BASE_URL + "/customers/")))
+            header().string("Content-Location", startsWith(BASE_URL + "/customers/")))
         .andExpect(jsonPath("$.customers.length()", is(60)));
   }
 
