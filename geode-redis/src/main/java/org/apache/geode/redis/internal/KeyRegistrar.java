@@ -79,7 +79,7 @@ public class KeyRegistrar {
   /**
    * Checks if the given key is a protected string in GeodeRedis
    *
-   *  @param key Key to check
+   * @param key Key to check
    */
   public boolean isProtected(ByteArrayWrapper key) {
     return redisMetaRegion.containsKey(key.toString())

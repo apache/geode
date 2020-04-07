@@ -164,6 +164,10 @@ public class SetExecutor extends StringExecutor {
       return -1L;
     }
 
+    if (expiration <= 0) {
+      return 0L;
+    }
+
     if (arg.equalsIgnoreCase("EX")) {
       return expiration * AbstractExecutor.millisInSecond;
     } else if (arg.equalsIgnoreCase("PX")) {
@@ -242,6 +246,4 @@ public class SetExecutor extends StringExecutor {
       }
     }
   }
-
-
 }

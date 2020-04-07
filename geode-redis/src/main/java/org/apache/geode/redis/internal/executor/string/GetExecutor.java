@@ -27,7 +27,7 @@ public class GetExecutor extends StringExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
 
-    if (command.getProcessedCommand().size() < 2) {
+    if (command.getProcessedCommand().size() != 2) {
       command
           .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.GETEXECUTOR));
       return;

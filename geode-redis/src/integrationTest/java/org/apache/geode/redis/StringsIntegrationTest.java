@@ -38,6 +38,7 @@ import java.util.concurrent.TimeoutException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -165,6 +166,20 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  public void testSET_with_Negative_EX_time_shouldReturnError() {
+    String key = "key";
+    String value = "value";
+    int millisecondsUntilExpiration = -1;
+
+    SetParams setParams = new SetParams();
+    setParams.ex(millisecondsUntilExpiration);
+
+    assertThatThrownBy(() -> jedis.set(key, value, setParams))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
+  }
+
+  @Test
   public void testSET_shouldAccept_PX_argumentToSetExpireTime() {
     String key = "key";
     String value = "value";
@@ -178,6 +193,20 @@ public class StringsIntegrationTest {
     Long result = jedis.ttl(key);
 
     assertThat(result).isGreaterThan(15l);
+  }
+
+  @Test
+  public void testSET_with_Negative_PX_time_shouldReturnError() {
+    String key = "key";
+    String value = "value";
+    int millisecondsUntilExpiration = -1;
+
+    SetParams setParams = new SetParams();
+    setParams.px(millisecondsUntilExpiration);
+
+    assertThatThrownBy(() -> jedis.set(key, value, setParams))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
   }
 
   @Test
@@ -210,7 +239,6 @@ public class StringsIntegrationTest {
     String result_EX = jedis.set(key, value, setParamsEX);
     assertThat(result_EX).isEqualTo("OK");
     assertThat(jedis.ttl(key)).isGreaterThan(15L);
-    jedis.set(key, value);
 
     String result_XX = jedis.set(key, value, setParamsXX);
 
@@ -228,9 +256,6 @@ public class StringsIntegrationTest {
     SetParams setParamsEX = new SetParams();
     setParamsEX.ex(secondsUntilExpiration);
 
-    SetParams setParamsXX = new SetParams();
-    setParamsXX.xx();
-
     SetParams setParamsNX = new SetParams();
     setParamsNX.nx();
 
@@ -239,6 +264,28 @@ public class StringsIntegrationTest {
     assertThat(result_NX).isNull();
 
     Long result = jedis.ttl(key_NX);
+    assertThat(result).isGreaterThan(15L);
+  }
+
+  @Test
+  @Ignore
+  public void testSET_with_KEEPTTL_shouldRetainPreviousTTL_OnSuccess() {
+    String key = "key";
+    String value = "value";
+    int secondsToExpire = 30;
+
+    SetParams setParamsEx = new SetParams();
+    setParamsEx.ex(secondsToExpire);
+
+    jedis.set(key, value, setParamsEx);
+
+    SetParams setParamsKeepTTL = new SetParams();
+    // setParamsKeepTTL.keepTtl();
+    // Jedis Doesn't support KEEPTTL yet.
+
+    jedis.set(key, "newValue", setParamsKeepTTL);
+
+    Long result = jedis.ttl(key);
     assertThat(result).isGreaterThan(15L);
   }
 
