@@ -15,10 +15,7 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -45,7 +42,7 @@ public class HSetExecutor extends HashExecutor implements Extendable {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
+    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     if (commandElems.size() < 4 || commandElems.size() % 2 == 1) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
@@ -54,40 +51,9 @@ public class HSetExecutor extends HashExecutor implements Extendable {
 
     ByteArrayWrapper key = command.getKey();
 
-    Object oldValue;
-    int fieldsAdded = 0;
+    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
 
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
-
-      for (int i = 2; i < commandElems.size(); i += 2) {
-        byte[] fieldArray = commandElems.get(i);
-        ByteArrayWrapper field = new ByteArrayWrapper(fieldArray);
-        byte[] value = commandElems.get(i + 1);
-        ByteArrayWrapper putValue = new ByteArrayWrapper(value);
-
-        if (onlySetOnAbsent()) {
-          oldValue = map.putIfAbsent(field, putValue);
-        } else {
-          oldValue = map.put(field, putValue);
-        }
-
-        if (oldValue == null) {
-          fieldsAdded++;
-        }
-      }
-
-      this.saveMap(map, context, key);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
+    int fieldsAdded = hash.hset(commandElems.subList(2, commandElems.size()), onlySetOnAbsent());
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), fieldsAdded));
   }

@@ -14,10 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -58,23 +56,8 @@ public class HGetAllExecutor extends HashExecutor {
     Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries;
     ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> results = getMap(context, key);
-
-    if (results == null || results.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
-    }
-
-    entries = results.entrySet();
-
-    if (entries == null || entries.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
-    }
-
-    // create a copy
-    entries = new ArrayList<>(entries);
-
+    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
+    entries = hash.hgetall();
     command.setResponse(Coder.getKeyValArrayResponse(context.getByteBufAllocator(), entries));
   }
 
