@@ -42,13 +42,13 @@ public interface RestoreRedundancyBuilder {
 
   /**
    * Set whether the restore redundancy operation should reassign primary buckets. The default,
-   * <code>false</code>, will result in primary buckets being reassigned for better load balancing
+   * <code>true</code>, will result in primary buckets being reassigned for better load balancing
    * across members.
    *
-   * @param shouldNotReassign A boolean indicating whether or not the operation created by this
+   * @param shouldReassign A boolean indicating whether or not the operation created by this
    *        class should reassign primary bucket hosts.
    */
-  RestoreRedundancyBuilder doNotReassignPrimaries(boolean shouldNotReassign);
+  RestoreRedundancyBuilder setReassignPrimaries(boolean shouldReassign);
 
   /**
    * Asynchronously starts a new restore redundancy operation. Only the cache resources used by this

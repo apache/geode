@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache.control;
 
 import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.FAILURE;
 import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.SUCCESS;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.SATISFIED;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFERS_COMPLETED;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFER_TIME;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -42,14 +42,14 @@ import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 
 public class RestoreRedundancyResultsImplTest {
-  private final RestoreRedundancyRegionResult successfulRegionResult =
-      mock(RestoreRedundancyRegionResult.class);
+  private final RegionRedundancyStatus successfulRegionResult =
+      mock(RegionRedundancyStatus.class);
   private final String successfulRegionName = "successfulRegion";
-  private final RestoreRedundancyRegionResult underRedundancyRegionResult =
-      mock(RestoreRedundancyRegionResult.class);
+  private final RegionRedundancyStatus underRedundancyRegionResult =
+      mock(RegionRedundancyStatus.class);
   private final String underRedundancyRegionName = "underRedundancyRegion";
-  private final RestoreRedundancyRegionResult zeroRedundancyRegionResult =
-      mock(RestoreRedundancyRegionResult.class);
+  private final RegionRedundancyStatus zeroRedundancyRegionResult =
+      mock(RegionRedundancyStatus.class);
   private final String zeroRedundancyRegionName = "zeroRedundancyRegion";
   private PartitionRebalanceInfo details = mock(PartitionRebalanceInfo.class);
   private int transfersCompleted = 5;
@@ -77,11 +77,11 @@ public class RestoreRedundancyResultsImplTest {
   }
 
   @Test
-  public void getStatusReturnsSuccessWhenAllRegionsHaveSomeRedundancy() {
+  public void getStatusReturnsFailureNotAllRegionsHaveFullySatisfiedRedundancy() {
     results.addRegionResult(successfulRegionResult);
     results.addRegionResult(underRedundancyRegionResult);
 
-    assertThat(results.getStatus(), is(SUCCESS));
+    assertThat(results.getStatus(), is(FAILURE));
   }
 
   @Test
@@ -119,18 +119,18 @@ public class RestoreRedundancyResultsImplTest {
     results.addRegionResult(underRedundancyRegionResult);
     results.addRegionResult(successfulRegionResult);
 
-    Map<String, RestoreRedundancyRegionResult> zeroRedundancyResults =
+    Map<String, RegionRedundancyStatus> zeroRedundancyResults =
         results.getZeroRedundancyRegionResults();
     assertThat(zeroRedundancyResults.size(), is(1));
     assertThat(zeroRedundancyResults.get(zeroRedundancyRegionName), is(zeroRedundancyRegionResult));
 
-    Map<String, RestoreRedundancyRegionResult> underRedundancyResults =
+    Map<String, RegionRedundancyStatus> underRedundancyResults =
         results.getUnderRedundancyRegionResults();
     assertThat(underRedundancyResults.size(), is(1));
     assertThat(underRedundancyResults.get(underRedundancyRegionName),
         is(underRedundancyRegionResult));
 
-    Map<String, RestoreRedundancyRegionResult> successfulRegionResults =
+    Map<String, RegionRedundancyStatus> successfulRegionResults =
         results.getSatisfiedRedundancyRegionResults();
     assertThat(successfulRegionResults.size(), is(1));
     assertThat(successfulRegionResults.get(successfulRegionName), is(successfulRegionResult));
@@ -139,28 +139,29 @@ public class RestoreRedundancyResultsImplTest {
   @Test
   public void addRegionResultsAddsToCorrectInternalMapAndAddsPrimaryReassignmentDetails() {
     RestoreRedundancyResults regionResults = mock(RestoreRedundancyResults.class);
-    Map<String, RestoreRedundancyRegionResult> resultsMap = new HashMap<>();
-    resultsMap.put(successfulRegionName, successfulRegionResult);
-    resultsMap.put(underRedundancyRegionName, underRedundancyRegionResult);
-    resultsMap.put(zeroRedundancyRegionName, zeroRedundancyRegionResult);
-    when(regionResults.getRegionResults()).thenReturn(resultsMap);
+    when(regionResults.getZeroRedundancyRegionResults())
+        .thenReturn(Collections.singletonMap(zeroRedundancyRegionName, zeroRedundancyRegionResult));
+    when(regionResults.getUnderRedundancyRegionResults()).thenReturn(
+        Collections.singletonMap(underRedundancyRegionName, underRedundancyRegionResult));
+    when(regionResults.getSatisfiedRedundancyRegionResults())
+        .thenReturn(Collections.singletonMap(successfulRegionName, successfulRegionResult));
     when(regionResults.getTotalPrimaryTransfersCompleted()).thenReturn(transfersCompleted);
     when(regionResults.getTotalPrimaryTransferTime()).thenReturn(transferTime);
 
     results.addRegionResults(regionResults);
 
-    Map<String, RestoreRedundancyRegionResult> zeroRedundancyResults =
+    Map<String, RegionRedundancyStatus> zeroRedundancyResults =
         results.getZeroRedundancyRegionResults();
     assertThat(zeroRedundancyResults.size(), is(1));
     assertThat(zeroRedundancyResults.get(zeroRedundancyRegionName), is(zeroRedundancyRegionResult));
 
-    Map<String, RestoreRedundancyRegionResult> underRedundancyResults =
+    Map<String, RegionRedundancyStatus> underRedundancyResults =
         results.getUnderRedundancyRegionResults();
     assertThat(underRedundancyResults.size(), is(1));
     assertThat(underRedundancyResults.get(underRedundancyRegionName),
         is(underRedundancyRegionResult));
 
-    Map<String, RestoreRedundancyRegionResult> successfulRegionResults =
+    Map<String, RegionRedundancyStatus> successfulRegionResults =
         results.getSatisfiedRedundancyRegionResults();
     assertThat(successfulRegionResults.size(), is(1));
     assertThat(successfulRegionResults.get(successfulRegionName), is(successfulRegionResult));

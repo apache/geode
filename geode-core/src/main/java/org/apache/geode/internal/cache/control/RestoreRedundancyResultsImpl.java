@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.NO_REDUNDANT_COPIES;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,10 +35,9 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
   public static final String PRIMARY_TRANSFERS_COMPLETED = "Total primary transfers completed = ";
   public static final String PRIMARY_TRANSFER_TIME = "Total primary transfer time (ms) = ";
 
-  Map<String, RestoreRedundancyRegionResult> regionResults = new HashMap<>();
-  Map<String, RestoreRedundancyRegionResult> zeroRedundancyRegions = new HashMap<>();
-  Map<String, RestoreRedundancyRegionResult> underRedundancyRegions = new HashMap<>();
-  Map<String, RestoreRedundancyRegionResult> satisfiedRedundancyRegions = new HashMap<>();
+  Map<String, RegionRedundancyStatus> zeroRedundancyRegions = new HashMap<>();
+  Map<String, RegionRedundancyStatus> underRedundancyRegions = new HashMap<>();
+  Map<String, RegionRedundancyStatus> satisfiedRedundancyRegions = new HashMap<>();
 
   private int totalPrimaryTransfersCompleted;
   private long totalPrimaryTransferTime;
@@ -49,10 +46,9 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
 
   @Override
   public void addRegionResults(RestoreRedundancyResults results) {
-    Map<String, RestoreRedundancyRegionResult> regionResults = results.getRegionResults();
-    this.regionResults.putAll(regionResults);
-    regionResults.values().forEach(this::addToFilteredMaps);
-
+    this.satisfiedRedundancyRegions.putAll(results.getSatisfiedRedundancyRegionResults());
+    this.underRedundancyRegions.putAll(results.getUnderRedundancyRegionResults());
+    this.zeroRedundancyRegions.putAll(results.getZeroRedundancyRegionResults());
     this.totalPrimaryTransfersCompleted += results.getTotalPrimaryTransfersCompleted();
     this.totalPrimaryTransferTime += results.getTotalPrimaryTransferTime();
   }
@@ -64,13 +60,12 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
   }
 
   @Override
-  public void addRegionResult(RestoreRedundancyRegionResult regionResult) {
-    regionResults.put(regionResult.getRegionName(), regionResult);
+  public void addRegionResult(RegionRedundancyStatus regionResult) {
     addToFilteredMaps(regionResult);
   }
 
   // Adds to the region result to the appropriate map depending on redundancy status
-  private void addToFilteredMaps(RestoreRedundancyRegionResult regionResult) {
+  private void addToFilteredMaps(RegionRedundancyStatus regionResult) {
     switch (regionResult.getStatus()) {
       case NO_REDUNDANT_COPIES:
         zeroRedundancyRegions.put(regionResult.getRegionName(), regionResult);
@@ -86,10 +81,9 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
 
   @Override
   public RestoreRedundancyResults.Status getStatus() {
-    boolean noRedundantCopies = regionResults.values().stream()
-        .anyMatch(result -> result.getStatus() == NO_REDUNDANT_COPIES);
+    boolean fullySatisfied = zeroRedundancyRegions.isEmpty() && underRedundancyRegions.isEmpty();
 
-    return noRedundantCopies ? Status.FAILURE : Status.SUCCESS;
+    return fullySatisfied ? Status.SUCCESS : Status.FAILURE;
   }
 
   @Override
@@ -118,38 +112,49 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
     return String.join("\n", messages);
   }
 
-  private String getResultsMessage(Map<String, RestoreRedundancyRegionResult> regionResults,
+  private String getResultsMessage(Map<String, RegionRedundancyStatus> regionResults,
       String baseMessage) {
     String message = baseMessage + "\n";
-    message += regionResults.values().stream().map(RestoreRedundancyRegionResult::toString)
+    message += regionResults.values().stream().map(RegionRedundancyStatus::toString)
         .collect(Collectors.joining(",\n"));
     return message;
   }
 
   @Override
-  public RestoreRedundancyRegionResult getRegionResult(String regionName) {
-    return regionResults.get(regionName);
+  public RegionRedundancyStatus getRegionResult(String regionName) {
+    RegionRedundancyStatus result = satisfiedRedundancyRegions.get(regionName);
+    if (result == null) {
+      result = underRedundancyRegions.get(regionName);
+    }
+    if (result == null) {
+      result = zeroRedundancyRegions.get(regionName);
+    }
+    return result;
   }
 
   @Override
-  public Map<String, RestoreRedundancyRegionResult> getZeroRedundancyRegionResults() {
+  public Map<String, RegionRedundancyStatus> getZeroRedundancyRegionResults() {
     return zeroRedundancyRegions;
   }
 
   @Override
-  public Map<String, RestoreRedundancyRegionResult> getUnderRedundancyRegionResults() {
+  public Map<String, RegionRedundancyStatus> getUnderRedundancyRegionResults() {
     return underRedundancyRegions;
   }
 
   @Override
-  public Map<String, RestoreRedundancyRegionResult> getSatisfiedRedundancyRegionResults() {
+  public Map<String, RegionRedundancyStatus> getSatisfiedRedundancyRegionResults() {
     return satisfiedRedundancyRegions;
   }
 
   @Override
-  // This returns the actual backing map
-  public Map<String, RestoreRedundancyRegionResult> getRegionResults() {
-    return regionResults;
+  public Map<String, RegionRedundancyStatus> getRegionResults() {
+    Map<String, RegionRedundancyStatus> combinedResults =
+        new HashMap<>(satisfiedRedundancyRegions);
+    combinedResults.putAll(underRedundancyRegions);
+    combinedResults.putAll(zeroRedundancyRegions);
+
+    return combinedResults;
   }
 
   @Override

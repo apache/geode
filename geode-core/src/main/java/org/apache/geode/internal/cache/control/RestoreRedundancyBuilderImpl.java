@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,12 +25,10 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.control.RestoreRedundancyBuilder;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.RestoreRedundancyDirector;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
@@ -41,7 +37,7 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
   private final InternalResourceManager manager;
   private Set<String> includedRegions;
   private Set<String> excludedRegions;
-  private boolean shouldNotReassign = false;
+  private boolean shouldReassign = true;
   private ScheduledExecutorService executor;
 
   public RestoreRedundancyBuilderImpl(InternalCache cache) {
@@ -63,52 +59,41 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
   }
 
   @Override
-  public RestoreRedundancyBuilder doNotReassignPrimaries(boolean shouldNotReassign) {
-    this.shouldNotReassign = shouldNotReassign;
+  public RestoreRedundancyBuilder setReassignPrimaries(boolean shouldReassign) {
+    this.shouldReassign = shouldReassign;
     return this;
   }
 
   @Override
   public CompletableFuture<RestoreRedundancyResults> start() {
-    if (hasMemberOlderThanGeode_1_13_0()) {
-      return CompletableFuture.completedFuture(getErrorRestoreRedundancyResult());
-    } else {
-      RegionFilter filter = getRegionFilter();
-      long start = manager.getStats().startRestoreRedundancy();
+    RegionFilter filter = getRegionFilter();
+    long start = manager.getStats().startRestoreRedundancy();
 
-      // Create a list of completable futures for each restore redundancy operation
-      List<CompletableFuture<RestoreRedundancyResults>> regionFutures =
-          cache.getPartitionedRegions().stream()
-              .filter(filter::include)
-              .map(this::getRedundancyOpFuture)
-              .collect(Collectors.toList());
+    // Create a list of completable futures for each restore redundancy operation
+    List<CompletableFuture<RestoreRedundancyResults>> regionFutures =
+        cache.getPartitionedRegions().stream()
+            .filter(filter::include)
+            .map(this::getRedundancyOpFuture)
+            .collect(Collectors.toList());
 
-      // Create a single completable future which completes when all of the restore redundancy
-      // futures return
-      CompletableFuture<Void> combinedFuture =
-          CompletableFuture.allOf(regionFutures.toArray(new CompletableFuture[0]));
+    // Create a single completable future which completes when all of the restore redundancy
+    // futures return
+    CompletableFuture<Void> combinedFuture =
+        CompletableFuture.allOf(regionFutures.toArray(new CompletableFuture[0]));
 
-      // Once all restore redundancy futures have returned, combine the results from each into one
-      // results object
-      CompletableFuture<RestoreRedundancyResults> resultsFuture =
-          getResultsFuture(regionFutures, combinedFuture);
+    // Once all restore redundancy futures have returned, combine the results from each into one
+    // results object
+    CompletableFuture<RestoreRedundancyResults> resultsFuture =
+        getResultsFuture(regionFutures, combinedFuture);
 
-      // Once results have been collected and combined, mark the operation as finished
-      resultsFuture.thenRun(() -> {
-        manager.removeInProgressRestoreRedundancy(resultsFuture);
-        manager.getStats().endRestoreRedundancy(start);
-      });
+    // Once results have been collected and combined, mark the operation as finished
+    resultsFuture.thenRun(() -> {
+      manager.removeInProgressRestoreRedundancy(resultsFuture);
+      manager.getStats().endRestoreRedundancy(start);
+    });
 
-      manager.addInProgressRestoreRedundancy(resultsFuture);
-      return resultsFuture;
-    }
-  }
-
-  private boolean hasMemberOlderThanGeode_1_13_0() {
-    return cache.getMembers().stream()
-        .map(InternalDistributedMember.class::cast)
-        .map(InternalDistributedMember::getVersionObject)
-        .anyMatch(memberVersion -> memberVersion.compareTo(Version.GEODE_1_13_0) < 0);
+    manager.addInProgressRestoreRedundancy(resultsFuture);
+    return resultsFuture;
   }
 
   RestoreRedundancyResults doRestoreRedundancy(PartitionedRegion region) {
@@ -168,7 +153,7 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
   // Extracted for testing
   PartitionedRegionRebalanceOp getPartitionedRegionRebalanceOp(PartitionedRegion region) {
     return new PartitionedRegionRebalanceOp(region, false,
-        new RestoreRedundancyDirector(shouldNotReassign), true, false, new AtomicBoolean(),
+        new RestoreRedundancyDirector(shouldReassign), true, false, new AtomicBoolean(),
         manager.getStats());
   }
 
@@ -178,8 +163,8 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
   }
 
   // Extracted for testing
-  RestoreRedundancyRegionResult getRegionResult(PartitionedRegion region) {
-    return new RestoreRedundancyRegionResult(region);
+  RegionRedundancyStatus getRegionResult(PartitionedRegion region) {
+    return new RegionRedundancyStatus(region);
   }
 
   // Extracted for testing
@@ -188,64 +173,5 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
       CompletableFuture<Void> combinedFuture) {
     return combinedFuture.thenApplyAsync(voidd -> getRestoreRedundancyResults(regionFutures),
         executor);
-  }
-
-  private RestoreRedundancyResults getErrorRestoreRedundancyResult() {
-    return new RestoreRedundancyResults() {
-      @Override
-      public void addRegionResults(RestoreRedundancyResults results) {}
-
-      @Override
-      public void addPrimaryReassignmentDetails(PartitionRebalanceInfo details) {}
-
-      @Override
-      public void addRegionResult(RestoreRedundancyRegionResult regionResult) {}
-
-      @Override
-      public Status getStatus() {
-        return Status.ERROR;
-      }
-
-      @Override
-      public String getMessage() {
-        return "Restore redundancy operations are not supported on versions older than "
-            + Version.GEODE_1_13_0.toString();
-      }
-
-      @Override
-      public RestoreRedundancyRegionResult getRegionResult(String regionName) {
-        return null;
-      }
-
-      @Override
-      public Map<String, RestoreRedundancyRegionResult> getZeroRedundancyRegionResults() {
-        return new HashMap<>();
-      }
-
-      @Override
-      public Map<String, RestoreRedundancyRegionResult> getUnderRedundancyRegionResults() {
-        return new HashMap<>();
-      }
-
-      @Override
-      public Map<String, RestoreRedundancyRegionResult> getSatisfiedRedundancyRegionResults() {
-        return new HashMap<>();
-      }
-
-      @Override
-      public Map<String, RestoreRedundancyRegionResult> getRegionResults() {
-        return new HashMap<>();
-      }
-
-      @Override
-      public int getTotalPrimaryTransfersCompleted() {
-        return 0;
-      }
-
-      @Override
-      public long getTotalPrimaryTransferTime() {
-        return 0;
-      }
-    };
   }
 }

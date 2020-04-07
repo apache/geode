@@ -21,21 +21,11 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 /**
  * Used to calculate and store the redundancy status for a {@link PartitionedRegion}.
  */
-public class RestoreRedundancyRegionResult implements Serializable {
+public class RegionRedundancyStatus implements Serializable {
   private static final long serialVersionUID = 3407539362166634316L;
 
-  /**
-   * The message prefix to be applied when redundancy was successfully restored for the region used
-   * to create this object.
-   */
-  public static final String SATISFIED_MESSAGE = "Redundancy satisfied for region ";
-
-  /**
-   * The message prefix to be applied when redundancy was not successfully restored for the region
-   * used to create this object.
-   */
-  public static final String NOT_SATISFIED_MESSAGE =
-      "Redundancy NOT satisfied for region ";
+  public static final String OUTPUT_STRING =
+      "%s redundancy status: %s. Desired redundancy is %s and actual redundancy is %s.";
 
   /**
    * The name of the region used to create this object.
@@ -71,7 +61,7 @@ public class RestoreRedundancyRegionResult implements Serializable {
     NO_REDUNDANT_COPIES
   }
 
-  public RestoreRedundancyRegionResult(PartitionedRegion region) {
+  public RegionRedundancyStatus(PartitionedRegion region) {
     regionName = region.getName();
     desiredRedundancy = region.getRedundantCopies();
     actualRedundancy = calculateLowestRedundancy(region);
@@ -80,10 +70,6 @@ public class RestoreRedundancyRegionResult implements Serializable {
 
   public String getRegionName() {
     return regionName;
-  }
-
-  public int getDesiredRedundancy() {
-    return desiredRedundancy;
   }
 
   public int getActualRedundancy() {
@@ -131,9 +117,7 @@ public class RestoreRedundancyRegionResult implements Serializable {
 
   @Override
   public String toString() {
-    String success =
-        status.equals(RedundancyStatus.SATISFIED) ? SATISFIED_MESSAGE : NOT_SATISFIED_MESSAGE;
-    return success + regionName + ". Desired redundancy is " + desiredRedundancy
-        + " and actual redundancy is " + actualRedundancy;
+    return String.format(OUTPUT_STRING, regionName, status.name(), desiredRedundancy,
+        actualRedundancy);
   }
 }

@@ -15,11 +15,9 @@
 package org.apache.geode.internal.cache.control;
 
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.NOT_SATISFIED_MESSAGE;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.SATISFIED;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.SATISFIED_MESSAGE;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -38,7 +36,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 @RunWith(JUnitParamsRunner.class)
-public class RestoreRedundancyRegionResultTest {
+public class RegionRedundancyStatusTest {
 
   private PartitionedRegion mockRegion;
   private final int desiredRedundancy = 2;
@@ -57,16 +55,15 @@ public class RestoreRedundancyRegionResultTest {
   @Parameters(method = "getActualRedundancyAndExpectedStatusAndMessage")
   @TestCaseName("[{index}] {method} (Desired redundancy:" + desiredRedundancy
       + "; Actual redundancy:{0}; Expected status:{1})")
-  public void constructorPopulatesValuesCorrectly(
-      int actualRedundancy, RestoreRedundancyRegionResult.RedundancyStatus expectedStatus,
-      String expectedMessage) {
+  public void constructorPopulatesValuesCorrectly(int actualRedundancy,
+      RegionRedundancyStatus.RedundancyStatus expectedStatus) {
     when(mockRegion.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(actualRedundancy);
 
-    RestoreRedundancyRegionResult result = new RestoreRedundancyRegionResult(mockRegion);
+    RegionRedundancyStatus result = new RegionRedundancyStatus(mockRegion);
 
     assertThat(result.getActualRedundancy(), is(actualRedundancy));
     assertThat(result.getStatus(), is(expectedStatus));
-    assertThat(result.toString(), containsString(expectedMessage));
+    assertThat(result.toString(), containsString(expectedStatus.name()));
   }
 
   @Test
@@ -75,18 +72,18 @@ public class RestoreRedundancyRegionResultTest {
     // Have only the bucket with ID = 1 report being under redundancy
     when(mockRegion.getRegionAdvisor().getBucketRedundancy(1)).thenReturn(oneRedundantCopy);
 
-    RestoreRedundancyRegionResult result = new RestoreRedundancyRegionResult(mockRegion);
+    RegionRedundancyStatus result = new RegionRedundancyStatus(mockRegion);
 
     assertThat(result.getActualRedundancy(), is(oneRedundantCopy));
     assertThat(result.getStatus(), is(NOT_SATISFIED));
-    assertThat(result.toString(), containsString(NOT_SATISFIED_MESSAGE));
+    assertThat(result.toString(), containsString(NOT_SATISFIED.name()));
   }
 
   public Object[] getActualRedundancyAndExpectedStatusAndMessage() {
     return new Object[] {
-        new Object[] {desiredRedundancy, SATISFIED, SATISFIED_MESSAGE},
-        new Object[] {oneRedundantCopy, NOT_SATISFIED, NOT_SATISFIED_MESSAGE},
-        new Object[] {zeroRedundancy, NO_REDUNDANT_COPIES, NOT_SATISFIED_MESSAGE}
+        new Object[] {desiredRedundancy, SATISFIED},
+        new Object[] {oneRedundantCopy, NOT_SATISFIED},
+        new Object[] {zeroRedundancy, NO_REDUNDANT_COPIES}
     };
   }
 

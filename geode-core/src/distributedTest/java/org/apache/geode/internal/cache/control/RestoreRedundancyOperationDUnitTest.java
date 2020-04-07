@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache.control;
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
 import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.FAILURE;
 import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.SUCCESS;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyRegionResult.RedundancyStatus.SATISFIED;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThan;
@@ -61,14 +61,13 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 @RunWith(JUnitParamsRunner.class)
 public class RestoreRedundancyOperationDUnitTest {
   private List<MemberVM> servers;
-  private static final int serversToStart = 3;
-  private static final String parentRegionName = "parentColocatedRegion";
-  private static final String childRegionName = "childColocatedRegion";
-  private static final int desiredRedundancyCopies = 2;
-  private static final String lowRedundancyRegionName = "lowRedundancyRegion";
-  private static final int lowRedundancyCopies = 1;
-  private static final int numBuckets = GLOBAL_MAX_BUCKETS_DEFAULT;
-  private static final int entries = 5 * numBuckets;
+  private static final int SERVERS_TO_START = 3;
+  private static final String PARENT_REGION_NAME = "parentColocatedRegion";
+  private static final String CHILD_REGION_NAME = "childColocatedRegion";
+  private static final int DESIRED_REDUNDANCY_COPIES = 2;
+  private static final String LOW_REDUNDANCY_REGION_NAME = "lowRedundancyRegion";
+  private static final int LOW_REDUNDANCY_COPIES = 1;
+  private static final int ENTRIES = 5 * GLOBAL_MAX_BUCKETS_DEFAULT;
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -78,14 +77,14 @@ public class RestoreRedundancyOperationDUnitTest {
     MemberVM locator = cluster.startLocatorVM(0);
     int locatorPort = locator.getPort();
     servers = new ArrayList<>();
-    IntStream.range(0, serversToStart)
+    IntStream.range(0, SERVERS_TO_START)
         .forEach(i -> servers.add(cluster.startServerVM(i + 1, locatorPort)));
 
     // Create the regions on server1 and populate with data
     servers.get(0).invoke(() -> {
       Collection<Region<Object, Object>> regions = createRegions();
       regions.forEach(
-          region -> IntStream.range(0, entries).forEach(i -> region.put("key" + i, "value" + i)));
+          region -> IntStream.range(0, ENTRIES).forEach(i -> region.put("key" + i, "value" + i)));
     });
 
     // Create regions on other servers but do not populate with data
@@ -94,19 +93,19 @@ public class RestoreRedundancyOperationDUnitTest {
 
     // Confirm that redundancy is impaired and primaries unbalanced for all regions on all members
     servers.forEach(s -> s.invoke(() -> {
-      assertRedundancyStatus(parentRegionName, false);
-      assertRedundancyStatus(childRegionName, false);
-      assertRedundancyStatus(lowRedundancyRegionName, false);
-      assertPrimariesBalanced(parentRegionName, serversToStart, false);
-      assertPrimariesBalanced(childRegionName, serversToStart, false);
-      assertPrimariesBalanced(lowRedundancyRegionName, serversToStart, false);
+      assertRedundancyStatus(PARENT_REGION_NAME, false);
+      assertRedundancyStatus(CHILD_REGION_NAME, false);
+      assertRedundancyStatus(LOW_REDUNDANCY_REGION_NAME, false);
+      assertPrimariesBalanced(PARENT_REGION_NAME, SERVERS_TO_START, false);
+      assertPrimariesBalanced(CHILD_REGION_NAME, SERVERS_TO_START, false);
+      assertPrimariesBalanced(LOW_REDUNDANCY_REGION_NAME, SERVERS_TO_START, false);
     }));
   }
 
   @Test
-  public void statsAreUpdatedWhenRestoreRedundnacyIsCalled() {
+  public void statsAreUpdatedWhenRestoreRedundancyIsCalled() {
     servers.get(0).invoke(() -> {
-      restoreRedundancyAndGetResults(null, null, false);
+      restoreRedundancyAndGetResults(null, null, true);
 
       ResourceManagerStats stats = Objects.requireNonNull(ClusterStartupRule.getCache())
           .getInternalResourceManager().getStats();
@@ -120,45 +119,45 @@ public class RestoreRedundancyOperationDUnitTest {
   @Test
   public void redundancyIsRecoveredAndPrimariesBalancedWhenRestoreRedundancyIsCalledWithNoIncludedOrExcludedRegions() {
     servers.get(0).invoke(() -> {
-      RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, false);
+      RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
       assertThat(results.getStatus(), is(SUCCESS));
       assertThat(results.getTotalPrimaryTransfersCompleted() > 0, is(true));
       assertThat(results.getTotalPrimaryTransferTime() > 0, is(true));
-      assertThat(results.getRegionResult(parentRegionName).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(childRegionName).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(lowRedundancyRegionName).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
     });
 
     servers.forEach(s -> s.invoke(() -> {
-      assertRedundancyStatus(parentRegionName, true);
-      assertRedundancyStatus(childRegionName, true);
-      assertRedundancyStatus(lowRedundancyRegionName, true);
-      assertPrimariesBalanced(parentRegionName, serversToStart, true);
-      assertPrimariesBalanced(childRegionName, serversToStart, true);
-      assertPrimariesBalanced(lowRedundancyRegionName, serversToStart, true);
+      assertRedundancyStatus(PARENT_REGION_NAME, true);
+      assertRedundancyStatus(CHILD_REGION_NAME, true);
+      assertRedundancyStatus(LOW_REDUNDANCY_REGION_NAME, true);
+      assertPrimariesBalanced(PARENT_REGION_NAME, SERVERS_TO_START, true);
+      assertPrimariesBalanced(CHILD_REGION_NAME, SERVERS_TO_START, true);
+      assertPrimariesBalanced(LOW_REDUNDANCY_REGION_NAME, SERVERS_TO_START, true);
     }));
   }
 
   @Test
-  public void redundancyIsRecoveredAndPrimariesNotBalancedWhenRestoreRedundancyIsCalledWithDoNotReassignPrimariesTrue() {
+  public void redundancyIsRecoveredAndPrimariesNotBalancedWhenRestoreRedundancyIsCalledWithReassignPrimariesFalse() {
     servers.get(0).invoke(() -> {
-      RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
+      RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, false);
 
       assertThat(results.getStatus(), is(SUCCESS));
       assertThat(results.getTotalPrimaryTransfersCompleted(), is(0));
       assertThat(results.getTotalPrimaryTransferTime(), is(0L));
-      assertThat(results.getRegionResult(parentRegionName).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(childRegionName).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(lowRedundancyRegionName).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
     });
 
     servers.forEach(s -> s.invoke(() -> {
-      assertRedundancyStatus(parentRegionName, true);
-      assertRedundancyStatus(childRegionName, true);
-      assertRedundancyStatus(lowRedundancyRegionName, true);
-      assertPrimariesBalanced(parentRegionName, serversToStart, false);
-      assertPrimariesBalanced(childRegionName, serversToStart, false);
-      assertPrimariesBalanced(lowRedundancyRegionName, serversToStart, false);
+      assertRedundancyStatus(PARENT_REGION_NAME, true);
+      assertRedundancyStatus(CHILD_REGION_NAME, true);
+      assertRedundancyStatus(LOW_REDUNDANCY_REGION_NAME, true);
+      assertPrimariesBalanced(PARENT_REGION_NAME, SERVERS_TO_START, false);
+      assertPrimariesBalanced(CHILD_REGION_NAME, SERVERS_TO_START, false);
+      assertPrimariesBalanced(LOW_REDUNDANCY_REGION_NAME, SERVERS_TO_START, false);
     }));
   }
 
@@ -166,21 +165,21 @@ public class RestoreRedundancyOperationDUnitTest {
   public void redundancyIsNotRecoveredAndPrimariesNotBalancedForExcludedNonColocatedRegion() {
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null,
-          Collections.singleton(lowRedundancyRegionName), false);
+          Collections.singleton(LOW_REDUNDANCY_REGION_NAME), true);
 
       assertThat(results.getStatus(), is(SUCCESS));
-      assertThat(results.getRegionResult(parentRegionName).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(childRegionName).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(lowRedundancyRegionName), nullValue());
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME), nullValue());
     });
 
     servers.forEach(s -> s.invoke(() -> {
-      assertRedundancyStatus(parentRegionName, true);
-      assertRedundancyStatus(childRegionName, true);
-      assertRedundancyStatus(lowRedundancyRegionName, false);
-      assertPrimariesBalanced(parentRegionName, serversToStart, true);
-      assertPrimariesBalanced(childRegionName, serversToStart, true);
-      assertPrimariesBalanced(lowRedundancyRegionName, serversToStart, false);
+      assertRedundancyStatus(PARENT_REGION_NAME, true);
+      assertRedundancyStatus(CHILD_REGION_NAME, true);
+      assertRedundancyStatus(LOW_REDUNDANCY_REGION_NAME, false);
+      assertPrimariesBalanced(PARENT_REGION_NAME, SERVERS_TO_START, true);
+      assertPrimariesBalanced(CHILD_REGION_NAME, SERVERS_TO_START, true);
+      assertPrimariesBalanced(LOW_REDUNDANCY_REGION_NAME, SERVERS_TO_START, false);
     }));
   }
 
@@ -194,46 +193,46 @@ public class RestoreRedundancyOperationDUnitTest {
       Set<String> excludeSet = excludeRegion == null ? null : Collections.singleton(excludeRegion);
 
       RestoreRedundancyResults results =
-          restoreRedundancyAndGetResults(includeSet, excludeSet, false);
+          restoreRedundancyAndGetResults(includeSet, excludeSet, true);
 
       assertThat(results.getStatus(), is(SUCCESS));
-      assertThat(results.getRegionResult(parentRegionName).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(childRegionName).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
     });
 
     servers.forEach(s -> s.invoke(() -> {
-      assertRedundancyStatus(parentRegionName, true);
-      assertRedundancyStatus(childRegionName, true);
-      assertPrimariesBalanced(parentRegionName, serversToStart, true);
-      assertPrimariesBalanced(childRegionName, serversToStart, true);
+      assertRedundancyStatus(PARENT_REGION_NAME, true);
+      assertRedundancyStatus(CHILD_REGION_NAME, true);
+      assertPrimariesBalanced(PARENT_REGION_NAME, SERVERS_TO_START, true);
+      assertPrimariesBalanced(CHILD_REGION_NAME, SERVERS_TO_START, true);
     }));
   }
 
   @Test
-  public void restoringRedundancyWithEnoughServersToCreateAtLeastOneRedundantCopyShouldReturnSuccessStatusAndBalancePrimaries() {
+  public void restoringRedundancyWithoutEnoughServersToFullySatisfyRedundancyShouldReturnFailureStatusAndBalancePrimaries() {
     servers.remove(servers.size() - 1).stop();
     int activeServers = servers.size();
 
     servers.get(0).invoke(() -> {
-      RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, false);
-      assertThat(results.getStatus(), is(SUCCESS));
-      assertThat(results.getRegionResult(parentRegionName).getStatus(), is(NOT_SATISFIED));
-      assertThat(results.getRegionResult(childRegionName).getStatus(), is(NOT_SATISFIED));
-      assertThat(results.getRegionResult(lowRedundancyRegionName).getStatus(), is(SATISFIED));
+      RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
+      assertThat(results.getStatus(), is(FAILURE));
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(NOT_SATISFIED));
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(NOT_SATISFIED));
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
     });
 
     servers.forEach(s -> s.invoke(() -> {
-      assertRedundancyStatus(parentRegionName, false);
-      assertRedundancyStatus(childRegionName, false);
-      assertRedundancyStatus(lowRedundancyRegionName, true);
-      assertPrimariesBalanced(parentRegionName, activeServers, true);
-      assertPrimariesBalanced(childRegionName, activeServers, true);
-      assertPrimariesBalanced(lowRedundancyRegionName, activeServers, true);
+      assertRedundancyStatus(PARENT_REGION_NAME, false);
+      assertRedundancyStatus(CHILD_REGION_NAME, false);
+      assertRedundancyStatus(LOW_REDUNDANCY_REGION_NAME, true);
+      assertPrimariesBalanced(PARENT_REGION_NAME, activeServers, true);
+      assertPrimariesBalanced(CHILD_REGION_NAME, activeServers, true);
+      assertPrimariesBalanced(LOW_REDUNDANCY_REGION_NAME, activeServers, true);
     }));
   }
 
   @Test
-  public void restoringRedundancyWithoutEnoughServersToCreateOneRedundancyCopyShouldReturnFailureStatus() {
+  public void restoringRedundancyWithoutEnoughServersToCreateAnyRedundantCopyShouldReturnFailureStatus() {
     // Stop the last two servers in the list and remove them from the list, leaving us with one
     // server
     servers.remove(servers.size() - 1).stop();
@@ -242,20 +241,20 @@ public class RestoreRedundancyOperationDUnitTest {
     assertThat(servers.size(), is(1));
 
     servers.get(0).invoke(() -> {
-      RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, false);
+      RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
       assertThat(results.getStatus(), is(FAILURE));
-      assertThat(results.getRegionResult(parentRegionName).getStatus(), is(NO_REDUNDANT_COPIES));
-      assertThat(results.getRegionResult(childRegionName).getStatus(), is(NO_REDUNDANT_COPIES));
-      assertThat(results.getRegionResult(lowRedundancyRegionName).getStatus(),
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(NO_REDUNDANT_COPIES));
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(NO_REDUNDANT_COPIES));
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(),
           is(NO_REDUNDANT_COPIES));
-      assertRedundancyStatus(parentRegionName, false);
-      assertRedundancyStatus(childRegionName, false);
-      assertRedundancyStatus(lowRedundancyRegionName, false);
+      assertRedundancyStatus(PARENT_REGION_NAME, false);
+      assertRedundancyStatus(CHILD_REGION_NAME, false);
+      assertRedundancyStatus(LOW_REDUNDANCY_REGION_NAME, false);
     });
   }
 
   private static RestoreRedundancyResults restoreRedundancyAndGetResults(
-      Set<String> includeRegions, Set<String> excludeRegions, boolean doNotReassignPrimaries)
+      Set<String> includeRegions, Set<String> excludeRegions, boolean shouldReassign)
       throws InterruptedException, ExecutionException {
     ResourceManager resourceManager =
         Objects.requireNonNull(ClusterStartupRule.getCache()).getResourceManager();
@@ -263,7 +262,7 @@ public class RestoreRedundancyOperationDUnitTest {
         .createRestoreRedundancyBuilder()
         .includeRegions(includeRegions)
         .excludeRegions(excludeRegions)
-        .doNotReassignPrimaries(doNotReassignPrimaries)
+        .setReassignPrimaries(shouldReassign)
         .start();
     assertThat(resourceManager.getRestoreRedundancyOperations().size(), is(1));
     assertThat(resourceManager.getRestoreRedundancyOperations().contains(redundancyOpFuture),
@@ -273,21 +272,21 @@ public class RestoreRedundancyOperationDUnitTest {
 
   private static Collection<Region<Object, Object>> createRegions() {
     Collection<Region<Object, Object>> regions = new HashSet<>();
-    PartitionAttributesImpl attributes = getAttributesWithRedundancy(desiredRedundancyCopies);
+    PartitionAttributesImpl attributes = getAttributesWithRedundancy(DESIRED_REDUNDANCY_COPIES);
     regions.add(Objects.requireNonNull(ClusterStartupRule.getCache())
         .createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(attributes)
-        .create(parentRegionName));
+        .create(PARENT_REGION_NAME));
 
-    attributes.setColocatedWith(parentRegionName);
+    attributes.setColocatedWith(PARENT_REGION_NAME);
     regions.add(Objects.requireNonNull(ClusterStartupRule.getCache())
         .createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(attributes)
-        .create(childRegionName));
+        .create(CHILD_REGION_NAME));
 
     PartitionAttributesImpl lowRedundancyAttributes =
-        getAttributesWithRedundancy(lowRedundancyCopies);
+        getAttributesWithRedundancy(LOW_REDUNDANCY_COPIES);
     regions.add(Objects.requireNonNull(ClusterStartupRule.getCache())
         .createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(lowRedundancyAttributes).create(lowRedundancyRegionName));
+        .setPartitionAttributes(lowRedundancyAttributes).create(LOW_REDUNDANCY_REGION_NAME));
 
     return regions;
   }
@@ -297,7 +296,7 @@ public class RestoreRedundancyOperationDUnitTest {
     attributes.setRedundantCopies(desiredRedundancy);
     attributes.setRecoveryDelay(-1);
     attributes.setStartupRecoveryDelay(-1);
-    attributes.setTotalNumBuckets(numBuckets);
+    attributes.setTotalNumBuckets(GLOBAL_MAX_BUCKETS_DEFAULT);
     return attributes;
   }
 
@@ -319,7 +318,7 @@ public class RestoreRedundancyOperationDUnitTest {
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
     int primariesOnServer = region.getLocalPrimaryBucketsListTestOnly().size();
     // Add one to account for integer rounding errors when dividing
-    int expectedPrimaries = 1 + numBuckets / numberOfServers;
+    int expectedPrimaries = 1 + GLOBAL_MAX_BUCKETS_DEFAULT / numberOfServers;
     // Because of the way reassigning primaries works, it is sometimes only possible to get the
     // difference between the most loaded member and the least loaded member to be 2, not 1 as would
     // be the case for perfect balance
@@ -337,12 +336,12 @@ public class RestoreRedundancyOperationDUnitTest {
   @SuppressWarnings("unused")
   private Object[] getIncludeAndExclude() {
     return new Object[] {
-        new Object[] {parentRegionName, null},
-        new Object[] {childRegionName, null},
-        new Object[] {childRegionName, parentRegionName},
-        new Object[] {parentRegionName, childRegionName},
-        new Object[] {null, parentRegionName},
-        new Object[] {null, childRegionName}
+        new Object[] {PARENT_REGION_NAME, null},
+        new Object[] {CHILD_REGION_NAME, null},
+        new Object[] {CHILD_REGION_NAME, PARENT_REGION_NAME},
+        new Object[] {PARENT_REGION_NAME, CHILD_REGION_NAME},
+        new Object[] {null, PARENT_REGION_NAME},
+        new Object[] {null, CHILD_REGION_NAME}
     };
   }
 }

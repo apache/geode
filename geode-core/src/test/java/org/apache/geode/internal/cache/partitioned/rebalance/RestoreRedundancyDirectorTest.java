@@ -48,13 +48,14 @@ public class RestoreRedundancyDirectorTest {
   @Test
   @Parameters({
       "true, true, true",
-      "false, true, false",
-      "false, false, true",
+      "false, true, true",
+      "false, false, false",
       "true, false, true"
   })
   public void isRebalanceNecessaryReturnsCorrectly(boolean redundancyImpaired,
-      boolean doNotReassignPrimaries, boolean expectedResult) {
-    RestoreRedundancyDirector director = spy(new RestoreRedundancyDirector(doNotReassignPrimaries));
+      boolean shouldReassignPrimaries, boolean expectedResult) {
+    RestoreRedundancyDirector director =
+        spy(new RestoreRedundancyDirector(shouldReassignPrimaries));
 
     assertThat(director.isRebalanceNecessary(redundancyImpaired, false), is(expectedResult));
   }
@@ -62,7 +63,7 @@ public class RestoreRedundancyDirectorTest {
   @Test
   public void initializeInitializesInternalDirectors() {
     RestoreRedundancyDirector director =
-        spy(new RestoreRedundancyDirector(false, removeOverRedundancy, satisfyRedundancy,
+        spy(new RestoreRedundancyDirector(true, removeOverRedundancy, satisfyRedundancy,
             reassignPrimaries));
 
     director.initialize(loadModel);
@@ -75,7 +76,7 @@ public class RestoreRedundancyDirectorTest {
   @Test
   public void nextStepReturnsFalseIfNoOperationAttempted() {
     RestoreRedundancyDirector director =
-        spy(new RestoreRedundancyDirector(false, removeOverRedundancy, satisfyRedundancy,
+        spy(new RestoreRedundancyDirector(true, removeOverRedundancy, satisfyRedundancy,
             reassignPrimaries));
 
     director.initialize(loadModel);
@@ -91,7 +92,7 @@ public class RestoreRedundancyDirectorTest {
   public void nextStepPerformsStepsInCorrectOrderOneAtATime() {
     // Correct order is: remove over redundancy, satisfy redundancy, reassign primaries
     RestoreRedundancyDirector director =
-        spy(new RestoreRedundancyDirector(false, removeOverRedundancy, satisfyRedundancy,
+        spy(new RestoreRedundancyDirector(true, removeOverRedundancy, satisfyRedundancy,
             reassignPrimaries));
 
     director.initialize(loadModel);
@@ -123,7 +124,7 @@ public class RestoreRedundancyDirectorTest {
   @Test
   public void nextStepReturnsTrueIfOperationWasAttempted() {
     RestoreRedundancyDirector director =
-        spy(new RestoreRedundancyDirector(false, removeOverRedundancy, satisfyRedundancy,
+        spy(new RestoreRedundancyDirector(true, removeOverRedundancy, satisfyRedundancy,
             reassignPrimaries));
 
     director.initialize(loadModel);
@@ -144,9 +145,9 @@ public class RestoreRedundancyDirectorTest {
   }
 
   @Test
-  public void nextStepDoesNotAttemptToReassignPrimariesWhenDoNotReassignPrimariesIsTrue() {
+  public void nextStepDoesNotAttemptToReassignPrimariesWhenReassignPrimariesIsFalse() {
     RestoreRedundancyDirector director =
-        spy(new RestoreRedundancyDirector(true, removeOverRedundancy, satisfyRedundancy,
+        spy(new RestoreRedundancyDirector(false, removeOverRedundancy, satisfyRedundancy,
             reassignPrimaries));
 
     director.initialize(loadModel);

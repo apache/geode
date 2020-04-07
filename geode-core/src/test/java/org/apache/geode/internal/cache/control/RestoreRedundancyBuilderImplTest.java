@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.ERROR;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,12 +39,9 @@ import org.junit.Test;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
-import org.apache.geode.internal.serialization.Version;
 
 public class RestoreRedundancyBuilderImplTest {
   InternalCache cache;
@@ -65,12 +59,6 @@ public class RestoreRedundancyBuilderImplTest {
     when(cache.getInternalResourceManager()).thenReturn(manager);
     when(manager.getStats()).thenReturn(stats);
     when(stats.startRestoreRedundancy()).thenReturn(startTime);
-
-    // This allows us to pass the hasMemberOlderThanGeode_1_13_0() method
-    InternalDistributedMember currentMember = mock(InternalDistributedMember.class);
-    when(currentMember.getVersionObject()).thenReturn(Version.CURRENT);
-    Set<DistributedMember> members = Collections.singleton(currentMember);
-    when(cache.getMembers()).thenReturn(members);
 
     builder = spy(new RestoreRedundancyBuilderImpl(cache));
 
@@ -95,7 +83,7 @@ public class RestoreRedundancyBuilderImplTest {
     doReturn(op).when(builder).getPartitionedRegionRebalanceOp(region);
     when(op.execute()).thenReturn(new HashSet<>());
 
-    RestoreRedundancyRegionResult regionResult = mock(RestoreRedundancyRegionResult.class);
+    RegionRedundancyStatus regionResult = mock(RegionRedundancyStatus.class);
     doReturn(regionResult).when(builder).getRegionResult(region);
 
     builder.doRestoreRedundancy(region);
@@ -129,8 +117,8 @@ public class RestoreRedundancyBuilderImplTest {
     when(cache.getRegion(regionPath1)).thenReturn(detailRegion1);
     when(cache.getRegion(regionPath2)).thenReturn(detailRegion2);
 
-    RestoreRedundancyRegionResult regionResult1 = mock(RestoreRedundancyRegionResult.class);
-    RestoreRedundancyRegionResult regionResult2 = mock(RestoreRedundancyRegionResult.class);
+    RegionRedundancyStatus regionResult1 = mock(RegionRedundancyStatus.class);
+    RegionRedundancyStatus regionResult2 = mock(RegionRedundancyStatus.class);
     doReturn(regionResult1).when(builder).getRegionResult(detailRegion1);
     doReturn(regionResult2).when(builder).getRegionResult(detailRegion2);
 
@@ -160,21 +148,6 @@ public class RestoreRedundancyBuilderImplTest {
 
     verify(emptyResults, times(1)).addRegionResults(result1);
     verify(emptyResults, times(1)).addRegionResults(result2);
-  }
-
-  @Test
-  public void startReturnsErrorRestoreRedundancyResultWhenSystemHasOldMember()
-      throws ExecutionException, InterruptedException {
-    InternalDistributedMember oldMember = mock(InternalDistributedMember.class);
-    when(oldMember.getVersionObject()).thenReturn(Version.GEODE_1_12_0);
-    Set<DistributedMember> members = Collections.singleton(oldMember);
-    when(cache.getMembers()).thenReturn(members);
-
-    CompletableFuture<RestoreRedundancyResults> resultFuture = builder.start();
-    RestoreRedundancyResults result = resultFuture.get();
-
-    assertThat(result.getStatus(), is(ERROR));
-    assertThat(result.getMessage(), containsString(Version.GEODE_1_13_0.toString()));
   }
 
   @Test

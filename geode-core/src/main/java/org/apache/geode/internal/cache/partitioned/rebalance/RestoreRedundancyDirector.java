@@ -29,20 +29,20 @@ public class RestoreRedundancyDirector extends RebalanceDirectorAdapter {
   private boolean finishedOverRedundancy;
   private boolean finishedSatisfyRedundancy;
   private boolean finishedReassignPrimaries;
-  private boolean doNotReassignPrimaries;
+  private boolean reassignPrimaries;
 
-  public RestoreRedundancyDirector(boolean shouldNotReassign) {
-    doNotReassignPrimaries = shouldNotReassign;
+  public RestoreRedundancyDirector(boolean shouldReassign) {
+    reassignPrimaries = shouldReassign;
     removeOverRedundancyDirector = new RemoveOverRedundancy();
     satisfyRedundancyDirector = new SatisfyRedundancy();
     reassignPrimariesDirector = new MovePrimaries();
   }
 
   // Constructor to allow mocks to be passed in for testing
-  RestoreRedundancyDirector(boolean shouldNotReassign,
+  RestoreRedundancyDirector(boolean shouldReassign,
       RemoveOverRedundancy removeOverRedundancyDirector,
       SatisfyRedundancy satisfyRedundancyDirector, MovePrimaries reassignPrimariesDirector) {
-    this.doNotReassignPrimaries = shouldNotReassign;
+    this.reassignPrimaries = shouldReassign;
     this.removeOverRedundancyDirector = removeOverRedundancyDirector;
     this.satisfyRedundancyDirector = satisfyRedundancyDirector;
     this.reassignPrimariesDirector = reassignPrimariesDirector;
@@ -51,12 +51,12 @@ public class RestoreRedundancyDirector extends RebalanceDirectorAdapter {
   @Override
   public boolean isRebalanceNecessary(boolean redundancyImpaired, boolean withPersistence) {
     // We can skip restoring redundancy if redundancy is not impaired
-    return redundancyImpaired || !doNotReassignPrimaries;
+    return redundancyImpaired || reassignPrimaries;
   }
 
   @Override
   public void initialize(PartitionedRegionLoadModel model) {
-    this.finishedReassignPrimaries = this.doNotReassignPrimaries;
+    this.finishedReassignPrimaries = !this.reassignPrimaries;
     this.removeOverRedundancyDirector.initialize(model);
     this.satisfyRedundancyDirector.initialize(model);
     this.reassignPrimariesDirector.initialize(model);
