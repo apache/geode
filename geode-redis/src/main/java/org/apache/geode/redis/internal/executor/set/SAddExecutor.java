@@ -17,9 +17,6 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -32,42 +29,22 @@ public class SAddExecutor extends SetExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    AtomicLong entriesAdded = new AtomicLong(0L);
+    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
-    if (commandElems.size() < 3) {
+    if (commandElements.size() < 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SADD));
       return;
     }
 
     ByteArrayWrapper key = command.getKey();
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
+    RedisSet geodeRedisSet = new GeodeRedisSetSynchronized(key, context);
+    Set<ByteArrayWrapper> membersToAdd =
+        new HashSet<>(commandElements.subList(2, commandElements.size()));
+
+    long entriesAdded = geodeRedisSet.sadd(membersToAdd);
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), entriesAdded));
 
     // Save key
     context.getKeyRegistrar().register(command.getKey(), RedisDataType.REDIS_SET);
-
-    region.compute(
-        key,
-        (ByteArrayWrapper localKey, Set<ByteArrayWrapper> oldSetValue) -> {
-          entriesAdded.set(0L);
-          Set<ByteArrayWrapper> setCopy;
-          if (oldSetValue == null) {
-            setCopy = new HashSet<>();
-          } else {
-            setCopy = new HashSet<>(oldSetValue);
-          }
-
-          for (int i = 2; i < commandElems.size(); i++) {
-            if (setCopy.add(new ByteArrayWrapper(commandElems.get(i)))) {
-              entriesAdded.incrementAndGet();
-            }
-          }
-
-          return setCopy;
-        });
-
-    command
-        .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), entriesAdded.get()));
-
   }
 }

@@ -306,7 +306,7 @@ public class GeodeRedisServer {
    * @return {@link RegionShortcut}
    */
   private static RegionShortcut setRegionType() {
-    String regionType = System.getProperty(DEFAULT_REGION_SYS_PROP_NAME, "PARTITION");
+    String regionType = System.getProperty(DEFAULT_REGION_SYS_PROP_NAME, "REPLICATE");
     RegionShortcut type;
     try {
       type = RegionShortcut.valueOf(regionType);

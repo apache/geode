@@ -14,13 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
@@ -44,30 +40,7 @@ public class SMembersExecutor extends SetExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
 
-    Set<ByteArrayWrapper> members;
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
-
-      // companies:ea64fe8c-e0a0-4439-a05d-d0738dd5ef80:idx
-      Set<ByteArrayWrapper> set = region.get(key);
-
-      if (set == null) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-        return;
-      }
-
-      members = new HashSet<>(set); // Emulate copy on read
-
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
+    Set<ByteArrayWrapper> members = new GeodeRedisSetSynchronized(key, context).members();
 
     try {
       command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), members));
@@ -76,4 +49,6 @@ public class SMembersExecutor extends SetExecutor {
           RedisConstants.SERVER_ERROR_MESSAGE));
     }
   }
+
+
 }

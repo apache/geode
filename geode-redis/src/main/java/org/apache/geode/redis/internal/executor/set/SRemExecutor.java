@@ -15,11 +15,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.List;
-import java.util.Set;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -28,12 +24,9 @@ import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class SRemExecutor extends SetExecutor {
-
-  private static final int NONE_REMOVED = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
+    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     if (commandElems.size() < 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SREM));
@@ -42,36 +35,8 @@ public class SRemExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
-
-    int numRemoved = 0;
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Set<ByteArrayWrapper> set = region.get(key);
-
-      if (set == null || set.isEmpty()) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NONE_REMOVED));
-        return;
-      }
-
-      for (int i = 2; i < commandElems.size(); i++) {
-        if (set.remove(new ByteArrayWrapper(commandElems.get(i)))) {
-          numRemoved++;
-        }
-      }
-
-      region.put(key, set);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
-
+    RedisSet set = new GeodeRedisSetSynchronized(key, context);
+    long numRemoved = set.srem(commandElems.subList(2, commandElems.size()));
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }
 }
