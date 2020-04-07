@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -123,7 +123,7 @@ public class RegionAlterFunctionTest {
   public void updateWithEmptyRegionAttributes() {
     // the regionAttributes starts with no values inside
     function.alterRegion(cache, config);
-    verifyZeroInteractions(mutator);
+    verifyNoInteractions(mutator);
   }
 
   @Test

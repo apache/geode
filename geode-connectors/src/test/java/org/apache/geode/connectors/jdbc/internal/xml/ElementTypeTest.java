@@ -30,7 +30,7 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Stack;
@@ -89,7 +89,7 @@ public class ElementTypeTest {
     when(regionCreation.getFullPath()).thenReturn("/region");
     stack.push(regionCreation);
 
-    ElementType.JDBC_MAPPING.startElement(stack, attributes);
+    JDBC_MAPPING.startElement(stack, attributes);
 
     RegionMapping regionMapping = (RegionMapping) stack.pop();
     assertThat(regionMapping.getRegionName()).isEqualTo("region");
@@ -107,7 +107,7 @@ public class ElementTypeTest {
     stack.push(regionCreation);
     stack.push(mapping);
 
-    ElementType.JDBC_MAPPING.endElement(stack);
+    JDBC_MAPPING.endElement(stack);
 
     assertThat(stack.size()).isEqualTo(1);
   }
@@ -133,7 +133,7 @@ public class ElementTypeTest {
     FieldMapping expected =
         new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myJdbcType", true);
 
-    ElementType.FIELD_MAPPING.startElement(stack, attributes);
+    FIELD_MAPPING.startElement(stack, attributes);
 
     RegionMapping mapping1 = (RegionMapping) stack.pop();
     assertThat(mapping1.getFieldMappings()).isEqualTo(singletonList(expected));
@@ -144,9 +144,9 @@ public class ElementTypeTest {
     RegionMapping mapping = mock(RegionMapping.class);
     stack.push(mapping);
 
-    ElementType.FIELD_MAPPING.endElement(stack);
+    FIELD_MAPPING.endElement(stack);
 
     assertThat(stack.size()).isEqualTo(1);
-    verifyZeroInteractions(mapping);
+    verifyNoInteractions(mapping);
   }
 }

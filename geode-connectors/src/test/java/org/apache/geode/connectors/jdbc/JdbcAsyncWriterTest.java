@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public class JdbcAsyncWriterTest {
   public void doesNothingIfEventListIsEmpty() {
     writer.processEvents(Collections.emptyList());
 
-    verifyZeroInteractions(sqlHandler);
+    verifyNoInteractions(sqlHandler);
     assertThat(writer.getSuccessfulEvents()).isZero();
     assertThat(writer.getTotalEvents()).isZero();
   }
