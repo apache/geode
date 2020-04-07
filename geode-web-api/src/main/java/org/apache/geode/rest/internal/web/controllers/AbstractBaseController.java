@@ -604,7 +604,7 @@ public abstract class AbstractBaseController implements InitializingBean {
 
     if (StringUtils.hasText(existingKey)) {
       newKey = existingKey;
-      if (NumberUtils.isNumeric(newKey) && domainObjectId == null) {
+      if (domainObject != null && NumberUtils.isNumeric(newKey) && domainObjectId == null) {
         final Long newId = IdentifiableUtils.createId(NumberUtils.parseLong(newKey));
         if (newKey.equals(newId.toString())) {
           IdentifiableUtils.setId(domainObject, newId);

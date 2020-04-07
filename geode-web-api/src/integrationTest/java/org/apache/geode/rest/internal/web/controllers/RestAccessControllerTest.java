@@ -201,14 +201,39 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
+        .andExpect(content().string(""))
         .andExpect(header().string("Location", BASE_URL + "/orders/1"));
 
     mockMvc.perform(post("/v1/orders?key=1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(content().json(jsonResources.get(ORDER1_JSON)));
 
     Order order = (Order) ((PdxInstance) orderRegion.get("1")).getObject();
+    assertThat(order).as("order should not be null").isNotNull();
+  }
+
+  @Test
+  @WithMockUser
+  public void createEntryWithEncodedKey() throws Exception {
+    String decodedKey = createKey(1);
+    String encodedKey = encodeKey(decodedKey);
+    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isCreated())
+        .andExpect(content().string(""))
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
+
+    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isConflict())
+        .andExpect(content().json(jsonResources.get(ORDER1_JSON)))
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
+
+    Order order = (Order) ((PdxInstance) orderRegion.get(decodedKey)).getObject();
     assertThat(order).as("order should not be null").isNotNull();
   }
 
@@ -219,15 +244,43 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
+        .andExpect(content().string(""))
         .andExpect(header().string("Location", BASE_URL + "/orders/1"));
 
     mockMvc.perform(post("/v1/orders?key=1")
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(content().json(jsonResources.get(ORDER1_ARRAY_JSON)));
+
 
     @SuppressWarnings("unchecked")
     List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get("1");
+    Order order = (Order) entries.get(0).getObject();
+    assertThat(order).as("order should not be null").isNotNull();
+  }
+
+  @Test
+  @WithMockUser
+  public void createEntryWithJsonArrayOfOrdersWithEncodedKey() throws Exception {
+    String decodedKey = createKey(1);
+    String encodedKey = encodeKey(decodedKey);
+    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
+        .content(jsonResources.get(ORDER1_ARRAY_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isCreated())
+        .andExpect(content().string(""))
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
+
+    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
+        .content(jsonResources.get(ORDER1_ARRAY_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isConflict())
+        .andExpect(content().json(jsonResources.get(ORDER1_ARRAY_JSON)))
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
+
+    @SuppressWarnings("unchecked")
+    List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get(decodedKey);
     Order order = (Order) entries.get(0).getObject();
     assertThat(order).as("order should not be null").isNotNull();
   }
@@ -513,6 +566,30 @@ public class RestAccessControllerTest {
         .andExpect(status().isNotFound())
         .andExpect(
             jsonPath("$.cause", is("The Region identified by name (unknown) could not be found!")));
+  }
+
+  @Test
+  @WithMockUser
+  public void failPutWithInvalidOp() throws Exception {
+    mockMvc.perform(put("/v1/orders/1?op=BOGUS")
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.cause", is(
+                "The op parameter (BOGUS) is not valid. Valid values are PUT, REPLACE, or CAS.")));
+  }
+
+  @Test
+  @WithMockUser
+  public void failPutWithKeyParamWithInvalidOp() throws Exception {
+    mockMvc.perform(put("/v1/orders?op=BOGUS&keys=1")
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.cause", is(
+                "The op parameter (BOGUS) is not valid. Valid values are PUT, CREATE, REPLACE, or CAS.")));
   }
 
   @Test

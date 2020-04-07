@@ -16,7 +16,7 @@
 package org.apache.geode.rest.internal.web.controllers.support;
 
 /**
- * UpdateOp contains all posible update operation supported with REST APIs
+ * UpdateOp contains all possible update operation supported with REST APIs
  */
 
 @SuppressWarnings("unused")

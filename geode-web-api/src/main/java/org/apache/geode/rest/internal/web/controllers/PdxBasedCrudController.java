@@ -42,6 +42,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
 import org.apache.geode.rest.internal.web.controllers.support.RegionData;
 import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.controllers.support.UpdateOp;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 
@@ -79,7 +80,8 @@ public class PdxBasedCrudController extends CommonCrudController {
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{region}",
       consumes = APPLICATION_JSON_UTF8_VALUE, produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region")
+  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region."
+      + " The key is not decoded so if the key contains special characters use PUT /{region}?keys=EncodedKey&op=CREATE.")
   @ApiResponses({@ApiResponse(code = 201, message = "Created."),
       @ApiResponse(code = 400,
           message = "Data specified (JSON doc) in the request body is invalid."),
@@ -92,12 +94,14 @@ public class PdxBasedCrudController extends CommonCrudController {
   public ResponseEntity<?> create(@PathVariable("region") String region,
       @RequestParam(value = "key", required = false) String key, @RequestBody final String json) {
     key = generateKey(key);
-
-    logger.debug(
-        "Posting (creating/putIfAbsent) JSON document ({}) to Region ({}) with Key ({})...", json,
-        region, key);
-
     region = decode(region);
+    return create(region, key, json, false);
+  }
+
+  private ResponseEntity<?> create(String region, String key, String json,
+      boolean keyInQueryParam) {
+    logger.debug("Create JSON document ({}) in Region ({}) with Key ({})...", json, region, key);
+
     Object existingPdxObj;
 
     // Check whether the user has supplied single JSON doc or Array of JSON docs
@@ -109,7 +113,11 @@ public class PdxBasedCrudController extends CommonCrudController {
     }
 
     final HttpHeaders headers = new HttpHeaders();
-    headers.setLocation(toUri(region, key));
+    if (keyInQueryParam) {
+      headers.setLocation(toUriWithKeys(new String[] {encode(key)}, region));
+    } else {
+      headers.setLocation(toUri(region, key));
+    }
 
     if (existingPdxObj != null) {
       final RegionEntryData<Object> data = new RegionEntryData<>(region);
@@ -128,7 +136,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @param region gemfire region name
    * @param limit total number of entries requested
    * @param encodedKeys an optional comma separated list of encoded keys to read
-   * @param ignoreMissingKey if true and reading more than on ekey then if a key is missing ignore
+   * @param ignoreMissingKey if true and reading more than one key then if a key is missing ignore
    *        it
    * @return JSON document
    */
@@ -136,7 +144,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       produces = APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read all data for region or the specified keys",
       notes = "If reading all data for region then the limit parameter can be used to give the maximum number of values to return."
-          + "If reading specific keys then the ignoreMissingKey parameter can be used to not fail if a key is missing.")
+          + " If reading specific keys then the ignoreMissingKey parameter can be used to not fail if a key is missing.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -330,7 +338,7 @@ public class PdxBasedCrudController extends CommonCrudController {
           APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "update data for key",
       notes = "Update or insert (put) data for keys in a region."
-          + " deprecated in favor of /{region}?keys=."
+          + " Deprecated in favor of /{region}?keys=."
           + " If op=REPLACE, update (replace) data with key if and only if the key exists in the region."
           + " If op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -350,6 +358,12 @@ public class PdxBasedCrudController extends CommonCrudController {
     logger.debug("updating key(s) for region ({}) ", region);
 
     region = decode(region);
+    if (!validOp(opValue)) {
+      String errorMessage = String.format(
+          "The op parameter (%1$s) is not valid. Valid values are PUT, REPLACE, or CAS.",
+          opValue);
+      return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+    }
 
     if (keys.length > 1) {
       // putAll case
@@ -367,10 +381,19 @@ public class PdxBasedCrudController extends CommonCrudController {
     }
   }
 
+  private boolean validOp(String opValue) {
+    try {
+      UpdateOp.valueOf(opValue.toUpperCase());
+      return true;
+    } catch (IllegalArgumentException ex) {
+      return false;
+    }
+  }
+
   /**
    * Update data for a key or set of keys
    *
-   * @param region gemfire data region
+   * @param encodedRegion gemfire data region
    * @param encodedKeys comma separated list of keys
    * @param opValue type of update (put, replace, cas etc)
    * @param json new data for the key(s)
@@ -382,16 +405,21 @@ public class PdxBasedCrudController extends CommonCrudController {
   @ApiOperation(value = "update data for key(s)",
       notes = "Update or insert (put) data for keys in a region."
           + " The keys are a comma separated list."
-          + " If op=REPLACE, update (replace) data with key if and only if the key exists in the region."
-          + " If op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
+          + " If multiple keys are given then put (create or update) the data for each key."
+          + " The op parameter is ignored if more than one key is given."
+          + " If op=PUT, the default, create or update data for the given key."
+          + " If op=CREATE, create data for the given key if and only if the key does not exit in the region."
+          + " If op=REPLACE, update (replace) data for the given key if and only if the key exists in the region."
+          + " If op=CAS, update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
+      @ApiResponse(code = 201, message = "For op=CREATE on success."),
       @ApiResponse(code = 400, message = "Bad Request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
       @ApiResponse(code = 404,
           message = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
       @ApiResponse(code = 409,
-          message = "For CAS, @old value does not match to the current value in region"),
+          message = "For op=CREATE, key already exist in region. For op=CAS, @old value does not match to the current value in region."),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   public ResponseEntity<?> updateKeys(@PathVariable("region") final String encodedRegion,
       @RequestParam(value = "keys") final String[] encodedKeys,
@@ -400,17 +428,28 @@ public class PdxBasedCrudController extends CommonCrudController {
 
     String decodedRegion = decode(encodedRegion);
     String[] decodedKeys = decode(encodedKeys);
-    securityService.authorize("WRITE", decodedRegion, decodedKeys);
-    logger.debug("updating keys ({}) for region ({}) op={}", decodedKeys, decodedRegion, opValue);
+    if (!validOp(opValue) && !opValue.equalsIgnoreCase("CREATE")) {
+      String errorMessage = String.format(
+          "The op parameter (%1$s) is not valid. Valid values are PUT, CREATE, REPLACE, or CAS.",
+          opValue);
+      return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+    }
 
     if (decodedKeys.length > 1) {
       // putAll case
+      logger.debug("updating keys ({}) for region ({}) op={}", decodedKeys, decodedRegion, opValue);
+      securityService.authorize("WRITE", decodedRegion, decodedKeys);
       updateMultipleKeys(decodedRegion, decodedKeys, json);
       HttpHeaders headers = new HttpHeaders();
       headers.setLocation(toUriWithKeys(encodedKeys, encodedRegion));
       return new ResponseEntity<>(headers, HttpStatus.OK);
+    } else if (opValue.equalsIgnoreCase("CREATE")) {
+      securityService.authorize("DATA", "WRITE", decodedRegion);
+      return create(decodedRegion, decodedKeys[0], json, true);
     } else {
       // put case
+      logger.debug("updating keys ({}) for region ({}) op={}", decodedKeys, decodedRegion, opValue);
+      securityService.authorize("WRITE", decodedRegion, decodedKeys);
       Object existingValue = updateSingleKey(decodedRegion, decodedKeys[0], json, opValue);
       final HttpHeaders headers = new HttpHeaders();
       headers.setLocation(toUriWithKeys(encodedKeys, encodedRegion));
