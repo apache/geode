@@ -14,18 +14,21 @@
  */
 package org.apache.geode.internal.cache;
 
-
+import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.concurrency.Utilities.availableProcessors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Operation;
@@ -36,10 +39,13 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
 
-
 @RunWith(ConcurrentTestRunner.class)
 public class CacheDistributionAdvisorConcurrentTest {
+
   private final int count = availableProcessors() * 2;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Test
   public void getAdviseAllEventsOrCachedForConcurrentUpdateShouldSucceed(
@@ -87,17 +93,24 @@ public class CacheDistributionAdvisorConcurrentTest {
     CacheDistributionAdvisee advisee = mock(CacheDistributionAdvisee.class);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(advisee.getCancelCriterion()).thenReturn(cancelCriterion);
+
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(advisee.getDistributionManager()).thenReturn(distributionManager);
+
     CacheDistributionAdvisor result =
         CacheDistributionAdvisor.createCacheDistributionAdvisor(advisee);
     when(advisee.getDistributionAdvisor()).thenReturn(result);
+
     return result;
   }
 
   private CacheProfile createCacheProfile() throws UnknownHostException {
     InternalDistributedMember member =
-        new InternalDistributedMember(InetAddress.getLocalHost(), 0, false, false);
+        new InternalDistributedMember(getLocalHost(), 0, false, false);
     return new CacheProfile(member, 1);
+  }
+
+  private static <T> T mock(Class<T> classToMock) {
+    return Mockito.mock(classToMock, withSettings().stubOnly());
   }
 }

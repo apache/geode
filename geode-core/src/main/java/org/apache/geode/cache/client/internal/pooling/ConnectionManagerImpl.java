@@ -263,7 +263,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
-        PooledConnection connection = availableConnectionManager.useFirst();
+        Connection connection = availableConnectionManager.useFirst();
         if (null != connection) {
           return connection;
         }
@@ -302,12 +302,12 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   @Override
-  public PooledConnection borrowConnection(ServerLocation server, long acquireTimeout,
+  public Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx)
       throws AllConnectionsInUseException, NoAvailableServersException,
       ServerConnectivityException {
 
-    PooledConnection connection;
+    Connection connection;
     logger.trace("Connection borrowConnection single hop connection");
 
     long waitStart = NOT_WAITING;
@@ -353,7 +353,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       throws AllConnectionsInUseException {
 
     try {
-      PooledConnection connection = availableConnectionManager
+      Connection connection = availableConnectionManager
           .useFirst((c) -> !excludedServers.contains(c.getServer()));
       if (null != connection) {
         return connection;

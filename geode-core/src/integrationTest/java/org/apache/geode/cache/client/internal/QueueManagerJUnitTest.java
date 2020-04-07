@@ -753,8 +753,23 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
+    public long getBirthDate() {
+      return 0;
+    }
+
+    @Override
+    public void setBirthDate(long ts) {
+
+    }
+
+    @Override
     public ConnectionStats getStats() {
       return null;
+    }
+
+    @Override
+    public boolean isActive() {
+      return false;
     }
 
     @Override

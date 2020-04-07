@@ -39,7 +39,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -198,7 +198,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     });
 
     managerVM.invoke(() -> {
-      verifyZeroInteractions(notificationListener);
+      verifyNoMoreInteractions(notificationListener);
     });
   }
 
@@ -245,7 +245,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     });
 
     managerVM.invoke(() -> {
-      verifyZeroInteractions(notificationListener);
+      verifyNoMoreInteractions(notificationListener);
     });
   }
 
@@ -333,7 +333,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     }
 
     managerVM.invoke(() -> {
-      verifyZeroInteractions(notificationListener);
+      verifyNoMoreInteractions(notificationListener);
     });
   }
 
@@ -363,7 +363,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     // managerVM should have missed the alerts from BEFORE it started
 
     managerVM.invoke(() -> {
-      verifyZeroInteractions(notificationListener);
+      verifyNoMoreInteractions(notificationListener);
     });
 
     // managerVM should now receive any new alerts though

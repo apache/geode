@@ -21,7 +21,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -220,6 +220,6 @@ public class ExecuteFunction65Test {
     executeFunction65.cmdExecute(message, serverConnection, securityService, 0);
 
     verify(securityService).authorize(ResourcePermissions.DATA_WRITE);
-    verifyZeroInteractions(serverToClientFunctionResultSender65Factory);
+    verifyNoMoreInteractions(serverToClientFunctionResultSender65Factory);
   }
 }

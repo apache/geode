@@ -18,7 +18,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -93,7 +93,7 @@ public class VMEventNotifierTest {
     notifiedFuture.get(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
     verify(vmEventListener1).afterCreateVM(eq(vm));
-    verifyZeroInteractions(vmEventListener2);
+    verifyNoMoreInteractions(vmEventListener2);
   }
 
   @Test

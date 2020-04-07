@@ -25,7 +25,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
@@ -191,7 +190,7 @@ public class SingleThreadColocationLoggerTest {
 
     colocationLogger.addMissingChildRegion("/childRegion");
 
-    verifyZeroInteractions(logger);
+    verifyNoMoreInteractions(logger);
   }
 
   @Test

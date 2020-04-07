@@ -36,9 +36,15 @@ public interface Connection {
 
   Socket getSocket();
 
+  long getBirthDate();
+
+  void setBirthDate(long ts);
+
   ByteBuffer getCommBuffer() throws SocketException;
 
   ConnectionStats getStats();
+
+  boolean isActive();
 
   /**
    * Forcefully close the resources used by this connection. This should be called if the connection
