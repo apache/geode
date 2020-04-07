@@ -2174,10 +2174,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           prepareDiskStoresForClose();
 
-          List<InternalRegion> rootRegionValues;
-
-          rootRegionValues = new ArrayList<>(rootRegions.values());
-
           Operation op;
           if (forcedDisconnect) {
             op = Operation.FORCED_DISCONNECT;
@@ -2189,7 +2185,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           InternalRegion prRoot = null;
 
-          for (InternalRegion lr : rootRegionValues) {
+          for (InternalRegion lr : rootRegions.values()) {
             if (isDebugEnabled) {
               logger.debug("{}: processing region {}", this, lr.getFullPath());
             }
@@ -2903,6 +2899,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         getCancelCriterion().checkCancelInProgress(null);
 
         Future<InternalRegion> future = null;
+        // synchronize the block because rootRegions get and then put have to stay together as an atomic operation
         synchronized (rootRegions) {
           region = rootRegions.get(name);
           if (region != null) {
@@ -2937,6 +2934,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             }
 
             rootRegions.put(name, region);
+            // Note that rootRegions is a ConcurrentMap. After rootRegions.put(name, region),
+            // the ConcurrentMap entry is now available for the other threads to consume,
+            // although rootRegions.put(name, region) is still in a synchronized block.
             if (isReInitCreate) {
               regionReinitialized(region);
             }
