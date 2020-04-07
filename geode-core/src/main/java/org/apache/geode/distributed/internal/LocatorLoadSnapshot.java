@@ -85,10 +85,6 @@ public class LocatorLoadSnapshot {
     }
   }
 
-  public void addServer(ServerLocation location, String[] groups, ServerLoad initialLoad) {
-    addServer(location, "", groups, initialLoad, 30000);
-  }
-
   /**
    * Add a new server to the load snapshot.
    */
