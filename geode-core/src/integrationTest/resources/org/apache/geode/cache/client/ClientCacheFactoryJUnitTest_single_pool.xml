@@ -27,5 +27,14 @@
   version="1.0">
   <pool name="my_pool_name" multiuser-authentication="true">
     <server host="localhost" port="40404"/>
+    <socket-factory>
+      <class-name>org.apache.geode.cache.client.proxy.SniSocketFactory</class-name>
+      <parameter name="hostname">
+        <string>localhost</string>
+      </parameter>
+      <parameter name="port">
+        <string>40404</string>
+      </parameter>
+    </socket-factory>
   </pool>
 </client-cache>

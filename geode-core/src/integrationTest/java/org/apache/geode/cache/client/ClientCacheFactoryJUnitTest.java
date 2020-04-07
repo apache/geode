@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -52,6 +53,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.UserAttributes;
+import org.apache.geode.cache.client.proxy.SniSocketFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -62,6 +64,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.ClientCacheCreation;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
@@ -127,7 +130,7 @@ public class ClientCacheFactoryJUnitTest {
   }
 
   @Test
-  public void test001FindDefaultFromXML() throws Exception {
+  public void test001FindDefaultPoolFromXML() throws Exception {
     File cacheXmlFile = temporaryFolder.newFile("ClientCacheFactoryJUnitTest.xml");
     URL url = ClientCacheFactoryJUnitTest.class
         .getResource("ClientCacheFactoryJUnitTest_single_pool.xml");
@@ -149,6 +152,11 @@ public class ClientCacheFactoryJUnitTest {
         .isEqualTo(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT);
     assertThat(defPool.getServers()).isEqualTo(
         Collections.singletonList(new InetSocketAddress("localhost", CacheServer.DEFAULT_PORT)));
+
+    assertThat(defPool.getSocketFactory()).isInstanceOf(SniSocketFactory.class);
+    Socket socket = defPool.getSocketFactory().createSocket();
+    assertThat(socket.getPort()).isEqualTo(12345);
+    assertThat(socket.getInetAddress()).isEqualTo(LocalHostUtil.getLocalHost());
   }
 
   /**

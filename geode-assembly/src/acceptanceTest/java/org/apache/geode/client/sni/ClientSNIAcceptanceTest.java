@@ -97,5 +97,6 @@ public class ClientSNIAcceptanceTest {
     region.destroy("hello");
     region.put("hello", "world");
     assertThat(region.get("hello")).isEqualTo("world");
+    assertThat(region.get("foo")).isEqualTo("bar");
   }
 }
