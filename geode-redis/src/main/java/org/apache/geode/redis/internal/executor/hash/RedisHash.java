@@ -22,8 +22,7 @@ import java.util.Map;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
 public interface RedisHash {
-  int hset(List<ByteArrayWrapper> fieldsToSet,
-      boolean NX);
+  int hset(List<ByteArrayWrapper> fieldsToSet, boolean NX);
 
   int hdel(List<ByteArrayWrapper> subList);
 

@@ -39,7 +39,7 @@ class GeodeRedisHashSynchronized implements RedisHash {
 
   @Override
   public int hset(List<ByteArrayWrapper> fieldsToSet,
-      boolean NX) {
+                  boolean NX) {
     AtomicInteger fieldsAdded = new AtomicInteger();
 
     Map<ByteArrayWrapper, ByteArrayWrapper> computedHash =
@@ -57,18 +57,17 @@ class GeodeRedisHashSynchronized implements RedisHash {
             ByteArrayWrapper field = fieldsToSet.get(i);
             ByteArrayWrapper value = fieldsToSet.get(i + 1);
 
-            Object abc;
             if (NX) {
-              abc = newHash.putIfAbsent(field, value);
+              newHash.putIfAbsent(field, value);
             } else {
-              abc = newHash.put(field, value);
-            }
-
-            if (abc == null) {
-              fieldsAdded.getAndIncrement();
+              newHash.put(field, value);
             }
           }
-
+          if (oldHash == null) {
+            fieldsAdded.set(newHash.size());
+          } else {
+            fieldsAdded.set(newHash.size() - oldHash.size());
+          }
           return newHash;
         });
 
@@ -85,11 +84,9 @@ class GeodeRedisHashSynchronized implements RedisHash {
     region().computeIfPresent(key, (_unused_, oldHash) -> {
       HashMap<ByteArrayWrapper, ByteArrayWrapper> newHash = new HashMap<>(oldHash);
       for (ByteArrayWrapper fieldToRemove : subList) {
-        Object oldValue = newHash.remove(fieldToRemove);
-        if (oldValue != null) {
-          numDeleted.incrementAndGet();
-        }
+        newHash.remove(fieldToRemove);
       }
+      numDeleted.set(oldHash.size() - newHash.size());
       return newHash;
     });
     return numDeleted.intValue();
