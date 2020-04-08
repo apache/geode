@@ -19,6 +19,7 @@ import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,12 +27,14 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -47,6 +50,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -142,9 +146,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private boolean isDiskSynchronous;
 
   /**
-   * The writeLock of this concurrent lock is used to protect access to the queue.
-   * It is implemented as a fair lock to ensure FIFO ordering of queueing attempts.
-   * Otherwise threads can be unfairly delayed.
+   * The writeLock of this concurrent lock is used to protect access to the queue. It is implemented
+   * as a fair lock to ensure FIFO ordering of queueing attempts. Otherwise threads can be unfairly
+   * delayed.
    */
   private ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
@@ -180,13 +184,20 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private AbstractGatewaySender sender = null;
 
+  private MetaRegionFactory metaRegionFactory;
+
   public SerialGatewaySenderQueue(AbstractGatewaySender abstractSender, String regionName,
       CacheListener listener, boolean cleanQueues) {
+    this(abstractSender, regionName, listener, cleanQueues, new MetaRegionFactory());
+  }
+
+  public SerialGatewaySenderQueue(AbstractGatewaySender abstractSender, String regionName,
+      CacheListener listener, boolean cleanQueues, MetaRegionFactory metaRegionFactory) {
     // The queue starts out with headKey and tailKey equal to -1 to force
     // them to be initialized from the region.
     this.regionName = regionName;
     this.cleanQueues = cleanQueues;
-
+    this.metaRegionFactory = metaRegionFactory;
     this.headKey = -1;
     this.tailKey.set(-1);
     this.indexes = new HashMap<String, Map<Object, Long>>();
@@ -347,12 +358,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   @Override
   public Object peek() throws CacheException {
-    Object object = peekAhead();
+    KeyAndEventPair object = peekAhead();
     if (logger.isTraceEnabled()) {
       logger.trace("{}: Peeked {} -> {}", this, peekedIds, object);
     }
 
-    return object;
+    return object.event;
     // OFFHEAP returned object only used to see if queue is empty
     // so no need to worry about off-heap refCount.
   }
@@ -372,13 +383,28 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.trace("{}: Peek start time={} end time={} time to wait={}", this, start, end,
           timeToWait);
     }
+
     List<AsyncEvent> batch =
         new ArrayList<AsyncEvent>(size == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : size);
+    Set<TransactionId> incompleteTransactionsInBatch = new HashSet<>();
+    long lastKey = -1;
     while (size == BATCH_BASED_ON_TIME_ONLY || batch.size() < size) {
-      AsyncEvent object = peekAhead();
+      KeyAndEventPair pair = peekAhead();
       // Conflate here
-      if (object != null) {
+      if (pair != null) {
+        AsyncEvent object = pair.event;
+        lastKey = pair.key;
         batch.add(object);
+        if (object instanceof GatewaySenderEventImpl) {
+          GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
+          if (event.getTransactionId() != null) {
+            if (event.isLastEventInTransaction()) {
+              incompleteTransactionsInBatch.remove(event.getTransactionId());
+            } else {
+              incompleteTransactionsInBatch.add(event.getTransactionId());
+            }
+          }
+        }
       } else {
         // If time to wait is -1 (don't wait) or time interval has elapsed
         long currentTime = System.currentTimeMillis();
@@ -405,12 +431,63 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         continue;
       }
     }
+    if (batch.size() > 0) {
+      peekEventsFromIncompleteTransactions(batch, incompleteTransactionsInBatch, lastKey);
+    }
+
     if (isTraceEnabled) {
       logger.trace("{}: Peeked a batch of {} entries", this, batch.size());
     }
     return batch;
     // OFFHEAP: all returned AsyncEvent end up being removed from queue after the batch is sent
     // so no need to worry about off-heap refCount.
+  }
+
+  private void peekEventsFromIncompleteTransactions(List<AsyncEvent> batch,
+      Set<TransactionId> incompleteTransactionIdsInBatch, long lastKey) {
+    if (!isGroupTransactionEvents()) {
+      return;
+    }
+
+    if (areAllTransactionsCompleteInBatch(incompleteTransactionIdsInBatch)) {
+      return;
+    }
+
+    for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
+      boolean presentLastEventInTransaction = false;
+      final int maxRetries = 2;
+      int retries = 0;
+      long lastKeyForTransaction = lastKey;
+      while (!presentLastEventInTransaction && ++retries <= maxRetries) {
+        EventsAndLastKey eventsAndKey =
+            peekEventsWithTransactionId(transactionId, lastKeyForTransaction);
+
+        for (Object object : eventsAndKey.events) {
+          GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
+          batch.add(event);
+          presentLastEventInTransaction = event.isLastEventInTransaction();
+
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "Peeking extra event: {}, isLastEventInTransaction: {}, batch size: {}",
+                event.getKey(), event.isLastEventInTransaction(), batch.size());
+          }
+        }
+        lastKeyForTransaction = eventsAndKey.lastKey;
+      }
+      if (retries >= maxRetries) {
+        logger.warn("Not able to retrieve all events for transaction {} after {} retries",
+            transactionId, retries);
+      }
+    }
+  }
+
+  protected boolean isGroupTransactionEvents() {
+    return sender.isGroupTransactionEvents();
+  }
+
+  private boolean areAllTransactionsCompleteInBatch(Set incompleteTransactions) {
+    return (incompleteTransactions.size() == 0);
   }
 
   @Override
@@ -650,7 +727,19 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return object;
   }
 
-  private AsyncEvent peekAhead() throws CacheException {
+  @VisibleForTesting
+  static class KeyAndEventPair {
+    public final long key;
+    public final AsyncEvent event;
+
+    KeyAndEventPair(Long key, AsyncEvent event) {
+      this.key = key;
+      this.event = event;
+    }
+  }
+
+  @VisibleForTesting
+  public KeyAndEventPair peekAhead() throws CacheException {
     AsyncEvent object = null;
     Long currentKey = getCurrentKey();
     if (currentKey == null) {
@@ -685,10 +774,58 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Peeked {}->{}", this, currentKey, object);
     }
+
     if (object != null) {
       this.peekedIds.add(currentKey);
+      return new KeyAndEventPair(currentKey, object);
     }
-    return object;
+    return null;
+  }
+
+  private EventsAndLastKey peekEventsWithTransactionId(TransactionId transactionId, long lastKey) {
+    Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
+        x -> x.getTransactionId().equals(transactionId);
+    Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
+        x -> x.isLastEventInTransaction();
+
+    return getElementsMatching(hasTransactionIdPredicate, isLastEventInTransactionPredicate,
+        lastKey);
+  }
+
+  static class EventsAndLastKey {
+    public final List<Object> events;
+    public final long lastKey;
+
+    EventsAndLastKey(List<Object> events, long lastKey) {
+      this.events = events;
+      this.lastKey = lastKey;
+    }
+  }
+
+  EventsAndLastKey getElementsMatching(Predicate condition, Predicate stopCondition, long lastKey) {
+    Object object;
+    List elementsMatching = new ArrayList<>();
+
+    long currentKey = lastKey;
+
+    while ((currentKey = inc(currentKey)) != getTailKey()) {
+      object = optimalGet(currentKey);
+      if (object == null) {
+        continue;
+      }
+
+      if (condition.test(object)) {
+        elementsMatching.add(object);
+        this.peekedIds.add((Long) currentKey);
+        lastKey = currentKey;
+
+        if (stopCondition.test(object)) {
+          break;
+        }
+      }
+    }
+
+    return new EventsAndLastKey(elementsMatching, lastKey);
   }
 
   /**
@@ -889,8 +1026,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       final RegionAttributes<Long, AsyncEvent> ra = factory.getCreateAttributes();
       try {
         SerialGatewaySenderQueueMetaRegion meta =
-            new SerialGatewaySenderQueueMetaRegion(this.regionName, ra, null, gemCache, sender,
-                sender.getStatisticsClock());
+            metaRegionFactory.newMetaRegion(gemCache, this.regionName, ra, sender);
         factory
             .setInternalMetaRegion(meta)
             .setDestroyLockFlag(true)
@@ -902,6 +1038,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         region = factory.create(regionName);
         // Add overflow statistics to the mbean
         addOverflowStatisticsToMBean(gemCache, sender);
+
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, this.region);
         }
@@ -920,7 +1057,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private void addOverflowStatisticsToMBean(Cache cache, AbstractGatewaySender sender) {
+  @VisibleForTesting
+  protected void addOverflowStatisticsToMBean(Cache cache, AbstractGatewaySender sender) {
     // Get the appropriate mbean and add the overflow stats to it
     LocalRegion lr = (LocalRegion) this.region;
     ManagementService service = ManagementService.getManagementService(cache);
@@ -1227,6 +1365,18 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         // in the sender queue or occurs in the the future.
         GatewaySenderEventImpl.release(event.getRawOldValue());
       }
+    }
+  }
+
+  static class MetaRegionFactory {
+    SerialGatewaySenderQueueMetaRegion newMetaRegion(InternalCache cache,
+        final String regionName,
+        final RegionAttributes ra,
+        AbstractGatewaySender sender) {
+      SerialGatewaySenderQueueMetaRegion meta =
+          new SerialGatewaySenderQueueMetaRegion(regionName, ra, null, cache, sender,
+              sender.getStatisticsClock());
+      return meta;
     }
   }
 

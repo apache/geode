@@ -158,6 +158,19 @@ public class CreateGatewaySenderCommandTest {
   }
 
   @Test
+  public void testInvalidGroupTransactionEventsDueToSerialAndMoreThanOneThread() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult = new CliFunctionResult("member",
+        CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --member=xyz --id=1 --remote-distributed-system-id=1 " +
+            "--group-transaction-events --parallel=false --dispatcher-threads=2 --order-policy=THREAD")
+        .statusIsError().containsOutput(
+            "Serial Gateway Sender cannot be created with --group-transaction-events when --dispatcher-threads is greater than 1");
+  }
+
+  @Test
   public void testFunctionArgs() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     cliFunctionResult = new CliFunctionResult("member",
@@ -248,6 +261,8 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isNull();
     assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).isNotNull().isEmpty();
     assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilter()).isNotNull().isEmpty();
+    assertThat(argsArgumentCaptor.getValue().isGroupTransactionEvents()).isNotNull();
+
   }
 
   @Test
@@ -262,7 +277,8 @@ public class CreateGatewaySenderCommandTest {
             + " --manual-start"
             + " --disk-synchronous"
             + " --enable-persistence"
-            + " --enable-batch-conflation")
+            + " --enable-batch-conflation"
+            + " --group-transaction-events")
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
 
@@ -273,6 +289,8 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isTrue();
+    assertThat(argsArgumentCaptor.getValue().isGroupTransactionEvents()).isTrue();
+
   }
 
   @Test
@@ -287,7 +305,8 @@ public class CreateGatewaySenderCommandTest {
             + " --manual-start=false"
             + " --disk-synchronous=false"
             + " --enable-persistence=false"
-            + " --enable-batch-conflation=false")
+            + " --enable-batch-conflation=false"
+            + " --group-transaction-events=false")
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
 
@@ -298,5 +317,7 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isFalse();
     assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isFalse();
     assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().isGroupTransactionEvents()).isFalse();
+
   }
 }

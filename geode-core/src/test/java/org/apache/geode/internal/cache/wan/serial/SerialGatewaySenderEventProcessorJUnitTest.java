@@ -358,7 +358,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
     eei.setEventId(new EventID(new byte[16], threadId, sequenceId));
     GatewaySenderEventImpl gsei =
-        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true);
+        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, false);
     return gsei;
   }
 

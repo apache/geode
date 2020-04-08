@@ -28,6 +28,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.internal.cache.execute.data.Customer;
+import org.apache.geode.internal.cache.execute.data.Order;
+import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.execute.data.Shipment;
+import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
@@ -102,15 +108,18 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
 
     assertEquals(NUM_PUTS, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue
-                                                                                           // size
-    assertEquals(NUM_PUTS * 2, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
-    assertEquals(NUM_PUTS * 2, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
-                                                                                               // queued
+    // size
+    assertEquals(NUM_PUTS * 2,
+        v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(NUM_PUTS * 2,
+        v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
+    // queued
     assertEquals(0, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                    // distributed
-    assertEquals(NUM_PUTS, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
-                                                                                               // queue
-                                                                                               // size
+    // distributed
+    assertEquals(NUM_PUTS,
+        v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
+    // queue
+    // size
 
     // stop vm7 to trigger rebalance and move some primary buckets
     System.out.println("Current secondary queue sizes:" + v4List.get(10) + ":" + v5List.get(10)
@@ -137,7 +146,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     v5List = (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
     v6List = (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
     v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
-    assertEquals(NUM_PUTS, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
+    assertEquals(NUM_PUTS,
+        v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
     // queue
     // size
     System.out.println("After restart vm7, secondary queue sizes:" + v4List.get(10) + ":"
@@ -159,10 +169,10 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
     assertEquals(NUM_PUTS, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                           // distributed
+    // distributed
     assertEquals(0, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
-                                                                                        // queue
-                                                                                        // size
+    // queue
+    // size
   }
 
   // TODO: add a test without redundancy for primary switch
@@ -194,15 +204,18 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
 
     assertEquals(NUM_PUTS, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue
-                                                                                           // size
-    assertEquals(NUM_PUTS * 2, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
-    assertEquals(NUM_PUTS * 2, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
-                                                                                               // queued
+    // size
+    assertEquals(NUM_PUTS * 2,
+        v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(NUM_PUTS * 2,
+        v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
+    // queued
     assertEquals(0, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                    // distributed
-    assertEquals(NUM_PUTS, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
-                                                                                               // queue
-                                                                                               // size
+    // distributed
+    assertEquals(NUM_PUTS,
+        v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
+    // queue
+    // size
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
     vm5.invoke(() -> WANTestBase.resumeSender("ln"));
@@ -219,10 +232,10 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
     assertEquals(NUM_PUTS, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                           // distributed
+    // distributed
     assertEquals(0, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
-                                                                                        // queue
-                                                                                        // size
+    // queue
+    // size
   }
 
   @Test
@@ -254,16 +267,17 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
 
     assertEquals(NUM_PUTS, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue
-                                                                                           // size
-    assertEquals(NUM_PUTS, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    // size
+    assertEquals(NUM_PUTS,
+        v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
     assertEquals(NUM_PUTS, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
-                                                                                           // queued
+    // queued
     assertEquals(0, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                    // distributed
+    // distributed
     assertEquals(0, v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4)); // batches
-                                                                                    // distributed
+    // distributed
     assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches
-                                                                                    // redistributed
+    // redistributed
 
   }
 
@@ -288,6 +302,75 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName, NUM_PUTS));
 
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v6List =
+        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v7List =
+        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    assertEquals(0, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
+    assertEquals(NUM_PUTS,
+        v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(NUM_PUTS, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
+    // queued
+    assertEquals(NUM_PUTS, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
+    // distributed
+    assertTrue(v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4) >= 10); // batches
+    // distributed
+    assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches
+    // redistributed
+
+    vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(10, NUM_PUTS, NUM_PUTS));
+  }
+
+  @Test
+  public void testPartitionedRegionParallelPropagation_NoGroupTransactionEvents()
+      throws Exception {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
+
+    int batchTimeInterval = 10000;
+    createSenders(lnPort, false, batchTimeInterval);
+
+    createReceiverCustomerOrderShipmentPR(vm2, 0);
+
+    createSenderCustomerOrderShipmentPRs(0);
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    final Map custKeyValue = new HashMap();
+    int intCustId = 1;
+    CustId custId = new CustId(intCustId);
+    custKeyValue.put(custId, new Customer());
+    vm4.invoke(() -> WANTestBase.putGivenKeyValue(customerRegionName, custKeyValue));
+
+    int groups = 3;
+    final Map keyValues = new HashMap();
+    for (int i = 0; i < groups; i++) {
+      OrderId orderId = new OrderId(i, custId);
+      ShipmentId shipmentId1 = new ShipmentId(i, orderId);
+      ShipmentId shipmentId2 = new ShipmentId(i + 1, orderId);
+      ShipmentId shipmentId3 = new ShipmentId(i + 2, orderId);
+      keyValues.put(orderId, new Order());
+      keyValues.put(shipmentId1, new Shipment());
+      keyValues.put(shipmentId2, new Shipment());
+      keyValues.put(shipmentId3, new Shipment());
+    }
+    int eventsPerTransaction = 4;
+    vm4.invoke(() -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(keyValues,
+        eventsPerTransaction));
+
+    int entries = (groups * eventsPerTransaction) + 1;
+
+    vm4.invoke(() -> WANTestBase.validateRegionSize(customerRegionName, 1));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, groups));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(shipmentRegionName, groups * 3));
 
     ArrayList<Integer> v4List =
         (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
@@ -299,17 +382,92 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
     assertEquals(0, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
-    assertEquals(NUM_PUTS, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
-    assertEquals(NUM_PUTS, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
-                                                                                           // queued
-    assertEquals(NUM_PUTS, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                           // distributed
-    assertTrue(v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4) >= 10); // batches
-                                                                                     // distributed
+    assertEquals(entries,
+        v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(entries, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
+    // queued
+    assertEquals(entries, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
+    // distributed
+    assertEquals(2, v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4)); // batches
+    // distributed
     assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches
-                                                                                    // redistributed
+    // redistributed
+  }
 
-    vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(10, NUM_PUTS, NUM_PUTS));
+  @Test
+  public void testPartitionedRegionParallelPropagation_GroupTransactionEvents()
+      throws Exception {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
+
+    int batchTimeInterval = 10000;
+    createSenders(lnPort, true, batchTimeInterval);
+
+    createReceiverCustomerOrderShipmentPR(vm2, 0);
+
+    createSenderCustomerOrderShipmentPRs(0);
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+
+    final Map custKeyValue = new HashMap();
+    int intCustId = 1;
+    CustId custId = new CustId(intCustId);
+    custKeyValue.put(custId, new Customer());
+    vm4.invoke(() -> WANTestBase.putGivenKeyValue(customerRegionName, custKeyValue));
+
+    int groups = 3;
+    final Map keyValues = new HashMap();
+    for (int i = 0; i < groups; i++) {
+      OrderId orderId = new OrderId(i, custId);
+      ShipmentId shipmentId1 = new ShipmentId(i, orderId);
+      ShipmentId shipmentId2 = new ShipmentId(i + 1, orderId);
+      ShipmentId shipmentId3 = new ShipmentId(i + 2, orderId);
+      keyValues.put(orderId, new Order());
+      keyValues.put(shipmentId1, new Shipment());
+      keyValues.put(shipmentId2, new Shipment());
+      keyValues.put(shipmentId3, new Shipment());
+    }
+
+    // 3 transactions of 4 events each are sent so that the the batch with 10
+    // events would contain the first 3 transactions complete and the first
+    // event of the last transaction.
+    // As --group-transaction-events is configured in the senders, the remaining
+    // two events of the last transaction are added to the batch which makes
+    // that only one batch of 12 events is sent.
+    int eventsPerTransaction = 4;
+    vm4.invoke(() -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(keyValues,
+        eventsPerTransaction));
+
+    int entries = (groups * eventsPerTransaction) + 1;
+
+    vm4.invoke(() -> WANTestBase.validateRegionSize(customerRegionName, 1));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, groups));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(shipmentRegionName, groups * 3));
+
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v6List =
+        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v7List =
+        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    assertEquals(0, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
+    assertEquals(entries,
+        v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(entries, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
+    // queued
+    assertEquals(entries, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
+    // distributed
+    assertEquals(1, v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4)); // batches
+    // distributed
+    assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches
+    // redistributed
   }
 
   @Test
@@ -343,15 +501,16 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
     assertEquals(0, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
-    assertEquals(400, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(400,
+        v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
     assertEquals(400, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
-                                                                                      // queued
+    // queued
     assertEquals(NUM_PUTS, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                           // distributed
+    // distributed
     assertTrue(v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4) >= 10); // batches
-                                                                                     // distributed
+    // distributed
     assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches
-                                                                                    // redistributed
+    // redistributed
 
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(10, NUM_PUTS, NUM_PUTS));
   }
@@ -453,9 +612,11 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     assertEquals(0, v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
     int receivedEvents = v5List.get(1) + v6List.get(1) + v7List.get(1);
     // We may see a single retried event on all members due to the kill
-    assertTrue("Received " + receivedEvents, 3000 <= receivedEvents && 3003 >= receivedEvents); // eventsReceived
+    assertTrue("Received " + receivedEvents,
+        3000 <= receivedEvents && 3003 >= receivedEvents); // eventsReceived
     int queuedEvents = v5List.get(2) + v6List.get(2) + v7List.get(2);
-    assertTrue("Queued " + queuedEvents, 3000 <= queuedEvents && 3003 >= queuedEvents); // eventsQueued
+    assertTrue("Queued " + queuedEvents,
+        3000 <= queuedEvents && 3003 >= queuedEvents); // eventsQueued
     // assertTrue(10000 <= v5List.get(3) + v6List.get(3) + v7List.get(3)); //events distributed :
     // its quite possible that vm4 has distributed some of the events
     // assertTrue(v5List.get(4) + v6List.get(4) + v7List.get(4) > 1000); //batches distributed : its
@@ -468,7 +629,6 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
   /**
    * 1 region and sender configured on local site and 1 region and a receiver configured on remote
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.
-   *
    */
   @Test
   public void testParallelPropagationWithRemoteRegionDestroy() throws Exception {
@@ -503,17 +663,16 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     ArrayList<Integer> v7List =
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", -1));
 
-
     assertTrue(v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4) >= 1); // batches
-                                                                                    // distributed :
-                                                                                    // its quite
-                                                                                    // possible that
-                                                                                    // vm4 has
-                                                                                    // distributed
-                                                                                    // some of the
-                                                                                    // batches.
+    // distributed :
+    // its quite
+    // possible that
+    // vm4 has
+    // distributed
+    // some of the
+    // batches.
     assertTrue(v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5) >= 1); // batches
-                                                                                    // redistributed
+    // redistributed
   }
 
   @Test
@@ -543,8 +702,6 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-
-
     vm4.invoke(() -> WANTestBase.doPuts(testName, 1000));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName, 800));
@@ -559,17 +716,18 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
     assertEquals(0, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
-    assertEquals(1000, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(1000,
+        v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
     assertEquals(900, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
-                                                                                      // queued
+    // queued
     assertEquals(800, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                      // distributed
+    // distributed
     assertTrue(v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4) >= 80); // batches
-                                                                                     // distributed
+    // distributed
     assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches
-                                                                                    // redistributed
+    // redistributed
     assertEquals(200, v4List.get(6) + v5List.get(6) + v6List.get(6) + v7List.get(6)); // events
-                                                                                      // filtered
+    // filtered
 
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(80, 800, 800));
   }
@@ -606,7 +764,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     verifyConflationIndexesSize("ln", 50, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> WANTestBase.checkQueueSize("ln",
-        keyValues.size() + updateKeyValues.size() /* creates aren't conflated */ ));
+        keyValues.size() + updateKeyValues.size() /* creates aren't conflated */));
 
     // Do the puts again. Since these are updates, the previous updates will be conflated.
     vm4.invoke(() -> WANTestBase.putGivenKeyValue(testName, updateKeyValues));
@@ -615,7 +773,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     verifyConflationIndexesSize("ln", 50, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> WANTestBase.checkQueueSize("ln",
-        keyValues.size() + updateKeyValues.size() /* creates aren't conflated */ ));
+        keyValues.size() + updateKeyValues.size() /* creates aren't conflated */));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName, 0));
 
@@ -712,6 +870,27 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
         () -> WANTestBase.createPartitionedRegion(testName, null, redundancy, 10, isOffHeap()));
   }
 
+  protected void createReceiverCustomerOrderShipmentPR(VM vm, int redundancy) {
+    vm.invoke(
+        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion(null, redundancy, 10,
+            isOffHeap()));
+  }
+
+  protected void createSenderCustomerOrderShipmentPRs(int redundancy) {
+    vm4.invoke(
+        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", redundancy, 10,
+            isOffHeap()));
+    vm5.invoke(
+        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", redundancy, 10,
+            isOffHeap()));
+    vm6.invoke(
+        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", redundancy, 10,
+            isOffHeap()));
+    vm7.invoke(
+        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", redundancy, 10,
+            isOffHeap()));
+  }
+
   protected void createSenderPRs(int redundancy) {
     vm4.invoke(
         () -> WANTestBase.createPartitionedRegion(testName, "ln", redundancy, 10, isOffHeap()));
@@ -751,13 +930,21 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     vm.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
   }
 
-  protected void createSenders(Integer lnPort) {
+  protected void createSenders(Integer lnPort, boolean isGroupTransactions, int batchTimeInterval) {
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-    vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
+        isGroupTransactions, batchTimeInterval));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
+        isGroupTransactions, batchTimeInterval));
+    vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
+        isGroupTransactions, batchTimeInterval));
+    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
+        isGroupTransactions, batchTimeInterval));
+  }
+
+  protected void createSenders(Integer lnPort) {
+    createSenders(lnPort, false, -1);
   }
 
   private void verifyConflationIndexesSize(String senderId, int expectedSize, VM... vms) {

@@ -69,6 +69,12 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
+  public GatewaySenderFactory setGroupTransactionEvents(boolean isGroupTransactionEvents) {
+    this.attrs.isGroupTransactionEvents = isGroupTransactionEvents;
+    return this;
+  }
+
+  @Override
   public GatewaySenderFactory setForInternalUse(boolean isForInternalUse) {
     this.attrs.isForInternalUse = isForInternalUse;
     return this;

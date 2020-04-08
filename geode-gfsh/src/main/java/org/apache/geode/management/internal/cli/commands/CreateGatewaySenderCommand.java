@@ -75,6 +75,11 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           mandatory = true,
           help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
 
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
+          specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false",
+          help = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP) boolean groupTransactionEvents,
+
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
           specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
@@ -139,7 +144,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
             socketBufferSize, socketReadTimeout, enableBatchConflation, batchSize,
             batchTimeInterval, enablePersistence, diskStoreName, diskSynchronous, maxQueueMemory,
             alertThreshold, dispatcherThreads, orderPolicy == null ? null : orderPolicy.name(),
-            gatewayEventFilters, gatewayTransportFilter);
+            gatewayEventFilters, gatewayTransportFilter, groupTransactionEvents);
 
     GatewaySenderFunctionArgs gatewaySenderFunctionArgs =
         new GatewaySenderFunctionArgs(configuration);
@@ -221,7 +226,8 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       Integer dispatcherThreads,
       String orderPolicy,
       String[] gatewayEventFilters,
-      String[] gatewayTransportFilters) {
+      String[] gatewayTransportFilters,
+      Boolean groupTransactionEvents) {
     CacheConfig.GatewaySender sender = new CacheConfig.GatewaySender();
     sender.setId(id);
     sender.setRemoteDistributedSystemId(int2string(remoteDSId));
@@ -239,6 +245,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
     sender.setAlertThreshold(int2string(alertThreshold));
     sender.setDispatcherThreads(int2string(dispatcherThreads));
     sender.setOrderPolicy(orderPolicy);
+    sender.setGroupTransactionEvents(groupTransactionEvents);
     if (gatewayEventFilters != null) {
       sender.getGatewayEventFilters().addAll((stringsToDeclarableTypes(gatewayEventFilters)));
     }
@@ -270,6 +277,9 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           (OrderPolicy) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY);
       Integer dispatcherThreads =
           (Integer) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS);
+      Boolean isGroupTransactionEvents =
+          (Boolean) parseResult
+              .getParamValue(CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS);
 
       if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
         return ResultModel.createError(
@@ -279,6 +289,12 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       if (parallel && orderPolicy == OrderPolicy.THREAD) {
         return ResultModel.createError(
             "Parallel Gateway Sender can not be created with THREAD OrderPolicy");
+      }
+
+      if (!parallel && dispatcherThreads != null && dispatcherThreads > 1
+          && isGroupTransactionEvents) {
+        return ResultModel.createError(
+            "Serial Gateway Sender cannot be created with --group-transaction-events when --dispatcher-threads is greater than 1.");
       }
 
       return ResultModel.createInfo("");

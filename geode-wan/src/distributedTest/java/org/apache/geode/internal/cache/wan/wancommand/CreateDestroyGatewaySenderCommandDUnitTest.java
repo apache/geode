@@ -112,7 +112,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
       String xml = locator.getConfigurationPersistenceService().getConfiguration("cluster")
           .getCacheXmlContent();
       assertThat(xml).contains(
-          "<gateway-sender id=\"ln\" remote-distributed-system-id=\"2\" parallel=\"false\" manual-start=\"false\" enable-batch-conflation=\"false\" enable-persistence=\"false\" disk-synchronous=\"true\"/>");
+          "<gateway-sender id=\"ln\" remote-distributed-system-id=\"2\" parallel=\"false\" manual-start=\"false\" enable-batch-conflation=\"false\" enable-persistence=\"false\" disk-synchronous=\"true\" group-transaction-events=\"false\"/>");
     });
 
     // destroy gateway sender and verify AEQs cleaned up
@@ -155,7 +155,8 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY + "=1000" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=2" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
+        + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=false";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .doesNotContainOutput("Did not complete waiting")
@@ -167,7 +168,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000, true,
-          false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, null);
+          false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, null, false);
     }, server1, server2, server3);
 
     // destroy gateway sender and verify AEQs cleaned up
@@ -191,7 +192,8 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE + "=1000" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=1";
+        + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=1" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=true";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .doesNotContainOutput("Did not complete waiting")
@@ -203,7 +205,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, 0, false, 100, 1000, false,
-          true, 100, 0, 1, null, null, null);
+          true, 100, 0, 1, null, null, null, true);
     }, server1, server2, server3);
 
     // destroy gateway sender and verify AEQs cleaned up
@@ -239,6 +241,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=false" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER
         + "=org.apache.geode.cache30.MyGatewayEventFilter1,org.apache.geode.cache30.MyGatewayEventFilter2";
 
@@ -256,7 +259,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000, true,
-          false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, eventFilters, null);
+          false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, eventFilters, null, false);
     }, server1, server2, server3);
 
     // destroy gateway sender and verify AEQs cleaned up
@@ -292,6 +295,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=false" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
 
@@ -308,7 +312,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000, true,
-          false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, transportFilters);
+          false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, transportFilters, false);
     }, server1, server2, server3);
 
     // destroy gateway sender and verify AEQs cleaned up

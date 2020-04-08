@@ -75,6 +75,8 @@ public class GatewaySenderAttributes {
 
   public boolean isParallel = GatewaySender.DEFAULT_IS_PARALLEL;
 
+  public boolean isGroupTransactionEvents = GatewaySender.DEFAULT_IS_GROUP_TRANSACTION_EVENTS;
+
   public boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 
   public boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
@@ -145,6 +147,10 @@ public class GatewaySenderAttributes {
 
   public boolean isParallel() {
     return this.isParallel;
+  }
+
+  public boolean isGroupTransactionEvents() {
+    return this.isGroupTransactionEvents;
   }
 
   public boolean isForInternalUse() {

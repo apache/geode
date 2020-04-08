@@ -165,8 +165,14 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   protected abstract void initializeMessageQueue(String id, boolean cleanQueues);
 
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event,
+      Object substituteValue) throws IOException, CacheException {
+    enqueueEvent(operation, event, substituteValue, false);
+  }
+
   public abstract void enqueueEvent(EnumListenerEvent operation, EntryEvent event,
-      Object substituteValue) throws IOException, CacheException;
+      Object substituteValue, boolean isLastEventInTransaction) throws IOException, CacheException;
+
 
   protected abstract void rebalance();
 
@@ -870,14 +876,14 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
               event.getRawCallbackArgument(), this.sender.getMyDSId(), allRemoteDSIds);
           event.setCallbackArgument(geCallbackArg);
           GatewaySenderEventImpl pdxSenderEvent =
-              new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, event, null); // OFFHEAP:
-                                                                                       // event for
-                                                                                       // pdx type
-                                                                                       // meta data
-                                                                                       // so it
-                                                                                       // should
-                                                                                       // never be
-                                                                                       // off-heap
+              new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, event, null, false); // OFFHEAP:
+          // event for
+          // pdx type
+          // meta data
+          // so it
+          // should
+          // never be
+          // off-heap
           pdxEventsMap.put(typeEntry.getKey(), pdxSenderEvent);
           pdxSenderEventsList.add(pdxSenderEvent);
         }

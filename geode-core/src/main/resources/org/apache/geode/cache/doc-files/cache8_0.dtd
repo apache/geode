@@ -675,6 +675,7 @@ As of 6.5 roll-oplogs is deprecated. Use disk-store-name instead.
   alert-threshold              CDATA #IMPLIED
   dispatcher-threads           CDATA #IMPLIED
   order-policy                 CDATA #IMPLIED
+  group-transaction-events     (false | true) #IMPLIED
  >
  
  <!-- ======================================================= -->

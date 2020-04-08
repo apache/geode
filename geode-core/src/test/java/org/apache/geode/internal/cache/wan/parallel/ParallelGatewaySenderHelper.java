@@ -93,7 +93,8 @@ public class ParallelGatewaySenderHelper {
     EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
     eei.setEventId(new EventID(new byte[16], threadId, sequenceId, bucketId));
     GatewaySenderEventImpl gsei =
-        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, bucketId);
+        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, bucketId,
+            false);
     gsei.setShadowKey(shadowKey);
     return gsei;
   }

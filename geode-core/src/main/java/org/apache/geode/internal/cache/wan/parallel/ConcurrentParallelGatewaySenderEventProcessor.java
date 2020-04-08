@@ -134,6 +134,12 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   @Override
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
       throws IOException, CacheException {
+    enqueueEvent(operation, event, substituteValue, false);
+  }
+
+  @Override
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction) throws IOException, CacheException {
     Region region = event.getRegion();
     // int bucketId = PartitionedRegionHelper.getHashKey((EntryOperation)event);
     int bucketId = ((EntryEventImpl) event).getEventId().getBucketID();
@@ -141,7 +147,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       return;
     }
     int pId = bucketId % this.nDispatcher;
-    this.processors[pId].enqueueEvent(operation, event, substituteValue);
+    this.processors[pId].enqueueEvent(operation, event, substituteValue, isLastEventInTransaction);
   }
 
   @Override

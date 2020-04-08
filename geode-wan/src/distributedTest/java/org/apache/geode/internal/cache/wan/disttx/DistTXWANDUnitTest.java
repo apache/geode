@@ -93,6 +93,8 @@ public class DistTXWANDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
+    vm6.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
+    vm7.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
 
     vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));

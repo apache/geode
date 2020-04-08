@@ -14,11 +14,18 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,9 +33,14 @@ import org.junit.Test;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
+import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.fake.Fakes;
 
 public class BucketRegionQueueJUnitTest {
@@ -42,6 +54,7 @@ public class BucketRegionQueueJUnitTest {
   private AbstractGatewaySender sender;
   private PartitionedRegion rootRegion;
   private BucketRegionQueue bucketRegionQueue;
+  private GatewaySenderStats stats;
 
   @Before
   public void setUpGemFire() {
@@ -68,6 +81,9 @@ public class BucketRegionQueueJUnitTest {
     // Mock gateway sender
     this.sender = ParallelGatewaySenderHelper.createGatewaySender(this.cache);
     when(this.queueRegion.getParallelGatewaySender()).thenReturn(this.sender);
+    stats = new GatewaySenderStats(new DummyStatisticsFactory(), "gatewaySenderStats-", "ln",
+        disabledClock());
+    when(this.sender.getStatistics()).thenReturn(stats);
   }
 
   private void createRootRegion() {
@@ -81,6 +97,7 @@ public class BucketRegionQueueJUnitTest {
     BucketRegionQueue realBucketRegionQueue = ParallelGatewaySenderHelper
         .createBucketRegionQueue(this.cache, this.rootRegion, this.queueRegion, BUCKET_ID);
     this.bucketRegionQueue = spy(realBucketRegionQueue);
+    this.bucketRegionQueue.getEventTracker().setInitialized();
   }
 
   @Test
@@ -119,5 +136,70 @@ public class BucketRegionQueueJUnitTest {
 
     // Invoke basicDestroy
     this.bucketRegionQueue.basicDestroy(event, true, null, false);
+  }
+
+  @Test
+  public void testGetElementsMatching() {
+    ParallelGatewaySenderEventProcessor processor =
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+
+    TransactionId tx1 = new TXId(null, 1);
+    TransactionId tx2 = new TXId(null, 2);
+    TransactionId tx3 = new TXId(null, 3);
+
+    GatewaySenderEventImpl event1 = createMockGatewaySenderEvent(1, tx1, false);
+    GatewaySenderEventImpl event2 = createMockGatewaySenderEvent(2, tx2, false);
+    GatewaySenderEventImpl event3 = createMockGatewaySenderEvent(3, tx1, true);
+    GatewaySenderEventImpl event4 = createMockGatewaySenderEvent(4, tx2, true);
+    GatewaySenderEventImpl event5 = createMockGatewaySenderEvent(5, tx3, false);
+    GatewaySenderEventImpl event6 = createMockGatewaySenderEvent(6, tx3, false);
+    GatewaySenderEventImpl event7 = createMockGatewaySenderEvent(7, tx1, true);
+
+    this.bucketRegionQueue
+        .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
+
+    try {
+      this.bucketRegionQueue.addToQueue(Long.valueOf(1), event1);
+      this.bucketRegionQueue.addToQueue(Long.valueOf(2), event2);
+      this.bucketRegionQueue.addToQueue(Long.valueOf(3), event3);
+      this.bucketRegionQueue.addToQueue(Long.valueOf(4), event4);
+      this.bucketRegionQueue.addToQueue(Long.valueOf(5), event5);
+      this.bucketRegionQueue.addToQueue(Long.valueOf(6), event6);
+      this.bucketRegionQueue.addToQueue(Long.valueOf(7), event7);
+
+    } catch (ForceReattemptException e) {
+      fail("Exception thrown: " + e);
+    }
+
+    Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
+        x -> x.getTransactionId().equals(tx1);
+    Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
+        x -> x.isLastEventInTransaction();
+    List<Object> objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
+        isLastEventInTransactionPredicate);
+
+    assertEquals(2, objects.size());
+    assertEquals(objects, Arrays.asList(new Object[] {event1, event3}));
+
+    objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
+        isLastEventInTransactionPredicate);
+    assertEquals(1, objects.size());
+    assertEquals(objects, Arrays.asList(new Object[] {event7}));
+
+    hasTransactionIdPredicate =
+        x -> x.getTransactionId().equals(tx2);
+    objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
+        isLastEventInTransactionPredicate);
+    assertEquals(2, objects.size());
+    assertEquals(objects, Arrays.asList(new Object[] {event2, event4}));
+  }
+
+  GatewaySenderEventImpl createMockGatewaySenderEvent(Object key, TransactionId tId,
+      boolean isLastEventInTx) {
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    when(event.isLastEventInTransaction()).thenReturn(isLastEventInTx);
+    when(event.getTransactionId()).thenReturn(tId);
+    when(event.getKey()).thenReturn(key);
+    return event;
   }
 }

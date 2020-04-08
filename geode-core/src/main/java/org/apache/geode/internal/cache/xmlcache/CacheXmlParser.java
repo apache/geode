@@ -586,6 +586,15 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory.setParallel(Boolean.parseBoolean(parallel));
     }
 
+    // group-transaction-events
+    String groupTransactionEvents = atts.getValue(GROUP_TRANSACTION_EVENTS);
+    if (groupTransactionEvents == null) {
+      gatewaySenderFactory
+          .setGroupTransactionEvents(GatewaySender.DEFAULT_IS_GROUP_TRANSACTION_EVENTS);
+    } else {
+      gatewaySenderFactory.setGroupTransactionEvents(Boolean.parseBoolean(groupTransactionEvents));
+    }
+
     // manual-start
     String manualStart = atts.getValue(MANUAL_START);
     if (manualStart == null) {
@@ -698,6 +707,15 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     stack.push(gatewaySenderFactory);
     // GatewaySender sender = gatewaySenderFactory.create(id, Integer.parseInt(remoteDS));
     // stack.push(sender);
+
+    String isGroupTransactionEvents = atts.getValue(GROUP_TRANSACTION_EVENTS);
+    if (isGroupTransactionEvents == null) {
+      gatewaySenderFactory
+          .setGroupTransactionEvents(GatewaySender.DEFAULT_IS_GROUP_TRANSACTION_EVENTS);
+    } else {
+      gatewaySenderFactory
+          .setGroupTransactionEvents(Boolean.parseBoolean(isGroupTransactionEvents));
+    }
   }
 
   private void startGatewayReceiver(Attributes atts) {
@@ -2244,6 +2262,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else {
       asyncEventQueueCreation.setParallel(Boolean.parseBoolean(parallel));
     }
+
     // batch-size
     String batchSize = atts.getValue(BATCH_SIZE);
     if (batchSize == null) {
