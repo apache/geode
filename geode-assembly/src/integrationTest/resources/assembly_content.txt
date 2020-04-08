@@ -1067,7 +1067,7 @@ lib/spring-context-5.2.5.RELEASE.jar
 lib/spring-core-5.2.5.RELEASE.jar
 lib/spring-jcl-5.2.5.RELEASE.jar
 lib/spring-shell-1.2.0.RELEASE.jar
-lib/spring-web-5.2.3.RELEASE.jar
+lib/spring-web-5.2.5.RELEASE.jar
 lib/swagger-annotations-1.5.23.jar
 tools/ClientProtocol/geode-protobuf-messages-definitions-0.0.0.zip
 tools/Extensions/geode-web-0.0.0.war

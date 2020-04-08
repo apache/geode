@@ -99,9 +99,7 @@ spring-core
 spring-expression
 spring-hateoas
 spring-jcl
-spring-jdbc
 spring-ldap-core
-spring-orm
 spring-oxm
 spring-plugin-core
 spring-plugin-metadata
