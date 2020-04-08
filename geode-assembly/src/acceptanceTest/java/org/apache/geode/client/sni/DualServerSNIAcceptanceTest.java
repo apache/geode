@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.net.URL;
@@ -31,13 +32,13 @@ import java.util.Properties;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -54,16 +55,16 @@ public class DualServerSNIAcceptanceTest {
   @ClassRule
   public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
-  @Rule
-  public DockerComposeRule docker = DockerComposeRule.builder()
+  @ClassRule
+  public static DockerComposeRule docker = DockerComposeRule.builder()
       .file(DOCKER_COMPOSE_PATH.getPath())
       .build();
 
-  private Properties gemFireProps;
+  private static Properties gemFireProps;
   private ClientCache cache;
 
-  @Before
-  public void before() throws IOException, InterruptedException {
+  @BeforeClass
+  public static void beforeClass() throws IOException, InterruptedException {
     docker.exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh"));
 
@@ -82,42 +83,72 @@ public class DualServerSNIAcceptanceTest {
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
   }
 
-
   @After
   public void after() {
-    if (cache != null) {
-      cache.close();
-      cache = null;
-    }
+    ensureCacheClosed();
   }
 
   @Test
-  public void dualServerTest() {
+  public void successfulRoutingTest() {
     verifyPutAndGet("group-dolores", "region-dolores");
   }
 
   @Test
-  public void dualServerTest2() {
+  public void successfulRoutingTest2() {
     verifyPutAndGet("group-clementine", "region-clementine");
   }
 
+  @Test
+  public void unreachabilityTest() {
+    verifyUnreachable("group-dolores", "region-clementine");
+  }
+
+  @Test
+  public void unreachabilityTest2() {
+    verifyUnreachable("group-clementine", "region-dolores");
+  }
+
+  private void verifyUnreachable(final String groupName, final String regionName) {
+    final Region<String, String> region = getRegion(groupName, regionName);
+    assertThatThrownBy(() -> region.destroy("hello"))
+        .hasCauseInstanceOf(RegionDestroyedException.class)
+        .hasStackTraceContaining("was not found during destroy request");
+  }
+
   private void verifyPutAndGet(final String groupName, final String regionName) {
-    int proxyPort = docker.containers()
+    final Region<String, String> region = getRegion(groupName, regionName);
+    region.destroy("hello");
+    region.put("hello", "world");
+    assertThat(region.get("hello")).isEqualTo("world");
+  }
+
+  /**
+   * modifies cache field as a side-effect
+   */
+  private Region<String, String> getRegion(final String groupName, final String regionName) {
+    final int proxyPort = docker.containers()
         .container("haproxy")
         .port(15443)
         .getExternalPort();
+    ensureCacheClosed();
     cache = new ClientCacheFactory(gemFireProps)
         .addPoolLocator("locator-maeve", 10334)
         .setPoolServerGroup(groupName)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
         .create();
-    Region<String, String> region =
-        cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
-            .create(regionName);
-    region.destroy("hello");
-    region.put("hello", "world");
-    assertThat(region.get("hello")).isEqualTo("world");
+    return cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .create(regionName);
+  }
+
+  /**
+   * modifies cache field as a side-effect
+   */
+  private void ensureCacheClosed() {
+    if (cache != null) {
+      cache.close();
+      cache = null;
+    }
   }
 
 }
