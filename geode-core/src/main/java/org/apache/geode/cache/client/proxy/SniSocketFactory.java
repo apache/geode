@@ -44,6 +44,7 @@ public class SniSocketFactory implements SocketFactory, Declarable {
 
   @Override // Declarable
   public void initialize(Cache cache, Properties properties) {
+    System.out.println("BRUCE: sni properties are " + properties);
     this.hostname = properties.getProperty("hostname");
     String portString =
         properties.getProperty("port", "" + DistributionLocator.DEFAULT_LOCATOR_PORT);
@@ -52,6 +53,15 @@ public class SniSocketFactory implements SocketFactory, Declarable {
 
   @Override
   public Socket createSocket() throws IOException {
+    System.out.println("BRUCE: creating a socket with " + hostname + ":" + port);
     return new SniProxySocket(new InetSocketAddress(hostname, port));
+  }
+
+  public String getHostname() {
+    return hostname;
+  }
+
+  public int getPort() {
+    return port;
   }
 }

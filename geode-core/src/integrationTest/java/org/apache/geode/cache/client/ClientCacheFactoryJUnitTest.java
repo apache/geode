@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -64,7 +63,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.ClientCacheCreation;
-import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
@@ -153,10 +151,12 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(defPool.getServers()).isEqualTo(
         Collections.singletonList(new InetSocketAddress("localhost", CacheServer.DEFAULT_PORT)));
 
-    assertThat(defPool.getSocketFactory()).isInstanceOf(SniSocketFactory.class);
-    Socket socket = defPool.getSocketFactory().createSocket();
-    assertThat(socket.getPort()).isEqualTo(12345);
-    assertThat(socket.getInetAddress()).isEqualTo(LocalHostUtil.getLocalHost());
+    // verify that the SocketCreator settings were correctly picked up from the xml file
+    SocketFactory factory = defPool.getSocketFactory();
+    assertThat(factory).isInstanceOf(SniSocketFactory.class);
+    SniSocketFactory sniSocketFactory = (SniSocketFactory) factory;
+    assertThat(sniSocketFactory.getPort()).isEqualTo(40404);
+    assertThat(sniSocketFactory.getHostname()).isEqualTo("localhost");
   }
 
   /**
