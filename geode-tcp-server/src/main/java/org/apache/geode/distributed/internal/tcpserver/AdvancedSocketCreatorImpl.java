@@ -23,8 +23,6 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
