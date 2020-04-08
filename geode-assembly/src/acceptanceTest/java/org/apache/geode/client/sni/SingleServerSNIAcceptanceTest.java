@@ -46,6 +46,16 @@ import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 
+/**
+ * This test runs against a 1-server, 1-locator Geode cluster. The server and locator run inside
+ * a (single) Docker container and are not route-able from the host (where this JUnit test is
+ * running). Another Docker container is running the HAProxy image and it's set up as an SNI
+ * gateway. The test connects to the gateway via SNI and the gateway (in one Docker container)
+ * forwards traffic to Geode members (running in the other Docker container).
+ *
+ * This test connects to the server and verifies it can write and read data in the region.
+ */
+
 public class ClientSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
