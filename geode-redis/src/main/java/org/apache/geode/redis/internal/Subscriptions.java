@@ -85,7 +85,7 @@ public class Subscriptions {
   /**
    * @return the total number of all local subscriptions
    */
-  public int size() {
+  public synchronized int size() {
     return subscriptions.size();
   }
 }
