@@ -2899,7 +2899,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         getCancelCriterion().checkCancelInProgress(null);
 
         Future<InternalRegion> future = null;
-        // synchronize the block because rootRegions get and then put have to stay together as an atomic operation
+        // synchronize the block because rootRegions get and then put have to stay together as an
+        // atomic operation
         synchronized (rootRegions) {
           region = rootRegions.get(name);
           if (region != null) {
