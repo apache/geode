@@ -87,6 +87,6 @@ lucene-core-6.6.6.jar
 lucene-queries-6.6.6.jar
 protobuf-java-3.10.0.jar
 geo-0.7.1.jar
-netty-all-4.1.42.Final.jar
+netty-all-4.1.45.Final.jar
 grumpy-core-0.2.2.jar
 commons-math3-3.2.jar

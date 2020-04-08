@@ -1040,7 +1040,7 @@ lib/micrometer-core-1.2.1.jar
 lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
-lib/netty-all-4.1.42.Final.jar
+lib/netty-all-4.1.45.Final.jar
 lib/protobuf-java-3.10.0.jar
 lib/ra.jar
 lib/rmiio-2.1.2.jar
