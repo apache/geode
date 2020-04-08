@@ -43,10 +43,19 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
-public class ClientSNIAcceptanceTest {
+/**
+ * This test runs against a 1-server, 1-locator Geode cluster. The server and locator run inside
+ * a (single) Docker container and are not route-able from the host (where this JUnit test is
+ * running). Another Docker container is running the HAProxy image and it's set up as an SNI
+ * gateway. The test connects to the gateway via SNI and the gateway (in one Docker container)
+ * forwards traffic to Geode members (running in the other Docker container).
+ *
+ * This test connects to the server and verifies it can write and read data in the region.
+ */
+public class SingleServerSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
-      ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
+      SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -64,7 +73,7 @@ public class ClientSNIAcceptanceTest {
   @Before
   public void before() throws IOException, InterruptedException {
     trustStorePath =
-        createTempFileFromResource(ClientSNIAcceptanceTest.class,
+        createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
     docker.exec(options("-T"), "geode",
