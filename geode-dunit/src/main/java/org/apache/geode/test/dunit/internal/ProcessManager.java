@@ -257,11 +257,10 @@ class ProcessManager implements ChildVMLauncher {
     } else {
       // remove current-version product classes and resources from the classpath
       dunitClasspath =
-          removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
-              "geode-http-service", "geode-json", "geode-log4j", "geode-lucene", "geode-tcp-server",
-              "geode-membership", "geode-management", "geode-logging", "geode-web",
-              "geode-rebalancer",
-              "geode-serialization", "geode-wan", "geode-gfsh", "geode-lucene");
+          dunitClasspath =
+              removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
+                  "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
+                  "geode-serialization", "geode-wan", "geode-gfsh");
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
     }
 
