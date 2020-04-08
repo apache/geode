@@ -85,7 +85,8 @@ public class Ping extends BaseCommand {
       ServerConnection serverConnection)
       throws IOException {
     if (logger.isDebugEnabled()) {
-      logger.debug("Received a Ping request from {} intended for {}.  Forwarding the ping...");
+      logger.debug("Received a Ping request from {} intended for {}. Forwarding the ping...",
+          serverConnection.getProxyID(), targetServer);
     }
     if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
       logger.warn("Unable to ping non-member {} for client {}", targetServer,
