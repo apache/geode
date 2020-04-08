@@ -41,6 +41,7 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RegionProvider;
 
+@SuppressWarnings("unchecked")
 public class StringGetExecutorJUnitTest {
 
   private Command command;
