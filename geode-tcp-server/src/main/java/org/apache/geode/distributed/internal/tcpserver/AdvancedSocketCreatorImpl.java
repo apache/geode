@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.tcpserver;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -22,6 +23,9 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -29,9 +33,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * accessed through the method {@link TcpSocketCreator#forAdvancedUse()}.
  */
 public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
-
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
-
+  private static Logger logger = LogService.getLogger();
   static {
     // customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections. It can be turned off by setting this
@@ -97,6 +100,9 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
       try {
         socket.connect(inetSocketAddress, Math.max(timeout, 0));
+      } catch (ConnectException connectException) {
+        logger.info("Failed to connect to " + inetSocketAddress);
+        throw connectException;
       } finally {
         if (optionalWatcher != null) {
           optionalWatcher.afterConnect(socket);
