@@ -26,12 +26,13 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import io.netty.channel.Channel;
+import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public class SubscriptionsTest {
+public class SubscriptionsIntegrationTest {
 
   private static final int ITERATIONS = 1000;
 
@@ -46,6 +47,11 @@ public class SubscriptionsTest {
       }
       return null;
     };
+  }
+
+  @AfterClass
+  public static void after() {
+    System.out.println("done");
   }
 
   @Test
