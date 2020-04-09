@@ -31,11 +31,12 @@ import java.net.URL;
 import java.util.Properties;
 
 import com.palantir.docker.compose.DockerComposeRule;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -43,7 +44,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 /**
  * These tests run against a 2-server, 1-locator Geode cluster. The servers and locator run inside
@@ -65,11 +65,6 @@ public class DualServerSNIAcceptanceTest {
   private static final URL DOCKER_COMPOSE_PATH =
       SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
-  @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
-
   @ClassRule
   public static DockerComposeRule docker = DockerComposeRule.builder()
       .file(DOCKER_COMPOSE_PATH.getPath())
@@ -80,6 +75,10 @@ public class DualServerSNIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() throws IOException, InterruptedException {
+
+    // No docker-compose available Windows. Do not run this test on Windows.
+    Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
+
     docker.exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh"));
 
