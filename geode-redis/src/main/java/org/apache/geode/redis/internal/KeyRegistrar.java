@@ -82,8 +82,7 @@ public class KeyRegistrar {
    * @param key Key to check
    */
   public boolean isProtected(ByteArrayWrapper key) {
-    return redisMetaRegion.containsKey(key.toString())
-        && RedisDataType.REDIS_PROTECTED.equals(redisMetaRegion.get(key.toString()));
+    return RedisDataType.REDIS_PROTECTED.equals(redisMetaRegion.get(key.toString()));
   }
 
   private boolean isValidDataType(RedisDataType actualDataType, RedisDataType expectedDataType) {

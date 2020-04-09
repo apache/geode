@@ -676,7 +676,7 @@ public class HashesIntegrationTest {
 
     assertThatThrownBy(
         () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE");
+            .hasMessageContaining("WRONGTYPE");
   }
 
   @Test
