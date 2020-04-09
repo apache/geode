@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -65,14 +66,7 @@ class GeodeRedisSetSynchronized implements RedisSet {
 
   @Override
   public Set<ByteArrayWrapper> members() {
-    HashSet<ByteArrayWrapper> members = new HashSet<>();
-    region().computeIfPresent(key,
-        (_unusedKey_, oldValue) -> {
-          members.clear();
-          members.addAll(oldValue);
-          return oldValue;
-        });
-    return members;
+    return region().getOrDefault(key, Collections.emptySet());
   }
 
   Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region() {

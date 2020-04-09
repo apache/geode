@@ -15,8 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +39,7 @@ class GeodeRedisHashSynchronized implements RedisHash {
 
   @Override
   public int hset(List<ByteArrayWrapper> fieldsToSet,
-                  boolean NX) {
+      boolean NX) {
     AtomicInteger fieldsAdded = new AtomicInteger();
 
     Map<ByteArrayWrapper, ByteArrayWrapper> computedHash =
@@ -94,12 +94,7 @@ class GeodeRedisHashSynchronized implements RedisHash {
 
   @Override
   public Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall() {
-    Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> entries = new ArrayList<>();
-    region().computeIfPresent(key, (_unused_, oldHash) -> {
-      entries.addAll(oldHash.entrySet());
-      return oldHash;
-    });
-    return entries;
+    return region().getOrDefault(key, Collections.emptyMap()).entrySet();
   }
 
   private Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> region() {
