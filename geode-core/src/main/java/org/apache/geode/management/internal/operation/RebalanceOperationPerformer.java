@@ -167,7 +167,7 @@ public class RebalanceOperationPerformer {
       result.setBucketTransfersCompleted(results.getTotalBucketTransfersCompleted());
       result.setPrimaryTransferTimeInMilliseconds(results.getTotalPrimaryTransferTime());
       result.setPrimaryTransfersCompleted(results.getTotalPrimaryTransfersCompleted());
-      result.setNumOfMembers(results.getTotalNumOfMembers());
+      result.setNumOfMembers(results.getTotalMembersExecutedOn());
       result.setTimeInMilliseconds(results.getTotalTime());
 
       return result;

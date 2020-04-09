@@ -143,5 +143,5 @@ public interface PartitionRebalanceInfo {
    *
    * @return the total number of members on which command is executed
    */
-  int getPrimaryNumOfMembers();
+  int getNumberOfMembersExecutedOn();
 }

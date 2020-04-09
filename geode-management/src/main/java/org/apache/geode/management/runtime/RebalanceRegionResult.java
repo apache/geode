@@ -78,5 +78,5 @@ public interface RebalanceRegionResult extends JsonSerializable, Serializable {
   /**
    * Returns the number of members on which rebalance operation is executed.
    */
-  int getNum0fMembers();
+  int getNumOfMembers();
 }

@@ -120,7 +120,7 @@ public class RebalanceRegionResultImpl implements RebalanceRegionResult {
   }
 
   @Override
-  public int getNum0fMembers() {
+  public int getNumOfMembers() {
     return numOfMembers;
   }
 

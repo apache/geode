@@ -16,6 +16,10 @@ package org.apache.geode.management.internal.cli.commands;
 
 
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,7 +45,7 @@ public class RebalanceCommandDistributedTestBase {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  protected static MemberVM locator, server1, server2;
+  protected static MemberVM locator, server1, server2, server3;
 
   @BeforeClass
   public static void beforeClass() {
@@ -92,6 +96,40 @@ public class RebalanceCommandDistributedTestBase {
     rebalanceResult.hasRow(7).contains(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED);
     rebalanceResult.hasRow(8).contains(CliStrings.REBALANCE__MSG__TOTALTIME);
     rebalanceResult.hasRow(9).contains(CliStrings.REBALANCE__MSG__MEMBER_COUNT);
+  }
+
+  @Test
+  public void testRebalanceResultOutputMemberCount() {
+    server3 = cluster.startServerVM(3, "localhost", locator.getPort());
+    server3.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      RegionFactory<Integer, Integer> dataRegionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+      Region region = dataRegionFactory.create("region-1");
+      for (int i = 0; i < 100; i++) {
+        region.put("key" + (i + 400), "value" + (i + 400));
+      }
+    });
+    // check if DistributedRegionMXBean is available so that command will not fail
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-1", 3);
+
+    Map<String, List<String>> listMembersResult = gfsh.executeAndAssertThat("list members")
+        .hasTableSection().getActual().getContent();
+    assertThat(listMembersResult.get("Name").size()).isEqualTo(4);
+
+    server3.forceDisconnect();
+
+    Map<String, List<String>> rebalanceResult = gfsh.executeAndAssertThat("rebalance")
+        .statusIsSuccess().hasTableSection().getActual().getContent();
+    
+    server3.waitTilFullyReconnected();
+
+    listMembersResult = gfsh.executeAndAssertThat("list members")
+        .hasTableSection().getActual().getContent();
+    assertThat(listMembersResult.get("Name").size()).isEqualTo(4);
+    assertThat(rebalanceResult.get("Rebalanced Stats").get(9))
+        .isEqualTo("Total number of members in system on which rebalance is executed");
+    assertThat(rebalanceResult.get("Value").get(9)).isEqualTo("2");
   }
 
   private static void setUpRegions() {

@@ -44,7 +44,7 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
     totalBucketTransfersCompleted += details.getBucketTransfersCompleted();
     totalPrimaryTransferTime += details.getPrimaryTransferTime();
     totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
-    totalNumOfMembers += details.getPrimaryNumOfMembers();
+    totalNumOfMembers += details.getNumberOfMembersExecutedOn();
     totalTime += details.getTime();
   }
 
@@ -104,7 +104,7 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
   }
 
   @Override
-  public int getTotalNumOfMembers() {
+  public int getTotalMembersExecutedOn() {
     return this.totalNumOfMembers;
   }
 

@@ -105,5 +105,5 @@ public interface RebalanceResults {
    *
    * @return the total number of members on which command is executed
    */
-  int getTotalNumOfMembers();
+  int getTotalMembersExecutedOn();
 }
