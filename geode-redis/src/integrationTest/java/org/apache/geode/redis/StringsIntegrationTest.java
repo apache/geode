@@ -22,7 +22,6 @@ import static org.apache.geode.redis.GeodeRedisServer.REDIS_META_DATA_REGION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
