@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -118,21 +117,27 @@ public class RegionConfigRealizerTest {
   }
 
   @Test
-  public void exists() {
+  public void regionDoesNotExistIfNotInCache() {
     config.setName("test");
     when(cache.getRegion("/test")).thenReturn(null);
     assertThat(realizer.exists(config, cache)).isFalse();
+  }
 
+
+  @Test
+  public void regionDoesNotExistIfDestroyed() {
+    when(cache.getRegion("/test")).thenReturn(region);
     when(region.isDestroyed()).thenReturn(true);
     assertThat(realizer.exists(config, cache)).isFalse();
   }
 
   @Test
-  public void existsDoesNotGetRuntimeInfo() {
+  public void regionExistsDoesNotGetRuntimeInfo() {
     config.setName("test");
     when(cache.getRegion("/test")).thenReturn(region);
+    when(region.isDestroyed()).thenReturn(false);
     boolean exists = realizer.exists(config, cache);
     assertThat(exists).isTrue();
-    verify(region, times(0)).size();
+    verify(region, never()).size();
   }
 }
