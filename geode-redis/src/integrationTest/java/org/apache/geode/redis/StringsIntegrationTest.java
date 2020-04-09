@@ -63,7 +63,7 @@ public class StringsIntegrationTest {
   private static int ITERATION_COUNT = 4000;
 
   @BeforeClass
-  public static void setUp() throws IOException {
+  public static void setUp() {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
