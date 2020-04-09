@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.redis.GeodeRedisServer.REDIS_META_DATA_REGION;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
@@ -93,7 +94,6 @@ public class StringsIntegrationTest {
     server.shutdown();
   }
 
-
   @Test
   public void testSET_shouldSetStringValueToKey_givenEmptyKey() {
 
@@ -109,7 +109,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldSetStringValueToKey_givenKeyContainingOtherDataType() {
+  public void testSET_shouldSetStringValueToKey_givenKeyIsOfDataTypeSet() {
     String key = "key";
     String stringValue = "value";
 
@@ -122,7 +122,20 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldHonorNX_evenIfKeyContainsOtherDataType() {
+  public void testSET_shouldSetStringValueToKey_givenKeyIsOfDataTypeHash() {
+    String key = "key";
+    String stringValue = "value";
+
+    jedis.hset(key, "field", "something else");
+
+    String result = jedis.set(key, stringValue);
+    assertThat(result).isEqualTo("OK");
+
+    assertThat(stringValue).isEqualTo(jedis.get(key));
+  }
+
+  @Test
+  public void testSET_shouldSetNX_evenIfKeyContainsOtherDataType() {
     String key = "key";
     String stringValue = "value";
 
@@ -135,7 +148,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldHonorXX_evenIfKeyContainsOtherDataType() {
+  public void testSET_shouldSetXX_evenIfKeyContainsOtherDataType() {
     String key = "key";
     String stringValue = "value";
 
@@ -150,7 +163,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldAccept_EX_argumentToSetExpireTime() {
+  public void testSET_withEXargument_shouldSetExpireTime() {
     String key = "key";
     String value = "value";
     int secondsUntilExpiration = 20;
@@ -166,7 +179,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_with_Negative_EX_time_shouldReturnError() {
+  public void testSET_withNegative_EX_time_shouldReturnError() {
     String key = "key";
     String value = "value";
     int millisecondsUntilExpiration = -1;
@@ -180,7 +193,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldAccept_PX_argumentToSetExpireTime() {
+  public void testSET_withPXargument_shouldSetExpireTime() {
     String key = "key";
     String value = "value";
     int millisecondsUntilExpiration = 20000;
@@ -228,7 +241,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldClearPreviousTTL_onXXSuccess() {
+  public void testSET_withXXArgument_shouldClearPreviousTTL_Success() {
     String key = "xx_key";
     String value = "did exist";
     int secondsUntilExpiration = 20;
@@ -290,7 +303,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldAccept_NX_argumentToOnlySetKeyIfIt_Does_not_Exist() {
+  public void testSET_withNXargument_shouldOnlySetKeyIfKeyDoesNotExist() {
     String key1 = "key_1";
     String key2 = "key_2";
     String value1 = "value_1";
@@ -313,7 +326,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldAccept_XX_argumentToOnlySetKeyIfIt_Does_Exist() {
+  public void testSET_withXXargument_shouldOnlySetKeyIfKeyExists() {
     String key1 = "key_1";
     String key2 = "key_2";
     String value1 = "value_1";
@@ -582,15 +595,6 @@ public class StringsIntegrationTest {
     assertThatThrownBy(() -> jedis.getSet(key, "this value doesn't matter"))
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
-  }
-
-  @Test
-  public void testSet_keyExistsWithDifferentDataType_returnsRedisDataTypeMismatchException() {
-    jedis.set("key", "value");
-
-    assertThatThrownBy(
-        () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
-            .hasMessageContaining("WRONGTYPE");
   }
 
   @Test
