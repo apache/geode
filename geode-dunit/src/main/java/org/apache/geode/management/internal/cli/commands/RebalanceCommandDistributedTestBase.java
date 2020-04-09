@@ -121,14 +121,14 @@ public class RebalanceCommandDistributedTestBase {
 
     Map<String, List<String>> rebalanceResult = gfsh.executeAndAssertThat("rebalance")
         .statusIsSuccess().hasTableSection().getActual().getContent();
-    
+
     server3.waitTilFullyReconnected();
 
     listMembersResult = gfsh.executeAndAssertThat("list members")
         .hasTableSection().getActual().getContent();
     assertThat(listMembersResult.get("Name").size()).isEqualTo(4);
     assertThat(rebalanceResult.get("Rebalanced Stats").get(9))
-        .isEqualTo("Total number of members in system on which rebalance is executed");
+        .isEqualTo(CliStrings.REBALANCE__MSG__MEMBER_COUNT);
     assertThat(rebalanceResult.get("Value").get(9)).isEqualTo("2");
   }
 
