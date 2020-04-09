@@ -206,7 +206,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
@@ -408,7 +407,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final DistributionManager dm;
 
-  private final Map<String, InternalRegion> rootRegions;
+  private final ConcurrentMap<String, InternalRegion> rootRegions;
 
   /**
    * True if this cache is being created by a ClientCacheFactory.
@@ -998,7 +997,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         throw new IllegalStateException("Cannot create a Cache in an admin-only VM.");
       }
 
-      rootRegions = new HashMap<>();
+      rootRegions = new ConcurrentHashMap<>();
 
       cqService = cqServiceFactory.apply(this);
 
@@ -2175,11 +2174,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           prepareDiskStoresForClose();
 
-          List<InternalRegion> rootRegionValues;
-          synchronized (rootRegions) {
-            rootRegionValues = new ArrayList<>(rootRegions.values());
-          }
-
           Operation op;
           if (forcedDisconnect) {
             op = Operation.FORCED_DISCONNECT;
@@ -2191,7 +2185,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           InternalRegion prRoot = null;
 
-          for (InternalRegion lr : rootRegionValues) {
+          for (InternalRegion lr : rootRegions.values()) {
             if (isDebugEnabled) {
               logger.debug("{}: processing region {}", this, lr.getFullPath());
             }
@@ -2905,6 +2899,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         getCancelCriterion().checkCancelInProgress(null);
 
         Future<InternalRegion> future = null;
+        // synchronize the block because rootRegions get and then put have to stay together as an
+        // atomic operation
         synchronized (rootRegions) {
           region = rootRegions.get(name);
           if (region != null) {
@@ -2939,13 +2935,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             }
 
             rootRegions.put(name, region);
+            // Note that rootRegions is a ConcurrentMap. After rootRegions.put(name, region),
+            // the ConcurrentMap entry is now available for the other threads to consume,
+            // although rootRegions.put(name, region) is still in a synchronized block.
             if (isReInitCreate) {
               regionReinitialized(region);
             }
             break;
           }
         }
-
         boolean interrupted = Thread.interrupted();
         try {
           throw new RegionExistsException(future.get());
@@ -2997,12 +2995,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           } finally {
             // clean up if initialize fails for any reason
             setRegionByPath(region.getFullPath(), null);
-            synchronized (rootRegions) {
-              Region rootRegion = rootRegions.get(name);
-              if (rootRegion == region) {
-                rootRegions.remove(name);
-              }
-            }
+            rootRegions.remove(name, region);
           }
         }
       }
@@ -3064,60 +3057,60 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public Set<InternalRegion> getAllRegions() {
     Set<InternalRegion> result = new HashSet<>();
-    synchronized (rootRegions) {
-      for (Region<?, ?> region : rootRegions.values()) {
-        if (region instanceof PartitionedRegion) {
-          PartitionedRegion partitionedRegion = (PartitionedRegion) region;
-          PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-          if (dataStore != null) {
-            Set<Entry<Integer, BucketRegion>> bucketEntries =
-                partitionedRegion.getDataStore().getAllLocalBuckets();
-            for (Entry entry : bucketEntries) {
-              result.add((InternalRegion) entry.getValue());
-            }
+
+    for (Region<?, ?> region : rootRegions.values()) {
+      if (region instanceof PartitionedRegion) {
+        PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+        PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
+        if (dataStore != null) {
+          Set<Entry<Integer, BucketRegion>> bucketEntries =
+              partitionedRegion.getDataStore().getAllLocalBuckets();
+          for (Entry entry : bucketEntries) {
+            result.add((InternalRegion) entry.getValue());
           }
-        } else if (region instanceof InternalRegion) {
-          InternalRegion internalRegion = (InternalRegion) region;
-          result.add(internalRegion);
-          result.addAll(internalRegion.basicSubregions(true));
         }
+      } else if (region instanceof InternalRegion) {
+        InternalRegion internalRegion = (InternalRegion) region;
+        result.add(internalRegion);
+        result.addAll(internalRegion.basicSubregions(true));
       }
     }
+
     return result;
   }
 
   @Override
   public Set<InternalRegion> getApplicationRegions() {
     Set<InternalRegion> result = new HashSet<>();
-    synchronized (rootRegions) {
-      for (Object region : rootRegions.values()) {
-        InternalRegion internalRegion = (InternalRegion) region;
-        if (internalRegion.isInternalRegion()) {
-          // Skip internal regions
-          continue;
-        }
-        result.add(internalRegion);
-        result.addAll(internalRegion.basicSubregions(true));
+
+    for (Object region : rootRegions.values()) {
+      InternalRegion internalRegion = (InternalRegion) region;
+      if (internalRegion.isInternalRegion()) {
+        // Skip internal regions
+        continue;
       }
+      result.add(internalRegion);
+      result.addAll(internalRegion.basicSubregions(true));
     }
+
     return result;
   }
 
   @Override
   public boolean hasPersistentRegion() {
-    synchronized (rootRegions) {
-      for (InternalRegion region : rootRegions.values()) {
-        if (region.getDataPolicy().withPersistence()) {
+
+    for (InternalRegion region : rootRegions.values()) {
+      if (region.getDataPolicy().withPersistence()) {
+        return true;
+      }
+      for (InternalRegion subRegion : region.basicSubregions(true)) {
+        if (subRegion.getDataPolicy().withPersistence()) {
           return true;
         }
-        for (InternalRegion subRegion : region.basicSubregions(true)) {
-          if (subRegion.getDataPolicy().withPersistence()) {
-            return true;
-          }
-        }
       }
-      return false;
     }
+    return false;
+
   }
 
   @Override
@@ -3172,12 +3165,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       try {
         String[] pathParts = parsePath(path);
         InternalRegion rootRegion;
-        synchronized (rootRegions) {
-          rootRegion = rootRegions.get(pathParts[0]);
-          if (rootRegion == null) {
-            return null;
-          }
+
+        rootRegion = rootRegions.get(pathParts[0]);
+        if (rootRegion == null) {
+          return null;
         }
+
         if (logger.isDebugEnabled()) {
           logger.debug("GemFireCache.getRegion, calling getSubregion on rootRegion({}): {}",
               pathParts[0], pathParts[1]);
@@ -3208,20 +3201,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     String[] pathParts = parsePath(path);
     InternalRegion rootRegion;
-    synchronized (rootRegions) {
-      rootRegion = rootRegions.get(pathParts[0]);
-      if (rootRegion == null) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("GemFireCache.getRegion, no region found for {}", pathParts[0]);
-        }
-        stopper.checkCancelInProgress(null);
-        return null;
+
+    rootRegion = rootRegions.get(pathParts[0]);
+    if (rootRegion == null) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("GemFireCache.getRegion, no region found for {}", pathParts[0]);
       }
-      if (!returnDestroyedRegion && rootRegion.isDestroyed()) {
-        stopper.checkCancelInProgress(null);
-        return null;
-      }
+      stopper.checkCancelInProgress(null);
+      return null;
     }
+    if (!returnDestroyedRegion && rootRegion.isDestroyed()) {
+      stopper.checkCancelInProgress(null);
+      return null;
+    }
+
 
     if (logger.isDebugEnabled()) {
       logger.debug("GemFireCache.getRegion, calling getSubregion on rootRegion({}): {}",
@@ -3268,20 +3261,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private Set<Region<?, ?>> rootRegions(boolean includePRAdminRegions, boolean waitForInit) {
     stopper.checkCancelInProgress(null);
     Set<Region<?, ?>> regions = new HashSet<>();
-    synchronized (rootRegions) {
-      for (InternalRegion region : rootRegions.values()) {
-        // If this is an internal meta-region, don't return it to end user
-        if (region.isSecret()
-            || region.isUsedForMetaRegion()
-            || !includePRAdminRegions
-                && (region.isUsedForPartitionedRegionAdmin()
-                    || region.isUsedForPartitionedRegionBucket())) {
-          // Skip administrative PartitionedRegions
-          continue;
-        }
-        regions.add(region);
+
+    for (InternalRegion region : rootRegions.values()) {
+      // If this is an internal meta-region, don't return it to end user
+      if (region.isSecret()
+          || region.isUsedForMetaRegion()
+          || !includePRAdminRegions
+              && (region.isUsedForPartitionedRegionAdmin()
+                  || region.isUsedForPartitionedRegionBucket())) {
+        // Skip administrative PartitionedRegions
+        continue;
       }
+      regions.add(region);
     }
+
     if (waitForInit) {
       for (Iterator<Region<?, ?>> iterator = regions.iterator(); iterator.hasNext();) {
         InternalRegion region = (InternalRegion) iterator.next();
@@ -3438,16 +3431,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public boolean removeRoot(InternalRegion rootRgn) {
-    synchronized (rootRegions) {
-      String regionName = rootRgn.getName();
-      InternalRegion found = rootRegions.get(regionName);
-      if (found == rootRgn) {
-        InternalRegion previous = rootRegions.remove(regionName);
-        Assert.assertTrue(previous == rootRgn);
-        return true;
-      }
-      return false;
-    }
+
+    String regionName = rootRgn.getName();
+    return rootRegions.remove(regionName, rootRgn);
+
   }
 
   /**
@@ -3621,15 +3608,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
 
-    synchronized (rootRegions) {
-      Set<InternalRegion> applicationRegions = getApplicationRegions();
-      for (InternalRegion region : applicationRegions) {
-        Set<String> senders = region.getAllGatewaySenderIds();
-        if (senders.contains(sender.getId()) && !sender.isParallel()) {
-          region.senderCreated();
-        }
+
+    Set<InternalRegion> applicationRegions = getApplicationRegions();
+    for (InternalRegion region : applicationRegions) {
+      Set<String> senders = region.getAllGatewaySenderIds();
+      if (senders.contains(sender.getId()) && !sender.isParallel()) {
+        region.senderCreated();
       }
     }
+
 
     if (!sender.isParallel()) {
       Region<?, ?> dynamicMetaRegion = getRegion(DynamicRegionFactory.DYNAMIC_REGION_LIST_NAME);
