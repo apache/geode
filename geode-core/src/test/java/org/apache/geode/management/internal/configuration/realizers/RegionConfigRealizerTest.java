@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -42,6 +43,7 @@ public class RegionConfigRealizerTest {
   RegionConfigRealizer realizer;
   RegionConfigValidator validator;
   Region config;
+  org.apache.geode.cache.Region region;
 
   @Before
   public void setup() {
@@ -52,6 +54,7 @@ public class RegionConfigRealizerTest {
     realizer = new RegionConfigRealizer();
     config = new Region();
     config.setName("test");
+    region = mock(org.apache.geode.cache.Region.class);
   }
 
   @Test
@@ -112,5 +115,24 @@ public class RegionConfigRealizerTest {
     verify(regionFactory, never()).setValueConstraint(any());
     verify(regionFactory, never()).setDiskStoreName(any());
     verify(regionFactory).setDataPolicy(DataPolicy.REPLICATE);
+  }
+
+  @Test
+  public void exists() {
+    config.setName("test");
+    when(cache.getRegion("/test")).thenReturn(null);
+    assertThat(realizer.exists(config, cache)).isFalse();
+
+    when(region.isDestroyed()).thenReturn(true);
+    assertThat(realizer.exists(config, cache)).isFalse();
+  }
+
+  @Test
+  public void existsDoesNotGetRuntimeInfo() {
+    config.setName("test");
+    when(cache.getRegion("/test")).thenReturn(region);
+    boolean exists = realizer.exists(config, cache);
+    assertThat(exists).isTrue();
+    verify(region, times(0)).size();
   }
 }
