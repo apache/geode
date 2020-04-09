@@ -15,8 +15,16 @@
 # limitations under the License.
 #
 
+<<<<<<< HEAD
 start locator --name=locator --hostname-for-clients=locator --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-keystore.jks
 start server --name=server --hostname-for-clients=server --locators=localhost[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-keystore.jks
+||||||| parent of e4820c0192... GEODE-7852: Add client side configuration option to support a SNI proxy
+start locator --name=locator-maeve --hostname-for-clients=locator-maeve --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-maeve-keystore.jks
+start server --name=server-dolores --hostname-for-clients=server-dolores --locators=localhost[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-dolores-keystore.jks
+=======
+start locator --name=locator-maeve --hostname-for-clients=locator-maeve --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-maeve-keystore.jks
+start server --name=server-dolores --max-heap=256m --hostname-for-clients=server-dolores --locators=localhost[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-dolores-keystore.jks
+>>>>>>> e4820c0192... GEODE-7852: Add client side configuration option to support a SNI proxy
 connect --locator=localhost[10334] --use-ssl=true --security-properties-file=/geode/config/gfsecurity.properties
 create region --name=jellyfish --type=REPLICATE
 

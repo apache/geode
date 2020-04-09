@@ -27,12 +27,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import com.palantir.docker.compose.DockerComposeRule;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
@@ -41,65 +44,153 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class ClientSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
-      ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
+      SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
+
+  public static final String TEST_KEY = "foo";
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
   public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
-  @Rule
-  public DockerComposeRule docker = DockerComposeRule.builder()
+  @ClassRule
+  public static DockerComposeRule docker = DockerComposeRule.builder()
       .file(DOCKER_COMPOSE_PATH.getPath())
       .build();
 
+  private static Properties clientCacheProperties;
+  private static ClientCache cache;
+  private static Region<String, String> region;
+  private static Map<String, String> bulkData;
 
-  private String trustStorePath;
-
-  @Before
-  public void before() throws IOException, InterruptedException {
-    trustStorePath =
-        createTempFileFromResource(ClientSNIAcceptanceTest.class,
-            "geode-config/truststore.jks")
-                .getAbsolutePath();
+  @BeforeClass
+  public static void beforeClass() throws IOException, InterruptedException {
+    // start up server/locator processes and initialize the server cache
     docker.exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
+
+    final String trustStorePath =
+        createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
+            "geode-config/truststore.jks")
+                .getAbsolutePath();
+
+    // set up client cache properties so it can connect to the server
+    clientCacheProperties = new Properties();
+    clientCacheProperties.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    clientCacheProperties.setProperty(SSL_KEYSTORE_TYPE, "jks");
+    clientCacheProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
+
+    clientCacheProperties.setProperty(SSL_TRUSTSTORE, trustStorePath);
+    clientCacheProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
+    clientCacheProperties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
+    cache = getClientCache(clientCacheProperties);
+
+    // the gfsh startup script created a server-side region named "jellyfish"
+    region = cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .create("jellyfish");
+    bulkData = getBulkDataMap();
+    region.putAll(bulkData);
   }
 
+  @AfterClass
+  public static void afterClass() throws Exception {
+    // preserve this commented code for debugging
+    // String logs = docker.exec(options("-T"), "geode",
+    // arguments("cat", "server-dolores/server-dolores.log"));
+    // System.out.println("server logs------------------------------------------");
+    // System.out.println(logs);
+
+    if (cache != null) {
+      cache.close();
+      cache = null;
+    }
+    bulkData = null;
+    region = null;
+  }
+
+  /**
+   * A basic connectivity test that does a
+   */
   @Test
   public void connectToSNIProxyDocker() {
-    Properties gemFireProps = new Properties();
-    gemFireProps.setProperty(SSL_ENABLED_COMPONENTS, "all");
-    gemFireProps.setProperty(SSL_KEYSTORE_TYPE, "jks");
-    gemFireProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
+    region.put("hello", "world");
+    assertThat(region.containsKey("hello")).isFalse(); // proxy regions don't store locally
+    assertThat(region.get("hello")).isEqualTo("world");
+    region.destroy("hello");
+    assertThat(region.get("hello")).isNull();
+    // the geode-starter.gfsh script put an entry named "foo" into the region
+    assertThat(region.get(TEST_KEY)).isNotNull();
+  }
 
-    gemFireProps.setProperty(SSL_TRUSTSTORE, trustStorePath);
-    gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
-    gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
+  /**
+   * A test of Region bulk put and query methods
+   */
+  @Test
+  public void query() throws Exception {
+    final SelectResults<String> results = region.query("SELECT * from /jellyfish");
+    assertThat(results).hasSize(bulkData.size());
+    for (String result : results) {
+      assertThat(bulkData.containsValue(result)).isTrue();
+    }
+  }
 
+  /**
+   * A test of Region bulk putAll/getAll methods
+   */
+  @Test
+  public void getAll() {
+    final Map<String, String> results = region.getAll(bulkData.keySet());
+    assertThat(results).hasSize(bulkData.size());
+    for (Map.Entry<String, String> entry : results.entrySet()) {
+      assertThat(region.containsKey(entry.getKey())).isFalse();
+      assertThat(bulkData.containsKey(entry.getKey())).isTrue();
+      assertThat(entry.getValue()).isEqualTo(bulkData.get(entry.getKey()));
+    }
+  }
+
+  /**
+   * A test of the Region API's methods that directly access the server cache
+   */
+  @Test
+  public void verifyServerAPIs() {
+    assertThat(region.sizeOnServer()).isEqualTo(bulkData.size());
+    Set<String> keysOnServer = region.keySetOnServer();
+    for (String entry : bulkData.keySet()) {
+      assertThat(region.containsKeyOnServer(entry)).isTrue();
+      assertThat(keysOnServer).contains(entry);
+    }
+  }
+
+
+  protected static Map<String, String> getBulkDataMap() {
+    // create a putAll map with enough keys to force a lot of "chunking" of the results
+    int numberOfKeys = BaseCommand.MAXIMUM_CHUNK_SIZE * 10; // 10,000 keys
+    Map<String, String> pairs = new HashMap<>();
+    for (int i = 1; i < numberOfKeys; i++) {
+      pairs.put("Object_" + i, "Value_" + i);
+    }
+    pairs.put(TEST_KEY, "some value");
+    return pairs;
+  }
+
+  protected static ClientCache getClientCache(Properties properties) {
     int proxyPort = docker.containers()
         .container("haproxy")
         .port(15443)
         .getExternalPort();
-    ClientCache cache = new ClientCacheFactory(gemFireProps)
-        .addPoolLocator("locator", 10334)
+    ClientCache result = new ClientCacheFactory(properties)
+        .addPoolLocator("locator-maeve", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
         .create();
-    // the geode-starter.gfsh script has created a Region named "jellyfish" on the
-    // server sitting behind the haproxy gateway. Show that an empty client cache can
-    // put something in that region and then retrieve it.
-    Region<String, String> region =
-        cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
-            .create("jellyfish");
-    region.destroy("hello");
-    region.put("hello", "world");
-    assertThat(region.get("hello")).isEqualTo("world");
-
+    return result;
   }
+
 }

@@ -105,7 +105,7 @@ public class HostAndPort implements DataSerializableFixedID {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + " [socketInetAddress=" + socketInetAddress + "]";
+    return getClass().getSimpleName() + "[" + socketInetAddress + "]";
   }
 
   public InetAddress getAddress() {
