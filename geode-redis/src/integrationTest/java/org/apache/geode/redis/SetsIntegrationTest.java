@@ -129,7 +129,7 @@ public class SetsIntegrationTest {
 
     try {
       jedis.sadd(key, setValue);
-    } catch (Exception exception) {
+    } catch (JedisDataException exception) {
     }
 
     String result = jedis.get(key);
