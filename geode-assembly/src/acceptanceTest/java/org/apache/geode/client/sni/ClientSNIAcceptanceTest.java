@@ -91,11 +91,17 @@ public class ClientSNIAcceptanceTest {
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
         .create();
+    // the geode-starter.gfsh script has created a Region named "jellyfish" on the
+    // server sitting behind the haproxy gateway. Show that an empty client cache can
+    // put something in that region and then retrieve it.
     Region<String, String> region =
         cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
             .create("jellyfish");
     region.destroy("hello");
     region.put("hello", "world");
     assertThat(region.get("hello")).isEqualTo("world");
+    // the geode-starter.gfsh script put an entry named "foo" into the region with the
+    // value "bar"
+    assertThat(region.get("foo")).isEqualTo("bar");
   }
 }

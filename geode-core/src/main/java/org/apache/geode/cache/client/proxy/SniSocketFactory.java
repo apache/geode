@@ -18,26 +18,50 @@ package org.apache.geode.cache.client.proxy;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.client.SocketFactory;
+import org.apache.geode.internal.DistributionLocator;
 
 /**
  * A {@link SocketFactory} that connects a client to locators and servers
  * through a SNI proxy.
  */
-public class SniSocketFactory implements SocketFactory {
+public class SniSocketFactory implements SocketFactory, Declarable {
 
 
-  private final String hostname;
-  private final int port;
+  private String hostname;
+  private int port;
+
+  public SniSocketFactory() {} // required by Declarable
 
   public SniSocketFactory(String hostname, int port) {
     this.hostname = hostname;
     this.port = port;
   }
 
+  @Override // Declarable
+  public void initialize(Cache cache, Properties properties) {
+    System.out.println("BRUCE: sni properties are " + properties);
+    this.hostname = properties.getProperty("hostname");
+    String portString =
+        properties.getProperty("port", "" + DistributionLocator.DEFAULT_LOCATOR_PORT);
+    this.port = Integer.parseInt(portString);
+  }
+
   @Override
   public Socket createSocket() throws IOException {
+    System.out.println("BRUCE: creating a socket with " + hostname + ":" + port);
     return new SniProxySocket(new InetSocketAddress(hostname, port));
+  }
+
+  public String getHostname() {
+    return hostname;
+  }
+
+  public int getPort() {
+    return port;
   }
 }
