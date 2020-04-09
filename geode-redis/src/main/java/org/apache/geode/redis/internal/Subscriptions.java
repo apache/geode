@@ -16,15 +16,15 @@
 
 package org.apache.geode.redis.internal;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
  * Class that manages both channel and pattern subscriptions.
  */
 public class Subscriptions {
-  private List<Subscription> subscriptions = new ArrayList<>();
+  private final List<Subscription> subscriptions = new CopyOnWriteArrayList<>();
 
   /**
    * Check whether a given client has already subscribed to a channel or pattern
@@ -32,7 +32,7 @@ public class Subscriptions {
    * @param channelOrPattern channel or pattern
    * @param client a client connection
    */
-  public synchronized boolean exists(Object channelOrPattern, Client client) {
+  public boolean exists(Object channelOrPattern, Client client) {
     return subscriptions.stream()
         .anyMatch(subscription -> subscription.isEqualTo(channelOrPattern, client));
   }
@@ -43,7 +43,7 @@ public class Subscriptions {
    * @param client the subscribed client
    * @return a list of subscriptions
    */
-  public synchronized List<Subscription> findSubscriptions(Client client) {
+  public List<Subscription> findSubscriptions(Client client) {
     return subscriptions.stream()
         .filter(subscription -> subscription.matchesClient(client))
         .collect(Collectors.toList());
@@ -55,7 +55,7 @@ public class Subscriptions {
    * @param channelOrPattern the channel or pattern
    * @return a list of subscriptions
    */
-  public synchronized List<Subscription> findSubscriptions(String channelOrPattern) {
+  public List<Subscription> findSubscriptions(String channelOrPattern) {
     return subscriptions.stream()
         .filter(subscription -> subscription.matches(channelOrPattern))
         .collect(Collectors.toList());
@@ -64,28 +64,28 @@ public class Subscriptions {
   /**
    * Add a new subscription
    */
-  public synchronized void add(Subscription subscription) {
+  public void add(Subscription subscription) {
     subscriptions.add(subscription);
   }
 
   /**
    * Remove all subscriptions for a given client
    */
-  public synchronized void remove(Client client) {
+  public void remove(Client client) {
     subscriptions.removeIf(subscription -> subscription.matchesClient(client));
   }
 
   /**
    * Remove a single subscription
    */
-  public synchronized void remove(Object channel, Client client) {
+  public void remove(Object channel, Client client) {
     subscriptions.removeIf(subscription -> subscription.isEqualTo(channel, client));
   }
 
   /**
    * @return the total number of all local subscriptions
    */
-  public synchronized int size() {
+  public int size() {
     return subscriptions.size();
   }
 }

@@ -55,6 +55,25 @@ public class SubscriptionsIntegrationTest {
   }
 
   @Test
+  public void add_doesNotThrowException_whenListIsConcurrentlyModified()
+      throws Exception {
+    final Subscriptions subscriptions = new Subscriptions();
+
+    Callable<Void> addingCallable1 =
+        functionSpinner(x -> subscriptions.add(mock(Subscription.class)));
+    Callable<Void> addingCallable2 =
+        functionSpinner(x -> subscriptions.add(mock(Subscription.class)));
+
+    Future<Void> addingFuture = executor.submit(addingCallable1);
+    Future<Void> existsFuture = executor.submit(addingCallable2);
+
+    addingFuture.get();
+    existsFuture.get();
+
+    assertThat(subscriptions.size()).isEqualTo(ITERATIONS * 2);
+  }
+
+  @Test
   public void exists_doesNotThrowException_whenListIsConcurrentlyModified()
       throws Exception {
     final Subscriptions subscriptions = new Subscriptions();
