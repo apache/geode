@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
+import static org.apache.geode.management.internal.i18n.CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -128,7 +129,7 @@ public class RemoveCommandDUnitTest {
     gfsh.executeAndAssertThat("list regions").statusIsSuccess();
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region")
+    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_CLEARS)
         .contains(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);
 
     server1.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
@@ -142,7 +143,7 @@ public class RemoveCommandDUnitTest {
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region")
+    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_CLEARS)
         .contains(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);;
 
     server1.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));

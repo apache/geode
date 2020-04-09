@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
+import static org.apache.geode.management.internal.i18n.CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -32,10 +34,10 @@ import org.apache.geode.test.junit.rules.VMProvider;
 
 
 public class ClearCommandDUnitTest {
-  private static final String commandString = CliStrings.CLEAR_REGION;
   private static final String REPLICATE_REGION_NAME = "replicateRegion";
   private static final String PARTITIONED_REGION_NAME = "partitionedRegion";
   private static final String EMPTY_STRING = "";
+  private static final int NUM_ENTRIES = 200;
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
@@ -70,30 +72,35 @@ public class ClearCommandDUnitTest {
 
     Region<String, String> replicateRegion = cache.getRegion(REPLICATE_REGION_NAME);
     replicateRegion.put(EMPTY_STRING, "valueForEmptyKey");
-    replicateRegion.put("key1", "value1");
-    replicateRegion.put("key2", "value2");
+    for(int i = 0; i < NUM_ENTRIES; i++) {
+      replicateRegion.put("key" + i, "value" + i);
+    }
 
     Region<String, String> partitionedRegion = cache.getRegion(PARTITIONED_REGION_NAME);
-    partitionedRegion.put("key1", "value1");
-    partitionedRegion.put("key2", "value2");
+    replicateRegion.put(EMPTY_STRING, "valueForEmptyKey");
+    for(int i = 0; i < NUM_ENTRIES; i++) {
+      partitionedRegion.put("key" + i, "value" + i);
+    }
   }
 
   @Test
-  public void clearInvalidRegion() {
-    String command = commandString + " --region=NotAValidRegion";
-
+  public void clearFailsWhenRegionIsNotFound() {
+    String invalidRegionName = "NotAValidRegion";
+    String command = new CommandStringBuilder(CliStrings.CLEAR)
+        .addOption(CliStrings.CLEAR_REGION_NAME, invalidRegionName).getCommandString();
     gfsh.executeAndAssertThat(command).statusIsError()
-        .containsOutput(String.format(REGION_NOT_FOUND, "/NotAValidRegion"));
+        .containsOutput(String.format(REGION_NOT_FOUND, "/" + invalidRegionName));
   }
 
   @Test
-  public void clearReplicateRegion() {
-    String command = commandString + " --region=" + REPLICATE_REGION_NAME;
+  public void clearSucceedsWithValidReplicateRegion() {
+    String command = new CommandStringBuilder(CliStrings.CLEAR)
+        .addOption(CliStrings.CLEAR_REGION_NAME, REPLICATE_REGION_NAME).getCommandString();
 
-    gfsh.executeAndAssertThat("list regions").statusIsSuccess();
+    gfsh.executeAndAssertThat("list regions");
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region");
+    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_CLEARS);
 
     server1.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
     server2.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
@@ -101,12 +108,13 @@ public class ClearCommandDUnitTest {
 
 
   @Test
-  public void clearPartitionedRegion() {
-    String command = commandString + " --region=" + PARTITIONED_REGION_NAME;
+  public void clearSucceedsWithValidPartitionedRegion() {
+    String command = new CommandStringBuilder(CliStrings.CLEAR)
+        .addOption(CliStrings.CLEAR_REGION_NAME, PARTITIONED_REGION_NAME).getCommandString();
 
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
+    gfsh.executeAndAssertThat(command);
 
-    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region");
+    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_CLEARS);
 
     server1.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
     server2.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));

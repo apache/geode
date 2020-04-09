@@ -490,7 +490,7 @@ public class MessageType {
       case QUERY_DATA_ERROR:
         return "QUERY_DATA_ERROR";
       case CLEAR_REGION:
-        return "CLEAR_REGION";
+        return "CLEAR";
       case CLEAR_REGION_DATA_ERROR:
         return "CLEAR_REGION_DATA_ERROR";
       case CONTAINS_KEY:
