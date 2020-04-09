@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
@@ -85,14 +86,16 @@ public class DeploymentManagementController extends AbstractManagementController
   @ApiOperation(value = "deploy")
   @ApiResponses({
       @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 409, message = "Index already exists."),
       @ApiResponse(code = 500, message = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'DEPLOY')")
   @PutMapping(value = Deployment.DEPLOYMENT_ENDPOINT,
       consumes = {"multipart/form-data"})
   public ResponseEntity<ClusterManagementResult> deploy(
-      @RequestParam(HasFile.FILE_PARAM) MultipartFile file,
-      @RequestParam(value = HasFile.CONFIG_PARAM) String json) throws IOException {
+      @ApiParam(value = "filePath",
+          required = true) @RequestParam(HasFile.FILE_PARAM) MultipartFile file,
+      @ApiParam("deployment json configuration") @RequestParam(value = HasFile.CONFIG_PARAM,
+          required = false) String json)
+      throws IOException {
     // save the file to the staging area
     if (file == null) {
       throw new IllegalArgumentException("No file uploaded");
@@ -100,7 +103,10 @@ public class DeploymentManagementController extends AbstractManagementController
     Path tempDir = FileUploader.createSecuredTempDirectory("uploaded-");
     File dest = new File(tempDir.toFile(), file.getOriginalFilename());
     file.transferTo(dest);
-    Deployment deployment = objectMapper.getObject().readValue(json, Deployment.class);
+    Deployment deployment = new Deployment();
+    if (StringUtils.isNotBlank(json)) {
+      deployment = objectMapper.getObject().readValue(json, Deployment.class);
+    }
     deployment.setFile(dest);
     ClusterManagementRealizationResult realizationResult =
         clusterManagementService.create(deployment);

@@ -18,7 +18,9 @@ package org.apache.geode.management.configuration;
 import java.io.File;
 
 public interface HasFile {
+  // the parameter name used in the request to send the file
   public static final String FILE_PARAM = "file";
+  // the parameter name used int the request to send the entire configuration
   public static final String CONFIG_PARAM = "config";
 
   File getFile();
