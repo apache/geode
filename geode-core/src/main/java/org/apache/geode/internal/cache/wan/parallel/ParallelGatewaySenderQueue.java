@@ -701,17 +701,17 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     AbstractBucketRegionQueue brq =
         (AbstractBucketRegionQueue) prQ.getDataStore().getLocalBucketById(bucketId);
 
+    // Full path of the bucket:
+    final String bucketFullPath =
+        Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR
+            + prQ.getBucketName(bucketId);
+
     try {
       if (brq == null) {
         // Set the threadInitLevel to BEFORE_INITIAL_IMAGE.
         final InitializationLevel oldLevel =
             LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
         try {
-          // Full path of the bucket:
-
-          final String bucketFullPath =
-              Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR
-                  + prQ.getBucketName(bucketId);
 
           brq = (AbstractBucketRegionQueue) prQ.getCache().getInternalRegionByPath(bucketFullPath);
           if (isDebugEnabled) {
@@ -739,8 +739,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             // chain is getting destroyed one by one starting from child region
             // i.e this bucket due to moveBucket operation
             // In that case we don't want to store this event.
-            if (((PartitionedRegion) prQ.getColocatedWithRegion()).getRegionAdvisor()
-                .getBucketAdvisor(bucketId).getShadowBucketDestroyed()) {
+            if (prQ.getColocatedWithRegion().getRegionAdvisor().getBucketAdvisor(bucketId)
+                .isShadowBucketDestroyed(bucketFullPath)) {
               if (isDebugEnabled) {
                 logger.debug(
                     "ParallelGatewaySenderOrderedQueue not putting key {} : Value : {} as shadowPR bucket is destroyed.",
@@ -790,17 +790,17 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           LocalRegion.setThreadInitLevelRequirement(oldLevel);
         }
       } else {
-        boolean thisbucketDestroyed = false;
+        boolean thisBucketDestroyed;
 
         if (!isDREvent) {
-          thisbucketDestroyed =
-              ((PartitionedRegion) prQ.getColocatedWithRegion()).getRegionAdvisor()
-                  .getBucketAdvisor(bucketId).getShadowBucketDestroyed() || brq.isDestroyed();
+          thisBucketDestroyed =
+              prQ.getColocatedWithRegion().getRegionAdvisor().getBucketAdvisor(bucketId)
+                  .isShadowBucketDestroyed(bucketFullPath) || brq.isDestroyed();
         } else {
-          thisbucketDestroyed = brq.isDestroyed();
+          thisBucketDestroyed = brq.isDestroyed();
         }
 
-        if (!thisbucketDestroyed) {
+        if (!thisBucketDestroyed) {
           putIntoBucketRegionQueue(brq, key, value);
           putDone = true;
         } else {

@@ -15,7 +15,9 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite;
 import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_SIZE_PROPERTY;
+import static org.apache.geode.internal.util.ArrayUtils.asList;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,14 +27,21 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -63,6 +72,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.WanTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
@@ -70,6 +80,9 @@ import org.apache.geode.test.junit.categories.WanTest;
 @Category(WanTest.class)
 @SuppressWarnings("serial")
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
+
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
@@ -640,6 +653,109 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> verifySenderDestroyed("ln", true));
     vm6.invoke(() -> verifySenderDestroyed("ln", true));
     vm7.invoke(() -> verifySenderDestroyed("ln", true));
+  }
+
+  @Test
+  public void destroyParallelGatewaySenderShouldNotStopDispatchingFromOtherSendersAttachedToTheRegion() {
+    String site2SenderId = "site2-sender";
+    String site3SenderId = "site3-sender";
+    String regionName = testName.getMethodName();
+    int[] ports = getRandomAvailableTCPPortsForDUnitSite(3);
+    int site1Port = ports[0];
+    int site2Port = ports[1];
+    int site3Port = ports[2];
+    Set<String> site1RemoteLocators =
+        Stream.of("localhost[" + site2Port + "]", "localhost[" + site3Port + "]")
+            .collect(Collectors.toSet());
+    Set<String> site2RemoteLocators =
+        Stream.of("localhost[" + site1Port + "]", "localhost[" + site3Port + "]")
+            .collect(Collectors.toSet());
+    Set<String> site3RemoteLocators =
+        Stream.of("localhost[" + site1Port + "]", "localhost[" + site2Port + "]")
+            .collect(Collectors.toSet());
+
+    // Start 3 sites.
+    vm0.invoke(() -> createLocator(1, site1Port,
+        Collections.singleton("localhost[" + site1Port + "]"), site1RemoteLocators));
+    vm1.invoke(() -> createLocator(2, site2Port,
+        Collections.singleton("localhost[" + site2Port + "]"), site2RemoteLocators));
+    vm2.invoke(() -> createLocator(3, site3Port,
+        Collections.singleton("localhost[" + site3Port + "]"), site3RemoteLocators));
+
+    // Create the cache on the 3 sites.
+    createCacheInVMs(site1Port, vm3);
+    createCacheInVMs(site2Port, vm4);
+    createCacheInVMs(site3Port, vm5);
+
+    // Create receiver and region on sites 2 and 3.
+    asList(vm4, vm5).forEach(vm -> vm.invoke(() -> {
+      createReceiver();
+      createPartitionedRegion(regionName, null, 1, 113, isOffHeap());
+    }));
+
+    // Create senders and partitioned region on site 1.
+    vm3.invoke(() -> {
+      createSender(site2SenderId, 2, true, 100, 20, false, false, null, false);
+      createSender(site3SenderId, 3, true, 100, 20, false, false, null, false);
+      waitForSenderRunningState(site2SenderId);
+      waitForSenderRunningState(site3SenderId);
+
+      createPartitionedRegion(regionName, String.join(",", site2SenderId, site3SenderId), 1, 113,
+          isOffHeap());
+    });
+
+    // #################################################################################### //
+
+    final int FIRST_BATCH = 100;
+    final int SECOND_BATCH = 200;
+    final Map<String, String> firstBatch = new HashMap<>();
+    IntStream.range(0, FIRST_BATCH).forEach(i -> firstBatch.put("Key" + i, "Value" + i));
+    final Map<String, String> secondBatch = new HashMap<>();
+    IntStream.range(FIRST_BATCH, SECOND_BATCH)
+        .forEach(i -> secondBatch.put("Key" + i, "Value" + i));
+
+    // Insert first batch and wait until the queues are empty.
+    vm3.invoke(() -> {
+      cache.getRegion(regionName).putAll(firstBatch);
+      checkQueueSize(site2SenderId, 0);
+      checkQueueSize(site3SenderId, 0);
+    });
+
+    // Wait until sites 2 and 3 have received all updates.
+    asList(vm4, vm5).forEach(vm -> vm.invoke(() -> {
+      Region<String, String> region = cache.getRegion(regionName);
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(FIRST_BATCH));
+      firstBatch.forEach((key, value) -> assertThat(region.get(key)).isEqualTo(value));
+    }));
+
+    // Stop sender to site3, remove it from the region and destroy it.
+    vm3.invoke(() -> {
+      stopSender(site3SenderId);
+      removeSenderFromTheRegion(site3SenderId, regionName);
+      destroySender(site3SenderId);
+      verifySenderDestroyed(site3SenderId, true);
+    });
+
+    // Insert second batch and wait until the queue is empty.
+    vm3.invoke(() -> {
+      cache.getRegion(regionName).putAll(secondBatch);
+      checkQueueSize(site2SenderId, 0);
+    });
+
+    // Site 3 should only have the first batch.
+    vm5.invoke(() -> {
+      Region<String, String> region = cache.getRegion(regionName);
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(FIRST_BATCH));
+      firstBatch.forEach((key, value) -> assertThat(region.get(key)).isEqualTo(value));
+    });
+
+    // Site 2 should have both batches.
+    vm4.invoke(() -> {
+      Region<String, String> region = cache.getRegion(regionName);
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(SECOND_BATCH));
+      firstBatch.forEach((key, value) -> assertThat(region.get(key)).isEqualTo(value));
+      secondBatch.forEach((key, value) -> assertThat(region.get(key)).isEqualTo(value));
+    });
   }
 
   @Test
