@@ -23,6 +23,8 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -32,7 +34,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
-
+  private static Logger logger = LogService.getLogger();
   static {
     // customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections. It can be turned off by setting this
@@ -99,7 +101,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       try {
         socket.connect(inetSocketAddress, Math.max(timeout, 0));
       } catch (ConnectException connectException) {
-        LogService.getLogger().info("Failed to connect to " + inetSocketAddress);
+        logger.info("Failed to connect to " + inetSocketAddress);
         throw connectException;
       } finally {
         if (optionalWatcher != null) {

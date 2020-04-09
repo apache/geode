@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.categories.SessionTest;
 @Category({SessionTest.class})
 public abstract class CargoTestBase {
   private final UniquePortSupplier portSupplier = new UniquePortSupplier();
-  Logger logger = LogService.getLogger();
+  private static Logger logger = LogService.getLogger();
 
   @Rule
   public TestName testName = new TestName();
@@ -160,9 +160,7 @@ public abstract class CargoTestBase {
 
   private String getResponseValue(Client client, String key)
       throws IOException, URISyntaxException {
-    String value = client.get(key).getResponse();
-    LogService.getLogger().info("client gets response value of {}", value);
-    return value;
+    return client.get(key).getResponse();
   }
 
   /**
