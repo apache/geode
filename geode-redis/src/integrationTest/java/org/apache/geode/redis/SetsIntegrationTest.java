@@ -728,8 +728,7 @@ public class SetsIntegrationTest {
     Throwable caughtException = catchThrowable(
         () -> jedis.srem(key));
 
-    assertThat(caughtException).hasMessageContaining("ERR The wrong number of arguments"
-        + " or syntax was provided, the format for the SREM command is");
+    assertThat(caughtException).hasMessageContaining("wrong number of arguments");
   }
 
   @Test
