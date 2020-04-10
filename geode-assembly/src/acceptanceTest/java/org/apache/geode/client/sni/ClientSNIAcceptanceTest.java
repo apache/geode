@@ -122,10 +122,11 @@ public class ClientSNIAcceptanceTest {
     verifyServerAPIs();
     query();
     getAll();
+    removeAll();
   }
 
   /**
-   * A basic connectivity test that does a
+   * A basic connectivity test that performs a few simple operations
    */
   public void connectToSNIProxyDocker() {
     region.put("hello", "world");
@@ -138,7 +139,7 @@ public class ClientSNIAcceptanceTest {
   }
 
   /**
-   * A test of Region bulk put and query methods
+   * A test of Region query that returns a "big" result
    */
   public void query() throws Exception {
     final SelectResults<String> results = region.query("SELECT * from /jellyfish");
@@ -149,7 +150,7 @@ public class ClientSNIAcceptanceTest {
   }
 
   /**
-   * A test of Region bulk putAll/getAll methods
+   * A test of Region bulk getAll
    */
   public void getAll() {
     final Map<String, String> results = region.getAll(bulkData.keySet());
@@ -159,6 +160,16 @@ public class ClientSNIAcceptanceTest {
       assertThat(bulkData.containsKey(entry.getKey())).isTrue();
       assertThat(entry.getValue()).isEqualTo(bulkData.get(entry.getKey()));
     }
+  }
+
+  /**
+   * A test of Region bulk removeAll
+   */
+  public void removeAll() {
+    assertThat(region.sizeOnServer()).isEqualTo(bulkData.size());
+    region.removeAll(bulkData.keySet());
+    assertThat(region.sizeOnServer()).isZero();
+    region.putAll(bulkData);
   }
 
   /**
