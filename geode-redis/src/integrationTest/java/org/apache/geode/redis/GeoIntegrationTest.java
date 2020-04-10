@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ public class GeoIntegrationTest {
   private static int port = 6379;
 
   @BeforeClass
-  public static void setUp() throws IOException {
+  public static void setUp() {
     CacheFactory cf = new CacheFactory();
     // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");

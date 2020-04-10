@@ -349,26 +349,26 @@ public class SetExecutorJUnitTest {
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSRem() {
-    Executor sRemExecutor = new SRemExecutor();
+  public void verifyErrorMessage_WhenTooFewArgsPassedToSRem() {
+    Executor subject = new SRemExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SREM".getBytes());
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor =
+        ArgumentCaptor.forClass(ByteBuf.class);
 
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
+
     when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    sRemExecutor.executeCommand(command, context);
-
     commandsAsBytes.add("key1".getBytes());
-    sRemExecutor.executeCommand(command, context);
+    subject.executeCommand(command, context);
 
-    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
+    verify(command).setResponse(argsErrorCaptor.capture());
 
     List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+
     assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 }
