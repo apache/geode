@@ -790,7 +790,7 @@ public class SetsIntegrationTest {
       masterSet.add("master-" + i);
     }
 
-    jedis.sadd("master", masterSet.toArray(new String[] {}));//
+    jedis.sadd("master", masterSet.toArray(new String[] {}));
 
     AtomicLong sremmed1 = new AtomicLong(0);
     Runnable runnable1 = () -> {
@@ -802,7 +802,7 @@ public class SetsIntegrationTest {
 
     AtomicLong sremmed2 = new AtomicLong(0);
     Runnable runnable2 = () -> {
-      for (int i = ENTRIES; i < ENTRIES; i++) {
+      for (int i = 0; i < ENTRIES; i++) {
         sremmed2.addAndGet(jedis2.srem("master", masterSet.get(i)));
         Thread.yield();
       }
