@@ -194,7 +194,7 @@ resources:
     driver: gcs
     initial_version: {{ metadata.initial_version }}
     json_key: ((!concourse-gcp-key))
-    key: semvers/((pipeline-prefix))((geode-build-branch))/version
+    key: semvers/((pipeline-prefix))((geode-build-branch))/number
 - name: geode-passing-tokens
   type: gcs-resource
   source:
@@ -246,7 +246,9 @@ jobs:
   serial: true
   plan:
   - get: geode-build-version
-    params: { bump: {{ semverPiece }} }
+    params: { bump: {{ semverPiece }},
+              pre: ((semver-prerelease-token)),
+              pre_without_version: true }
   - put: geode-build-version
     params:
       file: geode-build-version/number
