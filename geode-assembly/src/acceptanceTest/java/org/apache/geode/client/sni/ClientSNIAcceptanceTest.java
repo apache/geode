@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 public class ClientSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
-      SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
+      ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
   public static final String TEST_KEY = "foo";
 
@@ -65,7 +65,6 @@ public class ClientSNIAcceptanceTest {
       .file(DOCKER_COMPOSE_PATH.getPath())
       .build();
 
-  private static Properties clientCacheProperties;
   private static ClientCache cache;
   private static Region<String, String> region;
   private static Map<String, String> bulkData;
@@ -77,12 +76,12 @@ public class ClientSNIAcceptanceTest {
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
 
     final String trustStorePath =
-        createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
+        createTempFileFromResource(ClientSNIAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
 
     // set up client cache properties so it can connect to the server
-    clientCacheProperties = new Properties();
+    Properties clientCacheProperties = new Properties();
     clientCacheProperties.setProperty(SSL_ENABLED_COMPONENTS, "all");
     clientCacheProperties.setProperty(SSL_KEYSTORE_TYPE, "jks");
     clientCacheProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
@@ -100,7 +99,7 @@ public class ClientSNIAcceptanceTest {
   }
 
   @AfterClass
-  public static void afterClass() throws Exception {
+  public static void afterClass() {
     // preserve this commented code for debugging
     // String logs = docker.exec(options("-T"), "geode",
     // arguments("cat", "server-dolores/server-dolores.log"));
@@ -185,12 +184,11 @@ public class ClientSNIAcceptanceTest {
         .container("haproxy")
         .port(15443)
         .getExternalPort();
-    ClientCache result = new ClientCacheFactory(properties)
-        .addPoolLocator("locator-maeve", 10334)
+    return new ClientCacheFactory(properties)
+        .addPoolLocator("locator", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
         .create();
-    return result;
   }
 
 }
