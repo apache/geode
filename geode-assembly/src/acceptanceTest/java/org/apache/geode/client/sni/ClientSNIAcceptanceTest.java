@@ -66,9 +66,9 @@ public class ClientSNIAcceptanceTest {
       .file(DOCKER_COMPOSE_PATH.getPath())
       .build();
 
-  private static ClientCache cache;
-  private static Region<String, String> region;
-  private static Map<String, String> bulkData;
+  private ClientCache cache;
+  private Region<String, String> region;
+  private Map<String, String> bulkData;
 
   @Before
   public void before() throws IOException, InterruptedException {
