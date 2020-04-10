@@ -34,9 +34,7 @@ import java.util.Set;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,10 +51,10 @@ import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class ClientSNIAcceptanceTest {
 
-  private static final URL DOCKER_COMPOSE_PATH =
+  private final URL DOCKER_COMPOSE_PATH =
       ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
-  public static final String TEST_KEY = "foo";
+  public final String TEST_KEY = "foo";
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
