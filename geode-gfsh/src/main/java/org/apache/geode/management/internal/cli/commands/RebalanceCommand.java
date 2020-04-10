@@ -101,11 +101,12 @@ public class RebalanceCommand extends GfshCommand {
     rsltList.add(6, String.valueOf(results.getPrimaryTransferTimeInMilliseconds()));
     rsltList.add(7, String.valueOf(results.getPrimaryTransfersCompleted()));
     rsltList.add(8, String.valueOf(results.getTimeInMilliseconds()));
+    rsltList.add(9, String.valueOf(results.getNumOfMembers()));
     String regionName = results.getRegionName();
     if (!regionName.startsWith("/")) {
       regionName = "/" + regionName;
     }
-    rsltList.add(9, regionName);
+    rsltList.add(10, regionName);
 
     toCompositeResultData(result, rsltList, index, simulate, cache);
   }
@@ -114,7 +115,7 @@ public class RebalanceCommand extends GfshCommand {
   private void toCompositeResultData(ResultModel result,
       List<String> rstlist, int index, boolean simulate,
       InternalCache cache) {
-    final int resultItemCount = 9;
+    final int resultItemCount = 10;
 
     if (rstlist.size() <= resultItemCount || StringUtils.isEmpty(rstlist.get(resultItemCount))) {
       return;
@@ -168,6 +169,12 @@ public class RebalanceCommand extends GfshCommand {
     table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALTIME);
     table1.accumulate("Value", rstlist.get(8));
     resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ").append(rstlist.get(8))
+        .append(newLine);
+
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__MEMBER_COUNT);
+    table1.accumulate("Value", rstlist.get(9));
+    resultStr.append(CliStrings.REBALANCE__MSG__MEMBER_COUNT).append(" = ")
+        .append(rstlist.get(9))
         .append(newLine);
 
     String headerText;
@@ -231,6 +238,7 @@ public class RebalanceCommand extends GfshCommand {
 
       // do rebalance
       RebalanceResult rebalanceResult = RebalanceOperationPerformer.perform(cache, operation);
+
       // check for error
       if (!rebalanceResult.getSuccess()) {
         result.addInfo("error");

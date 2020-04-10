@@ -167,6 +167,7 @@ public class RebalanceOperationPerformer {
       result.setBucketTransfersCompleted(results.getTotalBucketTransfersCompleted());
       result.setPrimaryTransferTimeInMilliseconds(results.getTotalPrimaryTransferTime());
       result.setPrimaryTransfersCompleted(results.getTotalPrimaryTransfersCompleted());
+      result.setNumOfMembers(results.getTotalMembersExecutedOn());
       result.setTimeInMilliseconds(results.getTotalTime());
 
       return result;
@@ -455,7 +456,8 @@ public class RebalanceOperationPerformer {
     result.setPrimaryTransferTimeInMilliseconds(Long.parseLong(rstList.get(6)));
     result.setPrimaryTransfersCompleted(Integer.parseInt(rstList.get(7)));
     result.setTimeInMilliseconds(Long.parseLong(rstList.get(8)));
-    result.setRegionName(rstList.get(9).replace("/", ""));
+    result.setNumOfMembers(Integer.parseInt(rstList.get(9)));
+    result.setRegionName(rstList.get(10).replace("/", ""));
 
     return result;
   }

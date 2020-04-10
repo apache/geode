@@ -32,6 +32,7 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
   private long totalPrimaryTransferTime;
   private int totalPrimaryTransfersCompleted;
   private long totalTime;
+  private int totalNumOfMembers;
 
   public void addDetails(PartitionRebalanceInfo details) {
     this.detailSet.add(details);
@@ -43,6 +44,7 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
     totalBucketTransfersCompleted += details.getBucketTransfersCompleted();
     totalPrimaryTransferTime += details.getPrimaryTransferTime();
     totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
+    totalNumOfMembers += details.getNumberOfMembersExecutedOn();
     totalTime += details.getTime();
   }
 
@@ -56,6 +58,7 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
     totalBucketTransfersCompleted += details.totalBucketTransfersCompleted;
     totalPrimaryTransferTime += details.totalPrimaryTransferTime;
     totalPrimaryTransfersCompleted += details.totalPrimaryTransfersCompleted;
+    totalNumOfMembers += details.totalNumOfMembers;
     if (details.totalTime > totalTime)
       totalTime = details.totalTime;
   }
@@ -101,6 +104,11 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
   }
 
   @Override
+  public int getTotalMembersExecutedOn() {
+    return this.totalNumOfMembers;
+  }
+
+  @Override
   public int getTotalPrimaryTransfersCompleted() {
     return this.totalPrimaryTransfersCompleted;
   }
@@ -121,6 +129,7 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
         ", totalPrimaryTransferTimeInMilliseconds=" + totalPrimaryTransferTime +
         ", totalPrimaryTransfersCompleted=" + totalPrimaryTransfersCompleted +
         ", totalTimeInMilliseconds=" + totalTime +
+        ", totalNumOfMembers=" + totalNumOfMembers +
         "}";
   }
 }

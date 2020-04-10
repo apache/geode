@@ -52,21 +52,19 @@ rebalance --include-region=/region3 --simulate=true
 **Sample Output:**
 
 ``` pre
-rebalance
-1. server1  host1(3467):12435:12423
-Row  Rebalanced Stats               | Value 
----  ----------------               | ----- 
-1    TotalBucketCreateBytes         | 0 
-2    TotalBucketCreateTime          | 0 
-3    TotalBucketCreatesCompleted    | 0 
-4    TotalBucketTransferBytes       | 0 
-5    TotalBucketTransferTime        | 0 
-6    TotalBucketTransfersCompleted  | 0 
-7    TotalPrimaryTransferTime       | 0 
-8    TotalPrimaryTransfersCompleted | 0 
-9    TotalTime                      | 56
+                                       Rebalanced Stats                                         | Value
+----------------------------------------------------------------------------------------------- | -----
+Total bytes in all redundant bucket copies created during this rebalance                        | 0
+Total time (in milliseconds) spent creating redundant bucket copies during this rebalance       | 0
+Total number of redundant copies created during this rebalance                                  | 0
+Total bytes in buckets moved during this rebalance                                              | 0
+Total time (in milliseconds) spent moving buckets during this rebalance                         | 0
+Total number of buckets moved during this rebalance                                             | 0
+Total time (in milliseconds) spent switching the primary state of buckets during this rebalance | 0
+Total primaries transferred during this rebalance                                               | 0
+Total time (in milliseconds) for this rebalance                                                 | 0
+Total number of members in system on which rebalance is executed                                | 2
 
-Rebalance complete on host1(3467):12435:12423.
  
 ```
 

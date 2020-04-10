@@ -1873,6 +1873,8 @@ public class CliStrings {
       "Total primaries transferred during this rebalance";
   public static final String REBALANCE__MSG__TOTALTIME =
       "Total time (in milliseconds) for this rebalance";
+  public static final String REBALANCE__MSG__MEMBER_COUNT =
+      "Total number of members in system on which rebalance is executed";
   public static final String REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS =
       "Distributed system has no regions that can be rebalanced";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception =

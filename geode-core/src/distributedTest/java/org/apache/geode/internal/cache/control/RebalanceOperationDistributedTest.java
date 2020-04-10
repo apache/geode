@@ -1055,6 +1055,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       assertThat(details.getPrimaryTransfersCompleted()).isEqualTo(0);
       assertThat(details.getBucketTransferBytes()).isGreaterThan(0);
       assertThat(details.getBucketTransfersCompleted()).isEqualTo(3);
+      assertThat(details.getNumberOfMembersExecutedOn()).isEqualTo(2);
 
       Set<PartitionMemberInfo> afterDetails = details.getPartitionMemberDetailsAfter();
       assertThat(afterDetails).hasSize(2);
