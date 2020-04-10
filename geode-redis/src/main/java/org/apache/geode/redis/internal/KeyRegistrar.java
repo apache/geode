@@ -76,8 +76,17 @@ public class KeyRegistrar {
     }
   }
 
+  /**
+   * Checks if the given key is a protected string in GeodeRedis
+   *
+   * @param key Key to check
+   */
+  public boolean isProtected(ByteArrayWrapper key) {
+    return RedisDataType.REDIS_PROTECTED.equals(redisMetaRegion.get(key.toString()));
+  }
+
   private boolean isValidDataType(RedisDataType actualDataType, RedisDataType expectedDataType) {
-    return isKeyUnused(actualDataType) || actualDataType == expectedDataType;
+    return isKeyUnused(actualDataType) || actualDataType.equals(expectedDataType);
   }
 
   private boolean isKeyUnused(RedisDataType dataType) {
@@ -85,7 +94,7 @@ public class KeyRegistrar {
   }
 
   private void throwDataTypeException(ByteArrayWrapper key, RedisDataType dataType) {
-    if (dataType == RedisDataType.REDIS_PROTECTED) {
+    if (RedisDataType.REDIS_PROTECTED.equals(dataType)) {
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
     } else {
       throw new RedisDataTypeMismatchException(

@@ -22,7 +22,6 @@ import static org.apache.geode.redis.GeodeRedisServer.REDIS_META_DATA_REGION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -39,10 +38,12 @@ import java.util.concurrent.TimeoutException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -63,7 +64,7 @@ public class StringsIntegrationTest {
   private static int ITERATION_COUNT = 4000;
 
   @BeforeClass
-  public static void setUp() throws IOException {
+  public static void setUp() {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
@@ -93,12 +94,339 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  public void testSET_shouldSetStringValueToKey_givenEmptyKey() {
+
+    String key = "key";
+    String value = "value";
+
+    String result = jedis.get(key);
+    assertThat(result).isNull();
+
+    jedis.set(key, value);
+    result = jedis.get(key);
+    assertThat(result).isEqualTo(value);
+  }
+
+  @Test
+  public void testSET_shouldSetStringValueToKey_givenKeyIsOfDataTypeSet() {
+    String key = "key";
+    String stringValue = "value";
+
+    jedis.sadd(key, "member1", "member2");
+
+    jedis.set(key, stringValue);
+    String result = jedis.get(key);
+
+    assertThat(result).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void testSET_shouldSetStringValueToKey_givenKeyIsOfDataTypeHash() {
+    String key = "key";
+    String stringValue = "value";
+
+    jedis.hset(key, "field", "something else");
+
+    String result = jedis.set(key, stringValue);
+    assertThat(result).isEqualTo("OK");
+
+    assertThat(stringValue).isEqualTo(jedis.get(key));
+  }
+
+  @Test
+  public void testSET_shouldSetNX_evenIfKeyContainsOtherDataType() {
+    String key = "key";
+    String stringValue = "value";
+
+    jedis.sadd(key, "member1", "member2");
+    SetParams setParams = new SetParams();
+    setParams.nx();
+
+    String result = jedis.set(key, stringValue, setParams);
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void testSET_shouldSetXX_evenIfKeyContainsOtherDataType() {
+    String key = "key";
+    String stringValue = "value";
+
+    jedis.sadd(key, "member1", "member2");
+    SetParams setParams = new SetParams();
+    setParams.xx();
+
+    jedis.set(key, stringValue, setParams);
+    String result = jedis.get(key);
+
+    assertThat(result).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void testSET_withEXargument_shouldSetExpireTime() {
+    String key = "key";
+    String value = "value";
+    int secondsUntilExpiration = 20;
+
+    SetParams setParams = new SetParams();
+    setParams.ex(secondsUntilExpiration);
+
+    jedis.set(key, value, setParams);
+
+    Long result = jedis.ttl(key);
+
+    assertThat(result).isGreaterThan(15l);
+  }
+
+  @Test
+  public void testSET_withNegative_EX_time_shouldReturnError() {
+    String key = "key";
+    String value = "value";
+    int millisecondsUntilExpiration = -1;
+
+    SetParams setParams = new SetParams();
+    setParams.ex(millisecondsUntilExpiration);
+
+    assertThatThrownBy(() -> jedis.set(key, value, setParams))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
+  }
+
+  @Test
+  public void testSET_withPXargument_shouldSetExpireTime() {
+    String key = "key";
+    String value = "value";
+    int millisecondsUntilExpiration = 20000;
+
+    SetParams setParams = new SetParams();
+    setParams.px(millisecondsUntilExpiration);
+
+    jedis.set(key, value, setParams);
+
+    Long result = jedis.ttl(key);
+
+    assertThat(result).isGreaterThan(15l);
+  }
+
+  @Test
+  public void testSET_with_Negative_PX_time_shouldReturnError() {
+    String key = "key";
+    String value = "value";
+    int millisecondsUntilExpiration = -1;
+
+    SetParams setParams = new SetParams();
+    setParams.px(millisecondsUntilExpiration);
+
+    assertThatThrownBy(() -> jedis.set(key, value, setParams))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
+  }
+
+  @Test
+  public void testSET_shouldClearPreviousTTL_onSuccess() {
+    String key = "key";
+    String value = "value";
+    int secondsUntilExpiration = 20;
+
+    SetParams setParams = new SetParams();
+    setParams.ex(secondsUntilExpiration);
+
+    jedis.set(key, value, setParams);
+
+    jedis.set(key, "other value");
+
+    Long result = jedis.ttl(key);
+
+    assertThat(result).isEqualTo(-1L);
+  }
+
+  @Test
+  public void testSET_withXXArgument_shouldClearPreviousTTL_Success() {
+    String key = "xx_key";
+    String value = "did exist";
+    int secondsUntilExpiration = 20;
+    SetParams setParamsXX = new SetParams();
+    setParamsXX.xx();
+    SetParams setParamsEX = new SetParams();
+    setParamsEX.ex(secondsUntilExpiration);
+    String result_EX = jedis.set(key, value, setParamsEX);
+    assertThat(result_EX).isEqualTo("OK");
+    assertThat(jedis.ttl(key)).isGreaterThan(15L);
+
+    String result_XX = jedis.set(key, value, setParamsXX);
+
+    assertThat(result_XX).isEqualTo("OK");
+    Long result = jedis.ttl(key);
+    assertThat(result).isEqualTo(-1L);
+  }
+
+  @Test
+  public void testSET_should_not_clearPreviousTTL_onFailure() {
+    String key_NX = "nx_key";
+    String value_NX = "set only if key did not exist";
+    int secondsUntilExpiration = 20;
+
+    SetParams setParamsEX = new SetParams();
+    setParamsEX.ex(secondsUntilExpiration);
+
+    SetParams setParamsNX = new SetParams();
+    setParamsNX.nx();
+
+    jedis.set(key_NX, value_NX, setParamsEX);
+    String result_NX = jedis.set(key_NX, value_NX, setParamsNX);
+    assertThat(result_NX).isNull();
+
+    Long result = jedis.ttl(key_NX);
+    assertThat(result).isGreaterThan(15L);
+  }
+
+  @Test
+  @Ignore
+  public void testSET_with_KEEPTTL_shouldRetainPreviousTTL_OnSuccess() {
+    String key = "key";
+    String value = "value";
+    int secondsToExpire = 30;
+
+    SetParams setParamsEx = new SetParams();
+    setParamsEx.ex(secondsToExpire);
+
+    jedis.set(key, value, setParamsEx);
+
+    SetParams setParamsKeepTTL = new SetParams();
+    // setParamsKeepTTL.keepTtl();
+    // Jedis Doesn't support KEEPTTL yet.
+
+    jedis.set(key, "newValue", setParamsKeepTTL);
+
+    Long result = jedis.ttl(key);
+    assertThat(result).isGreaterThan(15L);
+  }
+
+  @Test
+  public void testSET_withNXargument_shouldOnlySetKeyIfKeyDoesNotExist() {
+    String key1 = "key_1";
+    String key2 = "key_2";
+    String value1 = "value_1";
+    String value2 = "value_2";
+
+    jedis.set(key1, value1);
+
+    SetParams setParams = new SetParams();
+    setParams.nx();
+
+    jedis.set(key1, value2, setParams);
+    String result1 = jedis.get(key1);
+
+    assertThat(result1).isEqualTo(value1);
+
+    jedis.set(key2, value2, setParams);
+    String result2 = jedis.get(key2);
+
+    assertThat(result2).isEqualTo(value2);
+  }
+
+  @Test
+  public void testSET_withXXargument_shouldOnlySetKeyIfKeyExists() {
+    String key1 = "key_1";
+    String key2 = "key_2";
+    String value1 = "value_1";
+    String value2 = "value_2";
+
+    jedis.set(key1, value1);
+
+    SetParams setParams = new SetParams();
+    setParams.xx();
+
+    jedis.set(key1, value2, setParams);
+    String result1 = jedis.get(key1);
+
+    assertThat(result1).isEqualTo(value2);
+
+    jedis.set(key2, value2, setParams);
+    String result2 = jedis.get(key2);
+
+    assertThat(result2).isNull();
+  }
+
+  @Test
+  public void testSET_XX_NX_arguments_should_return_OK_if_Successful() {
+    String key_NX = "nx_key";
+    String key_XX = "xx_key";
+    String value_NX = "did not exist";
+    String value_XX = "did exist";
+
+    SetParams setParamsXX = new SetParams();
+    setParamsXX.xx();
+
+    SetParams setParamsNX = new SetParams();
+    setParamsNX.nx();
+
+    String result_NX = jedis.set(key_NX, value_NX, setParamsNX);
+    assertThat(result_NX).isEqualTo("OK");
+
+    jedis.set(key_XX, value_XX);
+    String result_XX = jedis.set(key_NX, value_NX, setParamsXX);
+    assertThat(result_XX).isEqualTo("OK");
+  }
+
+  @Test
+  public void testSET_XX_NX_arguments_should_return_NULL_if_Not_Successful() {
+    String key_NX = "nx_key";
+    String key_XX = "xx_key";
+    String value_NX = "set only if key did not exist";
+    String value_XX = "set only if key did exist";
+
+    SetParams setParamsXX = new SetParams();
+    setParamsXX.xx();
+
+    SetParams setParamsNX = new SetParams();
+    setParamsNX.nx();
+
+    jedis.set(key_NX, value_NX);
+    String result_NX = jedis.set(key_NX, value_NX, setParamsNX);
+    assertThat(result_NX).isNull();
+
+    String result_XX = jedis.set(key_XX, value_XX, setParamsXX);
+    assertThat(result_XX).isNull();
+  }
+
+  @Test
+  public void testGET_shouldReturnValueOfKey_givenValueIsAString() {
+    String key = "key";
+    String value = "value";
+
+    String result = jedis.get(key);
+    assertThat(result).isNull();
+
+    jedis.set(key, value);
+    result = jedis.get(key);
+    assertThat(result).isEqualTo(value);
+  }
+
+  @Test
+  public void testGET_shouldReturnNil_givenKeyIsEmpty() {
+    String key = "this key does not exist";
+
+    String result = jedis.get(key);
+    assertThat(result).isNull();
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void testGET_shouldThrow_JedisDataExceptiondError_givenValueIs_Not_A_String() {
+    String key = "key";
+    String field = "field";
+    String member = "member";
+
+    jedis.sadd(key, field, member);
+
+    jedis.get(key);
+  }
+
+  @Test
   public void testAppend_shouldAppendValueWithInputStringAndReturnResultingLength() {
     String key = "key";
     String value = randString();
     int originalValueLength = value.length();
 
-    // @todo: for jedis this is bool, redis docs state int value...
     boolean result = jedis.exists(key);
     assertThat(result).isFalse();
 
@@ -266,15 +594,6 @@ public class StringsIntegrationTest {
     assertThatThrownBy(() -> jedis.getSet(key, "this value doesn't matter"))
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
-  }
-
-  @Test
-  public void testSet_keyExistsWithDifferentDataType_returnsRedisDataTypeMismatchException() {
-    jedis.hset("key", "field", "value");
-
-    assertThatThrownBy(
-        () -> jedis.set("key", "something else")).isInstanceOf(JedisDataException.class)
-            .hasMessageContaining("WRONGTYPE");
   }
 
   @Test

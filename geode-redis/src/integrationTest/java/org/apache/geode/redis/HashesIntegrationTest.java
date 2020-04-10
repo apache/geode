@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -53,6 +54,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -668,6 +670,14 @@ public class HashesIntegrationTest {
     }
   }
 
+  @Test
+  public void testHSet_keyExistsWithDifferentDataType() {
+    jedis.set("key", "value");
+
+    assertThatThrownBy(
+        () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("WRONGTYPE");
+  }
 
   @Test
   public void testConcurrentHSetHDel_sameKeyPerClient() throws InterruptedException {
