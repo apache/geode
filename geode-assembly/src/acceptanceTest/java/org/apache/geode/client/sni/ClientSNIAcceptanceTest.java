@@ -32,16 +32,13 @@ import java.util.Properties;
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class ClientSNIAcceptanceTest {
 
@@ -49,15 +46,11 @@ public class ClientSNIAcceptanceTest {
       ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
-
-  @Rule
-  public DockerComposeRule docker = DockerComposeRule.builder()
-      .file(DOCKER_COMPOSE_PATH.getPath())
-      .build();
-
+  public static NotOnWindowsDockerRule docker =
+      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
+          .file(DOCKER_COMPOSE_PATH.getPath())
+          .build());
 
   private String trustStorePath;
 
@@ -67,7 +60,7 @@ public class ClientSNIAcceptanceTest {
         createTempFileFromResource(ClientSNIAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
-    docker.exec(options("-T"), "geode",
+    docker.get().exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
   }
 
@@ -82,7 +75,7 @@ public class ClientSNIAcceptanceTest {
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
-    int proxyPort = docker.containers()
+    int proxyPort = docker.get().containers()
         .container("haproxy")
         .port(15443)
         .getExternalPort();
