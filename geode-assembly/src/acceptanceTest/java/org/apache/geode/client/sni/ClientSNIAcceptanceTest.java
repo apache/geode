@@ -33,9 +33,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.palantir.docker.compose.DockerComposeRule;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
@@ -60,8 +63,8 @@ public class ClientSNIAcceptanceTest {
   @ClassRule
   public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
-  @ClassRule
-  public static DockerComposeRule docker = DockerComposeRule.builder()
+  @Rule
+  public DockerComposeRule docker = DockerComposeRule.builder()
       .file(DOCKER_COMPOSE_PATH.getPath())
       .build();
 
@@ -69,8 +72,8 @@ public class ClientSNIAcceptanceTest {
   private static Region<String, String> region;
   private static Map<String, String> bulkData;
 
-  @BeforeClass
-  public static void beforeClass() throws IOException, InterruptedException {
+  @Before
+  public void before() throws IOException, InterruptedException {
     // start up server/locator processes and initialize the server cache
     docker.exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
@@ -98,8 +101,8 @@ public class ClientSNIAcceptanceTest {
     region.putAll(bulkData);
   }
 
-  @AfterClass
-  public static void afterClass() {
+  @After
+  public void after() {
     // preserve this commented code for debugging
     // String logs = docker.exec(options("-T"), "geode",
     // arguments("cat", "server-dolores/server-dolores.log"));
@@ -114,10 +117,18 @@ public class ClientSNIAcceptanceTest {
     region = null;
   }
 
+  // run all tests in one @Test to avoid having to stage a new Docker cluster for each
+  @Test
+  public void runAllTests() throws Exception {
+    connectToSNIProxyDocker();
+    verifyServerAPIs();
+    query();
+    getAll();
+  }
+
   /**
    * A basic connectivity test that does a
    */
-  @Test
   public void connectToSNIProxyDocker() {
     region.put("hello", "world");
     assertThat(region.containsKey("hello")).isFalse(); // proxy regions don't store locally
@@ -131,7 +142,6 @@ public class ClientSNIAcceptanceTest {
   /**
    * A test of Region bulk put and query methods
    */
-  @Test
   public void query() throws Exception {
     final SelectResults<String> results = region.query("SELECT * from /jellyfish");
     assertThat(results).hasSize(bulkData.size());
@@ -143,7 +153,6 @@ public class ClientSNIAcceptanceTest {
   /**
    * A test of Region bulk putAll/getAll methods
    */
-  @Test
   public void getAll() {
     final Map<String, String> results = region.getAll(bulkData.keySet());
     assertThat(results).hasSize(bulkData.size());
@@ -157,7 +166,6 @@ public class ClientSNIAcceptanceTest {
   /**
    * A test of the Region API's methods that directly access the server cache
    */
-  @Test
   public void verifyServerAPIs() {
     assertThat(region.sizeOnServer()).isEqualTo(bulkData.size());
     Set<String> keysOnServer = region.keySetOnServer();
@@ -168,7 +176,7 @@ public class ClientSNIAcceptanceTest {
   }
 
 
-  protected static Map<String, String> getBulkDataMap() {
+  protected Map<String, String> getBulkDataMap() {
     // create a putAll map with enough keys to force a lot of "chunking" of the results
     int numberOfKeys = BaseCommand.MAXIMUM_CHUNK_SIZE * 10; // 10,000 keys
     Map<String, String> pairs = new HashMap<>();
@@ -179,7 +187,7 @@ public class ClientSNIAcceptanceTest {
     return pairs;
   }
 
-  protected static ClientCache getClientCache(Properties properties) {
+  protected ClientCache getClientCache(Properties properties) {
     int proxyPort = docker.containers()
         .container("haproxy")
         .port(15443)
