@@ -60,9 +60,9 @@ public class SubscriptionsIntegrationTest {
     final Subscriptions subscriptions = new Subscriptions();
 
     Callable<Void> addingCallable1 =
-        functionSpinner(x -> subscriptions.add(mock(Subscription.class)));
+        functionSpinner(x -> subscriptions.add(new DummySubscription()));
     Callable<Void> addingCallable2 =
-        functionSpinner(x -> subscriptions.add(mock(Subscription.class)));
+        functionSpinner(x -> subscriptions.add(new DummySubscription()));
 
     Future<Void> addingFuture = executor.submit(addingCallable1);
     Future<Void> existsFuture = executor.submit(addingCallable2);
@@ -79,7 +79,7 @@ public class SubscriptionsIntegrationTest {
     final Subscriptions subscriptions = new Subscriptions();
 
     Callable<Void> addingCallable =
-        functionSpinner(x -> subscriptions.add(mock(Subscription.class)));
+        functionSpinner(x -> subscriptions.add(new DummySubscription()));
     Callable<Void> existsCallable =
         functionSpinner(x -> subscriptions.exists("channel", mock(Client.class)));
 
@@ -98,7 +98,7 @@ public class SubscriptionsIntegrationTest {
     final Subscriptions subscriptions = new Subscriptions();
 
     Callable<Void> addingCallable =
-        functionSpinner(x -> subscriptions.add(mock(Subscription.class)));
+        functionSpinner(x -> subscriptions.add(new DummySubscription()));
     Callable<Void> findSubscriptionsCallable =
         functionSpinner(x -> subscriptions.findSubscriptions(mock(Client.class)));
 
@@ -117,7 +117,7 @@ public class SubscriptionsIntegrationTest {
     final Subscriptions subscriptions = new Subscriptions();
 
     Callable<Void> addingCallable =
-        functionSpinner(x -> subscriptions.add(mock(Subscription.class)));
+        functionSpinner(x -> subscriptions.add(new DummySubscription()));
     Callable<Void> findSubscriptionsCallable =
         functionSpinner(x -> subscriptions.findSubscriptions("channel"));
 
@@ -160,7 +160,6 @@ public class SubscriptionsIntegrationTest {
 
     assertThat(subscriptions.size()).isEqualTo(0);
   }
-
 
   @Test
   public void removeByChannelAndClient_doesNotThrowException_whenListIsConcurrentlyModified()
