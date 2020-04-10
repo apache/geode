@@ -100,8 +100,6 @@ public class ClientSNIAcceptanceTest {
     region.destroy("hello");
     region.put("hello", "world");
     assertThat(region.get("hello")).isEqualTo("world");
-    // the geode-starter.gfsh script put an entry named "foo" into the region with the
-    // value "bar"
-    assertThat(region.get("foo")).isEqualTo("bar");
+
   }
 }
