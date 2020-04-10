@@ -183,7 +183,7 @@ public class ClientSNIAcceptanceTest {
 
   protected Map<String, String> getBulkDataMap() {
     // create a putAll map with enough keys to force a lot of "chunking" of the results
-    int numberOfKeys = BaseCommand.MAXIMUM_CHUNK_SIZE * 10; // 10,000 keys
+    int numberOfKeys = BaseCommand.MAXIMUM_CHUNK_SIZE * 10; // 1,000 keys
     Map<String, String> pairs = new HashMap<>();
     for (int i = 1; i < numberOfKeys; i++) {
       pairs.put("Object_" + i, "Value_" + i);
