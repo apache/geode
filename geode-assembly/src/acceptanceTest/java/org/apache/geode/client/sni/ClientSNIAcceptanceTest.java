@@ -54,8 +54,6 @@ public class ClientSNIAcceptanceTest {
   private final URL DOCKER_COMPOSE_PATH =
       ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
-  public final String TEST_KEY = "foo";
-
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
@@ -134,8 +132,6 @@ public class ClientSNIAcceptanceTest {
     assertThat(region.get("hello")).isEqualTo("world");
     region.destroy("hello");
     assertThat(region.get("hello")).isNull();
-    // the geode-starter.gfsh script put an entry named "foo" into the region
-    assertThat(region.get(TEST_KEY)).isNotNull();
   }
 
   /**
@@ -192,7 +188,6 @@ public class ClientSNIAcceptanceTest {
     for (int i = 1; i < numberOfKeys; i++) {
       pairs.put("Object_" + i, "Value_" + i);
     }
-    pairs.put(TEST_KEY, "some value");
     return pairs;
   }
 
