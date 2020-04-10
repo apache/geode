@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -95,6 +96,7 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
                   + " t where t.id = r.id order by r.id"))
           .getResult();
       SelectResults rs = (SelectResults) results.get(0);
+      assertEquals(numPuts, rs.size());
     });
   }
 
@@ -123,7 +125,7 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
                   + " t where t.id = r.id order by r.id"))
           .getResult();
       SelectResults rs = (SelectResults) results.get(0);
-      System.out.println("JASON results:" + rs);
+      assertEquals(numPuts, rs.size());
     });
   }
 

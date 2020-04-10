@@ -72,7 +72,7 @@ toData,33
 
 org/apache/geode/cache/query/internal/CumulativeNonDistinctResults,2
 fromData,144
-toData,145
+toData,146
 
 org/apache/geode/cache/query/internal/LinkedResultSet,2
 fromData,58
@@ -84,7 +84,7 @@ toData,84
 
 org/apache/geode/cache/query/internal/NWayMergeResults,2
 fromData,152
-toData,153
+toData,154
 
 org/apache/geode/cache/query/internal/NullToken,2
 fromData,1

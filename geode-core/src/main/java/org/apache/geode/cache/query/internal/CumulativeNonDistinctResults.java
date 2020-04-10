@@ -177,8 +177,6 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
       this.results = results;
       this.limit = limit;
       this.collectionsMetdata = collectionsMetadata;
-      System.out.println("JASON");
-
     }
 
     @Override
