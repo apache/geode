@@ -301,12 +301,13 @@ public class GeodeRedisServer {
 
   /**
    * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
-   * to a RegionShortcut type then {@link RegionShortcut#PARTITION} will be used by default.
+   * to a RegionShortcut type then {@link RegionShortcut#PARTITION_REDUNDANT} will be used by
+   * default.
    *
    * @return {@link RegionShortcut}
    */
   private static RegionShortcut setRegionType() {
-    String regionType = System.getProperty(DEFAULT_REGION_SYS_PROP_NAME, "PARTITION");
+    String regionType = System.getProperty(DEFAULT_REGION_SYS_PROP_NAME, "PARTITION_REDUNDANT");
     RegionShortcut type;
     try {
       type = RegionShortcut.valueOf(regionType);
