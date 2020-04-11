@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -734,91 +733,19 @@ public class SetsIntegrationTest {
   }
 
   @Test
-  public void testSRem_should_ReturnTheNumberOfElementsRemoved() {
-    String key = "key";
-    String field1 = "field1";
-    String field2 = "field2";
-    jedis.sadd(key, field1, field2);
+  public void testSRem() {
+    jedis.sadd("master", "field1", "field2");
 
-    Long removedElementsCount = jedis.srem(key, field1, field2);
+    Long sremCount = jedis.srem("master", "field1", "field2", "unknown");
+    Set<String> sremSet = jedis.smembers("master");
+    assertThat(sremCount).isEqualTo(2);
+    assertThat(sremSet).isEmpty();
 
-    assertThat(removedElementsCount).isEqualTo(2);
-  }
+    sremCount = jedis.srem("master", "field1", "field2", "unknown");
+    assertThat(sremCount).isEqualTo(0);
 
-  @Test
-  public void testSRem_should_RemoveSpecifiedElementsFromSet() {
-    String key = "key";
-    String field1 = "field1";
-    String field2 = "field2";
-    jedis.sadd(key, field1, field2);
-
-    jedis.srem(key, field2);
-
-    Set<String> membersInSet = jedis.smembers(key);
-    assertThat(membersInSet).doesNotContain(field2);
-  }
-
-  @Test
-  public void testSRem_should_ThrowError_givenOnlyKey() {
-    String key = "key";
-    String field1 = "field1";
-    String field2 = "field2";
-    jedis.sadd(key, field1, field2);
-
-    Throwable caughtException = catchThrowable(
-        () -> jedis.srem(key));
-
-    assertThat(caughtException).hasMessageContaining("wrong number of arguments");
-  }
-
-  @Test
-  public void testSRem_should_notRemoveMembersOfSetNotSpecified() {
-    String key = "key";
-    String field1 = "field1";
-    String field2 = "field2";
-    jedis.sadd(key, field1, field2);
-
-    jedis.srem(key, field1);
-
-    Set<String> membersInSet = jedis.smembers(key);
-    assertThat(membersInSet).containsExactly(field2);
-  }
-
-  @Test
-  public void testSRem_should_ignoreMembersNotInSpecifiedSet() {
-    String key = "key";
-    String field1 = "field1";
-    String field2 = "field2";
-    String unkownField = "random-guy";
-    jedis.sadd(key, field1, field2);
-
-    long result = jedis.srem(key, unkownField);
-
-    assertThat(result).isEqualTo(0);
-  }
-
-  @Test
-  public void testSRem_should_throwError_givenKeyThatIsNotASet() {
-    String key = "key";
-    String value = "value";
-    jedis.set(key, value);
-
-    Throwable caughtException = catchThrowable(
-        () -> jedis.srem(key, value));
-
-    assertThat(caughtException)
-        .hasMessageContaining(
-            "WRONGTYPE Operation against a key holding the wrong kind of value");
-  }
-
-  @Test
-  public void testSRem_shouldReturnZero_givenNonExistingKey() {
-    String key = "key";
-    String field = "field";
-
-    long result = jedis.srem(key, field);
-
-    assertThat(result).isEqualTo(0);
+    sremCount = jedis.srem("unknownkey", "field1");
+    assertThat(sremCount).isEqualTo(0);
   }
 
   @Test
