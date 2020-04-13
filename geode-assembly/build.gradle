@@ -228,6 +228,9 @@ dependencies {
   integrationTestImplementation('org.springframework:spring-beans')
   integrationTestImplementation('org.springframework:spring-context')
   integrationTestImplementation('org.springframework:spring-web')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-core')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-client')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-jose')
   integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 

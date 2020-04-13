@@ -39,15 +39,6 @@
     <url-pattern>/</url-pattern>
   </servlet-mapping>
 
-  <listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  </listener>
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-    <param-value>
-			/WEB-INF/pulse-servlet.xml
-    </param-value>
-  </context-param>
   <context-param>
     <param-name>spring.profiles.default</param-name>
     <param-value>pulse.authentication.default</param-value>
@@ -60,7 +51,4 @@
     <filter-name>springSecurityFilterChain</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-  <listener>
-    <listener-class>org.apache.geode.tools.pulse.internal.PulseAppListener</listener-class>
-  </listener>
 </web-app>

@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -59,6 +60,12 @@ public class ClusterSelectedRegionService implements PulseService {
 
   // String constants used for forming a json response
   private static final String ENTRY_SIZE = "entrySize";
+  private final Repository repository;
+
+  @Autowired
+  public ClusterSelectedRegionService(Repository repository) {
+    this.repository = repository;
+  }
 
   // Comparator based upon regions entry count
   private static Comparator<Cluster.Member> memberCurrentHeapUsageComparator = (m1, m2) -> {
@@ -77,7 +84,7 @@ public class ClusterSelectedRegionService implements PulseService {
         parameterMap.get("ClusterSelectedRegion").get("regionFullPath").textValue();
 
     // get cluster object
-    Cluster cluster = Repository.get().getCluster();
+    Cluster cluster = repository.getCluster();
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();

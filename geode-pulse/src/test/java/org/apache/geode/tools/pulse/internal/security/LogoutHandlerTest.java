@@ -14,98 +14,81 @@
  */
 package org.apache.geode.tools.pulse.internal.security;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.Collection;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Parameterized.UseParametersRunnerFactory;
-import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Repository.class)
-@PowerMockRunnerDelegate(Parameterized.class)
-@PowerMockIgnore({"javax.management.*", "javax.security.*", "*.UnitTest"})
-@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @Category({PulseTest.class, SecurityTest.class, LoggingTest.class})
 public class LogoutHandlerTest {
+  private static final String EXPECTED_REDIRECT_URL = "/defaultTargetUrl";
 
-  private static final String mockUser = "admin";
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
 
+  @Mock
+  private HttpServletRequest request;
+  @Mock
+  private HttpServletResponse response;
+  @Mock
   private Repository repository;
-  private LogoutHandler handler;
+  @Mock
+  private ApplicationContext applicationContext;
 
-  @Parameter
-  public static Authentication authentication;
-
-  @Parameters(name = "{0}")
-  public static Collection<Authentication> authentications() throws Exception {
-    Authentication defaultAuthentication = mock(Authentication.class, "Default Authentication");
-    when(defaultAuthentication.getName()).thenReturn(mockUser);
-
-    GemFireAuthentication gemfireAuthentication =
-        mock(GemFireAuthentication.class, "GemFire Authentication");
-    when(gemfireAuthentication.getName()).thenReturn(mockUser);
-
-    return Arrays.asList(defaultAuthentication, gemfireAuthentication);
-  }
+  private final LogoutHandler handler = new LogoutHandler(EXPECTED_REDIRECT_URL);
 
   @Before
-  public void setup() throws Exception {
-    Cluster cluster = Mockito.spy(Cluster.class);
-    repository = Mockito.spy(Repository.class);
-    spy(Repository.class);
-    when(Repository.class, "get").thenReturn(repository);
-    doReturn(cluster).when(repository).getCluster();
-    handler = new LogoutHandler("/defaultTargetUrl");
+  public void setup() {
+    when(request.getContextPath()).thenReturn("");
+    when(response.encodeRedirectURL(EXPECTED_REDIRECT_URL)).thenReturn(EXPECTED_REDIRECT_URL);
+    handler.setApplicationContext(applicationContext);
   }
 
   @Test
-  public void testNullAuthentication() throws Exception {
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    MockHttpServletResponse response = new MockHttpServletResponse();
+  public void onLogoutSuccess_logsOutAuthenticatedUser() throws Exception {
+    String authenticatedUser = "authenticated-user";
 
-    handler.onLogoutSuccess(request, response, null);
-
-    assertThat(response.getStatus()).isEqualTo(302);
-    assertThat(response.getHeader("Location")).isEqualTo("/defaultTargetUrl");
-  }
-
-  @Test
-  public void testNotNullAuthentication() throws Exception {
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    MockHttpServletResponse response = new MockHttpServletResponse();
+    Authentication authentication = mock(Authentication.class);
+    when(authentication.getName()).thenReturn(authenticatedUser);
+    when(applicationContext.getBean("repository", Repository.class)).thenReturn(repository);
 
     handler.onLogoutSuccess(request, response, authentication);
 
-    assertThat(response.getStatus()).isEqualTo(302);
-    assertThat(response.getHeader("Location")).isEqualTo("/defaultTargetUrl");
-    verify(repository, Mockito.times(1)).logoutUser(mockUser);
+    verify(repository, times(1)).logoutUser(authenticatedUser);
   }
+
+  @Test
+  public void onLogoutSuccess_redirectsToSpecifiedUrl() throws Exception {
+    when(applicationContext.getBean("repository", Repository.class)).thenReturn(repository);
+    handler.onLogoutSuccess(request, response, mock(Authentication.class));
+
+    verify(response).sendRedirect(EXPECTED_REDIRECT_URL);
+  }
+
+  @Test
+  public void onLogoutSuccess_redirectsToSpecifiedUrl_evenIfNoAuthenticationGiven()
+      throws Exception {
+    handler.onLogoutSuccess(request, response, null);
+
+    verify(response).sendRedirect(EXPECTED_REDIRECT_URL);
+  }
+
 }

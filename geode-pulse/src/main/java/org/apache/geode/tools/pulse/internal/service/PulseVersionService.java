@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,12 @@ import org.apache.geode.tools.pulse.internal.controllers.PulseController;
 public class PulseVersionService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
+  private final PulseController pulseController;
+
+  @Autowired
+  public PulseVersionService(PulseController pulseController) {
+    this.pulseController = pulseController;
+  }
 
   @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
@@ -50,12 +57,13 @@ public class PulseVersionService implements PulseService {
     ObjectNode responseJSON = mapper.createObjectNode();
 
     // Response
-    responseJSON.put("pulseVersion", PulseController.pulseVersion.getPulseVersion());
-    responseJSON.put("buildId", PulseController.pulseVersion.getPulseBuildId());
-    responseJSON.put("buildDate", PulseController.pulseVersion.getPulseBuildDate());
-    responseJSON.put("sourceDate", PulseController.pulseVersion.getPulseSourceDate());
-    responseJSON.put("sourceRevision", PulseController.pulseVersion.getPulseSourceRevision());
-    responseJSON.put("sourceRepository", PulseController.pulseVersion.getPulseSourceRepository());
+    responseJSON.put("pulseVersion", pulseController.getPulseVersion().getPulseVersion());
+    responseJSON.put("buildId", pulseController.getPulseVersion().getPulseBuildId());
+    responseJSON.put("buildDate", pulseController.getPulseVersion().getPulseBuildDate());
+    responseJSON.put("sourceDate", pulseController.getPulseVersion().getPulseSourceDate());
+    responseJSON.put("sourceRevision", pulseController.getPulseVersion().getPulseSourceRevision());
+    responseJSON.put("sourceRepository",
+        pulseController.getPulseVersion().getPulseSourceRepository());
 
     // Send json response
     return responseJSON;

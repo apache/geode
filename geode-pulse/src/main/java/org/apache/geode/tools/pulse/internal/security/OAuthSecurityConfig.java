@@ -15,8 +15,6 @@
 
 package org.apache.geode.tools.pulse.internal.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +32,7 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -41,8 +40,10 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 @Profile("pulse.authentication.oauth")
 @PropertySource("classpath:pulse.properties")
 public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
-  @Value("${pulse.oauth.provider}")
+  @Value("${pulse.oauth.providerId}")
   private String providerId;
+  @Value("${pulse.oauth.providerName}")
+  private String providerName;
   @Value("${pulse.oauth.clientId}")
   private String clientId;
   @Value("${pulse.oauth.clientSecret}")
@@ -58,16 +59,38 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
   @Value("${pulse.oauth.userNameAttributeName}")
   private String userNameAttributeName;
 
+  @Bean
+  public LogoutSuccessHandler logoutHandler() {
+    return new LogoutHandler("/login");
+  }
+
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http.authorizeRequests(authorize -> authorize
+        .mvcMatchers("/pulseVersion", "/scripts/**", "/images/**", "/css/**", "/properties/**")
+        .permitAll()
+        .mvcMatchers("/dataBrowser*", "/getQueryStatisticsGridModel*")
+        .access("hasAuthority('SCOPE_CLUSTER:READ') and hasAuthority('SCOPE_DATA:READ')")
+        .mvcMatchers("/*")
+        .hasAuthority("SCOPE_CLUSTER:READ")
         .anyRequest().authenticated())
-        .oauth2Login(withDefaults());
+        .oauth2Login(oauth -> oauth.defaultSuccessUrl("/clusterDetail.html", true))
+        .exceptionHandling(exception -> exception.accessDeniedPage("/accessDenied.html"))
+        .logout(logout -> logout
+            .logoutUrl("/clusterLogout")
+            .logoutSuccessHandler(logoutHandler()))
+        .headers(header -> header
+            .frameOptions().deny()
+            .xssProtection(xss -> xss
+                .xssProtectionEnabled(true)
+                .block(true))
+            .contentTypeOptions())
+        .csrf().disable();
   }
 
   @Bean
   public ClientRegistrationRepository clientRegistrationRepository() {
-    return new InMemoryClientRegistrationRepository(this.clientRegistration());
+    return new InMemoryClientRegistrationRepository(clientRegistration());
   }
 
   @Bean
@@ -84,16 +107,19 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
   private ClientRegistration clientRegistration() {
     return ClientRegistration.withRegistrationId(providerId)
-        .clientId(clientId)
-        .clientSecret(clientSecret)
         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
         .redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
-        .scope("openid", "CLUSTER:READ", "CLUSTER:WRITE", "DATA:READ", "DATA:WRITE")
+        .clientId(clientId)
+        .clientSecret(clientSecret)
         .authorizationUri(authorizationUri)
         .tokenUri(tokenUri)
         .userInfoUri(userInfoUri)
         .jwkSetUri(jwkSetUri)
-        .clientName("Pulse")
+        // When Spring shows the login page, it displays a link to the OAuth provider's
+        // authorization URI. Spring uses the value passed to clientName() as the text for that
+        // link. We pass the providerName property here, to let the user know which OAuth provider
+        // they will be redirected to.
+        .clientName(providerName)
         .userNameAttributeName(userNameAttributeName)
         .build();
   }

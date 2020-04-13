@@ -41,7 +41,7 @@ public class PulseSecurityIntegrationTest {
   public EmbeddedPulseRule pulse = new EmbeddedPulseRule();
 
   @Test
-  public void getAttributesWithSecurityManager() throws Exception {
+  public void getAttributesWithSecurityManager() {
     pulse.useJmxPort(locator.getJmxPort());
 
     ManagementService service =
@@ -50,9 +50,29 @@ public class PulseSecurityIntegrationTest {
     await()
         .untilAsserted(() -> assertThat(service.getMemberMXBean()).isNotNull());
 
-    Cluster cluster = pulse.getRepository().getCluster("cluster", "cluster");
+    Cluster cluster = pulse.getRepository().getClusterWithUserNameAndPassword("cluster", "cluster");
     Cluster.Member[] members = cluster.getMembers();
     assertThat(members.length).isEqualTo(1);
     assertThat(members[0].getName()).isEqualTo("locator");
   }
+
+  @Test
+  public void getAttributesWithSecurityManagerAndTokenLogin() {
+    String tokenValue = "atleast20charactersoftokenimsure";
+    String userName = "cluster";
+
+    pulse.useJmxPort(locator.getJmxPort());
+
+    ManagementService service =
+        ManagementService.getExistingManagementService(locator.getLocator().getCache());
+
+    await()
+        .untilAsserted(() -> assertThat(service.getMemberMXBean()).isNotNull());
+
+    Cluster cluster = pulse.getRepository().getClusterWithCredentials(userName, tokenValue);
+    Cluster.Member[] members = cluster.getMembers();
+    assertThat(members.length).isEqualTo(1);
+    assertThat(members[0].getName()).isEqualTo("locator");
+  }
+
 }

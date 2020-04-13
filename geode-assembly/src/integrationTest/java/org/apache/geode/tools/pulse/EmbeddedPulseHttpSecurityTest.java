@@ -15,40 +15,34 @@
 
 package org.apache.geode.tools.pulse;
 
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.http.HttpResponse;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.tools.pulse.internal.data.Cluster;
 
 
 @Category({SecurityTest.class, PulseTest.class})
-public class PulseSecurityTest {
+public class EmbeddedPulseHttpSecurityTest {
 
   @ClassRule
-  public static ServerStarterRule server =
-      new ServerStarterRule().withSecurityManager(SimpleSecurityManager.class)
-          .withJMXManager().withHttpService()
-          .withRegion(RegionShortcut.REPLICATE, "regionA");
-
-  @Rule
-  public EmbeddedPulseRule pulse = new EmbeddedPulseRule();
+  public static ServerStarterRule server = new ServerStarterRule()
+      .withSecurityManager(SimpleSecurityManager.class)
+      .withJMXManager()
+      .withHttpService()
+      .withRegion(REPLICATE, "regionA");
 
   @Rule
   public GeodeHttpClientRule client = new GeodeHttpClientRule(server::getHttpPort);
-
 
   @Test
   public void loginWithIncorrectPassword() throws Exception {
@@ -73,7 +67,6 @@ public class PulseSecurityTest {
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(403);
   }
 
-
   @Test
   public void loginAllAccess() throws Exception {
     client.loginToPulseAndVerify("CLUSTER,DATA", "CLUSTER,DATA");
@@ -95,20 +88,6 @@ public class PulseSecurityTest {
     // accessing data browser will be denied
     response = client.get("/pulse/dataBrowser.html");
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(403);
-  }
-
-  @Test
-  public void queryUsingEmbededPulseWillHaveAuthorizationEnabled() throws Exception {
-    pulse.useJmxPort(server.getJmxPort());
-    // using "cluster" to connect to jmx manager will not get authorized to execute query
-    Cluster cluster = pulse.getRepository().getCluster("cluster", "cluster");
-    ObjectNode result = cluster.executeQuery("select * from /regionA a order by a", null, 0);
-    assertThat(result.toString()).contains("cluster not authorized for DATA:READ");
-
-    // using "data" to connect to jmx manager will succeeed
-    cluster = pulse.getRepository().getCluster("data", "data");
-    result = cluster.executeQuery("select * from /regionA a order by a", null, 0);
-    assertThat(result.toString()).contains("No Data Found");
   }
 
   @Test
