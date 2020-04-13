@@ -94,12 +94,6 @@ public class HostAndPortTest {
   }
 
   @Test
-  public void toString_LocatorAddress() {
-    HostAndPort locator1 = new HostAndPort("fakelocalhost", 8091);
-    assertThat(locator1.toString()).contains("socketInetAddress");
-  }
-
-  @Test
   public void constructorWithNoHostName() {
     HostAndPort hostAndPort = new HostAndPort(null, 8091);
     assertThat(hostAndPort.getAddress()).isNotNull();
