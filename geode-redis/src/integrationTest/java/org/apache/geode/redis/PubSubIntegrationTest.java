@@ -27,7 +27,6 @@ import java.util.concurrent.Callable;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
