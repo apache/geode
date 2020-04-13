@@ -120,43 +120,41 @@ You can configure Pulse to use any Authentication Provider that supports OpenID 
 
 **Pulse Properties for OAuth Configuration**
 
-After you set up the authentication provider properly, create (or edit, if it already exists) a property file named `pulse.properties` with the following configuration:
+After you set up the authentication provider properly, create a properties file named `pulse.properties` (or edit it, if it already exists) to define the following required properties:
 
-Pulse defines the following required properties to configure its interaction with your OAuth provider:
+- **pulse.oauth.providerId**
 
--   **pulse.oauth.providerId**
+    An ID for Pulse to use internally to identify your OAuth provider.
 
-    An ID for Spring to use internally to identify your OAuth provider.
+- **pulse.oauth.providerName**
 
--   **pulse.oauth.providerName**
+    A name for Pulse to display on the login page to link to your OAuth provider. 
 
-    A name for Pulse display on the login page to link to your OAuth provider. 
+- **pulse.oauth.clientId**
 
--   **pulse.oauth.clientId**
-  
     The ID with which Pulse is registered with your OAuth provider.
 
--   **pulse.oauth.clientSecret**
-  
+- **pulse.oauth.clientSecret**
+
     The secret with which Pulse is registered with your OAuth provider.
 
--   **pulse.oauth.authorizationUri**
-  
+- **pulse.oauth.authorizationUri**
+
     The URI for your OAuth provider's authorization endpoint.
 
--   **pulse.oauth.tokenUri**
-  
+- **pulse.oauth.tokenUri**
+
     The URI for your OAuth provider's token endpoint.
 
--   **pulse.oauth.userInfoUri=http**
-  
+- **pulse.oauth.userInfoUri**
+
     The URI for your OAuth provider's user info endpoint.
 
--   **pulse.oauth.jwkSetUri**
-  
+- **pulse.oauth.jwkSetUri**
+
     The URI for your OAuth provider's JSON Web Key (JWK) Set endpoint.
 
--   **pulse.oauth.userNameAttributeName**
+- **pulse.oauth.userNameAttributeName**
 
     The attribute name used to access the user's name from your OAuth provider's user info response.
 
