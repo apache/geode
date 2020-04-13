@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.Before;
@@ -36,17 +37,27 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqExistsException;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
-public class ClientSNIAcceptanceTest {
+public class ClientSNICQAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
-      ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
+      ClientSNICQAcceptanceTest.class.getResource("docker-compose.yml");
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -57,22 +68,48 @@ public class ClientSNIAcceptanceTest {
   public DockerComposeRule docker = DockerComposeRule.builder()
       .file(DOCKER_COMPOSE_PATH.getPath())
       .build();
+  private CqQuery cqTracker;
 
+  AtomicInteger eventCreateCounter = new AtomicInteger(0);
+  AtomicInteger eventUpdateCounter = new AtomicInteger(0);
+
+  class SNICQListener implements CqListener {
+
+
+    @Override
+    public void onEvent(CqEvent cqEvent) {
+      Operation queryOperation = cqEvent.getQueryOperation();
+
+
+      if (queryOperation.isUpdate()) {
+        eventUpdateCounter.incrementAndGet();
+      } else if (queryOperation.isCreate()) {
+        eventCreateCounter.incrementAndGet();
+      }
+    }
+
+    @Override
+    public void onError(CqEvent aCqEvent) {
+      System.out.println("We had an ERROR....");
+    }
+  }
 
   private String trustStorePath;
 
   @Before
   public void before() throws IOException, InterruptedException {
     trustStorePath =
-        createTempFileFromResource(ClientSNIAcceptanceTest.class,
+        createTempFileFromResource(ClientSNICQAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
     docker.exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
+
   }
 
   @Test
-  public void connectToSNIProxyDocker() {
+  public void performSimpleCQOverSNIProxy()
+      throws CqException, CqExistsException, RegionNotFoundException {
     Properties gemFireProps = new Properties();
     gemFireProps.setProperty(SSL_ENABLED_COMPONENTS, "all");
     gemFireProps.setProperty(SSL_KEYSTORE_TYPE, "jks");
@@ -90,16 +127,60 @@ public class ClientSNIAcceptanceTest {
         .addPoolLocator("locator", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
+        .setPoolSubscriptionEnabled(true)
         .create();
-    // the geode-starter.gfsh script has created a Region named "jellyfish" on the
-    // server sitting behind the haproxy gateway. Show that an empty client cache can
-    // put something in that region and then retrieve it.
-    Region<String, String> region =
-        cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
+    Region<String, Integer> region =
+        cache.<String, Integer>createClientRegionFactory(ClientRegionShortcut.PROXY)
             .create("jellyfish");
-    region.destroy("hello");
-    region.put("hello", "world");
-    assertThat(region.get("hello")).isEqualTo("world");
+
+    startCQ(region);
+
+    populateRegion(region);
+    assertThat(region.get("key0")).isEqualTo(0);
+    assertThat(region.get("key1")).isEqualTo(1);
+    assertThat(region.get("key2")).isEqualTo(2);
+    assertThat(region.get("key99")).isEqualTo(99);
+
+
+    assertThat(eventCreateCounter.get()).isEqualTo(62);
+
+    updateRegion(region);
+    assertThat(region.get("key0")).isEqualTo(10);
+    assertThat(region.get("key1")).isEqualTo(11);
+    assertThat(region.get("key2")).isEqualTo(12);
+    assertThat(region.get("key99")).isEqualTo(109);
+
+    assertThat(eventUpdateCounter.get()).isEqualTo(62);
 
   }
+
+  public void updateRegion(Region<String, Integer> region) {
+    for (Integer i = 0; i < 100; ++i) {
+      String key = "key" + i;
+      region.put(key, (i + 10));
+    }
+  }
+
+  public void populateRegion(Region<String, Integer> region) {
+    for (Integer i = 0; i < 100; ++i) {
+      String key = "key" + i;
+      region.put(key, i);
+    }
+  }
+
+  public void startCQ(Region<String, Integer> region)
+      throws CqExistsException, CqException, RegionNotFoundException {
+    CqAttributesFactory cqf = new CqAttributesFactory();
+    cqf.addCqListener(new SNICQListener());
+    CqAttributes cqa = cqf.create();
+
+    String cqName = "jellyTracker";
+
+    String queryStr = "SELECT * FROM /jellyfish i where i > 37";
+
+    QueryService queryService = region.getRegionService().getQueryService();
+    cqTracker = queryService.newCq(cqName, queryStr, cqa);
+    cqTracker.execute();
+  }
+
 }
