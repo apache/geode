@@ -26,7 +26,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
 import org.apache.geode.tools.pulse.internal.data.Repository;
@@ -34,7 +33,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 /**
  * Handler is used to close jmx connection maintained at user-level
  */
-public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements LogoutSuccessHandler,
+public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements
     ApplicationContextAware {
   private static final Logger logger = LogManager.getLogger();
   private ApplicationContext applicationContext;

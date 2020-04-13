@@ -115,6 +115,10 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
         .tokenUri(tokenUri)
         .userInfoUri(userInfoUri)
         .jwkSetUri(jwkSetUri)
+        // When Spring shows the login page, it displays a link to the OAuth provider's
+        // authorization URI. Spring uses the value passed to clientName() as the text for that
+        // link. We pass the providerName property here, to let the user know which OAuth provider
+        // they will be redirected to.
         .clientName(providerName)
         .userNameAttributeName(userNameAttributeName)
         .build();
