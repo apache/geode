@@ -124,7 +124,7 @@ public class ClientSNICQAcceptanceTest {
         .port(15443)
         .getExternalPort();
     ClientCache cache = new ClientCacheFactory(gemFireProps)
-        .addPoolLocator("locator", 10334)
+        .addPoolLocator("locator-maeve", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
         .setPoolSubscriptionEnabled(true)

@@ -35,7 +35,6 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -43,7 +42,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 /**
  * These tests run against a 2-server, 1-locator Geode cluster. The servers and locator run inside
@@ -68,19 +66,16 @@ public class DualServerSNIAcceptanceTest {
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
+  public static NotOnWindowsDockerRule docker =
+      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
+          .file(DOCKER_COMPOSE_PATH.getPath()).build());
 
-  @ClassRule
-  public static DockerComposeRule docker = DockerComposeRule.builder()
-      .file(DOCKER_COMPOSE_PATH.getPath())
-      .build();
-
-  private static Properties gemFireProps;
+  private static Properties clientCacheProperties;
   private ClientCache cache;
 
   @BeforeClass
   public static void beforeClass() throws IOException, InterruptedException {
-    docker.exec(options("-T"), "geode",
+    docker.get().exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh"));
 
     final String trustStorePath =
@@ -88,14 +83,14 @@ public class DualServerSNIAcceptanceTest {
             "geode-config/truststore.jks")
                 .getAbsolutePath();
 
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(SSL_ENABLED_COMPONENTS, "all");
-    gemFireProps.setProperty(SSL_KEYSTORE_TYPE, "jks");
-    gemFireProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
+    clientCacheProperties = new Properties();
+    clientCacheProperties.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    clientCacheProperties.setProperty(SSL_KEYSTORE_TYPE, "jks");
+    clientCacheProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
 
-    gemFireProps.setProperty(SSL_TRUSTSTORE, trustStorePath);
-    gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
-    gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
+    clientCacheProperties.setProperty(SSL_TRUSTSTORE, trustStorePath);
+    clientCacheProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
+    clientCacheProperties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
   }
 
   @After
@@ -141,12 +136,12 @@ public class DualServerSNIAcceptanceTest {
    * modifies cache field as a side-effect
    */
   private Region<String, String> getRegion(final String groupName, final String regionName) {
-    final int proxyPort = docker.containers()
+    final int proxyPort = docker.get().containers()
         .container("haproxy")
         .port(15443)
         .getExternalPort();
     ensureCacheClosed();
-    cache = new ClientCacheFactory(gemFireProps)
+    cache = new ClientCacheFactory(clientCacheProperties)
         .addPoolLocator("locator-maeve", 10334)
         .setPoolServerGroup(groupName)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",

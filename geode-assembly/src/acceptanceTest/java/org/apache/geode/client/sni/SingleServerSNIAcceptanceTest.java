@@ -56,10 +56,10 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
  * This test connects to the server and verifies it can write and read data in the region.
  */
 
-public class ClientSNIAcceptanceTest {
+public class SingleServerSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
-      ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
+      SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -79,7 +79,7 @@ public class ClientSNIAcceptanceTest {
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
 
     final String trustStorePath =
-        createTempFileFromResource(ClientSNIAcceptanceTest.class,
+        createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
 
@@ -104,7 +104,7 @@ public class ClientSNIAcceptanceTest {
   @AfterClass
   public static void afterClass() throws Exception {
     String logs = docker.get().exec(options("-T"), "geode",
-        arguments("cat", "server/server.log"));
+        arguments("cat", "server-dolores/server-dolores.log"));
     System.out.println("server logs------------------------------------------");
     System.out.println(logs);
 
