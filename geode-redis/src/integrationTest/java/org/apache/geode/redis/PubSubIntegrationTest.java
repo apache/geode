@@ -257,7 +257,7 @@ public class PubSubIntegrationTest {
     assertThat(result).isEqualTo(1);
 
     assertThat(mockSubscriber.getReceivedMessages()).isEmpty();
-    GeodeAwaitility.await().until(() -> mockSubscriber.getReceivedPMessages().size() != 0);
+    GeodeAwaitility.await().until(() -> mockSubscriber.getReceivedPMessages().isEmpty());
     assertThat(mockSubscriber.getReceivedPMessages()).containsExactly(message);
 
     mockSubscriber.punsubscribe("sal*s");
