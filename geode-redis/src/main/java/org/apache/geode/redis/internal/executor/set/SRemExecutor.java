@@ -35,7 +35,7 @@ public class SRemExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-    RedisSet set = new GeodeRedisSetSynchronized(key, context);
+    RedisSet set = new GeodeRedisSetSynchronized(key, context.getRegionProvider().getSetRegion());
     long numRemoved = set.srem(commandElems.subList(2, commandElems.size()));
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));

@@ -29,11 +29,13 @@ import org.apache.geode.redis.internal.RedisDataType;
 class GeodeRedisSetSynchronized implements RedisSet {
 
   private ByteArrayWrapper key;
-  private ExecutionHandlerContext context;
+  private Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region;
 
-  public GeodeRedisSetSynchronized(ByteArrayWrapper key, ExecutionHandlerContext context) {
+
+  public GeodeRedisSetSynchronized(ByteArrayWrapper key,
+                                   Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region) {
     this.key = key;
-    this.context = context;
+    this.region = region;
   }
 
   @Override
@@ -42,10 +44,10 @@ class GeodeRedisSetSynchronized implements RedisSet {
     region().compute(key, (_unusedKey_, currentValue) -> {
       if (currentValue == null) {
         addedCount.set(membersToAdd.size());
-        return createSet(membersToAdd);
+        return new HashSet<>(membersToAdd);
       }
 
-      Set<ByteArrayWrapper> newValue = createSet(currentValue);
+      Set<ByteArrayWrapper> newValue = new HashSet<>(currentValue);
       newValue.addAll(membersToAdd);
       addedCount.set(newValue.size() - currentValue.size());
       return newValue;
@@ -57,7 +59,7 @@ class GeodeRedisSetSynchronized implements RedisSet {
   public long srem(Collection<ByteArrayWrapper> membersToRemove) {
     AtomicLong removedCount = new AtomicLong();
     region().computeIfPresent(key, (_unusedKey_, oldValue) -> {
-      Set<ByteArrayWrapper> newValue = createSet(oldValue);
+      Set<ByteArrayWrapper> newValue = new HashSet<>(oldValue);
       newValue.removeAll(membersToRemove);
       removedCount.set(oldValue.size() - newValue.size());
 
@@ -80,10 +82,7 @@ class GeodeRedisSetSynchronized implements RedisSet {
   }
 
   Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region() {
-    return context.getRegionProvider().getSetRegion();
+    return region;
   }
 
-  private Set<ByteArrayWrapper> createSet(Collection<ByteArrayWrapper> membersToAdd) {
-    return new HashSet<>(membersToAdd);
-  }
 }
