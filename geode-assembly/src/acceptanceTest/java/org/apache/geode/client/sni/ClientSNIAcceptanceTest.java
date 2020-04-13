@@ -33,12 +33,10 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.palantir.docker.compose.DockerComposeRule;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -47,31 +45,27 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class ClientSNIAcceptanceTest {
 
-  private final URL DOCKER_COMPOSE_PATH =
+  private static final URL DOCKER_COMPOSE_PATH =
       ClientSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
+  public static NotOnWindowsDockerRule docker =
+      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
+          .file(DOCKER_COMPOSE_PATH.getPath()).build());
 
-  @Rule
-  public DockerComposeRule docker = DockerComposeRule.builder()
-      .file(DOCKER_COMPOSE_PATH.getPath())
-      .build();
+  private static ClientCache cache;
+  private static Region<String, String> region;
+  private static Map<String, String> bulkData;
 
-  private ClientCache cache;
-  private Region<String, String> region;
-  private Map<String, String> bulkData;
-
-  @Before
-  public void before() throws IOException, InterruptedException {
+  @BeforeClass
+  public static void beforeClass() throws IOException, InterruptedException {
     // start up server/locator processes and initialize the server cache
-    docker.exec(options("-T"), "geode",
+    docker.get().exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
 
     final String trustStorePath =
@@ -97,13 +91,12 @@ public class ClientSNIAcceptanceTest {
     region.putAll(bulkData);
   }
 
-  @After
-  public void after() {
-    // preserve this commented code for debugging
-    // String logs = docker.exec(options("-T"), "geode",
-    // arguments("cat", "server-dolores/server-dolores.log"));
-    // System.out.println("server logs------------------------------------------");
-    // System.out.println(logs);
+  @AfterClass
+  public static void afterClass() throws Exception {
+    String logs = docker.get().exec(options("-T"), "geode",
+        arguments("cat", "server/server.log"));
+    System.out.println("server logs------------------------------------------");
+    System.out.println(logs);
 
     if (cache != null) {
       cache.close();
@@ -113,19 +106,10 @@ public class ClientSNIAcceptanceTest {
     region = null;
   }
 
-  // run all tests in one @Test to avoid having to stage a new Docker cluster for each
-  @Test
-  public void runAllTests() throws Exception {
-    connectToSNIProxyDocker();
-    verifyServerAPIs();
-    query();
-    getAll();
-    removeAll();
-  }
-
   /**
    * A basic connectivity test that performs a few simple operations
    */
+  @Test
   public void connectToSNIProxyDocker() {
     region.put("hello", "world");
     assertThat(region.containsKey("hello")).isFalse(); // proxy regions don't store locally
@@ -137,6 +121,7 @@ public class ClientSNIAcceptanceTest {
   /**
    * A test of Region query that returns a "big" result
    */
+  @Test
   public void query() throws Exception {
     final SelectResults<String> results = region.query("SELECT * from /jellyfish");
     assertThat(results).hasSize(bulkData.size());
@@ -148,6 +133,7 @@ public class ClientSNIAcceptanceTest {
   /**
    * A test of Region bulk getAll
    */
+  @Test
   public void getAll() {
     final Map<String, String> results = region.getAll(bulkData.keySet());
     assertThat(results).hasSize(bulkData.size());
@@ -161,6 +147,7 @@ public class ClientSNIAcceptanceTest {
   /**
    * A test of Region bulk removeAll
    */
+  @Test
   public void removeAll() {
     assertThat(region.sizeOnServer()).isEqualTo(bulkData.size());
     region.removeAll(bulkData.keySet());
@@ -171,6 +158,7 @@ public class ClientSNIAcceptanceTest {
   /**
    * A test of the Region API's methods that directly access the server cache
    */
+  @Test
   public void verifyServerAPIs() {
     assertThat(region.sizeOnServer()).isEqualTo(bulkData.size());
     Set<String> keysOnServer = region.keySetOnServer();
@@ -181,7 +169,7 @@ public class ClientSNIAcceptanceTest {
   }
 
 
-  protected Map<String, String> getBulkDataMap() {
+  protected static Map<String, String> getBulkDataMap() {
     // create a putAll map with enough keys to force a lot of "chunking" of the results
     int numberOfKeys = BaseCommand.MAXIMUM_CHUNK_SIZE * 10; // 1,000 keys
     Map<String, String> pairs = new HashMap<>();
@@ -191,8 +179,8 @@ public class ClientSNIAcceptanceTest {
     return pairs;
   }
 
-  protected ClientCache getClientCache(Properties properties) {
-    int proxyPort = docker.containers()
+  protected static ClientCache getClientCache(Properties properties) {
+    int proxyPort = docker.get().containers()
         .container("haproxy")
         .port(15443)
         .getExternalPort();
