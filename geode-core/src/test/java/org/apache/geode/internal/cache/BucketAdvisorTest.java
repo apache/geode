@@ -184,7 +184,7 @@ public class BucketAdvisorTest {
     assertThat(bucketAdvisor.isShadowBucketDestroyed(shadowBuckets.get(1))).isTrue();
 
     // Mark all shadow buckets values as non destroyed
-    bucketAdvisor.markAllShadowBucketsAsNotDestroyed();
+    bucketAdvisor.markAllShadowBucketsAsNonDestroyed();
     shadowBuckets
         .forEach(b -> assertThat(assertThat(bucketAdvisor.isShadowBucketDestroyed(b)).isFalse()));
 

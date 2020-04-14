@@ -451,11 +451,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
               try {
                 buk.initializePrimaryElector(creationRequestor);
                 if (getPartitionedRegion().getColocatedWith() == null) {
-                  buk.getBucketAdvisor().markAllShadowBucketsAsNotDestroyed();
+                  buk.getBucketAdvisor().markAllShadowBucketsAsNonDestroyed();
                 }
                 if (getPartitionedRegion().isShadowPR()) {
                   getPartitionedRegion().getColocatedWithRegion().getRegionAdvisor()
-                      .getBucketAdvisor(possiblyFreeBucketId).markAllShadowBucketsAsNotDestroyed();
+                      .getBucketAdvisor(possiblyFreeBucketId).markAllShadowBucketsAsNonDestroyed();
                 }
                 bukReg = createBucketRegion(possiblyFreeBucketId);
                 // Mark the bucket as hosting and distribute to peers

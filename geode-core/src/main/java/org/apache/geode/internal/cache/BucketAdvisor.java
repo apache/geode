@@ -166,7 +166,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   private PartitionedRegion pRegion;
 
-  private final ConcurrentMap<String, Boolean> shadowBucketsDestroyed = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, Boolean> destroyedShadowBuckets = new ConcurrentHashMap<>();
 
   /**
    * Constructs a new BucketAdvisor for the Bucket owned by RegionAdvisor.
@@ -2744,19 +2744,19 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  void markShadowBucketAsDestroyed(String shadowBucketPath) {
-    shadowBucketsDestroyed.put(shadowBucketPath, true);
-  }
-
-  public boolean isShadowBucketDestroyed(String shadowBucketPath) {
-    return shadowBucketsDestroyed.getOrDefault(shadowBucketPath, false);
+  void markAllShadowBucketsAsNonDestroyed() {
+    destroyedShadowBuckets.clear();
   }
 
   void markAllShadowBucketsAsDestroyed() {
-    shadowBucketsDestroyed.forEach((k, v) -> shadowBucketsDestroyed.put(k, true));
+    destroyedShadowBuckets.forEach((k, v) -> destroyedShadowBuckets.put(k, true));
   }
 
-  void markAllShadowBucketsAsNotDestroyed() {
-    shadowBucketsDestroyed.forEach((k, v) -> shadowBucketsDestroyed.put(k, false));
+  void markShadowBucketAsDestroyed(String shadowBucketPath) {
+    destroyedShadowBuckets.put(shadowBucketPath, true);
+  }
+
+  public boolean isShadowBucketDestroyed(String shadowBucketPath) {
+    return destroyedShadowBuckets.getOrDefault(shadowBucketPath, false);
   }
 }
