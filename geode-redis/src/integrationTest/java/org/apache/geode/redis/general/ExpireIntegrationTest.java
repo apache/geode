@@ -437,19 +437,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  public void PERSISTCommand_ShouldClearExpirationTimeForGivenKey() {
-    String key = "key";
-    String value = "value";
-    jedis.set(key, value);
-    jedis.expire(key, 20);
-
-    jedis.persist(key);
-
-    Long timeToLive = jedis.ttl(key);
-    assertThat(timeToLive).isEqualTo(-1);
-  }
-
-  @Test
   @Ignore("this test needs to pass to have feature parity with native redis")
   public void SettingExiprationToNegativeValue_ShouldDeleteKey() {
 
