@@ -27,6 +27,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
 class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
@@ -37,6 +38,10 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   public DeltaSet(Collection<ByteArrayWrapper> members) {
 
     this.members = members;
+  }
+
+  public DeltaSet() {
+    this.members = new HashSet<>();
   }
 
   public static Set<ByteArrayWrapper> brandNew(Collection<ByteArrayWrapper> membersToAdd) {
@@ -96,10 +101,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
   @Override
   public boolean addAll(Collection<? extends ByteArrayWrapper> c) {
-    boolean b = members.addAll(c);
-    elementsAddedDelta = c;
-    hasDelta = true;
-    return b;
+    return members.addAll(c);
   }
 
   @Override
@@ -159,5 +161,22 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.members = DataSerializer.readHashSet(in);
+  }
+
+  synchronized public long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
+                                        Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+                                        ByteArrayWrapper key) {
+    
+    int oldSize = this.members.size();
+    boolean isAddAllSuccessful = this.members.addAll(membersToAdd);
+    if(!isAddAllSuccessful) {
+      return 0;
+    }
+    elementsAddedDelta = membersToAdd;
+    hasDelta = true;
+    int newSize = this.members.size();
+    int elementsAdded = newSize - oldSize;
+    region.put(key, this);
+    return elementsAdded;
   }
 }
