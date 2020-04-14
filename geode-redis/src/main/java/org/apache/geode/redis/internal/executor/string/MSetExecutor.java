@@ -33,16 +33,17 @@ public class MSetExecutor extends StringExecutor {
   private final String SUCCESS = "OK";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public void  executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> region =
-        context.getRegionProvider().getStringsRegion();
 
     if (commandElems.size() < 3 || commandElems.size() % 2 == 0) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.MSET));
       return;
     }
+
+    Region<ByteArrayWrapper, ByteArrayWrapper> region =
+        context.getRegionProvider().getStringsRegion();
 
     Map<ByteArrayWrapper, ByteArrayWrapper> map = new HashMap<ByteArrayWrapper, ByteArrayWrapper>();
     for (int i = 1; i < commandElems.size(); i += 2) {
