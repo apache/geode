@@ -183,14 +183,14 @@ public class BucketAdvisorTest {
     bucketAdvisor.markShadowBucketAsDestroyed(shadowBuckets.get(1));
     assertThat(bucketAdvisor.isShadowBucketDestroyed(shadowBuckets.get(1))).isTrue();
 
-    // Mark all shadow buckets values as non destroyed
-    bucketAdvisor.markAllShadowBucketsAsNonDestroyed();
-    shadowBuckets
-        .forEach(b -> assertThat(assertThat(bucketAdvisor.isShadowBucketDestroyed(b)).isFalse()));
-
     // Mark all shadow buckets values as destroyed
     bucketAdvisor.markAllShadowBucketsAsDestroyed();
     shadowBuckets
         .forEach(b -> assertThat(assertThat(bucketAdvisor.isShadowBucketDestroyed(b)).isTrue()));
+
+    // Mark all shadow buckets values as non destroyed
+    bucketAdvisor.markAllShadowBucketsAsNonDestroyed();
+    shadowBuckets
+        .forEach(b -> assertThat(assertThat(bucketAdvisor.isShadowBucketDestroyed(b)).isFalse()));
   }
 }
