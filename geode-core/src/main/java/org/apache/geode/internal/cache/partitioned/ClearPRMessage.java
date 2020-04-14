@@ -175,7 +175,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     try {
       RegionEventImpl regionEvent = new RegionEventImpl(bucketRegion, Operation.REGION_CLEAR, null,
           false, region.getMyId(), eventID);
-      bucketRegion.cmnClearRegion(regionEvent, true, true);
+      bucketRegion.cmnClearRegion(regionEvent, false, true);
     } catch (PartitionOfflineException poe) {
       logger.info(
           "All members holding data for bucket {} are offline, no more retries will be attempted",
