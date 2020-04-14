@@ -37,18 +37,6 @@ import org.apache.geode.redis.internal.Executor;
 
 
 public class GetRangeExecutorJUnitTest {
-
-  private ExecutionHandlerContext context;
-  private Command command;
-  private UnpooledByteBufAllocator byteBuf;
-
-  @Before
-  public void setUp() {
-    context = mock(ExecutionHandlerContext.class);
-    command = mock(Command.class);
-    byteBuf = new UnpooledByteBufAllocator(false);
-  }
-
   @Test
   public void calledWithTooFewCommandArguments_returnsError() {
     Executor getRangeExecutor = new GetRangeExecutor();
@@ -56,18 +44,11 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithThreeArgs.add("GETRANGE".getBytes());
     commandsAsBytesWithThreeArgs.add("key".getBytes());
     commandsAsBytesWithThreeArgs.add("1".getBytes());
+    Command command = new Command(commandsAsBytesWithThreeArgs);
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+    getRangeExecutor.executeCommand(command, mockContext());
 
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithThreeArgs);
-
-    getRangeExecutor.executeCommand(command, context);
-
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -80,18 +61,11 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithFiveArgs.add("1".getBytes());
     commandsAsBytesWithFiveArgs.add("5".getBytes());
     commandsAsBytesWithFiveArgs.add("avocado".getBytes());
+    Command command = new Command(commandsAsBytesWithFiveArgs);
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+    getRangeExecutor.executeCommand(command, mockContext());
 
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithFiveArgs);
-
-    getRangeExecutor.executeCommand(command, context);
-
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -105,17 +79,10 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithInvalidStartIndex.add("not-a-number".getBytes());
     commandsAsBytesWithInvalidStartIndex.add("1".getBytes());
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+    Command command = new Command(commandsAsBytesWithInvalidStartIndex);
+    getRangeExecutor.executeCommand(command, mockContext());
 
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithInvalidStartIndex);
-
-    getRangeExecutor.executeCommand(command, context);
-
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR value is not an integer or out of range");
   }
 
@@ -129,19 +96,18 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithInvalidEndIndex.add("key".getBytes());
     commandsAsBytesWithInvalidEndIndex.add("1".getBytes());
     commandsAsBytesWithInvalidEndIndex.add("not-a-number".getBytes());
+    Command command = new Command(commandsAsBytesWithInvalidEndIndex);
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+    getRangeExecutor.executeCommand(command, mockContext());
 
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithInvalidEndIndex);
-
-    getRangeExecutor.executeCommand(command, context);
-
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR value is not an integer or out of range");
   }
 
+  public ExecutionHandlerContext mockContext() {
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    UnpooledByteBufAllocator byteBuf = new UnpooledByteBufAllocator(false);
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    return context;
+  }
 }

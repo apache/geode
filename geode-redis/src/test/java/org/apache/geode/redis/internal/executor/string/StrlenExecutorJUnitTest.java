@@ -38,14 +38,12 @@ import org.apache.geode.redis.internal.Executor;
 
 public class StrlenExecutorJUnitTest {
   private ExecutionHandlerContext context;
-  private Command command;
-  private UnpooledByteBufAllocator byteBuf;
 
   @Before
   public void setUp() {
     context = mock(ExecutionHandlerContext.class);
-    command = mock(Command.class);
-    byteBuf = new UnpooledByteBufAllocator(false);
+    UnpooledByteBufAllocator byteBuf = new UnpooledByteBufAllocator(false);
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
   }
 
   @Test
@@ -53,18 +51,11 @@ public class StrlenExecutorJUnitTest {
     Executor strlenExecutor = new StrlenExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("STRLEN".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     strlenExecutor.executeCommand(command, context);
 
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -75,18 +66,11 @@ public class StrlenExecutorJUnitTest {
     commandsAsBytes.add("APPEND".getBytes());
     commandsAsBytes.add("key".getBytes());
     commandsAsBytes.add("BONUS!".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     strlenExecutor.executeCommand(command, context);
 
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 }
