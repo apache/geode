@@ -47,6 +47,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class PartitionedRegionClearDUnitTest implements Serializable {
   protected static final String REGION_NAME = "testPR";
+  protected static final int TOTAL_BUCKET_NUM = 10;
   protected static final int NUM_ENTRIES = 1000;
 
   protected int locatorPort;
@@ -103,7 +104,8 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
   private void initDataStore(boolean withWriter) {
     RegionFactory factory = getCache().createRegionFactory(getRegionShortCut())
-        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create());
+        .setPartitionAttributes(
+            new PartitionAttributesFactory().setTotalNumBuckets(TOTAL_BUCKET_NUM).create());
     if (withWriter) {
       factory.setCacheWriter(new CountingCacheWriter());
     }
@@ -169,6 +171,26 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     return destroys;
   };
 
+  SerializableCallableIF<Integer> getBucketRegionWriterClears = () -> {
+    int clears = 0;
+    for (int i = 0; i < TOTAL_BUCKET_NUM; i++) {
+      String bucketRegionName = "_B__" + REGION_NAME + "_" + i;
+      clears += clearsByRegion.get(bucketRegionName) == null ? 0
+          : clearsByRegion.get(bucketRegionName).get();
+    }
+    return clears;
+  };
+
+  SerializableCallableIF<Integer> getBucketRegionWriterDestroys = () -> {
+    int destroys = 0;
+    for (int i = 0; i < TOTAL_BUCKET_NUM; i++) {
+      String bucketRegionName = "_B__" + REGION_NAME + "_" + i;
+      destroys += destroysByRegion.get(bucketRegionName) == null ? 0
+          : destroysByRegion.get(bucketRegionName).get();
+    }
+    return destroys;
+  };
+
   void configureServers(boolean dataStoreWithWriter, boolean accessorWithWriter) {
     dataStore1.invoke(() -> initDataStore(dataStoreWithWriter));
     dataStore2.invoke(() -> initDataStore(dataStoreWithWriter));
@@ -210,6 +232,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         .isEqualTo(1);
     assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
         .isEqualTo(0);
+
+    assertThat(dataStore3.invoke(getBucketRegionWriterDestroys))
+        .isEqualTo(dataStore3.invoke(getBucketRegionWriterClears))
+        .isEqualTo(0);
   }
 
   @Test
@@ -237,6 +263,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         .isEqualTo(0);
     assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
         .isEqualTo(1);
+
+    assertThat(accessor.invoke(getBucketRegionWriterDestroys))
+        .isEqualTo(accessor.invoke(getBucketRegionWriterClears))
+        .isEqualTo(0);
   }
 
   @Test
@@ -264,6 +294,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         .isEqualTo(0);
     assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
         .isEqualTo(1);
+
+    assertThat(accessor.invoke(getBucketRegionWriterDestroys))
+        .isEqualTo(accessor.invoke(getBucketRegionWriterClears))
+        .isEqualTo(0);
   }
 
   @Test
@@ -290,6 +324,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(dataStore3.invoke(getWriterClears))
         .isEqualTo(1);
     assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
+        .isEqualTo(0);
+
+    assertThat(dataStore3.invoke(getBucketRegionWriterDestroys))
+        .isEqualTo(dataStore3.invoke(getBucketRegionWriterClears))
         .isEqualTo(0);
   }
 
@@ -320,6 +358,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(dataStore3.invoke(getWriterClears))
         .isEqualTo(1);
     assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
+        .isEqualTo(0);
+
+    assertThat(dataStore3.invoke(getBucketRegionWriterDestroys))
+        .isEqualTo(dataStore3.invoke(getBucketRegionWriterClears))
         .isEqualTo(0);
   }
 
