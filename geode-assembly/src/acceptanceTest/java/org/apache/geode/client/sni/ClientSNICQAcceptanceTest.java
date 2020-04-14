@@ -184,7 +184,6 @@ public class ClientSNICQAcceptanceTest {
           arguments("java", "-cp", "/geode/lib/geode-dependencies.jar",
               "org.apache.geode.internal.statistics.StatArchiveReader",
               "stat", "server-dolores/statArchive.gfs", "CqServiceStats.numCqsClosed"));
-      System.out.println("stats from server are :" + stats);
       // the stat should transition from zero to one at some point
       assertThat(stats).contains("0.0 1.0");
     });
