@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,6 +32,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.palantir.docker.compose.DockerComposeRule;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -42,6 +44,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesFactory;
@@ -72,6 +75,7 @@ public class ClientSNICQAcceptanceTest {
 
   AtomicInteger eventCreateCounter = new AtomicInteger(0);
   AtomicInteger eventUpdateCounter = new AtomicInteger(0);
+  private ClientCache cache;
 
   class SNICQListener implements CqListener {
 
@@ -107,9 +111,18 @@ public class ClientSNICQAcceptanceTest {
 
   }
 
+  @After
+  public void after() throws Exception {
+    String output =
+        docker.exec(options("-T"), "geode", arguments("cat", "server-dolores/server-dolores.log"));
+    System.out.println("Server log file--------------------------------\n" + output);
+    if (cache != null) {
+      cache.close();
+    }
+  }
+
   @Test
-  public void performSimpleCQOverSNIProxy()
-      throws CqException, CqExistsException, RegionNotFoundException {
+  public void performSimpleCQOverSNIProxy() throws Exception {
     Properties gemFireProps = new Properties();
     gemFireProps.setProperty(SSL_ENABLED_COMPONENTS, "all");
     gemFireProps.setProperty(SSL_KEYSTORE_TYPE, "jks");
@@ -123,7 +136,7 @@ public class ClientSNICQAcceptanceTest {
         .container("haproxy")
         .port(15443)
         .getExternalPort();
-    ClientCache cache = new ClientCacheFactory(gemFireProps)
+    cache = new ClientCacheFactory(gemFireProps)
         .addPoolLocator("locator-maeve", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
@@ -151,6 +164,21 @@ public class ClientSNICQAcceptanceTest {
     assertThat(region.get("key99")).isEqualTo(109);
 
     assertThat(eventUpdateCounter.get()).isEqualTo(62);
+
+    // verify that the server cleans up when the client connection to the gateway is destroyed
+    ((PoolImpl) cache.getDefaultPool()).killPrimaryEndpoint();
+    // since we can't run code in the server let's grab the CQ statistics and verify that
+    // the CQ has been closed. StatArchiveReader has a main() that we can use to get a printout
+    // of stat values
+    await().untilAsserted(() -> {
+      String stats = docker.exec(options("-T"), "geode",
+          arguments("java", "-cp", "/geode/lib/geode-dependencies.jar",
+              "org.apache.geode.internal.statistics.StatArchiveReader",
+              "stat", "server-dolores/statArchive.gfs", "CqServiceStats.numCqsClosed"));
+      System.out.println("stats from server are :" + stats);
+      // the stat should transition from zero to one at some point
+      assertThat(stats).contains("0.0 1.0");
+    });
 
   }
 
