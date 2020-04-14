@@ -33,9 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
@@ -67,15 +68,17 @@ public class ClientSNICQAcceptanceTest {
   @ClassRule
   public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
-  @Rule
-  public DockerComposeRule docker = DockerComposeRule.builder()
-      .file(DOCKER_COMPOSE_PATH.getPath())
-      .build();
+  @ClassRule
+  public static NotOnWindowsDockerRule docker =
+      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
+          .file(DOCKER_COMPOSE_PATH.getPath()).build());
+
   private CqQuery cqTracker;
 
   AtomicInteger eventCreateCounter = new AtomicInteger(0);
   AtomicInteger eventUpdateCounter = new AtomicInteger(0);
   private ClientCache cache;
+  private Region<String, Integer> region;
 
   class SNICQListener implements CqListener {
 
@@ -98,31 +101,29 @@ public class ClientSNICQAcceptanceTest {
     }
   }
 
-  private String trustStorePath;
+  private static String trustStorePath;
 
-  @Before
-  public void before() throws IOException, InterruptedException {
+  @BeforeClass
+  public static void beforeClass() throws IOException, InterruptedException {
     trustStorePath =
         createTempFileFromResource(ClientSNICQAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
-    docker.exec(options("-T"), "geode",
+    docker.get().exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
 
   }
 
-  @After
-  public void after() throws Exception {
+  @AfterClass
+  public static void afterClass() throws Exception {
     String output =
-        docker.exec(options("-T"), "geode", arguments("cat", "server-dolores/server-dolores.log"));
+        docker.get().exec(options("-T"), "geode",
+            arguments("cat", "server-dolores/server-dolores.log"));
     System.out.println("Server log file--------------------------------\n" + output);
-    if (cache != null) {
-      cache.close();
-    }
   }
 
-  @Test
-  public void performSimpleCQOverSNIProxy() throws Exception {
+  @Before
+  public void before() throws Exception {
     Properties gemFireProps = new Properties();
     gemFireProps.setProperty(SSL_ENABLED_COMPONENTS, "all");
     gemFireProps.setProperty(SSL_KEYSTORE_TYPE, "jks");
@@ -132,7 +133,7 @@ public class ClientSNICQAcceptanceTest {
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
-    int proxyPort = docker.containers()
+    int proxyPort = docker.get().containers()
         .container("haproxy")
         .port(15443)
         .getExternalPort();
@@ -142,12 +143,20 @@ public class ClientSNICQAcceptanceTest {
             proxyPort))
         .setPoolSubscriptionEnabled(true)
         .create();
-    Region<String, Integer> region =
-        cache.<String, Integer>createClientRegionFactory(ClientRegionShortcut.PROXY)
-            .create("jellyfish");
+    region = cache.<String, Integer>createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .create("jellyfish");
+  }
 
+  @After
+  public void after() throws Exception {
+    if (cache != null) {
+      cache.close();
+    }
+  }
+
+  @Test
+  public void performSimpleCQOverSNIProxy() throws Exception {
     startCQ(region);
-
     populateRegion(region);
     assertThat(region.get("key0")).isEqualTo(0);
     assertThat(region.get("key1")).isEqualTo(1);
@@ -171,7 +180,7 @@ public class ClientSNICQAcceptanceTest {
     // the CQ has been closed. StatArchiveReader has a main() that we can use to get a printout
     // of stat values
     await().untilAsserted(() -> {
-      String stats = docker.exec(options("-T"), "geode",
+      String stats = docker.get().exec(options("-T"), "geode",
           arguments("java", "-cp", "/geode/lib/geode-dependencies.jar",
               "org.apache.geode.internal.statistics.StatArchiveReader",
               "stat", "server-dolores/statArchive.gfs", "CqServiceStats.numCqsClosed"));
