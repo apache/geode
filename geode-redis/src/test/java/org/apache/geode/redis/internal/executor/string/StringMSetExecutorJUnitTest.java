@@ -17,10 +17,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.Charset;
@@ -29,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.Command;
@@ -44,7 +40,8 @@ public class StringMSetExecutorJUnitTest {
     Command command = new Command(commandElems);
     new MSetExecutor().executeCommand(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset())).startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
@@ -55,7 +52,8 @@ public class StringMSetExecutorJUnitTest {
     Command command = new Command(args);
     new MSetExecutor().executeCommand(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset())).startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   private ExecutionHandlerContext mockContext() {

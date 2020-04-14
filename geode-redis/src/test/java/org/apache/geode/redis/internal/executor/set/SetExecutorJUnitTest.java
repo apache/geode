@@ -18,19 +18,15 @@ package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -52,8 +48,8 @@ public class SetExecutorJUnitTest {
     Executor sAddExecutor = new SAddExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SADD".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sAddExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -66,7 +62,6 @@ public class SetExecutorJUnitTest {
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SADD".getBytes());
     commandsAsBytes.add("key1".getBytes());
-
     Command command = new Command(commandsAsBytes);
 
     sAddExecutor.executeCommand(command, context);
@@ -80,8 +75,8 @@ public class SetExecutorJUnitTest {
     Executor sCardExecutor = new SCardExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SCARD".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sCardExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -95,10 +90,10 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SCARD".getBytes());
     commandsAsBytes.add("key1".getBytes());
     commandsAsBytes.add("key2".getBytes());
-
     Command command = new Command(commandsAsBytes);
 
     sCardExecutor.executeCommand(command, context);
+
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
@@ -108,8 +103,8 @@ public class SetExecutorJUnitTest {
     Executor sMembersExecutor = new SMembersExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SMEMBERS".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sMembersExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -123,10 +118,10 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SMEMBERS".getBytes());
     commandsAsBytes.add("key1".getBytes());
     commandsAsBytes.add("key2".getBytes());
-
     Command command = new Command(commandsAsBytes);
 
     sMembersExecutor.executeCommand(command, context);
+
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
@@ -136,8 +131,8 @@ public class SetExecutorJUnitTest {
     Executor sIsMemberExecutor = new SIsMemberExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SISMEMBER".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sIsMemberExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -149,10 +144,9 @@ public class SetExecutorJUnitTest {
     Executor sIsMemberExecutor = new SIsMemberExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SISMEMBER".getBytes());
-
     Command command = new Command(commandsAsBytes);
-
     commandsAsBytes.add("key1".getBytes());
+
     sIsMemberExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -167,8 +161,8 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("key1".getBytes());
     commandsAsBytes.add("member1".getBytes());
     commandsAsBytes.add("member2".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sIsMemberExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -180,8 +174,8 @@ public class SetExecutorJUnitTest {
     Executor sMoveExecutor = new SMoveExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SMOVE".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sMoveExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -194,8 +188,8 @@ public class SetExecutorJUnitTest {
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SMOVE".getBytes());
     commandsAsBytes.add("source".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sMoveExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -209,8 +203,8 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SMOVE".getBytes());
     commandsAsBytes.add("source".getBytes());
     commandsAsBytes.add("dest".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sMoveExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -226,7 +220,6 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("dest".getBytes());
     commandsAsBytes.add("field1".getBytes());
     commandsAsBytes.add("field2".getBytes());
-
     Command command = new Command(commandsAsBytes);
 
     sMoveExecutor.executeCommand(command, context);
@@ -240,8 +233,8 @@ public class SetExecutorJUnitTest {
     Executor sdiffExecutor = new SDiffExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SDIFF".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sdiffExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -253,8 +246,8 @@ public class SetExecutorJUnitTest {
     Executor sDiffStoreExecutor = new SDiffStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SDIFFSTORE".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sDiffStoreExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -267,7 +260,6 @@ public class SetExecutorJUnitTest {
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SDIFFSTORE".getBytes());
     commandsAsBytes.add("key1".getBytes());
-
     Command command = new Command(commandsAsBytes);
 
     sDiffStoreExecutor.executeCommand(command, context);
@@ -281,8 +273,8 @@ public class SetExecutorJUnitTest {
     Executor sInterExecutor = new SInterExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SINTER".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sInterExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -294,8 +286,8 @@ public class SetExecutorJUnitTest {
     Executor sInterStoreExecutor = new SInterStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SINTERSTORE".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sInterStoreExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -308,8 +300,8 @@ public class SetExecutorJUnitTest {
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SINTERSTORE".getBytes());
     commandsAsBytes.add("key1".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sInterStoreExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -321,8 +313,8 @@ public class SetExecutorJUnitTest {
     Executor sUnionExecutor = new SUnionExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SUNION".getBytes());
-
     Command command = new Command(commandsAsBytes);
+
     sUnionExecutor.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
@@ -334,7 +326,6 @@ public class SetExecutorJUnitTest {
     Executor sUnionStoreExecutor = new SUnionStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SUNIONSTORE".getBytes());
-
     Command command = new Command(commandsAsBytes);
 
     sUnionStoreExecutor.executeCommand(command, context);
@@ -349,7 +340,6 @@ public class SetExecutorJUnitTest {
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SUNIONSTORE".getBytes());
     commandsAsBytes.add("key1".getBytes());
-
     Command command = new Command(commandsAsBytes);
 
     sUnionStoreExecutor.executeCommand(command, context);
@@ -378,7 +368,6 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SPOP".getBytes());
     commandsAsBytes.add("key1".getBytes());
     commandsAsBytes.add("NAN".getBytes());
-
     Command command = new Command(commandsAsBytes);
 
     sPopExecutor.executeCommand(command, context);
@@ -409,6 +398,7 @@ public class SetExecutorJUnitTest {
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SREM".getBytes());
     Command command = new Command(commandsAsBytes);
+
     subject.executeCommand(command, context);
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))

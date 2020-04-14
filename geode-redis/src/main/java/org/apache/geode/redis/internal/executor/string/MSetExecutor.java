@@ -33,7 +33,7 @@ public class MSetExecutor extends StringExecutor {
   private final String SUCCESS = "OK";
 
   @Override
-  public void  executeCommand(Command command, ExecutionHandlerContext context) {
+  public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
 

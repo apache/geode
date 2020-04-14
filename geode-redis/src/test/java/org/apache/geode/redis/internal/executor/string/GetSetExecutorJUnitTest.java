@@ -81,7 +81,8 @@ public class GetSetExecutorJUnitTest {
 
     executor.executeCommand(command, context);
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset())).startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
@@ -95,7 +96,8 @@ public class GetSetExecutorJUnitTest {
 
     executor.executeCommand(command, context);
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset())).startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
