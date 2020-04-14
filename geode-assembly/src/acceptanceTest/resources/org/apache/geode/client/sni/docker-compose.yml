@@ -33,7 +33,7 @@ services:
     container_name: 'haproxy'
     image: 'haproxy:2.1'
     ports:
-      - "15443"
+      - "15443:15443"
     networks:
       geode-sni-test:
     volumes:
