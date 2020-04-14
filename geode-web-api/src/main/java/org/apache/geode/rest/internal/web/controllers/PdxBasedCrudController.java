@@ -14,6 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
 import org.apache.geode.rest.internal.web.controllers.support.RegionData;
 import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.controllers.support.UpdateOp;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 
@@ -78,7 +80,8 @@ public class PdxBasedCrudController extends CommonCrudController {
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{region}",
       consumes = APPLICATION_JSON_UTF8_VALUE, produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region")
+  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region."
+      + " The key is not decoded so if the key contains special characters use PUT/{region}?keys=EncodedKey&op=CREATE.")
   @ApiResponses({@ApiResponse(code = 201, message = "Created."),
       @ApiResponse(code = 400,
           message = "Data specified (JSON doc) in the request body is invalid."),
@@ -91,12 +94,14 @@ public class PdxBasedCrudController extends CommonCrudController {
   public ResponseEntity<?> create(@PathVariable("region") String region,
       @RequestParam(value = "key", required = false) String key, @RequestBody final String json) {
     key = generateKey(key);
-
-    logger.debug(
-        "Posting (creating/putIfAbsent) JSON document ({}) to Region ({}) with Key ({})...", json,
-        region, key);
-
     region = decode(region);
+    return create(region, key, json, false);
+  }
+
+  private ResponseEntity<?> create(String region, String key, String json,
+      boolean keyInQueryParam) {
+    logger.debug("Create JSON document ({}) in Region ({}) with Key ({})...", json, region, key);
+
     Object existingPdxObj;
 
     // Check whether the user has supplied single JSON doc or Array of JSON docs
@@ -108,7 +113,11 @@ public class PdxBasedCrudController extends CommonCrudController {
     }
 
     final HttpHeaders headers = new HttpHeaders();
-    headers.setLocation(toUri(region, key));
+    if (keyInQueryParam) {
+      headers.setLocation(toUriWithKeys(new String[] {encode(key)}, region));
+    } else {
+      headers.setLocation(toUri(region, key));
+    }
 
     if (existingPdxObj != null) {
       final RegionEntryData<Object> data = new RegionEntryData<>(region);
@@ -121,16 +130,20 @@ public class PdxBasedCrudController extends CommonCrudController {
   }
 
   /**
-   * Read all or fixed number of data in a given Region
+   * For the given region either gets all the region's data (with an optional limit),
+   * or gets the region's data for the given keys (optionally ignoring missing keys).
    *
    * @param region gemfire region name
    * @param limit total number of entries requested
+   * @param encodedKeys an optional comma separated list of encoded keys to read
+   * @param ignoreMissingKey if true and reading more than one key then if a key is missing ignore
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
       produces = APPLICATION_JSON_UTF8_VALUE)
-  @ApiOperation(value = "read all data for region",
-      notes = "Read all data for region. Use limit param to get fixed or limited number of entries.")
+  @ApiOperation(value = "read all data for region or the specified keys",
+      notes = "If reading all data for region then the limit parameter can be used to give the maximum number of values to return."
+          + " If reading specif keys then the ignoredMissingKey parameter can be used to not fail if a key is missing.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -140,11 +153,22 @@ public class PdxBasedCrudController extends CommonCrudController {
   @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
   public ResponseEntity<?> read(@PathVariable("region") String region,
       @RequestParam(value = "limit",
-          defaultValue = DEFAULT_GETALL_RESULT_LIMIT) final String limit) {
+          defaultValue = DEFAULT_GETALL_RESULT_LIMIT) final String limit,
+      @RequestParam(value = "keys", required = false) final String[] encodedKeys,
+      @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
     logger.debug("Reading all data in Region ({})...", region);
-
     region = decode(region);
+    if (encodedKeys == null || encodedKeys.length == 0) {
+      return getAllRegionData(region, limit);
+    } else {
+      String[] decodedKeys = decode(encodedKeys);
+      return getRegionKeys(region, ignoreMissingKey, decodedKeys, true);
+    }
+  }
 
+  private ResponseEntity<?> getAllRegionData(String region, String limit) {
+    securityService.authorize("DATA", "READ", region);
+    logger.debug("Reading all data in Region ({})...", region);
     Map<Object, Object> valueObjs = null;
     final RegionData<Object> data = new RegionData<>(region);
 
@@ -164,7 +188,7 @@ public class PdxBasedCrudController extends CommonCrudController {
 
     if ("ALL".equalsIgnoreCase(limit)) {
       data.add(values);
-      keyList = StringUtils.collectionToDelimitedString(keys, ",");
+      keyList = StringUtils.collectionToCommaDelimitedString(keys);
     } else {
       try {
         int maxLimit = Integer.parseInt(limit);
@@ -180,7 +204,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         }
         data.add(values.subList(0, maxLimit));
 
-        keyList = StringUtils.collectionToDelimitedString(keys.subList(0, maxLimit), ",");
+        keyList = StringUtils.collectionToCommaDelimitedString(keys.subList(0, maxLimit));
 
       } catch (NumberFormatException e) {
         // limit param is not specified in proper format. set the HTTPHeader
@@ -190,7 +214,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       }
     }
 
-    headers.set("Content-Location", toUri(region, keyList).toASCIIString());
+    headers.set(HttpHeaders.CONTENT_LOCATION, toUri(region, keyList).toASCIIString());
     return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
   }
 
@@ -198,12 +222,14 @@ public class PdxBasedCrudController extends CommonCrudController {
    * Reading data for set of keys
    *
    * @param region gemfire region name
+   * @param keys optional list of keys to read
+   * @param ignoreMissingKey if true and reading more than one key then if a key is missing ignore
    * @return JSON document
    */
-  @RequestMapping(method = RequestMethod.GET, value = "/{region}/**",
+  @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",
       produces = APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read data for specific keys",
-      notes = "Read data for specific set of keys in a region. The keys, ** in the endpoint, are a comma separated list.")
+      notes = "Read data for specif set of keys in a region. Deprecated in favor of /{region}?keys=.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad Request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -211,15 +237,17 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(code = 404, message = "Region does not exist."),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   public ResponseEntity<?> read(@PathVariable("region") String region,
-      @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey,
-      HttpServletRequest request) {
-    String[] keys = parseKeys(request, region);
-    securityService.authorize("READ", region, keys);
-    logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
-
-    final HttpHeaders headers = new HttpHeaders();
+      @PathVariable("keys") final String[] keys,
+      @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
     region = decode(region);
+    return getRegionKeys(region, ignoreMissingKey, keys, false);
+  }
 
+  private ResponseEntity<?> getRegionKeys(String region, String ignoreMissingKey, String[] keys,
+      boolean keysInQueryParam) {
+    logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
+    securityService.authorize("READ", region, keys);
+    final HttpHeaders headers = new HttpHeaders();
     if (keys.length == 1) {
       /* GET op on single key */
       Object value = getValue(region, keys[0]);
@@ -230,7 +258,15 @@ public class PdxBasedCrudController extends CommonCrudController {
       }
 
       final RegionEntryData<Object> data = new RegionEntryData<>(region);
-      headers.set("Content-Location", toUri(region, keys[0]).toASCIIString());
+      URI uri;
+      if (keysInQueryParam) {
+        String[] encodedKeys = encode(keys);
+        String encodedRegion = encode(region);
+        uri = this.toUriWithKeys(encodedKeys, encodedRegion);
+      } else {
+        uri = toUri(region, keys[0]);
+      }
+      headers.set(HttpHeaders.CONTENT_LOCATION, uri.toASCIIString());
       data.add(value);
       return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
 
@@ -244,28 +280,49 @@ public class PdxBasedCrudController extends CommonCrudController {
         return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
       }
 
+      final Map<Object, Object> valueObjs = getValues(region, keys);
+      // valueObjs will have as its keys all of "keys".
+      // valueObjs will have a null value if the key did not exist.
+      // So if ignoreMissingKey is false we can use "null" values to detect the missing keys.
       if (!("true".equalsIgnoreCase(ignoreMissingKey))) {
-        List<String> unknownKeys = checkForMultipleKeysExist(region, keys);
-        if (unknownKeys.size() > 0) {
-          String unknownKeysAsStr = StringUtils.collectionToDelimitedString(unknownKeys, ",");
-          String erroString = String.format("Requested keys (%1$s) not exist in region (%2$s)",
-              StringUtils.collectionToDelimitedString(unknownKeys, ","), region);
-          return new ResponseEntity<>(convertErrorAsJson(erroString), headers,
+        List<String> unknownKeys = new ArrayList<>();
+        // use "keys" to iterate so we get the original key ordering from user.
+        for (String key : keys) {
+          if (valueObjs.get(key) == null) {
+            unknownKeys.add(key);
+          }
+        }
+        if (!unknownKeys.isEmpty()) {
+          String unknownKeysAsStr = StringUtils.collectionToCommaDelimitedString(unknownKeys);
+          String errorString = String.format("Requested keys (%1$s) do not exist in region (%2$s)",
+              unknownKeysAsStr, region);
+          return new ResponseEntity<>(convertErrorAsJson(errorString), headers,
               HttpStatus.BAD_REQUEST);
         }
       }
 
-      final Map<Object, Object> valueObjs = getValues(region, keys);
+      // The dev rest api was already released with null values being returned
+      // for non-existent keys.
+      // Order the keys in the result after the array of keys given to this method.
+      // Previous code returned them in random order which the result harder to test and use.
 
-      // Do we need to remove null values from Map..?
-      // To Remove null value entries from map.
-      // valueObjs.values().removeAll(Collections.singleton(null));
+      URI uri;
+      if (keysInQueryParam) {
+        String[] encodedKeys = encode(keys);
+        String encodedRegion = encode(region);
+        uri = this.toUriWithKeys(encodedKeys, encodedRegion);
+      } else {
+        String keyList = StringUtils.arrayToCommaDelimitedString(keys);
+        uri = toUri(region, keyList);
+      }
 
-      // currently we are not removing keys having value null from the result.
-      String keyList = StringUtils.collectionToDelimitedString(valueObjs.keySet(), ",");
-      headers.set("Content-Location", toUri(region, keyList).toASCIIString());
+      headers.set(HttpHeaders.CONTENT_LOCATION, uri.toASCIIString());
       final RegionData<Object> data = new RegionData<>(region);
-      data.add(valueObjs.values());
+      // add the values in the same order as the original keys
+      // the code used to use valueObj.values() which used "hash" ordering.
+      for (String key : keys) {
+        data.add(valueObjs.get(key));
+      }
       return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
     }
   }
@@ -274,16 +331,17 @@ public class PdxBasedCrudController extends CommonCrudController {
    * Update data for a key or set of keys
    *
    * @param region gemfire data region
+   * @param keys comma seperated list of keys
    * @param opValue type of update (put, replace, cas etc)
    * @param json new data for the key(s)
    * @return JSON document
    */
-  @RequestMapping(method = RequestMethod.PUT, value = "/{region}/**",
+  @RequestMapping(method = RequestMethod.PUT, value = "/{region}/{keys}",
       consumes = {APPLICATION_JSON_UTF8_VALUE}, produces = {
           APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "update data for key",
       notes = "Update or insert (put) data for keys in a region."
-          + " The keys, ** in the endpoint, are a comma separated list."
+          + " Deprecated in favor of /{region}?keys=."
           + " If op=REPLACE, update (replace) data with key if and only if the key exists in the region."
           + " If op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -295,21 +353,109 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(code = 409,
           message = "For CAS, @old value does not match to the current value in region"),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
   public ResponseEntity<?> update(@PathVariable("region") String region,
+      @PathVariable("keys") String[] keys,
       @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
       @RequestBody final String json, HttpServletRequest request) {
-    String[] keys = parseKeys(request, region);
-    securityService.authorize("WRITE", region, keys);
     logger.debug("updating key(s) for region ({}) ", region);
 
     region = decode(region);
-
+    if (!validOp(opValue)) {
+      String errorMessage = String.format(
+          "The op parameter (%1$s) is not valid. Valid values are PUT, REPLACE, or CAS.",
+          opValue);
+      return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+    }
     if (keys.length > 1) {
-      // putAll case
-      return updateMultipleKeys(region, keys, json);
+      updateMultipleKeys(region, keys, json);
+      HttpHeaders headers = new HttpHeaders();
+      headers.setLocation(toUri(region, StringUtils.arrayToCommaDelimitedString(keys)));
+      return new ResponseEntity<>(headers, HttpStatus.OK);
     } else {
       // put case
-      return updateSingleKey(region, keys[0], json, opValue);
+      Object existingValue = updateSingleKey(region, keys[0], json, opValue);
+      final HttpHeaders headers = new HttpHeaders();
+      headers.setLocation(toUri(region, keys[0]));
+      return new ResponseEntity<>(existingValue, headers,
+          (existingValue == null ? HttpStatus.OK : HttpStatus.CONFLICT));
+    }
+  }
+
+  private boolean validOp(String opValue) {
+    try {
+      UpdateOp.valueOf(opValue.toUpperCase());
+      return true;
+    } catch (IllegalArgumentException ex) {
+      return false;
+    }
+  }
+
+  /**
+   * Update data for a key or set of keys
+   *
+   * @param encodedRegion gemfire data region
+   * @param encodedKeys comma separated list of keys
+   * @param opValue type of update (put, replace, cas etc)
+   * @param json new data for the key(s)
+   * @return JSON document
+   */
+  @RequestMapping(method = RequestMethod.PUT, value = "/{region}",
+      consumes = {APPLICATION_JSON_UTF8_VALUE}, produces = {
+          APPLICATION_JSON_UTF8_VALUE})
+  @ApiOperation(value = "update data for key(s)",
+      notes = "Update or insert (put) data for keys in a region."
+          + " The keys are a comma separated list."
+          + " If multiple keys are given then put (create or update) the data for each key."
+          + " The op parameter is ignored if more than one key is given."
+          + " If op=PUT, the default, create or update data for the given key."
+          + " If op=CREATE, create data for the given key if and only if the key does not exit in the region."
+          + " If op=REPLACE, update (replace) data for the given key if and only if the key exists in the region."
+          + " If op=CAS, update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
+  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
+      @ApiResponse(code = 201, message = "For op=CREATE on success."),
+      @ApiResponse(code = 400, message = "Bad Request."),
+      @ApiResponse(code = 401, message = "Invalid Username or Password."),
+      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
+      @ApiResponse(code = 404,
+          message = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
+      @ApiResponse(code = 409,
+          message = "For op=CREATE, key already exist in region. For op=CAS, @old value does not match to the current value in region."),
+      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  public ResponseEntity<?> updateKeys(@PathVariable("region") final String encodedRegion,
+      @RequestParam(value = "keys") final String[] encodedKeys,
+      @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
+      @RequestBody final String json) {
+
+    String decodedRegion = decode(encodedRegion);
+    String[] decodedKeys = decode(encodedKeys);
+    if (!validOp(opValue) && !opValue.equalsIgnoreCase("CREATE")) {
+      String errorMessage = String.format(
+          "The op parameter (%1$s) is not valid. Valid values are PUT, CREATE, REPLACE, or CAS.",
+          opValue);
+      return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+    }
+
+    if (decodedKeys.length > 1) {
+      // putAll case
+      logger.debug("updating keys ({}) for region ({}) op={}", decodedKeys, decodedRegion, opValue);
+      securityService.authorize("WRITE", decodedRegion, decodedKeys);
+      updateMultipleKeys(decodedRegion, decodedKeys, json);
+      HttpHeaders headers = new HttpHeaders();
+      headers.setLocation(toUriWithKeys(encodedKeys, encodedRegion));
+      return new ResponseEntity<>(headers, HttpStatus.OK);
+    } else if (opValue.equalsIgnoreCase("CREATE")) {
+      securityService.authorize("DATA", "WRITE", decodedRegion);
+      return create(decodedRegion, decodedKeys[0], json, true);
+    } else {
+      // put case
+      logger.debug("updating keys ({}) for region ({}) op={}", decodedKeys, decodedRegion, opValue);
+      securityService.authorize("WRITE", decodedRegion, decodedKeys);
+      Object existingValue = updateSingleKey(decodedRegion, decodedKeys[0], json, opValue);
+      final HttpHeaders headers = new HttpHeaders();
+      headers.setLocation(toUriWithKeys(encodedKeys, encodedRegion));
+      return new ResponseEntity<>(existingValue, headers,
+          (existingValue == null ? HttpStatus.OK : HttpStatus.CONFLICT));
     }
   }
 
@@ -334,5 +480,4 @@ public class PdxBasedCrudController extends CommonCrudController {
     headers.set("Resource-Count", String.valueOf(getRegion(region).size()));
     return new ResponseEntity<RegionData<?>>(headers, HttpStatus.OK);
   }
-
 }

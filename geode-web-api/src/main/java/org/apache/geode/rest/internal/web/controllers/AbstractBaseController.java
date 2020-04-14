@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -131,6 +130,13 @@ public abstract class AbstractBaseController implements InitializingBean {
         .pathSegment(pathSegments).build().toUri();
   }
 
+  URI toUriWithKeys(String[] keys, final String... pathSegments) {
+    return ServletUriComponentsBuilder.fromCurrentContextPath().path(getRestApiVersion())
+        .pathSegment(pathSegments)
+        .queryParam("keys", StringUtils.arrayToCommaDelimitedString(keys))
+        .build(true).toUri();
+  }
+
   protected abstract String getRestApiVersion();
 
   String validateQuery(String queryInUrl, String queryInBody) {
@@ -141,12 +147,35 @@ public abstract class AbstractBaseController implements InitializingBean {
     return (StringUtils.hasText(queryInUrl) ? decode(queryInUrl) : queryInBody);
   }
 
+  String encode(String value) {
+    if (value == null) {
+      throw new GemfireRestException("could not process null value specified in query String");
+    }
+    return encode(value, DEFAULT_ENCODING);
+  }
+
   String decode(final String value) {
     if (value == null) {
       throw new GemfireRestException("could not process null value specified in query String");
     }
 
     return decode(value, DEFAULT_ENCODING);
+  }
+
+  String[] decode(String[] values) {
+    String[] result = new String[values.length];
+    for (int i = 0; i < values.length; i++) {
+      result[i] = decode(values[i]);
+    }
+    return result;
+  }
+
+  String[] encode(String[] values) {
+    String[] result = new String[values.length];
+    for (int i = 0; i < values.length; i++) {
+      result[i] = encode(values[i]);
+    }
+    return result;
   }
 
   protected PdxInstance convert(final String json) {
@@ -575,7 +604,7 @@ public abstract class AbstractBaseController implements InitializingBean {
 
     if (StringUtils.hasText(existingKey)) {
       newKey = existingKey;
-      if (NumberUtils.isNumeric(newKey) && domainObjectId == null) {
+      if (domainObject != null && NumberUtils.isNumeric(newKey) && domainObjectId == null) {
         final Long newId = IdentifiableUtils.createId(NumberUtils.parseLong(newKey));
         if (newKey.equals(newId.toString())) {
           IdentifiableUtils.setId(domainObject, newId);
@@ -601,6 +630,14 @@ public abstract class AbstractBaseController implements InitializingBean {
     return newKey;
   }
 
+  private String encode(final String value, final String encoding) {
+    try {
+      return URLEncoder.encode(value, encoding);
+    } catch (UnsupportedEncodingException e) {
+      throw new GemfireRestException("Server has encountered unsupported encoding!");
+    }
+  }
+
   private String decode(final String value, final String encoding) {
     try {
       return URLDecoder.decode(value, encoding);
@@ -621,16 +658,6 @@ public abstract class AbstractBaseController implements InitializingBean {
       throw new ResourceNotFoundException(
           String.format("Key (%1$s) does not exist for region (%2$s) in cache!", key, region));
     }
-  }
-
-  List<String> checkForMultipleKeysExist(String region, String... keys) {
-    List<String> unknownKeys = new ArrayList<>();
-    for (String key : keys) {
-      if (!getRegion(region).containsKey(key)) {
-        unknownKeys.add(key);
-      }
-    }
-    return unknownKeys;
   }
 
   protected Object[] getKeys(final String regionNamePath, Object[] keys) {
@@ -795,7 +822,10 @@ public abstract class AbstractBaseController implements InitializingBean {
     }
   }
 
-  ResponseEntity<String> updateSingleKey(final String region, final String key, final String json,
+  /**
+   * @return if the opValue is CAS then the existingValue; otherwise null
+   */
+  String updateSingleKey(final String region, final String key, final String json,
       final String opValue) {
 
     final JSONTypes jsonType = validateJsonAndFindType(json);
@@ -817,20 +847,15 @@ public abstract class AbstractBaseController implements InitializingBean {
       default:
         if (JSONTypes.JSON_ARRAY.equals(jsonType)) {
           putValue(region, key, convertJsonArrayIntoPdxCollection(json));
-          // putValue(region, key, convertJsonIntoPdxCollection(json));
         } else {
           putValue(region, key, convert(json));
         }
     }
-
-    final HttpHeaders headers = new HttpHeaders();
-    headers.setLocation(toUri(region, key));
-    return new ResponseEntity<>(existingValue, headers,
-        (existingValue == null ? HttpStatus.OK : HttpStatus.CONFLICT));
+    return existingValue;
   }
 
 
-  ResponseEntity<String> updateMultipleKeys(final String region, final String[] keys,
+  void updateMultipleKeys(final String region, final String[] keys,
       final String json) {
 
     JsonNode jsonArr;
@@ -864,10 +889,6 @@ public abstract class AbstractBaseController implements InitializingBean {
     if (!CollectionUtils.isEmpty(map)) {
       putPdxValues(region, map);
     }
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setLocation(toUri(region, StringUtils.arrayToCommaDelimitedString(keys)));
-    return new ResponseEntity<>(headers, HttpStatus.OK);
   }
 
   JSONTypes validateJsonAndFindType(String json) {
@@ -973,17 +994,5 @@ public abstract class AbstractBaseController implements InitializingBean {
     // Add the local node to list
     targetedMembers.add(cache.getDistributedSystem().getDistributedMember());
     return targetedMembers;
-  }
-
-  protected String[] parseKeys(HttpServletRequest request, String region) {
-    String uri = request.getRequestURI();
-    int regionIndex = uri.indexOf("/" + region + "/");
-    if (regionIndex == -1) {
-      throw new IllegalStateException(
-          String.format("Could not find the region (%1$s) in the URI (%2$s)", region, uri));
-    }
-    int keysIndex = regionIndex + region.length() + 2;
-    String keysString = uri.substring(keysIndex);
-    return keysString.split(",");
   }
 }

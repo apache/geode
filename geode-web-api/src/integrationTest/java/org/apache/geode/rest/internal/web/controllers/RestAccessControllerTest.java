@@ -17,8 +17,11 @@ package org.apache.geode.rest.internal.web.controllers;
 import static org.apache.geode.test.matchers.JsonEquivalence.jsonEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
@@ -29,7 +32,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -100,6 +106,8 @@ public class RestAccessControllerTest {
   private static final String ORDER_CAS_WRONG_OLD_JSON = "order-cas-wrong-old.json";
 
   private static final String SLASH = "/";
+  private static final String KEY_PREFIX = "/?+ @&./";
+  private static final String KEY_SUFFIX = "/?+ @&./";
 
   private static Map<String, String> jsonResources = new HashMap<>();
 
@@ -109,6 +117,30 @@ public class RestAccessControllerTest {
 
   private static Region<?, ?> orderRegion;
   private static Region<String, PdxInstance> customerRegion;
+
+  private static String createKey(int keyNumber) {
+    return KEY_PREFIX + "KEY" + Integer.toString(keyNumber) + KEY_SUFFIX;
+  }
+
+  private static String createEncodedKey(int keyNumber) {
+    return encodeKey(createKey(keyNumber));
+  }
+
+  private static String encodeKey(String key) {
+    try {
+      return URLEncoder.encode(key, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  private static String decodeKey(String encodedKey) {
+    try {
+      return URLDecoder.decode(encodedKey, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new IllegalStateException(e);
+    }
+  }
 
   @ClassRule
   public static ServerStarterRule rule = new ServerStarterRule()
@@ -169,12 +201,14 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
+        .andExpect(content().string(""))
         .andExpect(header().string("Location", BASE_URL + "/orders/1"));
 
     mockMvc.perform(post("/v1/orders?key=1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(content().json(jsonResources.get(ORDER1_JSON)));
 
     Order order = (Order) ((PdxInstance) orderRegion.get("1")).getObject();
     assertThat(order).as("order should not be null").isNotNull();
@@ -183,19 +217,23 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void postEntryWithSlashKey() throws Exception {
-    String key = "1" + SLASH + "2";
-    mockMvc.perform(post("/v1/orders?key=" + key)
+    String decodedKey = createKey(1);
+    String encodedKey = encodeKey(decodedKey);
+    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
-        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+        .andExpect(content().string(""))
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
 
-    mockMvc.perform(post("/v1/orders?key=" + key)
+    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(content().json(jsonResources.get(ORDER1_JSON)))
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
 
-    Order order = (Order) ((PdxInstance) orderRegion.get(key)).getObject();
+    Order order = (Order) ((PdxInstance) orderRegion.get(decodedKey)).getObject();
     assertThat(order).as("order should not be null").isNotNull();
   }
 
@@ -206,12 +244,14 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
+        .andExpect(content().string(""))
         .andExpect(header().string("Location", BASE_URL + "/orders/1"));
 
     mockMvc.perform(post("/v1/orders?key=1")
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(content().json(jsonResources.get(ORDER1_ARRAY_JSON)));
 
     @SuppressWarnings("unchecked")
     List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get("1");
@@ -221,21 +261,25 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
-  public void postEntryWithSlashKeysAndJsonArrayOfOrders() throws Exception {
-    String key = "1" + SLASH + "2";
-    mockMvc.perform(post("/v1/orders?key=" + key)
+  public void createEntryWithJsonArrayOfOrdersWithEncodedKey() throws Exception {
+    String decodedKey = createKey(1);
+    String encodedKey = encodeKey(decodedKey);
+    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
-        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
+        .andExpect(content().string(""))
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
 
-    mockMvc.perform(post("/v1/orders?key=" + key)
+    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(content().json(jsonResources.get(ORDER1_ARRAY_JSON)))
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
 
     @SuppressWarnings("unchecked")
-    List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get(key);
+    List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get(decodedKey);
     Order order = (Order) entries.get(0).getObject();
     assertThat(order).as("order should not be null").isNotNull();
   }
@@ -313,23 +357,6 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
-  public void putEntryWithSlashKey() throws Exception {
-    String key = "1" + SLASH + "2";
-    mockMvc.perform(put("/v1/orders/" + key)
-        .content(jsonResources.get(ORDER2_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
-
-    mockMvc.perform(put("/v1/orders/" + key)
-        .content(jsonResources.get(ORDER2_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL + "/orders/" + key));
-  }
-
-  @Test
-  @WithMockUser
   public void failPutEntryWithInvalidJson() throws Exception {
     mockMvc.perform(put("/v1/orders/1")
         .content(jsonResources.get(MALFORMED_JSON))
@@ -377,7 +404,7 @@ public class RestAccessControllerTest {
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(header().string("Location", BASE_URL + "/customers/" + keys));
-    assertThat(customerRegion.size()).isEqualTo(60);
+    assertThat(customerRegion).hasSize(60);
     for (int i = 1; i <= 60; i++) {
       PdxInstance customer = customerRegion.get(String.valueOf(i));
       assertThat(customer.getField("customerId").toString())
@@ -387,25 +414,69 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
-  public void putAllWithSlashes() throws Exception {
+  public void putAllWithQueryParam() throws Exception {
     StringBuilder keysBuilder = new StringBuilder();
     for (int i = 1; i < 60; i++) {
-      keysBuilder.append(i).append(SLASH).append(',');
+      keysBuilder.append(i).append(',');
     }
-    keysBuilder.append(60).append(SLASH);
+    keysBuilder.append(60);
     String keys = keysBuilder.toString();
     mockMvc.perform(
-        put("/v1/customers/" + keys)
+        put("/v1/customers?keys=" + keys)
             .content(jsonResources.get(CUSTOMER_LIST_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL + "/customers/" + keys));
-    assertThat(customerRegion.size()).isEqualTo(60);
+        .andExpect(header().string("Location", BASE_URL + "/customers?keys=" + keys));
+    assertThat(customerRegion).hasSize(60);
     for (int i = 1; i <= 60; i++) {
-      PdxInstance customer = customerRegion.get(String.valueOf(i) + SLASH);
+      PdxInstance customer = customerRegion.get(String.valueOf(i));
       assertThat(customer.getField("customerId").toString())
           .isEqualTo(Integer.valueOf(100 + i).toString());
     }
+  }
+
+  @Test
+  @WithMockUser
+  public void putMultipleEncodedKeys() throws Exception {
+    StringBuilder keysBuilder = new StringBuilder();
+    for (int i = 1; i < 60; i++) {
+      keysBuilder.append(createEncodedKey(i)).append(',');
+    }
+    keysBuilder.append(createEncodedKey(60));
+    String keys = keysBuilder.toString();
+    mockMvc.perform(
+        put("/v1/customers?keys=" + keys)
+            .content(jsonResources.get(CUSTOMER_LIST_JSON))
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/customers?keys=" + keys));
+    assertThat(customerRegion).hasSize(60);
+    for (int i = 1; i <= 60; i++) {
+      PdxInstance customer = customerRegion.get(createKey(i));
+      assertThat(customer.getField("customerId").toString())
+          .isEqualTo(Integer.valueOf(100 + i).toString());
+    }
+  }
+
+  @Test
+  @WithMockUser
+  public void putSingleEncodedKey() throws Exception {
+    String decodedKey = createKey(32);
+    String encodedKey = encodeKey(decodedKey);
+
+    mockMvc.perform(
+        put("/v1/orders?keys=" + encodedKey)
+            .content(jsonResources.get(ORDER2_JSON))
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
+
+    assertThat(orderRegion).hasSize(1);
+    PdxInstance customer = customerRegion.get(createKey(32));
+    assertThat(orderRegion.containsKey(decodedKey)).isTrue();
+    Order order = (Order) ((PdxInstance) orderRegion.get(decodedKey)).getObject();
+    assertThat(order.getPurchaseOrderNo()).isEqualTo(112);
+    assertThat(order.getCustomerId()).isEqualTo(102);
   }
 
   @Test
@@ -416,6 +487,30 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.cause", is("JSON document specified in the request is incorrect")));
+  }
+
+  @Test
+  @WithMockUser
+  public void failPutWithInvalidOp() throws Exception {
+    mockMvc.perform(put("/v1/orders/1?op=BOGUS")
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.cause", is(
+                "The op parameter (BOGUS) is not valid. Valid values are PUT, REPLACE, or CAS.")));
+  }
+
+  @Test
+  @WithMockUser
+  public void failPutWithKeyParamWithInvalidOp() throws Exception {
+    mockMvc.perform(put("/v1/orders?op=BOGUS&keys=1")
+        .content(jsonResources.get(ORDER1_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.cause", is(
+                "The op parameter (BOGUS) is not valid. Valid values are PUT, CREATE, REPLACE, or CAS.")));
   }
 
   @Test
@@ -620,11 +715,12 @@ public class RestAccessControllerTest {
   @SuppressWarnings("unchecked")
   @Test
   @WithMockUser
-  public void getCustomers() throws Exception {
+  public void getAllCustomers() throws Exception {
     putAll();
     mockMvc.perform(get("/v1/customers?limit=ALL")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", startsWith(BASE_URL + "/customers/")))
         .andExpect(jsonPath("$.customers", jsonEquals(jsonResources.get(CUSTOMER_LIST_JSON))));
   }
 
@@ -646,7 +742,42 @@ public class RestAccessControllerTest {
     mockMvc.perform(get("/v1/customers?limit=10")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", startsWith(BASE_URL + "/customers/")))
         .andExpect(jsonPath("$.customers.length()", is(10)));
+  }
+
+  @Test
+  @WithMockUser
+  public void getCustomersWithLimitOverRegionSize() throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?limit=70")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(
+            header().string("Content-Location", startsWith(BASE_URL + "/customers/")))
+        .andExpect(jsonPath("$.customers.length()", is(60)));
+  }
+
+  @Test
+  @WithMockUser
+  public void getCustomersWithBogusLimitFails() throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?limit=bogus")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.cause", is("limit param (bogus) is not valid!")));
+  }
+
+  @Test
+  @WithMockUser
+  public void getCustomersWithNegativeLimitFails() throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?limit=-2")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.cause", is("Negative limit param (-2) is not valid!")));
   }
 
   @Test
@@ -681,25 +812,115 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  public void getSpecificKey() throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers/1")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", BASE_URL + "/customers/1"))
+        .andExpect(
+            jsonPath("$.customerId", equalTo(101)));
+  }
+
+  @Test
+  @WithMockUser
   public void getSpecificKeys() throws Exception {
     putAll();
     mockMvc.perform(get("/v1/customers/1,2,3,4,5?ignoreMissingKey=false")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", BASE_URL + "/customers/1,2,3,4,5"))
         .andExpect(
-            jsonPath("$.customers[*].customerId", containsInAnyOrder(101, 102, 103, 104, 105)));
+            jsonPath("$.customers[*].customerId", contains(101, 102, 103, 104, 105)));
   }
 
   @Test
   @WithMockUser
-  public void getSpecificKeysWithSlashes() throws Exception {
-    putAllWithSlashes();
-    mockMvc.perform(get("/v1/customers/1" + SLASH + ",2" + SLASH + ",3" + SLASH
-        + ",4" + SLASH + ",5" + SLASH)
-            .with(POST_PROCESSOR))
+  public void getSpecificKeyUsingQueryParam() throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?keys=1")
+        .with(POST_PROCESSOR))
         .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", BASE_URL + "/customers?keys=1"))
         .andExpect(
-            jsonPath("$.customers[*].customerId", containsInAnyOrder(101, 102, 103, 104, 105)));
+            jsonPath("$.customerId", equalTo(101)));
+  }
+
+  @Test
+  @WithMockUser
+  public void getSpecificKeysUsingQueryParam() throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?keys=5,4,3,2,1&ignoreMissingKey=false")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", BASE_URL + "/customers?keys=5,4,3,2,1"))
+        .andExpect(
+            jsonPath("$.customers[*].customerId", contains(105, 104, 103, 102, 101)));
+  }
+
+  @Test
+  @WithMockUser
+  public void getSpecificNonExistentKeyFails() throws Exception {
+    mockMvc.perform(get("/v1/customers?keys=nonExistentKey")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.cause",
+            is("Key (nonExistentKey) does not exist for region (customers) in cache!")));
+  }
+
+  @Test
+  @WithMockUser
+  public void getSpecificNonExistentKeyWithIgnoreMissingKeyStillFails() throws Exception {
+    // ignoreMissingKey=true ignored when single key is given
+    mockMvc.perform(get("/v1/customers?keys=nonExistentKey&ignoreMissingKey=true")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isNotFound())
+        .andExpect(
+            jsonPath("$.cause",
+                is("Key (nonExistentKey) does not exist for region (customers) in cache!")));
+  }
+
+  @Test
+  @WithMockUser
+  public void getSpecificKeysUsingQueryParamWithNonExistentKey() throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?keys=1,doesNotExist&ignoreMissingKey=true")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", BASE_URL + "/customers?keys=1,doesNotExist"))
+        .andExpect(jsonPath("$.customers.length()").value(2))
+        .andExpect(jsonPath("$.customers.[0].@type")
+            .value("org.apache.geode.rest.internal.web.controllers.Customer"))
+        .andExpect(jsonPath("$.customers.[0].customerId").value(101))
+        .andExpect(jsonPath("$.customers.[0].firstName").value("Vishal"))
+        .andExpect(jsonPath("$.customers.[0].lastName").value("Roa"))
+        .andExpect(jsonPath("$.customers.[1]").isEmpty());
+  }
+
+  @Test
+  @WithMockUser
+  public void getSpecificKeysUsingQueryParamWithNonExistentKeyFailsWhenNotIgnoring()
+      throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?keys=1,doesNotExist,doesNotExist2&ignoreMissingKey=false")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.cause",
+                is("Requested keys (doesNotExist,doesNotExist2) do not exist in region (customers)")));
+  }
+
+  @Test
+  @WithMockUser
+  public void getSpecificKeysUsingQueryParamWithNonExistentKeyFailsWithBogusIgnoringValue()
+      throws Exception {
+    putAll();
+    mockMvc.perform(get("/v1/customers?keys=1,doesNotExist,doesNotExist2&ignoreMissingKey=bogus")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.cause", is(
+                "ignoreMissingKey param (bogus) is not valid. valid usage is ignoreMissingKey=true!")));
   }
 
   @Test
@@ -740,12 +961,71 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
-  public void deleteMultipleKeysWithSlashes() throws Exception {
-    putAllWithSlashes();
-    mockMvc.perform(delete("/v1/customers/1" + SLASH + ",2" + SLASH + ",3"
-        + SLASH + ",4" + SLASH + ",5" + SLASH)
-            .with(POST_PROCESSOR))
+  public void deleteMultipleKeysWithQueryParam() throws Exception {
+    putAll();
+    mockMvc.perform(delete("/v1/customers?keys=2,3,4,5")
+        .with(POST_PROCESSOR))
         .andExpect(status().isOk());
+    assertThat(customerRegion).hasSize(60 - 4);
+    assertThat(customerRegion.containsKey("2")).isFalse();
+    assertThat(customerRegion.containsKey("3")).isFalse();
+    assertThat(customerRegion.containsKey("4")).isFalse();
+    assertThat(customerRegion.containsKey("5")).isFalse();
+  }
+
+  @Test
+  @WithMockUser
+  public void getMultipleEncodedKeys() throws Exception {
+    putMultipleEncodedKeys();
+    StringBuilder keyBuilder = new StringBuilder();
+    for (int i = 2; i <= 5; i++) {
+      keyBuilder.append(createEncodedKey(i));
+      if (i != 5) {
+        keyBuilder.append(',');
+      }
+    }
+    String keys = keyBuilder.toString();
+    mockMvc.perform(get("/v1/customers?keys=" + keys)
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", BASE_URL + "/customers?keys=" + keys))
+        .andExpect(
+            jsonPath("$.customers[*].customerId", contains(102, 103, 104, 105)));
+
+  }
+
+  @Test
+  @WithMockUser
+  public void getSingleEncodedKey() throws Exception {
+    putMultipleEncodedKeys();
+    String keys = createEncodedKey(7);
+    mockMvc.perform(get("/v1/customers?keys=" + keys)
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Location", BASE_URL + "/customers?keys=" + keys))
+        .andExpect(
+            jsonPath("$.customerId", equalTo(107)));
+  }
+
+  @Test
+  @WithMockUser
+  public void deleteMultipleEncodedKeys() throws Exception {
+    putMultipleEncodedKeys();
+    StringBuilder keyBuilder = new StringBuilder();
+    for (int i = 2; i <= 5; i++) {
+      keyBuilder.append(createEncodedKey(i));
+      if (i != 5) {
+        keyBuilder.append(',');
+      }
+    }
+    String keys = keyBuilder.toString();
+    mockMvc.perform(delete("/v1/customers?keys=" + keys)
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk());
+    assertThat(customerRegion).hasSize(60 - 4);
+    for (int i = 2; i <= 5; i++) {
+      assertThat(customerRegion.containsKey(createKey(i))).isFalse();
+    }
   }
 
   @Test
