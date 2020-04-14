@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,6 +43,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -49,7 +51,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 public class NetSearchMessagingDUnitTest implements Serializable {
   private static final int DEFAULT_MAXIMUM_ENTRIES = 5;
   private static final AtomicBoolean listenerHasFinished = new AtomicBoolean();
-
+  private static Logger logger = LogService.getLogger();
   private String regionName;
 
   private VM vm0;
@@ -230,21 +232,35 @@ public class NetSearchMessagingDUnitTest implements Serializable {
   @Test
   public void testNetSearchFailoverFromReplicate() {
     installListenerToDisconnectOnNetSearchRequest(vm0);
-
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate entered");
     createReplicate(vm0);
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 1");
+
     createNormal(vm1);
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 2");
     createNormal(vm2);
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 3");
     createEmpty(vm3);
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 4");
 
     put(vm3, "a", "b");
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 5");
 
     assertThat("b").isEqualTo(get(vm3, "a"));
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 6");
 
     vm0.invoke(() -> await("system to shut down")
         .untilAsserted(
-            () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNull()));
+            () -> {
+              logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 7");
+              assertThat(InternalDistributedSystem.getConnectedInstance()).isNull();
+              logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 8");
+
+            }));
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate 9");
 
     waitForListenerToFinish(vm0);
+    logger.info("DBG GEODE-7474: testNetSearchFailoverFromReplicate finished");
   }
 
   /**
@@ -305,68 +321,117 @@ public class NetSearchMessagingDUnitTest implements Serializable {
   }
 
   private void createEmpty(VM vm) {
+    logger.info("DBG GEODE-7474: createEmpty entered");
     vm.invoke(() -> {
+      logger.info("DBG GEODE-7474: createEmpty 1");
+
+
       getCache().createRegionFactory(RegionShortcut.REPLICATE_PROXY)
           .setConcurrencyChecksEnabled(false).create(regionName);
+      logger.info("DBG GEODE-7474: createEmpty 2");
+
     });
+    logger.info("DBG GEODE-7474: createEmpty finished");
   }
 
   private void createNormal(VM vm) {
+    logger.info("DBG GEODE-7474: createNormal entered");
+
     vm.invoke(() -> {
+      logger.info("DBG GEODE-7474: createNormal 1");
+
       getCache().createRegionFactory()
           .setScope(Scope.DISTRIBUTED_ACK)
           .setConcurrencyChecksEnabled(false)
           .setDataPolicy(DataPolicy.NORMAL)
           .setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL))
           .create(regionName);
+      logger.info("DBG GEODE-7474: createNormal 2");
+
     });
+    logger.info("DBG GEODE-7474: createNormal finished");
 
   }
 
   private void createOverflow(VM vm) {
+    logger.info("DBG GEODE-7474: createOverflow entered");
     vm.invoke(() -> {
+      logger.info("DBG GEODE-7474: createOverflow 1");
+
       getCache().createRegionFactory(RegionShortcut.REPLICATE)
           .setEvictionAttributes(
               EvictionAttributes.createLRUEntryAttributes(DEFAULT_MAXIMUM_ENTRIES,
                   EvictionAction.OVERFLOW_TO_DISK))
           .create(regionName);
+      logger.info("DBG GEODE-7474: createOverflow 2");
+
     });
+    logger.info("DBG GEODE-7474: createOverflow finished");
+
   }
 
   private void createReplicate(VM vm) {
+    logger.info("DBG GEODE-7474: createReplicate entered");
     vm.invoke(() -> {
+      logger.info("DBG GEODE-7474: createReplicate 1");
       getCache().createRegionFactory(RegionShortcut.REPLICATE)
           .setConcurrencyChecksEnabled(false)
           .create(regionName);
+      logger.info("DBG GEODE-7474: createReplicate 2");
     });
+    logger.info("DBG GEODE-7474: createReplicate finished");
   }
 
   private void installListenerToDisconnectOnNetSearchRequest(VM vm) {
+    logger.info("DBG GEODE-7474: installListenerToDisconnectOnNetSearchRequest entered");
+
     vm.invoke("install listener", () -> {
+      logger.info("DBG GEODE-7474: installListenerToDisconnectOnNetSearchRequest 1");
       listenerHasFinished.set(false);
+      logger.info("DBG GEODE-7474: installListenerToDisconnectOnNetSearchRequest 2");
+
       DistributionMessageObserver observer = new DistributionMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             DistributionMessage message) {
+          logger.info("DBG GEODE-7474: installListenerToDisconnectOnNetSearchRequest 3");
+
           if (message instanceof NetSearchRequestMessage) {
             DistributionMessageObserver.setInstance(null);
+            logger.info("DBG GEODE-7474: installListenerToDisconnectOnNetSearchRequest 4");
             disconnectFromDS();
+
+            logger.info("DBG GEODE-7474: installListenerToDisconnectOnNetSearchRequest 5");
             listenerHasFinished.set(true);
           }
+          logger.info("DBG GEODE-7474: installListenerToDisconnectOnNetSearchRequest 6");
         }
       };
       DistributionMessageObserver.setInstance(observer);
     });
+
+    logger.info("DBG GEODE-7474: installListenerToDisconnectOnNetSearchRequest finished");
   }
 
   private void waitForListenerToFinish(VM vm) {
+    logger.info("DBG GEODE-7474: waitForListenerToFinish entered");
+
     vm.invoke("wait for listener to finish", () -> {
+      logger.info("DBG GEODE-7474: waitForListenerToFinish 1");
+
       assertThat(DistributionMessageObserver.getInstance())
           .withFailMessage("listener was not invoked")
           .isNull();
+      logger.info("DBG GEODE-7474: waitForListenerToFinish 2");
+
       await("listener to finish")
-          .untilAsserted(() -> assertThat(listenerHasFinished).isTrue());
+          .untilAsserted(() -> {
+            assertThat(listenerHasFinished).isTrue();
+            logger.info("DBG GEODE-7474: waitForListenerToFinish 3");
+          });
     });
+
+    logger.info("DBG GEODE-7474: waitForListenerToFinish finished");
   }
 
   private InternalCache getCache() {
