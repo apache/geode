@@ -130,7 +130,7 @@ public class PersistIntegrationTest {
     String geoKey = "sicily";
     double latitude = 13.361389;
     double longitude = 38.115556;
-    String geoMember = "Palermo Catina";
+    String geoMember = "Palermo Catania";
 
     jedis.geoadd(geoKey, latitude, longitude, geoMember);
     jedis.expire(geoKey, 20);
