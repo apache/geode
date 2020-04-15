@@ -41,7 +41,6 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
 
   public GeodeRedisSetWithFunctions(ByteArrayWrapper key,
       Region<ByteArrayWrapper, DeltaSet> region) {
-
     this.key = key;
     this.region = region;
   }
