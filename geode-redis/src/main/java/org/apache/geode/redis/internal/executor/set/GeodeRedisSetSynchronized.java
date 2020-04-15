@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -54,23 +55,13 @@ class GeodeRedisSetSynchronized implements RedisSet {
 
   @Override
   public long srem(Collection<ByteArrayWrapper> membersToRemove) {
-    AtomicLong removedCount = new AtomicLong();
-    region().computeIfPresent(key, (_unusedKey_, oldValue) -> {
-      Set<ByteArrayWrapper> newValue = new HashSet<>(oldValue);
-      newValue.removeAll(membersToRemove);
-      removedCount.set(oldValue.size() - newValue.size());
+    DeltaSet deltaSet = (DeltaSet) region().get(key);
 
-      return newValue;
-    });
-
-    if (members().isEmpty()) {
-      RedisDataType type = context.getKeyRegistrar().getType(key);
-      if (type == RedisDataType.REDIS_SET) {
-        context.getRegionProvider().removeKey(key, type);
-      }
+    if(deltaSet == null) {
+      return 0L;
     }
 
-    return removedCount.longValue();
+    return deltaSet.customRemoveAll(membersToRemove, region, key);
   }
 
   @Override

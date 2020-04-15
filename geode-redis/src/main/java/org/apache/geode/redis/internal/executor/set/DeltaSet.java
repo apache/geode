@@ -34,6 +34,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   private Collection<ByteArrayWrapper> members;
   private boolean hasDelta;
   private Collection<? extends ByteArrayWrapper> elementsAddedDelta;
+  private Object delta;
 
   public DeltaSet(Collection<ByteArrayWrapper> members) {
 
@@ -120,7 +121,6 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   }
 
 
-
   // DELTA
   @Override
   public boolean hasDelta() {
@@ -129,21 +129,27 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeHashSet((HashSet<?>) elementsAddedDelta, out);
+    DataSerializer.writeObject(this.delta, out);
     hasDelta = false;
   }
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    Collection<? extends ByteArrayWrapper> elementsAdded;
+//    Collection<? extends ByteArrayWrapper> elementsAdded;
+    Object delta;
     try {
-      elementsAdded = DataSerializer.readHashSet(in);
+      delta = DataSerializer.readObject(in);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    this.members.addAll(elementsAdded);
+    if (delta instanceof AddedMembers) {
+      AddedMembers addedMembers = (AddedMembers) delta;
+      this.members.addAll(addedMembers.getMembersToAdd());
+    } else if (delta instanceof RemovedMembers) {
+      RemovedMembers removedMembers = (RemovedMembers) delta;
+      this.members.removeAll(removedMembers.getMembersToRemove());
+    }
   }
-
 
   // DATA SERIALIZABLE
 
@@ -158,8 +164,8 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   }
 
   public synchronized long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
-      ByteArrayWrapper key) {
+                                        Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+                                        ByteArrayWrapper key) {
 
     int oldSize = this.members.size();
     boolean isAddAllSuccessful = this.members.addAll(membersToAdd);
@@ -171,11 +177,54 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
       // and record the delta and do the region put.
       // return 0;
     }
-    elementsAddedDelta = membersToAdd;
+    this.delta = new AddedMembers(membersToAdd);
     hasDelta = true;
     int newSize = this.members.size();
     int elementsAdded = newSize - oldSize;
     region.put(key, this);
     return elementsAdded;
+  }
+
+  public synchronized long customRemoveAll(Collection<ByteArrayWrapper> membersToRemove,
+                                           Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+                                           ByteArrayWrapper key) {
+    int oldSize = this.members.size();
+    boolean isRemoveAllSuccessful = this.members.removeAll(membersToRemove);
+
+    if (!isRemoveAllSuccessful) {
+      // optimize later?
+    }
+
+    this.delta = new RemovedMembers(membersToRemove);
+    hasDelta = true;
+    int newSize = this.members.size();
+    int elementsRemoved = oldSize - newSize;
+    region.put(key, this);
+
+    return elementsRemoved;
+  }
+
+  private class AddedMembers {
+    private Collection<ByteArrayWrapper> membersToAdd;
+
+    public AddedMembers(Collection<ByteArrayWrapper> membersToAdd) {
+      this.membersToAdd = membersToAdd;
+    }
+
+    public Collection<ByteArrayWrapper> getMembersToAdd() {
+      return membersToAdd;
+    }
+  }
+
+  private class RemovedMembers {
+    private Collection<ByteArrayWrapper> membersToRemove;
+
+    public RemovedMembers(Collection<ByteArrayWrapper> membersToRemove) {
+      this.membersToRemove = membersToRemove;
+    }
+
+    public Collection<ByteArrayWrapper> getMembersToRemove() {
+      return membersToRemove;
+    }
   }
 }

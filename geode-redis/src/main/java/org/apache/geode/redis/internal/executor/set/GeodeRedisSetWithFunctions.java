@@ -53,8 +53,13 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   @Override
-  public long srem(Collection<ByteArrayWrapper> membersToAdd) {
-    return 0;
+  public long srem(Collection<ByteArrayWrapper> membersToRemove) {
+    ResultCollector<Collection<ByteArrayWrapper>, List<Long>> results = FunctionService
+        .onRegion(region)
+        .withFilter(Collections.singleton(key))
+        .setArguments(membersToRemove)
+        .execute(SremFunction.ID);
+    return results.getResult().get(0);
   }
 
   @Override
