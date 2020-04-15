@@ -145,7 +145,6 @@ public class DeltaSet implements Delta, DataSerializable {
   // for serialization
   public DeltaSet() {}
 
-
   // DELTA
   @Override
   public boolean hasDelta() {
