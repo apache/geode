@@ -93,7 +93,7 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
                   + " t where t.id = r.id"))
           .getResult();
       SelectResults rs = (SelectResults) results.get(0);
-      assertThat(rs).size().equals(numPuts);
+      assertThat(rs).size().isEqualTo(numPuts);
     });
   }
 
@@ -118,7 +118,7 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
                   + " t where t.id = r.id order by r.id"))
           .getResult();
       SelectResults rs = (SelectResults) results.get(0);
-      assertThat(rs).size().equals(numPuts);
+      assertThat(rs).size().isEqualTo(numPuts);
     });
   }
 
