@@ -82,7 +82,6 @@ public class StringsIntegrationTest {
   @After
   public void flushAll() {
     jedis.flushAll();
-    jedis2.flushAll();
   }
 
   @AfterClass

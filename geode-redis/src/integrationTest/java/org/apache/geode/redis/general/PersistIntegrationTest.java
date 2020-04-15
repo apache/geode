@@ -67,6 +67,7 @@ public class PersistIntegrationTest {
   @AfterClass
   public static void tearDown() {
     jedis.close();
+    jedis2.close();
     cache.close();
     server.shutdown();
   }

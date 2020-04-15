@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 @Category({RedisTest.class})
-public class StringsDockerAcceptanceTest extends StringsIntegrationTest {
+public class StringsNativeRedisAcceptanceTest extends StringsIntegrationTest {
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play

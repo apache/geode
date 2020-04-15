@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis;
 
-import java.util.Random;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -28,7 +26,7 @@ import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 @Category({RedisTest.class})
-public class HashesDockerAcceptanceTest extends HashesIntegrationTest {
+public class SortedSetNativeRedisAcceptanceTest extends SortedSetsIntegrationTest {
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -39,14 +37,11 @@ public class HashesDockerAcceptanceTest extends HashesIntegrationTest {
   public static void setUp() {
     GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
-    rand = new Random();
     jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);
-    jedis2 = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);
   }
 
   @AfterClass
   public static void tearDown() {
     jedis.close();
-    jedis2.close();
   }
 }
