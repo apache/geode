@@ -21,12 +21,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 
 class GeodeRedisSetSynchronized implements RedisSet {
+  private static final Logger logger = LogService.getLogger();
 
   private ByteArrayWrapper key;
   private Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region;
@@ -44,10 +48,12 @@ class GeodeRedisSetSynchronized implements RedisSet {
     do {
       DeltaSet deltaSet = (DeltaSet) region().get(key);
       if (deltaSet != null) {
+        logger.info("DEBUG: in GeodeRedisSetSynchronized sadd update path");
         // update existing value
         return deltaSet.customAddAll(membersToAdd, region, key);
       }
       created = region.putIfAbsent(key, new DeltaSet(membersToAdd)) == null;
+      logger.info("DEBUG: in GeodeRedisSetSynchronized sadd created=" + created);
     } while (!created);
     return membersToAdd.size();
   }

@@ -17,18 +17,23 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.Collection;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
 class SaddFunction implements Function {
+  private static final Logger logger = LogService.getLogger();
 
   public static final String ID = "SADD_FUNCTION";
 
   @Override
   public void execute(FunctionContext context) {
+    logger.info("DEBUG: SaddFunction in execute");
     RegionFunctionContextImpl regionFunctionContext =
         (RegionFunctionContextImpl) context;
     ByteArrayWrapper key =
