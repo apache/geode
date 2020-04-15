@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static com.google.common.collect.ImmutableMap.of;
 import static org.apache.geode.internal.cache.CacheServerImpl.CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,8 +29,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -156,8 +157,7 @@ public class BucketAdvisorTest {
     verify(volunteeringDelegate).volunteerForPrimary();
   }
 
-  @Test
-  public void shadowBucketsDestroyedTrackingShouldWorkCorrectly() {
+  BucketAdvisor mockBucketAdvisorWithShadowBucketsDestroyedMap(Map<String, Boolean> shadowBuckets) {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
 
@@ -172,25 +172,58 @@ public class BucketAdvisorTest {
     RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
     when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
 
-    List<String> shadowBuckets = Arrays.asList("/bucket1", "/bucket2", "/bucket3");
     BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor);
-    shadowBuckets.forEach(bucketAdvisor::markShadowBucketAsDestroyed);
+    bucketAdvisor.destroyedShadowBuckets.putAll(shadowBuckets);
 
-    // Return false by default.
-    assertThat(bucketAdvisor.isShadowBucketDestroyed("/bucket")).isFalse();
+    return bucketAdvisor;
+  }
 
-    // Return correct value when found.
-    bucketAdvisor.markShadowBucketAsDestroyed(shadowBuckets.get(1));
-    assertThat(bucketAdvisor.isShadowBucketDestroyed(shadowBuckets.get(1))).isTrue();
+  @Test
+  public void markAllShadowBucketsAsNonDestroyedShouldClearTheShadowBucketsDestroyedMap() {
+    Map<String, Boolean> buckets = of("/b1", false, "/b2", true);
+    BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
 
-    // Mark all shadow buckets values as destroyed
-    bucketAdvisor.markAllShadowBucketsAsDestroyed();
-    shadowBuckets
-        .forEach(b -> assertThat(assertThat(bucketAdvisor.isShadowBucketDestroyed(b)).isTrue()));
-
-    // Mark all shadow buckets values as non destroyed
+    assertThat(bucketAdvisor.destroyedShadowBuckets).isNotEmpty();
     bucketAdvisor.markAllShadowBucketsAsNonDestroyed();
-    shadowBuckets
-        .forEach(b -> assertThat(assertThat(bucketAdvisor.isShadowBucketDestroyed(b)).isFalse()));
+    assertThat(bucketAdvisor.destroyedShadowBuckets).isEmpty();
+  }
+
+  @Test
+  public void markAllShadowBucketsAsDestroyedShouldSetTheFlagAsTrueForEveryKnownShadowBucket() {
+    Map<String, Boolean> buckets = of("/b1", false, "/b2", false, "/b3", false);
+    BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
+
+    bucketAdvisor.destroyedShadowBuckets.forEach((k, v) -> assertThat(v).isFalse());
+    bucketAdvisor.markAllShadowBucketsAsDestroyed();
+    bucketAdvisor.destroyedShadowBuckets.forEach((k, v) -> assertThat(v).isTrue());
+  }
+
+  @Test
+  public void markShadowBucketAsDestroyedShouldSetTheFlagAsTrueOnlyForTheSpecificBucket() {
+    Map<String, Boolean> buckets = of("/b1", false);
+    BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
+
+    // Known Shadow Bucket
+    assertThat(bucketAdvisor.destroyedShadowBuckets.get("/b1")).isFalse();
+    bucketAdvisor.markShadowBucketAsDestroyed("/b1");
+    assertThat(bucketAdvisor.destroyedShadowBuckets.get("/b1")).isTrue();
+
+    // Unknown Shadow Bucket
+    assertThat(bucketAdvisor.destroyedShadowBuckets.get("/b5")).isNull();
+    bucketAdvisor.markShadowBucketAsDestroyed("/b5");
+    assertThat(bucketAdvisor.destroyedShadowBuckets.get("/b5")).isTrue();
+  }
+
+  @Test
+  public void isShadowBucketDestroyedShouldReturnCorrectly() {
+    Map<String, Boolean> buckets = of("/b1", true, "/b2", false);
+    BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
+
+    // Known Shadow Buckets
+    assertThat(bucketAdvisor.isShadowBucketDestroyed("/b1")).isTrue();
+    assertThat(bucketAdvisor.isShadowBucketDestroyed("/b2")).isFalse();
+
+    // Unknown Shadow Bucket
+    assertThat(bucketAdvisor.isShadowBucketDestroyed("/b5")).isFalse();
   }
 }
