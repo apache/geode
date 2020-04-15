@@ -16,6 +16,8 @@ package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;

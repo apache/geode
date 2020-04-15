@@ -26,15 +26,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
 @SuppressWarnings("unchecked")
 public class GeodeRedisSetWithFunctions implements RedisSet {
+  private static final Logger logger = LogService.getLogger();
 
   private final ByteArrayWrapper key;
   private final Region<ByteArrayWrapper, DeltaSet> region;
