@@ -40,9 +40,16 @@ class GeodeRedisSetSynchronized implements RedisSet {
 
   @Override
   public long sadd(Collection<ByteArrayWrapper> membersToAdd) {
-    DeltaSet deltaSet = (DeltaSet) region().getOrDefault(key, new DeltaSet());
-
-    return deltaSet.customAddAll(membersToAdd, region, key);
+    boolean created;
+    do {
+      DeltaSet deltaSet = (DeltaSet) region().get(key);
+      if (deltaSet != null) {
+        // update existing value
+        return deltaSet.customAddAll(membersToAdd, region, key);
+      }
+      created = region.putIfAbsent(key, new DeltaSet(membersToAdd)) == null;
+    } while (!created);
+    return membersToAdd.size();
   }
 
   @Override
