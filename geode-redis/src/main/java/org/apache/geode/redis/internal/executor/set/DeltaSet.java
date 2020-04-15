@@ -53,7 +53,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   }
 
 
-  //SET INTERFACE
+  // SET INTERFACE
   @Override
   public int size() {
     return members.size();
@@ -111,7 +111,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
   @Override
   public boolean removeAll(Collection<?> c) {
-    return  members.removeAll(c);
+    return members.removeAll(c);
   }
 
   @Override
@@ -121,13 +121,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
 
 
-
-
-
-
-
-
-  //DELTA
+  // DELTA
   @Override
   public boolean hasDelta() {
     return hasDelta;
@@ -141,7 +135,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    Collection<? extends ByteArrayWrapper>  elementsAdded;
+    Collection<? extends ByteArrayWrapper> elementsAdded;
     try {
       elementsAdded = DataSerializer.readHashSet(in);
     } catch (ClassNotFoundException e) {
@@ -151,7 +145,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   }
 
 
-  //DATA SERIALIZABLE
+  // DATA SERIALIZABLE
 
   @Override
   public void toData(DataOutput out) throws IOException {
@@ -163,13 +157,13 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     this.members = DataSerializer.readHashSet(in);
   }
 
-  synchronized public long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
-                                        Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
-                                        ByteArrayWrapper key) {
-    
+  public synchronized long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+      ByteArrayWrapper key) {
+
     int oldSize = this.members.size();
     boolean isAddAllSuccessful = this.members.addAll(membersToAdd);
-    if(!isAddAllSuccessful) {
+    if (!isAddAllSuccessful) {
       return 0;
     }
     elementsAddedDelta = membersToAdd;

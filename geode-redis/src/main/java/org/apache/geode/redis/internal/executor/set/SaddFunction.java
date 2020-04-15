@@ -29,20 +29,15 @@ class SaddFunction implements Function {
 
   @Override
   public void execute(FunctionContext context) {
-    RegionFunctionContextImpl
-        regionFunctionContext =
+    RegionFunctionContextImpl regionFunctionContext =
         (RegionFunctionContextImpl) context;
-    ByteArrayWrapper
-        key =
+    ByteArrayWrapper key =
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
-    Region
-        localRegion =
+    Region localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
-    Collection<ByteArrayWrapper>
-        membersToAdd =
+    Collection<ByteArrayWrapper> membersToAdd =
         (Collection<ByteArrayWrapper>) regionFunctionContext.getArguments();
-    long
-        membersadded =
+    long membersadded =
         new GeodeRedisSetSynchronized(key, localRegion).sadd(membersToAdd);
     regionFunctionContext.getResultSender().lastResult(membersadded);
   }

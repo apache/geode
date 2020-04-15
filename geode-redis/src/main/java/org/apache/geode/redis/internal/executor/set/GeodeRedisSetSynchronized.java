@@ -33,7 +33,7 @@ class GeodeRedisSetSynchronized implements RedisSet {
 
 
   public GeodeRedisSetSynchronized(ByteArrayWrapper key,
-                                   Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region) {
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region) {
     this.key = key;
     this.region = region;
   }

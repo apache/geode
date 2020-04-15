@@ -30,10 +30,12 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   private final ByteArrayWrapper key;
   private final Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region;
 
-  static {FunctionService.registerFunction(new SaddFunction());}
+  static {
+    FunctionService.registerFunction(new SaddFunction());
+  }
 
   public GeodeRedisSetWithFunctions(ByteArrayWrapper key,
-                                    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region) {
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region) {
 
     this.key = key;
     this.region = region;
