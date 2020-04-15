@@ -20,16 +20,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
 public class GeodeRedisSetWithFunctions implements RedisSet {
-  private static final Logger logger = LogService.getLogger();
 
   private final ByteArrayWrapper key;
   private final Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region;
@@ -47,7 +43,6 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
 
   @Override
   public long sadd(Collection<ByteArrayWrapper> membersToAdd) {
-    logger.info("DEBUG: GeodeRedisSetWithFunctions in sadd");
     ResultCollector<Collection<ByteArrayWrapper>, List<Long>> results = FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
