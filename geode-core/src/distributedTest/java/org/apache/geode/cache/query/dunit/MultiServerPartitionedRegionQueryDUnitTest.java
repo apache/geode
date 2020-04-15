@@ -15,7 +15,7 @@
 package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.test.dunit.VM.getVM;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,7 +63,7 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
   public ClientCacheRule clientCacheRule = new ClientCacheRule();
 
   private VM server1, server2, client;
-  private String regionName = "region";
+  private static String regionName = "region";
 
   @Before
   public void setup() {
@@ -74,12 +75,8 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
   @Test
   public void cumulativeResultsToDataShouldWriteToTheCorrectStreamNotCauseCorruption() {
     int numPuts = 10;
-    int port = server1.invoke(() -> {
-      return createServerAndRegion();
-    });
-    server2.invoke(() -> {
-      createServerAndRegion();
-    });
+    int port = server1.invoke(this::createServerAndRegion);
+    server2.invoke((SerializableRunnableIF) this::createServerAndRegion);
 
     String hostname = server1.getHost().getHostName();
     client.invoke(() -> {
@@ -93,22 +90,18 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
       ArrayList results = (ArrayList) FunctionService.onRegion(region)
           .execute(new QueryWithoutTurningIntoListFunction(regionName,
               "select distinct r.id, r.name from /" + regionName + " r, /" + regionName
-                  + " t where t.id = r.id order by r.id"))
+                  + " t where t.id = r.id"))
           .getResult();
       SelectResults rs = (SelectResults) results.get(0);
-      assertEquals(numPuts, rs.size());
+      assertThat(rs).size().equals(numPuts);
     });
   }
 
   @Test
   public void nwayMergeResultsToDataShouldWriteToTheCorrectStreamAndNotCauseCorruption() {
     int numPuts = 10;
-    int port = server1.invoke(() -> {
-      return createServerAndRegion();
-    });
-    server2.invoke(() -> {
-      createServerAndRegion();
-    });
+    int port = server1.invoke(this::createServerAndRegion);
+    server2.invoke((SerializableRunnableIF) this::createServerAndRegion);
 
     String hostname = server1.getHost().getHostName();
     client.invoke(() -> {
@@ -125,7 +118,7 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
                   + " t where t.id = r.id order by r.id"))
           .getResult();
       SelectResults rs = (SelectResults) results.get(0);
-      assertEquals(numPuts, rs.size());
+      assertThat(rs).size().equals(numPuts);
     });
   }
 
