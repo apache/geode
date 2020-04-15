@@ -120,8 +120,8 @@ public class RedisLockServiceJUnitTest {
 
     latch.countDown();
 
-    assertThat(lockService1.lock(key)).isNotNull();
     t1.join();
+    assertThat(lockService1.lock(key)).isNotNull();
   }
 
   @Test
