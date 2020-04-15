@@ -81,6 +81,21 @@ By default gateway sender queues use 5 threads to dispatch queued events. With a
 
 See [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
 
+## <a id="GW_sender_connect" class="no-quick-link"></a>Timing of Connections
+
+When a gateway sender is created, it tries once to connect to
+the gateway receiver.
+If the gateway sender cannot connect,
+the gateway sender does not retry until there is a batch of events to be sent.
+At that time, the gateway sender tries again to connect to the gateway receiver.
+
+During a normal initial startup,
+one cluster site will start before the other cluster site.
+The cluster site that starts first will not be connected
+to the remote cluster site,
+even after that other cluster site starts.
+Only when data is to be sent will the connection be made.
+
 ## <a id="topic_9AA37B43642D4DE19072CA3367C849BA__section_70A4D850A5404429AD5CB483D2053F1A" class="no-quick-link"></a>High Availability for Gateway Senders
 
 When a serial gateway sender configuration is deployed to multiple Geode members, only one "primary" sender is active at a given time. All other serial gateway sender instances are inactive "secondaries" that are available as backups if the primary sender shuts down. Geode designates the first gateway sender to start up as the primary sender, and all other senders become secondaries. As gateway senders start and shut down, Geode ensures that the oldest running gateway sender operates as the primary.
