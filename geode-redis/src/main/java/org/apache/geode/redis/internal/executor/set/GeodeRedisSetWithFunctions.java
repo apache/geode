@@ -15,12 +15,14 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -32,6 +34,8 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
 
   static {
     FunctionService.registerFunction(new SaddFunction());
+    FunctionService.registerFunction(new SremFunction());
+    FunctionService.registerFunction(new SmembersFunction());
   }
 
   public GeodeRedisSetWithFunctions(ByteArrayWrapper key,
@@ -64,7 +68,11 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
 
   @Override
   public Set<ByteArrayWrapper> members() {
-    return null;
+    ResultCollector<Void, List<Set<ByteArrayWrapper>>> results = FunctionService
+        .onRegion(region)
+        .withFilter(Collections.singleton(key))
+        .execute(SmembersFunction.ID);
+    return results.getResult().get(0);
   }
 
 }

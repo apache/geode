@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.set;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,7 +38,6 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   private Object delta;
 
   public DeltaSet(Collection<ByteArrayWrapper> members) {
-
     this.members = members;
   }
 
@@ -154,7 +154,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   // DATA SERIALIZABLE
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public synchronized void toData(DataOutput out) throws IOException {
     DataSerializer.writeHashSet((HashSet<?>) members, out);
   }
 
@@ -192,7 +192,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     boolean isRemoveAllSuccessful = this.members.removeAll(membersToRemove);
 
     if (!isRemoveAllSuccessful) {
-      // optimize later?
+      return 0;
     }
 
     this.delta = new RemovedMembers(membersToRemove);
@@ -204,7 +204,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     return elementsRemoved;
   }
 
-  private class AddedMembers {
+  private class AddedMembers implements DataSerializable {
     private Collection<ByteArrayWrapper> membersToAdd;
 
     public AddedMembers(Collection<ByteArrayWrapper> membersToAdd) {
@@ -214,9 +214,19 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     public Collection<ByteArrayWrapper> getMembersToAdd() {
       return membersToAdd;
     }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeObject(members, out);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      members = DataSerializer.readObject(in);
+    }
   }
 
-  private class RemovedMembers {
+  private class RemovedMembers implements DataSerializable {
     private Collection<ByteArrayWrapper> membersToRemove;
 
     public RemovedMembers(Collection<ByteArrayWrapper> membersToRemove) {
@@ -225,6 +235,16 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
     public Collection<ByteArrayWrapper> getMembersToRemove() {
       return membersToRemove;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeObject(members, out);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      members = DataSerializer.readObject(in);
     }
   }
 }

@@ -14,7 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -26,18 +28,21 @@ import org.apache.geode.redis.internal.RedisDataType;
 public class SRemExecutor extends SetExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
+    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
-    if (commandElems.size() < 3) {
+    if (commandElements.size() < 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SREM));
       return;
     }
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-    RedisSet set = new GeodeRedisSetSynchronized(key, context.getRegionProvider().getSetRegion());
-    long numRemoved = set.srem(commandElems.subList(2, commandElems.size()));
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
+    RedisSet geodeRedisSet = new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
+
+
+    Set<ByteArrayWrapper> membersToRemove = new HashSet<>(commandElements.subList(2, commandElements.size()));
+    long membersRemoved = geodeRedisSet.srem(membersToRemove);
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), membersRemoved));
   }
 }
