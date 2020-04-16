@@ -17,11 +17,16 @@ package org.apache.geode.redis.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.DefaultChannelPromise;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.junit.Test;
 
 
@@ -30,16 +35,19 @@ public class PubSubImplJUnitTest {
   @Test
   public void testSubscriptionWithDeadClientIsPruned() {
     Subscriptions subscriptions = new Subscriptions();
-    ExecutionHandlerContext mockExecutionHandlerContext = mock(ExecutionHandlerContext.class);
+    ExecutionHandlerContext mockContext = mock(ExecutionHandlerContext.class);
+
+    FailingChannelFuture mockFuture = new FailingChannelFuture();
+    when(mockContext.writeToChannel(any())).thenReturn(mockFuture);
+    when(mockContext.getByteBufAllocator()).thenReturn(new PooledByteBufAllocator());
 
     Client deadClient = mock(Client.class);
     when(deadClient.isDead()).thenReturn(true);
 
     ChannelSubscription subscription =
         spy(new ChannelSubscription(deadClient,
-            "sally", mockExecutionHandlerContext));
+            "sally", mockContext));
 
-    doReturn(new PublishResult(deadClient, false)).when(subscription).publishMessage(any(), any());
     subscriptions.add(subscription);
 
     PubSubImpl subject = new PubSubImpl(subscriptions);
@@ -48,5 +56,34 @@ public class PubSubImplJUnitTest {
 
     assertThat(numberOfSubscriptions).isEqualTo(0);
     assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty();
+  }
+
+  static class FailingChannelFuture extends DefaultChannelPromise {
+    private GenericFutureListener listener;
+
+    FailingChannelFuture() {
+      super(mock(Channel.class));
+    }
+
+    @Override
+    public ChannelPromise addListener(
+        GenericFutureListener<? extends Future<? super Void>> listener) {
+      this.listener = listener;
+      fail();
+      return null;
+    }
+
+    @Override
+    public Throwable cause() {
+      return new RuntimeException("aeotunhasoen");
+    }
+
+    public void fail() {
+      try {
+        this.listener.operationComplete(this);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 }

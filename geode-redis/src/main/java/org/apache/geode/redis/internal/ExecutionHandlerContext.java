@@ -96,7 +96,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param cache The Geode cache instance of this vm
    * @param regionProvider The region provider of this context
    * @param server Instance of the server it is attached to, only used so that any execution
-   *        can initiate a shutdwon
+   *        can initiate a shutdown
    * @param password Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
@@ -176,6 +176,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         && cause.getCause() instanceof RedisCommandParserException) {
       response =
           Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.PARSING_EXCEPTION_MESSAGE);
+
     } else if (cause instanceof RegionCreationException) {
       this.logger.error(cause);
       response =

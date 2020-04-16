@@ -16,11 +16,9 @@
 
 package org.apache.geode.redis.internal;
 
-import java.nio.channels.ClosedChannelException;
-import java.util.concurrent.ExecutionException;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -42,13 +40,10 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public PublishResult publishMessage(String channel, byte[] message) {
+  public void publishMessage(String channel, byte[] message,
+      PublishResultCollector publishResultCollector) {
     ByteBuf messageByteBuffer = constructResponse(channel, message);
-    if (messageByteBuffer == null) {
-      return new PublishResult(client, false);
-    }
-
-    return new PublishResult(client, writeToChannelSynchronously(messageByteBuffer));
+    writeToChannel(messageByteBuffer, publishResultCollector);
   }
 
   Client getClient() {
@@ -77,23 +72,15 @@ public abstract class AbstractSubscription implements Subscription {
    * to the client, resulted in an error - for example if the client has disconnected and the write
    * fails. In such cases we need to be able to notify the caller.
    */
-  private boolean writeToChannelSynchronously(ByteBuf messageByteBuffer) {
+  private void writeToChannel(ByteBuf messageByteBuffer,
+      PublishResultCollector resultCollector) {
     ChannelFuture channelFuture = context.writeToChannel(messageByteBuffer);
-
-    try {
-      channelFuture.get();
-    } catch (ExecutionException e) {
-      if (e.getCause() instanceof ClosedChannelException) {
-        logger.warn("Unable to write to channel: {}", e.getMessage());
+    channelFuture.addListener((ChannelFutureListener) future -> {
+      if (future.cause() == null) {
+        resultCollector.success();
       } else {
-        logger.warn("Unable to write to channel", e);
+        resultCollector.failure(client);
       }
-      return false;
-    } catch (InterruptedException e) {
-      logger.warn("Unable to write to channel", e);
-      return false;
-    }
-
-    return channelFuture.cause() == null;
+    });
   }
 }

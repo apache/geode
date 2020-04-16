@@ -17,8 +17,6 @@
 package org.apache.geode.redis.internal;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.Function;
@@ -109,23 +107,21 @@ public class PubSubImpl implements PubSub {
   @VisibleForTesting
   long publishMessageToSubscribers(String channel, byte[] message) {
 
-    Map<Boolean, List<PublishResult>> results = subscriptions
-        .findSubscriptions(channel)
+    List<Subscription> foundSubscriptions = subscriptions
+        .findSubscriptions(channel);
+    if (foundSubscriptions.isEmpty()) {
+      return 0;
+    }
+
+    PublishResultCollector publishResultCollector =
+        new PublishResultCollector(foundSubscriptions.size(), subscriptions);
+
+    foundSubscriptions
         .stream()
-        .map(subscription -> subscription.publishMessage(channel, message))
-        .collect(Collectors.partitioningBy(PublishResult::isSuccessful));
+        .forEach(
+            subscription -> subscription.publishMessage(channel, message, publishResultCollector));
 
-    prune(results.get(false));
-
-    return results.get(true).size();
+    return publishResultCollector.getSuccessCount();
   }
 
-  private void prune(List<PublishResult> failedSubscriptions) {
-    failedSubscriptions.forEach(publishResult -> {
-      Client client = publishResult.getClient();
-      if (client.isDead()) {
-        subscriptions.remove(client);
-      }
-    });
-  }
 }

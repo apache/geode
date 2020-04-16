@@ -53,6 +53,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
+import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -610,10 +611,16 @@ public class GeodeRedisServer {
                 new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
                     keyRegistrar, pubSub, hashLockService));
           }
-        }).option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_RCVBUF, getBufferSize())
+        }).option(ChannelOption.SO_REUSEADDR, true)
+        .option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
+        .childOption(EpollChannelOption.TCP_KEEPIDLE, 1)
+        .childOption(EpollChannelOption.TCP_KEEPINTVL, 30)
+        .childOption(EpollChannelOption.TCP_KEEPCNT, 3)
         .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, GeodeRedisServer.connectTimeoutMillis)
-        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+
+    ;
 
     // Bind and start to accept incoming connections.
     ChannelFuture f = b.bind(new InetSocketAddress(getBindAddress(), serverPort)).sync();
