@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +33,14 @@ public class UnsubscribeExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    byte[] channelName = command.getProcessedCommand().get(1);
+    List<byte[]> commandElems = command.getProcessedCommand();
+    if (commandElems.size() < 2) {
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), "not enough arguments"));
+      return;
+    }
+
+    byte[] channelName = commandElems.get(1);
     long subscriptionCount =
         context.getPubSub().unsubscribe(new String(channelName), context.getClient());
 

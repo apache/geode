@@ -58,6 +58,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
 
 import org.apache.geode.GemFireConfigException;
@@ -332,16 +333,15 @@ public class GeodeRedisServer {
    */
   private int setNumWorkerThreads() {
     String prop = System.getProperty(NUM_THREADS_SYS_PROP_NAME);
-    int numCores = Runtime.getRuntime().availableProcessors();
-    int def = 4 * numCores;
+    int defaultThreads = Runtime.getRuntime().availableProcessors();
     if (prop == null || prop.isEmpty()) {
-      return def;
+      return defaultThreads;
     }
     int threads;
     try {
       threads = Integer.parseInt(prop);
     } catch (NumberFormatException e) {
-      return def;
+      return defaultThreads;
     }
     return threads;
   }
@@ -620,11 +620,13 @@ public class GeodeRedisServer {
             ChannelPipeline p = ch.pipeline();
             addSSLIfEnabled(ch, p);
             p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
+            p.addLast(new WriteTimeoutHandler(10));
             p.addLast(ExecutionHandlerContext.class.getSimpleName(),
                 new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
                     keyRegistrar, pubSub, hashLockService));
           }
-        }).option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_RCVBUF, getBufferSize())
+        }).option(ChannelOption.SO_REUSEADDR, true)
+        .option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
         .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, GeodeRedisServer.connectTimeoutMillis)
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);

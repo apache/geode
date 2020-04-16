@@ -328,7 +328,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * a {@code Set<WeakReference<Thread>>} to track the {@code Thread}s in the factory's
    * {@code ThreadGroup} excluding subgroups.
    */
-  protected static class DedicatedThreadFactory implements ThreadFactory {
+  public static class DedicatedThreadFactory implements ThreadFactory {
 
     private static final AtomicInteger POOL_NUMBER = new AtomicInteger(1);
 
@@ -337,7 +337,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     private final String namePrefix;
     private final Set<WeakReference<Thread>> directThreads = new HashSet<>();
 
-    protected DedicatedThreadFactory() {
+    public DedicatedThreadFactory() {
       group = new ThreadGroup(ExecutorServiceRule.class.getSimpleName() + "-ThreadGroup");
       namePrefix = "pool-" + POOL_NUMBER.getAndIncrement() + "-thread-";
     }

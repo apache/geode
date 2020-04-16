@@ -14,26 +14,20 @@
  *
  */
 
-package org.apache.geode.redis;
+package org.apache.geode.redis.mocks;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.logging.log4j.Logger;
-import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class MockSubscriber extends JedisPubSub {
+public class MockSubscriberWithLatch extends JedisPubSub {
   private CountDownLatch latch;
   private List<String> receivedMessages = new ArrayList<String>();
-  private Client client;
 
-  private static final Logger logger = LogService.getLogger();
-
-  public MockSubscriber(CountDownLatch latch) {
+  public MockSubscriberWithLatch(CountDownLatch latch) {
     this.latch = latch;
   }
 
@@ -43,20 +37,11 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onSubscribe(String channel, int subscribedChannels) {
-    // logger.info("--->>> Received subscription for " + client.getSocket());
     latch.countDown();
   }
 
   @Override
   public void onMessage(String channel, String message) {
     receivedMessages.add(message);
-  }
-
-  @Override
-  public void proceed(Client client, String... channels) {
-    this.client = client;
-    // logger.info("--->>> Before for " + client.getSocket());
-    super.proceed(client, channels);
-    // logger.info("--->>> After for " + client.getSocket());
   }
 }
