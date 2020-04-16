@@ -44,7 +44,8 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
     totalBucketTransfersCompleted += details.getBucketTransfersCompleted();
     totalPrimaryTransferTime += details.getPrimaryTransferTime();
     totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
-    totalNumOfMembers += details.getNumberOfMembersExecutedOn();
+    if (totalNumOfMembers == 0)
+      totalNumOfMembers += details.getNumberOfMembersExecutedOn();
     totalTime += details.getTime();
   }
 
