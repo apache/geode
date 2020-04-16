@@ -21,18 +21,6 @@ apply plugin: 'signing'
 // The published bom will constrain versions within geode of any subproject with this property set.
 project.ext.set('constrainVersionInBom', true)
 
-if (project.name != 'geode-assembly') {
-  task sourcesJar(type: Jar) {
-    from sourceSets.main.allJava
-    classifier = 'sources'
-  }
-
-  task javadocJar(type: Jar) {
-    from javadoc
-    classifier = 'javadoc'
-  }
-}
-
 def apacheLicense = '''
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -53,12 +41,6 @@ def apacheLicense = '''
 publishing {
   publications {
     maven(MavenPublication) {
-      if (project.name != 'geode-assembly') {
-        // use the (possibly empty) Jar tasks above for sources and javadoc
-        artifact sourcesJar
-        artifact javadocJar
-      }
-
       pom {
         name = 'Apache Geode'
         description = 'Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
@@ -74,38 +56,6 @@ publishing {
           license {
             name = 'The Apache Software License, Version 2.0'
             url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-          }
-        }
-
-        withXml {
-          // This black magic checks to see if a dependency has the flag ext.optional=true
-          // set on it, and if so marks the dependency as optional in the maven pom
-          def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
-          def runtimeDeps = project.configurations.runtime.dependencies.collectEntries {
-            [it.name, it]
-          }
-          depMap.putAll(runtimeDeps)
-          def runtimeOnlyDeps = project.configurations.runtimeOnly.dependencies.collectEntries {
-            [it.name, it]
-          }
-          depMap.putAll(runtimeOnlyDeps)
-          def implementationDependencies = project.configurations.implementation.dependencies.collectEntries {
-            [it.name, it]
-          }
-          depMap.putAll(implementationDependencies)
-          def apiDependencies = project.configurations.api.dependencies.collectEntries {
-            [it.name, it]
-          }
-          depMap.putAll(apiDependencies)
-          asNode().dependencies.dependency.findAll {
-            def dep = depMap.get(it.artifactId.text())
-            return dep?.hasProperty('optional') && dep.optional
-          }.each {
-            if (it.optional) {
-              it.optional.value = 'true'
-            } else {
-              it.appendNode('optional', 'true')
-            }
           }
         }
 
