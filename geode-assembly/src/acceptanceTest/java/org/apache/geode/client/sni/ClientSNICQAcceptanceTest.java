@@ -163,8 +163,7 @@ public class ClientSNICQAcceptanceTest {
     assertThat(region.get("key2")).isEqualTo(2);
     assertThat(region.get("key99")).isEqualTo(99);
 
-
-    assertThat(eventCreateCounter.get()).isEqualTo(62);
+    await().untilAsserted(() -> assertThat(eventCreateCounter.get()).isEqualTo(62));
 
     updateRegion(region);
     assertThat(region.get("key0")).isEqualTo(10);
@@ -172,7 +171,7 @@ public class ClientSNICQAcceptanceTest {
     assertThat(region.get("key2")).isEqualTo(12);
     assertThat(region.get("key99")).isEqualTo(109);
 
-    assertThat(eventUpdateCounter.get()).isEqualTo(62);
+    await().untilAsserted(() -> assertThat(eventUpdateCounter.get()).isEqualTo(62));
 
     // verify that the server cleans up when the client connection to the gateway is destroyed
     ((PoolImpl) cache.getDefaultPool()).killPrimaryEndpoint();
