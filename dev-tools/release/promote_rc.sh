@@ -177,7 +177,7 @@ else
   git checkout -b apache-geode-${VERSION}
   GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-geode-${VERSION}.tgz.sha256)
   set +x
-  sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.cgi?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+  sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.lua?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
       -e '/ *mirror ".*www.*/d' \
       -e '/ *mirror ".*downloads.*/d' \
       -e 's# *mirror ".*archive.*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"\
@@ -327,7 +327,7 @@ fi
 
 echo ""
 echo "============================================================"
-echo "Updating 'old' versions"
+echo "Updating 'old' versions and Benchmarks baseline"
 echo "============================================================"
 set -x
 cd ${GEODE_DEVELOP}
@@ -358,10 +358,19 @@ else
     -i.bak settings.gradle
 fi
 rm settings.gradle.bak
+if [ $PATCH -eq 0 ] ; then
+  #also update benchmark baseline for develop to this new minor
+  sed -e "s/^  baseline_version:.*/  baseline_version: '${VERSION}'/" \
+    -i.bak ci/pipelines/shared/jinja.variables.yml
+  rm ci/pipelines/shared/jinja.variables.yml.bak
+  BENCHMSG=" and set as Benchmarks baseline"
+  set -x
+  git add ci/pipelines/shared/jinja.variables.yml
+fi
 set -x
 git add settings.gradle
 git diff --staged
-git commit -m "add ${VERSION} to old versions"
+git commit -m "add ${VERSION} to old versions${BENCHMSG} on develop"
 git push -u myfork
 set +x
 
