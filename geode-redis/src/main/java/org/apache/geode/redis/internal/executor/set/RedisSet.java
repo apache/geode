@@ -20,10 +20,12 @@ import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-interface RedisSet {
+public interface RedisSet {
   long sadd(Collection<ByteArrayWrapper> membersToAdd);
 
   long srem(Collection<ByteArrayWrapper> membersToAdd);
 
   Set<ByteArrayWrapper> members();
+
+  Boolean del();
 }

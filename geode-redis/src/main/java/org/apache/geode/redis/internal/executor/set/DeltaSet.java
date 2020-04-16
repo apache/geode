@@ -204,6 +204,20 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     return elementsRemoved;
   }
 
+  public synchronized Boolean delete(
+      Region<ByteArrayWrapper,
+          Set<ByteArrayWrapper>>
+          region,
+      ByteArrayWrapper key) {
+
+    try {
+      region.remove(key);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
   private class AddedMembers implements DataSerializable {
     private Collection<ByteArrayWrapper> membersToAdd;
 

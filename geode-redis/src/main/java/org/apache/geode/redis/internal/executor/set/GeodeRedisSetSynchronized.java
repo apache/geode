@@ -66,6 +66,16 @@ class GeodeRedisSetSynchronized implements RedisSet {
     return region().getOrDefault(key, Collections.emptySet());
   }
 
+  @Override
+  public Boolean del() {
+    DeltaSet deltaSet = (DeltaSet) region().get(key);
+    if (deltaSet==null){
+      return false;
+    }
+    return deltaSet.delete(region, key);
+
+  }
+
   Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region() {
     return region;
   }
