@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.executor.set;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -135,7 +134,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-//    Collection<? extends ByteArrayWrapper> elementsAdded;
+    // Collection<? extends ByteArrayWrapper> elementsAdded;
     Object delta;
     try {
       delta = DataSerializer.readObject(in);
@@ -154,7 +153,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   // DATA SERIALIZABLE
 
   @Override
-  public synchronized void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     DataSerializer.writeHashSet((HashSet<?>) members, out);
   }
 
@@ -164,8 +163,8 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   }
 
   public synchronized long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
-                                        Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
-                                        ByteArrayWrapper key) {
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+      ByteArrayWrapper key) {
 
     int oldSize = this.members.size();
     boolean isAddAllSuccessful = this.members.addAll(membersToAdd);
@@ -185,9 +184,13 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     return elementsAdded;
   }
 
+  public synchronized Set<ByteArrayWrapper> members() {
+    return new HashSet<>(this.members);
+  }
+
   public synchronized long customRemoveAll(Collection<ByteArrayWrapper> membersToRemove,
-                                           Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
-                                           ByteArrayWrapper key) {
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+      ByteArrayWrapper key) {
     int oldSize = this.members.size();
     boolean isRemoveAllSuccessful = this.members.removeAll(membersToRemove);
 
@@ -205,9 +208,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   }
 
   public synchronized Boolean delete(
-      Region<ByteArrayWrapper,
-          Set<ByteArrayWrapper>>
-          region,
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
       ByteArrayWrapper key) {
 
     try {

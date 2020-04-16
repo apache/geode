@@ -38,10 +38,12 @@ public class SRemExecutor extends SetExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
 
-    RedisSet geodeRedisSet = new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
+    RedisSet geodeRedisSet =
+        new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
 
 
-    Set<ByteArrayWrapper> membersToRemove = new HashSet<>(commandElements.subList(2, commandElements.size()));
+    Set<ByteArrayWrapper> membersToRemove =
+        new HashSet<>(commandElements.subList(2, commandElements.size()));
     long membersRemoved = geodeRedisSet.srem(membersToRemove);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), membersRemoved));
   }

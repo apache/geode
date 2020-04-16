@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -54,7 +53,7 @@ class GeodeRedisSetSynchronized implements RedisSet {
   public long srem(Collection<ByteArrayWrapper> membersToRemove) {
     DeltaSet deltaSet = (DeltaSet) region().get(key);
 
-    if(deltaSet == null) {
+    if (deltaSet == null) {
       return 0L;
     }
 
@@ -63,13 +62,15 @@ class GeodeRedisSetSynchronized implements RedisSet {
 
   @Override
   public Set<ByteArrayWrapper> members() {
-    return region().getOrDefault(key, Collections.emptySet());
+    DeltaSet deltaSet = (DeltaSet) region().getOrDefault(key, new DeltaSet());
+
+    return deltaSet.members();
   }
 
   @Override
   public Boolean del() {
     DeltaSet deltaSet = (DeltaSet) region().get(key);
-    if (deltaSet==null){
+    if (deltaSet == null) {
       return false;
     }
     return deltaSet.delete(region, key);
