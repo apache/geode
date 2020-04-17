@@ -25,7 +25,7 @@ public class LoopingThreads {
   private final Function<Integer, Object>[] functions;
 
   public LoopingThreads(int iterationCount,
-                        Function<Integer, Object>... functions) {
+      Function<Integer, Object>... functions) {
     this.iterationCount = iterationCount;
     this.functions = functions;
   }
@@ -58,7 +58,7 @@ public class LoopingThreads {
     private CountDownLatch startLatch;
 
     public LoopingRunnable(Function<Integer, Object> runnable, int iterationCount,
-                           CountDownLatch startLatch) {
+        CountDownLatch startLatch) {
       this.runnable = runnable;
       this.iterationCount = iterationCount;
       this.startLatch = startLatch;
@@ -80,7 +80,7 @@ public class LoopingThreads {
 
   private class LoopingThread extends Thread {
     public LoopingThread(Function<Integer, Object> runnable, int iterationCount,
-                         CountDownLatch latch) {
+        CountDownLatch latch) {
       super(new LoopingRunnable(runnable, iterationCount, latch));
     }
   }

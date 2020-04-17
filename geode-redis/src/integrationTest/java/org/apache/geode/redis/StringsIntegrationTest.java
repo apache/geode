@@ -609,18 +609,11 @@ public class StringsIntegrationTest {
   @Test
   public void testGetSet_shouldBeAtomic()
       throws ExecutionException, InterruptedException, TimeoutException {
-
     jedis.set("contestedKey", "0");
     assertThat(jedis.get("contestedKey")).isEqualTo("0");
     CountDownLatch latch = new CountDownLatch(1);
     ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Integer> callable1 = () -> {
-      latch.await();
-      for (int i = 0; i < ITERATION_COUNT; i++) {
-        jedis.incr("contestedKey");
-      }
-      return ITERATION_COUNT;
-    };
+    Callable<Integer> callable1 = () -> doABunchOfGetSets(jedis, latch);
     Callable<Integer> callable2 = () -> doABunchOfGetSets(jedis2, latch);
     Future<Integer> future1 = pool.submit(callable1);
     Future<Integer> future2 = pool.submit(callable2);
@@ -794,13 +787,13 @@ public class StringsIntegrationTest {
     new LoopingThreads(
         ITERATION_COUNT,
         (i) -> jedis.set(keyBaseName + i, "value" + i))
-        .run();
+            .run();
 
     AtomicLong deletedCount = new AtomicLong();
     new LoopingThreads(ITERATION_COUNT,
         (i) -> deletedCount.addAndGet(jedis.del(keyBaseName + i)),
         (i) -> deletedCount.addAndGet(jedis2.del(keyBaseName + i)))
-        .run();
+            .run();
 
 
     assertThat(deletedCount.get()).isEqualTo(ITERATION_COUNT);
@@ -856,7 +849,7 @@ public class StringsIntegrationTest {
         ITERATION_COUNT,
         (i) -> jedis.decr("contestedKey"),
         (i) -> jedis2.decr("contestedKey"))
-        .run();
+            .run();
 
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(-2 * ITERATION_COUNT));
   }
@@ -917,7 +910,7 @@ public class StringsIntegrationTest {
         ITERATION_COUNT,
         (i) -> jedis.incr("contestedKey"),
         (i) -> jedis2.incr("contestedKey"))
-        .run();
+            .run();
 
 
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(2 * ITERATION_COUNT));

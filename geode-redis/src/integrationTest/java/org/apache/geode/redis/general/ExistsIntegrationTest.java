@@ -40,8 +40,7 @@ public class ExistsIntegrationTest {
   public static Jedis jedis2;
   public static Jedis jedis3;
   public static int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  ;
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
 
@@ -278,7 +277,7 @@ public class ExistsIntegrationTest {
         iterationCount,
         (i) -> existsCount.addAndGet(jedis.exists(toArray("key" + i))),
         (i) -> existsCount.addAndGet(jedis2.exists(toArray("key" + i))))
-        .run();
+            .run();
 
     assertThat(existsCount.get()).isEqualTo(2 * iterationCount);
   }
@@ -292,7 +291,7 @@ public class ExistsIntegrationTest {
         (i) -> jedis.set("key", "value"),
         (i) -> jedis2.exists(toArray("key")),
         (i) -> jedis3.del("key"))
-        .run();
+            .run();
   }
 
   public String[] toArray(String... strings) {
