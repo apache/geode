@@ -613,7 +613,7 @@ public class StringsIntegrationTest {
     assertThat(jedis.get("contestedKey")).isEqualTo("0");
     CountDownLatch latch = new CountDownLatch(1);
     ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Integer> callable1 = () -> doABunchOfGetSets(jedis, latch);
+    Callable<Integer> callable1 = () -> doABunchOfIncrs(jedis, latch);
     Callable<Integer> callable2 = () -> doABunchOfGetSets(jedis2, latch);
     Future<Integer> future1 = pool.submit(callable1);
     Future<Integer> future2 = pool.submit(callable2);
@@ -622,6 +622,14 @@ public class StringsIntegrationTest {
 
     GeodeAwaitility.await().untilAsserted(() -> assertThat(future2.get()).isEqualTo(future1.get()));
     assertThat(future1.get() + future2.get()).isEqualTo(2 * ITERATION_COUNT);
+  }
+
+  private Integer doABunchOfIncrs(Jedis jedis, CountDownLatch latch) throws InterruptedException {
+    latch.await();
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      jedis.incr("contestedKey");
+    }
+    return ITERATION_COUNT;
   }
 
   private Integer doABunchOfGetSets(Jedis jedis, CountDownLatch latch) throws InterruptedException {
