@@ -136,16 +136,16 @@ tests:
   RAM: '210'
   name: Upgrade
 - ARTIFACT_SLUG: concurrencytestfiles
-  CALL_STACK_TIMEOUT: '1200'
+  CALL_STACK_TIMEOUT: '3000'
   CPUS: '96'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 30m
+  EXECUTE_TEST_TIMEOUT: 1h
   GRADLE_TASK: concurrencyTest
   MAX_IN_FLIGHT: 1
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '280'
+  RAM: '28'
   name: Concurrency
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '20700'
