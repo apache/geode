@@ -33,6 +33,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -43,6 +44,7 @@ public class SaddDistDunitTest {
 
   static final String LOCAL_HOST = "127.0.0.1";
   static final int SET_SIZE = 1000;
+  static int[] availablePorts;
   static Jedis jedis1;
   static Jedis jedis2;
   static Jedis jedis3;
@@ -59,6 +61,9 @@ public class SaddDistDunitTest {
 
   @BeforeClass
   public static void classSetup() {
+
+    availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+
     locatorProperties = new Properties();
     serverProperties1 = new Properties();
     serverProperties2 = new Properties();
@@ -66,13 +71,13 @@ public class SaddDistDunitTest {
 
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    serverProperties1.setProperty(REDIS_PORT, "6371");
+    serverProperties1.setProperty(REDIS_PORT, Integer.toString(availablePorts[0]));
     serverProperties1.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
 
-    serverProperties2.setProperty(REDIS_PORT, "6372");
+    serverProperties2.setProperty(REDIS_PORT, Integer.toString(availablePorts[1]));
     serverProperties2.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
 
-    serverProperties3.setProperty(REDIS_PORT, "6373");
+    serverProperties3.setProperty(REDIS_PORT, Integer.toString(availablePorts[2]));
     serverProperties3.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
 
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
@@ -80,9 +85,9 @@ public class SaddDistDunitTest {
     server2 = clusterStartUp.startServerVM(2, serverProperties2, locator.getPort());
     server3 = clusterStartUp.startServerVM(3, serverProperties3, locator.getPort());
 
-    jedis1 = new Jedis(LOCAL_HOST, 6371);
-    jedis2 = new Jedis(LOCAL_HOST, 6372);
-    jedis3 = new Jedis(LOCAL_HOST, 6373);
+    jedis1 = new Jedis(LOCAL_HOST, availablePorts[0]);
+    jedis2 = new Jedis(LOCAL_HOST, availablePorts[1]);
+    jedis3 = new Jedis(LOCAL_HOST, availablePorts[2]);
   }
 
   @Before
@@ -125,6 +130,10 @@ public class SaddDistDunitTest {
     List<String> members1 = makeMemberList(SET_SIZE, "member1-");
     List<String> members2 = makeMemberList(SET_SIZE, "member2-");
 
+    List<String> allMembers = new ArrayList<>();
+    allMembers.addAll(members1);
+    allMembers.addAll(members2);
+
     Runnable addSetsWithClient1 = makeSADDRunnable(key, members1, jedis1);
     Runnable addSetsWithClient2 = makeSADDRunnable(key, members2, jedis2);
 
@@ -132,8 +141,7 @@ public class SaddDistDunitTest {
 
     Set<String> results = jedis3.smembers(key);
 
-    members1.addAll(members2);
-    assertThat(results.toArray()).containsExactlyInAnyOrder(members1.toArray());
+    assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
 
   }
 
@@ -180,11 +188,11 @@ public class SaddDistDunitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSamSetConcurrently()
+  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSetConcurrently()
       throws InterruptedException {
 
-    Jedis jedis1B = new Jedis(LOCAL_HOST, 6371);
-    Jedis jedis2B = new Jedis(LOCAL_HOST, 6372);
+    Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
+    Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
 
     String key1 = "key1";
 
@@ -203,6 +211,40 @@ public class SaddDistDunitTest {
     Set<String> results = jedis3.smembers(key1);
 
     assertThat(results.toArray()).containsExactlyInAnyOrder(members1.toArray());
+
+    jedis1B.disconnect();
+    jedis2B.disconnect();
+  }
+
+  @Test
+  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSet_withDifferentData_Concurrently()
+      throws InterruptedException {
+
+    Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
+    Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
+
+    String key1 = "key1";
+
+    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
+    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
+
+    List<String> allMembers = new ArrayList<>();
+    allMembers.addAll(members1);
+    allMembers.addAll(members2);
+
+    Runnable addSetsWithClient1 = makeSADDRunnable(key1, members1, jedis1);
+    Runnable addSetsWithClient1B = makeSADDRunnable(key1, members1, jedis1B);
+    Runnable addSetsWithClient2 = makeSADDRunnable(key1, members2, jedis2);
+    Runnable addSetsWithClient2B = makeSADDRunnable(key1, members2, jedis2B);
+
+    runConcurrentThreads(addSetsWithClient1,
+        addSetsWithClient1B,
+        addSetsWithClient2,
+        addSetsWithClient2B);
+
+    Set<String> results = jedis3.smembers(key1);
+
+    assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
 
     jedis1B.disconnect();
     jedis2B.disconnect();
