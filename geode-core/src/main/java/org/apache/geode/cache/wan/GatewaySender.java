@@ -183,8 +183,7 @@ public interface GatewaySender {
 
   /**
    * Starts this GatewaySender and discards previous queue content. Once the GatewaySender is
-   * running,
-   * its configuration cannot be changed.
+   * running, its configuration cannot be changed.
    */
   void startWithCleanQueue();
 

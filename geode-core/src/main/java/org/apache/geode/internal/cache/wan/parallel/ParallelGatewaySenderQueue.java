@@ -529,6 +529,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         prQ = (PartitionedRegion) fact.create(prQName);
         // at this point we should be able to assert prQ == meta;
 
+        if (prQ == null)
+          return;
         // TODO This should not be set on the PR but on the GatewaySender
         prQ.enableConflation(sender.isBatchConflationEnabled());
         if (isAccessor)
@@ -543,7 +545,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
         }
-        if ((prQ != null) && this.cleanQueues) {
+        if (this.cleanQueues) {
           // now, clean up the shadowPR's buckets on this node (primary as well as
           // secondary) for a fresh start
           Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
