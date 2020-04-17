@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.string;
 
+import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -26,7 +27,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -47,7 +47,6 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 public class StringSetExecutorJUnitTest {
 
-  private Command command;
   private ExecutionHandlerContext context;
   private SetExecutor executor;
   private ByteBuf buffer;
@@ -57,7 +56,6 @@ public class StringSetExecutorJUnitTest {
   @SuppressWarnings("unchecked")
   @Before
   public void setup() {
-    command = mock(Command.class);
     context = mock(ExecutionHandlerContext.class);
 
     regionProvider = mock(RegionProvider.class);
@@ -80,15 +78,11 @@ public class StringSetExecutorJUnitTest {
     doAnswer(x -> null).when(executor).checkDataType(any(), any(), any());
   }
 
-  private String getBuffer() {
-    return buffer.toString(0, buffer.writerIndex(), Charset.defaultCharset());
-  }
 
   @Test
   public void testBasicSet() {
     List<byte[]> args = Arrays.asList("SET".getBytes(), "key".getBytes(), "value".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(args);
 
     executor.executeCommand(command, context);
 
@@ -98,7 +92,7 @@ public class StringSetExecutorJUnitTest {
 
     assertThat(keyCaptor.getValue()).isEqualTo("key");
     assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(getBuffer()).startsWith("+OK");
+    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
   }
 
   @Test
@@ -106,18 +100,11 @@ public class StringSetExecutorJUnitTest {
     List<byte[]> commandArgumentWithTooFewArgs = Arrays.asList(
         "SET".getBytes(),
         "key".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithTooFewArgs);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(commandArgumentWithTooFewArgs);
 
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -128,18 +115,11 @@ public class StringSetExecutorJUnitTest {
         "key".getBytes(),
         "value".getBytes(),
         "EX".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(commandArgumentWithEXNoParameter);
 
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(defaultCharset()))
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 
@@ -151,18 +131,11 @@ public class StringSetExecutorJUnitTest {
         "value".getBytes(),
         "EX".getBytes(),
         "NotANumberAtAll".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(commandArgumentWithEXNoParameter);
 
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(defaultCharset()))
         .contains(RedisConstants.ERROR_NOT_INTEGER);
   }
 
@@ -174,18 +147,11 @@ public class StringSetExecutorJUnitTest {
         "value".getBytes(),
         "EX".getBytes(),
         "0".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(commandArgumentWithEXNoParameter);
 
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(defaultCharset()))
         .contains(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
   }
 
@@ -197,17 +163,11 @@ public class StringSetExecutorJUnitTest {
         "value".getBytes(),
         "PX".getBytes());
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(commandArgumentWithEXNoParameter);
 
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(defaultCharset()))
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 
@@ -221,18 +181,11 @@ public class StringSetExecutorJUnitTest {
         "30000".getBytes(),
         "EX".getBytes(),
         "30".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(commandArgumentWithEXNoParameter);
 
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(defaultCharset()))
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 
@@ -244,18 +197,11 @@ public class StringSetExecutorJUnitTest {
         "value".getBytes(),
         "NX".getBytes(),
         "XX".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(commandArgumentWithEXNoParameter);
 
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(defaultCharset()))
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 
@@ -266,9 +212,9 @@ public class StringSetExecutorJUnitTest {
         "key".getBytes(),
         "value".getBytes(),
         "NX".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+
     when(region.putIfAbsent(any(), any())).thenReturn(null);
+    Command command = new Command(args);
 
     executor.executeCommand(command, context);
 
@@ -278,7 +224,7 @@ public class StringSetExecutorJUnitTest {
 
     assertThat(keyCaptor.getValue()).isEqualTo("key");
     assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(getBuffer()).startsWith("+OK");
+    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
   }
 
   @Test
@@ -288,9 +234,8 @@ public class StringSetExecutorJUnitTest {
         "key".getBytes(),
         "value".getBytes(),
         "NX".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
     when(region.putIfAbsent(any(), any())).thenReturn(new ByteArrayWrapper("old-value".getBytes()));
+    Command command = new Command(args);
 
     executor.executeCommand(command, context);
 
@@ -300,7 +245,7 @@ public class StringSetExecutorJUnitTest {
 
     assertThat(keyCaptor.getValue()).isEqualTo("key");
     assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(getBuffer()).startsWith("$-1");
+    assertThat(command.getResponse().toString(defaultCharset())).startsWith("$-1");
   }
 
   @Test
@@ -310,14 +255,13 @@ public class StringSetExecutorJUnitTest {
         "key".getBytes(),
         "value".getBytes(),
         "XX".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
     when(region.containsKey(any())).thenReturn(false);
+    Command command = new Command(args);
 
     executor.executeCommand(command, context);
     verify(region, never()).put(any(), any());
 
-    assertThat(getBuffer()).startsWith("$-1");
+    assertThat(command.getResponse().toString(defaultCharset())).startsWith("$-1");
   }
 
   @Test
@@ -327,9 +271,8 @@ public class StringSetExecutorJUnitTest {
         "key".getBytes(),
         "value".getBytes(),
         "XX".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
     when(region.containsKey(any())).thenReturn(true);
+    Command command = new Command(args);
 
     executor.executeCommand(command, context);
 
@@ -339,7 +282,7 @@ public class StringSetExecutorJUnitTest {
 
     assertThat(keyCaptor.getValue()).isEqualTo("key");
     assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(getBuffer()).startsWith("+OK");
+    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
   }
 
   @Test
@@ -350,8 +293,7 @@ public class StringSetExecutorJUnitTest {
         "value".getBytes(),
         "EX".getBytes(),
         "5".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(args);
 
     executor.executeCommand(command, context);
 
@@ -367,7 +309,7 @@ public class StringSetExecutorJUnitTest {
     assertThat(valueCaptor.getValue()).isEqualTo("value");
     assertThat(expireKey.getValue()).isEqualTo("key");
     assertThat(expireValue.getValue()).isEqualTo(5000);
-    assertThat(getBuffer()).startsWith("+OK");
+    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
   }
 
   @Test
@@ -377,8 +319,7 @@ public class StringSetExecutorJUnitTest {
         "key".getBytes(),
         "value".getBytes(),
         "KEEPTTL".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(args);
 
     executor.executeCommand(command, context);
 
@@ -388,7 +329,7 @@ public class StringSetExecutorJUnitTest {
 
     assertThat(keyCaptor.getValue()).isEqualTo("key");
     assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(getBuffer()).startsWith("+OK");
+    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
 
     ByteArrayWrapper keyWrapper = new ByteArrayWrapper("key".getBytes());
     verify(regionProvider, never()).cancelKeyExpiration(keyWrapper);

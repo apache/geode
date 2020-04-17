@@ -18,19 +18,14 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -39,34 +34,24 @@ import org.apache.geode.redis.internal.executor.DelExecutor;
 
 
 public class DelExecutorJUnitTest {
-  private ExecutionHandlerContext context;
-  private Command command;
-  private UnpooledByteBufAllocator byteBuf;
-
-  @Before
-  public void setUp() {
-    context = mock(ExecutionHandlerContext.class);
-    command = mock(Command.class);
-    byteBuf = new UnpooledByteBufAllocator(false);
-  }
 
   @Test
   public void calledWithTooFewOptions_returnsError() {
     Executor delExecutor = new DelExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("DEL".getBytes());
+    Command command = new Command(commandsAsBytes);
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+    delExecutor.executeCommand(command, mockContext());
 
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
-
-    delExecutor.executeCommand(command, context);
-
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  public ExecutionHandlerContext mockContext() {
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    UnpooledByteBufAllocator byteBuf = new UnpooledByteBufAllocator(false);
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    return context;
   }
 }

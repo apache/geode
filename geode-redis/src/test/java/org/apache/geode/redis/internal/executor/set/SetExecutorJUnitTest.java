@@ -18,19 +18,15 @@ package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -38,337 +34,388 @@ import org.apache.geode.redis.internal.Executor;
 
 public class SetExecutorJUnitTest {
   ExecutionHandlerContext context;
-  Command command;
   UnpooledByteBufAllocator byteBuf;
 
   @Before
   public void setUp() {
     context = mock(ExecutionHandlerContext.class);
-    command = mock(Command.class);
     byteBuf = new UnpooledByteBufAllocator(false);
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSAdd() {
+  public void verifyErrorMessageWhenOneArgPassedToSAdd() {
     Executor sAddExecutor = new SAddExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SADD".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sAddExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("key1".getBytes());
-    sAddExecutor.executeCommand(command, context);
-
-    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSCard() {
+  public void verifyErrorMessageWhenTwoArgsPassedToSAdd() {
+    Executor sAddExecutor = new SAddExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SADD".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sAddExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenOneArgsPassedToSCard() {
     Executor sCardExecutor = new SCardExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SCARD".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sCardExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("key1".getBytes());
-    commandsAsBytes.add("key2".getBytes());
-    sCardExecutor.executeCommand(command, context);
-    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSMembers() {
+  public void verifyErrorMessageWhenMoreThanTwoArgsPassedToSCard() {
+    Executor sCardExecutor = new SCardExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SCARD".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    commandsAsBytes.add("key2".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sCardExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenOneArgPassedToSMembers() {
     Executor sMembersExecutor = new SMembersExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SMEMBERS".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sMembersExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("key1".getBytes());
-    commandsAsBytes.add("key2".getBytes());
-    sMembersExecutor.executeCommand(command, context);
-    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSIsMember() {
+  public void verifyErrorMessageWhenMoreThanTwoArgsPassedToSMembers() {
+    Executor sMembersExecutor = new SMembersExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SMEMBERS".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    commandsAsBytes.add("key2".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sMembersExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenOneArgPassedToSIsMember() {
     Executor sIsMemberExecutor = new SIsMemberExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SISMEMBER".getBytes());
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sIsMemberExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("key1".getBytes());
-    sIsMemberExecutor.executeCommand(command, context);
-
-    commandsAsBytes.add("member1".getBytes());
-    commandsAsBytes.add("member2".getBytes());
-    sIsMemberExecutor.executeCommand(command, context);
-
-    verify(command, times(3)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(2).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSMove() {
+  public void verifyErrorMessageWhenTwoArgsPassedToSIsMember() {
+    Executor sIsMemberExecutor = new SIsMemberExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SISMEMBER".getBytes());
+    Command command = new Command(commandsAsBytes);
+    commandsAsBytes.add("key1".getBytes());
+
+    sIsMemberExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenMoreThanThreeArgsPassedToSIsMember() {
+    Executor sIsMemberExecutor = new SIsMemberExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SISMEMBER".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    commandsAsBytes.add("member1".getBytes());
+    commandsAsBytes.add("member2".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sIsMemberExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenOneArgsPassedToSMove() {
     Executor sMoveExecutor = new SMoveExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SMOVE".getBytes());
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sMoveExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("source".getBytes());
-    sMoveExecutor.executeCommand(command, context);
-
-    commandsAsBytes.add("dest".getBytes());
-    sMoveExecutor.executeCommand(command, context);
-
-    commandsAsBytes.add("field1".getBytes());
-    commandsAsBytes.add("field2".getBytes());
-    sMoveExecutor.executeCommand(command, context);
-
-    verify(command, times(4)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(2).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(3).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSDiff() {
+  public void verifyErrorMessageWhenTwoArgsPassedToSMove() {
+    Executor sMoveExecutor = new SMoveExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SMOVE".getBytes());
+    commandsAsBytes.add("source".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sMoveExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenThreeArgsPassedToSMove() {
+    Executor sMoveExecutor = new SMoveExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SMOVE".getBytes());
+    commandsAsBytes.add("source".getBytes());
+    commandsAsBytes.add("dest".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sMoveExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenMoreThanFourArgsPassedToSMove() {
+    Executor sMoveExecutor = new SMoveExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SMOVE".getBytes());
+    commandsAsBytes.add("source".getBytes());
+    commandsAsBytes.add("dest".getBytes());
+    commandsAsBytes.add("field1".getBytes());
+    commandsAsBytes.add("field2".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sMoveExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenArgsPassedToSDiff() {
     Executor sdiffExecutor = new SDiffExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SDIFF".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sdiffExecutor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    assertThat(argsErrorCaptor.getValue().toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSDiffStore() {
+  public void verifyErrorMessageWhenNoArgsPassedToSDiffStore() {
     Executor sDiffStoreExecutor = new SDiffStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SDIFFSTORE".getBytes());
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sDiffStoreExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("key1".getBytes());
-    sDiffStoreExecutor.executeCommand(command, context);
-
-    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSInter() {
+  public void verifyErrorMessageWhenOneArgPassedToSDiffStore() {
+    Executor sDiffStoreExecutor = new SDiffStoreExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SDIFFSTORE".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sDiffStoreExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenNoArgsPassedToSInter() {
     Executor sInterExecutor = new SInterExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SINTER".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sInterExecutor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    assertThat(argsErrorCaptor.getValue().toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSInterStore() {
+  public void verifyErrorMessageWhenNoArgsPassedToSInterStore() {
     Executor sInterStoreExecutor = new SInterStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SINTERSTORE".getBytes());
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sInterStoreExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("key1".getBytes());
-    sInterStoreExecutor.executeCommand(command, context);
-
-    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSUnion() {
+  public void verifyErrorMessageWhenOneArgPassedToSInterStore() {
+    Executor sInterStoreExecutor = new SInterStoreExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SINTERSTORE".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sInterStoreExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenNoArgsPassedToSUnion() {
     Executor sUnionExecutor = new SUnionExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SUNION".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sUnionExecutor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    assertThat(argsErrorCaptor.getValue().toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSUnionStore() {
+  public void verifyErrorMessageWhenNoArgsPassedToSUnionStore() {
     Executor sUnionStoreExecutor = new SUnionStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SUNIONSTORE".getBytes());
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sUnionStoreExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("key1".getBytes());
-    sUnionStoreExecutor.executeCommand(command, context);
-
-    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenWrongArgsPassedToSPop() {
+  public void verifyErrorMessageWhenOneArgPassedToSUnionStore() {
+    Executor sUnionStoreExecutor = new SUnionStoreExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SUNIONSTORE".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sUnionStoreExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenNoArgsPassedToSPop() {
     Executor sPopExecutor = new SPopExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SPOP".getBytes());
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+    Command command = new Command(commandsAsBytes);
 
     sPopExecutor.executeCommand(command, context);
 
-    commandsAsBytes.add("key1".getBytes());
-    commandsAsBytes.add("NAN".getBytes());
-    sPopExecutor.executeCommand(command, context);
-
-    commandsAsBytes.set(2, "4".getBytes()); // switch "NAN" to a real number
-    commandsAsBytes.add("invalid".getBytes());
-    sPopExecutor.executeCommand(command, context);
-
-    verify(command, times(3)).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
-    assertThat(capturedErrors.get(2).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessage_WhenTooFewArgsPassedToSRem() {
+  public void verifyErrorMessageWhenWrongNANPassedToSPop() {
+    Executor sPopExecutor = new SPopExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SPOP".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    commandsAsBytes.add("NAN".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sPopExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessageWhenMoreTwoArgsPassedToSPop() {
+    Executor sPopExecutor = new SPopExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SPOP".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    commandsAsBytes.add("4".getBytes()); // switch "NAN" to a real number
+    commandsAsBytes.add("invalid".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    sPopExecutor.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void verifyErrorMessage_WhenNoArgsPassedToSRem() {
     Executor subject = new SRemExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SREM".getBytes());
+    Command command = new Command(commandsAsBytes);
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor =
-        ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(context.getByteBufAllocator()).thenReturn(byteBuf);
-
-    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
-
-    commandsAsBytes.add("key1".getBytes());
     subject.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
 
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+  @Test
+  public void verifyErrorMessage_WhenOneArgPassedToSRem() {
+    Executor subject = new SRemExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SREM".getBytes());
+    commandsAsBytes.add("key1".getBytes());
+    Command command = new Command(commandsAsBytes);
 
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    subject.executeCommand(command, context);
+
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 }

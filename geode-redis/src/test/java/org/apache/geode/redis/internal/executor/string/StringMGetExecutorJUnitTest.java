@@ -16,73 +16,56 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class StringMGetExecutorJUnitTest {
 
-  private Command command;
   private ExecutionHandlerContext context;
   private MGetExecutor executor;
-  private ByteBuf buffer;
-  private RegionProvider regionProvider;
 
   @Before
   public void setup() {
-    command = mock(Command.class);
     context = mock(ExecutionHandlerContext.class);
 
-    regionProvider = mock(RegionProvider.class);
+    RegionProvider regionProvider = mock(RegionProvider.class);
     when(context.getRegionProvider()).thenReturn(regionProvider);
-    ByteBufAllocator allocator = mock(ByteBufAllocator.class);
 
-    buffer = Unpooled.buffer();
-    when(allocator.buffer()).thenReturn(buffer);
-    when(allocator.buffer(anyInt())).thenReturn(buffer);
-    when(context.getByteBufAllocator()).thenReturn(allocator);
+    when(context.getByteBufAllocator()).thenReturn(new UnpooledByteBufAllocator(false));
 
-    executor = spy(new MGetExecutor());
-    doAnswer(x -> null).when(executor).checkDataType(any(), any(), any());
-  }
-
-  private String getBuffer() {
-    return buffer.toString(0, buffer.writerIndex(), Charset.defaultCharset());
+    executor = new MGetExecutor();
   }
 
   @Test
   public void testTooFewOptions() {
+    List<byte[]> args = Arrays.asList("MGET".getBytes());
+    Command command = new Command(args);
     executor.executeCommand(command, context);
 
-    assertThat(getBuffer()).startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
   public void testWrongNumberOfOptions() {
     List<byte[]> args = Arrays.asList("MGET".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
 
+    Command command = new Command(args);
     executor.executeCommand(command, context);
 
-    assertThat(getBuffer()).startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 }

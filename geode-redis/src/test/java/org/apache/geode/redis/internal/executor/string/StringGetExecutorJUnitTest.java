@@ -44,25 +44,21 @@ import org.apache.geode.redis.internal.RegionProvider;
 @SuppressWarnings("unchecked")
 public class StringGetExecutorJUnitTest {
 
-  private Command command;
   private ExecutionHandlerContext context;
   private GetExecutor executor;
-  private ByteBuf buffer;
   private Region<ByteArrayWrapper, ByteArrayWrapper> region;
-  private RegionProvider regionProvider;
 
   @Before
   public void setup() {
-    command = mock(Command.class);
     context = mock(ExecutionHandlerContext.class);
 
-    regionProvider = mock(RegionProvider.class);
+    RegionProvider regionProvider = mock(RegionProvider.class);
     when(context.getRegionProvider()).thenReturn(regionProvider);
     region = mock(Region.class);
     when(regionProvider.getStringsRegion()).thenReturn(region);
 
     ByteBufAllocator allocator = mock(ByteBufAllocator.class);
-    buffer = Unpooled.buffer();
+    ByteBuf buffer = Unpooled.buffer();
     when(allocator.buffer()).thenReturn(buffer);
     when(allocator.buffer(anyInt())).thenReturn(buffer);
     when(context.getByteBufAllocator()).thenReturn(allocator);
@@ -76,10 +72,8 @@ public class StringGetExecutorJUnitTest {
   @Test
   public void testBasicGet() {
     List<byte[]> args = Arrays.asList("get".getBytes(), "key".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
 
-    executor.executeCommand(command, context);
+    executor.executeCommand(new Command(args), context);
 
     ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
     verify(region).get(keyCaptor.capture());
@@ -92,17 +86,10 @@ public class StringGetExecutorJUnitTest {
     List<byte[]> commandArgumentWithTooFewArgs = Arrays.asList(
         "GET".getBytes());
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithTooFewArgs);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
-
+    Command command = new Command(commandArgumentWithTooFewArgs);
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -113,18 +100,11 @@ public class StringGetExecutorJUnitTest {
         "key".getBytes(),
         "something".getBytes(),
         "somethingelse".getBytes());
-
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
-    when(command.getProcessedCommand()).thenReturn(commandArgumentWithEXNoParameter);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(commandArgumentWithEXNoParameter);
 
     executor.executeCommand(command, context);
 
-    verify(command).setResponse(argsErrorCaptor.capture());
-
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .contains(
             "-ERR The wrong number of arguments or syntax was provided, the format for the GET command is \"GET key\"");
   }

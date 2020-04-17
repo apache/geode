@@ -44,50 +44,45 @@ import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class GetSetExecutorJUnitTest {
-  private Command command;
   private ExecutionHandlerContext context;
   private GetSetExecutor executor;
-  private ByteBuf buffer;
-  private KeyRegistrar keyRegistrar;
   private Region<ByteArrayWrapper, ByteArrayWrapper> region;
-  private RegionProvider regionProvider;
-  private RedisLockService lockService;
 
   @SuppressWarnings("unchecked")
   @Before
   public void setup() {
-    command = mock(Command.class);
     context = mock(ExecutionHandlerContext.class);
 
-    regionProvider = mock(RegionProvider.class);
+    RegionProvider regionProvider = mock(RegionProvider.class);
     when(context.getRegionProvider()).thenReturn(regionProvider);
     region = mock(Region.class);
     when(regionProvider.getStringsRegion()).thenReturn(region);
 
     ByteBufAllocator allocator = mock(ByteBufAllocator.class);
-    buffer = Unpooled.buffer();
+    ByteBuf buffer = Unpooled.buffer();
     when(allocator.buffer()).thenReturn(buffer);
     when(allocator.buffer(anyInt())).thenReturn(buffer);
     when(context.getByteBufAllocator()).thenReturn(allocator);
 
-    keyRegistrar = mock(KeyRegistrar.class);
+    KeyRegistrar keyRegistrar = mock(KeyRegistrar.class);
     when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
 
-    lockService = mock(RedisLockService.class);
+    RedisLockService lockService = mock(RedisLockService.class);
     when(context.getLockService()).thenReturn(lockService);
 
     executor = spy(new GetSetExecutor());
   }
 
-  private String getBuffer() {
-    return buffer.toString(0, buffer.writerIndex(), Charset.defaultCharset());
-  }
-
   @Test
   public void test_givenTooFewOptions_returnsError() {
+    List<byte[]> args = Arrays.asList(
+        "GETSET".getBytes());
+    Command command = new Command(args);
+
     executor.executeCommand(command, context);
 
-    assertThat(getBuffer()).startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
@@ -97,12 +92,12 @@ public class GetSetExecutorJUnitTest {
         "key1".getBytes(),
         "val1".getBytes(),
         "key2".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key".getBytes()));
+    Command command = new Command(args);
 
     executor.executeCommand(command, context);
 
-    assertThat(getBuffer()).startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
@@ -111,15 +106,15 @@ public class GetSetExecutorJUnitTest {
         "GETSET".getBytes(),
         "key1".getBytes(),
         "val1".getBytes());
-    when(command.getProcessedCommand()).thenReturn(args);
-    when(command.getKey()).thenReturn(new ByteArrayWrapper("key1".getBytes()));
+    Command command = new Command(args);
+
     when(region.get(any())).thenReturn(new ByteArrayWrapper("non-null value".getBytes()));
     doThrow(new RedisDataTypeMismatchException("this string doesn't matter")).when(executor)
         .checkDataType(any(), any(), any());
 
     executor.executeCommand(command, context);
 
-    assertThat(getBuffer())
+    assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 }
