@@ -96,10 +96,12 @@ public class ClientSNIDropProxyAcceptanceTest {
         .hasMessageContaining("Unable to connect to any locators in the list");
 
 
-    docker.run(DockerComposeRunOption.options("--publish", String.format("%d:15443", proxyPort)), "haproxy", DockerComposeRunArgument.arguments("haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg") );
-//    docker.containers()
-//        .container("haproxy")
-//        .start();
+    docker.run(DockerComposeRunOption.options("--publish", String.format("%d:15443", proxyPort)),
+        "haproxy",
+        DockerComposeRunArgument.arguments("haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"));
+    // docker.containers()
+    // .container("haproxy")
+    // .start();
 
     assertThat(region.get("Roy Hobbs")).isEqualTo(9);
 
