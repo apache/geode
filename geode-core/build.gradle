@@ -38,6 +38,7 @@ idea {
     testSourceDirs += project.tasks.generateDistributedTestGrammarSource.outputs.files
     testSourceDirs += project.tasks.generatePerformanceTestGrammarSource.outputs.files
     testSourceDirs += project.tasks.generateUpgradeTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generateConcurrencyTestGrammarSource.outputs.files
   }
 }
 
@@ -316,7 +317,6 @@ dependencies {
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testImplementation(project(':geode-concurrency-test'))
   testImplementation('org.apache.bcel:bcel')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
@@ -346,7 +346,6 @@ dependencies {
   integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  integrationTestImplementation(project(':geode-concurrency-test'))
   integrationTestImplementation('org.apache.bcel:bcel')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   integrationTestImplementation('org.powermock:powermock-core')
@@ -389,6 +388,10 @@ dependencies {
     exclude module: 'geode-core'
   }
   performanceTestImplementation(project(':geode-log4j'))
+
+  concurrencyTestImplementation(project(':geode-log4j'))
+  concurrencyTestImplementation(project(':geode-concurrency-test'))
+  concurrencyTestImplementation(project(':geode-dunit'))
 }
 
 jmh {

@@ -22,8 +22,13 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  implementation('junit:junit')
+
+  api(project(':geode-junit'))
+
   implementation('org.apache.logging.log4j:log4j-api')
+
+  testImplementation('pl.pragmatists:JUnitParams')
+
   integrationTestImplementation('org.assertj:assertj-core')
 }
 

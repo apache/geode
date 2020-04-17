@@ -46,7 +46,7 @@ public class ConcurrencyRuleTest {
   private final AtomicInteger iterations = new AtomicInteger(0);
 
   private final int stopIteration = 2;
-  private final Integer expectedRetVal = Integer.valueOf(72);
+  private final Integer expectedRetVal = 72;
   private final Throwable expectedException =
       new IllegalStateException("Oh boy, here I go testin' again");
   private final IllegalStateException expectedExceptionWithCause =
@@ -62,25 +62,25 @@ public class ConcurrencyRuleTest {
 
   private final Callable<Integer> callWithRetVal = () -> {
     invoked.set(Boolean.TRUE);
-    return Integer.valueOf(72);
+    return 72;
   };
 
   private final Callable<Integer> callWithRetValAndRepeatCount = () -> {
     iterations.incrementAndGet();
-    return Integer.valueOf(72);
+    return 72;
   };
 
   private final Callable<Integer> callWithRetValAndRepeatCountAndOneWrongValue = () -> {
     int currentIteration = iterations.incrementAndGet();
     if (currentIteration == stopIteration) {
-      return Integer.valueOf(3);
+      return 3;
     }
-    return Integer.valueOf(72);
+    return 72;
   };
 
   private final Callable<Void> callWithExceptionAndCause = () -> {
-    Exception e = new IllegalStateException("Oh boy, here I go testin' again");
-    e.initCause(new NullPointerException());
+    Exception e =
+        new IllegalStateException("Oh boy, here I go testin' again", new NullPointerException());
     throw e;
   };
 
@@ -94,7 +94,7 @@ public class ConcurrencyRuleTest {
     if (currentIteration == stopIteration) {
       throw new IllegalStateException("Oh boy, here I go testin' again");
     }
-    return Integer.valueOf(72);
+    return 72;
   };
 
   @Rule
@@ -249,7 +249,7 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectValue_failsForWrongValue(Execution execution) {
-    concurrencyRule.add(callWithRetVal).expectValue(Integer.valueOf(3));
+    concurrencyRule.add(callWithRetVal).expectValue(3);
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
         .isInstanceOf(AssertionError.class);
     assertThat(invoked.get()).isTrue();
@@ -330,23 +330,23 @@ public class ConcurrencyRuleTest {
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterations(Execution execution) {
     int expectedIterations = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithRetValAndRepeatCount).repeatForIterations(4);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(expectedIterations);
+    assertThat(iterations.get()).isEqualTo(expectedIterations);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectExceptionForEach_byExceptionClass(Execution execution) {
     int expectedIterations = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithExceptionAndRepeatCount)
         .expectExceptionType(expectedException.getClass()).repeatForIterations(4);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(expectedIterations);
+    assertThat(iterations.get()).isEqualTo(expectedIterations);
   }
 
   @Test
@@ -354,36 +354,36 @@ public class ConcurrencyRuleTest {
   public void repeatForIterationsAndExpectExceptionForEach_byExceptionInstance(
       Execution execution) {
     int expectedIteration = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithExceptionAndRepeatCount).expectException(expectedException)
         .repeatForIterations(4);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(expectedIteration);
+    assertThat(iterations.get()).isEqualTo(expectedIteration);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectValueForEach(Execution execution) {
     int ExpectedIterations = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithRetValAndRepeatCount).repeatForIterations(4)
         .expectValue(expectedRetVal);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(ExpectedIterations);
+    assertThat(iterations.get()).isEqualTo(ExpectedIterations);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectValueForEach_failsWithOneWrongValue(Execution execution) {
     int expectedIterations = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithRetValAndRepeatCountAndOneWrongValue).expectValue(expectedRetVal)
         .repeatForIterations(expectedIterations);
     assertThatThrownBy(() -> execution.execute(concurrencyRule)).isInstanceOf(AssertionError.class);
-    assertThat(this.iterations.get()).isEqualTo(stopIteration);
+    assertThat(iterations.get()).isEqualTo(stopIteration);
   }
 
   @Test
@@ -434,24 +434,24 @@ public class ConcurrencyRuleTest {
 
   @Test
   public void clearEmptiesThreadsToRun() {
-    final AtomicBoolean b1 = new AtomicBoolean(Boolean.FALSE);
-    final AtomicBoolean b2 = new AtomicBoolean(Boolean.FALSE);
-    final AtomicBoolean b3 = new AtomicBoolean(Boolean.FALSE);
-    final AtomicBoolean b4 = new AtomicBoolean(Boolean.FALSE);
+    final AtomicBoolean b1 = new AtomicBoolean(false);
+    final AtomicBoolean b2 = new AtomicBoolean(false);
+    final AtomicBoolean b3 = new AtomicBoolean(false);
+    final AtomicBoolean b4 = new AtomicBoolean(false);
 
-    Callable c1 = () -> {
+    Callable<Void> c1 = () -> {
       b1.set(true);
       return null;
     };
-    Callable c2 = () -> {
+    Callable<Void> c2 = () -> {
       b2.set(true);
       return null;
     };
-    Callable c3 = () -> {
+    Callable<Void> c3 = () -> {
       b3.set(true);
       return null;
     };
-    Callable c4 = () -> {
+    Callable<Void> c4 = () -> {
       b4.set(true);
       return null;
     };
@@ -495,9 +495,7 @@ public class ConcurrencyRuleTest {
       throw new IOException("foo");
     };
 
-    Callable<String> valueCallable = () -> {
-      return "successful value";
-    };
+    Callable<String> valueCallable = () -> "successful value";
 
     Callable<Void> setInvokedCallable = () -> {
       invoked.set(true);
@@ -546,13 +544,9 @@ public class ConcurrencyRuleTest {
 
   @Test
   public void afterFailsIfThreadsWereNotRun() {
-    Callable<Integer> c1 = () -> {
-      return 2;
-    };
+    Callable<Integer> c1 = () -> 2;
 
-    Callable<String> c2 = () -> {
-      return "some string";
-    };
+    Callable<String> c2 = () -> "some string";
 
     concurrencyRule.add(c1).expectValue(2);
     concurrencyRule.add(c1).expectValue(2).repeatForIterations(5);

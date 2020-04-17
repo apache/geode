@@ -82,7 +82,7 @@ public class NestedFunctionExecutionDistributedTest implements Serializable {
       new DistributedRestoreSystemProperties();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     server = getVM(0);
     client = getVM(1);
 
@@ -90,7 +90,7 @@ public class NestedFunctionExecutionDistributedTest implements Serializable {
     regionName = uniqueName + "_region";
     hostName = getHostName();
 
-    int port = server.invoke(() -> createServerCache());
+    int port = server.invoke(this::createServerCache);
 
     client.invoke(() -> createClientCache(port, 30000));
   }
@@ -133,11 +133,12 @@ public class NestedFunctionExecutionDistributedTest implements Serializable {
     clientCacheRule.getClientCache().createClientRegionFactory(shortcut).create(regionName);
   }
 
-  private void executeFunction(Function function, int numThreads) {
+  private void executeFunction(Function<?> function, int numThreads) {
     ConcurrencyRule concurrencyRule = new ConcurrencyRule();
     try {
       for (int i = 0; i < numThreads; i++) {
         Callable<String> executeFunction = () -> {
+          @SuppressWarnings("unchecked")
           List<String> result =
               (List<String>) FunctionService
                   .onRegion(clientCacheRule.getClientCache().getRegion(regionName))
@@ -154,21 +155,22 @@ public class NestedFunctionExecutionDistributedTest implements Serializable {
     }
   }
 
-  private static class ParentFunction implements Function {
+  private static class ParentFunction implements Function<Void> {
 
     private static final CyclicBarrier CHILD_FUNCTION_EXECUTION_BARRIER =
         new CyclicBarrier(MAX_FE_THREADS);
 
     @Override
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<Void> context) {
       // Wait for MAX_FE_THREADS to be in use before continuing to execute the ChildFunction.
       try {
         CHILD_FUNCTION_EXECUTION_BARRIER.await();
       } catch (Exception e) {
         throw new FunctionException("Caught exception waiting for barrier: ", e);
       }
-      List childFunctionResult =
-          (List) FunctionService.onRegion(((RegionFunctionContext) context).getDataSet())
+      @SuppressWarnings("unchecked")
+      List<String> childFunctionResult =
+          (List<String>) FunctionService.onRegion(((RegionFunctionContext) context).getDataSet())
               .execute(new ChildFunction()).getResult();
       context.getResultSender().lastResult(childFunctionResult.get(0));
     }
@@ -179,10 +181,10 @@ public class NestedFunctionExecutionDistributedTest implements Serializable {
     }
   }
 
-  private static class ChildFunction implements Function {
+  private static class ChildFunction implements Function<Void> {
 
     @Override
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<Void> context) {
       context.getResultSender().lastResult(CHILD_FUNCTION_EXECUTED);
     }
 

@@ -66,6 +66,8 @@ dependencies {
 
   upgradeTestImplementation(project(':geode-dunit')) {
   }
+
+  concurrencyTestImplementation(project(':geode-concurrency-test'))
 }
 
 distributedTest.dependsOn(war)

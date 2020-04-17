@@ -76,7 +76,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 public class ConcurrencyRule extends SerializableExternalResource {
 
   private final ExecutorService threadPool = Executors.newCachedThreadPool();
-  private final Collection<ConcurrentOperation> toInvoke;
+  private final Collection<ConcurrentOperation<?>> toInvoke;
   private final Collection<Future<Void>> futures;
 
   private ProtectedErrorCollector errorCollector;
@@ -124,7 +124,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
    * @return concurrentOperation, the ConcurrentOperation that has been added to the rule
    */
   public <T> ConcurrentOperation<T> add(Callable<T> callable) {
-    ConcurrentOperation<T> concurrentOperation = new ConcurrentOperation(callable);
+    ConcurrentOperation<T> concurrentOperation = new ConcurrentOperation<>(callable);
     toInvoke.add(concurrentOperation);
     allThreadsExecuted.set(false);
 
@@ -137,15 +137,13 @@ public class ConcurrencyRule extends SerializableExternalResource {
    * thread runs until timeout has been reached. This method will not return until all
    * threads have completed or been cancelled.
    *
-   * @throws InterruptedException if interrupted before timeout
    * @throws RuntimeException with cause of MultipleFailureException with a list of failures
    *         including AssertionErrors for all threads whose expectations were not met (if there are
    *         multiple failures).
    * @throws AssertionError if a single thread's expectations are not met
-   * @throws Exception if a thread throws an unexpected exception
    */
   public void executeInParallel() {
-    for (ConcurrentOperation op : toInvoke) {
+    for (ConcurrentOperation<?> op : toInvoke) {
       futures.add(threadPool.submit(op));
     }
     allThreadsExecuted.set(true);
@@ -164,10 +162,9 @@ public class ConcurrencyRule extends SerializableExternalResource {
    *         including AssertionErrors for all threads whose expectations were not met (if there are
    *         multiple failures).
    * @throws AssertionError if a single thread's expectations are not met
-   * @throws Exception if a thread throws an unexpected exception
    */
   public void executeInSeries() {
-    for (ConcurrentOperation op : toInvoke) {
+    for (ConcurrentOperation<?> op : toInvoke) {
       awaitFuture(threadPool.submit(op));
     }
     allThreadsExecuted.set(true);
@@ -232,7 +229,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
     }
   }
 
-  private static Object readField(final Class targetClass, final Object targetInstance,
+  private static Object readField(final Class<?> targetClass, final Object targetInstance,
       final String fieldName) {
     try {
       Field field = targetClass.getDeclaredField(fieldName);
@@ -251,21 +248,21 @@ public class ConcurrencyRule extends SerializableExternalResource {
     private final int DEFAULT_ITERATIONS = 1;
     private final Duration DEFAULT_DURATION = Duration.ofSeconds(300);
 
-    private Callable<T> callable;
+    private final Callable<T> callable;
     private int iterations;
     private Duration duration;
     private Boolean expectedResultIsSet;
     private T expectedValue;
     private Boolean eventualExpectedValueSet;
     private Throwable expectedException;
-    private Class expectedExceptionType;
-    private Class expectedExceptionCauseType;
+    private Class<?> expectedExceptionType;
+    private Class<? extends Throwable> expectedExceptionCauseType;
 
     public ConcurrentOperation() {
       callable = null;
       iterations = DEFAULT_ITERATIONS;
       duration = DEFAULT_DURATION;
-      this.expectedResultIsSet = false;
+      expectedResultIsSet = false;
       expectedException = null;
       expectedExceptionType = null;
       expectedExceptionCauseType = null;
@@ -274,10 +271,10 @@ public class ConcurrencyRule extends SerializableExternalResource {
     }
 
     public ConcurrentOperation(Callable<T> toAdd) {
-      this.callable = toAdd;
+      callable = toAdd;
       iterations = DEFAULT_ITERATIONS;
       duration = DEFAULT_DURATION;
-      this.expectedResultIsSet = false;
+      expectedResultIsSet = false;
       expectedException = null;
       expectedExceptionType = null;
       expectedExceptionCauseType = null;
@@ -292,7 +289,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
      * @param iterations the number of times to run the callable
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
-    public ConcurrentOperation repeatForIterations(int iterations) {
+    public ConcurrentOperation<T> repeatForIterations(int iterations) {
       if (!duration.equals(DEFAULT_DURATION)) {
         throw new IllegalArgumentException("Specify only Duration or Iterations");
       }
@@ -310,7 +307,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
      * @param duration the Duration for which to repeat the callable
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
-    public ConcurrentOperation repeatForDuration(Duration duration) {
+    public ConcurrentOperation<T> repeatForDuration(Duration duration) {
       if (iterations != DEFAULT_ITERATIONS) {
         throw new IllegalArgumentException("Specify only Duration or Iterations");
       }
@@ -327,14 +324,14 @@ public class ConcurrencyRule extends SerializableExternalResource {
      *        implement equals
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
-    public ConcurrentOperation repeatUntilValue(T expectedValue) {
-      if (this.expectedResultIsSet) {
+    public ConcurrentOperation<T> repeatUntilValue(T expectedValue) {
+      if (expectedResultIsSet) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
 
-      this.eventualExpectedValueSet = true;
+      eventualExpectedValueSet = true;
       this.expectedValue = expectedValue;
-      this.expectedResultIsSet = true;
+      expectedResultIsSet = true;
       return this;
     }
 
@@ -348,13 +345,13 @@ public class ConcurrencyRule extends SerializableExternalResource {
      *        must also have a null or empty message.
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
-    public ConcurrentOperation expectException(Throwable expectedException) {
+    public ConcurrentOperation<T> expectException(Throwable expectedException) {
       if (expectedResultIsSet) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
 
       this.expectedException = expectedException;
-      this.expectedResultIsSet = true;
+      expectedResultIsSet = true;
       return this;
     }
 
@@ -365,13 +362,14 @@ public class ConcurrencyRule extends SerializableExternalResource {
      * @param expectedExceptionType the class of the expected exception. Causes will not be checked.
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
-    public ConcurrentOperation expectExceptionType(Class expectedExceptionType) {
+    public ConcurrentOperation<T> expectExceptionType(
+        Class<? extends Throwable> expectedExceptionType) {
       if (expectedException != null || expectedValue != null) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
 
       this.expectedExceptionType = expectedExceptionType;
-      this.expectedResultIsSet = true;
+      expectedResultIsSet = true;
       return this;
     }
 
@@ -383,13 +381,14 @@ public class ConcurrencyRule extends SerializableExternalResource {
      *        itself will not be checked.
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
-    public ConcurrentOperation expectExceptionCauseType(Class expectedExceptionCauseType) {
+    public ConcurrentOperation<T> expectExceptionCauseType(
+        Class<? extends Throwable> expectedExceptionCauseType) {
       if (expectedException != null || expectedValue != null) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
 
       this.expectedExceptionCauseType = expectedExceptionCauseType;
-      this.expectedResultIsSet = true;
+      expectedResultIsSet = true;
       return this;
     }
 
@@ -400,13 +399,13 @@ public class ConcurrencyRule extends SerializableExternalResource {
      *        implement equals
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
-    public ConcurrentOperation expectValue(T expectedValue) {
-      if (this.expectedResultIsSet) {
+    public ConcurrentOperation<T> expectValue(T expectedValue) {
+      if (expectedResultIsSet) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
 
       this.expectedValue = expectedValue;
-      this.expectedResultIsSet = true;
+      expectedResultIsSet = true;
       return this;
     }
 
@@ -433,7 +432,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
       try {
         do {
           numRuns++;
-          retVal = this.callable.call();
+          retVal = callable.call();
 
           if (eventualExpectedValueSet && retVal.equals(expectedValue)) {
             return;
@@ -442,22 +441,22 @@ public class ConcurrencyRule extends SerializableExternalResource {
             && ((iterations != DEFAULT_ITERATIONS && numRuns < iterations)
                 || (timeRun.elapsed(SECONDS) <= duration.getSeconds())));
 
-        if (this.expectedValue != null) {
-          assertThat(retVal).isEqualTo(this.expectedValue);
+        if (expectedValue != null) {
+          assertThat(retVal).isEqualTo(expectedValue);
         }
       } catch (Exception e) {
         exception = e;
       }
 
-      if (this.expectedExceptionCauseType != null && this.expectedExceptionType != null) {
-        assertThat(exception).isInstanceOf(this.expectedExceptionType)
-            .hasCauseInstanceOf(this.expectedExceptionCauseType);
-      } else if (this.expectedExceptionType != null) {
-        assertThat(exception).isInstanceOf(this.expectedExceptionType);
-      } else if (this.expectedExceptionCauseType != null) {
-        assertThat(exception).hasCauseInstanceOf(this.expectedExceptionCauseType);
-      } else if (this.expectedException != null) {
-        checkThrown(exception, this.expectedException);
+      if (expectedExceptionCauseType != null && expectedExceptionType != null) {
+        assertThat(exception).isInstanceOf(expectedExceptionType)
+            .hasCauseInstanceOf(expectedExceptionCauseType);
+      } else if (expectedExceptionType != null) {
+        assertThat(exception).isInstanceOf(expectedExceptionType);
+      } else if (expectedExceptionCauseType != null) {
+        assertThat(exception).hasCauseInstanceOf(expectedExceptionCauseType);
+      } else if (expectedException != null) {
+        checkThrown(exception, expectedException);
       } else {
         if (exception != null) {
           throw exception; // rethrow if we weren't expecting any exception and got one
@@ -490,6 +489,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
       }
     }
 
+    @SuppressWarnings("unchecked")
     List<Throwable> getErrors() {
       return (List<Throwable>) readField(ErrorCollector.class, this, "errors");
     }

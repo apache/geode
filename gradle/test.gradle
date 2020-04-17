@@ -66,6 +66,10 @@ facets {
     testTaskName = 'upgradeTest'
     includeInCheckLifecycle = false
   }
+  concurrencyTest {
+    testTaskName = 'concurrencyTest'
+    includeInCheckLifecycle = false
+  }
 }
 
 configurations {
@@ -76,6 +80,7 @@ configurations {
   acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
   uiTestAnnotationProcessor.extendsFrom annotationProcessor
   upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
+  concurrencyTestAnnotationProcessor.extendsFrom annotationProcessor
   // Facets does not extend the new runtimeOnly configurations
   integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
   distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
@@ -83,6 +88,7 @@ configurations {
   acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
   uiTestRuntimeOnly.extendsFrom(runtimeOnly)
   upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
+  concurrencyTestRuntimeOnly.extendsFrom(runtimeOnly)
 }
 
 dependencies {
@@ -102,7 +108,7 @@ dependencies {
 }
 
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
-           upgradeTest]) {
+           upgradeTest, concurrencyTest]) {
   forkEvery 1
 
   doFirst {
@@ -155,7 +161,7 @@ task repeatUnitTest(type: RepeatTest) {
   // default classpath works for this one.
 }
 
-configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
+configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest, concurrencyTest]) {
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
   }
@@ -257,7 +263,7 @@ acceptanceTest {
 
 
 // Make precheckin task run all validation tests for checking in code.
-task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {
+task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest, concurrencyTest]) {
   description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
 }
 

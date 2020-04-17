@@ -25,12 +25,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,9 +44,6 @@ import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
 public class ClusterElderManagerTest {
   private Distribution distribution;
-  private CancelCriterion systemCancelCriterion;
-  private InternalDistributedSystem system;
-  private CancelCriterion cancelCriterion;
   private ClusterDistributionManager clusterDistributionManager;
   private InternalDistributedMember member0;
   private final InternalDistributedMember member1 = mock(InternalDistributedMember.class);
@@ -57,9 +56,9 @@ public class ClusterElderManagerTest {
   public void before() {
     member0 = mock(InternalDistributedMember.class);
     clusterDistributionManager = mock(ClusterDistributionManager.class);
-    cancelCriterion = mock(CancelCriterion.class);
-    system = mock(InternalDistributedSystem.class);
-    systemCancelCriterion = mock(CancelCriterion.class);
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    CancelCriterion systemCancelCriterion = mock(CancelCriterion.class);
     distribution = mock(Distribution.class);
 
     when(clusterDistributionManager.getCancelCriterion()).thenReturn(cancelCriterion);
@@ -80,7 +79,7 @@ public class ClusterElderManagerTest {
   @Test
   public void getElderIdWithNoMembers() {
     ClusterElderManager clusterElderManager = new ClusterElderManager(clusterDistributionManager);
-    when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList());
+    when(clusterDistributionManager.getViewMembers()).thenReturn(ImmutableList.of());
 
     assertThat(clusterElderManager.getElderId()).isNull();
   }
@@ -159,7 +158,7 @@ public class ClusterElderManagerTest {
     assertThatInterruptableRunnableWaits(() -> {
       try {
         clusterElderManager.waitForElder(member0);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
     });
   }
@@ -196,7 +195,7 @@ public class ClusterElderManagerTest {
       // Wait for membership listener to be added
       await().until(() -> membershipListener.get() != null);
 
-      currentMembers.set(Arrays.asList(member0));
+      currentMembers.set(Collections.singletonList(member0));
       membershipListener.get().memberDeparted(clusterDistributionManager, member1, true);
       return null;
     };
@@ -210,6 +209,7 @@ public class ClusterElderManagerTest {
 
   @Test
   public void getElderStateAsElder() throws InterruptedException {
+    @SuppressWarnings("unchecked")
     Supplier<ElderState> elderStateSupplier = mock(Supplier.class);
     ElderState elderState = mock(ElderState.class);
     when(elderStateSupplier.get()).thenReturn(elderState);
@@ -224,6 +224,7 @@ public class ClusterElderManagerTest {
 
   @Test
   public void getElderStateGetsBuiltOnceAsElder() throws InterruptedException {
+    @SuppressWarnings("unchecked")
     Supplier<ElderState> elderStateSupplier = mock(Supplier.class);
     ElderState elderState = mock(ElderState.class);
     when(elderStateSupplier.get()).thenReturn(elderState);
@@ -241,6 +242,7 @@ public class ClusterElderManagerTest {
 
   @Test
   public void getElderStateFromMultipleThreadsAsElder() {
+    @SuppressWarnings("unchecked")
     Supplier<ElderState> elderStateSupplier = mock(Supplier.class);
     ElderState elderState = mock(ElderState.class);
     when(elderStateSupplier.get()).thenReturn(elderState);
@@ -261,6 +263,7 @@ public class ClusterElderManagerTest {
 
   @Test
   public void getElderStateNotAsElder() throws InterruptedException {
+    @SuppressWarnings("unchecked")
     Supplier<ElderState> elderStateSupplier = mock(Supplier.class);
     ClusterElderManager clusterElderManager =
         new ClusterElderManager(clusterDistributionManager, elderStateSupplier);
@@ -273,6 +276,7 @@ public class ClusterElderManagerTest {
 
   @Test
   public void getElderStateWaitsToBecomeElder() {
+    @SuppressWarnings("unchecked")
     Supplier<ElderState> elderStateSupplier = mock(Supplier.class);
     ClusterElderManager clusterElderManager =
         new ClusterElderManager(clusterDistributionManager, elderStateSupplier);
@@ -308,6 +312,7 @@ public class ClusterElderManagerTest {
 
   @Test
   public void getElderStateReturnsElderStateIfWaitsToBecomeElder() throws Exception {
+    @SuppressWarnings("unchecked")
     Supplier<ElderState> elderStateSupplier = mock(Supplier.class);
     ElderState elderState = mock(ElderState.class);
     when(elderStateSupplier.get()).thenReturn(elderState);
@@ -315,7 +320,8 @@ public class ClusterElderManagerTest {
         new ClusterElderManager(clusterDistributionManager, elderStateSupplier);
     when(clusterDistributionManager.getId()).thenReturn(member0);
     when(clusterDistributionManager.isCloseInProgress()).thenReturn(true);
-    when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member1));
+    when(clusterDistributionManager.getViewMembers())
+        .thenReturn(Collections.singletonList(member1));
 
     assertThat(clusterElderManager.getElderState(true)).isEqualTo(elderState);
   }

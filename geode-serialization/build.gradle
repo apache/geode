@@ -35,7 +35,6 @@ dependencies {
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'
   }
-  testImplementation(project(':geode-concurrency-test'))
 
   testImplementation('com.tngtech.archunit:archunit-junit4')
   testImplementation('org.apache.bcel:bcel')

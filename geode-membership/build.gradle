@@ -41,7 +41,6 @@ dependencies {
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-logging'
     }
-    testImplementation(project(':geode-concurrency-test'))
 
     testImplementation('org.mockito:mockito-core')
     testImplementation('junit:junit')
@@ -66,7 +65,9 @@ dependencies {
     testImplementation('com.tngtech.archunit:archunit-junit4')
 
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
-  
+
+    concurrencyTestImplementation sourceSets.integrationTest.output
+    concurrencyTestImplementation(project(':geode-concurrency-test'))
 }
 
 distributedTest {
