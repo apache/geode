@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.categories.RedisTest;
 public class ExistsDUnitTest implements Serializable {
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(5);
+  public static ClusterStartupRule cluster = new ClusterStartupRule(3);
 
   private static String LOCALHOST = "localhost";
 
