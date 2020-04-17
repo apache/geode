@@ -451,11 +451,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
               try {
                 buk.initializePrimaryElector(creationRequestor);
                 if (getPartitionedRegion().getColocatedWith() == null) {
-                  buk.getBucketAdvisor().setShadowBucketDestroyed(false);
+                  buk.getBucketAdvisor().markAllShadowBucketsAsNonDestroyed();
                 }
                 if (getPartitionedRegion().isShadowPR()) {
                   getPartitionedRegion().getColocatedWithRegion().getRegionAdvisor()
-                      .getBucketAdvisor(possiblyFreeBucketId).setShadowBucketDestroyed(false);
+                      .getBucketAdvisor(possiblyFreeBucketId).markAllShadowBucketsAsNonDestroyed();
                 }
                 bukReg = createBucketRegion(possiblyFreeBucketId);
                 // Mark the bucket as hosting and distribute to peers
@@ -472,7 +472,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
                   bukReg.invokePartitionListenerAfterBucketCreated();
                 } else {
                   if (buk.getPartitionedRegion().getColocatedWith() == null) {
-                    buk.getBucketAdvisor().setShadowBucketDestroyed(true);
+                    buk.getBucketAdvisor().markAllShadowBucketsAsDestroyed();
                     // clear tempQueue for all the shadowPR buckets
                     clearAllTempQueueForShadowPR(buk.getBucketId());
                   }
@@ -1423,7 +1423,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
                     && buk.getPartitionedRegion().isShadowPR()) {
                   if (buk.getPartitionedRegion().getColocatedWithRegion() != null) {
                     buk.getPartitionedRegion().getColocatedWithRegion().getRegionAdvisor()
-                        .getBucketAdvisor(bucketId).setShadowBucketDestroyed(true);
+                        .getBucketAdvisor(bucketId).markShadowBucketAsDestroyed(buk.getFullPath());
                   }
                 }
               } catch (RegionDestroyedException ignore) {
@@ -1593,7 +1593,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         if (bucketRegion.getPartitionedRegion().isShadowPR()) {
           if (bucketRegion.getPartitionedRegion().getColocatedWithRegion() != null) {
             bucketRegion.getPartitionedRegion().getColocatedWithRegion().getRegionAdvisor()
-                .getBucketAdvisor(bucketId).setShadowBucketDestroyed(true);
+                .getBucketAdvisor(bucketId).markAllShadowBucketsAsDestroyed();
           }
         }
         bucketAdvisor.getProxyBucketRegion().removeBucket();

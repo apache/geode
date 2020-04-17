@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import static com.google.common.collect.ImmutableMap.of;
 import static org.apache.geode.internal.cache.CacheServerImpl.CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -28,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -59,6 +62,7 @@ public class BucketAdvisorTest {
     ProxyBucketRegion mockBucket = mock(ProxyBucketRegion.class);
     RegionAdvisor mockRegionAdvisor = mock(RegionAdvisor.class);
     PartitionedRegion mockPartitionedRegion = mock(PartitionedRegion.class);
+    @SuppressWarnings("rawtypes")
     PartitionAttributes mockPartitionAttributes = mock(PartitionAttributes.class);
     DistributionManager mockDistributionManager = mock(DistributionManager.class);
     List<CacheServer> cacheServers = new ArrayList<>();
@@ -80,12 +84,13 @@ public class BucketAdvisorTest {
     assertThat(bucketAdvisor.getBucketServerLocations(0).size()).isEqualTo(0);
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void whenServerThrowsIllegalStateExceptionWithoutBindAddressMsgThenExceptionMustBeThrown() {
     InternalCache mockCache = mock(InternalCache.class);
     ProxyBucketRegion mockBucket = mock(ProxyBucketRegion.class);
     RegionAdvisor mockRegionAdvisor = mock(RegionAdvisor.class);
     PartitionedRegion mockPartitionedRegion = mock(PartitionedRegion.class);
+    @SuppressWarnings("rawtypes")
     PartitionAttributes mockPartitionAttributes = mock(PartitionAttributes.class);
     DistributionManager mockDistributionManager = mock(DistributionManager.class);
     List<CacheServer> cacheServers = new ArrayList<>();
@@ -103,7 +108,8 @@ public class BucketAdvisorTest {
     when(mockCacheServer.getExternalAddress()).thenThrow(new IllegalStateException());
 
     BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(mockBucket, mockRegionAdvisor);
-    bucketAdvisor.getBucketServerLocations(0).size();
+    assertThatThrownBy(() -> bucketAdvisor.getBucketServerLocations(0))
+        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -149,5 +155,75 @@ public class BucketAdvisorTest {
     assertEquals(missingElectorId, advisorSpy.getPrimaryElector());
     advisorSpy.volunteerForPrimary();
     verify(volunteeringDelegate).volunteerForPrimary();
+  }
+
+  BucketAdvisor mockBucketAdvisorWithShadowBucketsDestroyedMap(Map<String, Boolean> shadowBuckets) {
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
+
+    Bucket bucket = mock(Bucket.class);
+    when(bucket.isHosting()).thenReturn(true);
+    when(bucket.isPrimary()).thenReturn(false);
+    when(bucket.getDistributionManager()).thenReturn(distributionManager);
+
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    when(partitionedRegion.getRedundantCopies()).thenReturn(0);
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(new PartitionAttributesImpl());
+    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
+    when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
+
+    BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor);
+    bucketAdvisor.destroyedShadowBuckets.putAll(shadowBuckets);
+
+    return bucketAdvisor;
+  }
+
+  @Test
+  public void markAllShadowBucketsAsNonDestroyedShouldClearTheShadowBucketsDestroyedMap() {
+    Map<String, Boolean> buckets = of("/b1", false, "/b2", true);
+    BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
+
+    assertThat(bucketAdvisor.destroyedShadowBuckets).isNotEmpty();
+    bucketAdvisor.markAllShadowBucketsAsNonDestroyed();
+    assertThat(bucketAdvisor.destroyedShadowBuckets).isEmpty();
+  }
+
+  @Test
+  public void markAllShadowBucketsAsDestroyedShouldSetTheFlagAsTrueForEveryKnownShadowBucket() {
+    Map<String, Boolean> buckets = of("/b1", false, "/b2", false, "/b3", false);
+    BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
+
+    bucketAdvisor.destroyedShadowBuckets.forEach((k, v) -> assertThat(v).isFalse());
+    bucketAdvisor.markAllShadowBucketsAsDestroyed();
+    bucketAdvisor.destroyedShadowBuckets.forEach((k, v) -> assertThat(v).isTrue());
+  }
+
+  @Test
+  public void markShadowBucketAsDestroyedShouldSetTheFlagAsTrueOnlyForTheSpecificBucket() {
+    Map<String, Boolean> buckets = of("/b1", false);
+    BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
+
+    // Known Shadow Bucket
+    assertThat(bucketAdvisor.destroyedShadowBuckets.get("/b1")).isFalse();
+    bucketAdvisor.markShadowBucketAsDestroyed("/b1");
+    assertThat(bucketAdvisor.destroyedShadowBuckets.get("/b1")).isTrue();
+
+    // Unknown Shadow Bucket
+    assertThat(bucketAdvisor.destroyedShadowBuckets.get("/b5")).isNull();
+    bucketAdvisor.markShadowBucketAsDestroyed("/b5");
+    assertThat(bucketAdvisor.destroyedShadowBuckets.get("/b5")).isTrue();
+  }
+
+  @Test
+  public void isShadowBucketDestroyedShouldReturnCorrectly() {
+    Map<String, Boolean> buckets = of("/b1", true, "/b2", false);
+    BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
+
+    // Known Shadow Buckets
+    assertThat(bucketAdvisor.isShadowBucketDestroyed("/b1")).isTrue();
+    assertThat(bucketAdvisor.isShadowBucketDestroyed("/b2")).isFalse();
+
+    // Unknown Shadow Bucket
+    assertThat(bucketAdvisor.isShadowBucketDestroyed("/b5")).isFalse();
   }
 }

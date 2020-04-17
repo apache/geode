@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -164,7 +166,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   private PartitionedRegion pRegion;
 
-  private volatile boolean shadowBucketDestroyed;
+  final ConcurrentMap<String, Boolean> destroyedShadowBuckets = new ConcurrentHashMap<>();
 
   /**
    * Constructs a new BucketAdvisor for the Bucket owned by RegionAdvisor.
@@ -2742,11 +2744,19 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  void setShadowBucketDestroyed(boolean destroyed) {
-    shadowBucketDestroyed = destroyed;
+  void markAllShadowBucketsAsNonDestroyed() {
+    destroyedShadowBuckets.clear();
   }
 
-  public boolean getShadowBucketDestroyed() {
-    return shadowBucketDestroyed;
+  void markAllShadowBucketsAsDestroyed() {
+    destroyedShadowBuckets.forEach((k, v) -> destroyedShadowBuckets.put(k, true));
+  }
+
+  void markShadowBucketAsDestroyed(String shadowBucketPath) {
+    destroyedShadowBuckets.put(shadowBucketPath, true);
+  }
+
+  public boolean isShadowBucketDestroyed(String shadowBucketPath) {
+    return destroyedShadowBuckets.getOrDefault(shadowBucketPath, false);
   }
 }
