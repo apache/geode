@@ -142,7 +142,7 @@ public class ExpireIntegrationTest {
     String key = "sicily";
     double latitude = 13.361389;
     double longitude = 38.115556;
-    String member = "Palermo Catina";
+    String member = "Palermo Catania";
 
     jedis.geoadd(key, latitude, longitude, member);
 
