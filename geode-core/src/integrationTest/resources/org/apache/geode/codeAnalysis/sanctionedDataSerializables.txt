@@ -939,6 +939,10 @@ org/apache/geode/internal/cache/DistributedClearOperation$ClearRegionWithContext
 fromData,15
 toData,15
 
+org/apache/geode/internal/cache/DistributedPingMessage,2
+fromData,26
+toData,23
+
 org/apache/geode/internal/cache/DistributedPutAllOperation$EntryVersionsList,2
 fromData,272
 toData,292
