@@ -31,6 +31,8 @@ import java.net.URL;
 import java.util.Properties;
 
 import com.palantir.docker.compose.DockerComposeRule;
+import com.palantir.docker.compose.execution.DockerComposeRunArgument;
+import com.palantir.docker.compose.execution.DockerComposeRunOption;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -63,6 +65,7 @@ public class ClientSNIDropProxyAcceptanceTest {
   private ClientCache cache;
 
   private String trustStorePath;
+  private int proxyPort;
 
   @Before
   public void before() throws IOException, InterruptedException {
@@ -92,9 +95,11 @@ public class ClientSNIDropProxyAcceptanceTest {
         .isInstanceOf(NoAvailableLocatorsException.class)
         .hasMessageContaining("Unable to connect to any locators in the list");
 
-    docker.containers()
-        .container("haproxy")
-        .start();
+
+    docker.run(DockerComposeRunOption.options("--publish", String.format("%d:15443", proxyPort)), "haproxy", DockerComposeRunArgument.arguments("haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg") );
+//    docker.containers()
+//        .container("haproxy")
+//        .start();
 
     assertThat(region.get("Roy Hobbs")).isEqualTo(9);
 
@@ -119,13 +124,13 @@ public class ClientSNIDropProxyAcceptanceTest {
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
-    int proxyPort = docker.containers()
+    proxyPort = docker.containers()
         .container("haproxy")
         .port(15443)
         .getExternalPort();
 
     cache = new ClientCacheFactory(gemFireProps)
-        .addPoolLocator("locator", 10334)
+        .addPoolLocator("locator-maeve", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
             proxyPort))
         .setPoolSubscriptionEnabled(true)
