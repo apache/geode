@@ -75,7 +75,6 @@ public class ClientSNIDropProxyAcceptanceTest {
                 .getAbsolutePath();
     docker.exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
-
   }
 
   @Test
@@ -87,21 +86,14 @@ public class ClientSNIDropProxyAcceptanceTest {
     region.put("Roy Hobbs", 9);
     assertThat(region.get("Roy Hobbs")).isEqualTo(9);
 
-    docker.containers()
-        .container("haproxy")
-        .stop();
+    stopProxy();
 
     assertThatThrownBy(() -> region.get("Roy Hobbs"))
         .isInstanceOf(NoAvailableLocatorsException.class)
         .hasMessageContaining("Unable to connect to any locators in the list");
 
 
-    docker.run(DockerComposeRunOption.options("--publish", String.format("%d:15443", proxyPort)),
-        "haproxy",
-        DockerComposeRunArgument.arguments("haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"));
-    // docker.containers()
-    // .container("haproxy")
-    // .start();
+    restartProxy();
 
     assertThat(region.get("Roy Hobbs")).isEqualTo(9);
 
@@ -114,6 +106,49 @@ public class ClientSNIDropProxyAcceptanceTest {
     region.put("Ricky Vaughn", 99);
     region.put("Ebbie Calvin LaLoosh", 37);
 
+  }
+
+  private void stopProxy() throws IOException, InterruptedException {
+    docker.containers()
+        .container("haproxy")
+        .stop();
+  }
+
+  private void restartProxy() throws IOException, InterruptedException {
+    restartProxyOnPreviousPort();
+    // Leave this commented here in case you need it for troubleshooting
+    // restartProxyOnDockerComposePort();
+  }
+
+  /**
+   * Use this variant to (re)start the container on whatever port(s) is specified in
+   * docker-compose.yml. Usually that would look something like:
+   *
+   * ports:
+   * - "15443:15443"
+   *
+   * Leave this unused method here for troubleshooting.
+   */
+  private void restartProxyOnDockerComposePort() throws IOException, InterruptedException {
+    docker.containers()
+        .container("haproxy")
+        .start();
+  }
+
+  /**
+   * Use this variant to (re)start the container whatever host port it was bound to before
+   * it was stopped. Usually you'll want the ports spec in docker-compose.yml to look like
+   * this when using this method (allowing Docker to initially choose a random host port
+   * to bind to):
+   *
+   * ports:
+   * - "15443"
+   */
+  private void restartProxyOnPreviousPort() throws IOException, InterruptedException {
+    docker.run(
+        DockerComposeRunOption.options("-d", "--publish", String.format("%d:15443", proxyPort)),
+        "haproxy",
+        DockerComposeRunArgument.arguments("haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"));
   }
 
   public Region<String, Integer> getRegion() {
