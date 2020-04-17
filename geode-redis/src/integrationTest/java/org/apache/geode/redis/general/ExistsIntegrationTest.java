@@ -290,7 +290,7 @@ public class ExistsIntegrationTest {
   }
 
   @Test
-  public void shouldCorrectlyVerifyKeyExistsConcurrentlyWhileDeletingAndSettingKey()
+  public void shouldNotThrowExceptionsWhenConcurrentlyCreatingCheckingAndDeletingKeys()
       throws InterruptedException {
     int iterationCount = 5000;
 
@@ -313,12 +313,6 @@ public class ExistsIntegrationTest {
   private void setKeys(Jedis jedis, int iterationCount) {
     for (int i = 0; i < iterationCount; i++) {
       jedis.set("key" + i, "value" + i);
-    }
-  }
-
-  private void existsKeys(AtomicLong existsCount, Jedis jedis, int iterationCount) {
-    for (int i = 0; i < iterationCount; i++) {
-      existsCount.addAndGet(jedis.exists("key" + i, "doesNotExist" + i));
     }
   }
 
