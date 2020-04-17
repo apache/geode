@@ -619,10 +619,10 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     this.durableClientVM.invoke("Get", () -> {
       await().untilAsserted(() -> {
-      Region<Object, Object> region = getCache().getRegion(regionName);
-      assertThat(region).isNotNull();
-      // Register interest in all keys
-      assertThat(region.getEntry("0")).isNull();
+        Region<Object, Object> region = getCache().getRegion(regionName);
+        assertThat(region).isNotNull();
+        // Register interest in all keys
+        assertThat(region.getEntry("0")).isNull();
       });
     });
 
