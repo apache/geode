@@ -119,8 +119,6 @@ public class SaddDistDunitTest {
 
     jedis1.sadd(key, members.toArray(new String[] {}));
 
-    GeodeAwaitility.await().untilAsserted(() -> assertThat(jedis2.scard(key)).isEqualTo(SET_SIZE));
-
     Set<String> result = jedis2.smembers(key);
 
     assertThat(result.toArray()).containsExactlyInAnyOrder(members.toArray());
@@ -147,9 +145,6 @@ public class SaddDistDunitTest {
 
     runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
 
-    GeodeAwaitility.await().untilAsserted(
-        () -> assertThat(jedis3.scard(key)).isEqualTo(members1.size() + members2.size()));
-
     Set<String> results = jedis3.smembers(key);
 
     assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
@@ -170,8 +165,6 @@ public class SaddDistDunitTest {
     Runnable addSetsWithClient2 = makeSADDRunnable(key, members, jedis2, startThreads);
 
     runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
-
-    GeodeAwaitility.await().untilAsserted(() -> assertThat(jedis3.scard(key)).isEqualTo(SET_SIZE));
 
     Set<String> results = jedis3.smembers(key);
 
@@ -195,11 +188,6 @@ public class SaddDistDunitTest {
     Runnable addSetsWithClient2 = makeSADDRunnable(key2, members2, jedis2, startThreads);
 
     runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
-
-    GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(jedis3.scard(key1)).isEqualTo(members1.size()));
-    GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(jedis3.scard(key2)).isEqualTo(members2.size()));
 
     Set<String> results1 = jedis3.smembers(key1);
     Set<String> results2 = jedis3.smembers(key2);
@@ -232,9 +220,6 @@ public class SaddDistDunitTest {
         addSetsWithClient1B,
         addSetsWithClient2,
         addSetsWithClient2B);
-
-    GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(jedis3.scard(key)).isEqualTo(members.size()));
 
     Set<String> results = jedis3.smembers(key);
 
@@ -272,9 +257,6 @@ public class SaddDistDunitTest {
         addSetsWithClient1B,
         addSetsWithClient2,
         addSetsWithClient2B);
-
-    GeodeAwaitility.await().untilAsserted(
-        () -> assertThat(jedis3.scard(key)).isEqualTo(members1.size() + members2.size()));
 
     Set<String> results = jedis3.smembers(key);
 
