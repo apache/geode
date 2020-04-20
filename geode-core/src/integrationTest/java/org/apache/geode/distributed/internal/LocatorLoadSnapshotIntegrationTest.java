@@ -46,7 +46,6 @@ public class LocatorLoadSnapshotIntegrationTest {
     final int NUM_REQUESTS = 10000;
     int ALLOWED_THRESHOLD = 50; // We should never be off by more than
     // the number of concurrent threads.
-    final int LOAD_POLL_INTERVAL = 30000;
 
     final LocatorLoadSnapshot sn = new LocatorLoadSnapshot();
     final ServerLocation l1 = new ServerLocation("localhost", 1);
@@ -57,9 +56,9 @@ public class LocatorLoadSnapshotIntegrationTest {
     int initialLoad2 = (int) (Math.random() * (NUM_REQUESTS / 2));
     int initialLoad3 = (int) (Math.random() * (NUM_REQUESTS / 2));
 
-    sn.addServer(l1, "", new String[0], new ServerLoad(initialLoad1, 1, 0, 1), LOAD_POLL_INTERVAL);
-    sn.addServer(l2, "", new String[0], new ServerLoad(initialLoad2, 1, 0, 1), LOAD_POLL_INTERVAL);
-    sn.addServer(l3, "", new String[0], new ServerLoad(initialLoad3, 1, 0, 1), LOAD_POLL_INTERVAL);
+    sn.addServer(l1, new String[0], new ServerLoad(initialLoad1, 1, 0, 1));
+    sn.addServer(l2, new String[0], new ServerLoad(initialLoad2, 1, 0, 1));
+    sn.addServer(l3, new String[0], new ServerLoad(initialLoad3, 1, 0, 1));
 
     final Map loadCounts = new HashMap();
     loadCounts.put(l1, new AtomicInteger(initialLoad1));
