@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis;
+package org.apache.geode.redis.sets;
 
 
 import org.junit.AfterClass;
@@ -27,7 +27,7 @@ import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 @Category({RedisTest.class})
-public class SetsNativeRedisAcceptanceTest extends SetsIntegrationTest {
+public class SInterNativeRedisAcceptanceTest extends SInterIntegrationTest {
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
