@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -30,12 +29,11 @@ public class PingOp {
    * Ping the specified server to see if it is still alive
    *
    * @param pool the pool to use to communicate with the server.
-   * @param serverLocation the server to do the execution on
+   * @param server the server to do the execution on
    */
-  public static void execute(ExecutablePool pool, ServerLocation serverLocation,
-      DistributedMember serverID) {
-    AbstractOp op = new PingOpImpl(serverLocation, serverID);
-    pool.executeOn(serverLocation, op, false, false);
+  public static void execute(ExecutablePool pool, ServerLocation server) {
+    AbstractOp op = new PingOpImpl();
+    pool.executeOn(server, op, false, false);
   }
 
   private PingOp() {
@@ -45,16 +43,12 @@ public class PingOp {
   static class PingOpImpl extends AbstractOp {
 
     private long startTime;
-    private ServerLocation location;
-    private final DistributedMember serverID;
 
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    PingOpImpl(ServerLocation location, DistributedMember serverID) {
+    PingOpImpl() {
       super(MessageType.PING, 0);
-      this.location = location;
-      this.serverID = serverID;
     }
 
     @Override
@@ -71,9 +65,8 @@ public class PingOp {
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
-      getMessage().setNumberOfParts(1);
-      getMessage().addObjPart(serverID);
-      getMessage().send(true);
+      this.startTime = System.currentTimeMillis();
+      getMessage().send(false);
       Message.MESSAGE_TYPE.set(MessageType.PING);
     }
 
