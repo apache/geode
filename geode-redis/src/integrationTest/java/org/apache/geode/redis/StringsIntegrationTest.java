@@ -49,7 +49,7 @@ import redis.clients.jedis.params.SetParams;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.general.LoopingThreads;
+import org.apache.geode.redis.general.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -792,13 +792,13 @@ public class StringsIntegrationTest {
   public void testConcurrentDel_differentClients() {
     String keyBaseName = "DELBASE";
 
-    new LoopingThreads(
+    new ConcurrentLoopingThreads(
         ITERATION_COUNT,
         (i) -> jedis.set(keyBaseName + i, "value" + i))
             .run();
 
     AtomicLong deletedCount = new AtomicLong();
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> deletedCount.addAndGet(jedis.del(keyBaseName + i)),
         (i) -> deletedCount.addAndGet(jedis2.del(keyBaseName + i)))
             .run();
@@ -853,7 +853,7 @@ public class StringsIntegrationTest {
   public void testDecr_shouldBeAtomic() throws ExecutionException, InterruptedException {
     jedis.set("contestedKey", "0");
 
-    new LoopingThreads(
+    new ConcurrentLoopingThreads(
         ITERATION_COUNT,
         (i) -> jedis.decr("contestedKey"),
         (i) -> jedis2.decr("contestedKey"))
@@ -914,7 +914,7 @@ public class StringsIntegrationTest {
   public void testIncr_shouldBeAtomic() throws ExecutionException, InterruptedException {
     jedis.set("contestedKey", "0");
 
-    new LoopingThreads(
+    new ConcurrentLoopingThreads(
         ITERATION_COUNT,
         (i) -> jedis.incr("contestedKey"),
         (i) -> jedis2.incr("contestedKey"))

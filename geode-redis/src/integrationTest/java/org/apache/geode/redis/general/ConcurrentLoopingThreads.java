@@ -20,12 +20,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class LoopingThreads {
+public class ConcurrentLoopingThreads {
   private final int iterationCount;
   private final Consumer<Integer>[] functions;
 
   @SuppressWarnings("unchecked")
-  public LoopingThreads(int iterationCount,
+  public ConcurrentLoopingThreads(int iterationCount,
       Consumer<Integer>... functions) {
     this.iterationCount = iterationCount;
     this.functions = functions;

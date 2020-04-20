@@ -56,7 +56,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.general.LoopingThreads;
+import org.apache.geode.redis.general.ConcurrentLoopingThreads;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
@@ -483,7 +483,7 @@ public class HashesIntegrationTest {
       expectedMap.put("field" + i, "value" + i);
     }
 
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hmset(key1, Maps.newHashMap("field" + i, "value" + i)),
         (i) -> jedis2.hmset(key2, Maps.newHashMap("field" + i, "value" + i)))
             .run();
@@ -496,7 +496,7 @@ public class HashesIntegrationTest {
   public void testConcurrentHMSet_sameKeyPerClient() throws InterruptedException {
     String key = "HMSET1";
 
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hmset(key, Maps.newHashMap("fieldA" + i, "valueA" + i)),
         (i) -> jedis2.hmset(key, Maps.newHashMap("fieldB" + i, "valueB" + i)))
             .run();
@@ -516,7 +516,7 @@ public class HashesIntegrationTest {
     }
 
     AtomicLong successCount = new AtomicLong();
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> successCount.addAndGet(jedis.hsetnx(key, "field" + i, "A")),
         (i) -> successCount.addAndGet(jedis2.hsetnx(key, "field" + i, "B")))
             .run();
@@ -533,7 +533,7 @@ public class HashesIntegrationTest {
       expectedMap.put("field" + i, "value" + i);
     }
 
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hset(key1, "field" + i, "value" + i),
         (i) -> jedis2.hset(key2, "field" + i, "value" + i))
             .run();
@@ -546,7 +546,7 @@ public class HashesIntegrationTest {
   public void testConcurrentHSet_sameKeyPerClient() throws InterruptedException {
     String key1 = "HSET1";
 
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hset(key1, "fieldA" + i, "value" + i),
         (i) -> jedis2.hset(key1, "fieldB" + i, "value" + i))
             .run();
@@ -562,7 +562,7 @@ public class HashesIntegrationTest {
 
     jedis.hset(key, field, "0");
 
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hincrBy(key, field, 1),
         (i) -> jedis2.hincrBy(key, field, 1))
             .run();
@@ -578,7 +578,7 @@ public class HashesIntegrationTest {
 
     jedis.hset(key, field, "0");
 
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hincrByFloat(key, field, 0.5),
         (i) -> jedis.hincrByFloat(key, field, 1.0)).run();
 
@@ -601,7 +601,7 @@ public class HashesIntegrationTest {
 
     ArrayBlockingQueue<String> blockingQueue = new ArrayBlockingQueue<>(ITERATION_COUNT);
 
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> {
           jedis.hset(key, "field" + i, "value" + i);
           blockingQueue.add("field" + i);
@@ -629,7 +629,7 @@ public class HashesIntegrationTest {
     doABunchOfHSets(key, record, jedis);
 
     AtomicLong successCount = new AtomicLong();
-    new LoopingThreads(ITERATION_COUNT,
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> {
           if (jedis.hgetAll(key).size() == ITERATION_COUNT) {
             successCount.incrementAndGet();

@@ -270,10 +270,10 @@ public class ExistsIntegrationTest {
   public void shouldCorrectlyVerifyKeysExistConcurrently() {
     int iterationCount = 5000;
 
-    new LoopingThreads(iterationCount, (i) -> jedis.set("key" + i, "value" + i)).run();
+    new ConcurrentLoopingThreads(iterationCount, (i) -> jedis.set("key" + i, "value" + i)).run();
 
     AtomicLong existsCount = new AtomicLong(0);
-    new LoopingThreads(
+    new ConcurrentLoopingThreads(
         iterationCount,
         (i) -> existsCount.addAndGet(jedis.exists(toArray("key" + i))),
         (i) -> existsCount.addAndGet(jedis2.exists(toArray("key" + i))))
@@ -286,7 +286,7 @@ public class ExistsIntegrationTest {
   public void shouldNotThrowExceptionsWhenConcurrentlyCreatingCheckingAndDeletingKeys() {
 
     int iterationCount = 5000;
-    new LoopingThreads(
+    new ConcurrentLoopingThreads(
         iterationCount,
         (i) -> jedis.set("key", "value"),
         (i) -> jedis2.exists(toArray("key")),
