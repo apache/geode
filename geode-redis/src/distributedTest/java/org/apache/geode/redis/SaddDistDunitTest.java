@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -115,6 +117,8 @@ public class SaddDistDunitTest {
 
     jedis1.sadd(key, members.toArray(new String[] {}));
 
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(jedis2.scard(key)).isEqualTo(SET_SIZE));
+
     Set<String> result = jedis2.smembers(key);
 
     assertThat(result.toArray()).containsExactlyInAnyOrder(members.toArray());
@@ -134,10 +138,15 @@ public class SaddDistDunitTest {
     allMembers.addAll(members1);
     allMembers.addAll(members2);
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members1, jedis1);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members2, jedis2);
+    CountDownLatch startThreads = new CountDownLatch(1);
 
-    runConcurrentThreads(addSetsWithClient1, addSetsWithClient2);
+    Runnable addSetsWithClient1 = makeSADDRunnable(key, members1, jedis1, startThreads);
+    Runnable addSetsWithClient2 = makeSADDRunnable(key, members2, jedis2, startThreads);
+
+    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(jedis3.scard(key)).isEqualTo(members1.size() + members2.size()));
 
     Set<String> results = jedis3.smembers(key);
 
@@ -153,10 +162,14 @@ public class SaddDistDunitTest {
 
     List<String> members = makeMemberList(SET_SIZE, "member-");
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members, jedis1);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members, jedis2);
+    CountDownLatch startThreads = new CountDownLatch(1);
 
-    runConcurrentThreads(addSetsWithClient1, addSetsWithClient2);
+    Runnable addSetsWithClient1 = makeSADDRunnable(key, members, jedis1, startThreads);
+    Runnable addSetsWithClient2 = makeSADDRunnable(key, members, jedis2, startThreads);
+
+    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(jedis3.scard(key)).isEqualTo(SET_SIZE));
 
     Set<String> results = jedis3.smembers(key);
 
@@ -174,10 +187,17 @@ public class SaddDistDunitTest {
     List<String> members1 = makeMemberList(SET_SIZE, "member1-");
     List<String> members2 = makeMemberList(SET_SIZE, "member2-");
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key1, members1, jedis1);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key2, members2, jedis2);
+    CountDownLatch startThreads = new CountDownLatch(1);
 
-    runConcurrentThreads(addSetsWithClient1, addSetsWithClient2);
+    Runnable addSetsWithClient1 = makeSADDRunnable(key1, members1, jedis1, startThreads);
+    Runnable addSetsWithClient2 = makeSADDRunnable(key2, members2, jedis2, startThreads);
+
+    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(jedis3.scard(key1)).isEqualTo(members1.size()));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(jedis3.scard(key2)).isEqualTo(members2.size()));
 
     Set<String> results1 = jedis3.smembers(key1);
     Set<String> results2 = jedis3.smembers(key2);
@@ -194,23 +214,29 @@ public class SaddDistDunitTest {
     Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
     Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
 
-    String key1 = "key1";
+    String key = "key";
 
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
+    List<String> members = makeMemberList(SET_SIZE, "member1-");
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key1, members1, jedis1);
-    Runnable addSetsWithClient1B = makeSADDRunnable(key1, members1, jedis1B);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key1, members1, jedis2);
-    Runnable addSetsWithClient2B = makeSADDRunnable(key1, members1, jedis2B);
+    CountDownLatch startThreads = new CountDownLatch(1);
 
-    runConcurrentThreads(addSetsWithClient1,
+    Runnable addSetsWithClient1 = makeSADDRunnable(key, members, jedis1, startThreads);
+    Runnable addSetsWithClient1B = makeSADDRunnable(key, members, jedis1B, startThreads);
+    Runnable addSetsWithClient2 = makeSADDRunnable(key, members, jedis2, startThreads);
+    Runnable addSetsWithClient2B = makeSADDRunnable(key, members, jedis2B, startThreads);
+
+    runConcurrentThreads(startThreads,
+        addSetsWithClient1,
         addSetsWithClient1B,
         addSetsWithClient2,
         addSetsWithClient2B);
 
-    Set<String> results = jedis3.smembers(key1);
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(jedis3.scard(key)).isEqualTo(members.size()));
 
-    assertThat(results.toArray()).containsExactlyInAnyOrder(members1.toArray());
+    Set<String> results = jedis3.smembers(key);
+
+    assertThat(results.toArray()).containsExactlyInAnyOrder(members.toArray());
 
     jedis1B.disconnect();
     jedis2B.disconnect();
@@ -223,7 +249,7 @@ public class SaddDistDunitTest {
     Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
     Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
 
-    String key1 = "key1";
+    String key = "key1";
 
     List<String> members1 = makeMemberList(SET_SIZE, "member1-");
     List<String> members2 = makeMemberList(SET_SIZE, "member2-");
@@ -232,17 +258,23 @@ public class SaddDistDunitTest {
     allMembers.addAll(members1);
     allMembers.addAll(members2);
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key1, members1, jedis1);
-    Runnable addSetsWithClient1B = makeSADDRunnable(key1, members1, jedis1B);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key1, members2, jedis2);
-    Runnable addSetsWithClient2B = makeSADDRunnable(key1, members2, jedis2B);
+    CountDownLatch startThreads = new CountDownLatch(1);
 
-    runConcurrentThreads(addSetsWithClient1,
+    Runnable addSetsWithClient1 = makeSADDRunnable(key, members1, jedis1, startThreads);
+    Runnable addSetsWithClient1B = makeSADDRunnable(key, members1, jedis1B, startThreads);
+    Runnable addSetsWithClient2 = makeSADDRunnable(key, members2, jedis2, startThreads);
+    Runnable addSetsWithClient2B = makeSADDRunnable(key, members2, jedis2B, startThreads);
+
+    runConcurrentThreads(startThreads,
+        addSetsWithClient1,
         addSetsWithClient1B,
         addSetsWithClient2,
         addSetsWithClient2B);
 
-    Set<String> results = jedis3.smembers(key1);
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(jedis3.scard(key)).isEqualTo(members1.size() + members2.size()));
+
+    Set<String> results = jedis3.smembers(key);
 
     assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
 
@@ -250,7 +282,7 @@ public class SaddDistDunitTest {
     jedis2B.disconnect();
   }
 
-  private void runConcurrentThreads(Runnable... runnables)
+  private void runConcurrentThreads(CountDownLatch startThread, Runnable... runnables)
       throws InterruptedException {
     List<Thread> threads = new ArrayList<>();
 
@@ -258,13 +290,21 @@ public class SaddDistDunitTest {
 
     threads.forEach((thread -> thread.start()));
 
+    startThread.countDown();
+
     for (Thread thread : threads) {
       thread.join();
     }
   }
 
-  private Runnable makeSADDRunnable(String key, List<String> members, Jedis jedis) {
+  private Runnable makeSADDRunnable(String key, List<String> members, Jedis jedis,
+      CountDownLatch startThread) {
     return () -> {
+      try {
+        startThread.await();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       for (int i = 0; i < members.size(); i++) {
         jedis.sadd(key, members.get(i));
       }
