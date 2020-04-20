@@ -47,6 +47,8 @@ public class SaddDistDunitTest {
   static final String LOCAL_HOST = "127.0.0.1";
   static final int SET_SIZE = 1000;
   static int[] availablePorts;
+  private static final int JEDIS_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   static Jedis jedis1;
   static Jedis jedis2;
   static Jedis jedis3;
@@ -87,9 +89,9 @@ public class SaddDistDunitTest {
     server2 = clusterStartUp.startServerVM(2, serverProperties2, locator.getPort());
     server3 = clusterStartUp.startServerVM(3, serverProperties3, locator.getPort());
 
-    jedis1 = new Jedis(LOCAL_HOST, availablePorts[0]);
-    jedis2 = new Jedis(LOCAL_HOST, availablePorts[1]);
-    jedis3 = new Jedis(LOCAL_HOST, availablePorts[2]);
+    jedis1 = new Jedis(LOCAL_HOST, availablePorts[0], JEDIS_TIMEOUT);
+    jedis2 = new Jedis(LOCAL_HOST, availablePorts[1], JEDIS_TIMEOUT);
+    jedis3 = new Jedis(LOCAL_HOST, availablePorts[2], JEDIS_TIMEOUT);
   }
 
   @Before
