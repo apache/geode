@@ -73,6 +73,9 @@ Replicated regions cannot use a parallel gateway sender.
 
 Although parallel gateway senders provide the best throughput for WAN distribution, they provide less control for event ordering. Event ordering for the region as a whole is not preserved, because multiple Geode servers distribute the regions events at the same time. However, the ordering of events for a given partition can be preserved. See [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
 
+Persisted data from a parallel gateway sender must go to the same disk
+store as used by the region.
+
 ## <a id="topic_9AA37B43642D4DE19072CA3367C849BA__section_75F4588FEA404712963CE83FACB8ED1B" class="no-quick-link"></a>Gateway Sender Queues
 
 The queue that a gateway sender uses to distribute events to a remote site overflows to disk as needed, in order to prevent the Geode member from running out of memory. You can configure the maximum amount of memory that each queue uses, as well as the batch size and frequency for processing batches in the queue. You can also configure these queues to persist to disk, so that a gateway sender can pick up where it left off when its member shuts down and is later restarted.
