@@ -24,9 +24,9 @@ public class ConcurrentLoopingThreads {
   private final int iterationCount;
   private final Consumer<Integer>[] functions;
 
-  @SuppressWarnings("unchecked")
+  @SafeVarargs
   public ConcurrentLoopingThreads(int iterationCount,
-      Consumer... functions) {
+      Consumer<Integer>... functions) {
     this.iterationCount = iterationCount;
     this.functions = functions;
   }
