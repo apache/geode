@@ -20,12 +20,15 @@ import javax.management.remote.JMXConnector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Component;
 
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
@@ -36,11 +39,13 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
  *
  * @since GemFire version 9.0
  */
+@Component
+@Profile("pulse.authentication.gemfire")
 public class GemFireAuthenticationProvider implements AuthenticationProvider {
-
   private static final Logger logger = LogManager.getLogger();
   private final Repository repository;
 
+  @Autowired
   public GemFireAuthenticationProvider(Repository repository) {
     this.repository = repository;
   }
@@ -49,8 +54,9 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     if (authentication instanceof GemFireAuthentication) {
       GemFireAuthentication gemAuth = (GemFireAuthentication) authentication;
-      if (gemAuth.isAuthenticated())
+      if (gemAuth.isAuthenticated()) {
         return gemAuth;
+      }
     }
 
     String name = authentication.getName();
@@ -65,7 +71,7 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
 
     Collection<GrantedAuthority> list = GemFireAuthentication.populateAuthorities(jmxc);
     GemFireAuthentication auth = new GemFireAuthentication(authentication.getPrincipal(),
-        authentication.getCredentials(), list, jmxc);
+        authentication.getCredentials(), list);
     logger.debug("For user " + name + " authList=" + list);
     return auth;
   }

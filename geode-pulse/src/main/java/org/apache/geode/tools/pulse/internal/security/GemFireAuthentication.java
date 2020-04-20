@@ -48,12 +48,9 @@ import org.apache.geode.tools.pulse.internal.data.PulseConstants;
  */
 public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 
-  private JMXConnector jmxc = null;
-
   public GemFireAuthentication(Object principal, Object credentials,
-      Collection<GrantedAuthority> list, JMXConnector jmxc) {
+      Collection<GrantedAuthority> list) {
     super(principal, credentials, list);
-    this.jmxc = jmxc;
   }
 
   private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;

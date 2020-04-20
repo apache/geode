@@ -59,19 +59,18 @@ public class Repository {
   Locale locale =
       new Locale(PulseConstants.APPLICATION_LANGUAGE, PulseConstants.APPLICATION_COUNTRY);
 
-  private ResourceBundle resourceBundle =
+  private final ResourceBundle resourceBundle =
       ResourceBundle.getBundle(PulseConstants.LOG_MESSAGES_FILE, locale);
 
-  private PulseConfig pulseConfig = new PulseConfig();
+  private final PulseConfig pulseConfig = new PulseConfig();
 
+  @Autowired(required = false)
   public Repository() {
     this(null);
   }
 
-  // The authorizedClientService is required only when using OAuth2 security.
-  @Autowired
-  public Repository(
-      @Autowired(required = false) OAuth2AuthorizedClientService authorizedClientService) {
+  @Autowired(required = false)
+  public Repository(OAuth2AuthorizedClientService authorizedClientService) {
     this(authorizedClientService, Cluster::new);
   }
 

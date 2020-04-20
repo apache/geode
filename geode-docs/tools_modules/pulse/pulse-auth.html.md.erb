@@ -154,6 +154,10 @@ After you set up the authentication provider properly, create a properties file 
 
     The URI for your OAuth provider's JSON Web Key (JWK) Set endpoint.
 
+- **pulse.oauth.endSessionEndpoint**
+
+    The URI for your OAuth provider's endpoint to request that the end user be logged out. See the `end_session_endpoint` parameter of the OpenID Provider Discovery Metadata standard proposal.
+
 - **pulse.oauth.userNameAttributeName**
 
     The attribute name used to access the user's name from your OAuth provider's user info response.
@@ -169,6 +173,7 @@ pulse.oauth.authorizationUri=http://example.com/uaa/oauth/authorize
 pulse.oauth.tokenUri=http://example.com/uaa/oauth/token
 pulse.oauth.userInfoUri=http://example.com/uaa/userinfo
 pulse.oauth.jwkSetUri=http://example.com/uaa/token_keys
+pulse.oauth.endSessionEndpoint=http://example.com/uaa/profile
 pulse.oauth.userNameAttributeName=user_name
 ```
 
