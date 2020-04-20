@@ -17,18 +17,18 @@ package org.apache.geode.redis.general;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class LoopingThreads {
   private final int iterationCount;
-  private final Function<Integer, Object>[] functions;
+  private final Consumer<Integer>[] functions;
 
   @SuppressWarnings("unchecked")
   public LoopingThreads(int iterationCount,
-      Function... functions) {
+      Consumer<Integer>... functions) {
     this.iterationCount = iterationCount;
-    this.functions = (Function<Integer, Object>[]) functions;
+    this.functions = functions;
   }
 
   public void run() {
@@ -54,11 +54,11 @@ public class LoopingThreads {
   }
 
   private class LoopingRunnable implements Runnable {
-    private final Function<Integer, Object> runnable;
+    private final Consumer<Integer> runnable;
     private final int iterationCount;
     private CountDownLatch startLatch;
 
-    public LoopingRunnable(Function<Integer, Object> runnable, int iterationCount,
+    public LoopingRunnable(Consumer<Integer> runnable, int iterationCount,
         CountDownLatch startLatch) {
       this.runnable = runnable;
       this.iterationCount = iterationCount;
@@ -73,14 +73,14 @@ public class LoopingThreads {
         throw new RuntimeException(e);
       }
       for (int i = 0; i < iterationCount; i++) {
-        runnable.apply(i);
+        runnable.accept(i);
         Thread.yield();
       }
     }
   }
 
   private class LoopingThread extends Thread {
-    public LoopingThread(Function<Integer, Object> runnable, int iterationCount,
+    public LoopingThread(Consumer<Integer> runnable, int iterationCount,
         CountDownLatch latch) {
       super(new LoopingRunnable(runnable, iterationCount, latch));
     }
