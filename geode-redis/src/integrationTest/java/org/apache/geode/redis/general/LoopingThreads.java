@@ -20,15 +20,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-@SuppressWarnings("unchecked")
 public class LoopingThreads {
   private final int iterationCount;
   private final Function<Integer, Object>[] functions;
 
+  @SuppressWarnings("unchecked")
   public LoopingThreads(int iterationCount,
-      Function<Integer, Object>... functions) {
+      Function... functions) {
     this.iterationCount = iterationCount;
-    this.functions = functions;
+    this.functions = (Function<Integer, Object>[]) functions;
   }
 
   public void run() {
