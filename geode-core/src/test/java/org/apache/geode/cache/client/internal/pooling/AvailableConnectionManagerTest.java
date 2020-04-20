@@ -33,13 +33,6 @@ public class AvailableConnectionManagerTest {
 
   private final AvailableConnectionManager instance = new AvailableConnectionManager();
 
-  private PooledConnection createConnection() {
-    PooledConnection result = mock(PooledConnection.class);
-    when(result.activate()).thenReturn(true);
-    when(result.isActive()).thenReturn(true);
-    return result;
-  }
-
   @Test
   public void useFirstReturnsNullGivenEmptyManager() {
     instance.getDeque().clear();
@@ -131,9 +124,8 @@ public class AvailableConnectionManagerTest {
       if (firstTime.get()) {
         firstTime.set(false);
         return true;
-      } else {
-        return false;
       }
+      return false;
     });
 
     assertThat(result).isNull();
@@ -253,4 +245,10 @@ public class AvailableConnectionManagerTest {
     assertThat(connection).isSameAs(expected);
   }
 
+  private Connection createConnection() {
+    Connection result = mock(Connection.class);
+    when(result.activate()).thenReturn(true);
+    when(result.isActive()).thenReturn(true);
+    return result;
+  }
 }
