@@ -338,6 +338,7 @@ public class ClientHealthMonitor {
    * @param proxyID The id of the client from which the ping was received
    */
   public void receivedPing(ClientProxyMembershipID proxyID) {
+    logger.info("[JUAN]: Received ping for client {}", proxyID, new Throwable());
     if (clientMonitor == null) {
       return;
     }

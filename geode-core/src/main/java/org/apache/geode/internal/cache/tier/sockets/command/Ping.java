@@ -43,11 +43,11 @@ public class Ping extends BaseCommand {
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("{}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),
-          clientMessage.getTransactionId(), serverConnection.getSocketString(),
-          (DistributionStats.getStatTime() - start));
-    }
+    // if (isDebugEnabled) {
+    logger.debug("[JUAN]: {}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),
+        clientMessage.getTransactionId(), serverConnection.getSocketString(),
+        (DistributionStats.getStatTime() - start));
+    // }
     if (clientMessage.getNumberOfParts() > 0) {
       try {
         DistributedMember targetServer = (DistributedMember) clientMessage.getPart(0).getObject();
@@ -84,10 +84,10 @@ public class Ping extends BaseCommand {
   protected void pingCorrectServer(Message clientMessage, DistributedMember targetServer,
       ServerConnection serverConnection)
       throws IOException {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Received a Ping request from {} intended for {}. Forwarding the ping...",
-          serverConnection.getProxyID(), targetServer);
-    }
+    // if (logger.isDebugEnabled()) {
+    logger.debug("[JUAN]: Received a Ping request from {} intended for {}. Forwarding the ping...",
+        serverConnection.getProxyID(), targetServer);
+    // }
     if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
       logger.warn("Unable to ping non-member {} for client {}", targetServer,
           serverConnection.getProxyID());
@@ -111,8 +111,8 @@ public class Ping extends BaseCommand {
     replyMsg.setTransactionId(origMsg.getTransactionId());
     replyMsg.addBytesPart(okBytes());
     replyMsg.send(serverConnection);
-    if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl tx: {}", serverConnection.getName(), origMsg.getTransactionId());
-    }
+    // if (logger.isTraceEnabled()) {
+    logger.trace("[JUAN]: {}: rpl tx: {}", serverConnection.getName(), origMsg.getTransactionId());
+    // }
   }
 }

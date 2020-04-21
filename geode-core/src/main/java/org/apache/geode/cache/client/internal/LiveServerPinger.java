@@ -87,6 +87,8 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     public void run2() {
       if (endpoint.timeToPing(pingIntervalNanos)) {
         try {
+          logger.info("[JUAN]: Sending ping to ServerLocation {} and MemberId {}",
+              endpoint.getLocation(), endpoint.getMemberId(), new Throwable());
           PingOp.execute(pool, endpoint.getLocation(), endpoint.getMemberId());
         } catch (Exception e) {
           if (logger.isDebugEnabled()) {
