@@ -22,13 +22,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.RestoreRedundancyBuilder;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
-import org.apache.geode.internal.cache.partitioned.rebalance.RestoreRedundancyDirector;
+import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
@@ -106,7 +107,7 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
       try {
         detailSet = op.execute();
 
-        RestoreRedundancyResults results = getEmptyRestoreRedundancyResults();
+        RestoreRedundancyResultsImpl results = getEmptyRestoreRedundancyResults();
         // No work was done, either because redundancy was not impaired or because colocation
         // was not complete
         if (detailSet.isEmpty()) {
@@ -133,7 +134,7 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
 
   RestoreRedundancyResults getRestoreRedundancyResults(
       List<CompletableFuture<RestoreRedundancyResults>> regionFutures) {
-    RestoreRedundancyResults finalResult = getEmptyRestoreRedundancyResults();
+    RestoreRedundancyResultsImpl finalResult = getEmptyRestoreRedundancyResults();
     regionFutures.stream()
         .map(CompletableFuture::join)
         .forEach(finalResult::addRegionResults);
@@ -152,13 +153,14 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
 
   // Extracted for testing
   PartitionedRegionRebalanceOp getPartitionedRegionRebalanceOp(PartitionedRegion region) {
-    return new PartitionedRegionRebalanceOp(region, false,
-        new RestoreRedundancyDirector(shouldReassign), true, false, new AtomicBoolean(),
-        manager.getStats());
+    CompositeDirector director = new CompositeDirector(true, true, false, shouldReassign);
+    director.setIsRestoreRedundancy(true);
+    return new PartitionedRegionRebalanceOp(region, false, director, true, false,
+        new AtomicBoolean(), manager.getStats());
   }
 
   // Extracted for testing
-  RestoreRedundancyResults getEmptyRestoreRedundancyResults() {
+  RestoreRedundancyResultsImpl getEmptyRestoreRedundancyResults() {
     return new RestoreRedundancyResultsImpl();
   }
 

@@ -36,12 +36,12 @@ public class CompositeDirector extends RebalanceDirectorAdapter {
   private boolean moveBuckets;
   private boolean movePrimaries;
 
+  private boolean isRestoreRedundancy;
+
   private final RemoveOverRedundancy removeOverRedundancyDirector = new RemoveOverRedundancy();
   private final SatisfyRedundancy satisfyRedundancyDirector = new SatisfyRedundancy();
   private final MovePrimaries movePrimariesDirector = new MovePrimaries();
   private final MoveBuckets moveBucketsDirector = new MoveBuckets();
-
-  private PartitionedRegionLoadModel model;
 
   /**
    * @param removeOverRedundancy true to remove buckets that exceed redundancy levels
@@ -57,20 +57,20 @@ public class CompositeDirector extends RebalanceDirectorAdapter {
     this.initialMovePrimaries = movePrimaries;
   }
 
-
-
   @Override
   public boolean isRebalanceNecessary(boolean redundancyImpaired, boolean withPersistence) {
+    // Restoring redundancy does not require that persistence is enabled to consider the operation
+    // necessary
+    if (isRestoreRedundancy) {
+      return redundancyImpaired || initialMovePrimaries;
+    }
     // We can skip a rebalance is redundancy is not impaired and we
     // don't need to move primaries.
     return redundancyImpaired || (initialMovePrimaries && withPersistence);
   }
 
-
-
   @Override
   public void initialize(PartitionedRegionLoadModel model) {
-    this.model = model;
     this.removeOverRedundancy = initialRemoveOverRedundancy;
     this.satisfyRedundancy = initialSatisfyRedundancy;
     this.moveBuckets = initialMoveBuckets;
@@ -120,4 +120,11 @@ public class CompositeDirector extends RebalanceDirectorAdapter {
     return attemptedOperation;
   }
 
+  public boolean isRestoreRedundancy() {
+    return isRestoreRedundancy;
+  }
+
+  public void setIsRestoreRedundancy(boolean restoreRedundancy) {
+    isRestoreRedundancy = restoreRedundancy;
+  }
 }

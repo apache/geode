@@ -12,17 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.control;
+package org.apache.geode.cache.control;
 
-import java.io.Serializable;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Used to calculate and store the redundancy status for a {@link PartitionedRegion}.
  */
-public class RegionRedundancyStatus implements Serializable {
-  private static final long serialVersionUID = 3407539362166634316L;
+public class RegionRedundancyStatus implements DataSerializableFixedID {
 
   public static final String OUTPUT_STRING =
       "%s redundancy status: %s. Desired redundancy is %s and actual redundancy is %s.";
@@ -30,22 +36,22 @@ public class RegionRedundancyStatus implements Serializable {
   /**
    * The name of the region used to create this object.
    */
-  private final String regionName;
+  private String regionName;
 
   /**
    * The configured redundancy of the region used to create this object.
    */
-  private final int desiredRedundancy;
+  private int desiredRedundancy;
 
   /**
    * The actual redundancy of the region used to create this object at time of creation.
    */
-  private final int actualRedundancy;
+  private int actualRedundancy;
 
   /**
    * The {@link RedundancyStatus} of the region used to create this object at time of creation.
    */
-  private final RedundancyStatus status;
+  private RedundancyStatus status;
 
   /**
    * The redundancy status of the region used to create this object at time of creation.
@@ -55,11 +61,13 @@ public class RegionRedundancyStatus implements Serializable {
    * {@link #NO_REDUNDANT_COPIES} if at least one bucket in the region has zero redundant copies and
    * the region is not configured for zero redundancy
    */
-  enum RedundancyStatus {
+  public enum RedundancyStatus {
     SATISFIED,
     NOT_SATISFIED,
     NO_REDUNDANT_COPIES
   }
+
+  public RegionRedundancyStatus() {}
 
   public RegionRedundancyStatus(PartitionedRegion region) {
     regionName = region.getName();
@@ -119,5 +127,32 @@ public class RegionRedundancyStatus implements Serializable {
   public String toString() {
     return String.format(OUTPUT_STRING, regionName, status.name(), desiredRedundancy,
         actualRedundancy);
+  }
+
+  @Override
+  public int getDSFID() {
+    return REGION_REDUNDANCY_STATUS;
+  }
+
+  @Override
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    DataSerializer.writeString(regionName, out);
+    DataSerializer.writeEnum(status, out);
+    out.writeInt(desiredRedundancy);
+    out.writeInt(actualRedundancy);
+  }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    this.regionName = DataSerializer.readString(in);
+    this.status = DataSerializer.readEnum(RedundancyStatus.class, in);
+    this.desiredRedundancy = in.readInt();
+    this.actualRedundancy = in.readInt();
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
   }
 }

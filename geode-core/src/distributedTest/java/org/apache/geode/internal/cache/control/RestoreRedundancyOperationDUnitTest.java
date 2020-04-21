@@ -15,11 +15,11 @@
 package org.apache.geode.internal.cache.control;
 
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.FAILURE;
 import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.SUCCESS;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThan;

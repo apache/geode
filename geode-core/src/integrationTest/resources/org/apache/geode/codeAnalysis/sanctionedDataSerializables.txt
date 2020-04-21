@@ -66,6 +66,10 @@ org/apache/geode/cache/client/internal/locator/ServerLocationRequest,2
 fromData,9
 toData,9
 
+org/apache/geode/cache/control/RegionRedundancyStatus,2
+fromData,42
+toData,37
+
 org/apache/geode/cache/query/internal/CqEntry,2
 fromData,33
 toData,33

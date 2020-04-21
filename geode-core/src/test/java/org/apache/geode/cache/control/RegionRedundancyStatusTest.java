@@ -12,12 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.control;
+package org.apache.geode.cache.control;
 
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;

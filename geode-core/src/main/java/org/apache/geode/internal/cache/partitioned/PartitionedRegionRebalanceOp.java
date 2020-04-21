@@ -47,9 +47,9 @@ import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage.RemoveBuc
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorImpl;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorWrapper;
+import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.ParallelBucketOperator;
 import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
-import org.apache.geode.internal.cache.partitioned.rebalance.RestoreRedundancyDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
@@ -203,7 +203,8 @@ public class PartitionedRegionRebalanceOp {
 
       director.initialize(loadModel);
       String operationType = "Rebalancing";
-      if (director instanceof RestoreRedundancyDirector) {
+      if (director instanceof CompositeDirector
+          && ((CompositeDirector) director).isRestoreRedundancy()) {
         operationType = "Restoring redundancy";
       }
 

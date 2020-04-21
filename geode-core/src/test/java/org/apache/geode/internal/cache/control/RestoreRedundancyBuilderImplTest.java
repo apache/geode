@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.InternalCache;
@@ -48,7 +49,7 @@ public class RestoreRedundancyBuilderImplTest {
   InternalResourceManager manager;
   ResourceManagerStats stats;
   RestoreRedundancyBuilderImpl builder;
-  RestoreRedundancyResults emptyResults;
+  RestoreRedundancyResultsImpl emptyResults;
   long startTime = 5;
 
   @Before
@@ -62,7 +63,7 @@ public class RestoreRedundancyBuilderImplTest {
 
     builder = spy(new RestoreRedundancyBuilderImpl(cache));
 
-    emptyResults = mock(RestoreRedundancyResults.class);
+    emptyResults = mock(RestoreRedundancyResultsImpl.class);
     doReturn(emptyResults).when(builder).getEmptyRestoreRedundancyResults();
   }
 

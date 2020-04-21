@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.cache.control;
 
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.FAILURE;
 import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.SUCCESS;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.internal.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFERS_COMPLETED;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFER_TIME;
@@ -38,6 +38,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 

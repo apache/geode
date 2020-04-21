@@ -34,6 +34,7 @@ import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
+import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.CqEntry;
 import org.apache.geode.cache.query.internal.CumulativeNonDistinctResults;
@@ -799,6 +800,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
         GatewaySenderAdvisor.GatewaySenderProfile.class);
     serializer.registerDSFID(ROLE_EVENT, RoleEventImpl.class);
     serializer.registerDSFID(CLIENT_REGION_EVENT, ClientRegionEventImpl.class);
+    serializer.registerDSFID(REGION_REDUNDANCY_STATUS, RegionRedundancyStatus.class);
     serializer.registerDSFID(PR_INVALIDATE_MESSAGE, InvalidateMessage.class);
     serializer.registerDSFID(PR_INVALIDATE_REPLY_MESSAGE,
         InvalidateMessage.InvalidateReplyMessage.class);

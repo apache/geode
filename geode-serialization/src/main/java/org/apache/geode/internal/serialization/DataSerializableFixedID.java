@@ -271,7 +271,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte ROLE_EVENT = 19;
   byte CLIENT_REGION_EVENT = 20;
 
-  // 21 unused
+  byte REGION_REDUNDANCY_STATUS = 21;
 
   byte FIND_DURABLE_QUEUE = 22;
   byte FIND_DURABLE_QUEUE_REPLY = 23;

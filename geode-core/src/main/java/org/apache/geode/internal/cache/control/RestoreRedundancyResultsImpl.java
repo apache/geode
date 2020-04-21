@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 
@@ -44,7 +45,6 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
 
   public RestoreRedundancyResultsImpl() {}
 
-  @Override
   public void addRegionResults(RestoreRedundancyResults results) {
     this.satisfiedRedundancyRegions.putAll(results.getSatisfiedRedundancyRegionResults());
     this.underRedundancyRegions.putAll(results.getUnderRedundancyRegionResults());
@@ -53,13 +53,11 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
     this.totalPrimaryTransferTime += results.getTotalPrimaryTransferTime();
   }
 
-  @Override
   public void addPrimaryReassignmentDetails(PartitionRebalanceInfo details) {
     this.totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
     this.totalPrimaryTransferTime += details.getPrimaryTransferTime();
   }
 
-  @Override
   public void addRegionResult(RegionRedundancyStatus regionResult) {
     addToFilteredMaps(regionResult);
   }

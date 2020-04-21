@@ -355,6 +355,8 @@ javadoc/org/apache/geode/cache/configuration/package-tree.html
 javadoc/org/apache/geode/cache/control/RebalanceFactory.html
 javadoc/org/apache/geode/cache/control/RebalanceOperation.html
 javadoc/org/apache/geode/cache/control/RebalanceResults.html
+javadoc/org/apache/geode/cache/control/RegionRedundancyStatus.RedundancyStatus.html
+javadoc/org/apache/geode/cache/control/RegionRedundancyStatus.html
 javadoc/org/apache/geode/cache/control/ResourceManager.html
 javadoc/org/apache/geode/cache/control/RestoreRedundancyBuilder.html
 javadoc/org/apache/geode/cache/control/RestoreRedundancyResults.Status.html
