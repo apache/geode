@@ -521,12 +521,20 @@ public class CacheCreation implements InternalCache {
 
     cache.initializePdxRegistry();
 
-    for (DiskStore diskStore : diskStores.values()) {
+    diskStores.values().parallelStream().forEach(diskStore -> {
+      logger.info("JC thread id {} disk store {}", Thread.currentThread().getId(),
+          diskStore.getName());
       DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
       if (creation != pdxRegDSC) {
         createDiskStore(creation, cache);
       }
-    }
+    });
+    // for (DiskStore diskStore : diskStores.values()) {
+    // DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
+    // if (creation != pdxRegDSC) {
+    // createDiskStore(creation, cache);
+    // }
+    // }
 
     if (hasDynamicRegionFactory()) {
       DynamicRegionFactory.get().open(getDynamicRegionFactoryConfig());
@@ -654,6 +662,8 @@ public class CacheCreation implements InternalCache {
 
   void initializeRegions(Map<String, Region<?, ?>> declarativeRegions, Cache cache) {
     for (Region region : declarativeRegions.values()) {
+      logger.info("JC: region {} thread id {}", region.getName(),
+          Thread.currentThread().getId());
       RegionCreation regionCreation = (RegionCreation) region;
       regionCreation.createRoot(cache);
     }
