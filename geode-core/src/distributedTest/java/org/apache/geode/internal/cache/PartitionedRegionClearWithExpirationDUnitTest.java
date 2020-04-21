@@ -64,6 +64,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
@@ -290,7 +291,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   }
 
   /**
-   * Register the MemberKiller CacheWriter on the given vms and cancel auto-reconnects.
+   * Register the MemberKiller CacheWriter on the given vms.
    */
   private void registerVMKillerAsCacheWriter(List<VM> vmsToBounce) {
     vmsToBounce.forEach(vm -> vm.invoke(() -> {
@@ -316,7 +317,8 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   public void clearShouldRemoveRegisteredExpirationTasks(TestVM coordinatorVM,
       RegionShortcut regionShortcut, ExpirationAction expirationAction) {
     final int entries = 500;
-    parametrizedSetup(regionShortcut, new ExpirationAttributes(EXPIRATION_TIME, expirationAction));
+    int expirationTime = (int) GeodeAwaitility.getTimeout().getValueInMS() / 1000;
+    parametrizedSetup(regionShortcut, new ExpirationAttributes(expirationTime, expirationAction));
     populateRegion(accessor, entries, asList(accessor, server1, server2));
 
     // Clear the region.
@@ -461,7 +463,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
       assertThat(listener.tasksCanceled.get()).isEqualTo(listener.tasksScheduled.get());
     });
 
-    // Assert all expiration tasks were executed and expired (restarted member).
+    // Assert all expiration tasks were expired as the region is empty (restarted member).
     server2.invoke(() -> {
       PartitionedRegionDataStore dataStore =
           ((PartitionedRegion) cacheRule.getCache().getRegion(REGION_NAME)).getDataStore();
