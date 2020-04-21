@@ -817,11 +817,11 @@ public class CliStrings {
       "Index definitions successfully cleared";
 
   /* clear region */
-  public static final String CLEAR = "clear";
-  public static final String CLEAR_HELP =
+  public static final String CLEAR_REGION = "clear region";
+  public static final String CLEAR_REGION_HELP =
       "Clears/Removes all keys from the specified region.";
-  public static final String CLEAR_REGION_NAME = "region";
-  public static final String CLEAR_REGION_NAME_HELP = "Region to clear keys from.";
+  public static final String CLEAR_REGION_REGION_NAME = "name";
+  public static final String CLEAR_REGION_REGION_NAME_HELP = "Region to clear keys from.";
 
   /* create region */
   public static final String CREATE_REGION = "create region";

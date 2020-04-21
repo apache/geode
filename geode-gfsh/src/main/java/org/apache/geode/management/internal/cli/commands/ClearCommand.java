@@ -42,10 +42,10 @@ public class ClearCommand extends GfshCommand {
   public static final String REGION_NOT_FOUND = "Region <%s> not found in any of the members";
 
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
-  @CliCommand(value = {CliStrings.CLEAR}, help = CliStrings.CLEAR_HELP)
+  @CliCommand(value = {CliStrings.CLEAR_REGION}, help = CliStrings.CLEAR_REGION_HELP)
   public ResultModel clear(
-      @CliOption(key = {CliStrings.CLEAR_REGION_NAME}, mandatory = true,
-          help = CliStrings.CLEAR_REGION_NAME_HELP,
+      @CliOption(key = {CliStrings.CLEAR_REGION_REGION_NAME}, mandatory = true,
+          help = CliStrings.CLEAR_REGION_REGION_NAME_HELP,
           optionContext = ConverterHint.REGION_PATH) String regionPath) {
 
     Cache cache = getCache();

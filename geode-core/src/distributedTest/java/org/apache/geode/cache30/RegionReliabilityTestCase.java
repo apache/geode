@@ -1341,7 +1341,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       // pass
     }
 
-    // CLEAR
+    // CLEAR_REGION
     reset.run();
     Host.getHost(0).getVM(1).invoke(createRegion);
     try {

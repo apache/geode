@@ -86,16 +86,16 @@ public class ClearCommandDUnitTest {
   @Test
   public void clearFailsWhenRegionIsNotFound() {
     String invalidRegionName = "NotAValidRegion";
-    String command = new CommandStringBuilder(CliStrings.CLEAR)
-        .addOption(CliStrings.CLEAR_REGION_NAME, invalidRegionName).getCommandString();
+    String command = new CommandStringBuilder(CliStrings.CLEAR_REGION)
+        .addOption(CliStrings.CLEAR_REGION_REGION_NAME, invalidRegionName).getCommandString();
     gfsh.executeAndAssertThat(command).statusIsError()
         .containsOutput(String.format(REGION_NOT_FOUND, "/" + invalidRegionName));
   }
 
   @Test
   public void clearSucceedsWithValidReplicateRegion() {
-    String command = new CommandStringBuilder(CliStrings.CLEAR)
-        .addOption(CliStrings.CLEAR_REGION_NAME, REPLICATE_REGION_NAME).getCommandString();
+    String command = new CommandStringBuilder(CliStrings.CLEAR_REGION)
+        .addOption(CliStrings.CLEAR_REGION_REGION_NAME, REPLICATE_REGION_NAME).getCommandString();
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
@@ -108,8 +108,8 @@ public class ClearCommandDUnitTest {
 
   @Test
   public void clearSucceedsWithValidPartitionedRegion() {
-    String command = new CommandStringBuilder(CliStrings.CLEAR)
-        .addOption(CliStrings.CLEAR_REGION_NAME, PARTITIONED_REGION_NAME).getCommandString();
+    String command = new CommandStringBuilder(CliStrings.CLEAR_REGION)
+        .addOption(CliStrings.CLEAR_REGION_REGION_NAME, PARTITIONED_REGION_NAME).getCommandString();
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 

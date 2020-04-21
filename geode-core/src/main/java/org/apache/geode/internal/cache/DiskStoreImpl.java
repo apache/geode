@@ -3509,7 +3509,7 @@ public class DiskStoreImpl implements DiskStore {
       if (de != null) {
         sb.append(" key=").append(de.getKey());
       } else {
-        sb.append(" <END CLEAR>");
+        sb.append(" <END CLEAR_REGION>");
       }
       return sb.toString();
     }
