@@ -37,9 +37,7 @@ import com.palantir.docker.compose.execution.DockerComposeRunOption;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -47,7 +45,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class ClientSNIDropProxyAcceptanceTest {
 
@@ -57,12 +54,9 @@ public class ClientSNIDropProxyAcceptanceTest {
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
-
-  @Rule
-  public DockerComposeRule docker = DockerComposeRule.builder()
-      .file(DOCKER_COMPOSE_PATH.getPath())
-      .build();
+  public static NotOnWindowsDockerRule docker =
+      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
+          .file(DOCKER_COMPOSE_PATH.getPath()).build());
 
   private ClientCache cache;
 
@@ -75,7 +69,7 @@ public class ClientSNIDropProxyAcceptanceTest {
         createTempFileFromResource(ClientSNIDropProxyAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
-    docker.exec(options("-T"), "geode",
+    docker.get().exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
   }
 
@@ -116,7 +110,7 @@ public class ClientSNIDropProxyAcceptanceTest {
   }
 
   private void stopProxy() throws IOException, InterruptedException {
-    docker.containers()
+    docker.get().containers()
         .container("haproxy")
         .stop();
   }
@@ -137,7 +131,7 @@ public class ClientSNIDropProxyAcceptanceTest {
    * Leave this unused method here for troubleshooting.
    */
   private void restartProxyOnDockerComposePort() throws IOException, InterruptedException {
-    docker.containers()
+    docker.get().containers()
         .container("haproxy")
         .start();
   }
@@ -152,7 +146,13 @@ public class ClientSNIDropProxyAcceptanceTest {
    * - "15443"
    */
   private void restartProxyOnPreviousPort() throws IOException, InterruptedException {
-    docker.run(
+    /*
+     * docker-compose run needs -d to daemonize the container (fork the process and return control
+     * to this process). The first time we ran the HAproxy container, we let it pick the host port
+     * to bind on. This time, we want it to bind to that same host port (proxyPort). The syntax
+     * for the --publish argument is <host-port>:<internal-port> in this case.
+     */
+    docker.get().run(
         DockerComposeRunOption.options("-d", "--publish", String.format("%d:15443", proxyPort)),
         "haproxy",
         DockerComposeRunArgument.arguments("haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"));
@@ -168,10 +168,12 @@ public class ClientSNIDropProxyAcceptanceTest {
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
-    proxyPort = docker.containers()
+    proxyPort = docker.get().containers()
         .container("haproxy")
         .port(15443)
         .getExternalPort();
+
+    ensureCacheClosed();
 
     cache = new ClientCacheFactory(gemFireProps)
         .addPoolLocator("locator-maeve", 10334)
