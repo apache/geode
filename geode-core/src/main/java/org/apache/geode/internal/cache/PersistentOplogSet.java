@@ -345,7 +345,7 @@ public class PersistentOplogSet implements OplogSet {
   void recoverRegionsThatAreReady() {
     // The following sync also prevents concurrent recoveries by multiple regions
     // which is needed currently.
-    synchronized (getAlreadyRecoveredOnce()) {
+//    synchronized (getAlreadyRecoveredOnce()) {
 
       // need to take a snapshot of DiskRecoveryStores we will recover
       synchronized (pendingRecoveryMap) {
@@ -435,7 +435,7 @@ public class PersistentOplogSet implements OplogSet {
         currentRecoveryMap.clear();
         EntryLogger.clearSource();
       }
-    }
+//    }
   }
 
   private long recoverOplogs(long byteCount) {
