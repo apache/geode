@@ -338,7 +338,8 @@ public class ClientHealthMonitor {
    * @param proxyID The id of the client from which the ping was received
    */
   public void receivedPing(ClientProxyMembershipID proxyID) {
-    logger.info("[JUAN]: Received ping for client {}", proxyID, new Throwable());
+    logger.info("[JUAN]: ClientHealthMonitor: Received ping from client with member id {}",
+        proxyID);
     if (clientMonitor == null) {
       return;
     }
@@ -349,9 +350,17 @@ public class ClientHealthMonitor {
 
     AtomicLong heartbeat = clientHeartbeats.get(proxyID);
     if (null == heartbeat) {
+      logger.info("[JUAN]: ClientHealthMonitor: Registering client with member id {}...", proxyID);
       registerClient(proxyID);
+      logger.info("[JUAN]: ClientHealthMonitor: Registering client with member id {}... Done!.",
+          proxyID);
     } else {
+      logger.info("[JUAN]: ClientHealthMonitor: Updating heartbeat for client with member id {}...",
+          proxyID);
       heartbeat.set(System.currentTimeMillis());
+      logger.info(
+          "[JUAN]: ClientHealthMonitor: Updating heartbeat for client with member id {}... Done!.",
+          proxyID);
     }
   }
 

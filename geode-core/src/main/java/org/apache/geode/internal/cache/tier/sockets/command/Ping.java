@@ -44,7 +44,7 @@ public class Ping extends BaseCommand {
       final SecurityService securityService, long start) throws IOException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     // if (isDebugEnabled) {
-    logger.debug("[JUAN]: {}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),
+    logger.info("[JUAN]: {}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),
         clientMessage.getTransactionId(), serverConnection.getSocketString(),
         (DistributionStats.getStatTime() - start));
     // }
@@ -53,6 +53,9 @@ public class Ping extends BaseCommand {
         DistributedMember targetServer = (DistributedMember) clientMessage.getPart(0).getObject();
         DistributedMember myID = serverConnection.getCache().getMyId();
         if (!myID.equals(targetServer)) {
+          logger.info(
+              "[JUAN]: Redirecting ping request from {} to {} because myID.equals(targetServer) = {}.",
+              myID, targetServer, myID.equals(targetServer));
           pingCorrectServer(clientMessage, targetServer, serverConnection);
           writeReply(clientMessage, serverConnection);
           serverConnection.setAsTrue(RESPONDED);
@@ -85,7 +88,7 @@ public class Ping extends BaseCommand {
       ServerConnection serverConnection)
       throws IOException {
     // if (logger.isDebugEnabled()) {
-    logger.debug("[JUAN]: Received a Ping request from {} intended for {}. Forwarding the ping...",
+    logger.info("[JUAN]: Received a Ping request from {} intended for {}. Forwarding the ping...",
         serverConnection.getProxyID(), targetServer);
     // }
     if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
