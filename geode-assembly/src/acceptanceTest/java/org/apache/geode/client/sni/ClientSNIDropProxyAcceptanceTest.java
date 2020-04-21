@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,6 +34,7 @@ import java.util.Properties;
 import com.palantir.docker.compose.DockerComposeRule;
 import com.palantir.docker.compose.execution.DockerComposeRunArgument;
 import com.palantir.docker.compose.execution.DockerComposeRunOption;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -77,6 +79,11 @@ public class ClientSNIDropProxyAcceptanceTest {
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
   }
 
+  @After
+  public void after() {
+    ensureCacheClosed();
+  }
+
   @Test
   public void performSimpleOperationsDropSNIProxy()
       throws IOException,
@@ -95,7 +102,7 @@ public class ClientSNIDropProxyAcceptanceTest {
 
     restartProxy();
 
-    assertThat(region.get("Roy Hobbs")).isEqualTo(9);
+    await().untilAsserted(() -> assertThat(region.get("Roy Hobbs")).isEqualTo(9));
 
     region.put("Bennie Rodriquez", 30);
     assertThat(region.get("Bennie Rodriquez")).isEqualTo(30);
@@ -175,6 +182,16 @@ public class ClientSNIDropProxyAcceptanceTest {
     return (Region<String, Integer>) cache.<String, Integer>createClientRegionFactory(
         ClientRegionShortcut.PROXY)
         .create("jellyfish");
+  }
+
+  /**
+   * modifies cache field as a side-effect
+   */
+  private void ensureCacheClosed() {
+    if (cache != null) {
+      cache.close();
+      cache = null;
+    }
   }
 
 }
