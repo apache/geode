@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -176,15 +177,15 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    vm0.invoke(() -> stopLocatorAndCheckIt());
+    vm0.invoke(this::stopLocatorAndCheckIt);
 
     // now make sure everyone else saw the locator go away
-    vm3.invoke(() -> verifyLocatorStopped());
+    vm3.invoke(this::verifyLocatorStopped);
     vm2.invoke(() -> verifyBridgeServerSawLocatorStop(port2));
     vm1.invoke(() -> verifyBridgeServerSawLocatorStopWithName(port2));
 
     // restart bridge server 1 and see if controller sees it
-    vm1.invoke(() -> restartBridgeServer());
+    vm1.invoke(this::restartBridgeServer);
 
     vm3.invoke(() -> verifyBridgeServerRestart(bsPort1, bsPort2, bsPort3, bsPort4, "bs3Group1",
         "bs3Group2",
@@ -195,8 +196,8 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke("Disconnect from " + locators, this::safeCloseCache);
     // now make sure controller saw all bridge servers stop
 
-    vm3.invoke(() -> verifyLocatorsAndBridgeServersStoppped());
-    vm3.invoke(() -> stopLocatorAndCheckIt());
+    vm3.invoke(this::verifyLocatorsAndBridgeServersStoppped);
+    vm3.invoke(this::stopLocatorAndCheckIt);
   }
 
 
@@ -300,15 +301,15 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    vm0.invoke(() -> stopLocatorAndCheckIt());
+    vm0.invoke(this::stopLocatorAndCheckIt);
 
     // now make sure everyone else saw the locator go away
-    vm3.invoke(() -> verifyLocatorStopped());
-    vm2.invoke(() -> verifyBridgeServerSawLocatorStop(port2));
-    vm1.invoke(() -> verifyBridgeServerSawLocatorStopWithName(port2));
+    vm3.invoke(() -> await().untilAsserted(this::verifyLocatorStopped));
+    vm2.invoke(() -> await().untilAsserted(() -> verifyBridgeServerSawLocatorStop(port2)));
+    vm1.invoke(() -> await().untilAsserted(() -> verifyBridgeServerSawLocatorStopWithName(port2)));
 
     // restart bridge server 1 and see if controller sees it
-    vm1.invoke(() -> restartBridgeServer());
+    vm1.invoke(this::restartBridgeServer);
 
     vm3.invoke(() -> verifyBridgeServerRestart(bsPort1, bsPort2, bsPort3, bsPort4, "bs1Group1",
         "bs1Group2",
@@ -318,8 +319,8 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke("Disconnect from " + locators, this::safeCloseCache);
     // now make sure controller saw all bridge servers stop
 
-    vm3.invoke(() -> verifyLocatorsAndBridgeServersStoppped());
-    vm3.invoke(() -> stopLocatorAndCheckIt());
+    vm3.invoke(() -> await().untilAsserted(this::verifyLocatorsAndBridgeServersStoppped));
+    vm3.invoke(this::stopLocatorAndCheckIt);
   }
 
   private void createCache(String locators, String groups) {
