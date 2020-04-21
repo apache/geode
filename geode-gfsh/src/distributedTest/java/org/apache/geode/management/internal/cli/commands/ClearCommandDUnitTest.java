@@ -72,13 +72,13 @@ public class ClearCommandDUnitTest {
 
     Region<String, String> replicateRegion = cache.getRegion(REPLICATE_REGION_NAME);
     replicateRegion.put(EMPTY_STRING, "valueForEmptyKey");
-    for(int i = 0; i < NUM_ENTRIES; i++) {
+    for (int i = 0; i < NUM_ENTRIES; i++) {
       replicateRegion.put("key" + i, "value" + i);
     }
 
     Region<String, String> partitionedRegion = cache.getRegion(PARTITIONED_REGION_NAME);
     replicateRegion.put(EMPTY_STRING, "valueForEmptyKey");
-    for(int i = 0; i < NUM_ENTRIES; i++) {
+    for (int i = 0; i < NUM_ENTRIES; i++) {
       partitionedRegion.put("key" + i, "value" + i);
     }
   }

@@ -241,7 +241,9 @@ public class DataCommandResult implements Serializable {
     result.operationCompletedSuccessfully = flag;
     return result;
   }
-  public static DataCommandResult createClearResult(Throwable error, String errorString, boolean flag) {
+
+  public static DataCommandResult createClearResult(Throwable error, String errorString,
+      boolean flag) {
     DataCommandResult result = new DataCommandResult();
     result.command = CliStrings.REMOVE;
     result.error = error;
