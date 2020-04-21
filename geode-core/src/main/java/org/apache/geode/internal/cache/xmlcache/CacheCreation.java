@@ -667,12 +667,12 @@ public class CacheCreation implements InternalCache {
       RegionCreation regionCreation = (RegionCreation) region;
       regionCreation.createRoot(cache);
     });
-//    for (Region region : declarativeRegions.values()) {
-//      logger.info("JC: region {} thread id {}", region.getName(),
-//          Thread.currentThread().getId());
-//      RegionCreation regionCreation = (RegionCreation) region;
-//      regionCreation.createRoot(cache);
-//    }
+    // for (Region region : declarativeRegions.values()) {
+    // logger.info("JC: region {} thread id {}", region.getName(),
+    // Thread.currentThread().getId());
+    // RegionCreation regionCreation = (RegionCreation) region;
+    // regionCreation.createRoot(cache);
+    // }
   }
 
   /**
