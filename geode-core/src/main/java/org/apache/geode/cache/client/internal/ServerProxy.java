@@ -16,7 +16,6 @@ package org.apache.geode.cache.client.internal;
 
 
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Used to send operations from a client to a server.
@@ -47,15 +46,6 @@ public class ServerProxy {
    */
   public void detach() {
     this.pool.detach();
-  }
-
-  /**
-   * Ping the specified server to see if it is still alive
-   *
-   * @param server the server to do the execution on
-   */
-  public void ping(ServerLocation server) {
-    PingOp.execute(this.pool, server);
   }
 
   /**
