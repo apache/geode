@@ -50,7 +50,7 @@ public class DataCommandResult implements Serializable {
 
   public static final Logger logger = LogManager.getLogger();
   public static final String DATA_INFO_SECTION = "data-info";
-  public static final String HEADER_INFO_SECTION = "header-info";
+  public static final String WARNING_INFO_SECTION = "header-info";
   public static final String QUERY_SECTION = "query";
   public static final String LOCATION_SECTION = "location";
   private String command;
@@ -242,16 +242,6 @@ public class DataCommandResult implements Serializable {
     return result;
   }
 
-  public static DataCommandResult createClearResult(Throwable error, String errorString,
-      boolean flag) {
-    DataCommandResult result = new DataCommandResult();
-    result.command = CliStrings.REMOVE;
-    result.error = error;
-    result.errorString = errorString;
-    result.operationCompletedSuccessfully = flag;
-    return result;
-  }
-
   public static DataCommandResult createRemoveInfoResult(Object inputKey, Object value,
       Throwable error, String infoString, boolean flag) {
     DataCommandResult result = new DataCommandResult();
@@ -399,7 +389,7 @@ public class DataCommandResult implements Serializable {
     ResultModel result = new ResultModel();
 
     if (warningMessage != null && !warningMessage.isEmpty()) {
-      InfoResultModel info = result.addInfo(HEADER_INFO_SECTION);
+      InfoResultModel info = result.addInfo(WARNING_INFO_SECTION);
       info.addLine(warningMessage);
     }
 

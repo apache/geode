@@ -60,7 +60,7 @@ public class ClearCommand extends GfshCommand {
       Set<DistributedMember> memberList = findAnyMembersForRegion(regionPath);
 
       if (CollectionUtils.isEmpty(memberList)) {
-        return new ResultModel().createError(String.format(REGION_NOT_FOUND, regionPath));
+        return ResultModel.createError(String.format(REGION_NOT_FOUND, regionPath));
       }
 
       DataCommandRequest request = new DataCommandRequest();

@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -276,7 +275,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
 
     if (StringUtils.isEmpty(removeAllKeys) && (key == null)) {
       return DataCommandResult.createRemoveResult(null, null, null,
-          "BR" + CliStrings.REMOVE__MSG__KEY_EMPTY, false);
+          CliStrings.REMOVE__MSG__KEY_EMPTY, false);
     }
 
     Region region = cache.getRegion(regionName);
@@ -319,7 +318,6 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
   }
 
   public DataCommandResult clear(Region region, String regionName) {
-    DataPolicy policy = region.getAttributes().getDataPolicy();
     region.clear();
     if (logger.isDebugEnabled()) {
       logger.debug("Cleared all keys in the region - {}", regionName);

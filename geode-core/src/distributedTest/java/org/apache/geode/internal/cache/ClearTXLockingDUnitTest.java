@@ -49,7 +49,8 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
  * <p>
  * GEODE-1740: It was observed that operations performed within a transaction were not holding
  * region modification locks for the duration of commit processing. This lock is used to ensure
- * region consistency during CLEAR_REGION processing. By not holding the lock for the duration of commit
+ * region consistency during CLEAR_REGION processing. By not holding the lock for the duration of
+ * commit
  * processing, a window was opened that allowed region operations such as clear to occur in
  * mid-commit.
  *
