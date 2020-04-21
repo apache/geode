@@ -144,28 +144,28 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     // As a simple fix for 41290, only allow one DiskStore to be created
     // at a time per cache by syncing on the cache.
     DiskStore result;
-//    synchronized (this.cache) {
-      result = findExisting(name);
-      if (result == null) {
-        if (this.cache instanceof GemFireCacheImpl) {
-          TypeRegistry registry = this.cache.getPdxRegistry();
-          DiskStoreImpl dsi = new DiskStoreImpl(this.cache, this.attrs);
-          result = dsi;
-          // Added for M&M
-          this.cache.getInternalDistributedSystem()
-              .handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, dsi);
-          initializeDiskStore(dsi);
-          this.cache.addDiskStore(dsi);
-          if (registry != null) {
-            registry.creatingDiskStore(dsi);
-          }
-        } else if (this.cache instanceof CacheCreation) {
-          CacheCreation creation = (CacheCreation) this.cache;
-          result = new DiskStoreAttributesCreation(this.attrs);
-          creation.addDiskStore(result);
+    // synchronized (this.cache) {
+    result = findExisting(name);
+    if (result == null) {
+      if (this.cache instanceof GemFireCacheImpl) {
+        TypeRegistry registry = this.cache.getPdxRegistry();
+        DiskStoreImpl dsi = new DiskStoreImpl(this.cache, this.attrs);
+        result = dsi;
+        // Added for M&M
+        this.cache.getInternalDistributedSystem()
+            .handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, dsi);
+        initializeDiskStore(dsi);
+        this.cache.addDiskStore(dsi);
+        if (registry != null) {
+          registry.creatingDiskStore(dsi);
         }
+      } else if (this.cache instanceof CacheCreation) {
+        CacheCreation creation = (CacheCreation) this.cache;
+        result = new DiskStoreAttributesCreation(this.attrs);
+        creation.addDiskStore(result);
       }
-//    }
+    }
+    // }
 
     // Don't allow this disk store to be created
     // until an in progress backup is completed. This

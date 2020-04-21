@@ -345,97 +345,97 @@ public class PersistentOplogSet implements OplogSet {
   void recoverRegionsThatAreReady() {
     // The following sync also prevents concurrent recoveries by multiple regions
     // which is needed currently.
-//    synchronized (getAlreadyRecoveredOnce()) {
+    // synchronized (getAlreadyRecoveredOnce()) {
 
-      // need to take a snapshot of DiskRecoveryStores we will recover
-      synchronized (pendingRecoveryMap) {
-        currentRecoveryMap.clear();
-        currentRecoveryMap.putAll(pendingRecoveryMap);
-        pendingRecoveryMap.clear();
-      }
+    // need to take a snapshot of DiskRecoveryStores we will recover
+    synchronized (pendingRecoveryMap) {
+      currentRecoveryMap.clear();
+      currentRecoveryMap.putAll(pendingRecoveryMap);
+      pendingRecoveryMap.clear();
+    }
 
-      if (currentRecoveryMap.isEmpty() && getAlreadyRecoveredOnce().get()) {
-        // no recovery needed
-        return;
+    if (currentRecoveryMap.isEmpty() && getAlreadyRecoveredOnce().get()) {
+      // no recovery needed
+      return;
+    }
+
+    for (DiskRecoveryStore drs : currentRecoveryMap.values()) {
+      // Call prepare early to fix bug 41119.
+      drs.getDiskRegionView().prepareForRecovery();
+    }
+
+    if (!getAlreadyRecoveredOnce().get()) {
+      initOplogEntryId();
+      // Fix for #43026 - make sure we don't reuse an entry
+      // id that has been marked as cleared.
+      updateOplogEntryId(parent.getDiskInitFile().getMaxRecoveredClearEntryId());
+    }
+
+    long start = parent.getStats().startRecovery();
+    EntryLogger.setSource(parent.getDiskStoreID(), "recovery");
+
+    long byteCount = 0;
+    try {
+      byteCount = recoverOplogs(byteCount);
+
+    } finally {
+      Map<String, Integer> prSizes = null;
+      Map<String, Integer> prBuckets = null;
+      if (parent.isValidating()) {
+        prSizes = new HashMap<>();
+        prBuckets = new HashMap<>();
       }
 
       for (DiskRecoveryStore drs : currentRecoveryMap.values()) {
-        // Call prepare early to fix bug 41119.
-        drs.getDiskRegionView().prepareForRecovery();
-      }
-
-      if (!getAlreadyRecoveredOnce().get()) {
-        initOplogEntryId();
-        // Fix for #43026 - make sure we don't reuse an entry
-        // id that has been marked as cleared.
-        updateOplogEntryId(parent.getDiskInitFile().getMaxRecoveredClearEntryId());
-      }
-
-      long start = parent.getStats().startRecovery();
-      EntryLogger.setSource(parent.getDiskStoreID(), "recovery");
-
-      long byteCount = 0;
-      try {
-        byteCount = recoverOplogs(byteCount);
-
-      } finally {
-        Map<String, Integer> prSizes = null;
-        Map<String, Integer> prBuckets = null;
-        if (parent.isValidating()) {
-          prSizes = new HashMap<>();
-          prBuckets = new HashMap<>();
+        for (Oplog oplog : getAllOplogs()) {
+          if (oplog != null) {
+            // Need to do this AFTER recovery to protect from concurrent compactions
+            // trying to remove the oplogs.
+            // We can't remove a dr from the oplog's unrecoveredRegionCount
+            // until it is fully recovered.
+            // This fixes bug 41119.
+            oplog.checkForRecoverableRegion(drs.getDiskRegionView());
+          }
         }
 
-        for (DiskRecoveryStore drs : currentRecoveryMap.values()) {
-          for (Oplog oplog : getAllOplogs()) {
-            if (oplog != null) {
-              // Need to do this AFTER recovery to protect from concurrent compactions
-              // trying to remove the oplogs.
-              // We can't remove a dr from the oplog's unrecoveredRegionCount
-              // until it is fully recovered.
-              // This fixes bug 41119.
-              oplog.checkForRecoverableRegion(drs.getDiskRegionView());
-            }
-          }
-
-          if (parent.isValidating()) {
-            if (drs instanceof ValidatingDiskRegion) {
-              ValidatingDiskRegion vdr = (ValidatingDiskRegion) drs;
-              if (vdr.isBucket()) {
-                String prName = vdr.getPrName();
-                if (prSizes.containsKey(prName)) {
-                  int oldSize = prSizes.get(prName);
-                  oldSize += vdr.size();
-                  prSizes.put(prName, oldSize);
-                  int oldBuckets = prBuckets.get(prName);
-                  oldBuckets++;
-                  prBuckets.put(prName, oldBuckets);
-                } else {
-                  prSizes.put(prName, vdr.size());
-                  prBuckets.put(prName, 1);
-                }
+        if (parent.isValidating()) {
+          if (drs instanceof ValidatingDiskRegion) {
+            ValidatingDiskRegion vdr = (ValidatingDiskRegion) drs;
+            if (vdr.isBucket()) {
+              String prName = vdr.getPrName();
+              if (prSizes.containsKey(prName)) {
+                int oldSize = prSizes.get(prName);
+                oldSize += vdr.size();
+                prSizes.put(prName, oldSize);
+                int oldBuckets = prBuckets.get(prName);
+                oldBuckets++;
+                prBuckets.put(prName, oldBuckets);
               } else {
-                parent.incLiveEntryCount(vdr.size());
-                out.println(vdr.getName() + ": entryCount=" + vdr.size());
+                prSizes.put(prName, vdr.size());
+                prBuckets.put(prName, 1);
               }
+            } else {
+              parent.incLiveEntryCount(vdr.size());
+              out.println(vdr.getName() + ": entryCount=" + vdr.size());
             }
           }
         }
-
-        if (parent.isValidating()) {
-          for (Map.Entry<String, Integer> me : prSizes.entrySet()) {
-            parent.incLiveEntryCount(me.getValue());
-            out.println(me.getKey() + " entryCount=" + me.getValue() + " bucketCount="
-                + prBuckets.get(me.getKey()));
-          }
-        }
-
-        parent.getStats().endRecovery(start, byteCount);
-        getAlreadyRecoveredOnce().set(true);
-        currentRecoveryMap.clear();
-        EntryLogger.clearSource();
       }
-//    }
+
+      if (parent.isValidating()) {
+        for (Map.Entry<String, Integer> me : prSizes.entrySet()) {
+          parent.incLiveEntryCount(me.getValue());
+          out.println(me.getKey() + " entryCount=" + me.getValue() + " bucketCount="
+              + prBuckets.get(me.getKey()));
+        }
+      }
+
+      parent.getStats().endRecovery(start, byteCount);
+      getAlreadyRecoveredOnce().set(true);
+      currentRecoveryMap.clear();
+      EntryLogger.clearSource();
+    }
+    // }
   }
 
   private long recoverOplogs(long byteCount) {
