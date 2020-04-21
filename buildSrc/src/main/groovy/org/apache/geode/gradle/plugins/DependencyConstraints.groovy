@@ -259,5 +259,15 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-web')
       entry('spring-webmvc')
     }
+
+    dependencySet(group: 'org.springframework.boot', version: '2.2.1.RELEASE') {
+      entry('spring-boot-starter')
+      entry('spring-boot-starter-web')
+      entry('spring-boot-starter-data-redis')
+    }
+
+    dependencySet(group: 'org.springframework.session', version: '2.2.1.RELEASE') {
+      entry('spring-session-data-redis')
+    }
   }
 }
