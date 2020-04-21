@@ -1921,7 +1921,7 @@ public class CliStrings {
   public static final String REMOVE__MSG__KEY_EMPTY = "Key is Null";
   public static final String REMOVE__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
   public static final String REMOVE__MSG__KEY_NOT_FOUND_REGION = "Key is not present in the region";
-  public static final String REMOVE__MSG__CLEARED_ALL_CLEARS = "Cleared all keys in the region";
+  public static final String REMOVE__MSG__CLEARED_ALL_KEYS = "Cleared all keys in the region";
   public static final String REMOVE__MSG__CLEARALL_DEPRECATION_WARNING =
       "Warning: The --all option for the 'remove' command is deprecated. Please"
           + " use the 'clear' command instead.";

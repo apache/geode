@@ -241,6 +241,14 @@ public class DataCommandResult implements Serializable {
     result.operationCompletedSuccessfully = flag;
     return result;
   }
+  public static DataCommandResult createClearResult(Throwable error, String errorString, boolean flag) {
+    DataCommandResult result = new DataCommandResult();
+    result.command = CliStrings.REMOVE;
+    result.error = error;
+    result.errorString = errorString;
+    result.operationCompletedSuccessfully = flag;
+    return result;
+  }
 
   public static DataCommandResult createRemoveInfoResult(Object inputKey, Object value,
       Throwable error, String infoString, boolean flag) {

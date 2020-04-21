@@ -276,7 +276,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
 
     if (StringUtils.isEmpty(removeAllKeys) && (key == null)) {
       return DataCommandResult.createRemoveResult(null, null, null,
-          CliStrings.REMOVE__MSG__KEY_EMPTY, false);
+          "BR" + CliStrings.REMOVE__MSG__KEY_EMPTY, false);
     }
 
     Region region = cache.getRegion(regionName);
@@ -313,16 +313,19 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
               CliStrings.REMOVE__MSG__KEY_NOT_FOUND_REGION, false);
         }
       } else {
-        DataPolicy policy = region.getAttributes().getDataPolicy();
-        region.clear();
-        if (logger.isDebugEnabled()) {
-          logger.debug("Cleared all keys in the region - {}", regionName);
-        }
-        return DataCommandResult.createRemoveInfoResult(key, null, null,
-            CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS, regionName), true);
-
+        return clear(region, regionName);
       }
     }
+  }
+
+  public DataCommandResult clear(Region region, String regionName) {
+    DataPolicy policy = region.getAttributes().getDataPolicy();
+    region.clear();
+    if (logger.isDebugEnabled()) {
+      logger.debug("Cleared all keys in the region - {}", regionName);
+    }
+    return DataCommandResult.createRemoveInfoResult(null, null, null,
+        CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_KEYS, regionName), true);
   }
 
   @SuppressWarnings({"rawtypes"})

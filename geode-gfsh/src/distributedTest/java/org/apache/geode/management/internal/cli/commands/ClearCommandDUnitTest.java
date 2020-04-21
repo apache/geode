@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
-import static org.apache.geode.management.internal.i18n.CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS;
+import static org.apache.geode.management.internal.i18n.CliStrings.REMOVE__MSG__CLEARED_ALL_KEYS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -97,10 +97,9 @@ public class ClearCommandDUnitTest {
     String command = new CommandStringBuilder(CliStrings.CLEAR)
         .addOption(CliStrings.CLEAR_REGION_NAME, REPLICATE_REGION_NAME).getCommandString();
 
-    gfsh.executeAndAssertThat("list regions");
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_CLEARS);
+    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_KEYS);
 
     server1.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
     server2.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
@@ -112,9 +111,9 @@ public class ClearCommandDUnitTest {
     String command = new CommandStringBuilder(CliStrings.CLEAR)
         .addOption(CliStrings.CLEAR_REGION_NAME, PARTITIONED_REGION_NAME).getCommandString();
 
-    gfsh.executeAndAssertThat(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_CLEARS);
+    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_KEYS);
 
     server1.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
     server2.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
