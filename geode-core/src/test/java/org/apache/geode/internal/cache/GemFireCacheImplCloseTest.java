@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Properties;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -39,6 +40,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.client.PoolFactory;
@@ -53,7 +56,6 @@ import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.util.concurrent.MeteredCountDownLatch;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -74,6 +76,8 @@ public class GemFireCacheImplCloseTest {
 
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Before
   public void setUp() {
@@ -99,8 +103,6 @@ public class GemFireCacheImplCloseTest {
         .thenReturn(21);
     when(replyProcessor21Factory.create(any(), any()))
         .thenReturn(replyProcessor21);
-
-    gemFireCacheImpl = gemFireCacheImpl(false);
   }
 
   @After
@@ -115,12 +117,16 @@ public class GemFireCacheImplCloseTest {
 
   @Test
   public void isClosed_returnsFalse_ifCacheExists() {
+    gemFireCacheImpl = gemFireCacheImpl(false);
+
     assertThat(gemFireCacheImpl.isClosed())
         .isFalse();
   }
 
   @Test
   public void isClosed_returnsTrue_ifCacheIsClosed() {
+    gemFireCacheImpl = gemFireCacheImpl(false);
+
     gemFireCacheImpl.close();
 
     assertThat(gemFireCacheImpl.isClosed())
@@ -129,6 +135,7 @@ public class GemFireCacheImplCloseTest {
 
   @Test
   public void close_closesHeapEvictor() {
+    gemFireCacheImpl = gemFireCacheImpl(false);
     HeapEvictor heapEvictor = mock(HeapEvictor.class);
     gemFireCacheImpl.setHeapEvictor(heapEvictor);
 
@@ -140,6 +147,7 @@ public class GemFireCacheImplCloseTest {
 
   @Test
   public void close_closesOffHeapEvictor() {
+    gemFireCacheImpl = gemFireCacheImpl(false);
     OffHeapEvictor offHeapEvictor = mock(OffHeapEvictor.class);
     gemFireCacheImpl.setOffHeapEvictor(offHeapEvictor);
 
@@ -156,6 +164,7 @@ public class GemFireCacheImplCloseTest {
     meterRegistry.add(userRegistry);
     when(internalDistributedSystem.getMeterRegistry())
         .thenReturn(meterRegistry);
+    gemFireCacheImpl = gemFireCacheImpl(false);
 
     gemFireCacheImpl.close();
 
@@ -169,6 +178,7 @@ public class GemFireCacheImplCloseTest {
    */
   @Test
   public void close_doesNothingIfAlreadyClosed() {
+    gemFireCacheImpl = gemFireCacheImpl(false);
     gemFireCacheImpl.close();
 
     verify(internalDistributedSystem).disconnect();
@@ -181,32 +191,31 @@ public class GemFireCacheImplCloseTest {
 
   @Test
   public void close_blocksUntilFirstCallToCloseCompletes() throws Exception {
-    MeteredCountDownLatch go = new MeteredCountDownLatch(1);
+    gemFireCacheImpl = gemFireCacheImpl(false);
+    CyclicBarrier cyclicBarrier = new CyclicBarrier(3);
     AtomicLong winner = new AtomicLong();
 
     Future<Long> close1 = executorServiceRule.submit(() -> {
       synchronized (GemFireCacheImpl.class) {
         long threadId = Thread.currentThread().getId();
-        go.await(getTimeout().toMillis(), MILLISECONDS);
+        cyclicBarrier.await(getTimeout().toMillis(), MILLISECONDS);
         gemFireCacheImpl.close();
         winner.compareAndSet(0, threadId);
         return threadId;
       }
     });
 
-    await().until(() -> go.getWaitCount() == 1);
+    await().until(() -> cyclicBarrier.getNumberWaiting() == 1);
 
     Future<Long> close2 = executorServiceRule.submit(() -> {
       long threadId = Thread.currentThread().getId();
-      go.await(getTimeout().toMillis(), MILLISECONDS);
+      cyclicBarrier.await(getTimeout().toMillis(), MILLISECONDS);
       gemFireCacheImpl.close();
       winner.compareAndSet(0, threadId);
       return threadId;
     });
 
-    await().until(() -> go.getWaitCount() == 2);
-
-    go.countDown();
+    cyclicBarrier.await(getTimeout().toMillis(), MILLISECONDS);
 
     long threadId1 = close1.get();
     long threadId2 = close2.get();
