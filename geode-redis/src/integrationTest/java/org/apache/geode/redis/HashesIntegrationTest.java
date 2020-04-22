@@ -670,7 +670,6 @@ public class HashesIntegrationTest {
   @After
   public void flushAll() {
     jedis.flushAll();
-    jedis2.flushAll();
   }
 
   @AfterClass

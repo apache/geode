@@ -23,12 +23,12 @@ import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.redis.general.PersistIntegrationTest;
+import org.apache.geode.redis.general.ExpireIntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 @Category({RedisTest.class})
-public class PersistDockerAcceptanceTest extends PersistIntegrationTest {
+public class ExpireNativeRedisAcceptanceTest extends ExpireIntegrationTest {
 
   private static GenericContainer redisContainer;
 
@@ -42,11 +42,10 @@ public class PersistDockerAcceptanceTest extends PersistIntegrationTest {
     redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
     jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
-  public static void tearDown() {
+  public static void classLevelTearDown() {
     jedis.close();
   }
 

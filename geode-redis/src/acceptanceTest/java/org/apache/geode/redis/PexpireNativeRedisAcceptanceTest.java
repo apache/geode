@@ -15,8 +15,6 @@
 
 package org.apache.geode.redis;
 
-
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -25,13 +23,12 @@ import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.redis.general.PexpireIntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 @Category({RedisTest.class})
-public class PubSubDockerAcceptanceTest extends PubSubIntegrationTest {
-
-  private static GenericContainer redisContainer;
+public class PexpireNativeRedisAcceptanceTest extends PexpireIntegrationTest {
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -40,19 +37,14 @@ public class PubSubDockerAcceptanceTest extends PubSubIntegrationTest {
 
   @BeforeClass
   public static void setUp() {
-    redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
+    GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
-    subscriber = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
-    publisher = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
-  public static void tearDown() {
-    subscriber.close();
-    publisher.close();
+  public static void classLevelTearDown() {
+    jedis.close();
   }
 
-  public int getPort() {
-    return redisContainer.getFirstMappedPort();
-  }
 }
