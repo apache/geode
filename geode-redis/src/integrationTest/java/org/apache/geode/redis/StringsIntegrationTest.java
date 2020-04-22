@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -48,6 +49,7 @@ import redis.clients.jedis.params.SetParams;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.general.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -787,46 +789,27 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testConcurrentDel_differentClients()
-      throws InterruptedException, ExecutionException {
+  public void testConcurrentDel_differentClients() {
     String keyBaseName = "DELBASE";
 
-    doABunchOfSets(keyBaseName, jedis);
+    new ConcurrentLoopingThreads(
+        ITERATION_COUNT,
+        (i) -> jedis.set(keyBaseName + i, "value" + i))
+            .run();
 
-    CountDownLatch latch = new CountDownLatch(1);
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Integer> callable1 = () -> doABunchOfDels(keyBaseName, 0, jedis, latch);
-    Callable<Integer> callable2 = () -> doABunchOfDels(keyBaseName, 1, jedis2, latch);
-    Future<Integer> future1 = pool.submit(callable1);
-    Future<Integer> future2 = pool.submit(callable2);
+    AtomicLong deletedCount = new AtomicLong();
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
+        (i) -> deletedCount.addAndGet(jedis.del(keyBaseName + i)),
+        (i) -> deletedCount.addAndGet(jedis2.del(keyBaseName + i)))
+            .run();
 
-    latch.countDown();
 
-    assertThat(future1.get() + future2.get()).isEqualTo(ITERATION_COUNT);
+    assertThat(deletedCount.get()).isEqualTo(ITERATION_COUNT);
 
     for (int i = 0; i < ITERATION_COUNT; i++) {
       assertThat(jedis.get(keyBaseName + i)).isNull();
     }
 
-    pool.shutdown();
-  }
-
-  private void doABunchOfSets(String keyBaseName, Jedis jedis) {
-    for (int i = 0; i < ITERATION_COUNT; i++) {
-      jedis.set(keyBaseName + i, "value" + i);
-    }
-  }
-
-  private int doABunchOfDels(String keyBaseName, int start, Jedis jedis, CountDownLatch latch)
-      throws InterruptedException {
-    int delCount = 0;
-    latch.await();
-
-    for (int i = start; i < ITERATION_COUNT; i += 2) {
-      delCount += jedis.del(keyBaseName + i);
-      Thread.yield();
-    }
-    return delCount;
   }
 
   @Test
@@ -870,27 +853,13 @@ public class StringsIntegrationTest {
   public void testDecr_shouldBeAtomic() throws ExecutionException, InterruptedException {
     jedis.set("contestedKey", "0");
 
-    CountDownLatch latch = new CountDownLatch(1);
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Integer> callable1 = () -> doABunchOfDecrs(jedis, latch);
-    Callable<Integer> callable2 = () -> doABunchOfDecrs(jedis2, latch);
-    Future<Integer> future1 = pool.submit(callable1);
-    Future<Integer> future2 = pool.submit(callable2);
-
-    latch.countDown();
-
-    future1.get();
-    future2.get();
+    new ConcurrentLoopingThreads(
+        ITERATION_COUNT,
+        (i) -> jedis.decr("contestedKey"),
+        (i) -> jedis2.decr("contestedKey"))
+            .run();
 
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(-2 * ITERATION_COUNT));
-  }
-
-  private Integer doABunchOfDecrs(Jedis jedis, CountDownLatch latch) throws InterruptedException {
-    latch.await();
-    for (int i = 0; i < ITERATION_COUNT; i++) {
-      jedis.decr("contestedKey");
-    }
-    return ITERATION_COUNT;
   }
 
   @Test
@@ -945,17 +914,12 @@ public class StringsIntegrationTest {
   public void testIncr_shouldBeAtomic() throws ExecutionException, InterruptedException {
     jedis.set("contestedKey", "0");
 
-    CountDownLatch latch = new CountDownLatch(1);
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Integer> callable1 = () -> doABunchOfIncrs(jedis, latch);
-    Callable<Integer> callable2 = () -> doABunchOfIncrs(jedis2, latch);
-    Future<Integer> future1 = pool.submit(callable1);
-    Future<Integer> future2 = pool.submit(callable2);
+    new ConcurrentLoopingThreads(
+        ITERATION_COUNT,
+        (i) -> jedis.incr("contestedKey"),
+        (i) -> jedis2.incr("contestedKey"))
+            .run();
 
-    latch.countDown();
-
-    future1.get();
-    future2.get();
 
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(2 * ITERATION_COUNT));
   }

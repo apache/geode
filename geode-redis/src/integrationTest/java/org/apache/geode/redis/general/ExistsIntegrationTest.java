@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -268,75 +267,36 @@ public class ExistsIntegrationTest {
   }
 
   @Test
-  public void shouldCorrectlyVerifyKeysExistConcurrently() throws InterruptedException {
+  public void shouldCorrectlyVerifyKeysExistConcurrently() {
     int iterationCount = 5000;
-    setKeys(jedis, iterationCount);
+
+    new ConcurrentLoopingThreads(iterationCount, (i) -> jedis.set("key" + i, "value" + i)).run();
 
     AtomicLong existsCount = new AtomicLong(0);
-
-    Thread thread1 =
-        new LoopingThread((i) -> existsCount.addAndGet(jedis.exists(toArray("key" + i))),
-            iterationCount);
-    Thread thread2 =
-        new LoopingThread((i) -> existsCount.addAndGet(jedis2.exists(toArray("key" + i))),
-            iterationCount);
-
-    thread1.start();
-    thread2.start();
-    thread1.join();
-    thread2.join();
+    new ConcurrentLoopingThreads(
+        iterationCount,
+        (i) -> existsCount.addAndGet(jedis.exists(toArray("key" + i))),
+        (i) -> existsCount.addAndGet(jedis2.exists(toArray("key" + i))))
+            .run();
 
     assertThat(existsCount.get()).isEqualTo(2 * iterationCount);
   }
 
   @Test
-  public void shouldNotThrowExceptionsWhenConcurrentlyCreatingCheckingAndDeletingKeys()
-      throws InterruptedException {
+  public void shouldNotThrowExceptionsWhenConcurrentlyCreatingCheckingAndDeletingKeys() {
+
     int iterationCount = 5000;
-
-    Thread loopingThread1 = new LoopingThread((i) -> jedis.set("key", "value"), iterationCount);
-    Thread loopingThread2 = new LoopingThread((i) -> jedis2.exists(toArray("key")), iterationCount);
-    Thread loopingThread3 = new LoopingThread((i) -> jedis3.del("key"), iterationCount);
-
-    loopingThread1.start();
-    loopingThread2.start();
-    loopingThread3.start();
-    loopingThread1.join();
-    loopingThread2.join();
-    loopingThread3.join();
+    new ConcurrentLoopingThreads(
+        iterationCount,
+        (i) -> jedis.set("key", "value"),
+        (i) -> jedis2.exists(toArray("key")),
+        (i) -> jedis3.del("key"))
+            .run();
   }
 
   public String[] toArray(String... strings) {
     return strings;
   }
 
-  private void setKeys(Jedis jedis, int iterationCount) {
-    for (int i = 0; i < iterationCount; i++) {
-      jedis.set("key" + i, "value" + i);
-    }
-  }
 
-  private class LoopingThread extends Thread {
-
-    public LoopingThread(Function<Integer, Object> runnable, int iterationCount) {
-      super(new LoopingRunnable(runnable, iterationCount));
-    }
-  }
-
-  private class LoopingRunnable implements Runnable {
-    private final Function<Integer, Object> runnable;
-    private final int iterationCount;
-
-    public LoopingRunnable(Function<Integer, Object> runnable, int iterationCount) {
-      this.runnable = runnable;
-      this.iterationCount = iterationCount;
-    }
-
-    @Override
-    public void run() {
-      for (int i = 0; i < iterationCount; i++) {
-        runnable.apply(i);
-      }
-    }
-  }
 }
