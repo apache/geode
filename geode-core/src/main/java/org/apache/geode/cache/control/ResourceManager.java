@@ -83,15 +83,15 @@ public interface ResourceManager {
    *
    * @return a class for defining and starting restore redundancy operations
    */
-  RestoreRedundancyBuilder createRestoreRedundancyBuilder();
+  RestoreRedundancyOperation createRestoreRedundancyOperation();
 
   /**
-   * Returns a set of all active restore redundancy operations that were started locally on this
+   * Returns a set of all active restore redundancy futures that were started locally on this
    * member.
    *
-   * @return a set of all active restore redundancy operations started locally.
+   * @return a set of all active restore redundancy futures started locally.
    */
-  Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyOperations();
+  Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyFutures();
 
   /**
    * Set the percentage of heap at or above which the cache is considered in danger of becoming

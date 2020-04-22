@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.control;
 
+import java.time.Duration;
 import java.util.Map;
-
 
 /**
  * A class to collect the results of restore redundancy operations for one or more regions and
@@ -110,10 +110,10 @@ public interface RestoreRedundancyResults {
   int getTotalPrimaryTransfersCompleted();
 
   /**
-   * Returns the total time, in milliseconds, spent transferring primaries as part of the restore
-   * redundancy operations.
+   * Returns the total time spent transferring primaries as part of the restore redundancy
+   * operations.
    *
-   * @return the total time, in milliseconds, spent transferring primaries
+   * @return A {@link Duration} representing the total time spent transferring primaries
    */
-  long getTotalPrimaryTransferTime();
+  Duration getTotalPrimaryTransferTime();
 }

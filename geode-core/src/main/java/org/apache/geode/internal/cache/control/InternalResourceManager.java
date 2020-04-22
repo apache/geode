@@ -19,12 +19,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -42,7 +42,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.control.RestoreRedundancyBuilder;
+import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -87,14 +87,15 @@ public class InternalResourceManager implements ResourceManager {
   private final ScheduledExecutorService scheduledExecutor;
   private final ExecutorService notifyExecutor;
 
-  // The set of in progress rebalance operations.
-  private final Set<RebalanceOperation> inProgressRebalanceOperations = new HashSet<>();
-  private final Object inProgressRebalanceOperationsLock = new Object();
+  // A map of in progress rebalance operations. The value is Boolean because ConcurrentHashMap does
+  // not support null values.
+  private final Map<RebalanceOperation, Boolean> inProgressRebalanceOperations =
+      new ConcurrentHashMap<>();
 
-  // The set of in progress restore redundancy completable futures.
-  private final Set<CompletableFuture<RestoreRedundancyResults>> inProgressRedundancyOperations =
-      new HashSet<>();
-  private final Object inProgressRedundancyOperationsLock = new Object();
+  // A map of in progress restore redundancy completable futures. The value is Boolean because
+  // ConcurrentHashMap does not support null values.
+  private final Map<CompletableFuture<RestoreRedundancyResults>, Boolean> inProgressRedundancyOperations =
+      new ConcurrentHashMap<>();
 
   final InternalCache cache;
 
@@ -294,21 +295,15 @@ public class InternalResourceManager implements ResourceManager {
 
   @Override
   public Set<RebalanceOperation> getRebalanceOperations() {
-    synchronized (this.inProgressRebalanceOperationsLock) {
-      return new HashSet<>(this.inProgressRebalanceOperations);
-    }
+    return Collections.unmodifiableSet(inProgressRebalanceOperations.keySet());
   }
 
   void addInProgressRebalance(RebalanceOperation op) {
-    synchronized (this.inProgressRebalanceOperationsLock) {
-      this.inProgressRebalanceOperations.add(op);
-    }
+    inProgressRebalanceOperations.put(op, Boolean.TRUE);
   }
 
   void removeInProgressRebalance(RebalanceOperation op) {
-    synchronized (this.inProgressRebalanceOperationsLock) {
-      this.inProgressRebalanceOperations.remove(op);
-    }
+    inProgressRebalanceOperations.remove(op);
   }
 
   class RebalanceFactoryImpl implements RebalanceFactory {
@@ -348,29 +343,23 @@ public class InternalResourceManager implements ResourceManager {
   }
 
   @Override
-  public RestoreRedundancyBuilder createRestoreRedundancyBuilder() {
-    return new RestoreRedundancyBuilderImpl(cache);
+  public RestoreRedundancyOperation createRestoreRedundancyOperation() {
+    return new RestoreRedundancyOperationImpl(cache);
   }
 
   @Override
-  public Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyOperations() {
-    synchronized (this.inProgressRedundancyOperationsLock) {
-      return new HashSet<>(this.inProgressRedundancyOperations);
-    }
+  public Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyFutures() {
+    return Collections.unmodifiableSet(inProgressRedundancyOperations.keySet());
   }
 
   void addInProgressRestoreRedundancy(
       CompletableFuture<RestoreRedundancyResults> completableFuture) {
-    synchronized (this.inProgressRedundancyOperationsLock) {
-      this.inProgressRedundancyOperations.add(completableFuture);
-    }
+    inProgressRedundancyOperations.put(completableFuture, Boolean.TRUE);
   }
 
   void removeInProgressRestoreRedundancy(
       CompletableFuture<RestoreRedundancyResults> completableFuture) {
-    synchronized (this.inProgressRedundancyOperationsLock) {
-      this.inProgressRedundancyOperations.remove(completableFuture);
-    }
+    inProgressRedundancyOperations.remove(completableFuture);
   }
 
   void stopExecutor(ExecutorService executor) {

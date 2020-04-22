@@ -44,11 +44,11 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 
-public class RestoreRedundancyBuilderImplTest {
+public class RestoreRedundancyOperationImplTest {
   InternalCache cache;
   InternalResourceManager manager;
   ResourceManagerStats stats;
-  RestoreRedundancyBuilderImpl builder;
+  RestoreRedundancyOperationImpl operation;
   RestoreRedundancyResultsImpl emptyResults;
   long startTime = 5;
 
@@ -61,19 +61,19 @@ public class RestoreRedundancyBuilderImplTest {
     when(manager.getStats()).thenReturn(stats);
     when(stats.startRestoreRedundancy()).thenReturn(startTime);
 
-    builder = spy(new RestoreRedundancyBuilderImpl(cache));
+    operation = spy(new RestoreRedundancyOperationImpl(cache));
 
     emptyResults = mock(RestoreRedundancyResultsImpl.class);
-    doReturn(emptyResults).when(builder).getEmptyRestoreRedundancyResults();
+    doReturn(emptyResults).when(operation).getEmptyRestoreRedundancyResults();
   }
 
   @Test
   public void doRestoreRedundancyReturnsEmptyResultsWhenRegionDestroyedExceptionIsThrown() {
     PartitionedRegion region = mock(PartitionedRegion.class);
-    doThrow(new RegionDestroyedException("message", "/regionPath")).when(builder)
+    doThrow(new RegionDestroyedException("message", "/regionPath")).when(operation)
         .getPartitionedRegionRebalanceOp(region);
 
-    assertThat(builder.doRestoreRedundancy(region), is(emptyResults));
+    assertThat(operation.doRestoreRedundancy(region), is(emptyResults));
   }
 
   @Test
@@ -81,13 +81,13 @@ public class RestoreRedundancyBuilderImplTest {
     PartitionedRegion region = mock(PartitionedRegion.class);
 
     PartitionedRegionRebalanceOp op = mock(PartitionedRegionRebalanceOp.class);
-    doReturn(op).when(builder).getPartitionedRegionRebalanceOp(region);
+    doReturn(op).when(operation).getPartitionedRegionRebalanceOp(region);
     when(op.execute()).thenReturn(new HashSet<>());
 
-    RegionRedundancyStatus regionResult = mock(RegionRedundancyStatus.class);
-    doReturn(regionResult).when(builder).getRegionResult(region);
+    RegionRedundancyStatus regionResult = mock(RegionRedundancyStatusImpl.class);
+    doReturn(regionResult).when(operation).getRegionResult(region);
 
-    builder.doRestoreRedundancy(region);
+    operation.doRestoreRedundancy(region);
 
     verify(emptyResults, times(1)).addRegionResult(regionResult);
   }
@@ -98,7 +98,7 @@ public class RestoreRedundancyBuilderImplTest {
     PartitionedRegion region = mock(PartitionedRegion.class);
 
     PartitionedRegionRebalanceOp op = mock(PartitionedRegionRebalanceOp.class);
-    doReturn(op).when(builder).getPartitionedRegionRebalanceOp(region);
+    doReturn(op).when(operation).getPartitionedRegionRebalanceOp(region);
 
     PartitionRebalanceInfo details1 = mock(PartitionRebalanceInfo.class);
     String regionPath1 = "/region1";
@@ -118,12 +118,12 @@ public class RestoreRedundancyBuilderImplTest {
     when(cache.getRegion(regionPath1)).thenReturn(detailRegion1);
     when(cache.getRegion(regionPath2)).thenReturn(detailRegion2);
 
-    RegionRedundancyStatus regionResult1 = mock(RegionRedundancyStatus.class);
-    RegionRedundancyStatus regionResult2 = mock(RegionRedundancyStatus.class);
-    doReturn(regionResult1).when(builder).getRegionResult(detailRegion1);
-    doReturn(regionResult2).when(builder).getRegionResult(detailRegion2);
+    RegionRedundancyStatus regionResult1 = mock(RegionRedundancyStatusImpl.class);
+    RegionRedundancyStatus regionResult2 = mock(RegionRedundancyStatusImpl.class);
+    doReturn(regionResult1).when(operation).getRegionResult(detailRegion1);
+    doReturn(regionResult2).when(operation).getRegionResult(detailRegion2);
 
-    builder.doRestoreRedundancy(region);
+    operation.doRestoreRedundancy(region);
 
     verify(emptyResults, times(1)).addRegionResult(regionResult1);
     verify(emptyResults, times(1)).addRegionResult(regionResult2);
@@ -145,7 +145,7 @@ public class RestoreRedundancyBuilderImplTest {
     futures.add(future1);
     futures.add(future2);
 
-    builder.getRestoreRedundancyResults(futures);
+    operation.getRestoreRedundancyResults(futures);
 
     verify(emptyResults, times(1)).addRegionResults(result1);
     verify(emptyResults, times(1)).addRegionResults(result2);
@@ -155,7 +155,7 @@ public class RestoreRedundancyBuilderImplTest {
   @SuppressWarnings("unchecked")
   public void startCreatesRedundancyOpFutureForAllIncludedRegions() {
     RegionFilter filter = mock(RegionFilter.class);
-    doReturn(filter).when(builder).getRegionFilter();
+    doReturn(filter).when(operation).getRegionFilter();
 
     PartitionedRegion includeRegion = mock(PartitionedRegion.class);
     PartitionedRegion excludeRegion = mock(PartitionedRegion.class);
@@ -168,22 +168,22 @@ public class RestoreRedundancyBuilderImplTest {
     when(filter.include(excludeRegion)).thenReturn(false);
 
     CompletableFuture<RestoreRedundancyResults> redundancyOpFuture = mock(CompletableFuture.class);
-    doReturn(redundancyOpFuture).when(builder).getRedundancyOpFuture(any());
+    doReturn(redundancyOpFuture).when(operation).getRedundancyOpFuture(any());
 
     CompletableFuture<RestoreRedundancyResults> resultsFuture = mock(CompletableFuture.class);
-    doReturn(resultsFuture).when(builder).getResultsFuture(any(), any());
+    doReturn(resultsFuture).when(operation).getResultsFuture(any(), any());
 
-    builder.start();
+    operation.start();
 
-    verify(builder, times(1)).getRedundancyOpFuture(includeRegion);
-    verify(builder, times(0)).getRedundancyOpFuture(excludeRegion);
+    verify(operation, times(1)).getRedundancyOpFuture(includeRegion);
+    verify(operation, times(0)).getRedundancyOpFuture(excludeRegion);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void startAddsInProgressRestoreRedundancyAndRemovesInProgressRestoreRedundancyAndUpdatesStatsOnCompletion() {
     RegionFilter filter = mock(RegionFilter.class);
-    doReturn(filter).when(builder).getRegionFilter();
+    doReturn(filter).when(operation).getRegionFilter();
 
     PartitionedRegion includeRegion = mock(PartitionedRegion.class);
     when(cache.getPartitionedRegions()).thenReturn(Collections.singleton(includeRegion));
@@ -191,13 +191,13 @@ public class RestoreRedundancyBuilderImplTest {
     when(filter.include(includeRegion)).thenReturn(true);
 
     CompletableFuture<RestoreRedundancyResults> redundancyOpFuture = mock(CompletableFuture.class);
-    doReturn(redundancyOpFuture).when(builder).getRedundancyOpFuture(any());
+    doReturn(redundancyOpFuture).when(operation).getRedundancyOpFuture(any());
 
     CompletableFuture<RestoreRedundancyResults> resultsFuture =
         CompletableFuture.completedFuture(null);
-    doReturn(resultsFuture).when(builder).getResultsFuture(any(), any());
+    doReturn(resultsFuture).when(operation).getResultsFuture(any(), any());
 
-    builder.start().join();
+    operation.start().join();
 
     verify(manager, times(1)).addInProgressRestoreRedundancy(resultsFuture);
     verify(manager, times(1)).removeInProgressRestoreRedundancy(resultsFuture);

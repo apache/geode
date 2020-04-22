@@ -14,145 +14,56 @@
  */
 package org.apache.geode.cache.control;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
-
 /**
- * Used to calculate and store the redundancy status for a {@link PartitionedRegion}.
+ * Used to calculate and store a snapshot of the redundancy status for a partitioned region.
  */
-public class RegionRedundancyStatus implements DataSerializableFixedID {
-
-  public static final String OUTPUT_STRING =
-      "%s redundancy status: %s. Desired redundancy is %s and actual redundancy is %s.";
-
-  /**
-   * The name of the region used to create this object.
-   */
-  private String regionName;
-
-  /**
-   * The configured redundancy of the region used to create this object.
-   */
-  private int desiredRedundancy;
-
-  /**
-   * The actual redundancy of the region used to create this object at time of creation.
-   */
-  private int actualRedundancy;
-
-  /**
-   * The {@link RedundancyStatus} of the region used to create this object at time of creation.
-   */
-  private RedundancyStatus status;
+public interface RegionRedundancyStatus {
 
   /**
    * The redundancy status of the region used to create this object at time of creation.
-   * {@link #SATISFIED} if every bucket in the region has the configured number of redundant copies
+   * {@link #SATISFIED} if every bucket in the region has the configured number of redundant copies.
    * {@link #NOT_SATISFIED} if at least one bucket in the region has less than the configured number
-   * of redundant copies
+   * of redundant copies.
    * {@link #NO_REDUNDANT_COPIES} if at least one bucket in the region has zero redundant copies and
-   * the region is not configured for zero redundancy
+   * the region is not configured for zero redundancy.
    */
-  public enum RedundancyStatus {
+  enum RedundancyStatus {
     SATISFIED,
     NOT_SATISFIED,
     NO_REDUNDANT_COPIES
   }
 
-  public RegionRedundancyStatus() {}
-
-  public RegionRedundancyStatus(PartitionedRegion region) {
-    regionName = region.getName();
-    desiredRedundancy = region.getRedundantCopies();
-    actualRedundancy = calculateLowestRedundancy(region);
-    status = determineStatus(desiredRedundancy, actualRedundancy);
-  }
-
-  public String getRegionName() {
-    return regionName;
-  }
-
-  public int getActualRedundancy() {
-    return actualRedundancy;
-  }
-
-  public RedundancyStatus getStatus() {
-    return status;
-  }
+  /**
+   * Returns the name of the region used to create this RegionRedundancyStatus.
+   *
+   * @return The name of the region used to create this RegionRedundancyStatus.
+   */
+  String getRegionName();
 
   /**
-   * Calculates the lowest redundancy for any bucket in the region.
+   * Returns the configured redundancy level for the region used to create this
+   * RegionRedundancyStatus.
    *
-   * @param region The region for which the lowest redundancy should be calculated.
-   * @return The redundancy of the least redundant bucket in the region.
+   * @return The configured redundancy level for the region used to create this
+   *         RegionRedundancyStatus.
    */
-  private int calculateLowestRedundancy(PartitionedRegion region) {
-    int numBuckets = region.getPartitionAttributes().getTotalNumBuckets();
-    int minRedundancy = Integer.MAX_VALUE;
-    for (int i = 0; i < numBuckets; i++) {
-      int bucketRedundancy = region.getRegionAdvisor().getBucketRedundancy(i);
-      if (bucketRedundancy < minRedundancy) {
-        minRedundancy = bucketRedundancy;
-      }
-    }
-    return minRedundancy;
-  }
+  int getConfiguredRedundancy();
 
   /**
-   * Determines the {@link RedundancyStatus} for the region. If redundancy is not configured (i.e.
-   * configured redundancy = 0), this always returns {@link RedundancyStatus#SATISFIED}.
+   * Returns the number of redundant copies for all buckets in the region used to create this
+   * RegionRedundancyStatus, at the time of creation. If some buckets have fewer redundant copies
+   * than others, the lower number is returned.
    *
-   * @param desiredRedundancy The configured redundancy of the region.
-   * @param actualRedundancy The actual redundancy of the region.
-   * @return The {@link RedundancyStatus} for the region.
+   * @return The number of redundant copies for all buckets in the region used to create this
+   *         RegionRedundancyStatus, at the time of creation.
    */
-  private RedundancyStatus determineStatus(int desiredRedundancy, int actualRedundancy) {
-    boolean zeroRedundancy = desiredRedundancy == 0;
-    if (actualRedundancy == 0) {
-      return zeroRedundancy ? RedundancyStatus.SATISFIED : RedundancyStatus.NO_REDUNDANT_COPIES;
-    }
-    return desiredRedundancy == actualRedundancy ? RedundancyStatus.SATISFIED
-        : RedundancyStatus.NOT_SATISFIED;
-  }
+  int getActualRedundancy();
 
-  @Override
-  public String toString() {
-    return String.format(OUTPUT_STRING, regionName, status.name(), desiredRedundancy,
-        actualRedundancy);
-  }
-
-  @Override
-  public int getDSFID() {
-    return REGION_REDUNDANCY_STATUS;
-  }
-
-  @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
-    DataSerializer.writeString(regionName, out);
-    DataSerializer.writeEnum(status, out);
-    out.writeInt(desiredRedundancy);
-    out.writeInt(actualRedundancy);
-  }
-
-  @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    this.regionName = DataSerializer.readString(in);
-    this.status = DataSerializer.readEnum(RedundancyStatus.class, in);
-    this.desiredRedundancy = in.readInt();
-    this.actualRedundancy = in.readInt();
-  }
-
-  @Override
-  public Version[] getSerializationVersions() {
-    return null;
-  }
+  /**
+   * Returns the {@link RedundancyStatus} for the region used to create this RegionRedundancyStatus
+   * at the time of creation.
+   *
+   * @return The {@link RedundancyStatus} for the region used to create this RegionRedundancyStatus.
+   */
+  RedundancyStatus getStatus();
 }

@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.control.RegionRedundancyStatus;
-import org.apache.geode.cache.control.RestoreRedundancyBuilder;
+import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.InternalCache;
@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
+class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
 
   private final InternalCache cache;
   private final InternalResourceManager manager;
@@ -41,26 +41,26 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
   private boolean shouldReassign = true;
   private ScheduledExecutorService executor;
 
-  public RestoreRedundancyBuilderImpl(InternalCache cache) {
+  public RestoreRedundancyOperationImpl(InternalCache cache) {
     this.cache = cache;
     this.manager = cache.getInternalResourceManager();
     this.executor = this.manager.getExecutor();
   }
 
   @Override
-  public RestoreRedundancyBuilder includeRegions(Set<String> regions) {
+  public RestoreRedundancyOperation includeRegions(Set<String> regions) {
     this.includedRegions = regions;
     return this;
   }
 
   @Override
-  public RestoreRedundancyBuilder excludeRegions(Set<String> regions) {
+  public RestoreRedundancyOperation excludeRegions(Set<String> regions) {
     this.excludedRegions = regions;
     return this;
   }
 
   @Override
-  public RestoreRedundancyBuilder setReassignPrimaries(boolean shouldReassign) {
+  public RestoreRedundancyOperation shouldReassignPrimaries(boolean shouldReassign) {
     this.shouldReassign = shouldReassign;
     return this;
   }
@@ -166,7 +166,7 @@ class RestoreRedundancyBuilderImpl implements RestoreRedundancyBuilder {
 
   // Extracted for testing
   RegionRedundancyStatus getRegionResult(PartitionedRegion region) {
-    return new RegionRedundancyStatus(region);
+    return new RegionRedundancyStatusImpl(region);
   }
 
   // Extracted for testing

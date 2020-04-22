@@ -122,7 +122,7 @@ public class RestoreRedundancyOperationDUnitTest {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
       assertThat(results.getStatus(), is(SUCCESS));
       assertThat(results.getTotalPrimaryTransfersCompleted() > 0, is(true));
-      assertThat(results.getTotalPrimaryTransferTime() > 0, is(true));
+      assertThat(results.getTotalPrimaryTransferTime().toMillis() > 0, is(true));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
@@ -145,7 +145,7 @@ public class RestoreRedundancyOperationDUnitTest {
 
       assertThat(results.getStatus(), is(SUCCESS));
       assertThat(results.getTotalPrimaryTransfersCompleted(), is(0));
-      assertThat(results.getTotalPrimaryTransferTime(), is(0L));
+      assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(0L));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
@@ -259,13 +259,13 @@ public class RestoreRedundancyOperationDUnitTest {
     ResourceManager resourceManager =
         Objects.requireNonNull(ClusterStartupRule.getCache()).getResourceManager();
     CompletableFuture<RestoreRedundancyResults> redundancyOpFuture = resourceManager
-        .createRestoreRedundancyBuilder()
+        .createRestoreRedundancyOperation()
         .includeRegions(includeRegions)
         .excludeRegions(excludeRegions)
-        .setReassignPrimaries(shouldReassign)
+        .shouldReassignPrimaries(shouldReassign)
         .start();
-    assertThat(resourceManager.getRestoreRedundancyOperations().size(), is(1));
-    assertThat(resourceManager.getRestoreRedundancyOperations().contains(redundancyOpFuture),
+    assertThat(resourceManager.getRestoreRedundancyFutures().size(), is(1));
+    assertThat(resourceManager.getRestoreRedundancyFutures().contains(redundancyOpFuture),
         is(true));
     return redundancyOpFuture.get();
   }

@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.control.RestoreRedundancyBuilder;
+import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 
@@ -64,20 +64,20 @@ public class ResourceManagerCreation implements ResourceManager {
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.cache.control.ResourceManager#createRestoreRedundancyBuilder()
+   * @see org.apache.geode.cache.control.ResourceManager#createRestoreRedundancyOperation()
    */
   @Override
-  public RestoreRedundancyBuilder createRestoreRedundancyBuilder() {
+  public RestoreRedundancyOperation createRestoreRedundancyOperation() {
     throw new IllegalArgumentException("Unused");
   }
 
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.cache.control.ResourceManager#getRestoreRedundancyOperations()
+   * @see org.apache.geode.cache.control.ResourceManager#getRestoreRedundancyFutures()
    */
   @Override
-  public Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyOperations() {
+  public Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyFutures() {
     throw new IllegalArgumentException("Unused");
   }
 

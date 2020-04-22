@@ -225,7 +225,10 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   byte REMOVE_CACHESERVER_PROFILE_UPDATE = -19;
 
-  // IDs -18 through -10 unused
+  byte REGION_REDUNDANCY_STATUS = -18;
+  byte RESTORE_REDUNDANCY_RESULTS = -17;
+
+  // IDs -16 through -10 unused
 
   byte PR_REMOVE_ALL_MESSAGE = -9;
   byte REMOVE_ALL_MESSAGE = -8;
@@ -271,7 +274,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte ROLE_EVENT = 19;
   byte CLIENT_REGION_EVENT = 20;
 
-  byte REGION_REDUNDANCY_STATUS = 21;
+  // 21 unused
 
   byte FIND_DURABLE_QUEUE = 22;
   byte FIND_DURABLE_QUEUE_REPLY = 23;

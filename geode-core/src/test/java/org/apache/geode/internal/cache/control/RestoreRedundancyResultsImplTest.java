@@ -30,6 +30,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,13 +45,13 @@ import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 
 public class RestoreRedundancyResultsImplTest {
   private final RegionRedundancyStatus successfulRegionResult =
-      mock(RegionRedundancyStatus.class);
+      mock(RegionRedundancyStatusImpl.class);
   private final String successfulRegionName = "successfulRegion";
   private final RegionRedundancyStatus underRedundancyRegionResult =
-      mock(RegionRedundancyStatus.class);
+      mock(RegionRedundancyStatusImpl.class);
   private final String underRedundancyRegionName = "underRedundancyRegion";
   private final RegionRedundancyStatus zeroRedundancyRegionResult =
-      mock(RegionRedundancyStatus.class);
+      mock(RegionRedundancyStatusImpl.class);
   private final String zeroRedundancyRegionName = "zeroRedundancyRegion";
   private PartitionRebalanceInfo details = mock(PartitionRebalanceInfo.class);
   private int transfersCompleted = 5;
@@ -147,7 +148,7 @@ public class RestoreRedundancyResultsImplTest {
     when(regionResults.getSatisfiedRedundancyRegionResults())
         .thenReturn(Collections.singletonMap(successfulRegionName, successfulRegionResult));
     when(regionResults.getTotalPrimaryTransfersCompleted()).thenReturn(transfersCompleted);
-    when(regionResults.getTotalPrimaryTransferTime()).thenReturn(transferTime);
+    when(regionResults.getTotalPrimaryTransferTime()).thenReturn(Duration.ofMillis(transferTime));
 
     results.addRegionResults(regionResults);
 
@@ -168,18 +169,18 @@ public class RestoreRedundancyResultsImplTest {
     assertThat(successfulRegionResults.get(successfulRegionName), is(successfulRegionResult));
 
     assertThat(results.getTotalPrimaryTransfersCompleted(), is(transfersCompleted));
-    assertThat(results.getTotalPrimaryTransferTime(), is(transferTime));
+    assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(transferTime));
   }
 
   @Test
   public void addPrimaryDetailsUpdatesValue() {
     assertThat(results.getTotalPrimaryTransfersCompleted(), is(0));
-    assertThat(results.getTotalPrimaryTransferTime(), is(0L));
+    assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(0L));
     results.addPrimaryReassignmentDetails(details);
     assertThat(results.getTotalPrimaryTransfersCompleted(), is(transfersCompleted));
-    assertThat(results.getTotalPrimaryTransferTime(), is(transferTime));
+    assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(transferTime));
     results.addPrimaryReassignmentDetails(details);
     assertThat(results.getTotalPrimaryTransfersCompleted(), is(transfersCompleted * 2));
-    assertThat(results.getTotalPrimaryTransferTime(), is(transferTime * 2));
+    assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(transferTime * 2));
   }
 }

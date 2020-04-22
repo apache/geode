@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.control;
+package org.apache.geode.internal.cache.control;
 
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
 import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
@@ -33,10 +33,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 @RunWith(JUnitParamsRunner.class)
-public class RegionRedundancyStatusTest {
+public class RegionRedundancyStatusImplTest {
 
   private PartitionedRegion mockRegion;
   private final int desiredRedundancy = 2;
@@ -59,8 +60,9 @@ public class RegionRedundancyStatusTest {
       RegionRedundancyStatus.RedundancyStatus expectedStatus) {
     when(mockRegion.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(actualRedundancy);
 
-    RegionRedundancyStatus result = new RegionRedundancyStatus(mockRegion);
+    RegionRedundancyStatus result = new RegionRedundancyStatusImpl(mockRegion);
 
+    assertThat(result.getConfiguredRedundancy(), is(desiredRedundancy));
     assertThat(result.getActualRedundancy(), is(actualRedundancy));
     assertThat(result.getStatus(), is(expectedStatus));
     assertThat(result.toString(), containsString(expectedStatus.name()));
@@ -72,8 +74,9 @@ public class RegionRedundancyStatusTest {
     // Have only the bucket with ID = 1 report being under redundancy
     when(mockRegion.getRegionAdvisor().getBucketRedundancy(1)).thenReturn(oneRedundantCopy);
 
-    RegionRedundancyStatus result = new RegionRedundancyStatus(mockRegion);
+    RegionRedundancyStatus result = new RegionRedundancyStatusImpl(mockRegion);
 
+    assertThat(result.getConfiguredRedundancy(), is(desiredRedundancy));
     assertThat(result.getActualRedundancy(), is(oneRedundantCopy));
     assertThat(result.getStatus(), is(NOT_SATISFIED));
     assertThat(result.toString(), containsString(NOT_SATISFIED.name()));

@@ -34,7 +34,6 @@ import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
-import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.CqEntry;
 import org.apache.geode.cache.query.internal.CumulativeNonDistinctResults;
@@ -268,8 +267,10 @@ import org.apache.geode.internal.cache.backup.FlushToDiskRequest;
 import org.apache.geode.internal.cache.backup.FlushToDiskResponse;
 import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
 import org.apache.geode.internal.cache.compression.SnappyCompressedCachedDeserializable;
+import org.apache.geode.internal.cache.control.RegionRedundancyStatusImpl;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceProfileMessage;
+import org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
 import org.apache.geode.internal.cache.ha.QueueRemovalMessage;
 import org.apache.geode.internal.cache.locks.TXLockBatch;
@@ -575,6 +576,8 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(ADD_CACHESERVER_PROFILE_UPDATE, AddCacheServerProfileMessage.class);
     serializer.registerDSFID(REMOVE_CACHESERVER_PROFILE_UPDATE,
         RemoveCacheServerProfileMessage.class);
+    serializer.registerDSFID(REGION_REDUNDANCY_STATUS, RegionRedundancyStatusImpl.class);
+    serializer.registerDSFID(RESTORE_REDUNDANCY_RESULTS, RestoreRedundancyResultsImpl.class);
     serializer.registerDSFID(SERVER_INTEREST_REGISTRATION_MESSAGE,
         ServerInterestRegistrationMessage.class);
     serializer.registerDSFID(FILTER_PROFILE_UPDATE, FilterProfile.OperationMessage.class);
@@ -800,7 +803,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
         GatewaySenderAdvisor.GatewaySenderProfile.class);
     serializer.registerDSFID(ROLE_EVENT, RoleEventImpl.class);
     serializer.registerDSFID(CLIENT_REGION_EVENT, ClientRegionEventImpl.class);
-    serializer.registerDSFID(REGION_REDUNDANCY_STATUS, RegionRedundancyStatus.class);
     serializer.registerDSFID(PR_INVALIDATE_MESSAGE, InvalidateMessage.class);
     serializer.registerDSFID(PR_INVALIDATE_REPLY_MESSAGE,
         InvalidateMessage.InvalidateReplyMessage.class);

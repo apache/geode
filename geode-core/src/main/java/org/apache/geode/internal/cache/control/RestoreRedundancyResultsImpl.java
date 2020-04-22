@@ -14,19 +14,27 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import java.io.Serializable;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
-public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, Serializable {
-  private static final long serialVersionUID = -2558652878831737255L;
+public class RestoreRedundancyResultsImpl
+    implements RestoreRedundancyResults, DataSerializableFixedID {
   public static final String NO_REDUNDANT_COPIES_FOR_REGIONS =
       "The following regions have redundancy configured but zero redundant copies: ";
   public static final String REDUNDANCY_NOT_SATISFIED_FOR_REGIONS =
@@ -36,12 +44,12 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
   public static final String PRIMARY_TRANSFERS_COMPLETED = "Total primary transfers completed = ";
   public static final String PRIMARY_TRANSFER_TIME = "Total primary transfer time (ms) = ";
 
-  Map<String, RegionRedundancyStatus> zeroRedundancyRegions = new HashMap<>();
-  Map<String, RegionRedundancyStatus> underRedundancyRegions = new HashMap<>();
-  Map<String, RegionRedundancyStatus> satisfiedRedundancyRegions = new HashMap<>();
+  private Map<String, RegionRedundancyStatus> zeroRedundancyRegions = new HashMap<>();
+  private Map<String, RegionRedundancyStatus> underRedundancyRegions = new HashMap<>();
+  private Map<String, RegionRedundancyStatus> satisfiedRedundancyRegions = new HashMap<>();
 
   private int totalPrimaryTransfersCompleted;
-  private long totalPrimaryTransferTime;
+  private Duration totalPrimaryTransferTime = Duration.ZERO;
 
   public RestoreRedundancyResultsImpl() {}
 
@@ -50,12 +58,14 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
     this.underRedundancyRegions.putAll(results.getUnderRedundancyRegionResults());
     this.zeroRedundancyRegions.putAll(results.getZeroRedundancyRegionResults());
     this.totalPrimaryTransfersCompleted += results.getTotalPrimaryTransfersCompleted();
-    this.totalPrimaryTransferTime += results.getTotalPrimaryTransferTime();
+    this.totalPrimaryTransferTime =
+        this.totalPrimaryTransferTime.plus(results.getTotalPrimaryTransferTime());
   }
 
   public void addPrimaryReassignmentDetails(PartitionRebalanceInfo details) {
     this.totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
-    this.totalPrimaryTransferTime += details.getPrimaryTransferTime();
+    this.totalPrimaryTransferTime =
+        this.totalPrimaryTransferTime.plusMillis(details.getPrimaryTransferTime());
   }
 
   public void addRegionResult(RegionRedundancyStatus regionResult) {
@@ -105,7 +115,7 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
 
     // Add info about primaries
     messages.add(PRIMARY_TRANSFERS_COMPLETED + totalPrimaryTransfersCompleted);
-    messages.add(PRIMARY_TRANSFER_TIME + totalPrimaryTransferTime);
+    messages.add(PRIMARY_TRANSFER_TIME + totalPrimaryTransferTime.toMillis());
 
     return String.join("\n", messages);
   }
@@ -161,7 +171,36 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults, S
   }
 
   @Override
-  public long getTotalPrimaryTransferTime() {
-    return this.totalPrimaryTransferTime;
+  public Duration getTotalPrimaryTransferTime() {
+    return totalPrimaryTransferTime;
+  }
+
+  @Override
+  public int getDSFID() {
+    return RESTORE_REDUNDANCY_RESULTS;
+  }
+
+  @Override
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    DataSerializer.writeHashMap(satisfiedRedundancyRegions, out);
+    DataSerializer.writeHashMap(underRedundancyRegions, out);
+    DataSerializer.writeHashMap(zeroRedundancyRegions, out);
+    out.writeInt(totalPrimaryTransfersCompleted);
+    DataSerializer.writeObject(totalPrimaryTransferTime, out);
+  }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    this.satisfiedRedundancyRegions = DataSerializer.readHashMap(in);
+    this.underRedundancyRegions = DataSerializer.readHashMap(in);
+    this.zeroRedundancyRegions = DataSerializer.readHashMap(in);
+    this.totalPrimaryTransfersCompleted = in.readInt();
+    this.totalPrimaryTransferTime = DataSerializer.readObject(in);
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
   }
 }

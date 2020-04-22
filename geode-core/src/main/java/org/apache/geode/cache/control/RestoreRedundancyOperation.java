@@ -19,10 +19,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Factory for defining and starting a {@link CompletableFuture} that returns
+ * Class for defining and starting a {@link CompletableFuture} that returns
  * {@link RestoreRedundancyResults}.
  */
-public interface RestoreRedundancyBuilder {
+public interface RestoreRedundancyOperation {
   /**
    * Specify which regions to include in the restore redundancy operation. The default,
    * <code>null<code>, means all regions should be included. Includes take precedence over
@@ -30,7 +30,7 @@ public interface RestoreRedundancyBuilder {
    *
    * @param regions A set containing the names of regions to include.
    */
-  RestoreRedundancyBuilder includeRegions(Set<String> regions);
+  RestoreRedundancyOperation includeRegions(Set<String> regions);
 
   /**
    * Exclude specific regions from the restore redundancy operation. The default,
@@ -38,7 +38,7 @@ public interface RestoreRedundancyBuilder {
    *
    * @param regions A set containing the names of regions to exclude.
    */
-  RestoreRedundancyBuilder excludeRegions(Set<String> regions);
+  RestoreRedundancyOperation excludeRegions(Set<String> regions);
 
   /**
    * Set whether the restore redundancy operation should reassign primary buckets. The default,
@@ -48,7 +48,7 @@ public interface RestoreRedundancyBuilder {
    * @param shouldReassign A boolean indicating whether or not the operation created by this
    *        class should reassign primary bucket hosts.
    */
-  RestoreRedundancyBuilder setReassignPrimaries(boolean shouldReassign);
+  RestoreRedundancyOperation shouldReassignPrimaries(boolean shouldReassign);
 
   /**
    * Asynchronously starts a new restore redundancy operation. Only the cache resources used by this
