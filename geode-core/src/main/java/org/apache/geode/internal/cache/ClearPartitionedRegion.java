@@ -17,20 +17,16 @@ package org.apache.geode.internal.cache;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.cache.persistence.PartitionOfflineException;
-import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.partitioned.ClearPRMessage;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
