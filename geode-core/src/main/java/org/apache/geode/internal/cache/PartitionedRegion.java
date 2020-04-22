@@ -321,6 +321,8 @@ public class PartitionedRegion extends LocalRegion
     }
   };
 
+  private final ClearPartitionedRegion clearPartitionedRegion = new ClearPartitionedRegion(this);
+
   /**
    * Global Region for storing PR config ( PRName->PRConfig). This region would be used to resolve
    * PR name conflict.*
@@ -2148,7 +2150,8 @@ public class PartitionedRegion extends LocalRegion
     throw new UnsupportedOperationException();
   }
 
-  @Override
+  /*@Override*/
+  /*
   void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     synchronized (clearLock) {
@@ -2211,6 +2214,7 @@ public class PartitionedRegion extends LocalRegion
       logger.info("Partitioned region {} finsihed clear operation.", this.getFullPath());
     }
   }
+  */
 
   void sendClearMsgByBucket(final Integer bucketId, ClearPRMessage clearPRMessage) {
     RetryTimeKeeper retryTime = null;
@@ -2267,7 +2271,7 @@ public class PartitionedRegion extends LocalRegion
         currentTarget = waitForNodeOrCreateBucket(retryTime, null, bucketId, false);
         if (currentTarget == null) {
           // the bucket does not exist, no need to clear
-          logger.info("Bucket " + bucketId + " does not contain data, no need to clear");
+          logger.debug("Bucket " + bucketId + " does not contain data, no need to clear");
           return;
         } else {
           if (logger.isDebugEnabled()) {
@@ -10411,5 +10415,24 @@ public class PartitionedRegion extends LocalRegion
       return;
     this.getSystem().handleResourceEvent(ResourceEvent.REGION_CREATE, this);
     this.regionCreationNotified = true;
+  }
+
+  protected ClearPartitionedRegion getClearPartitionedRegion() {
+    return clearPartitionedRegion;
+  }
+
+  @Override
+  void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
+    // Synchronized to avoid other threads invoking clear on this vm/node.
+    synchronized (clearLock) {
+      clearPartitionedRegion.doClear(regionEvent, cacheWrite, this);
+    }
+  }
+
+  boolean hasAnyClientsInterested() {
+    if (getRegionAdvisor().adviseAllServersWithInterest().size() > 0) {
+      return true;
+    }
+    return false;
   }
 }

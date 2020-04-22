@@ -8431,7 +8431,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (useRVV && getDataPolicy().withReplication() && getConcurrencyChecksEnabled()) {
       rvv = versionVector.getCloneForTransmission();
     }
-    clearRegionLocally(regionEvent, cacheWrite, rvv);
+    clearRegionLocal(regionEvent, cacheWrite, rvv);
   }
 
   /**
@@ -8442,8 +8442,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * will not take distributedLock. The clear operation will also clear the local transactional
    * entries. The clear operation will have immediate committed state.
    */
-  void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite,
+  @Override
+  public void clearRegionLocal(RegionEventImpl regionEvent, boolean cacheWrite,
       RegionVersionVector vector) {
+
     final boolean isRvvDebugEnabled = logger.isTraceEnabled(LogMarker.RVV_VERBOSE);
 
     RegionVersionVector rvv = vector;
