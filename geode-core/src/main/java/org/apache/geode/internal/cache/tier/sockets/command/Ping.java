@@ -60,7 +60,7 @@ public class Ping extends BaseCommand {
         }
       } catch (ClassNotFoundException e) {
         logger.warn("Unable to deserialize message from " + serverConnection.getProxyID());
-        writeErrorResponse(clientMessage, MessageType.REPLY, serverConnection);
+        writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
         return;
       }
@@ -91,7 +91,7 @@ public class Ping extends BaseCommand {
     if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
       logger.warn("Unable to ping non-member {} for client {}", targetServer,
           serverConnection.getProxyID());
-      writeErrorResponse(clientMessage, MessageType.REPLY, serverConnection);
+      writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     } else {
       // send a ping message to the server. This is a one-way message that doesn't send a reply
