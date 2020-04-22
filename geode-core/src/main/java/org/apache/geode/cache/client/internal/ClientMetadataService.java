@@ -756,7 +756,7 @@ public class ClientMetadataService {
   }
 
   private void addClientPartitionAdvisor(String regionFullPath, ClientPartitionAdvisor advisor) {
-    if (this.cache.isClosed() || this.clientPRAdvisors == null) {
+    if (this.cache.isClosed()) {
       return;
     }
     try {
@@ -778,7 +778,7 @@ public class ClientMetadataService {
   }
 
   public ClientPartitionAdvisor getClientPartitionAdvisor(String regionFullPath) {
-    if (this.cache.isClosed() || this.clientPRAdvisors == null) {
+    if (this.cache.isClosed()) {
       return null;
     }
     ClientPartitionAdvisor prAdvisor = null;
@@ -791,15 +791,14 @@ public class ClientMetadataService {
   }
 
   public Set<ClientPartitionAdvisor> getColocatedClientPartitionAdvisor(String regionFullPath) {
-    if (this.cache.isClosed() || this.clientPRAdvisors == null
-        || this.colocatedPRAdvisors == null) {
+    if (this.cache.isClosed()) {
       return null;
     }
     return this.colocatedPRAdvisors.get(regionFullPath);
   }
 
   private Set<String> getAllRegionFullPaths() {
-    if (this.cache.isClosed() || this.clientPRAdvisors == null) {
+    if (this.cache.isClosed()) {
       return null;
     }
     Set<String> keys = null;
