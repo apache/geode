@@ -340,13 +340,14 @@ public class ClientHealthMonitor {
   public void receivedPing(ClientProxyMembershipID proxyID) {
     logger.info("[JUAN]: ClientHealthMonitor: Received ping from client with member id {}",
         proxyID);
+
     if (clientMonitor == null) {
       return;
     }
 
-    if (logger.isTraceEnabled()) {
-      logger.trace("ClientHealthMonitor: Received ping from client with member id {}", proxyID);
-    }
+    // if (logger.isTraceEnabled()) {
+    // logger.trace("ClientHealthMonitor: Received ping from client with member id {}", proxyID);
+    // }
 
     AtomicLong heartbeat = clientHeartbeats.get(proxyID);
     if (null == heartbeat) {

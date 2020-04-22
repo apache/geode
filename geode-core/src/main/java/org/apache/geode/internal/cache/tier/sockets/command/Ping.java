@@ -43,22 +43,24 @@ public class Ping extends BaseCommand {
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    // if (isDebugEnabled) {
-    logger.info("[JUAN]: {}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),
+    logger.info("[JUAN]: {}: Received PING with tx {} from {} at {}", serverConnection.getName(),
         clientMessage.getTransactionId(), serverConnection.getSocketString(),
         (DistributionStats.getStatTime() - start));
-    // }
+
     if (clientMessage.getNumberOfParts() > 0) {
       try {
         DistributedMember targetServer = (DistributedMember) clientMessage.getPart(0).getObject();
         DistributedMember myID = serverConnection.getCache().getMyId();
         if (!myID.equals(targetServer)) {
           logger.info(
-              "[JUAN]: Redirecting ping request from {} to {} because myID.equals(targetServer) = {}.",
+              "[JUAN]: Redirecting ping request from {} to {} because I'm not the target -> myID.equals(targetServer) = {}...",
               myID, targetServer, myID.equals(targetServer));
           pingCorrectServer(clientMessage, targetServer, serverConnection);
           writeReply(clientMessage, serverConnection);
           serverConnection.setAsTrue(RESPONDED);
+          logger.info(
+              "[JUAN]: Redirecting ping request from {} to {} because I'm not the target -> myID.equals(targetServer) = {}... Done!.",
+              myID, targetServer, myID.equals(targetServer));
           return;
         }
       } catch (ClassNotFoundException e) {
@@ -75,22 +77,17 @@ public class Ping extends BaseCommand {
 
     writeReply(clientMessage, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
-    if (isDebugEnabled) {
-      logger.debug("{}: Sent ping reply to {}", serverConnection.getName(),
-          serverConnection.getSocketString());
-    }
+    // if (isDebugEnabled) {
+    logger.info("[JUAN]: {}: Sent ping reply to {}", serverConnection.getName(),
+        serverConnection.getSocketString());
+    // }
   }
 
   /**
    * Process a ping request that was sent to the wrong server
    */
   protected void pingCorrectServer(Message clientMessage, DistributedMember targetServer,
-      ServerConnection serverConnection)
-      throws IOException {
-    // if (logger.isDebugEnabled()) {
-    logger.info("[JUAN]: Received a Ping request from {} intended for {}. Forwarding the ping...",
-        serverConnection.getProxyID(), targetServer);
-    // }
+      ServerConnection serverConnection) throws IOException {
     if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
       logger.warn("Unable to ping non-member {} for client {}", targetServer,
           serverConnection.getProxyID());
@@ -115,7 +112,8 @@ public class Ping extends BaseCommand {
     replyMsg.addBytesPart(okBytes());
     replyMsg.send(serverConnection);
     // if (logger.isTraceEnabled()) {
-    logger.info("[JUAN]: {}: rpl tx: {}", serverConnection.getName(), origMsg.getTransactionId());
+    logger.info("[JUAN]: {}: replying PING with tx {}", serverConnection.getName(),
+        origMsg.getTransactionId());
     // }
   }
 }
