@@ -225,12 +225,12 @@ public class ConnectionImpl implements Connection {
 
   @Override
   public long getBirthDate() {
-    return 0; // TODO:KIRK
+    return 0;
   }
 
   @Override
   public void setBirthDate(long ts) {
-    // TODO:KIRK
+    // nothing
   }
 
   @Override
@@ -251,7 +251,7 @@ public class ConnectionImpl implements Connection {
 
   @Override
   public boolean isActive() {
-    return false; // TODO:KIRK
+    return false;
   }
 
   @Override
