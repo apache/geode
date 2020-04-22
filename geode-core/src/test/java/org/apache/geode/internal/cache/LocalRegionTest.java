@@ -23,6 +23,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -276,5 +277,26 @@ public class LocalRegionTest {
     when(filterInfo.isChangeAppliedToCache()).thenReturn(false);
 
     assertThat(region.isGenerateLocalFilterRoutingNeeded(event)).isFalse();
+  }
+
+  @Test
+  public void cancelAllEntryExpiryTasksShouldClearMapOfExpiryTasks() {
+    when(cache.getExpirationScheduler()).thenReturn(mock(ExpirationScheduler.class));
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    RegionEntry regionEntry1 = mock(RegionEntry.class);
+    RegionEntry regionEntry2 = mock(RegionEntry.class);
+    EntryExpiryTask entryExpiryTask1 = spy(new EntryExpiryTask(region, regionEntry1));
+    EntryExpiryTask entryExpiryTask2 = spy(new EntryExpiryTask(region, regionEntry2));
+    region.entryExpiryTasks.put(regionEntry1, entryExpiryTask1);
+    region.entryExpiryTasks.put(regionEntry2, entryExpiryTask2);
+
+    region.cancelAllEntryExpiryTasks();
+    assertThat(region.entryExpiryTasks).isEmpty();
+    verify(entryExpiryTask1, times(1)).cancel();
+    verify(entryExpiryTask2, times(1)).cancel();
   }
 }
