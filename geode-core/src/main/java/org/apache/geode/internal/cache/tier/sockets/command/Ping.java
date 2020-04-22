@@ -115,7 +115,7 @@ public class Ping extends BaseCommand {
     replyMsg.addBytesPart(okBytes());
     replyMsg.send(serverConnection);
     // if (logger.isTraceEnabled()) {
-    logger.trace("[JUAN]: {}: rpl tx: {}", serverConnection.getName(), origMsg.getTransactionId());
+    logger.info("[JUAN]: {}: rpl tx: {}", serverConnection.getName(), origMsg.getTransactionId());
     // }
   }
 }
