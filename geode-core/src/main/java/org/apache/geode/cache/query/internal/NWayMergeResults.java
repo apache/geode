@@ -481,7 +481,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
       E data = iter.next();
       if (isStruct) {
         Object[] fields = ((Struct) data).getFieldValues();
-        DataSerializer.writeObjectArray(fields, out);
+        DataSerializer.writeObjectArray(fields, hdos);
       } else {
         context.getSerializer().writeObject(data, hdos);
       }
