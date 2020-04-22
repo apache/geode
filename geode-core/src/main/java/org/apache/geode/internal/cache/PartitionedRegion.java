@@ -2147,71 +2147,71 @@ public class PartitionedRegion extends LocalRegion
     throw new UnsupportedOperationException();
   }
 
-  /*@Override*/
+  /* @Override */
   /*
-  void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    synchronized (clearLock) {
-      final DistributedLockService lockService = getPartitionedRegionLockService();
-      try {
-        lockService.lock("_clearOperation" + this.getFullPath().replace('/', '_'), -1, -1);
-      } catch (IllegalStateException e) {
-        lockCheckReadiness();
-        throw e;
-      }
-      try {
-        if (cache.isCacheAtShutdownAll()) {
-          throw cache.getCacheClosedException("Cache is shutting down");
-        }
-
-        // do cacheWrite
-        cacheWriteBeforeRegionClear(regionEvent);
-
-        // create ClearPRMessage per bucket
-        List<ClearPRMessage> clearMsgList = createClearPRMessages(regionEvent.getEventId());
-        for (ClearPRMessage clearPRMessage : clearMsgList) {
-          int bucketId = clearPRMessage.getBucketId();
-          checkReadiness();
-          long sendMessagesStartTime = 0;
-          if (isDebugEnabled) {
-            sendMessagesStartTime = System.currentTimeMillis();
-          }
-          try {
-            sendClearMsgByBucket(bucketId, clearPRMessage);
-          } catch (PartitionOfflineException poe) {
-            // TODO add a PartialResultException
-            logger.info("PR.sendClearMsgByBucket encountered PartitionOfflineException at bucket "
-                + bucketId, poe);
-          } catch (Exception e) {
-            logger.info("PR.sendClearMsgByBucket encountered exception at bucket " + bucketId, e);
-          }
-
-          if (isDebugEnabled) {
-            long now = System.currentTimeMillis();
-            logger.debug("PR.sendClearMsgByBucket for bucket {} took {} ms", bucketId,
-                (now - sendMessagesStartTime));
-          }
-          // TODO add psStats
-        }
-      } finally {
-        try {
-          lockService.unlock("_clearOperation" + this.getFullPath().replace('/', '_'));
-        } catch (IllegalStateException e) {
-          lockCheckReadiness();
-        }
-      }
-
-      // notify bridge clients at PR level
-      regionEvent.setEventType(EnumListenerEvent.AFTER_REGION_CLEAR);
-      boolean hasListener = hasListener();
-      if (hasListener) {
-        dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
-      }
-      notifyBridgeClients(regionEvent);
-      logger.info("Partitioned region {} finsihed clear operation.", this.getFullPath());
-    }
-  }
-  */
+   * void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
+   * final boolean isDebugEnabled = logger.isDebugEnabled();
+   * synchronized (clearLock) {
+   * final DistributedLockService lockService = getPartitionedRegionLockService();
+   * try {
+   * lockService.lock("_clearOperation" + this.getFullPath().replace('/', '_'), -1, -1);
+   * } catch (IllegalStateException e) {
+   * lockCheckReadiness();
+   * throw e;
+   * }
+   * try {
+   * if (cache.isCacheAtShutdownAll()) {
+   * throw cache.getCacheClosedException("Cache is shutting down");
+   * }
+   *
+   * // do cacheWrite
+   * cacheWriteBeforeRegionClear(regionEvent);
+   *
+   * // create ClearPRMessage per bucket
+   * List<ClearPRMessage> clearMsgList = createClearPRMessages(regionEvent.getEventId());
+   * for (ClearPRMessage clearPRMessage : clearMsgList) {
+   * int bucketId = clearPRMessage.getBucketId();
+   * checkReadiness();
+   * long sendMessagesStartTime = 0;
+   * if (isDebugEnabled) {
+   * sendMessagesStartTime = System.currentTimeMillis();
+   * }
+   * try {
+   * sendClearMsgByBucket(bucketId, clearPRMessage);
+   * } catch (PartitionOfflineException poe) {
+   * // TODO add a PartialResultException
+   * logger.info("PR.sendClearMsgByBucket encountered PartitionOfflineException at bucket "
+   * + bucketId, poe);
+   * } catch (Exception e) {
+   * logger.info("PR.sendClearMsgByBucket encountered exception at bucket " + bucketId, e);
+   * }
+   *
+   * if (isDebugEnabled) {
+   * long now = System.currentTimeMillis();
+   * logger.debug("PR.sendClearMsgByBucket for bucket {} took {} ms", bucketId,
+   * (now - sendMessagesStartTime));
+   * }
+   * // TODO add psStats
+   * }
+   * } finally {
+   * try {
+   * lockService.unlock("_clearOperation" + this.getFullPath().replace('/', '_'));
+   * } catch (IllegalStateException e) {
+   * lockCheckReadiness();
+   * }
+   * }
+   *
+   * // notify bridge clients at PR level
+   * regionEvent.setEventType(EnumListenerEvent.AFTER_REGION_CLEAR);
+   * boolean hasListener = hasListener();
+   * if (hasListener) {
+   * dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
+   * }
+   * notifyBridgeClients(regionEvent);
+   * logger.info("Partitioned region {} finsihed clear operation.", this.getFullPath());
+   * }
+   * }
+   */
 
   void sendClearMsgByBucket(final Integer bucketId, ClearPRMessage clearPRMessage) {
     RetryTimeKeeper retryTime = null;
