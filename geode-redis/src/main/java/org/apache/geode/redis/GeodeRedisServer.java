@@ -312,7 +312,7 @@ public class GeodeRedisServer {
     try {
       type = RegionShortcut.valueOf(regionType);
     } catch (Exception e) {
-      type = RegionShortcut.PARTITION;
+      type = RegionShortcut.PARTITION_REDUNDANT;
     }
     return type;
   }

@@ -47,7 +47,7 @@ To implement a <%=vars.product_name%> instance using the Redis Adapter:
 2.  Use gfsh to start a <%=vars.product_name%> server, specifying the three configuration options described above:
     -   Use `--redis-port` to specify the port. This parameter is required -- the <%=vars.product_name%> server will listen on this port for Redis commands.
     -   Use `--redis-bind-address` to specify the IP address of the server host. This parameter is optional. If not specified, the default is determined from the /etc/hosts file.
-    -   Use `--J=-Dgemfireredis.regiontype` to specify the region type. This parameter is optional. If not specified, regiontype is set to PARTITION.
+    -   Use `--J=-Dgemfireredis.regiontype` to specify the region type. This parameter is optional. If not specified, regiontype is set to PARTITION_REDUNDANT.
 
 For example:
 
