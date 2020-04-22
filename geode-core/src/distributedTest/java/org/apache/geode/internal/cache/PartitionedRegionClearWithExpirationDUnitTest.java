@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.ExpirationAction.DESTROY;
-import static org.apache.geode.cache.ExpirationAction.INVALIDATE;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
@@ -51,7 +50,6 @@ import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -79,8 +77,6 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   private static final Integer BUCKETS = 13;
   private static final Integer EXPIRATION_TIME = 30;
   private static final String REGION_NAME = "PartitionedRegion";
-  private static final String TEST_CASE_NAME =
-      "[{index}] {method}(Coordinator:{0}, RegionType:{1}, ExpirationAction:{2})";
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule(3);
@@ -119,28 +115,13 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   }
 
   @SuppressWarnings("unused")
-  static Object[] regionTypesAndExpirationActions() {
+  static Object[] vmsAndRegionTypes() {
     ArrayList<Object[]> parameters = new ArrayList<>();
     RegionShortcut[] regionShortcuts = regionTypes();
 
     Arrays.stream(regionShortcuts).forEach(regionShortcut -> {
-      parameters.add(new Object[] {regionShortcut, DESTROY});
-      parameters.add(new Object[] {regionShortcut, INVALIDATE});
-    });
-
-    return parameters.toArray();
-  }
-
-  @SuppressWarnings("unused")
-  static Object[] vmsRegionTypesAndExpirationActions() {
-    ArrayList<Object[]> parameters = new ArrayList<>();
-    RegionShortcut[] regionShortcuts = regionTypes();
-
-    Arrays.stream(regionShortcuts).forEach(regionShortcut -> {
-      parameters.add(new Object[] {TestVM.SERVER1, regionShortcut, DESTROY});
-      parameters.add(new Object[] {TestVM.SERVER1, regionShortcut, INVALIDATE});
-      parameters.add(new Object[] {TestVM.ACCESSOR, regionShortcut, DESTROY});
-      parameters.add(new Object[] {TestVM.ACCESSOR, regionShortcut, INVALIDATE});
+      parameters.add(new Object[] {TestVM.SERVER1, regionShortcut});
+      parameters.add(new Object[] {TestVM.ACCESSOR, regionShortcut});
     });
 
     return parameters.toArray();
@@ -301,7 +282,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   }
 
   /**
-   * The test does the following (clear coordinator and expiration action are parametrized):
+   * The test does the following (clear coordinator and region type are parametrized):
    * - Populates the Partition Region (entries have expiration).
    * - Verifies that the entries are synchronized on all members.
    * - Clears the Partition Region once.
@@ -312,13 +293,13 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
    * . The Partition Region is empty on all members.
    */
   @Test
-  @TestCaseName(TEST_CASE_NAME)
-  @Parameters(method = "vmsRegionTypesAndExpirationActions")
+  @Parameters(method = "vmsAndRegionTypes")
+  @TestCaseName("[{index}] {method}(Coordinator:{0}, RegionType:{1})")
   public void clearShouldRemoveRegisteredExpirationTasks(TestVM coordinatorVM,
-      RegionShortcut regionShortcut, ExpirationAction expirationAction) {
+      RegionShortcut regionShortcut) {
     final int entries = 500;
     int expirationTime = (int) GeodeAwaitility.getTimeout().getValueInMS() / 1000;
-    parametrizedSetup(regionShortcut, new ExpirationAttributes(expirationTime, expirationAction));
+    parametrizedSetup(regionShortcut, new ExpirationAttributes(expirationTime, DESTROY));
     populateRegion(accessor, entries, asList(accessor, server1, server2));
 
     // Clear the region.
@@ -346,7 +327,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   }
 
   /**
-   * The test does the following (expiration action is parametrized):
+   * The test does the following (region type is parametrized):
    * - Populates the Partition Region (entries have expiration).
    * - Verifies that the entries are synchronized on all members.
    * - Sets the {@link MemberKiller} as a {@link CacheWriter} to stop the coordinator VM while the
@@ -358,13 +339,12 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
    * . The Partition Region Buckets are consistent on all members.
    */
   @Test
-  @TestCaseName("[{index}] {method}(RegionType:{0}, ExpirationAction:{1})")
-  @Parameters(method = "regionTypesAndExpirationActions")
+  @Parameters(method = "regionTypes")
+  @TestCaseName("[{index}] {method}(RegionType:{0})")
   public void clearShouldFailWhenCoordinatorMemberIsBouncedAndExpirationTasksShouldSurvive(
-      RegionShortcut regionShortcut, ExpirationAction expirationAction) {
+      RegionShortcut regionShortcut) {
     final int entries = 1000;
-    ExpirationAttributes expirationAttributes =
-        new ExpirationAttributes(EXPIRATION_TIME, expirationAction);
+    ExpirationAttributes expirationAttributes = new ExpirationAttributes(EXPIRATION_TIME, DESTROY);
     parametrizedSetup(regionShortcut, expirationAttributes);
     populateRegion(accessor, entries, asList(accessor, server1, server2));
     registerVMKillerAsCacheWriter(Collections.singletonList(server1));
@@ -409,7 +389,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   }
 
   /**
-   * The test does the following (clear coordinator and expiration action are parametrized):
+   * The test does the following (clear coordinator and region type are parametrized):
    * - Populates the Partition Region (entries have expiration).
    * - Verifies that the entries are synchronized on all members.
    * - Sets the {@link MemberKiller} as a {@link CacheWriter} to stop a non-coordinator VM while the
@@ -424,13 +404,12 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
    * . The Partition Region is empty and buckets are consistent across all members.
    */
   @Test
-  @TestCaseName(TEST_CASE_NAME)
-  @Parameters(method = "vmsRegionTypesAndExpirationActions")
+  @Parameters(method = "vmsAndRegionTypes")
+  @TestCaseName("[{index}] {method}(Coordinator:{0}, RegionType:{1})")
   public void clearShouldSucceedAndRemoveRegisteredExpirationTasksWhenNonCoordinatorMemberIsBounced(
-      TestVM coordinatorVM, RegionShortcut regionShortcut, ExpirationAction expirationAction) {
+      TestVM coordinatorVM, RegionShortcut regionShortcut) {
     final int entries = 1500;
-    ExpirationAttributes expirationAttributes =
-        new ExpirationAttributes(EXPIRATION_TIME, expirationAction);
+    ExpirationAttributes expirationAttributes = new ExpirationAttributes(EXPIRATION_TIME, DESTROY);
     parametrizedSetup(regionShortcut, expirationAttributes);
     registerVMKillerAsCacheWriter(Collections.singletonList(server2));
     populateRegion(accessor, entries, asList(accessor, server1, server2));
