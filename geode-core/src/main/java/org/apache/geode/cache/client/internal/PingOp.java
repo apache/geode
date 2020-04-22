@@ -34,7 +34,7 @@ public class PingOp {
    */
   public static void execute(ExecutablePool pool, ServerLocation serverLocation,
       DistributedMember serverID) {
-    AbstractOp op = new PingOpImpl(serverLocation, serverID);
+    AbstractOp op = new PingOpImpl(serverID);
     pool.executeOn(serverLocation, op, false, false);
   }
 
@@ -44,16 +44,13 @@ public class PingOp {
 
   static class PingOpImpl extends AbstractOp {
 
-    private long startTime;
-    private ServerLocation location;
     private final DistributedMember serverID;
 
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    PingOpImpl(ServerLocation location, DistributedMember serverID) {
+    PingOpImpl(DistributedMember serverID) {
       super(MessageType.PING, 0);
-      this.location = location;
       this.serverID = serverID;
     }
 
