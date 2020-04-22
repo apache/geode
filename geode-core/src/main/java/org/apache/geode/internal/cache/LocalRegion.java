@@ -325,6 +325,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private int txRefCount;
 
+  @VisibleForTesting
+  final ConcurrentHashMap<RegionEntry, EntryExpiryTask> entryExpiryTasks =
+      new ConcurrentHashMap<>();
+
   private volatile boolean regionInvalid;
 
   /**
@@ -7967,7 +7971,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  private void cancelAllEntryExpiryTasks() {
+  @VisibleForTesting
+  void cancelAllEntryExpiryTasks() {
     // This method gets called during LocalRegion construction
     // in which case the final entryExpiryTasks field can still be null
     if (entryExpiryTasks.isEmpty()) {
@@ -7982,6 +7987,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       task.cancel();
       doPurge = true;
     }
+
+    // Clear the map after canceling each expiry task.
+    entryExpiryTasks.clear();
+
     if (doPurge) {
       // do a force to not leave any refs to this region
       cache.getExpirationScheduler().forcePurge();
