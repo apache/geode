@@ -1014,9 +1014,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Sets the number of milliseconds to wait for ping responses when determining whether another member is still alive. Defaults to %s.",
         DEFAULT_MEMBER_TIMEOUT));
 
-    // for some reason the default port range is null under some circumstances
-    int[] range = DEFAULT_MEMBERSHIP_PORT_RANGE;
-    String srange = range == null ? "not available" : "" + range[0] + "-" + range[1];
+    String srange = "" + DEFAULT_MEMBERSHIP_PORT_RANGE[0] + "-" + DEFAULT_MEMBERSHIP_PORT_RANGE[1];
     String msg = String.format(
         "Sets the range of datagram socket ports that can be used for membership ID purposes and unicast datagram messaging. Defaults to %s.",
         srange);

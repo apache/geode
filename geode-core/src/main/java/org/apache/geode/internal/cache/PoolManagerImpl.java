@@ -287,9 +287,6 @@ public class PoolManagerImpl {
   }
 
   public static void emergencyClose() {
-    if (impl == null) {
-      return;
-    }
     impl.itrForEmergencyClose.ifPresent(poolIterator -> {
       while (poolIterator.hasNext()) {
         Pool pool = poolIterator.next();
