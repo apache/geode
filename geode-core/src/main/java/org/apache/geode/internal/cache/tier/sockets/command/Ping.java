@@ -19,6 +19,7 @@ import java.io.IOException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPingMessage;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -50,11 +51,17 @@ public class Ping extends BaseCommand {
     }
     if (clientMessage.getNumberOfParts() > 0) {
       try {
-        DistributedMember targetServer = (DistributedMember) clientMessage.getPart(0).getObject();
-        DistributedMember myID = serverConnection.getCache().getMyId();
+        InternalDistributedMember targetServer =
+            (InternalDistributedMember) clientMessage.getPart(0).getObject();
+        InternalDistributedMember myID = serverConnection.getCache().getMyId();
         if (!myID.equals(targetServer)) {
-          pingCorrectServer(clientMessage, targetServer, serverConnection);
-          writeReply(clientMessage, serverConnection);
+          if (myID.compareTo(targetServer.getMemberIdentifier(), true, false) == 0) {
+            logger.warn("Target server {} has different viewId {}", targetServer, myID);
+            writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
+          }else {
+            pingCorrectServer(clientMessage, targetServer, serverConnection);
+            writeReply(clientMessage, serverConnection);
+          }
           serverConnection.setAsTrue(RESPONDED);
           return;
         }

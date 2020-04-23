@@ -641,4 +641,8 @@ public class InternalDistributedMember
   public interface HostnameResolver {
     InetAddress getInetAddress(ServerLocation location) throws UnknownHostException;
   }
+
+  public MemberIdentifier getMemberIdentifier() {
+    return memberIdentifier;
+  }
 }
