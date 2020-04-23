@@ -89,6 +89,7 @@ public class ClearPartitionedRegion {
 
   public void clearRegionLocal(RegionEventImpl regionEvent, boolean cacheWrite,
       RegionVersionVector vector) {
+    logger.info("#### CPR.clearRegionLocal", new Exception("DEBUG"));
     // Synchronized to handle the requester departure.
     synchronized (lockForListenerAndClientNotification) {
       if (partitionedRegion.getDataStore() != null) {
@@ -110,6 +111,8 @@ public class ClearPartitionedRegion {
   }
 
   private void doAfterClear(RegionEventImpl regionEvent) {
+    logger
+        .info("#### doAfterClear clientInterested: " + partitionedRegion.hasAnyClientsInterested());
     if (partitionedRegion.hasAnyClientsInterested()) {
       notifyClients(regionEvent);
     }
@@ -120,7 +123,6 @@ public class ClearPartitionedRegion {
   }
 
   void notifyClients(RegionEventImpl event) {
-
     // Set client routing information into the event
     // The clear operation in case of PR is distributed differently
     // hence the FilterRoutingInfo is set here instead of
@@ -130,11 +132,14 @@ public class ClearPartitionedRegion {
         .isUsedForPartitionedRegionAdmin()
         && !partitionedRegion.isUsedForPartitionedRegionBucket() && !partitionedRegion
             .isUsedForParallelGatewaySenderQueue()) {
+
       FilterRoutingInfo localCqFrInfo =
           partitionedRegion.getFilterProfile().getFilterRoutingInfoPart1(event,
               FilterProfile.NO_PROFILES, Collections.emptySet());
+
       FilterRoutingInfo localCqInterestFrInfo =
           partitionedRegion.getFilterProfile().getFilterRoutingInfoPart2(localCqFrInfo, event);
+
       if (localCqInterestFrInfo != null) {
         event.setLocalFilterInfo(localCqInterestFrInfo.getLocalFilterInfo());
       }

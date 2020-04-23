@@ -10391,9 +10391,13 @@ public class PartitionedRegion extends LocalRegion
   }
 
   boolean hasAnyClientsInterested() {
-    if (getRegionAdvisor().adviseAllServersWithInterest().size() > 0) {
+    // Check local filter
+    if (getFilterProfile() != null && (getFilterProfile().hasInterest() || getFilterProfile()
+        .hasCQs())) {
       return true;
     }
-    return false;
+    // check peer server filters
+    return (getRegionAdvisor().hasPRServerWithInterest()
+        || getRegionAdvisor().hasPRServerWithCQs());
   }
 }

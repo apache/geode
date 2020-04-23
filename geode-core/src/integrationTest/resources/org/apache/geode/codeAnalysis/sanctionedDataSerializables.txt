@@ -857,6 +857,10 @@ org/apache/geode/internal/cache/CacheServerAdvisor$CacheServerProfile,2
 fromData,54
 toData,43
 
+org/apache/geode/internal/cache/ClearPartitionedRegionMessage,2
+fromData,40
+toData,36
+
 org/apache/geode/internal/cache/ClientRegionEventImpl,2
 fromData,15
 toData,15

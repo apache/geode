@@ -274,6 +274,7 @@ org/apache/geode/internal/cache/BucketAdvisor$SetFromMap,true,245465785475754387
 org/apache/geode/internal/cache/BucketNotFoundException,true,2898657229184289911
 org/apache/geode/internal/cache/BucketRegion$SizeOp,false
 org/apache/geode/internal/cache/CacheClientStatus,true,-56148046466517217,_id:org/apache/geode/internal/cache/tier/sockets/ClientProxyMembershipID,_memberId:java/lang/String,_numberOfConnections:int,_socketAddresses:java/util/List,_socketPorts:java/util/List
+org/apache/geode/internal/cache/ClearPartitionedRegionMessage$OperationType,false
 org/apache/geode/internal/cache/CommitReplyException,true,-7711083075296622596,exceptions:java/util/Set
 org/apache/geode/internal/cache/DataLocationException,true,-7385193860335007389
 org/apache/geode/internal/cache/DiskDirSizesUnit,false
