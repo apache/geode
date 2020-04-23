@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisDataType;
 
 class GeodeRedisSetSynchronized implements RedisSet {
 
@@ -59,8 +60,15 @@ class GeodeRedisSetSynchronized implements RedisSet {
       Set<ByteArrayWrapper> newValue = createSet(oldValue);
       newValue.removeAll(membersToRemove);
       removedCount.set(oldValue.size() - newValue.size());
+
       return newValue;
     });
+
+    if (members().size() == 0) {
+      RedisDataType type = context.getKeyRegistrar().getType(key);
+      context.getRegionProvider().removeKey(key, type);
+    }
+
     return removedCount.longValue();
   }
 

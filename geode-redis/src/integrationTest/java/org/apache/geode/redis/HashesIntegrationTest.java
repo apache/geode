@@ -146,6 +146,15 @@ public class HashesIntegrationTest {
     assertTrue(jedis.hlen(key) == 0);
   }
 
+  @Test
+  public void testHDelDeletesKeyWhenHashIsEmpty() {
+    jedis.hset("farm", "chicken", "little");
+
+    jedis.hdel("farm", "chicken");
+
+    assertThat(jedis.exists("farm")).isFalse();
+  }
+
 
   @Test
   public void testHkeys() {

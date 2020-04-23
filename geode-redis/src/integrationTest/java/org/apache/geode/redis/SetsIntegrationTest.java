@@ -213,6 +213,15 @@ public class SetsIntegrationTest {
   }
 
   @Test
+  public void testSRemDeletesKeyWhenSetIsEmpty() {
+    jedis.sadd("farm", "chicken");
+
+    jedis.srem("farm", "chicken");
+
+    assertThat(jedis.exists("farm")).isFalse();
+  }
+
+  @Test
   public void testSMembersSIsMember() {
     int elements = 10;
     Set<String> strings = new HashSet<String>();
