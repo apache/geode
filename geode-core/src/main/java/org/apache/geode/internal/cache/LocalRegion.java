@@ -8445,7 +8445,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void clearRegionLocal(RegionEventImpl regionEvent, boolean cacheWrite,
       RegionVersionVector vector) {
-
     final boolean isRvvDebugEnabled = logger.isTraceEnabled(LogMarker.RVV_VERBOSE);
 
     RegionVersionVector rvv = vector;

@@ -21,6 +21,7 @@ import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCach
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,6 +39,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -107,7 +109,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
   }
 
   private void verifyRegionSize(boolean isClient, int expectedNum) {
-    GeodeAwaitility.await()
+    GeodeAwaitility.await().atMost(10, SECONDS)
         .untilAsserted(() -> assertThat(getRegion(isClient).size()).isEqualTo(expectedNum));
   }
 
@@ -115,6 +117,13 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
     Region region = getClientCache().createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
         .create(REGION_NAME);
     region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
+  }
+
+  private void stopServers() {
+    List<CacheServer> cacheServers = getCache().getCacheServers();
+    for (CacheServer server : cacheServers) {
+      server.stop();
+    }
   }
 
   private void initDataStore() {
@@ -204,6 +213,26 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
   @Test
   public void normalClearFromClient() {
+    client1.invoke(this::initClientCache);
+    client2.invoke(this::initClientCache);
+
+    client1.invoke(() -> feed(true));
+    verifyClientRegionSize(NUM_ENTRIES);
+    verifyServerRegionSize(NUM_ENTRIES);
+
+    client1.invoke(() -> getRegion(true).clear());
+
+    verifyServerRegionSize(0);
+    verifyClientRegionSize(0);
+    verifyCacheListenerTriggerCount(null);
+  }
+
+  @Test
+  public void clearFromClientWithAccessorAsServer() {
+    dataStore1.invoke(this::stopServers);
+    dataStore2.invoke(this::stopServers);
+    dataStore3.invoke(this::stopServers);
+
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
