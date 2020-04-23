@@ -50,7 +50,7 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
   private final AtomicBoolean passed = new AtomicBoolean(true);
   private final AtomicBoolean delete = new AtomicBoolean(true);
   private final AtomicReference<File> copyTo = new AtomicReference<>();
-  private final AtomicReference<When> when = new AtomicReference<>();
+  private final AtomicReference<When> when = new AtomicReference<>(When.FAILS);
   private final AtomicReference<String> methodName = new AtomicReference<>();
 
   /**
