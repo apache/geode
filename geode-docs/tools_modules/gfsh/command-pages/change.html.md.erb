@@ -20,7 +20,9 @@ limitations under the License.
 -->
 <a id="topic_E74ED23CB60342538B2175C326E7D758"></a>
 
-Changes the logging level on specified members.
+Changes the logging level on specified members. This command takes effect if the default <%=vars.product_name%> logging configuration is used.
+
+When using a custom `Log4J` configuration, this command takes effect only if the member whose logging level you want to change was started using the `--J=-Dgeode.LOG_LEVEL_UPDATE_OCCURS=ALWAYS` system property.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
