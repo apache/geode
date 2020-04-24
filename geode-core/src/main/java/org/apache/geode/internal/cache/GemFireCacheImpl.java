@@ -721,6 +721,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private List<File> backupFiles = emptyList();
 
+  private ConcurrentMap<String, CountDownLatch> diskStoreLatches = new ConcurrentHashMap();
+
   static {
     // this works around jdk bug 6427854
     String propertyName = "sun.nio.ch.bugLevel";
@@ -1084,6 +1086,32 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     clientMetadataService = clientMetadataServiceFactory.apply(this);
+  }
+
+  public void lockDiskStore(String diskStoreName) {
+    CountDownLatch countDownLatch = diskStoreLatches.get(diskStoreName);
+    if (countDownLatch == null) {
+      countDownLatch = diskStoreLatches.putIfAbsent(diskStoreName, new CountDownLatch(1));
+      if (countDownLatch != null) {
+        try {
+          countDownLatch.await();
+        } catch (InterruptedException e) {
+          throw new InternalGemFireError(e);
+        }
+      }
+    } else {
+      try {
+        countDownLatch.await();
+      } catch (InterruptedException e) {
+        throw new InternalGemFireError(e);
+      }
+    }
+  }
+
+  public void unlockDiskStore(String diskStoreName) {
+    if (diskStoreLatches.get(diskStoreName) != null) {
+      diskStoreLatches.get(diskStoreName).countDown();
+    }
   }
 
   /**
@@ -2443,6 +2471,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public void removeDiskStore(DiskStoreImpl diskStore) {
     diskStores.remove(diskStore.getName());
+    diskStoreLatches.remove(diskStore.getName());
     regionOwnedDiskStores.remove(diskStore.getName());
     if (!diskStore.getOwnedByRegion()) {
       system.handleResourceEvent(ResourceEvent.DISKSTORE_REMOVE, diskStore);
