@@ -55,12 +55,11 @@ public class Ping extends BaseCommand {
             (InternalDistributedMember) clientMessage.getPart(0).getObject();
         InternalDistributedMember myID = serverConnection.getCache().getMyId();
         if (!myID.equals(targetServer)) {
-          if (myID.compareTo(targetServer.getMemberIdentifier(), true, false) == 0) {
+          if (myID.compareTo(targetServer, true, false) == 0) {
             logger.warn("Target server {} has different viewId {}", targetServer, myID);
             writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
           } else {
             pingCorrectServer(clientMessage, targetServer, serverConnection);
-            writeReply(clientMessage, serverConnection);
           }
           serverConnection.setAsTrue(RESPONDED);
           return;
