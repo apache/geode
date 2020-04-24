@@ -30,7 +30,7 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Stack;
@@ -147,6 +147,6 @@ public class ElementTypeTest {
     ElementType.FIELD_MAPPING.endElement(stack);
 
     assertThat(stack.size()).isEqualTo(1);
-    verifyZeroInteractions(mapping);
+    verifyNoMoreInteractions(mapping);
   }
 }

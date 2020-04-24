@@ -224,6 +224,16 @@ public class ConnectionImpl implements Connection {
   }
 
   @Override
+  public long getBirthDate() {
+    return 0;
+  }
+
+  @Override
+  public void setBirthDate(long ts) {
+    // nothing
+  }
+
+  @Override
   public OutputStream getOutputStream() {
     return out;
   }
@@ -237,6 +247,11 @@ public class ConnectionImpl implements Connection {
   @Override
   public ConnectionStats getStats() {
     return endpoint.getStats();
+  }
+
+  @Override
+  public boolean isActive() {
+    return false;
   }
 
   @Override

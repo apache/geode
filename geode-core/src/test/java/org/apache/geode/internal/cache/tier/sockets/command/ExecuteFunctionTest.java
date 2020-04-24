@@ -22,7 +22,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -194,7 +194,7 @@ public class ExecuteFunctionTest {
 
     verify(securityService).authorize(ResourcePermissions.DATA_WRITE);
     verify(chunkedResponseMessage).sendChunk(serverConnection);
-    verifyZeroInteractions(serverToClientFunctionResultSenderFactory);
+    verifyNoMoreInteractions(serverToClientFunctionResultSenderFactory);
   }
 
   @Test
@@ -220,6 +220,6 @@ public class ExecuteFunctionTest {
     executeFunction.cmdExecute(message, serverConnection, securityService, 0);
 
     verify(chunkedResponseMessage).sendChunk(serverConnection);
-    verifyZeroInteractions(serverToClientFunctionResultSenderFactory);
+    verifyNoMoreInteractions(serverToClientFunctionResultSenderFactory);
   }
 }

@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -558,7 +558,7 @@ public class InternalCacheBuilderTest {
         .setIsExistingOk(true)
         .create(givenSystem));
 
-    verifyZeroInteractions(givenSystem);
+    verifyNoMoreInteractions(givenSystem);
   }
 
   @Test
