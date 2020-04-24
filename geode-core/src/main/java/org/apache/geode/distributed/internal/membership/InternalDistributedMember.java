@@ -642,7 +642,4 @@ public class InternalDistributedMember
     InetAddress getInetAddress(ServerLocation location) throws UnknownHostException;
   }
 
-  public MemberIdentifier getMemberIdentifier() {
-    return memberIdentifier;
-  }
 }
