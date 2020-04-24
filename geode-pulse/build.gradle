@@ -52,7 +52,6 @@ dependencies {
   // Needed to fully use log4j instead of commons-logging.
   compile('org.apache.logging.log4j:log4j-jcl')
   compile('org.apache.logging.log4j:log4j-api')
-//  compile('org.apache.logging.log4j:log4j-core')
 
   compile('commons-beanutils:commons-beanutils')
   compile('commons-collections:commons-collections')
@@ -91,8 +90,7 @@ dependencies {
 
   runtimeOnly('org.springframework:spring-expression')
 
-  // added only to ensure common version with other geode modules
-  runtimeOnly('org.slf4j:slf4j-api')
+  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl')
 
   providedCompile('commons-logging:commons-logging')
 
