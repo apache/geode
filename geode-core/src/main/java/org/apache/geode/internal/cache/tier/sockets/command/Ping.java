@@ -43,24 +43,34 @@ public class Ping extends BaseCommand {
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("{}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),
-          clientMessage.getTransactionId(), serverConnection.getSocketString(),
-          (DistributionStats.getStatTime() - start));
-    }
+    logger.info("[JUAN]: {}: Received PING with tx {} from {} at {}", serverConnection.getName(),
+        clientMessage.getTransactionId(), serverConnection.getSocketString(),
+        (DistributionStats.getStatTime() - start));
+
     if (clientMessage.getNumberOfParts() > 0) {
       try {
         InternalDistributedMember targetServer =
             (InternalDistributedMember) clientMessage.getPart(0).getObject();
         InternalDistributedMember myID = serverConnection.getCache().getMyId();
+
         if (!myID.equals(targetServer)) {
+          logger.info("[JUAN]: I'm ({}) not the target ({}) -> myID.equals(targetServer) = {}...",
+              myID, targetServer, myID.equals(targetServer));
+
           if (myID.compareTo(targetServer, true, false) == 0) {
-            logger.warn("Target server {} has different viewId {}", targetServer, myID);
+            logger.info(
+                "[JUAN]: I'm ({}) the Target ({}) but the client has an invalid viewId ({}) cached, writing error...",
+                myID, targetServer, myID.getVmViewId());
             writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
+            logger.info(
+                "[JUAN]: I'm ({}) the Target ({}) but the client has an invalid viewId ({}) cached, writing error... Done!.",
+                myID, targetServer, myID.getVmViewId());
           } else {
+            logger.info("[JUAN]: Redirecting ping to {}...", targetServer);
             pingCorrectServer(clientMessage, targetServer, serverConnection);
+            logger.info("[JUAN]: Redirecting ping to {}... Done!.", targetServer);
           }
+
           serverConnection.setAsTrue(RESPONDED);
           return;
         }
@@ -78,33 +88,37 @@ public class Ping extends BaseCommand {
 
     writeReply(clientMessage, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
-    if (isDebugEnabled) {
-      logger.debug("{}: Sent ping reply to {}", serverConnection.getName(),
-          serverConnection.getSocketString());
-    }
+    // if (isDebugEnabled) {
+    // logger.debug("{}: Sent ping reply to {}", serverConnection.getName(),
+    // serverConnection.getSocketString());
+    // }
+    logger.info("[JUAN]: {}: PING replied with tx {} to {}.", serverConnection.getName(),
+        clientMessage.getTransactionId(), serverConnection.getSocketString());
   }
 
   /**
    * Process a ping request that was sent to the wrong server
    */
   protected void pingCorrectServer(Message clientMessage, DistributedMember targetServer,
-      ServerConnection serverConnection)
-      throws IOException {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Received a Ping request from {} intended for {}. Forwarding the ping...",
-          serverConnection.getProxyID(), targetServer);
-    }
+      ServerConnection serverConnection) throws IOException {
+    logger.info("[JUAN]: Received a Ping request from {} intended for {}. Forwarding the ping...",
+        serverConnection.getProxyID(), targetServer);
+
     if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
-      logger.warn("Unable to ping non-member {} for client {}", targetServer,
-          serverConnection.getProxyID());
+      logger.info("[JUAN]: Unable to ping non-member {} for client {}, writing error...",
+          targetServer, serverConnection.getProxyID());
       writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
+      logger.info("[JUAN]: Unable to ping non-member {} for client {}, writing error... Done!",
+          targetServer, serverConnection.getProxyID());
     } else {
+      logger.info("[JUAN]: Redirecting ping through DistributedPingMessage...");
       // send a ping message to the server. This is a one-way message that doesn't send a reply
       final DistributedPingMessage distributedPingMessage =
           new DistributedPingMessage(targetServer, serverConnection.getProxyID());
       serverConnection.getCache().getDistributionManager().putOutgoing(distributedPingMessage);
       writeReply(clientMessage, serverConnection);
+      logger.info("[JUAN]: Redirecting ping through DistributedPingMessage... Done!.");
     }
   }
 

@@ -87,12 +87,15 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     public void run2() {
       if (endpoint.timeToPing(pingIntervalNanos)) {
         try {
+          logger.info("[JUAN]: Sending ping to ServerLocation {} and MemberId {}...",
+              endpoint.getLocation(), endpoint.getMemberId());
           PingOp.execute(pool, endpoint.getLocation(), endpoint.getMemberId());
+          logger.info("[JUAN]: Sending ping to ServerLocation {} and MemberId {}... Done!.",
+              endpoint.getLocation(), endpoint.getMemberId());
         } catch (Exception e) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Error occurred while pinging server: {} - {}", endpoint.getLocation(),
-                e.getMessage());
-          }
+          logger.error(
+              "[JUAN]: Error occurred while sending ping to ServerLocation {} and MemberId {}",
+              endpoint.getLocation(), endpoint.getMemberId(), e);
           InternalCache cache = GemFireCacheImpl.getInstance();
           if (cache != null) {
             ClientMetadataService cms = cache.getClientMetadataService();
