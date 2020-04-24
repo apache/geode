@@ -33,7 +33,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   private Collection<ByteArrayWrapper> members;
   private boolean hasDelta;
-  private Collection<? extends ByteArrayWrapper> elementsAddedDelta;
   private Object delta;
 
   public DeltaSet(Collection<ByteArrayWrapper> members) {
@@ -219,7 +218,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     }
   }
 
-  private class AddedMembers implements DataSerializable {
+  public static class AddedMembers implements DataSerializable {
     private Collection<ByteArrayWrapper> membersToAdd;
 
     public AddedMembers() {
@@ -236,16 +235,16 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeObject(members, out);
+      DataSerializer.writeObject(membersToAdd, out);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      members = DataSerializer.readObject(in);
+      membersToAdd = DataSerializer.readObject(in);
     }
   }
 
-  private class RemovedMembers implements DataSerializable {
+  public static class RemovedMembers implements DataSerializable {
     private Collection<ByteArrayWrapper> membersToRemove;
 
     public RemovedMembers() {
@@ -262,12 +261,12 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeObject(members, out);
+      DataSerializer.writeObject(membersToRemove, out);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      members = DataSerializer.readObject(in);
+      membersToRemove = DataSerializer.readObject(in);
     }
   }
 }
