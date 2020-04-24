@@ -77,10 +77,10 @@ public class SMoveExecutor extends SetExecutor {
 
           destinationSet.add(member);
 
-          region.put(destination, destinationSet);
+          region.put(destination, new DeltaSet(destinationSet));
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
 
-          region.put(source, sourceSet);
+          region.put(source, new DeltaSet(sourceSet));
           context.getKeyRegistrar().register(source, RedisDataType.REDIS_SET);
 
           command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));

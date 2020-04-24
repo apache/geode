@@ -101,7 +101,7 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
           set.add(entry);
         }
         if (!set.isEmpty()) {
-          newSet = new HashSet<>(set);
+          newSet = new DeltaSet(set);
           region.put(destination, newSet);
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
         }
