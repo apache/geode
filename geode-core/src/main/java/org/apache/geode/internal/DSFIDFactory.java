@@ -455,6 +455,8 @@ public class DSFIDFactory implements DataSerializableFixedID {
   }
 
   private void registerDSFIDTypes(DSFIDSerializer serializer) {
+    serializer.registerDSFID(REGION_REDUNDANCY_STATUS, RegionRedundancyStatusImpl.class);
+    serializer.registerDSFID(RESTORE_REDUNDANCY_RESULTS, RestoreRedundancyResultsImpl.class);
     serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
     serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
     serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
@@ -576,8 +578,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(ADD_CACHESERVER_PROFILE_UPDATE, AddCacheServerProfileMessage.class);
     serializer.registerDSFID(REMOVE_CACHESERVER_PROFILE_UPDATE,
         RemoveCacheServerProfileMessage.class);
-    serializer.registerDSFID(REGION_REDUNDANCY_STATUS, RegionRedundancyStatusImpl.class);
-    serializer.registerDSFID(RESTORE_REDUNDANCY_RESULTS, RestoreRedundancyResultsImpl.class);
     serializer.registerDSFID(SERVER_INTEREST_REGISTRATION_MESSAGE,
         ServerInterestRegistrationMessage.class);
     serializer.registerDSFID(FILTER_PROFILE_UPDATE, FilterProfile.OperationMessage.class);

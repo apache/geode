@@ -57,6 +57,9 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   // NOTE, codes < -65536 will take 4 bytes to serialize
   // NOTE, codes < -128 will take 2 bytes to serialize
 
+  short REGION_REDUNDANCY_STATUS = -161;
+  short RESTORE_REDUNDANCY_RESULTS = -160;
+
   short CREATE_REGION_MESSAGE_LUCENE = -159;
   short FINAL_CHECK_PASSED_MESSAGE = -158;
   short NETWORK_PARTITION_MESSAGE = -157;
@@ -225,10 +228,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   byte REMOVE_CACHESERVER_PROFILE_UPDATE = -19;
 
-  byte REGION_REDUNDANCY_STATUS = -18;
-  byte RESTORE_REDUNDANCY_RESULTS = -17;
-
-  // IDs -16 through -10 unused
+  // IDs -18 through -10 unused
 
   byte PR_REMOVE_ALL_MESSAGE = -9;
   byte REMOVE_ALL_MESSAGE = -8;

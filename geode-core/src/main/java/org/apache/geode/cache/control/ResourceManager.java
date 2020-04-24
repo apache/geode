@@ -79,7 +79,13 @@ public interface ResourceManager {
   Set<RebalanceOperation> getRebalanceOperations();
 
   /**
-   * Creates a class for defining and starting restore redundancy operations.
+   * Creates a {@link RestoreRedundancyOperation} class for defining and starting restore redundancy
+   * operations and for determining the redundancy status of regions. Similar to a rebalance
+   * operation, a restore redundancy operation will attempt to bring each included region to its
+   * configured redundancy level by creating redundant copies of buckets, and will also optionally
+   * reassign which members host the primary buckets for better load balancing. A restore redundancy
+   * operation differs from a rebalance operation in that it will not move buckets from one member
+   * to another.
    *
    * @return a class for defining and starting restore redundancy operations
    */
