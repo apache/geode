@@ -17,6 +17,7 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -2757,6 +2758,17 @@ public class Cluster extends Thread {
 
   public boolean deleteQueryById(String userId, String queryId) {
     return getDataBrowser().deleteQueryById(userId, queryId);
+  }
+
+  public void reconnectToGemFire(Object credentials) {
+    if (jmxConnector != null) {
+      try {
+        jmxConnector.close();
+      } catch (IOException e) {
+        logger.info("Could not close old connection on reconnect attempt", e);
+      }
+      jmxConnector = updater.connect(credentials);
+    }
   }
 
   public void connectToGemFire(Object credentials) {
