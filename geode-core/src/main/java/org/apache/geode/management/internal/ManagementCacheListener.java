@@ -35,11 +35,13 @@ class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
   private final MBeanProxyFactory proxyHelper;
 
   ManagementCacheListener(MBeanProxyFactory proxyHelper) {
+    logger.info("KIRK:ManagementCacheListener:ctor");
     this.proxyHelper = proxyHelper;
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
+    logger.info("KIRK:ManagementCacheListener:afterCreate: {}", event);
     ObjectName objectName = null;
 
     try {
@@ -58,6 +60,7 @@ class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
 
   @Override
   public void afterDestroy(EntryEvent<String, Object> event) {
+    logger.info("KIRK:ManagementCacheListener:afterDestroy: {}", event);
     ObjectName objectName = null;
 
     try {
@@ -74,6 +77,7 @@ class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
+    logger.info("KIRK:ManagementCacheListener:afterUpdate: {}", event);
     ObjectName objectName = null;
     try {
       objectName = ObjectName.getInstance(event.getKey());

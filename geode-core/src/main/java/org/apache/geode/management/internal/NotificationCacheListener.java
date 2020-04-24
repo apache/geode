@@ -16,14 +16,18 @@ package org.apache.geode.management.internal;
 
 import javax.management.Notification;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This listener will be attached to each notification region corresponding to a member
  */
 class NotificationCacheListener extends CacheListenerAdapter<NotificationKey, Notification> {
+  private static final Logger logger = LogService.getLogger();
 
   private final NotificationHubClient notificationHubClient;
 
@@ -33,16 +37,19 @@ class NotificationCacheListener extends CacheListenerAdapter<NotificationKey, No
 
   @VisibleForTesting
   NotificationCacheListener(NotificationHubClient notificationHubClient) {
+    logger.info("KIRK:NotificationCacheListener:ctor");
     this.notificationHubClient = notificationHubClient;
   }
 
   @Override
   public void afterCreate(EntryEvent<NotificationKey, Notification> event) {
+    logger.info("KIRK:NotificationCacheListener:afterCreate: {}", event);
     notificationHubClient.sendNotification(event);
   }
 
   @Override
   public void afterUpdate(EntryEvent<NotificationKey, Notification> event) {
+    logger.info("KIRK:NotificationCacheListener:afterUpdate: {}", event);
     notificationHubClient.sendNotification(event);
   }
 }

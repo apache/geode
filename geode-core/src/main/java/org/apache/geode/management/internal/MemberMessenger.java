@@ -16,6 +16,8 @@ package org.apache.geode.management.internal;
 
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -24,12 +26,14 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AlertLevelChangeMessage;
 import org.apache.geode.logging.internal.log4j.LogLevel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Handles messaging from manager to members for various operations. It sends two types of messages:
  * {@link ManagerStartupMessage} and {@link AlertLevelChangeMessage}
  */
 public class MemberMessenger {
+  private static final Logger logger = LogService.getLogger();
 
   private final MBeanJMXAdapter jmxAdapter;
   private final InternalDistributedSystem system;
@@ -91,6 +95,7 @@ public class MemberMessenger {
    * (GEODE-5923).
    */
   void broadcastManagerInfo() {
+    logger.info("KIRK:MemberMessenger:broadcastManagerInfo");
     Set<InternalDistributedMember> otherMemberSet =
         system.getDistributionManager().getAllOtherMembers();
 

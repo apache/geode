@@ -350,15 +350,19 @@ public class SystemManagementService extends BaseManagementService {
 
   @Override
   public void startManager() {
+    logger.info("KIRK:SystemManagementService:startManager");
     if (!cache.getInternalDistributedSystem().getConfig().getJmxManager()) {
+      logger.info("KIRK:SystemManagementService:startManager:throw");
       throw new ManagementException(
           "Could not start the manager because the gemfire property \"jmx-manager\" is false.");
     }
 
     synchronized (instances) {
+      logger.info("KIRK:SystemManagementService:startManager:sync");
       verifyManagementService();
 
       if (federatingManager != null && federatingManager.isRunning()) {
+        logger.info("KIRK:SystemManagementService:startManager:sync:early-out");
         throw new AlreadyRunningException(
             "Manager is already running");
       }
@@ -369,6 +373,7 @@ public class SystemManagementService extends BaseManagementService {
 
       boolean started = false;
       try {
+        logger.info("KIRK:SystemManagementService:startManager:sync:handleResourceEvent");
         system.handleResourceEvent(ResourceEvent.MANAGER_START, null);
         federatingManager.startManager();
         if (agent != null) {
@@ -578,10 +583,13 @@ public class SystemManagementService extends BaseManagementService {
    * Creates a Manager instance in stopped state.
    */
   public boolean createManager() {
+    logger.info("KIRK:SystemManagementService:createManager");
     synchronized (instances) {
       if (federatingManager != null) {
+        logger.info("KIRK:SystemManagementService:createManager:early-out");
         return false;
       }
+      logger.info("KIRK:SystemManagementService:createManager:handleResourceEvent");
       system.handleResourceEvent(ResourceEvent.MANAGER_CREATE, null);
       // An initialised copy of federating manager
       federatingManager = federatingManagerFactory.create(repo, system, this, cache,

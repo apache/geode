@@ -170,6 +170,7 @@ public class ManagementAdapter {
    * instance variable
    */
   void handleCacheCreation(InternalCache cache) throws ManagementException {
+    logger.info("KIRK:ManagementAdapter:handleCacheCreation");
     try {
       internalCache = cache;
       service = (SystemManagementService) ManagementService.getManagementService(internalCache);
@@ -879,7 +880,9 @@ public class ManagementAdapter {
    * @param locator instance of locator which is getting started
    */
   void handleLocatorStart(Locator locator) throws ManagementException {
+    logger.info("KIRK:ManagementAdapter:handleLocatorStart");
     if (!isServiceInitialised("handleLocatorCreation")) {
+      logger.info("KIRK:ManagementAdapter:handleLocatorStart:early-out");
       return;
     }
 

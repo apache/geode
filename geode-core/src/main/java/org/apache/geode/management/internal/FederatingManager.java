@@ -107,6 +107,7 @@ public class FederatingManager extends Manager {
    */
   @Override
   public synchronized void startManager() {
+    logger.info("KIRK:FederatingManager:startManager");
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting the Federating Manager.... ");
@@ -236,6 +237,7 @@ public class FederatingManager extends Manager {
    * After that the task will be marked as cancelled.
    */
   private void startManagingActivity() {
+    logger.info("KIRK:FederatingManager:startManagingActivity");
     boolean isDebugEnabled = logger.isDebugEnabled();
 
     Collection<Callable<InternalDistributedMember>> giiTaskList = new ArrayList<>();
@@ -249,6 +251,7 @@ public class FederatingManager extends Manager {
       if (isDebugEnabled) {
         logger.debug("Management Resource creation started  : ");
       }
+      logger.info("KIRK:FederatingManager:startManagingActivity:invokeAll");
       List<Future<InternalDistributedMember>> futureTaskList =
           executorService.invokeAll(giiTaskList);
 
@@ -370,13 +373,16 @@ public class FederatingManager extends Manager {
 
   @VisibleForTesting
   void addMemberArtifacts(InternalDistributedMember member) {
+    logger.info("KIRK:FederatingManager:addMemberArtifacts");
     synchronized (member) {
+      logger.info("KIRK:FederatingManager:addMemberArtifacts:sync");
       String appender = MBeanJMXAdapter.getUniqueIDForMember(member);
       String monitoringRegionName = ManagementConstants.MONITORING_REGION + "_" + appender;
       String notificationRegionName = ManagementConstants.NOTIFICATION_REGION + "_" + appender;
 
       if (cache.getInternalRegion(monitoringRegionName) != null
           && cache.getInternalRegion(notificationRegionName) != null) {
+        logger.info("KIRK:FederatingManager:addMemberArtifacts:early-out");
         return;
       }
 
@@ -434,6 +440,8 @@ public class FederatingManager extends Manager {
             if (!running) {
               return;
             }
+            logger.info("KIRK:FederatingManager:addMemberArtifacts:createRegion: {}",
+                monitoringRegionName);
             proxyMonitoringRegion = monitorFactory.create(monitoringRegionName);
           } catch (TimeoutException | RegionExistsException e) {
             if (logger.isDebugEnabled()) {
@@ -448,6 +456,8 @@ public class FederatingManager extends Manager {
             if (!running) {
               return;
             }
+            logger.info("KIRK:FederatingManager:addMemberArtifacts:createRegion: {}",
+                notificationRegionName);
             proxyNotificationRegion = notificationFactory.create(notificationRegionName);
             proxyNotificationRegionCreated = true;
           } catch (TimeoutException | RegionExistsException e) {
@@ -477,6 +487,7 @@ public class FederatingManager extends Manager {
             if (!running) {
               return;
             }
+            logger.info("KIRK:FederatingManager:addMemberArtifacts:createAllProxies");
             proxyFactory.createAllProxies(member, proxyMonitoringRegion);
           } catch (Exception e) {
             if (logger.isDebugEnabled()) {
@@ -493,9 +504,11 @@ public class FederatingManager extends Manager {
 
       // Before completing task intimate all listening ProxyListener which might send
       // notifications.
+      logger.info("KIRK:FederatingManager:addMemberArtifacts:memberJoined");
       service.memberJoined(member);
 
       // Send manager info to the added member
+      logger.info("KIRK:FederatingManager:addMemberArtifacts:sendManagerInfo");
       messenger.sendManagerInfo(member);
     }
   }
