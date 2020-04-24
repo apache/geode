@@ -17,8 +17,10 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.DistributedPingMessage;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -47,16 +49,62 @@ public class Ping extends BaseCommand {
           clientMessage.getTransactionId(), serverConnection.getSocketString(),
           (DistributionStats.getStatTime() - start));
     }
+    if (clientMessage.getNumberOfParts() > 0) {
+      try {
+        InternalDistributedMember targetServer =
+            (InternalDistributedMember) clientMessage.getPart(0).getObject();
+        InternalDistributedMember myID = serverConnection.getCache().getMyId();
+        if (!myID.equals(targetServer)) {
+          if (myID.compareTo(targetServer, true, false) == 0) {
+            logger.warn("Target server {} has different viewId {}", targetServer, myID);
+            writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
+          } else {
+            pingCorrectServer(clientMessage, targetServer, serverConnection);
+          }
+          serverConnection.setAsTrue(RESPONDED);
+          return;
+        }
+      } catch (ClassNotFoundException e) {
+        logger.warn("Unable to deserialize message from " + serverConnection.getProxyID());
+        writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
+        return;
+      }
+    }
     ClientHealthMonitor chm = ClientHealthMonitor.getInstance();
-    if (chm != null)
+    if (chm != null) {
       chm.receivedPing(serverConnection.getProxyID());
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    }
 
     writeReply(clientMessage, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
     if (isDebugEnabled) {
       logger.debug("{}: Sent ping reply to {}", serverConnection.getName(),
           serverConnection.getSocketString());
+    }
+  }
+
+  /**
+   * Process a ping request that was sent to the wrong server
+   */
+  protected void pingCorrectServer(Message clientMessage, DistributedMember targetServer,
+      ServerConnection serverConnection)
+      throws IOException {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Received a Ping request from {} intended for {}. Forwarding the ping...",
+          serverConnection.getProxyID(), targetServer);
+    }
+    if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
+      logger.warn("Unable to ping non-member {} for client {}", targetServer,
+          serverConnection.getProxyID());
+      writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
+    } else {
+      // send a ping message to the server. This is a one-way message that doesn't send a reply
+      final DistributedPingMessage distributedPingMessage =
+          new DistributedPingMessage(targetServer, serverConnection.getProxyID());
+      serverConnection.getCache().getDistributionManager().putOutgoing(distributedPingMessage);
+      writeReply(clientMessage, serverConnection);
     }
   }
 
