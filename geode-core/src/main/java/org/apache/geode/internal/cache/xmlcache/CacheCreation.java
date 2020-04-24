@@ -661,18 +661,10 @@ public class CacheCreation implements InternalCache {
   }
 
   void initializeRegions(Map<String, Region<?, ?>> declarativeRegions, Cache cache) {
-    declarativeRegions.values().parallelStream().forEach(region -> {
-      logger.info("JC: region {} thread id {}", region.getName(),
-          Thread.currentThread().getId());
+    for (Region region : declarativeRegions.values()) {
       RegionCreation regionCreation = (RegionCreation) region;
       regionCreation.createRoot(cache);
-    });
-    // for (Region region : declarativeRegions.values()) {
-    // logger.info("JC: region {} thread id {}", region.getName(),
-    // Thread.currentThread().getId());
-    // RegionCreation regionCreation = (RegionCreation) region;
-    // regionCreation.createRoot(cache);
-    // }
+    }
   }
 
   /**
