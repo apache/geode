@@ -222,6 +222,10 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   private class AddedMembers implements DataSerializable {
     private Collection<ByteArrayWrapper> membersToAdd;
 
+    public AddedMembers() {
+      // For serialization
+    }
+
     public AddedMembers(Collection<ByteArrayWrapper> membersToAdd) {
       this.membersToAdd = membersToAdd;
     }
@@ -243,6 +247,10 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
   private class RemovedMembers implements DataSerializable {
     private Collection<ByteArrayWrapper> membersToRemove;
+
+    public RemovedMembers() {
+      // For serialization
+    }
 
     public RemovedMembers(Collection<ByteArrayWrapper> membersToRemove) {
       this.membersToRemove = membersToRemove;
