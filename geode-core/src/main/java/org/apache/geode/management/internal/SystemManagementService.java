@@ -589,9 +589,6 @@ public class SystemManagementService extends BaseManagementService {
           new MemberMessenger(jmxAdapter, system),
           () -> LoggingExecutors.newFixedThreadPool("FederatingManager", true,
               Runtime.getRuntime().availableProcessors()));
-      // TODO:KIRK: next line notifies all members we are a manager but the ManagementCacheListener
-      // is NOT created yet
-      cache.getJmxManagerAdvisor().broadcastChange();
       return true;
     }
   }
