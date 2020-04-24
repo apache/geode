@@ -54,7 +54,7 @@ public class ClearCommand extends GfshCommand {
 
 
     Region region = cache.getRegion(regionPath);
-    DataCommandFunction clearfn = new DataCommandFunction();
+    DataCommandFunction clearfn = createCommandFunction();
     DataCommandResult dataResult;
     if (region == null) {
       Set<DistributedMember> memberList = findAnyMembersForRegion(regionPath);
@@ -76,5 +76,13 @@ public class ClearCommand extends GfshCommand {
     dataResult.setKeyClass(null);
 
     return dataResult.toResultModel();
+  }
+
+  DataCommandResult callFunctionForRegion(DataCommandRequest request, DataCommandFunction clearfn, Set<DistributedMember> memberList) {
+    return DataCommandsUtils.callFunctionForRegion(request, clearfn, memberList);
+  }
+
+  DataCommandFunction createCommandFunction() {
+    return new DataCommandFunction();
   }
 }
