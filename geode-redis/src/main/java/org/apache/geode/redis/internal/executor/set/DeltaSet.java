@@ -60,7 +60,6 @@ public class DeltaSet implements Delta, DataSerializable {
     resultSender.lastResult(DeltaSet.members(localRegion, key));
   }
 
-
   public static long sadd(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
