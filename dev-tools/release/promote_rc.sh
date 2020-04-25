@@ -327,7 +327,7 @@ fi
 
 echo ""
 echo "============================================================"
-echo "Updating 'old' versions and Benchmarks baseline"
+echo "Updating 'old' versions and Benchmarks baseline on develop"
 echo "============================================================"
 set -x
 cd ${GEODE_DEVELOP}
@@ -372,6 +372,27 @@ git add settings.gradle
 git diff --staged
 git commit -m "add ${VERSION} to old versions${BENCHMSG} on develop"
 git push -u myfork
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Updating 'old' versions on support/$VERSION_MM"
+echo "============================================================"
+set -x
+cd ${GEODE}
+git pull
+set +x
+#add at the end as this release will always be the latest on this branch
+sed -e "s/].each/,\\
+ '${VERSION}'].each/" \
+  -i.bak settings.gradle
+rm settings.gradle.bak
+set -x
+git add settings.gradle
+git diff --staged
+git commit -m "add ${VERSION} to old versions on support/$VERSION_MM"
+git push
 set +x
 
 
