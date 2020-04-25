@@ -181,8 +181,6 @@ set -x
 git add .
 git diff --staged
 
-./gradlew clean
-./gradlew build -Dskip.tests=true
 ./gradlew updateExpectedPom
 
 git commit -a -m "roll develop to ${NEWVERSION} now that support/${VERSION_MM} has been created"
@@ -195,7 +193,7 @@ echo "============================================================"
 echo "Setting version on support/${VERSION_MM}"
 echo "============================================================"
 set -x
-${0%/*}/set_versions.sh -v ${VERSION_MM}.0 -s
+${0%/*}/set_versions.sh -v ${VERSION_MM}.0 -s -w "${WORKSPACE}"
 set +x
 
 

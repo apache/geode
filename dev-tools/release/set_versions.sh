@@ -26,7 +26,7 @@ usage() {
 
 FULL_VERSION=""
 
-while getopts ":v:sw:" opt; do
+while getopts ":v:snw:" opt; do
   case ${opt} in
     v )
       VERSION=$OPTARG
@@ -34,9 +34,10 @@ while getopts ":v:sw:" opt; do
     s )
       SNAPSHOT="-SNAPSHOT"
       ;;
+    n )
+      NOPUSH=true
     w )
       WORKSPACE="$OPTARG"
-      NOPUSH=true
       CLEAN=false
       ;;
     \? )

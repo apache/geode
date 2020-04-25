@@ -109,6 +109,16 @@ set +x
 
 echo ""
 echo "============================================================"
+echo "Re-adding -SNAPSHOT in case this is not the final RC"
+echo "============================================================"
+#note: this also pushes the commit that removed -SNAPSHOT in prepare step
+set -x
+${0%/*}/set_versions.sh -v ${VERSION} -s -w "${WORKSPACE}"
+set +x
+
+
+echo ""
+echo "============================================================"
 echo "Pushing tags..."
 echo "============================================================"
 
@@ -118,15 +128,6 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     git push origin rel/v${FULL_VERSION}
     set +x
 done
-
-
-echo ""
-echo "============================================================"
-echo "Re-adding -SNAPSHOT in case this is not the final RC"
-echo "============================================================"
-set -x
-${0%/*}/set_versions.sh -v ${VERSION} -s
-set +x
 
 
 echo ""
