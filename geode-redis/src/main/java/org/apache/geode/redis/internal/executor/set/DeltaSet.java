@@ -168,12 +168,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     int oldSize = this.members.size();
     boolean isAddAllSuccessful = this.members.addAll(membersToAdd);
     if (!isAddAllSuccessful) {
-      // This is a good optimization but makes it hard to test
-      // using the redis sadd benchmark since with it most of
-      // the adds are of values that are already in the set.
-      // So for now instead of returning early fall through
-      // and record the delta and do the region put.
-      // return 0;
+      return 0;
     }
     this.delta = new AddedMembers(membersToAdd);
     hasDelta = true;
