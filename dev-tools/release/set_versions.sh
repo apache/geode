@@ -18,16 +18,15 @@
 set -e
 
 usage() {
-    echo "Usage: set_versions.sh -v version_number [-s] [-n]"
+    echo "Usage: set_versions.sh -v version_number [-s]"
     echo "  -v   The #.#.# version number for the next release"
     echo "  -s   append -SNAPSHOT to version number"
-    echo "  -n   commit but don't push"
     exit 1
 }
 
 FULL_VERSION=""
 
-while getopts ":v:sn" opt; do
+while getopts ":v:sw:" opt; do
   case ${opt} in
     v )
       VERSION=$OPTARG
@@ -35,8 +34,10 @@ while getopts ":v:sn" opt; do
     s )
       SNAPSHOT="-SNAPSHOT"
       ;;
-    n )
+    w )
+      WORKSPACE="$OPTARG"
       NOPUSH=true
+      CLEAN=false
       ;;
     \? )
       usage
@@ -56,7 +57,7 @@ fi
 VERSION_MM=${VERSION%.*}
 
 set -x
-WORKSPACE=$PWD/release-${VERSION}-workspace
+[ -n "${WORKSPACE}" ] || WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 set +x
@@ -68,25 +69,27 @@ function failMsg1 {
 trap failMsg1 ERR
 
 
-echo ""
-echo "============================================================"
-echo "Cleaning workspace directory..."
-echo "============================================================"
-set -x
-rm -rf $WORKSPACE
-mkdir -p $WORKSPACE
-cd $WORKSPACE
-set +x
+if [ "${CLEAN}" != "false" ] ; then
+  echo ""
+  echo "============================================================"
+  echo "Cleaning workspace directory..."
+  echo "============================================================"
+  set -x
+  rm -rf $WORKSPACE
+  mkdir -p $WORKSPACE
+  cd $WORKSPACE
+  set +x
 
 
-echo ""
-echo "============================================================"
-echo "Cloning repositories..."
-echo "============================================================"
-set -x
-git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode.git
-git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-examples.git
-set +x
+  echo ""
+  echo "============================================================"
+  echo "Cloning repositories..."
+  echo "============================================================"
+  set -x
+  git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode.git
+  git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-examples.git
+  set +x
+fi
 
 
 function failMsg2 {
@@ -120,8 +123,6 @@ set -x
 git add .
 git diff --staged
 
-./gradlew clean
-./gradlew build -Dskip.tests=true
 ./gradlew updateExpectedPom
 
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
