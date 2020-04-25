@@ -122,6 +122,15 @@ done
 
 echo ""
 echo "============================================================"
+echo "Re-adding -SNAPSHOT in case this is not the final RC"
+echo "============================================================"
+set -x
+${0%/*}/set_versions.sh -v ${VERSION} -s
+set +x
+
+
+echo ""
+echo "============================================================"
 echo "Done publishing the release candidate!  Next steps:"
 echo "============================================================"
 cd ${GEODE}/../..

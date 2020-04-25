@@ -18,17 +18,21 @@
 set -e
 
 usage() {
-    echo "Usage: set_versions.sh -v version_number"
+    echo "Usage: set_versions.sh -v version_number [-s]"
     echo "  -v   The #.#.# version number for the next release"
+    echo "  -s   append -SNAPSHOT to version number"
     exit 1
 }
 
 FULL_VERSION=""
 
-while getopts ":v:" opt; do
+while getopts ":v:s" opt; do
   case ${opt} in
     v )
       VERSION=$OPTARG
+      ;;
+    s )
+      SNAPSHOT="-SNAPSHOT"
       ;;
     \? )
       usage
@@ -99,13 +103,14 @@ git pull
 set +x
 
 #version = 1.13.0-SNAPSHOT
-sed -e "s/^version =.*/version = ${VERSION}/" -i.bak gradle.properties
+sed -e "s/^version =.*/version = ${VERSION}${SNAPSHOT}/" -i.bak gradle.properties
 
 #SEMVER_PRERELEASE_TOKEN=SNAPSHOT
-sed -e 's/^SEMVER_PRERELEASE_TOKEN=.*/SEMVER_PRERELEASE_TOKEN=""/' -i.bak ci/pipelines/meta/meta.properties
+[ -z "$SNAPSHOT" ] && STOKEN='""' || STOKEN="SNAPSHOT"
+sed -e 's/^SEMVER_PRERELEASE_TOKEN=.*/SEMVER_PRERELEASE_TOKEN='"${STOKEN}/" -i.bak ci/pipelines/meta/meta.properties
 
 #  initial_version: 1.12.0
-sed -e "s/^  initial_version:.*/  initial_version: ${VERSION}/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
+sed -e "s/^  initial_version:.*/  initial_version: ${VERSION}${SNAPSHOT}/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
 
 rm gradle.properties.bak ci/pipelines/meta/meta.properties.bak ci/pipelines/shared/jinja.variables.yml.bak
 set -x
@@ -116,8 +121,10 @@ git diff --staged
 ./gradlew build -Dskip.tests=true
 ./gradlew updateExpectedPom
 
-git commit -a -m "Bumping version to ${VERSION}"
-git push -u origin
+if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+  git commit -a -m "Bumping version to ${VERSION}${SNAPSHOT}"
+  git push -u origin
+fi
 set +x
 
 
@@ -132,16 +139,18 @@ set +x
 
 #version = 1.12.0-SNAPSHOT
 #geodeVersion = 1.12.0-SNAPSHOT
-sed -e "s/^version = .*/version = ${VERSION}/" \
-    -e "s/^geodeVersion = .*/geodeVersion = ${VERSION}/" \
+sed -e "s/^version = .*/version = ${VERSION}${SNAPSHOT}/" \
+    -e "s/^geodeVersion = .*/geodeVersion = ${VERSION}${SNAPSHOT}/" \
     -i.bak gradle.properties
 
 rm gradle.properties.bak
 set -x
 git add .
 git diff --staged
-git commit -m "Bumping version to ${VERSION}"
-git push -u origin
+if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+  git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
+  git push -u origin
+fi
 set +x
 
 
@@ -150,6 +159,3 @@ echo "============================================================"
 echo "Done setting support versions!"
 echo "============================================================"
 cd ${GEODE}/../..
-PATCH=${VERSION##*.}
-[ $PATCH -eq 0 ] || echo "Bump support pipeline to ${VERSION} by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
-echo "That's it for now.  Once all needed fixes have been proposed and cherry-picked to support/${VERSION_MM}, come back and run ${0%/*}/prepare_rc.sh -v ${VERSION}.RC1"
