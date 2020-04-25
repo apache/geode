@@ -27,5 +27,5 @@ public interface RedisSet {
 
   Set<ByteArrayWrapper> members();
 
-  Boolean del();
+  boolean del();
 }

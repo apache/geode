@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -26,58 +27,77 @@ import org.apache.geode.redis.internal.RedisDataType;
 class GeodeRedisSetSynchronized implements RedisSet {
 
   private ByteArrayWrapper key;
-  private Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region;
-
+  private Region<ByteArrayWrapper, DeltaSet> region;
 
   public GeodeRedisSetSynchronized(ByteArrayWrapper key,
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region) {
+      Region<ByteArrayWrapper, DeltaSet> region) {
     this.key = key;
     this.region = region;
   }
 
   @Override
   public long sadd(Collection<ByteArrayWrapper> membersToAdd) {
-    boolean created;
-    do {
-      DeltaSet deltaSet = (DeltaSet) region().get(key);
-      if (deltaSet != null) {
+    while (true) {
+      DeltaSet deltaSet = region().get(key);
+      if (deltaSet == null) {
+        // create new set
+        if (region.putIfAbsent(key, new DeltaSet(membersToAdd)) == null) {
+          return membersToAdd.size();
+        } else {
+          // retry since another thread concurrently changed the region
+        }
+      } else {
         // update existing value
-        return deltaSet.customAddAll(membersToAdd, region, key);
+        try {
+          return deltaSet.customAddAll(membersToAdd, region, key);
+        } catch (DeltaSet.RetryDueToConcurrentModification ex) {
+          // retry since another thread concurrently changed the region
+        }
       }
-      created = region.putIfAbsent(key, new DeltaSet(membersToAdd)) == null;
-    } while (!created);
-    return membersToAdd.size();
+    }
   }
 
   @Override
   public long srem(Collection<ByteArrayWrapper> membersToRemove) {
-    DeltaSet deltaSet = (DeltaSet) region().get(key);
-
-    if (deltaSet == null) {
-      return 0L;
+    while (true) {
+      DeltaSet deltaSet = region().get(key);
+      if (deltaSet == null) {
+        return 0L;
+      }
+      try {
+        return deltaSet.customRemoveAll(membersToRemove, region, key);
+      } catch (DeltaSet.RetryDueToConcurrentModification ex) {
+        // retry since another thread concurrently changed the region
+      }
     }
+  }
 
-    return deltaSet.customRemoveAll(membersToRemove, region, key);
+  @Override
+  public boolean del() {
+    while (true) {
+      DeltaSet deltaSet = region().get(key);
+      if (deltaSet == null) {
+        return false;
+      }
+      if (deltaSet.delete(region, key)) {
+        return true;
+      } else {
+        // retry since another thread concurrently changed the region
+      }
+    }
   }
 
   @Override
   public Set<ByteArrayWrapper> members() {
-    DeltaSet deltaSet = (DeltaSet) region().getOrDefault(key, new DeltaSet());
-
-    return deltaSet.members();
-  }
-
-  @Override
-  public Boolean del() {
-    DeltaSet deltaSet = (DeltaSet) region().get(key);
-    if (deltaSet == null) {
-      return false;
+    DeltaSet deltaSet = region().get(key);
+    if (deltaSet != null) {
+      return deltaSet.members();
+    } else {
+      return Collections.emptySet();
     }
-    return deltaSet.delete(region, key);
-
   }
 
-  Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region() {
+  Region<ByteArrayWrapper, DeltaSet> region() {
     return region;
   }
 

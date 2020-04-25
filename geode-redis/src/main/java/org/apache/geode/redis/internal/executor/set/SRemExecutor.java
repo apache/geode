@@ -14,9 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -42,8 +41,8 @@ public class SRemExecutor extends SetExecutor {
         new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
 
 
-    Set<ByteArrayWrapper> membersToRemove =
-        new HashSet<>(commandElements.subList(2, commandElements.size()));
+    List<ByteArrayWrapper> membersToRemove =
+        new ArrayList<>(commandElements.subList(2, commandElements.size()));
     long membersRemoved = geodeRedisSet.srem(membersToRemove);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), membersRemoved));
   }

@@ -75,7 +75,7 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   @Override
-  public Boolean del() {
+  public boolean del() {
     ResultCollector<Void, List<Boolean>> results = FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))

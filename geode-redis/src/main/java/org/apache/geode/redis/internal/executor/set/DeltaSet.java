@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.set;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,27 +31,31 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
+/**
+ * TODO: it is probably a bad idea for this class to implement Set.
+ * We want to be careful how other code interacts with these instances
+ * to make sure that no modifications are made that are not thread safe
+ * and that will always be stored in the region.
+ * Currently the only "correct" methods on this class are:
+ * members, delete, customAddAll, customRemoveAll, and the
+ * serialization methods.
+ */
 class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
-  private Collection<ByteArrayWrapper> members;
-  private boolean hasDelta;
-  private Object delta;
+  private HashSet<ByteArrayWrapper> members;
+  private final transient ArrayList<ByteArrayWrapper> deltas = new ArrayList<>();
+  // true if deltas contains adds; false if removes
+  private transient boolean deltasAreAdds;
 
   public DeltaSet(Collection<ByteArrayWrapper> members) {
-    this.members = members;
+    if (members instanceof HashSet) {
+      this.members = (HashSet) members;
+    } else {
+      this.members = new HashSet<>(members);
+    }
   }
 
-  public DeltaSet() {
-    this.members = new HashSet<>();
-  }
-
-  public static Set<ByteArrayWrapper> brandNew(Collection<ByteArrayWrapper> membersToAdd) {
-    return new DeltaSet(membersToAdd);
-  }
-
-  public static Set<ByteArrayWrapper> fromDeltaSet(Set<ByteArrayWrapper> currentValue) {
-    return new DeltaSet(new HashSet<>(currentValue));
-  }
-
+  // for serialization
+  public DeltaSet() {}
 
   // SET INTERFACE
   @Override
@@ -122,30 +127,29 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   // DELTA
   @Override
   public boolean hasDelta() {
-    return hasDelta;
+    return !deltas.isEmpty();
   }
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.delta, out);
-    hasDelta = false;
+    DataSerializer.writeBoolean(deltasAreAdds, out);
+    DataSerializer.writeArrayList(deltas, out);
+    deltas.clear();
   }
 
   @Override
-  public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    // Collection<? extends ByteArrayWrapper> elementsAdded;
-    Object delta;
+  public void fromDelta(DataInput in)
+      throws IOException, InvalidDeltaException {
+    boolean deltaAdds = DataSerializer.readBoolean(in);
     try {
-      delta = DataSerializer.readObject(in);
+      ArrayList<ByteArrayWrapper> deltas = DataSerializer.readArrayList(in);
+      if (deltaAdds) {
+        members.addAll(deltas);
+      } else {
+        members.removeAll(deltas);
+      }
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
-    }
-    if (delta instanceof AddedMembers) {
-      AddedMembers addedMembers = (AddedMembers) delta;
-      this.members.addAll(addedMembers.getMembersToAdd());
-    } else if (delta instanceof RemovedMembers) {
-      RemovedMembers removedMembers = (RemovedMembers) delta;
-      this.members.removeAll(removedMembers.getMembersToRemove());
     }
   }
 
@@ -153,115 +157,68 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeHashSet((HashSet<?>) members, out);
+    DataSerializer.writeHashSet(members, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.members = DataSerializer.readHashSet(in);
+    members = DataSerializer.readHashSet(in);
   }
 
   public synchronized long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+      Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
-
-    int oldSize = this.members.size();
-    boolean isAddAllSuccessful = this.members.addAll(membersToAdd);
-    if (!isAddAllSuccessful) {
-      return 0;
+    for (ByteArrayWrapper memberToAdd : membersToAdd) {
+      if (members.add(memberToAdd)) {
+        deltas.add(memberToAdd);
+        deltasAreAdds = true;
+      }
     }
-    this.delta = new AddedMembers(membersToAdd);
-    hasDelta = true;
-    int newSize = this.members.size();
-    int elementsAdded = newSize - oldSize;
-    region.put(key, this);
-    return elementsAdded;
-  }
-
-  public synchronized Set<ByteArrayWrapper> members() {
-    return new HashSet<>(this.members);
+    long result = deltas.size();
+    if (result != 0) {
+      if (!region.replace(key, this, this)) {
+        deltas.clear();
+        throw new RetryDueToConcurrentModification();
+      }
+    }
+    deltas.clear();
+    return result;
   }
 
   public synchronized long customRemoveAll(Collection<ByteArrayWrapper> membersToRemove,
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+      Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
-    int oldSize = this.members.size();
-    boolean isRemoveAllSuccessful = this.members.removeAll(membersToRemove);
-
-    if (!isRemoveAllSuccessful) {
-      return 0;
+    for (ByteArrayWrapper memberToRemove : membersToRemove) {
+      if (members.remove(memberToRemove)) {
+        deltas.add(memberToRemove);
+        deltasAreAdds = false;
+      }
     }
-
-    this.delta = new RemovedMembers(membersToRemove);
-    hasDelta = true;
-    int newSize = this.members.size();
-    int elementsRemoved = oldSize - newSize;
-    region.put(key, this);
-
-    return elementsRemoved;
+    long result = deltas.size();
+    if (result != 0) {
+      if (!region.replace(key, this, this)) {
+        deltas.clear();
+        throw new RetryDueToConcurrentModification();
+      }
+    }
+    deltas.clear();
+    return result;
   }
 
-  public synchronized Boolean delete(
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region,
+  /**
+   * This exception is thrown if a modification fails because some other
+   * thread changed what is stored in the region.
+   */
+  static class RetryDueToConcurrentModification extends RuntimeException {
+  }
+
+  public boolean delete(
+      Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
-
-    try {
-      region.remove(key);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
+    return region.remove(key, this);
   }
 
-  public static class AddedMembers implements DataSerializable {
-    private Collection<ByteArrayWrapper> membersToAdd;
-
-    public AddedMembers() {
-      // For serialization
-    }
-
-    public AddedMembers(Collection<ByteArrayWrapper> membersToAdd) {
-      this.membersToAdd = membersToAdd;
-    }
-
-    public Collection<ByteArrayWrapper> getMembersToAdd() {
-      return membersToAdd;
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeObject(membersToAdd, out);
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      membersToAdd = DataSerializer.readObject(in);
-    }
-  }
-
-  public static class RemovedMembers implements DataSerializable {
-    private Collection<ByteArrayWrapper> membersToRemove;
-
-    public RemovedMembers() {
-      // For serialization
-    }
-
-    public RemovedMembers(Collection<ByteArrayWrapper> membersToRemove) {
-      this.membersToRemove = membersToRemove;
-    }
-
-    public Collection<ByteArrayWrapper> getMembersToRemove() {
-      return membersToRemove;
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeObject(membersToRemove, out);
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      membersToRemove = DataSerializer.readObject(in);
-    }
+  public synchronized Set<ByteArrayWrapper> members() {
+    return new HashSet<>(members);
   }
 }
