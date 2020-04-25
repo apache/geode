@@ -36,6 +36,7 @@ while getopts ":v:snw:" opt; do
       ;;
     n )
       NOPUSH=true
+      ;;
     w )
       WORKSPACE="$OPTARG"
       CLEAN=false
