@@ -17,15 +17,18 @@ package org.apache.geode.cache.wan;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.version.VersionManager;
 
@@ -100,9 +103,23 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
 
     // Use gfsh to attempt to create a gateway sender in the mixed site servers
     this.gfsh.connectAndVerify(jmxManagerPort, GfshCommandRule.PortType.jmxManager);
-    this.gfsh
-        .executeAndAssertThat(getCreateGatewaySenderCommand("toSite2", site2DistributedSystemId))
-        .statusIsError()
-        .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
+    CommandResultAssert cmd = this.gfsh
+        .executeAndAssertThat(getCreateGatewaySenderCommand("toSite2", site2DistributedSystemId));
+    if (!majorMinor(oldVersion).equals(majorMinor(Version.CURRENT.getName()))) {
+      cmd.statusIsError()
+          .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
+    } else {
+      // generally serialization version is unchanged between patch releases
+      cmd.statusIsSuccess();
+    }
+  }
+
+  /**
+   * returns the major.minor prefix of a semver
+   */
+  private static String majorMinor(String version) {
+    String[] parts = version.split("\\.");
+    Assertions.assertThat(parts.length).isGreaterThanOrEqualTo(2);
+    return parts[0] + "." + parts[1];
   }
 }
