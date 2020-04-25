@@ -147,7 +147,7 @@ echo "============================================================"
 echo "Removing -SNAPSHOT"
 echo "============================================================"
 set -x
-${0%/*}/set_versions.sh -v ${VERSION}
+${0%/*}/set_versions.sh -v ${VERSION} -n
 set +x
 
 

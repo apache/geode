@@ -18,21 +18,25 @@
 set -e
 
 usage() {
-    echo "Usage: set_versions.sh -v version_number [-s]"
+    echo "Usage: set_versions.sh -v version_number [-s] [-n]"
     echo "  -v   The #.#.# version number for the next release"
     echo "  -s   append -SNAPSHOT to version number"
+    echo "  -n   commit but don't push"
     exit 1
 }
 
 FULL_VERSION=""
 
-while getopts ":v:s" opt; do
+while getopts ":v:sn" opt; do
   case ${opt} in
     v )
       VERSION=$OPTARG
       ;;
     s )
       SNAPSHOT="-SNAPSHOT"
+      ;;
+    n )
+      NOPUSH=true
       ;;
     \? )
       usage
@@ -105,12 +109,11 @@ set +x
 #version = 1.13.0-SNAPSHOT
 sed -e "s/^version =.*/version = ${VERSION}${SNAPSHOT}/" -i.bak gradle.properties
 
-#SEMVER_PRERELEASE_TOKEN=SNAPSHOT
-[ -z "$SNAPSHOT" ] && STOKEN='""' || STOKEN="SNAPSHOT"
-sed -e 's/^SEMVER_PRERELEASE_TOKEN=.*/SEMVER_PRERELEASE_TOKEN='"${STOKEN}/" -i.bak ci/pipelines/meta/meta.properties
+#always ensure SEMVER_PRERELEASE_TOKEN=SNAPSHOT for pipeline, even without -s
+sed -e 's/^SEMVER_PRERELEASE_TOKEN=.*/SEMVER_PRERELEASE_TOKEN=SNAPSHOT/' -i.bak ci/pipelines/meta/meta.properties
 
-#  initial_version: 1.12.0
-sed -e "s/^  initial_version:.*/  initial_version: ${VERSION}${SNAPSHOT}/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
+#  initial_version: 1.12.0 //always ensure -SNAPSHOT for pipeline, even without -s
+sed -e "s/^  initial_version:.*/  initial_version: ${VERSION}-SNAPSHOT/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
 
 rm gradle.properties.bak ci/pipelines/meta/meta.properties.bak ci/pipelines/shared/jinja.variables.yml.bak
 set -x
@@ -123,7 +126,7 @@ git diff --staged
 
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git commit -a -m "Bumping version to ${VERSION}${SNAPSHOT}"
-  git push -u origin
+  [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
 
@@ -149,7 +152,7 @@ git add .
 git diff --staged
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
-  git push -u origin
+  [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
 
