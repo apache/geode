@@ -68,6 +68,7 @@ resources:
   source:
     branch: ((geode-build-branch))
     paths:
+    - ci/scripts/build_image.sh
     - ci/images/google-geode-builder
     {{ github_access() | indent(4) }}
 
@@ -76,6 +77,7 @@ resources:
   source:
     branch: ((geode-build-branch))
     paths:
+    - ci/scripts/build_image.sh
     - ci/images/google-windows-geode-builder
     {{ github_access() | indent(4) }}
 
@@ -230,6 +232,8 @@ jobs:
     config:
       inputs:
       - name: google-geode-builder
+      - name: linux-base-family
+        path: base-family
       outputs:
       - name: results
       platform: linux
@@ -239,9 +243,10 @@ jobs:
         GCP_PROJECT: ((gcp-project))
         CONCOURSE_GCP_KEY: "((concourse-gcp-key))"
         JAVA_BUILD_VERSION: 8
-        BASE_FAMILY: ((linux-base-family))
       run:
-        path: google-geode-builder/ci/images/google-geode-builder/build_image.sh
+        path: google-geode-builder/ci/scripts/build_image.sh
+        args:
+        - google-geode-builder/ci/images/google-geode-builder/packer.json
 
 - name: build-google-windows-geode-builder
   public: ((public-pipelines))
@@ -262,6 +267,8 @@ jobs:
     config:
       inputs:
       - name: google-windows-geode-builder
+      - name: windows-base-family
+        path: base-family
       outputs:
       - name: results
       platform: linux
@@ -271,9 +278,10 @@ jobs:
         GCP_PROJECT: ((gcp-project))
         CONCOURSE_GCP_KEY: "((concourse-gcp-key))"
         JAVA_BUILD_VERSION: 8
-        BASE_FAMILY: ((windows-base-family))
       run:
-        path: google-windows-geode-builder/ci/images/google-windows-geode-builder/build_image.sh
+        path: google-windows-geode-builder/ci/scripts/build_image.sh
+        args:
+          - google-windows-geode-builder/ci/images/google-windows-geode-builder/packer.json
 
 - name: build-alpine-tools-docker-image
   public: ((public-pipelines))

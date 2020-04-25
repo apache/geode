@@ -11,7 +11,7 @@
     {
       "type": "googlecompute",
       "project_id": "{{user `gcp_project`}}",
-      "source_image_family": "{{ user `base_family`}}",
+      "source_image": "{{ user `base_image`}}",
       "ssh_username": "packer",
       "zone": "us-central1-f",
       "image_family": "{{user `pipeline_prefix`}}linux-geode-builder",
