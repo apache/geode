@@ -18,11 +18,14 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.assertj.core.api.Assertions;
+import org.junit.Assume;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -34,6 +37,9 @@ public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentV
 
   @Test
   public void luceneReindexShouldBeSuccessfulWhenAllServersRollToCurrentVersion() throws Exception {
+    Assume.assumeFalse("minor versions should be different",
+        majorMinor(oldVersion).equals(majorMinor(Version.CURRENT.getName())));
+
     final Host host = Host.getHost(0);
     VM locator1 = host.getVM(oldVersion, 0);
     VM server1 = host.getVM(oldVersion, 1);
@@ -109,5 +115,13 @@ public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentV
     }
   }
 
+  /**
+   * returns the major.minor prefix of a semver
+   */
+  private static String majorMinor(String version) {
+    String[] parts = version.split("\\.");
+    Assertions.assertThat(parts.length).isGreaterThanOrEqualTo(2);
+    return parts[0] + "." + parts[1];
+  }
 
 }
