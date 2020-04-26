@@ -327,7 +327,7 @@ fi
 
 echo ""
 echo "============================================================"
-echo "Updating 'old' versions and Benchmarks baseline"
+echo "Updating 'old' versions and Benchmarks baseline on develop"
 echo "============================================================"
 set -x
 cd ${GEODE_DEVELOP}

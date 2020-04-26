@@ -98,7 +98,6 @@ fi
 set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
-GEODE_DEVELOP=$WORKSPACE/geode-develop
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
@@ -139,6 +138,12 @@ git clone --single-branch --branch master git@github.com:Homebrew/homebrew-core.
 svn checkout https://dist.apache.org/repos/dist --depth empty
 svn update --set-depth immediates --parents dist/release/geode
 svn update --set-depth infinity --parents dist/dev/geode
+set +x
+
+
+set -x
+${0%/*}/set_copyright.sh ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
+
 set +x
 
 

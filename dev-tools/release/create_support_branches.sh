@@ -112,6 +112,27 @@ function failMsg2 {
 trap 'failMsg2 $LINENO' ERR
 
 
+set -x
+${0%/*}/set_copyright.sh ${GEODE} ${GEODE_DEVELOP} ${GEODE_EXAMPLES} ${GEODE_EXAMPLES_DEVELOP} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Pushing copyright updates (if any) to develop before branching"
+echo "============================================================"
+#get these 2 done before the branch so we don't have to do develop and support separately.
+#the other 2 will be pushed to develop and support versions when version bumps are pushed.
+for DIR in ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
+    set -x
+    cd ${DIR}
+    if ! [ git push --dry-run 2>&1 | grep -q 'Everything up-to-date' ] ; then
+      git push -u origin
+    fi
+    set +x
+done
+
+
 echo ""
 echo "============================================================"
 echo "Creating support/${VERSION_MM} branches"
@@ -120,7 +141,7 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git checkout -b support/${VERSION_MM}
-    git push -u origin HEAD
+    git push -u origin
     set +x
 done
 
@@ -131,7 +152,7 @@ echo "Bumping version on develop to ${NEWVERSION}"
 echo "============================================================"
 set -x
 cd ${GEODE_DEVELOP}
-git pull
+git pull -r
 git remote add myfork git@github.com:${GITHUB_USER}/geode.git || true
 git checkout -b roll-develop-to-${NEWVERSION}
 set +x
@@ -196,7 +217,7 @@ echo "Bumping examples version on develop to ${NEWVERSION}"
 echo "============================================================"
 set -x
 cd ${GEODE_EXAMPLES_DEVELOP}
-git pull
+git pull -r
 set +x
 
 #version = 1.13.0-SNAPSHOT
@@ -210,7 +231,7 @@ set -x
 git add gradle.properties
 git diff --staged
 git commit -m "point develop examples to ${NEWVERSION}-SNAPSHOT now that support/${VERSION_MM} has been created"
-git push
+git push -u origin
 set +x
 
 

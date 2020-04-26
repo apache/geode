@@ -66,7 +66,7 @@ set +x
 
 
 function failMsg1 {
-  echo "ERROR: script did NOT complete successfully.  Please try again."
+  echo "ERROR: set_versions script did NOT complete successfully.  Please try again."
 }
 trap failMsg1 ERR
 
@@ -96,8 +96,8 @@ fi
 
 function failMsg2 {
   errln=$1
-  echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 63-$(( errln - 1 ))) and try again"
+  echo "ERROR: set_versions script did NOT complete successfully"
+  echo "Comment out any steps that already succeeded (approximately lines 105-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg2 $LINENO' ERR
 
