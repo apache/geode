@@ -383,14 +383,25 @@ jobs:
               curl -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
               gpg --import KEYS
               url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
-              function verifyArtifactSignatureLicenseNoticeAndCopyright {
+              function verifyArtifactSizeSignatureLicenseNoticeAndCopyright {
                 tld=$1
                 file=${tld}.tgz
+                minfilesize=$2
+                maxfilesize=$3
                 echo Verifying $file...
                 asc=${file}.asc
                 sha=${file}.sha256
                 sum=sha256sum
                 curl -s $url/$file > $file
+                actualfilesize=$(wc -c < $file)
+                if [ $actualfilesize -lt $minfilesize ] ; then
+                  echo "File size of $file is only $actualfilesize bytes, expected at least $minfilesize"
+                  return 1
+                fi
+                if [ $actualfilesize -gt $maxfilesize ] ; then
+                  echo "File size of $file is $actualfilesize, expected no more than $maxfilesize bytes"
+                  return 1
+                fi
                 curl -s $url/$asc > $asc
                 curl -s $url/$sha > $sha
                 gpg --verify $asc
@@ -408,12 +419,14 @@ jobs:
                 year=$(date +%Y)
                 grep "Copyright" "${tld}/NOTICE"
                 grep -q "Copyright.*${year}.*Apache Software Foundation" "${tld}/NOTICE"
+                #check that the declared license is of the correct type
+                head -1 "${tld}/LICENSE" | grep -q "Apache License"
               }
-              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src
-              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}
-              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src
-              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src
-              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src 10000000 30000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION} 100000000 150000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src 50000 2000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src 2000000 4000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src 50000 500000
               curl -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
               sort < exp > expected-file-list
               set +x
