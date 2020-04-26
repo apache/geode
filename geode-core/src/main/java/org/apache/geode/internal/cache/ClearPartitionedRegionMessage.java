@@ -28,7 +28,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -41,7 +40,7 @@ public class ClearPartitionedRegionMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   public static enum OperationType {
-    OP_LOCK_FOR_CLEAR, OP_UNLOCK_FOR_CLEAR, OP_CLEAR,
+    OP_LOCK_FOR_PR_CLEAR, OP_UNLOCK_FOR_PR_CLEAR, OP_PR_CLEAR,
   }
 
   private Object cbArg;
@@ -108,9 +107,9 @@ public class ClearPartitionedRegionMessage extends PartitionMessage {
       return true;
     }
 
-    if (op == OperationType.OP_LOCK_FOR_CLEAR) {
+    if (op == OperationType.OP_LOCK_FOR_PR_CLEAR) {
       r.getClearPartitionedRegion().obtainClearLockLocal(getSender());
-    } else if (op == OperationType.OP_UNLOCK_FOR_CLEAR) {
+    } else if (op == OperationType.OP_UNLOCK_FOR_PR_CLEAR) {
       r.getClearPartitionedRegion().releaseClearLockLocal();
     } else {
       RegionEventImpl event =
@@ -161,17 +160,17 @@ public class ClearPartitionedRegionMessage extends PartitionMessage {
       super(system, initMembers);
     }
 
-    @Override
-    protected void processException(ReplyException ex) {
-      // retry on ForceReattempt in case the region is still being initialized
-      if (ex.getRootCause() instanceof ForceReattemptException) {
-        super.processException(ex);
-      }
-      // other errors are ignored
-      else if (logger.isDebugEnabled()) {
-        logger.debug("DestroyRegionResponse ignoring exception", ex);
-      }
-    }
+    /*
+     * @Override
+     * protected void processException(ReplyException ex) {
+     * // retry on ForceReattempt in case the region is still being initialized
+     * if (ex.getRootCause() instanceof ForceReattemptException) {
+     * super.processException(ex);
+     * } else if (logger.isDebugEnabled()) {
+     * logger.debug("DestroyRegionResponse ignoring exception", ex);
+     * }
+     * }
+     */
   }
 
 }
