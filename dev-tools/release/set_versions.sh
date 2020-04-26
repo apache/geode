@@ -97,7 +97,7 @@ fi
 function failMsg2 {
   errln=$1
   echo "ERROR: set_versions script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 105-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 74-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg2 $LINENO' ERR
 
@@ -114,21 +114,17 @@ set +x
 #version = 1.13.0-SNAPSHOT
 sed -e "s/^version =.*/version = ${VERSION}${SNAPSHOT}/" -i.bak gradle.properties
 
-#always ensure SEMVER_PRERELEASE_TOKEN=SNAPSHOT for pipeline, even without -s
-sed -e 's/^SEMVER_PRERELEASE_TOKEN=.*/SEMVER_PRERELEASE_TOKEN=SNAPSHOT/' -i.bak ci/pipelines/meta/meta.properties
-
-#  initial_version: 1.12.0 //always ensure -SNAPSHOT for pipeline, even without -s
-sed -e "s/^  initial_version:.*/  initial_version: ${VERSION}-SNAPSHOT/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
-
-rm gradle.properties.bak ci/pipelines/meta/meta.properties.bak ci/pipelines/shared/jinja.variables.yml.bak
+rm gradle.properties.bak
 set -x
-git add .
+git add gradle.properties
 git diff --staged
 
 ./gradlew updateExpectedPom
+git add .
+echo "$(git diff --staged | wc -l)-line diff of expected-pom changes will also be committed (not shown)"
 
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
-  git commit -a -m "Bumping version to ${VERSION}${SNAPSHOT}"
+  git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
