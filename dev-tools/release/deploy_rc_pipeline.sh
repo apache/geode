@@ -383,8 +383,9 @@ jobs:
               curl -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
               gpg --import KEYS
               url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
-              function verifyArtifactSignature {
-                file=$1
+              function verifyArtifactSignatureLicenseNoticeAndCopyright {
+                tld=$1
+                file=${tld}.tgz
                 echo Verifying $file...
                 asc=${file}.asc
                 sha=${file}.sha256
@@ -397,12 +398,22 @@ jobs:
                 echo $file >> exp
                 echo $asc >> exp
                 echo $sha >> exp
+                #check that each archive contains all content below a top-level-directory with the same name as the file (sans .tgz)
+                ! tar tvzf $file | grep -v " ${tld}/"
+                #check that each archive contains LICENSE and NOTICE
+                tar tvzf $file | grep " ${tld}/LICENSE"
+                tar tvzf $file | grep " ${tld}/NOTICE"
+                #check that NOTICE contains current copyright year and correctly assigns copyright to ASF
+                tar xzf $file "${tld}/NOTICE"
+                year=$(date +%Y)
+                grep "Copyright" "${tld}/NOTICE"
+                grep -q "Copyright.*${year}.*Apache Software Foundation" "${tld}/NOTICE"
               }
-              verifyArtifactSignature apache-geode-${VERSION}-src.tgz
-              verifyArtifactSignature apache-geode-${VERSION}.tgz
-              verifyArtifactSignature apache-geode-examples-${VERSION}-src.tgz
-              verifyArtifactSignature apache-geode-native-${VERSION}-src.tgz
-              verifyArtifactSignature apache-geode-benchmarks-${VERSION}-src.tgz
+              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src
+              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}
+              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src
+              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src
+              verifyArtifactSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src
               curl -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
               sort < exp > expected-file-list
               set +x
