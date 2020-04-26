@@ -164,7 +164,7 @@ jobs:
               cd geode-examples
               java -version
               ./gradlew runAll
-  - name: run-geode-examples-from-src-tar-gz-jdk8
+  - name: run-geode-examples-from-src-tgz-jdk8
     serial: true
     plan:
       - aggregate:
@@ -190,9 +190,9 @@ jobs:
               FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}.tar.gz > src.tgz
+              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
-              cd apache-geode-examples-${VERSION}
+              cd apache-geode-examples-${VERSION}-src
               java -version
               ./gradlew -PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN} build runAll
   - name: build-geode-native-from-tag
@@ -237,7 +237,7 @@ jobs:
               cmake --build . -- -j 4
               cmake --build . --target docs -- -j 4
               cmake --build . --target install -- -j 4
-  - name: build-geode-native-from-src-tar-gz
+  - name: build-geode-native-from-src-tgz
     serial: true
     plan:
       - aggregate:
@@ -275,9 +275,9 @@ jobs:
               echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tar.gz > src.tgz
+              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
-              cd apache-geode-native*
+              cd apache-geode-native-${VERSION}-src
               mkdir build
               cd build
               cmake .. -DGEODE_ROOT=$PWD/../../geode/geode-assembly/build/install/apache-geode
@@ -387,8 +387,8 @@ jobs:
                 file=$1
                 echo Verifying $file...
                 asc=${file}.asc
-                sha=${file}.sha$2
-                sum=sha${2}sum
+                sha=${file}.sha256
+                sum=sha256sum
                 curl -s $url/$file > $file
                 curl -s $url/$asc > $asc
                 curl -s $url/$sha > $sha
@@ -398,11 +398,11 @@ jobs:
                 echo $asc >> exp
                 echo $sha >> exp
               }
-              verifyArtifactSignature apache-geode-${VERSION}-src.tgz 256
-              verifyArtifactSignature apache-geode-${VERSION}.tgz 256
-              verifyArtifactSignature apache-geode-examples-${VERSION}.tar.gz 256
-              verifyArtifactSignature apache-geode-native-${VERSION}-src.tar.gz 512
-              verifyArtifactSignature apache-geode-benchmarks-${VERSION}-src.tgz 256
+              verifyArtifactSignature apache-geode-${VERSION}-src.tgz
+              verifyArtifactSignature apache-geode-${VERSION}.tgz
+              verifyArtifactSignature apache-geode-examples-${VERSION}-src.tgz
+              verifyArtifactSignature apache-geode-native-${VERSION}-src.tgz
+              verifyArtifactSignature apache-geode-benchmarks-${VERSION}-src.tgz
               curl -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
               sort < exp > expected-file-list
               set +x
@@ -456,8 +456,8 @@ jobs:
                 curl -s $url/$file | tar tvzf - | egrep '\.('"${BINARY_EXTENSIONS}"')$' | tee -a bins
               }
               verifyNoBinaries apache-geode-${VERSION}-src.tgz
-              verifyNoBinaries apache-geode-examples-${VERSION}.tar.gz
-              verifyNoBinaries apache-geode-native-${VERSION}-src.tar.gz
+              verifyNoBinaries apache-geode-examples-${VERSION}-src.tgz
+              verifyNoBinaries apache-geode-native-${VERSION}-src.tgz
               verifyNoBinaries apache-geode-benchmarks-${VERSION}-src.tgz
               echo ""
               echo ""
