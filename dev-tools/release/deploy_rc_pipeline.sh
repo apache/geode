@@ -105,9 +105,16 @@ jobs:
             - -ec
             - |
               set -ex
+              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
+              SHA=$(cd geode && git rev-parse HEAD)
               java -version
               cd geode
-              ./gradlew test
+              ./gradlew test installDist
+              gfsh=geode-assembly/build/install/apache-geode/bin/gfsh
+              $gfsh version --full | grep "^Source-Revision: ${SHA}$"
+              $gfsh version --full | grep "^Product-Version: ${VERSION}$"
+              ! $gfsh version --full | grep Oracle
   - name: build-geode-from-src-tgz
     serial: true
     plan:
@@ -133,11 +140,50 @@ jobs:
               set -ex
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}-src.tgz > src.tgz
+              SHA=$(cd geode && git rev-parse HEAD)
+              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-${VERSION}-src
               java -version
-              ./gradlew test
+              ./gradlew test installDist
+              gfsh=geode-assembly/build/install/apache-geode/bin/gfsh
+              $gfsh version --full | grep "^Source-Revision: ${SHA}$"
+              $gfsh version --full | grep "^Product-Version: ${VERSION}$"
+              ! $gfsh version --full | grep Oracle
+  - name: run-gfsh-from-tgz
+    serial: true
+    plan:
+      - aggregate:
+          - get: geode
+            trigger: true
+      - task: validate
+        timeout: 1h
+        config:
+          image_resource:
+            type: docker-image
+            source:
+              repository: openjdk
+              tag: 8
+          inputs:
+            - name: geode
+          platform: linux
+          run:
+            path: /bin/sh
+            args:
+            - -ec
+            - |
+              set -ex
+              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
+              SHA=$(cd geode && git rev-parse HEAD)
+              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > bin.tgz
+              tar xzf bin.tgz
+              cd apache-geode-${VERSION}
+              java -version
+              gfsh=bin/gfsh
+              $gfsh version --full | grep "^Source-Revision: ${SHA}$"
+              $gfsh version --full | grep "^Product-Version: ${VERSION}$"
+              ! $gfsh version --full | grep Oracle
   - name: run-geode-examples-jdk11
     serial: true
     plan:
@@ -190,7 +236,7 @@ jobs:
               FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-examples-${VERSION}-src
               java -version
@@ -221,7 +267,7 @@ jobs:
               FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               #use geode from binary dist
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > geode-bin.tgz
+              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > geode-bin.tgz
               tar xzf geode-bin.tgz
               # needed to get cmake >= 3.12
               echo 'APT::Default-Release "stable";' >> /etc/apt/apt.conf.d/99defaultrelease
@@ -275,7 +321,7 @@ jobs:
               echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tgz > src.tgz
+              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-native-${VERSION}-src
               mkdir build
@@ -315,7 +361,7 @@ jobs:
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
               cd upthewaterspout-tests
-              curl -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
+              curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
               gpg --import KEYS
               java -version
               ./gradlew build -PmavenURL=${STAGING_MAVEN} -PdownloadURL=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/ -Pversion=${FULL_VERSION}
@@ -343,7 +389,7 @@ jobs:
               set -ex
               FULL_VERSION=$(cd geode-benchmarks && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
-              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
+              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-benchmarks-${VERSION}-src
               java -version
@@ -380,7 +426,7 @@ jobs:
               set -ex
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
-              curl -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
+              curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
               gpg --import KEYS
               url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
               function verifyArtifactSizeSignatureLicenseNoticeAndCopyright {
@@ -392,7 +438,7 @@ jobs:
                 asc=${file}.asc
                 sha=${file}.sha256
                 sum=sha256sum
-                curl -s $url/$file > $file
+                curl -L -s $url/$file > $file
                 actualfilesize=$(wc -c < $file)
                 if [ $actualfilesize -lt $minfilesize ] ; then
                   echo "File size of $file is only $actualfilesize bytes, expected at least $minfilesize"
@@ -402,8 +448,8 @@ jobs:
                   echo "File size of $file is $actualfilesize, expected no more than $maxfilesize bytes"
                   return 1
                 fi
-                curl -s $url/$asc > $asc
-                curl -s $url/$sha > $sha
+                curl -L -s $url/$asc > $asc
+                curl -L -s $url/$sha > $sha
                 gpg --verify $asc
                 $sum -c $sha
                 echo $file >> exp
@@ -427,7 +473,7 @@ jobs:
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src 50000 2000000
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src 2000000 4000000
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src 50000 500000
-              curl -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
+              curl -L -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
               sort < exp > expected-file-list
               set +x
               echo ""
@@ -477,7 +523,7 @@ jobs:
                 file=$1
                 echo ""
                 echo Checking $file...
-                curl -s $url/$file | tar tvzf - | egrep '\.('"${BINARY_EXTENSIONS}"')$' | tee -a bins
+                curl -L -s $url/$file | tar tvzf - | egrep '\.('"${BINARY_EXTENSIONS}"')$' | tee -a bins
               }
               verifyNoBinaries apache-geode-${VERSION}-src.tgz
               verifyNoBinaries apache-geode-examples-${VERSION}-src.tgz
