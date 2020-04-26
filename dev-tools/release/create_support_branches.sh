@@ -67,6 +67,7 @@ WORKSPACE=$PWD/support-${VERSION_MM}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_DEVELOP=$WORKSPACE/geode-develop
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
+GEODE_EXAMPLES_DEVELOP=$WORKSPACE/geode-examples-develop
 GEODE_NATIVE=$WORKSPACE/geode-native
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 set +x
@@ -97,6 +98,7 @@ set -x
 git clone --single-branch --branch develop git@github.com:apache/geode.git
 git clone --single-branch --branch develop git@github.com:apache/geode.git geode-develop
 git clone --single-branch --branch develop git@github.com:apache/geode-examples.git
+git clone --single-branch --branch develop git@github.com:apache/geode-examples.git geode-examples-develop
 git clone --single-branch --branch develop git@github.com:apache/geode-native.git
 git clone --single-branch --branch develop git@github.com:apache/geode-benchmarks.git
 set +x
@@ -185,6 +187,30 @@ git diff --staged
 
 git commit -a -m "roll develop to ${NEWVERSION} now that support/${VERSION_MM} has been created"
 git push -u myfork
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Bumping examples version on develop to ${NEWVERSION}"
+echo "============================================================"
+set -x
+cd ${GEODE_EXAMPLES_DEVELOP}
+git pull
+set +x
+
+#version = 1.13.0-SNAPSHOT
+#geodeVersion = 1.13.0-SNAPSHOT
+sed \
+  -e "s/^version =.*/version = ${NEWVERSION}-SNAPSHOT/" \
+  -e "s/^geodeVersion =.*/geodeVersion = ${NEWVERSION}-SNAPSHOT/" \
+  -i.bak gradle.properties
+rm gradle.properties.bak
+set -x
+git add gradle.properties
+git diff --staged
+git commit -m "point develop examples to ${NEWVERSION}-SNAPSHOT now that support/${VERSION_MM} has been created"
+git push
 set +x
 
 
