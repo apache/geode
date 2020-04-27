@@ -15,15 +15,6 @@
 
 package org.apache.geode.redis.internal;
 
-import static org.apache.geode.redis.internal.RedisDataType.NONE;
-import static org.apache.geode.redis.internal.RedisDataType.REDIS_HASH;
-import static org.apache.geode.redis.internal.RedisDataType.REDIS_HLL;
-import static org.apache.geode.redis.internal.RedisDataType.REDIS_LIST;
-import static org.apache.geode.redis.internal.RedisDataType.REDIS_PUBSUB;
-import static org.apache.geode.redis.internal.RedisDataType.REDIS_SET;
-import static org.apache.geode.redis.internal.RedisDataType.REDIS_SORTEDSET;
-import static org.apache.geode.redis.internal.RedisDataType.REDIS_STRING;
-
 import org.apache.geode.redis.internal.executor.AuthExecutor;
 import org.apache.geode.redis.internal.executor.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.DelExecutor;
@@ -180,138 +171,138 @@ public enum RedisCommandType {
    ************** Strings ****************
    ***************************************/
 
-  APPEND(new AppendExecutor(), REDIS_STRING),
-  BITCOUNT(new BitCountExecutor(), REDIS_STRING),
-  BITOP(new BitOpExecutor(), REDIS_STRING),
-  BITPOS(new BitPosExecutor(), REDIS_STRING),
-  DECR(new DecrExecutor(), REDIS_STRING),
-  DECRBY(new DecrByExecutor(), REDIS_STRING),
-  GET(new GetExecutor(), REDIS_STRING),
-  GETBIT(new GetBitExecutor(), REDIS_STRING),
-  GETRANGE(new GetRangeExecutor(), REDIS_STRING),
-  GETSET(new GetSetExecutor(), REDIS_STRING),
-  INCR(new IncrExecutor(), REDIS_STRING),
-  INCRBY(new IncrByExecutor(), REDIS_STRING),
-  INCRBYFLOAT(new IncrByFloatExecutor(), REDIS_STRING),
-  MGET(new MGetExecutor(), REDIS_STRING),
-  MSET(new MSetExecutor(), REDIS_STRING),
-  MSETNX(new MSetNXExecutor(), REDIS_STRING),
-  PSETEX(new PSetEXExecutor(), REDIS_STRING),
-  SETEX(new SetEXExecutor(), REDIS_STRING),
-  SET(new SetExecutor(), REDIS_STRING),
-  SETBIT(new SetBitExecutor(), REDIS_STRING),
-  SETNX(new SetNXExecutor(), REDIS_STRING),
-  SETRANGE(new SetRangeExecutor(), REDIS_STRING),
-  STRLEN(new StrlenExecutor(), REDIS_STRING),
+  APPEND(new AppendExecutor()),
+  BITCOUNT(new BitCountExecutor()),
+  BITOP(new BitOpExecutor()),
+  BITPOS(new BitPosExecutor()),
+  DECR(new DecrExecutor()),
+  DECRBY(new DecrByExecutor()),
+  GET(new GetExecutor()),
+  GETBIT(new GetBitExecutor()),
+  GETRANGE(new GetRangeExecutor()),
+  GETSET(new GetSetExecutor()),
+  INCR(new IncrExecutor()),
+  INCRBY(new IncrByExecutor()),
+  INCRBYFLOAT(new IncrByFloatExecutor()),
+  MGET(new MGetExecutor()),
+  MSET(new MSetExecutor()),
+  MSETNX(new MSetNXExecutor()),
+  PSETEX(new PSetEXExecutor()),
+  SETEX(new SetEXExecutor()),
+  SET(new SetExecutor()),
+  SETBIT(new SetBitExecutor()),
+  SETNX(new SetNXExecutor()),
+  SETRANGE(new SetRangeExecutor()),
+  STRLEN(new StrlenExecutor()),
 
   /***************************************
    **************** Hashes ***************
    ***************************************/
 
-  HDEL(new HDelExecutor(), REDIS_HASH),
-  HEXISTS(new HExistsExecutor(), REDIS_HASH),
-  HGET(new HGetExecutor(), REDIS_HASH),
-  HGETALL(new HGetAllExecutor(), REDIS_HASH),
-  HINCRBY(new HIncrByExecutor(), REDIS_HASH),
-  HINCRBYFLOAT(new HIncrByFloatExecutor(), REDIS_HASH),
-  HKEYS(new HKeysExecutor(), REDIS_HASH),
-  HLEN(new HLenExecutor(), REDIS_HASH),
-  HMGET(new HMGetExecutor(), REDIS_HASH),
-  HMSET(new HMSetExecutor(), REDIS_HASH),
-  HSCAN(new HScanExecutor(), REDIS_HASH),
-  HSET(new HSetExecutor(), REDIS_HASH),
-  HSETNX(new HSetNXExecutor(), REDIS_HASH),
-  HVALS(new HValsExecutor(), REDIS_HASH),
+  HDEL(new HDelExecutor()),
+  HEXISTS(new HExistsExecutor()),
+  HGET(new HGetExecutor()),
+  HGETALL(new HGetAllExecutor()),
+  HINCRBY(new HIncrByExecutor()),
+  HINCRBYFLOAT(new HIncrByFloatExecutor()),
+  HKEYS(new HKeysExecutor()),
+  HLEN(new HLenExecutor()),
+  HMGET(new HMGetExecutor()),
+  HMSET(new HMSetExecutor()),
+  HSCAN(new HScanExecutor()),
+  HSET(new HSetExecutor()),
+  HSETNX(new HSetNXExecutor()),
+  HVALS(new HValsExecutor()),
 
   /***************************************
    *********** HyperLogLogs **************
    ***************************************/
 
-  PFADD(new PFAddExecutor(), REDIS_HLL),
-  PFCOUNT(new PFCountExecutor(), REDIS_HLL),
-  PFMERGE(new PFMergeExecutor(), REDIS_HLL),
+  PFADD(new PFAddExecutor()),
+  PFCOUNT(new PFCountExecutor()),
+  PFMERGE(new PFMergeExecutor()),
 
   /***************************************
    *************** Lists *****************
    ***************************************/
 
-  LINDEX(new LIndexExecutor(), REDIS_LIST),
-  LINSERT(new LInsertExecutor(), REDIS_LIST),
-  LLEN(new LLenExecutor(), REDIS_LIST),
-  LPOP(new LPopExecutor(), REDIS_LIST),
-  LPUSH(new LPushExecutor(), REDIS_LIST),
-  LPUSHX(new LPushXExecutor(), REDIS_LIST),
-  LRANGE(new LRangeExecutor(), REDIS_LIST),
-  LREM(new LRemExecutor(), REDIS_LIST),
-  LSET(new LSetExecutor(), REDIS_LIST),
-  LTRIM(new LTrimExecutor(), REDIS_LIST),
-  RPOP(new RPopExecutor(), REDIS_LIST),
-  RPUSH(new RPushExecutor(), REDIS_LIST),
-  RPUSHX(new RPushXExecutor(), REDIS_LIST),
+  LINDEX(new LIndexExecutor()),
+  LINSERT(new LInsertExecutor()),
+  LLEN(new LLenExecutor()),
+  LPOP(new LPopExecutor()),
+  LPUSH(new LPushExecutor()),
+  LPUSHX(new LPushXExecutor()),
+  LRANGE(new LRangeExecutor()),
+  LREM(new LRemExecutor()),
+  LSET(new LSetExecutor()),
+  LTRIM(new LTrimExecutor()),
+  RPOP(new RPopExecutor()),
+  RPUSH(new RPushExecutor()),
+  RPUSHX(new RPushXExecutor()),
 
   /***************************************
    **************** Sets *****************
    ***************************************/
 
-  SADD(new SAddExecutor(), REDIS_SET),
-  SCARD(new SCardExecutor(), REDIS_SET),
-  SDIFF(new SDiffExecutor(), REDIS_SET),
-  SDIFFSTORE(new SDiffStoreExecutor(), REDIS_SET),
-  SISMEMBER(new SIsMemberExecutor(), REDIS_SET),
-  SINTER(new SInterExecutor(), REDIS_SET),
-  SINTERSTORE(new SInterStoreExecutor(), REDIS_SET),
-  SMEMBERS(new SMembersExecutor(), REDIS_SET),
-  SMOVE(new SMoveExecutor(), REDIS_SET),
-  SPOP(new SPopExecutor(), REDIS_SET),
-  SRANDMEMBER(new SRandMemberExecutor(), REDIS_SET),
-  SUNION(new SUnionExecutor(), REDIS_SET),
-  SUNIONSTORE(new SUnionStoreExecutor(), REDIS_SET),
-  SSCAN(new SScanExecutor(), REDIS_SET),
-  SREM(new SRemExecutor(), REDIS_SET),
+  SADD(new SAddExecutor()),
+  SCARD(new SCardExecutor()),
+  SDIFF(new SDiffExecutor()),
+  SDIFFSTORE(new SDiffStoreExecutor()),
+  SISMEMBER(new SIsMemberExecutor()),
+  SINTER(new SInterExecutor()),
+  SINTERSTORE(new SInterStoreExecutor()),
+  SMEMBERS(new SMembersExecutor()),
+  SMOVE(new SMoveExecutor()),
+  SPOP(new SPopExecutor()),
+  SRANDMEMBER(new SRandMemberExecutor()),
+  SUNION(new SUnionExecutor()),
+  SUNIONSTORE(new SUnionStoreExecutor()),
+  SSCAN(new SScanExecutor()),
+  SREM(new SRemExecutor()),
 
   /***************************************
    ************* Sorted Sets *************
    ***************************************/
 
-  ZADD(new ZAddExecutor(), REDIS_SORTEDSET),
-  ZCARD(new ZCardExecutor(), REDIS_SORTEDSET),
-  ZCOUNT(new ZCountExecutor(), REDIS_SORTEDSET),
-  ZINCRBY(new ZIncrByExecutor(), REDIS_SORTEDSET),
-  ZLEXCOUNT(new ZLexCountExecutor(), REDIS_SORTEDSET),
-  ZRANGE(new ZRangeExecutor(), REDIS_SORTEDSET),
-  ZRANGEBYLEX(new ZRangeByLexExecutor(), REDIS_SORTEDSET),
-  ZRANGEBYSCORE(new ZRangeByScoreExecutor(), REDIS_SORTEDSET),
-  ZREVRANGE(new ZRevRangeExecutor(), REDIS_SORTEDSET),
-  ZRANK(new ZRankExecutor(), REDIS_SORTEDSET),
-  ZREM(new ZRemExecutor(), REDIS_SORTEDSET),
-  ZREMRANGEBYLEX(new ZRemRangeByLexExecutor(), REDIS_SORTEDSET),
-  ZREMRANGEBYRANK(new ZRemRangeByRankExecutor(), REDIS_SORTEDSET),
-  ZREMRANGEBYSCORE(new ZRemRangeByScoreExecutor(), REDIS_SORTEDSET),
-  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), REDIS_SORTEDSET),
-  ZREVRANK(new ZRevRankExecutor(), REDIS_SORTEDSET),
-  ZSCAN(new ZScanExecutor(), REDIS_SORTEDSET),
-  ZSCORE(new ZScoreExecutor(), REDIS_SORTEDSET),
+  ZADD(new ZAddExecutor()),
+  ZCARD(new ZCardExecutor()),
+  ZCOUNT(new ZCountExecutor()),
+  ZINCRBY(new ZIncrByExecutor()),
+  ZLEXCOUNT(new ZLexCountExecutor()),
+  ZRANGE(new ZRangeExecutor()),
+  ZRANGEBYLEX(new ZRangeByLexExecutor()),
+  ZRANGEBYSCORE(new ZRangeByScoreExecutor()),
+  ZREVRANGE(new ZRevRangeExecutor()),
+  ZRANK(new ZRankExecutor()),
+  ZREM(new ZRemExecutor()),
+  ZREMRANGEBYLEX(new ZRemRangeByLexExecutor()),
+  ZREMRANGEBYRANK(new ZRemRangeByRankExecutor()),
+  ZREMRANGEBYSCORE(new ZRemRangeByScoreExecutor()),
+  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor()),
+  ZREVRANK(new ZRevRankExecutor()),
+  ZSCAN(new ZScanExecutor()),
+  ZSCORE(new ZScoreExecutor()),
 
   /***************************************
    ********** Publish Subscribe **********
    ***************************************/
 
-  SUBSCRIBE(new SubscribeExecutor(), REDIS_PUBSUB),
-  PUBLISH(new PublishExecutor(), REDIS_PUBSUB),
-  UNSUBSCRIBE(new UnsubscribeExecutor(), REDIS_PUBSUB),
-  PSUBSCRIBE(new PsubscribeExecutor(), REDIS_PUBSUB),
-  PUNSUBSCRIBE(new PunsubscribeExecutor(), REDIS_PUBSUB),
+  SUBSCRIBE(new SubscribeExecutor()),
+  PUBLISH(new PublishExecutor()),
+  UNSUBSCRIBE(new UnsubscribeExecutor()),
+  PSUBSCRIBE(new PsubscribeExecutor()),
+  PUNSUBSCRIBE(new PunsubscribeExecutor()),
 
   /**************************************
    * Geospatial commands ****************
    **************************************/
 
-  GEOADD(new GeoAddExecutor(), REDIS_SORTEDSET),
-  GEOHASH(new GeoHashExecutor(), REDIS_SORTEDSET),
-  GEOPOS(new GeoPosExecutor(), REDIS_SORTEDSET),
-  GEODIST(new GeoDistExecutor(), REDIS_SORTEDSET),
-  GEORADIUS(new GeoRadiusExecutor(), REDIS_SORTEDSET),
-  GEORADIUSBYMEMBER(new GeoRadiusByMemberExecutor(), REDIS_SORTEDSET),
+  GEOADD(new GeoAddExecutor()),
+  GEOHASH(new GeoHashExecutor()),
+  GEOPOS(new GeoPosExecutor()),
+  GEODIST(new GeoDistExecutor()),
+  GEORADIUS(new GeoRadiusExecutor()),
+  GEORADIUSBYMEMBER(new GeoRadiusByMemberExecutor()),
 
   /***************************************
    ************ Transactions *************
@@ -336,7 +327,6 @@ public enum RedisCommandType {
   UNKNOWN(new UnkownExecutor());
 
   private final Executor executor;
-  private final RedisDataType dataType;
 
   /**
    * @return {@link Executor} for the command type
@@ -345,16 +335,7 @@ public enum RedisCommandType {
     return executor;
   };
 
-  public RedisDataType getDataType() {
-    return dataType;
-  }
-
   private RedisCommandType(Executor executor) {
-    this(executor, NONE);
-  }
-
-  private RedisCommandType(Executor executor, RedisDataType dataType) {
     this.executor = executor;
-    this.dataType = dataType;
   }
 }
