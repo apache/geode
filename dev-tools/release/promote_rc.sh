@@ -437,5 +437,6 @@ PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "9. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop"
 M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "9 months from now")
 [ "${PATCH}" -ne 0 ] || echo "10. Mark your calendar for $M to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
-echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 ))"
+echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
+echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
 echo "Finally, send announce email!"

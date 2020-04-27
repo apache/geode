@@ -109,12 +109,21 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Pushing tags..."
+echo "Re-adding -SNAPSHOT in case this is not the final RC"
 echo "============================================================"
+set -x
+${0%/*}/set_versions.sh -v ${VERSION} -s -n -w "${WORKSPACE}"
+set +x
 
+
+echo ""
+echo "============================================================"
+echo "Pushing copyrights, versions, and tags..."
+echo "============================================================"
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
+    git push -u origin
     git push origin rel/v${FULL_VERSION}
     set +x
 done

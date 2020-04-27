@@ -10,6 +10,7 @@ These scripts are intended to be run from the parent directory of your geode dev
 Overview of scripts:
 
 create_support_branches.sh: cuts support/x.y from develop for all projects and walks you through creating pipelines and setting version numbers
+  set_copyright.sh updates the copyright year
 set_versions.sh: updates files that need to contain the version number planned for the next release from this support branch
 prepare_rc.sh: Checks out the various geode repos, builds a release candidate, and publishes to nexus staging repo
 commit_rc.sh: Pushes the tags and artifacts staged by prepare_rc.sh and then runs print_rc_email.sh
