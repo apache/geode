@@ -15,10 +15,13 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.control.RestoreRedundancyOperation;
+import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 
 /**
@@ -55,6 +58,26 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public Set<RebalanceOperation> getRebalanceOperations() {
+    throw new IllegalArgumentException("Unused");
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.apache.geode.cache.control.ResourceManager#createRestoreRedundancyOperation()
+   */
+  @Override
+  public RestoreRedundancyOperation createRestoreRedundancyOperation() {
+    throw new IllegalArgumentException("Unused");
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.apache.geode.cache.control.ResourceManager#getRestoreRedundancyFutures()
+   */
+  @Override
+  public Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyFutures() {
     throw new IllegalArgumentException("Unused");
   }
 
