@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,24 +35,31 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
+public class InternalDistributedSystemLockMemoryIntegrationTest {
 
-public class InternalDistributedSystemTest {
   private MetricsService.Builder builder;
-
-  @Before
-  public void setup() {
-    builder = mock(MetricsService.Builder.class);
-    when(builder.build(any())).thenReturn(mock(MetricsService.class));
-  }
+  private InternalDistributedSystem system;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
+  @Before
+  public void setUp() {
+    builder = mock(MetricsService.Builder.class);
+    when(builder.build(any())).thenReturn(mock(MetricsService.class));
+  }
+
+  @After
+  public void tearDown() {
+    if (system != null) {
+      system.disconnect();
+    }
+  }
+
   @Test
   public void lockMemoryAllowedIfAllowMemoryOverCommitIsSet() {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT", "true");
-    InternalDistributedSystem system =
-        spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
+    system = spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
     doNothing().when(system).lockMemory();
 
     system.lockMemory(100, 200);
@@ -63,8 +71,7 @@ public class InternalDistributedSystemTest {
   public void lockMemoryAvoidedIfAvoidMemoryLockWhenOverCommitIsSet() {
     System.setProperty(
         GeodeGlossary.GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT", "true");
-    InternalDistributedSystem system =
-        spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
+    system = spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
 
     system.lockMemory(100, 200);
 
@@ -76,8 +83,7 @@ public class InternalDistributedSystemTest {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT", "true");
     System.setProperty(
         GeodeGlossary.GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT", "true");
-    InternalDistributedSystem system =
-        spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
+    system = spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
 
     system.lockMemory(100, 200);
 
@@ -87,8 +93,7 @@ public class InternalDistributedSystemTest {
 
   @Test
   public void lockMemoryThrowsIfMemoryOverCommit() {
-    InternalDistributedSystem system =
-        spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
+    system = spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
 
     Throwable caughtException = catchThrowable(() -> system.lockMemory(100, 200));
 
@@ -98,8 +103,7 @@ public class InternalDistributedSystemTest {
 
   @Test
   public void locksMemoryIfMemoryNotOverCommit() {
-    InternalDistributedSystem system =
-        spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
+    system = spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
     doNothing().when(system).lockMemory();
 
     system.lockMemory(200, 100);

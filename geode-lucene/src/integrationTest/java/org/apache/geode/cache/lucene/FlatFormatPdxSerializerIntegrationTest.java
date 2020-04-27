@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
@@ -26,14 +26,14 @@ import org.apache.lucene.index.IndexableField;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
-import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category({LuceneTest.class})
-public class FlatFormatPdxSerializerJunitTest {
+@Category(LuceneTest.class)
+public class FlatFormatPdxSerializerIntegrationTest {
 
   private PdxInstance createPdxInstance() {
     HashSet positions = new HashSet();
@@ -102,7 +102,7 @@ public class FlatFormatPdxSerializerJunitTest {
     FlatFormatSerializer serializer = new FlatFormatSerializer();
     PdxInstance pdx = createPdxInstance();
 
-    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, pdx, fields);
+    Document doc1 = invokeSerializer(serializer, pdx, fields);
     assertEquals(17, doc1.getFields().size());
 
     IndexableField[] fieldsInDoc = doc1.getFields("intArr");
@@ -118,7 +118,7 @@ public class FlatFormatPdxSerializerJunitTest {
 
     FlatFormatSerializer serializer = new FlatFormatSerializer();
     PdxInstance pdx = createPdxInstance();
-    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, pdx, fields);
+    Document doc1 = invokeSerializer(serializer, pdx, fields);
 
     IndexableField[] fieldsInDoc = doc1.getFields("status");
     Collection<Object> results = getResultCollection(fieldsInDoc, false);
@@ -132,7 +132,7 @@ public class FlatFormatPdxSerializerJunitTest {
 
     FlatFormatSerializer serializer = new FlatFormatSerializer();
     PdxInstance pdx = createPdxInstance();
-    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, pdx, fields);
+    Document doc1 = invokeSerializer(serializer, pdx, fields);
 
     IndexableField[] fieldsInDoc = doc1.getFields("positions.secId");
     Collection<Object> results = getResultCollection(fieldsInDoc, false);
@@ -147,7 +147,7 @@ public class FlatFormatPdxSerializerJunitTest {
 
     FlatFormatSerializer serializer = new FlatFormatSerializer();
     PdxInstance pdx = createPdxInstance();
-    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, pdx, fields);
+    Document doc1 = invokeSerializer(serializer, pdx, fields);
 
     IndexableField[] fieldsInDoc = doc1.getFields("positions.sharesOutstanding");
     Collection<Object> results = getResultCollection(fieldsInDoc, true);
@@ -166,5 +166,14 @@ public class FlatFormatPdxSerializerJunitTest {
       }
     }
     return results;
+  }
+
+  private static Document invokeSerializer(LuceneSerializer mapper, Object object,
+      String[] fields) {
+    LuceneIndex index = Mockito.mock(LuceneIndex.class);
+    Mockito.when(index.getFieldNames()).thenReturn(fields);
+    Collection<Document> docs = mapper.toDocuments(index, object);
+    assertEquals(1, docs.size());
+    return docs.iterator().next();
   }
 }
