@@ -58,6 +58,9 @@ public class LiveServerPinger extends EndpointListenerAdapter {
 
   @Override
   public void endpointNowInUse(Endpoint endpoint) {
+    logger.info(
+        "[JUAN]: Adding endpoint with ServerLocation {} and MemberId {} to the LiveServerPinger...",
+        endpoint.getLocation(), endpoint.getMemberId());
     try {
       Future future = pool.getBackgroundProcessor().scheduleWithFixedDelay(new PingTask(endpoint),
           pingIntervalNanos, pingIntervalNanos, TimeUnit.NANOSECONDS);
@@ -67,13 +70,22 @@ public class LiveServerPinger extends EndpointListenerAdapter {
         throw e;
       }
     }
+    logger.info(
+        "[JUAN]: Adding endpoint with ServerLocation {} and MemberId {} to the LiveServerPinger... Done!.",
+        endpoint.getLocation(), endpoint.getMemberId());
   }
 
   private void cancelFuture(Endpoint endpoint) {
+    logger.info(
+        "[JUAN]: Removing endpoint with ServerLocation {} and MemberId {} to the LiveServerPinger...",
+        endpoint.getLocation(), endpoint.getMemberId());
     Future future = taskFutures.remove(endpoint);
     if (future != null) {
       future.cancel(false);
     }
+    logger.info(
+        "[JUAN]: Removing endpoint with ServerLocation {} and MemberId {} to the LiveServerPinger... Done!.",
+        endpoint.getLocation(), endpoint.getMemberId());
   }
 
   private class PingTask extends PoolTask {
