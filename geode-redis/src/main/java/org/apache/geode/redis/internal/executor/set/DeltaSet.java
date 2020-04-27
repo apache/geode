@@ -42,7 +42,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
  */
 class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   private HashSet<ByteArrayWrapper> members;
-  private final transient ArrayList<ByteArrayWrapper> deltas = new ArrayList<>();
+  private transient ArrayList<ByteArrayWrapper> deltas;
   // true if deltas contains adds; false if removes
   private transient boolean deltasAreAdds;
 
@@ -123,18 +123,16 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     members.clear();
   }
 
-
   // DELTA
   @Override
   public boolean hasDelta() {
-    return !deltas.isEmpty();
+    return deltas != null;
   }
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
     DataSerializer.writeBoolean(deltasAreAdds, out);
     DataSerializer.writeArrayList(deltas, out);
-    deltas.clear();
   }
 
   @Override
@@ -167,7 +165,8 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
 
 
   /**
-   * @param membersToAdd members to add to this set
+   * @param membersToAdd members to add to this set; NOTE must be an ArrayList and it may by
+   *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to add to
    * @return the number of members actually added
@@ -176,25 +175,32 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   public synchronized long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
-    for (ByteArrayWrapper memberToAdd : membersToAdd) {
-      if (members.add(memberToAdd)) {
-        deltas.add(memberToAdd);
-        deltasAreAdds = true;
+    if (region.get(key) != this) {
+      throw new RetryDueToConcurrentModification();
+    }
+    Iterator<ByteArrayWrapper> membersToAddIterator = membersToAdd.iterator();
+    while (membersToAddIterator.hasNext()) {
+      ByteArrayWrapper memberToAdd = membersToAddIterator.next();
+      if (!members.add(memberToAdd)) {
+        membersToAddIterator.remove();
       }
     }
-    long result = deltas.size();
-    if (result != 0) {
-      if (!region.replace(key, this, this)) {
-        deltas.clear();
-        throw new RetryDueToConcurrentModification();
+    int membersAdded = membersToAdd.size();
+    if (membersAdded != 0) {
+      deltasAreAdds = true;
+      deltas = (ArrayList<ByteArrayWrapper>) membersToAdd;
+      try {
+        region.put(key, this);
+      } finally {
+        deltas = null;
       }
     }
-    deltas.clear();
-    return result;
+    return membersAdded;
   }
 
   /**
-   * @param membersToRemove members to remove from this set
+   * @param membersToRemove members to remove from this set; NOTE must be an ArrayList and it may by
+   *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to remove from
    * @return the number of members actually removed
@@ -203,21 +209,27 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   public synchronized long customRemoveAll(Collection<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
-    for (ByteArrayWrapper memberToRemove : membersToRemove) {
-      if (members.remove(memberToRemove)) {
-        deltas.add(memberToRemove);
-        deltasAreAdds = false;
+    if (region.get(key) != this) {
+      throw new RetryDueToConcurrentModification();
+    }
+    Iterator<ByteArrayWrapper> membersToRemoveIterator = membersToRemove.iterator();
+    while (membersToRemoveIterator.hasNext()) {
+      ByteArrayWrapper memberToAdd = membersToRemoveIterator.next();
+      if (!members.remove(memberToAdd)) {
+        membersToRemoveIterator.remove();
       }
     }
-    long result = deltas.size();
-    if (result != 0) {
-      if (!region.replace(key, this, this)) {
-        deltas.clear();
-        throw new RetryDueToConcurrentModification();
+    int membersRemoved = membersToRemove.size();
+    if (membersRemoved != 0) {
+      deltasAreAdds = false;
+      deltas = (ArrayList<ByteArrayWrapper>) membersToRemove;
+      try {
+        region.put(key, this);
+      } finally {
+        deltas = null;
       }
     }
-    deltas.clear();
-    return result;
+    return membersRemoved;
   }
 
   /**
@@ -233,7 +245,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
    * @param key the name of the set to delete
    * @return true if set deleted; false if not found
    */
-  public boolean delete(
+  public synchronized boolean delete(
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     return region.remove(key, this);
@@ -242,6 +254,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   /**
    * The returned set is a copy and will not be changed
    * by future changes to this DeltaSet.
+   *
    * @return a set containing all the members in this set
    */
   public synchronized Set<ByteArrayWrapper> members() {
