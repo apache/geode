@@ -27,6 +27,7 @@ class SaddFunction implements Function {
 
   public static final String ID = "SADD_FUNCTION";
 
+  @SuppressWarnings("unchecked")
   @Override
   public void execute(FunctionContext context) {
     RegionFunctionContextImpl regionFunctionContext =

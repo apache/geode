@@ -25,6 +25,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
+@SuppressWarnings("unchecked")
 public class GeodeRedisSetWithFunctions implements RedisSet {
 
   private final ByteArrayWrapper key;

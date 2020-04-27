@@ -27,6 +27,7 @@ class SremFunction implements Function {
 
   public static final String ID = "SREM_FUNCTION";
 
+  @SuppressWarnings("unchecked")
   @Override
   public void execute(FunctionContext context) {
     RegionFunctionContextImpl regionFunctionContext =

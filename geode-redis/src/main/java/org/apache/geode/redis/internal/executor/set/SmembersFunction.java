@@ -27,6 +27,7 @@ class SmembersFunction implements Function {
 
   public static final String ID = "SMEMBERS_FUNCTION";
 
+  @SuppressWarnings("unchecked")
   @Override
   public void execute(FunctionContext context) {
     RegionFunctionContextImpl regionFunctionContext =
