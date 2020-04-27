@@ -16,6 +16,7 @@
 package org.apache.geode.cache.control;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EvictionAttributes;
@@ -76,6 +77,27 @@ public interface ResourceManager {
    * @return a set of all active RebalanceOperations started locally
    */
   Set<RebalanceOperation> getRebalanceOperations();
+
+  /**
+   * Creates a {@link RestoreRedundancyOperation} class for defining and starting restore redundancy
+   * operations and for determining the redundancy status of regions. Similar to a rebalance
+   * operation, a restore redundancy operation will attempt to bring each included region to its
+   * configured redundancy level by creating redundant copies of buckets, and will also optionally
+   * reassign which members host the primary buckets for better load balancing. A restore redundancy
+   * operation differs from a rebalance operation in that it will not move buckets from one member
+   * to another.
+   *
+   * @return a class for defining and starting restore redundancy operations
+   */
+  RestoreRedundancyOperation createRestoreRedundancyOperation();
+
+  /**
+   * Returns a set of all active restore redundancy futures that were started locally on this
+   * member.
+   *
+   * @return a set of all active restore redundancy futures started locally.
+   */
+  Set<CompletableFuture<RestoreRedundancyResults>> getRestoreRedundancyFutures();
 
   /**
    * Set the percentage of heap at or above which the cache is considered in danger of becoming

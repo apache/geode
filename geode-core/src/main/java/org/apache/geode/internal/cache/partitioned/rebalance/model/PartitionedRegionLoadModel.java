@@ -362,6 +362,9 @@ public class PartitionedRegionLoadModel {
    * to create a bucket on that node. Because the bucket operator is asynchronous, the bucket may
    * not be created immediately, but the model will be updated regardless. Invoke
    * {@link #waitForOperations()} to wait for those operations to actually complete
+   *
+   * @param bucket the bucket for which a redundant copy should be made
+   * @param targetMember the member on which a redundant copy of a bucket should be made
    */
   public void createRedundantBucket(final BucketRollup bucket, final Member targetMember) {
     Map<String, Long> colocatedRegionSizes = getColocatedRegionSizes(bucket);
