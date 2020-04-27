@@ -38,9 +38,8 @@ class SaddFunction implements Function {
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
     Collection<ByteArrayWrapper> membersToAdd =
         (Collection<ByteArrayWrapper>) regionFunctionContext.getArguments();
-    long membersadded =
-        new GeodeRedisSetSynchronized(key, localRegion).sadd(membersToAdd);
-    regionFunctionContext.getResultSender().lastResult(membersadded);
+    long membersAdded = DeltaSet.sadd(localRegion, key, membersToAdd);
+    regionFunctionContext.getResultSender().lastResult(membersAdded);
   }
 
   @Override

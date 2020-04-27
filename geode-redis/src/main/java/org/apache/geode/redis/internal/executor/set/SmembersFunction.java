@@ -36,7 +36,7 @@ class SmembersFunction implements Function {
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
     Region localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
-    Set<ByteArrayWrapper> members = new GeodeRedisSetSynchronized(key, localRegion).members();
+    Set<ByteArrayWrapper> members = DeltaSet.members(localRegion, key);
     regionFunctionContext.getResultSender().lastResult(members);
   }
 

@@ -34,7 +34,7 @@ public class SdelFunction implements Function {
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
     Region localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
-    Boolean deleteSuccessful = new GeodeRedisSetSynchronized(key, localRegion).del();
+    Boolean deleteSuccessful = DeltaSet.del(localRegion, key);
     regionFunctionContext.getResultSender().lastResult(deleteSuccessful);
   }
 

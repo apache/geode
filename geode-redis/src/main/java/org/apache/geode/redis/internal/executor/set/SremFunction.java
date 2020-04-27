@@ -38,9 +38,8 @@ class SremFunction implements Function {
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
     Collection<ByteArrayWrapper> membersToRemove =
         (Collection<ByteArrayWrapper>) regionFunctionContext.getArguments();
-    long membersremoved =
-        new GeodeRedisSetSynchronized(key, localRegion).srem(membersToRemove);
-    regionFunctionContext.getResultSender().lastResult(membersremoved);
+    long membersRemoved = DeltaSet.srem(localRegion, key, membersToRemove);
+    regionFunctionContext.getResultSender().lastResult(membersRemoved);
   }
 
   @Override

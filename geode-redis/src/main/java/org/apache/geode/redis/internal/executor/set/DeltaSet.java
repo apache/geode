@@ -20,6 +20,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -41,6 +42,71 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
  * serialization methods.
  */
 class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
+
+  public static long sadd(Region<ByteArrayWrapper, DeltaSet> region,
+      ByteArrayWrapper key,
+      Collection<ByteArrayWrapper> membersToAdd) {
+    while (true) {
+      DeltaSet deltaSet = region.get(key);
+      if (deltaSet == null) {
+        // create new set
+        if (region.putIfAbsent(key, new DeltaSet(membersToAdd)) == null) {
+          return membersToAdd.size();
+        } else {
+          // retry since another thread concurrently changed the region
+        }
+      } else {
+        // update existing value
+        try {
+          return deltaSet.saddInstance(membersToAdd, region, key);
+        } catch (DeltaSet.RetryDueToConcurrentModification ex) {
+          // retry since another thread concurrently changed the region
+        }
+      }
+    }
+  }
+
+  public static long srem(Region<ByteArrayWrapper, DeltaSet> region,
+      ByteArrayWrapper key,
+      Collection<ByteArrayWrapper> membersToRemove) {
+    while (true) {
+      DeltaSet deltaSet = region.get(key);
+      if (deltaSet == null) {
+        return 0L;
+      }
+      try {
+        return deltaSet.sremInstance(membersToRemove, region, key);
+      } catch (DeltaSet.RetryDueToConcurrentModification ex) {
+        // retry since another thread concurrently changed the region
+      }
+    }
+  }
+
+  public static boolean del(Region<ByteArrayWrapper, DeltaSet> region,
+      ByteArrayWrapper key) {
+    while (true) {
+      DeltaSet deltaSet = region.get(key);
+      if (deltaSet == null) {
+        return false;
+      }
+      if (deltaSet.delInstance(region, key)) {
+        return true;
+      } else {
+        // retry since another thread concurrently changed the region
+      }
+    }
+  }
+
+  public static Set<ByteArrayWrapper> members(Region<ByteArrayWrapper, DeltaSet> region,
+      ByteArrayWrapper key) {
+    DeltaSet deltaSet = region.get(key);
+    if (deltaSet != null) {
+      return deltaSet.members();
+    } else {
+      return Collections.emptySet();
+    }
+  }
+
   private HashSet<ByteArrayWrapper> members;
   private transient ArrayList<ByteArrayWrapper> deltas;
   // true if deltas contains adds; false if removes
@@ -174,7 +240,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
    * @return the number of members actually added
    * @throws RetryDueToConcurrentModification if a concurrent modification is detected
    */
-  synchronized long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
+  synchronized long saddInstance(Collection<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     if (region.get(key) != this) {
@@ -202,7 +268,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
    * @return the number of members actually removed
    * @throws RetryDueToConcurrentModification if a concurrent modification is detected
    */
-  synchronized long customRemoveAll(Collection<ByteArrayWrapper> membersToRemove,
+  private synchronized long sremInstance(Collection<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     if (region.get(key) != this) {
@@ -235,7 +301,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
    * @param key the name of the set to delete
    * @return true if set deleted; false if not found
    */
-  synchronized boolean delete(
+  private synchronized boolean delInstance(
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     return region.remove(key, this);
@@ -247,7 +313,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
    *
    * @return a set containing all the members in this set
    */
-  public synchronized Set<ByteArrayWrapper> members() {
+  private synchronized Set<ByteArrayWrapper> members() {
     return new HashSet<>(members);
   }
 }
