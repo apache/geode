@@ -267,9 +267,9 @@ cp ${GEODE_BENCHMARKS}/apache-geode-benchmarks-${VERSION}* ${FULL_VERSION}
 set +x
 
 # verify all files are signed.  sometimes gradle "forgets" to make the .asc file
-for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tgz ; do
-  if ! [ -r $f.sha256 ] && ! [ -r $f.sha512 ] ; then
-    echo missing $f.sha256 or $f.sha512
+for f in ${FULL_VERSION}/*.tgz ; do
+  if ! [ -r $f.sha256 ] ; then
+    echo missing $f.sha256
     exit 1
   fi
   if ! [ -r $f.asc ] ; then
