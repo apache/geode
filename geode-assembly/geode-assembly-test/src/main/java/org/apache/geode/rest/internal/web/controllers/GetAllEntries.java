@@ -29,6 +29,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 
 public class GetAllEntries implements Function {
 
+  @SuppressWarnings("unchecked")
   @Override
   public void execute(FunctionContext context) {
     Map<String, String> myMap = new HashMap();
