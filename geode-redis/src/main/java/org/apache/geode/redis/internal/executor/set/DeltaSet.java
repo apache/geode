@@ -165,6 +165,14 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     members = DataSerializer.readHashSet(in);
   }
 
+
+  /**
+   * @param membersToAdd members to add to this set
+   * @param region the region this instance is stored in
+   * @param key the name of the set to add to
+   * @return the number of members actually added
+   * @throw RetryDueToConcurrentModification if a concurrent modification is detected
+   */
   public synchronized long customAddAll(Collection<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
@@ -185,6 +193,13 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     return result;
   }
 
+  /**
+   * @param membersToRemove members to remove from this set
+   * @param region the region this instance is stored in
+   * @param key the name of the set to remove from
+   * @return the number of members actually removed
+   * @throw RetryDueToConcurrentModification if a concurrent modification is detected
+   */
   public synchronized long customRemoveAll(Collection<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
@@ -212,12 +227,23 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   static class RetryDueToConcurrentModification extends RuntimeException {
   }
 
+  /**
+   *
+   * @param region the region the set is stored in
+   * @param key the name of the set to delete
+   * @return true if set deleted; false if not found
+   */
   public boolean delete(
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     return region.remove(key, this);
   }
 
+  /**
+   * The returned set is a copy and will not be changed
+   * by future changes to this DeltaSet.
+   * @return a set containing all the members in this set
+   */
   public synchronized Set<ByteArrayWrapper> members() {
     return new HashSet<>(members);
   }
