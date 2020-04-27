@@ -540,4 +540,5 @@ jobs:
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML
+fly -t concourse.apachegeode-ci.info-main unpause-pipeline -p apache-support-${VERSION_MM//./-}-rc
 rm $PIPEYML
