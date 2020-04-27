@@ -1351,6 +1351,10 @@ toData,31
 org/apache/geode/internal/cache/control/MemoryThresholds$MemoryState,1
 toData,12
 
+org/apache/geode/internal/cache/control/RegionRedundancyStatusImpl,2
+fromData,42
+toData,37
+
 org/apache/geode/internal/cache/control/ResourceAdvisor$ResourceManagerProfile,2
 fromData,67
 toData,100
@@ -1358,6 +1362,10 @@ toData,100
 org/apache/geode/internal/cache/control/ResourceAdvisor$ResourceProfileMessage,2
 fromData,88
 toData,72
+
+org/apache/geode/internal/cache/control/RestoreRedundancyResultsImpl,2
+fromData,46
+toData,43
 
 org/apache/geode/internal/cache/event/EventSequenceNumberHolder,2
 fromData,22
