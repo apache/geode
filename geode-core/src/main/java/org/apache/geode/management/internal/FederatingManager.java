@@ -33,6 +33,7 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.GemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DataPolicy;
@@ -40,9 +41,7 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -65,6 +64,8 @@ import org.apache.geode.management.ManagementException;
  */
 public class FederatingManager extends Manager {
   private static final Logger logger = LogService.getLogger();
+
+  private final Object lock = new Object();
 
   private final SystemManagementService service;
   private final AtomicReference<Exception> latestException = new AtomicReference<>();
@@ -106,35 +107,40 @@ public class FederatingManager extends Manager {
    * Management exception has to be handled by the caller.
    */
   @Override
-  public synchronized void startManager() {
+  public void startManager() {
     logger.info("KIRK:FederatingManager:startManager");
-    try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Starting the Federating Manager.... ");
+    synchronized (lock) {
+      logger.info("KIRK:FederatingManager:startManager:sync");
+      try {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Starting the Federating Manager.... ");
+        }
+
+        executorService = executorServiceSupplier.get();
+
+        running = true;
+        startManagingActivity();
+        messenger.broadcastManagerInfo();
+      } catch (Exception e) {
+        running = false;
+        throw new ManagementException(e);
       }
-
-      executorService = executorServiceSupplier.get();
-
-      running = true;
-      startManagingActivity();
-      messenger.broadcastManagerInfo();
-    } catch (Exception e) {
-      running = false;
-      throw new ManagementException(e);
     }
   }
 
   @Override
-  public synchronized void stopManager() {
-    // remove hidden management regions and federatedMBeans
-    if (!running) {
-      return;
+  public void stopManager() {
+    synchronized (lock) {
+      // remove hidden management regions and federatedMBeans
+      if (!running) {
+        return;
+      }
+      running = false;
+      if (logger.isDebugEnabled()) {
+        logger.debug("Stopping the Federating Manager.... ");
+      }
+      stopManagingActivity();
     }
-    running = false;
-    if (logger.isDebugEnabled()) {
-      logger.debug("Stopping the Federating Manager.... ");
-    }
-    stopManagingActivity();
   }
 
   @Override
@@ -223,11 +229,13 @@ public class FederatingManager extends Manager {
     }
   }
 
-  private synchronized void executeTask(Runnable task) {
-    try {
-      executorService.execute(task);
-    } catch (RejectedExecutionException ignored) {
-      // Ignore, we are getting shutdown
+  private void executeTask(Runnable task) {
+    synchronized (lock) {
+      try {
+        executorService.execute(task);
+      } catch (RejectedExecutionException ignored) {
+        // Ignore, we are getting shutdown
+      }
     }
   }
 
@@ -260,29 +268,40 @@ public class FederatingManager extends Manager {
           DistributedMember returnedMember = futureTask.get();
           String memberId = returnedMember != null ? returnedMember.getId() : null;
 
+          logger.info("KIRK:FederatingManager:startManagingActivity:futureTask:memberId={}",
+              memberId);
+
           if (futureTask.isDone()) {
             if (isDebugEnabled) {
               logger.debug("Monitoring Resource Created for : {}", memberId);
             }
-
+            logger.info(
+                "KIRK:FederatingManager:startManagingActivity:futureTask:memberId={}:isDone",
+                memberId);
           }
+
           if (futureTask.isCancelled()) {
             // Retry mechanism can be added here after discussions
             if (isDebugEnabled) {
               logger.debug("Monitoring resource Creation Failed for : {}", memberId);
             }
-
+            logger.info(
+                "KIRK:FederatingManager:startManagingActivity:futureTask:memberId={}:isCancelled",
+                memberId);
           }
+
         } catch (ExecutionException e) {
           if (isDebugEnabled) {
             logger.debug("ExecutionException during Management GII", e);
           }
+          logger.info("KIRK:FederatingManager:startManagingActivity:futureTask:catch", e);
 
         } catch (CancellationException e) {
           if (isDebugEnabled) {
             logger.debug("InterruptedException while creating Monitoring resource with error",
                 new ManagementException(e));
           }
+          logger.info("KIRK:FederatingManager:startManagingActivity:futureTask:catch", e);
         }
       }
     } catch (InterruptedException e) {
@@ -290,6 +309,7 @@ public class FederatingManager extends Manager {
         logger.debug("InterruptedException while creating Monitoring resource with error",
             new ManagementException(e));
       }
+      logger.info("KIRK:FederatingManager:startManagingActivity:catch", e);
 
     } finally {
       if (isDebugEnabled) {
@@ -314,6 +334,8 @@ public class FederatingManager extends Manager {
         giiTask.call();
       } catch (RuntimeException e) {
         logger.warn("Error federating new member {}", member.getId(), e);
+        logger.warn("KIRK:FederatingMember:addMember: Error federating new member {}",
+            member.getId(), e);
         latestException.set(e);
       }
     });
@@ -321,42 +343,44 @@ public class FederatingManager extends Manager {
 
   @VisibleForTesting
   void removeMemberArtifacts(DistributedMember member, boolean crashed) {
-    Region<String, Object> monitoringRegion = repo.getEntryFromMonitoringRegionMap(member);
-    Region<NotificationKey, Notification> notificationRegion =
-        repo.getEntryFromNotifRegionMap(member);
+    synchronized (member) {
+      Region<String, Object> monitoringRegion = repo.getEntryFromMonitoringRegionMap(member);
+      Region<NotificationKey, Notification> notificationRegion =
+          repo.getEntryFromNotifRegionMap(member);
 
-    if (monitoringRegion == null && notificationRegion == null) {
-      return;
-    }
-
-    repo.romoveEntryFromMonitoringRegionMap(member);
-    repo.removeEntryFromNotifRegionMap(member);
-
-    // If cache is closed all the regions would have been destroyed implicitly
-    if (!cache.isClosed()) {
-      try {
-        if (monitoringRegion != null) {
-          proxyFactory.removeAllProxies(member, monitoringRegion);
-          monitoringRegion.localDestroyRegion();
-        }
-      } catch (CancelException | RegionDestroyedException ignore) {
-        // ignored
+      if (monitoringRegion == null && notificationRegion == null) {
+        return;
       }
 
-      try {
-        if (notificationRegion != null) {
-          notificationRegion.localDestroyRegion();
-        }
-      } catch (CancelException | RegionDestroyedException ignore) {
-        // ignored
-      }
-    }
+      repo.romoveEntryFromMonitoringRegionMap(member);
+      repo.removeEntryFromNotifRegionMap(member);
 
-    if (!system.getDistributedMember().equals(member)) {
-      try {
-        service.memberDeparted((InternalDistributedMember) member, crashed);
-      } catch (CancelException | RegionDestroyedException ignore) {
-        // ignored
+      // If cache is closed all the regions would have been destroyed implicitly
+      if (!cache.isClosed()) {
+        try {
+          if (monitoringRegion != null) {
+            proxyFactory.removeAllProxies(member, monitoringRegion);
+            monitoringRegion.localDestroyRegion();
+          }
+        } catch (CancelException | RegionDestroyedException ignore) {
+          // ignored
+        }
+
+        try {
+          if (notificationRegion != null) {
+            notificationRegion.localDestroyRegion();
+          }
+        } catch (CancelException | RegionDestroyedException ignore) {
+          // ignored
+        }
+      }
+
+      if (!system.getDistributedMember().equals(member)) {
+        try {
+          service.memberDeparted((InternalDistributedMember) member, crashed);
+        } catch (CancelException | RegionDestroyedException ignore) {
+          // ignored
+        }
       }
     }
   }
@@ -367,8 +391,10 @@ public class FederatingManager extends Manager {
   }
 
   @VisibleForTesting
-  synchronized Exception getAndResetLatestException() {
-    return latestException.getAndSet(null);
+  Exception getAndResetLatestException() {
+    synchronized (lock) {
+      return latestException.getAndSet(null);
+    }
   }
 
   @VisibleForTesting
@@ -386,91 +412,53 @@ public class FederatingManager extends Manager {
         return;
       }
 
-      try {
+      // GII wont start at all if its interrupted
+      if (!Thread.currentThread().isInterrupted()) {
+        HasCachePerfStats monitoringRegionStats = getMonitoringRegionStats();
 
-        // GII wont start at all if its interrupted
-        if (!Thread.currentThread().isInterrupted()) {
+        boolean proxyNotificationRegionCreated = false;
+        try {
+          if (!running) {
+            return;
+          }
 
-          // Create anonymous stats holder for Management Regions
-          HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
-
-            @Override
-            public CachePerfStats getCachePerfStats() {
-              return new CachePerfStats(cache.getDistributedSystem(),
-                  "RegionStats-managementRegionStats", statisticsClock);
-            }
-
-            @Override
-            public boolean hasOwnStats() {
-              return true;
-            }
-          };
+          logger.info("KIRK:FederatingManager:addMemberArtifacts:createRegion: {}",
+              monitoringRegionName);
 
           // Monitoring region for member is created
           InternalRegionFactory<String, Object> monitorFactory =
               cache.createInternalRegionFactory();
-          monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-          monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
-          monitorFactory.setConcurrencyChecksEnabled(false);
-          ManagementCacheListener managementCacheListener =
-              new ManagementCacheListener(proxyFactory);
-          monitorFactory.addCacheListener(managementCacheListener);
-          monitorFactory.setIsUsedForMetaRegion(true);
+          monitorFactory.addCacheListener(new ManagementCacheListener(proxyFactory));
           monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
+          monitorFactory.setConcurrencyChecksEnabled(false);
+          monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
+          monitorFactory.setIsUsedForMetaRegion(true);
+          monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+          Region<String, Object> proxyMonitoringRegion =
+              monitorFactory.create(monitoringRegionName);
+
+          logger.info("KIRK:FederatingManager:addMemberArtifacts:createRegion: {}",
+              notificationRegionName);
 
           // Notification region for member is created
           InternalRegionFactory<NotificationKey, Notification> notificationFactory =
               cache.createInternalRegionFactory();
-          notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-          notificationFactory.setDataPolicy(DataPolicy.REPLICATE);
           notificationFactory.setConcurrencyChecksEnabled(false);
+          notificationFactory.setDataPolicy(DataPolicy.REPLICATE);
+          notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
 
           // Fix for issue #49638, evict the internal region _notificationRegion
           notificationFactory
               .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
                   ManagementConstants.NOTIF_REGION_MAX_ENTRIES, EvictionAction.LOCAL_DESTROY));
 
-          NotificationCacheListener notifListener = new NotificationCacheListener(proxyFactory);
-          notificationFactory.addCacheListener(notifListener);
-          notificationFactory.setIsUsedForMetaRegion(true);
+          notificationFactory.addCacheListener(new NotificationCacheListener(proxyFactory));
           notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
+          notificationFactory.setIsUsedForMetaRegion(true);
 
-          Region<String, Object> proxyMonitoringRegion;
-          try {
-            if (!running) {
-              return;
-            }
-            logger.info("KIRK:FederatingManager:addMemberArtifacts:createRegion: {}",
-                monitoringRegionName);
-            proxyMonitoringRegion = monitorFactory.create(monitoringRegionName);
-          } catch (TimeoutException | RegionExistsException e) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Error During Internal Region creation", e);
-            }
-            throw new ManagementException(e);
-          }
-
-          boolean proxyNotificationRegionCreated = false;
-          Region<NotificationKey, Notification> proxyNotificationRegion;
-          try {
-            if (!running) {
-              return;
-            }
-            logger.info("KIRK:FederatingManager:addMemberArtifacts:createRegion: {}",
-                notificationRegionName);
-            proxyNotificationRegion = notificationFactory.create(notificationRegionName);
-            proxyNotificationRegionCreated = true;
-          } catch (TimeoutException | RegionExistsException e) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Error During Internal Region creation", e);
-            }
-            throw new ManagementException(e);
-          } finally {
-            if (!proxyNotificationRegionCreated) {
-              // Destroy the proxy region if proxy notification region is not created
-              proxyMonitoringRegion.localDestroyRegion();
-            }
-          }
+          Region<NotificationKey, Notification> proxyNotificationRegion =
+              notificationFactory.create(notificationRegionName);
+          proxyNotificationRegionCreated = true;
 
           if (logger.isDebugEnabled()) {
             logger.debug("Management Region created with Name : {}",
@@ -483,23 +471,23 @@ public class FederatingManager extends Manager {
           // regions. We can safely proceed here.
           repo.putEntryInMonitoringRegionMap(member, proxyMonitoringRegion);
           repo.putEntryInNotifRegionMap(member, proxyNotificationRegion);
-          try {
-            if (!running) {
-              return;
-            }
-            logger.info("KIRK:FederatingManager:addMemberArtifacts:createAllProxies");
-            proxyFactory.createAllProxies(member, proxyMonitoringRegion);
-          } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Error During GII Proxy creation", e);
-            }
 
-            throw new ManagementException(e);
+          logger.info("KIRK:FederatingManager:addMemberArtifacts:createAllProxies");
+          proxyFactory.createAllProxies(member, proxyMonitoringRegion);
+
+        } catch (Exception e) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Error During Internal Region creation", e);
+          }
+          logger.info("KIRK:FederatingManager:addMemberArtifacts:catch", e);
+          throw new ManagementException(e);
+        } finally {
+          logger.info("KIRK:FederatingManager:addMemberArtifacts:finally");
+          if (!proxyNotificationRegionCreated) {
+            // Destroy the proxy region if proxy notification region is not created
+            localDestroyRegion(monitoringRegionName);
           }
         }
-
-      } catch (Exception e) {
-        throw new ManagementException(e);
       }
 
       // Before completing task intimate all listening ProxyListener which might send
@@ -511,6 +499,37 @@ public class FederatingManager extends Manager {
       logger.info("KIRK:FederatingManager:addMemberArtifacts:sendManagerInfo");
       messenger.sendManagerInfo(member);
     }
+  }
+
+  private void localDestroyRegion(String regionName) {
+    try {
+      Region proxyMonitoringRegion = cache.getRegion(regionName);
+      if (proxyMonitoringRegion != null) {
+        proxyMonitoringRegion.localDestroyRegion();
+      }
+    } catch (GemFireException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Local destroy of region " + regionName + " failed", e);
+      }
+      // ignored
+    }
+  }
+
+  private HasCachePerfStats getMonitoringRegionStats() {
+    // Create anonymous stats holder for Management Regions
+    return new HasCachePerfStats() {
+
+      @Override
+      public CachePerfStats getCachePerfStats() {
+        return new CachePerfStats(cache.getDistributedSystem(),
+            "RegionStats-managementRegionStats", statisticsClock);
+      }
+
+      @Override
+      public boolean hasOwnStats() {
+        return true;
+      }
+    };
   }
 
   /**
