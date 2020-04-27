@@ -136,7 +136,7 @@ public class SMoveIntegrationTest {
     Future<Long> future2 = pool.submit(callable2);
 
     assertThat(future1.get() + future2.get()).isEqualTo(new Long(strings.length));
-    assertThat(jedis.smembers(dest).toArray()).containsExactlyInAnyOrder(strings);
+    assertThat(jedis.smembers(dest)).containsExactlyInAnyOrder(strings);
     assertThat(jedis.scard(source)).isEqualTo(0L);
   }
 
