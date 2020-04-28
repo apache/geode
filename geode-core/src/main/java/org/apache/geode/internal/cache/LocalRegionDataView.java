@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.util.Collection;
 import java.util.Set;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
@@ -352,6 +353,9 @@ public class LocalRegionDataView implements InternalDataView {
       successfulPuts.clear();
       putallOp.fillVersionedObjectList(successfulPuts);
     }
+    if (reg.getDataPolicy() == DataPolicy.NORMAL || reg.getDataPolicy() == DataPolicy.PRELOADED) {
+      return;
+    }
     // BR & DR's putAll
     long token = -1;
     try {
@@ -373,6 +377,9 @@ public class LocalRegionDataView implements InternalDataView {
       // to the successfulOps list for transmission back to the client
       successfulOps.clear();
       op.fillVersionedObjectList(successfulOps);
+    }
+    if (reg.getDataPolicy() == DataPolicy.NORMAL || reg.getDataPolicy() == DataPolicy.PRELOADED) {
+      return;
     }
     // BR, DR's removeAll
     long token = -1;

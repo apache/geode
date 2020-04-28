@@ -9359,7 +9359,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * putAll completes. This won't work for non-replicate regions though since they uses one-hop
    * during basicPutPart2 to get a valid version tag.
    */
-  private void lockRVVForBulkOp() {
+  public void lockRVVForBulkOp() {
     ARMLockTestHook testHook = getRegionMap().getARMLockTestHook();
     if (testHook != null) {
       testHook.beforeBulkLock(this);
@@ -9374,7 +9374,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  private void unlockRVVForBulkOp() {
+  public void unlockRVVForBulkOp() {
     ARMLockTestHook testHook = getRegionMap().getARMLockTestHook();
     if (testHook != null) {
       testHook.beforeBulkRelease(this);
