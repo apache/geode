@@ -231,19 +231,12 @@ public class DeltaSet implements Delta, DataSerializable {
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      if (members.isEmpty()) {
-        region.remove(key);
-        if (setWasDeleted != null) {
-          setWasDeleted.set(true);
-        }
-      } else {
-        deltasAreAdds = false;
-        deltas = membersToRemove;
-        try {
-          region.put(key, this);
-        } finally {
-          deltas = null;
-        }
+      deltasAreAdds = false;
+      deltas = membersToRemove;
+      try {
+        region.put(key, this);
+      } finally {
+        deltas = null;
       }
     }
     return membersRemoved;
