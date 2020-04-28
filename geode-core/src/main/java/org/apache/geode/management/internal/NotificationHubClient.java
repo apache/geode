@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal;
 
-
 import javax.management.Notification;
 
 import org.apache.logging.log4j.Logger;
@@ -24,20 +23,13 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class actually distribute the notification with the help of the actual broadcaster proxy.
- *
- *
  */
-
-public class NotificationHubClient {
-
+class NotificationHubClient {
   private static final Logger logger = LogService.getLogger();
 
-  /**
-   * proxy factory
-   */
   private MBeanProxyFactory proxyFactory;
 
-  protected NotificationHubClient(MBeanProxyFactory proxyFactory) {
+  NotificationHubClient(MBeanProxyFactory proxyFactory) {
     this.proxyFactory = proxyFactory;
   }
 
@@ -47,16 +39,16 @@ public class NotificationHubClient {
    * it does not throw any exception. it will capture all exception and log a warning
    *
    */
-  public void sendNotification(EntryEvent<NotificationKey, Notification> event) {
-
-    NotificationBroadCasterProxy notifBroadCaster;
+  void sendNotification(EntryEvent<NotificationKey, Notification> event) {
+    logger.info("KIRK:NotificationHubClient:sendNotification: {}", event);
     try {
-
-      notifBroadCaster = proxyFactory.findProxy(event.getKey().getObjectName(),
-          NotificationBroadCasterProxy.class);
+      NotificationBroadCasterProxy broadcaster =
+          proxyFactory.findProxy(event.getKey().getObjectName(),
+              NotificationBroadCasterProxy.class);
       // Will return null if the Bean is filtered out.
-      if (notifBroadCaster != null) {
-        notifBroadCaster.sendNotification(event.getNewValue());
+      if (broadcaster != null) {
+        logger.info("KIRK:NotificationHubClient:sendNotification:sendNotification {}", event);
+        broadcaster.sendNotification(event.getNewValue());
       }
 
     } catch (Exception e) {
@@ -65,7 +57,5 @@ public class NotificationHubClient {
       }
       logger.warn(e.getMessage(), e);
     }
-
   }
-
 }

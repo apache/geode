@@ -43,14 +43,12 @@ class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
   public void afterCreate(EntryEvent<String, Object> event) {
     logger.info("KIRK:ManagementCacheListener:afterCreate: {}", event);
     ObjectName objectName = null;
-
     try {
       objectName = ObjectName.getInstance(event.getKey());
       Object newObject = event.getNewValue();
       DistributedMember distributedMember = event.getDistributedMember();
       Region<String, Object> region = event.getRegion();
-      proxyHelper.createProxy(distributedMember, objectName, region,
-          newObject);
+      proxyHelper.createProxy(distributedMember, objectName, region, newObject);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
@@ -62,7 +60,6 @@ class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
   public void afterDestroy(EntryEvent<String, Object> event) {
     logger.info("KIRK:ManagementCacheListener:afterDestroy: {}", event);
     ObjectName objectName = null;
-
     try {
       objectName = ObjectName.getInstance(event.getKey());
       Object oldObject = event.getOldValue();
@@ -83,8 +80,10 @@ class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
       objectName = ObjectName.getInstance(event.getKey());
 
       ProxyInfo proxyInfo = proxyHelper.findProxyInfo(objectName);
+      logger.info("KIRK:ManagementCacheListener:afterUpdate:proxyInfo: {}", proxyInfo);
       if (proxyInfo != null) {
         ProxyInterface proxyObj = (ProxyInterface) proxyInfo.getProxyInstance();
+        logger.info("KIRK:ManagementCacheListener:afterUpdate:proxyObj: {}", proxyObj);
         // Will return null if proxy is filtered out
         if (proxyObj != null) {
           proxyObj.setLastRefreshedTime(System.currentTimeMillis());

@@ -21,15 +21,11 @@ import javax.management.NotificationBroadcaster;
  * This interface is to extend the functionality of NotificationBroadcaster. It enables proxies to
  * send notifications on their own as proxy implementations have to implement the sendNotification
  * method.
- *
- *
- *
  */
-
 public interface NotificationBroadCasterProxy extends NotificationBroadcaster {
+
   /**
    * send the notification to registered clients
-   *
    */
   void sendNotification(Notification notification);
 }

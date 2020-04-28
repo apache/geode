@@ -89,6 +89,7 @@ public class MBeanProxyFactory {
         logger.debug("Proxy Created for : {}", objectName);
       }
 
+      logger.info("KIRK:MBeanProxyFactory:createProxy: created proxy for {}", objectName);
     } catch (ClassNotFoundException e) {
       throw new ManagementException(e);
     }
