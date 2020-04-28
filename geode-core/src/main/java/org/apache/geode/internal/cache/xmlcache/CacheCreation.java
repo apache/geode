@@ -522,19 +522,11 @@ public class CacheCreation implements InternalCache {
     cache.initializePdxRegistry();
 
     diskStores.values().parallelStream().forEach(diskStore -> {
-      logger.info("JC thread id {} disk store {}", Thread.currentThread().getId(),
-          diskStore.getName());
       DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
       if (creation != pdxRegDSC) {
         createDiskStore(creation, cache);
       }
     });
-    // for (DiskStore diskStore : diskStores.values()) {
-    // DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
-    // if (creation != pdxRegDSC) {
-    // createDiskStore(creation, cache);
-    // }
-    // }
 
     if (hasDynamicRegionFactory()) {
       DynamicRegionFactory.get().open(getDynamicRegionFactoryConfig());

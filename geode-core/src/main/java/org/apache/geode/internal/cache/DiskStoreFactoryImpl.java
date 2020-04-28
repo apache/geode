@@ -144,7 +144,6 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     // As a simple fix for 41290, only allow one DiskStore to be created
     // at a time per cache by syncing on the cache.
     DiskStore result;
-    // synchronized (this.cache) {
     try {
       if (this.cache instanceof GemFireCacheImpl) {
         ((GemFireCacheImpl) this.cache).lockDiskStore(name);
@@ -174,7 +173,6 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
         ((GemFireCacheImpl) this.cache).unlockDiskStore(name);
       }
     }
-    // }
 
     // Don't allow this disk store to be created
     // until an in progress backup is completed. This
