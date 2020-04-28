@@ -23,7 +23,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
@@ -169,7 +169,7 @@ public class AvailableConnectionManagerConcurrentTest {
   public void addLastRemoveDoesNotRemoveOtherConnections(ParallelExecutor executor)
       throws ExecutionException, InterruptedException {
     int originalCount = 7;
-    List<Connection> originalConnections = new ArrayList<>();
+    Collection<Connection> originalConnections = new ArrayList<>();
     repeat(() -> {
       Connection original = createConnection();
       originalConnections.add(original);

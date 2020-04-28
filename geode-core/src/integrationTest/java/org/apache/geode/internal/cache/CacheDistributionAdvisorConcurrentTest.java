@@ -16,8 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.concurrency.Utilities.availableProcessors;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
@@ -32,7 +31,6 @@ import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -48,57 +46,59 @@ public class CacheDistributionAdvisorConcurrentTest {
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Test
-  public void getAdviseAllEventsOrCachedForConcurrentUpdateShouldSucceed(
-      ParallelExecutor executor) throws Exception {
+  public void getAdviseAllEventsOrCachedForConcurrentUpdateShouldSucceed(ParallelExecutor executor)
+      throws Exception {
 
-    DistributionAdvisor advisor = createCacheDistributionAdvisor();
+    CacheDistributionAdvisor advisor = createCacheDistributionAdvisor();
     CacheProfile profile = createCacheProfile();
     advisor.putProfile(profile, true);
 
     executor.inParallel(() -> {
-      ((CacheDistributionAdvisor) advisor).adviseAllEventsOrCached();
+      advisor.adviseAllEventsOrCached();
     }, count);
     executor.execute();
 
-    assertTrue(((CacheDistributionAdvisor) advisor).adviseAllEventsOrCached()
-        .contains(profile.getDistributedMember()));
-    assertEquals(((CacheDistributionAdvisor) advisor).adviseAllEventsOrCached().size(), 1);
-
+    assertThat(advisor.adviseAllEventsOrCached())
+        .contains(profile.getDistributedMember());
+    assertThat(advisor.adviseAllEventsOrCached())
+        .hasSize(1);
   }
 
   @Test
-  public void getAdviseUpdateForConcurrentUpdateShouldSucceed(
-      ParallelExecutor executor) throws Exception {
+  public void getAdviseUpdateForConcurrentUpdateShouldSucceed(ParallelExecutor executor)
+      throws Exception {
 
     EntryEventImpl event = new EntryEventImpl();
     event.setNewValue(null);
     event.setOperation(Operation.CREATE);
 
-    DistributionAdvisor advisor = createCacheDistributionAdvisor();
+    CacheDistributionAdvisor advisor = createCacheDistributionAdvisor();
     CacheProfile profile = createCacheProfile();
     advisor.putProfile(profile, true);
 
     executor.inParallel(() -> {
-      ((CacheDistributionAdvisor) advisor).adviseUpdate(event);
+      advisor.adviseUpdate(event);
     }, count);
     executor.execute();
 
-    assertTrue(((CacheDistributionAdvisor) advisor).adviseAllEventsOrCached()
-        .contains(profile.getDistributedMember()));
-    assertEquals(((CacheDistributionAdvisor) advisor).adviseAllEventsOrCached().size(), 1);
+    assertThat(advisor.adviseAllEventsOrCached())
+        .contains(profile.getDistributedMember());
+    assertThat(advisor.adviseAllEventsOrCached())
+        .hasSize(1);
 
   }
 
-  private DistributionAdvisor createCacheDistributionAdvisor() {
+  private CacheDistributionAdvisor createCacheDistributionAdvisor() {
     CacheDistributionAdvisee advisee = mock(CacheDistributionAdvisee.class);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
-    when(advisee.getCancelCriterion()).thenReturn(cancelCriterion);
-
     DistributionManager distributionManager = mock(DistributionManager.class);
+
+    when(advisee.getCancelCriterion()).thenReturn(cancelCriterion);
     when(advisee.getDistributionManager()).thenReturn(distributionManager);
 
     CacheDistributionAdvisor result =
         CacheDistributionAdvisor.createCacheDistributionAdvisor(advisee);
+
     when(advisee.getDistributionAdvisor()).thenReturn(result);
 
     return result;
