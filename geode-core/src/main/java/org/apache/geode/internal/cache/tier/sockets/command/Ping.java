@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -56,8 +57,11 @@ public class Ping extends BaseCommand {
         InternalDistributedMember myID = serverConnection.getCache().getMyId();
         if (!myID.equals(targetServer)) {
           if (myID.compareTo(targetServer, true, false) == 0) {
-            logger.warn("Target server {} has different viewId {}", targetServer, myID);
-            writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
+            String errorMessage =
+                String.format("Target server " + targetServer + " has different viewId: " + myID);
+            logger.warn(errorMessage);
+            writeException(clientMessage, new InternalGemFireException(errorMessage), false,
+                serverConnection);
           } else {
             pingCorrectServer(clientMessage, targetServer, serverConnection);
           }
@@ -66,7 +70,7 @@ public class Ping extends BaseCommand {
         }
       } catch (ClassNotFoundException e) {
         logger.warn("Unable to deserialize message from " + serverConnection.getProxyID());
-        writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
+        writeException(clientMessage, e, false, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
         return;
       }
