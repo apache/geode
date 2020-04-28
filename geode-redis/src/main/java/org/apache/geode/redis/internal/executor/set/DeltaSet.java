@@ -31,54 +31,41 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-/**
- * TODO: it is probably a bad idea for this class to implement Set.
- * We want to be careful how other code interacts with these instances
- * to make sure that no modifications are made that are not thread safe
- * and that will always be stored in the region.
- * Currently the only "correct" methods on this class are:
- * members, delete, customAddAll, customRemoveAll, and the
- * serialization methods.
- */
 public class DeltaSet implements Delta, DataSerializable {
 
   public static long sadd(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
-    while (true) {
+    long result = -1;
+    do {
       DeltaSet deltaSet = region.get(key);
-      if (deltaSet == null) {
+      if (deltaSet != null) {
+        // update existing value
+        result = deltaSet.saddInstance(membersToAdd, region, key);
+      } else {
         // create new set
         if (region.putIfAbsent(key, new DeltaSet(membersToAdd)) == null) {
           return membersToAdd.size();
         } else {
           // retry since another thread concurrently changed the region
         }
-      } else {
-        // update existing value
-        try {
-          return deltaSet.saddInstance(membersToAdd, region, key);
-        } catch (DeltaSet.RetryDueToConcurrentModification ex) {
-          // retry since another thread concurrently changed the region
-        }
       }
-    }
+    } while (result == -1);
+    return result;
   }
 
   public static long srem(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove) {
-    while (true) {
+    long result;
+    do {
       DeltaSet deltaSet = region.get(key);
       if (deltaSet == null) {
         return 0L;
       }
-      try {
-        return deltaSet.sremInstance(membersToRemove, region, key);
-      } catch (DeltaSet.RetryDueToConcurrentModification ex) {
-        // retry since another thread concurrently changed the region
-      }
-    }
+      result = deltaSet.sremInstance(membersToRemove, region, key);
+    } while (result == -1);
+    return result;
   }
 
   public static boolean del(Region<ByteArrayWrapper, DeltaSet> region,
@@ -179,14 +166,13 @@ public class DeltaSet implements Delta, DataSerializable {
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to add to
-   * @return the number of members actually added
-   * @throws RetryDueToConcurrentModification if a concurrent modification is detected
+   * @return the number of members actually added; -1 if concurrent modification
    */
   private synchronized long saddInstance(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     if (region.get(key) != this) {
-      throw new RetryDueToConcurrentModification();
+      return -1;
     }
     membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
     int membersAdded = membersToAdd.size();
@@ -207,14 +193,13 @@ public class DeltaSet implements Delta, DataSerializable {
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to remove from
-   * @return the number of members actually removed
-   * @throws RetryDueToConcurrentModification if a concurrent modification is detected
+   * @return the number of members actually removed; -1 if concurrent modification
    */
   private synchronized long sremInstance(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     if (region.get(key) != this) {
-      throw new RetryDueToConcurrentModification();
+      return -1;
     }
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
     int membersRemoved = membersToRemove.size();
@@ -228,13 +213,6 @@ public class DeltaSet implements Delta, DataSerializable {
       }
     }
     return membersRemoved;
-  }
-
-  /**
-   * This exception is thrown if a modification fails because some other
-   * thread changed what is stored in the region.
-   */
-  static class RetryDueToConcurrentModification extends RuntimeException {
   }
 
   /**
