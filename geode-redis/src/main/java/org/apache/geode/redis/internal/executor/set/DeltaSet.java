@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
@@ -41,7 +40,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
  * members, delete, customAddAll, customRemoveAll, and the
  * serialization methods.
  */
-class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
+public class DeltaSet implements Delta, DataSerializable {
 
   public static long sadd(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
@@ -107,6 +106,14 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
     }
   }
 
+  public synchronized boolean contains(ByteArrayWrapper member) {
+    return members.contains(member);
+  }
+
+  public synchronized int size() {
+    return members.size();
+  }
+
   private HashSet<ByteArrayWrapper> members;
   private transient ArrayList<ByteArrayWrapper> deltas;
   // true if deltas contains adds; false if removes
@@ -123,71 +130,6 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   // for serialization
   public DeltaSet() {}
 
-  // SET INTERFACE
-  @Override
-  public int size() {
-    return members.size();
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return members.isEmpty();
-  }
-
-  @Override
-  public boolean contains(Object o) {
-    return members.contains(o);
-  }
-
-  @Override
-  public Iterator<ByteArrayWrapper> iterator() {
-    return members.iterator();
-  }
-
-  @Override
-  public Object[] toArray() {
-    return members.toArray();
-  }
-
-  @Override
-  public <T> T[] toArray(T[] a) {
-    return members.toArray(a);
-  }
-
-  @Override
-  public boolean add(ByteArrayWrapper byteArrayWrapper) {
-    return members.add(byteArrayWrapper);
-  }
-
-  @Override
-  public boolean remove(Object o) {
-    return members.remove(o);
-  }
-
-  @Override
-  public boolean containsAll(Collection<?> c) {
-    return members.containsAll(c);
-  }
-
-  @Override
-  public boolean addAll(Collection<? extends ByteArrayWrapper> c) {
-    return members.addAll(c);
-  }
-
-  @Override
-  public boolean retainAll(Collection<?> c) {
-    return members.retainAll(c);
-  }
-
-  @Override
-  public boolean removeAll(Collection<?> c) {
-    return members.removeAll(c);
-  }
-
-  @Override
-  public void clear() {
-    members.clear();
-  }
 
   // DELTA
   @Override
@@ -202,7 +144,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
   }
 
   @Override
-  public void fromDelta(DataInput in)
+  public synchronized void fromDelta(DataInput in)
       throws IOException, InvalidDeltaException {
     boolean deltaAdds = DataSerializer.readBoolean(in);
     try {
@@ -313,7 +255,7 @@ class DeltaSet implements Set<ByteArrayWrapper>, Delta, DataSerializable {
    *
    * @return a set containing all the members in this set
    */
-  private synchronized Set<ByteArrayWrapper> members() {
+  synchronized Set<ByteArrayWrapper> members() {
     return new HashSet<>(members);
   }
 }

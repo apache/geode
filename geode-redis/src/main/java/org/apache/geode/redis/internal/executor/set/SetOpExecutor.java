@@ -71,14 +71,14 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
       List<byte[]> commandElems, int setsStartIndex,
       RegionProvider regionProvider, ByteArrayWrapper destination,
       ByteArrayWrapper firstSetKey) {
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = this.getRegion(context);
-    Set<ByteArrayWrapper> firstSet = region.get(firstSetKey);
+    Region<ByteArrayWrapper, DeltaSet> region = this.getRegion(context);
+    Set<ByteArrayWrapper> firstSet = DeltaSet.members(region, firstSetKey);
 
     List<Set<ByteArrayWrapper>> setList = new ArrayList<>();
     for (int i = setsStartIndex; i < commandElems.size(); i++) {
       ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
 
-      Set<ByteArrayWrapper> entry = region.get(key);
+      Set<ByteArrayWrapper> entry = DeltaSet.members(region, key);
       if (entry != null) {
         setList.add(entry);
       } else if (this instanceof SInterExecutor) {
@@ -93,16 +93,10 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
 
     Set<ByteArrayWrapper> resultSet = setOp(firstSet, setList);
     if (isStorage()) {
-      Set<ByteArrayWrapper> newSet = null;
       regionProvider.removeKey(destination);
       if (resultSet != null) {
-        Set<ByteArrayWrapper> set = new HashSet<>();
-        for (ByteArrayWrapper entry : resultSet) {
-          set.add(entry);
-        }
-        if (!set.isEmpty()) {
-          newSet = new DeltaSet(set);
-          region.put(destination, newSet);
+        if (!resultSet.isEmpty()) {
+          region.put(destination, new DeltaSet(resultSet));
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
         }
         command

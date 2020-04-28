@@ -45,8 +45,8 @@ public class SScanExecutor extends AbstractScanExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
-    Set<ByteArrayWrapper> set = region.get(key);
+    Region<ByteArrayWrapper, DeltaSet> region = getRegion(context);
+    Set<ByteArrayWrapper> set = DeltaSet.members(region, key);
 
     if (set == null) {
       command.setResponse(
@@ -58,7 +58,7 @@ public class SScanExecutor extends AbstractScanExecutor {
     int cursor = 0;
     Pattern matchPattern = null;
     String globMatchPattern = null;
-    int count = DEFUALT_COUNT;
+    int count = DEFAULT_COUNT;
     try {
       cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {
@@ -122,7 +122,7 @@ public class SScanExecutor extends AbstractScanExecutor {
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
 
-  private Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getRegion(
+  private Region<ByteArrayWrapper, DeltaSet> getRegion(
       ExecutionHandlerContext context) {
     return context.getRegionProvider().getSetRegion();
   }

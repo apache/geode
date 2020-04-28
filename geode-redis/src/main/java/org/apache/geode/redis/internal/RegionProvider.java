@@ -18,7 +18,6 @@ import java.io.Closeable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,6 +48,7 @@ import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
+import org.apache.geode.redis.internal.executor.set.DeltaSet;
 import org.apache.geode.redis.internal.executor.set.GeodeRedisSetWithFunctions;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
 
@@ -81,7 +81,7 @@ public class RegionProvider implements Closeable {
   private final Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
 
   private final Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion;
-  private final Region<ByteArrayWrapper, Set<ByteArrayWrapper>> setRegion;
+  private final Region<ByteArrayWrapper, DeltaSet> setRegion;
 
   private final Cache cache;
   private final QueryService queryService;
@@ -101,7 +101,7 @@ public class RegionProvider implements Closeable {
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
       Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion,
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> setRegion) {
+      Region<ByteArrayWrapper, DeltaSet> setRegion) {
 
     this(stringsRegion, hLLRegion, redisMetaRegion, expirationsMap, expirationExecutor,
         defaultShortcut, hashRegion, setRegion, GemFireCacheImpl.getInstance());
@@ -113,7 +113,7 @@ public class RegionProvider implements Closeable {
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
       Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion,
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> setRegion, Cache cache) {
+      Region<ByteArrayWrapper, DeltaSet> setRegion, Cache cache) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null) {
       throw new NullPointerException();
     }
@@ -487,7 +487,7 @@ public class RegionProvider implements Closeable {
   /**
    * @return the setRegion
    */
-  public Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getSetRegion() {
+  public Region<ByteArrayWrapper, DeltaSet> getSetRegion() {
     return setRegion;
   }
 

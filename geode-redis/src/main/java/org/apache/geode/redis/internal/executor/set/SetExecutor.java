@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
@@ -32,7 +31,7 @@ public abstract class SetExecutor extends AbstractExecutor {
    * @param context the execution handler
    * @return the set Region
    */
-  Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getRegion(ExecutionHandlerContext context) {
+  Region<ByteArrayWrapper, DeltaSet> getRegion(ExecutionHandlerContext context) {
     return context.getRegionProvider().getSetRegion();
   }
 

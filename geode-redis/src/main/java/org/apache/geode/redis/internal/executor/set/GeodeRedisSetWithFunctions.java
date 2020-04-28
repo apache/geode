@@ -29,7 +29,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 public class GeodeRedisSetWithFunctions implements RedisSet {
 
   private final ByteArrayWrapper key;
-  private final Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region;
+  private final Region<ByteArrayWrapper, DeltaSet> region;
 
   static {
     FunctionService.registerFunction(new SaddFunction());
@@ -39,7 +39,7 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   public GeodeRedisSetWithFunctions(ByteArrayWrapper key,
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region) {
+      Region<ByteArrayWrapper, DeltaSet> region) {
 
     this.key = key;
     this.region = region;
