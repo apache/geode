@@ -381,5 +381,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       this.attrs.transFilters.add(filter);
     }
     this.attrs.eventSubstitutionFilter = senderCreation.getGatewayEventSubstitutionFilter();
+    this.attrs.isGroupTransactionEvents = senderCreation.isGroupTransactionEvents();
   }
 }

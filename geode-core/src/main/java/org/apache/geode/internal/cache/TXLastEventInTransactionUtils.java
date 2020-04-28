@@ -39,19 +39,38 @@ public class TXLastEventInTransactionUtils {
    *         events belong have different sets of senders that group transactions
    *         then it throws a ServiceConfigurationError exception.
    */
-  public static EntryEventImpl getLastTransactionEvents(List<EntryEventImpl> callbacks,
+  public static EntryEventImpl getLastTransactionEvent(List<EntryEventImpl> callbacks,
       Cache cache)
       throws ServiceConfigurationError {
     if (checkNoSendersGroupTransactionEvents(callbacks, cache)) {
       return null;
     }
 
-    if (!checkAllEventsGoToSameGroupingSenders(callbacks, cache)) {
+    List<Set> senderIdsPerEvent = getGroupingSendersPerEvent(callbacks, cache);
+    if (senderIdsPerEvent.stream().distinct().count() > 1) {
+      String info = eventsAndSendersPerEventToString(callbacks, senderIdsPerEvent);
       throw new ServiceConfigurationError(
-          "Not all events go to the same senders that group transactions");
-    }
+          "Not all events go to the same senders that group transactions. " + info);
+    } ;
 
     return callbacks.get(callbacks.size() - 1);
+  }
+
+  private static String eventsAndSendersPerEventToString(List<EntryEventImpl> callbacks,
+      List<Set> senderIdsPerEvent) {
+    StringBuilder buf = new StringBuilder();
+    for (int i = 0; i < callbacks.size(); i++) {
+      buf.append("Event[");
+      buf.append(i);
+      buf.append("]: ");
+      buf.append(callbacks.get(i));
+      buf.append(", senders for Event[");
+      buf.append(i);
+      buf.append("]: ");
+      buf.append(senderIdsPerEvent.get(i));
+      buf.append("; ");
+    }
+    return buf.toString();
   }
 
   private static boolean checkNoSendersGroupTransactionEvents(List<EntryEventImpl> callbacks,
@@ -77,7 +96,7 @@ public class TXLastEventInTransactionUtils {
         .collect(Collectors.toSet());
   }
 
-  private static boolean checkAllEventsGoToSameGroupingSenders(List<EntryEventImpl> callbacks,
+  private static List<Set> getGroupingSendersPerEvent(List<EntryEventImpl> callbacks,
       Cache cache) throws ServiceConfigurationError {
     List<Set> senderIdsPerEvent = callbacks
         .stream()
@@ -87,7 +106,7 @@ public class TXLastEventInTransactionUtils {
                 Collectors.toSet()))
         .collect(Collectors.toList());
 
-    return senderIdsPerEvent.stream().distinct().count() <= 1;
+    return senderIdsPerEvent;
   }
 
   private static boolean doesSenderGroupTransactionEvents(Cache cache, String senderId)

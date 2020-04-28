@@ -121,7 +121,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvents(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
 
     assertEquals(null, lastTransactionEvent);
   }
@@ -136,7 +136,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvents(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
 
     assertEquals(event2, lastTransactionEvent);
   }
@@ -151,7 +151,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvents(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
 
     assertEquals(event2, lastTransactionEvent);
   }
@@ -165,9 +165,9 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event1);
     events.add(event2);
 
-    assertThatThrownBy(() -> TXLastEventInTransactionUtils.getLastTransactionEvents(events, cache))
+    assertThatThrownBy(() -> TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache))
         .isInstanceOf(ServiceConfigurationError.class)
-        .hasMessage("Not all events go to the same senders that group transactions");
+        .hasMessageContaining("Not all events go to the same senders that group transactions");
   }
 
   @Test
@@ -179,7 +179,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event1);
     events.add(event2);
 
-    assertThatThrownBy(() -> TXLastEventInTransactionUtils.getLastTransactionEvents(events, cache))
+    assertThatThrownBy(() -> TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache))
         .isInstanceOf(ServiceConfigurationError.class)
         .hasMessage("No information for senderId: sender5");
   }

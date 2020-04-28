@@ -229,9 +229,9 @@ public class TXState implements TXStateInterface {
     EntryEventImpl lastTransactionEvent = null;
     try {
       lastTransactionEvent =
-          TXLastEventInTransactionUtils.getLastTransactionEvents(getPendingCallbacks(), getCache());
+          TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
     } catch (ServiceConfigurationError ex) {
-      logger.error("Not all events in transaction go to the same senders that group transactions");
+      logger.error(ex.getMessage());
       isConfigError = true;
     }
 

@@ -284,8 +284,9 @@ public class WANConfigurationJUnitTest {
     fact.addGatewayTransportFilter(myStreamFilter1);
     GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
     fact.addGatewayTransportFilter(myStreamFilter2);
+    boolean groupTransactionEvents = false;
+    fact.setGroupTransactionEvents(groupTransactionEvents);
     GatewaySender sender1 = fact.create("TKSender", 2);
-
     RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
     factory.addGatewaySenderId(sender1.getId());
     Region region = factory.create("test_ValidateGatewaySenderAttributes");
@@ -305,7 +306,7 @@ public class WANConfigurationJUnitTest {
         gatewaySender.getGatewayEventFilters().size());
     assertEquals(sender1.getGatewayTransportFilters().size(),
         gatewaySender.getGatewayTransportFilters().size());
-
+    assertEquals(sender1.isGroupTransactionEvents(), gatewaySender.isGroupTransactionEvents());
   }
 
   /**

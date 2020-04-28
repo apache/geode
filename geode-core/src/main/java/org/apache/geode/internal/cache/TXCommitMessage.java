@@ -732,9 +732,9 @@ public class TXCommitMessage extends PooledDistributionMessage
     EntryEventImpl lastTransactionEvent = null;
     try {
       lastTransactionEvent =
-          TXLastEventInTransactionUtils.getLastTransactionEvents(callbacks, dm.getCache());
+          TXLastEventInTransactionUtils.getLastTransactionEvent(callbacks, dm.getCache());
     } catch (ServiceConfigurationError ex) {
-      logger.error("Not all events in transaction go to the same senders that group transactions");
+      logger.error(ex.getMessage());
       isConfigError = true;
     }
 
