@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,6 +48,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.junit.categories.RedisTest;
 
@@ -210,6 +214,79 @@ public class SetsIntegrationTest {
       }
     }
     return successes;
+  }
+
+  @Test
+  public void testSRemErrorMessage_givenIncorrectDataType() {
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> {
+      jedis.srem("farm", "chicken");
+    }).isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+  }
+
+  @Test
+  public void testSRemDeletesKeyWhenSetIsEmpty() {
+    jedis.sadd("farm", "chicken");
+
+    jedis.srem("farm", "chicken");
+
+    assertThat(jedis.exists("farm")).isFalse();
+  }
+
+  @Ignore("GEODE-7905")
+  @Test
+  public void testConcurrentSRemConsistentlyUpdatesMetaInformation()
+      throws ExecutionException, InterruptedException {
+    ByteArrayWrapper keyAsByteArray = new ByteArrayWrapper("set".getBytes());
+    AtomicLong errorCount = new AtomicLong();
+    CyclicBarrier startCyclicBarrier = new CyclicBarrier(2, () -> {
+      boolean keyIsRegistered = server.getKeyRegistrar().isRegistered(keyAsByteArray);
+      boolean containsKey = server.getRegionCache().getSetRegion().containsKey(keyAsByteArray);
+
+      if (keyIsRegistered != containsKey) {
+        errorCount.getAndIncrement();
+        jedis.sadd("set", "member");
+        jedis.del("set");
+      }
+    });
+
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+
+    Callable<Long> callable1 = () -> {
+      Long removedCount = 0L;
+      for (int i = 0; i < 1000; i++) {
+        try {
+          Long result = jedis.srem("set", "member");
+          startCyclicBarrier.await();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return removedCount;
+    };
+
+    Callable<Long> callable2 = () -> {
+      Long addedCount = 0L;
+      for (int i = 0; i < 1000; i++) {
+        try {
+          addedCount += jedis2.sadd("set", "member");
+          startCyclicBarrier.await();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return addedCount;
+    };
+
+    Future<Long> future1 = pool.submit(callable1);
+    Future<Long> future2 = pool.submit(callable2);
+
+    future1.get();
+    future2.get();
+
+    assertThat(errorCount.get())
+        .as("Inconsistency between keyRegistrar and backing store detected.").isEqualTo(0L);
   }
 
   @Test

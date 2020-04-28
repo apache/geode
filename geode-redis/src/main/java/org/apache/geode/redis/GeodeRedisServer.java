@@ -294,10 +294,15 @@ public class GeodeRedisServer {
 
   private boolean shutdown;
   private boolean started;
+
   private KeyRegistrar keyRegistrar;
   private PubSub pubSub;
   private RedisLockService hashLockService;
 
+  @VisibleForTesting
+  protected KeyRegistrar getKeyRegistrar() {
+    return keyRegistrar;
+  }
 
   /**
    * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
@@ -448,6 +453,11 @@ public class GeodeRedisServer {
     }
     this.cache = cache;
     logger = cache.getLogger();
+  }
+
+  @VisibleForTesting
+  protected RegionProvider getRegionCache() {
+    return regionCache;
   }
 
   private void initializeRedis() {

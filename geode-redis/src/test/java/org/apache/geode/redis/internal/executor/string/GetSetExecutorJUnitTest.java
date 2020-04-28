@@ -17,9 +17,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -39,7 +37,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.KeyRegistrar;
-import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 
@@ -98,23 +95,5 @@ public class GetSetExecutorJUnitTest {
 
     assertThat(command.getResponse().toString(Charset.defaultCharset()))
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
-  }
-
-  @Test
-  public void test_givenKeyHoldsWrongType_returnsError() {
-    List<byte[]> args = Arrays.asList(
-        "GETSET".getBytes(),
-        "key1".getBytes(),
-        "val1".getBytes());
-    Command command = new Command(args);
-
-    when(region.get(any())).thenReturn(new ByteArrayWrapper("non-null value".getBytes()));
-    doThrow(new RedisDataTypeMismatchException("this string doesn't matter")).when(executor)
-        .checkDataType(any(), any(), any());
-
-    executor.executeCommand(command, context);
-
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
-        .startsWith("-ERR WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 }
