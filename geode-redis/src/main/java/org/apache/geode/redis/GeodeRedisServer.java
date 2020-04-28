@@ -618,9 +618,7 @@ public class GeodeRedisServer {
         .childOption(EpollChannelOption.TCP_KEEPINTVL, 30)
         .childOption(EpollChannelOption.TCP_KEEPCNT, 3)
         .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, GeodeRedisServer.connectTimeoutMillis)
-        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-
-    ;
+        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
     // Bind and start to accept incoming connections.
     ChannelFuture f = b.bind(new InetSocketAddress(getBindAddress(), serverPort)).sync();
