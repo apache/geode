@@ -74,7 +74,7 @@ public class NioSslEngine implements NioFilter {
     int packetBufferSize = engine.getSession().getPacketBufferSize();
     this.engine = engine;
     this.bufferPool = bufferPool;
-    this.myNetData = bufferPool.acquireNonDirectSenderBuffer(packetBufferSize);
+    this.myNetData = bufferPool.acquireDirectSenderBuffer(packetBufferSize);
     this.peerAppData = bufferPool.acquireNonDirectReceiveBuffer(appBufferSize);
   }
 
@@ -398,6 +398,7 @@ public class NioSslEngine implements NioFilter {
     } finally {
       bufferPool.releaseBuffer(TRACKED_SENDER, myNetData);
       bufferPool.releaseBuffer(TRACKED_RECEIVER, peerAppData);
+      myNetData = null;
       this.closed = true;
     }
   }
