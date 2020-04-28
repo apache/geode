@@ -20,6 +20,14 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
+apply plugin: 'nebula.facet'
+facets {
+  commonTest {
+    testTaskName = 'commonTest'
+    includeInCheckLifecycle = false
+  }
+}
+
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-serialization'))
@@ -36,10 +44,12 @@ dependencies {
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation(sourceSets.commonTest.output)
   integrationTestImplementation('redis.clients:jedis')
   integrationTestRuntime(project(':geode-log4j'))
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)
+  acceptanceTestImplementation(sourceSets.commonTest.output)
   acceptanceTestImplementation(project(':geode-dunit'))
   acceptanceTestImplementation(project(':geode-junit'))
   acceptanceTestImplementation('redis.clients:jedis')
@@ -47,5 +57,6 @@ dependencies {
   acceptanceTestRuntime(project(':geode-log4j'))
 
   distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')
 }
