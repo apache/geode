@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -46,8 +46,8 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   @Override
-  public long sadd(Collection<ByteArrayWrapper> membersToAdd) {
-    ResultCollector<Collection<ByteArrayWrapper>, List<Long>> results = FunctionService
+  public long sadd(ArrayList<ByteArrayWrapper> membersToAdd) {
+    ResultCollector<ArrayList<ByteArrayWrapper>, List<Long>> results = FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
         .setArguments(membersToAdd)
@@ -57,8 +57,8 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   @Override
-  public long srem(Collection<ByteArrayWrapper> membersToRemove) {
-    ResultCollector<Collection<ByteArrayWrapper>, List<Long>> results = FunctionService
+  public long srem(ArrayList<ByteArrayWrapper> membersToRemove) {
+    ResultCollector<ArrayList<ByteArrayWrapper>, List<Long>> results = FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
         .setArguments(membersToRemove)

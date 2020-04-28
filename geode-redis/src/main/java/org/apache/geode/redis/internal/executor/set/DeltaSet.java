@@ -44,7 +44,7 @@ public class DeltaSet implements Delta, DataSerializable {
 
   public static long sadd(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
-      Collection<ByteArrayWrapper> membersToAdd) {
+      ArrayList<ByteArrayWrapper> membersToAdd) {
     while (true) {
       DeltaSet deltaSet = region.get(key);
       if (deltaSet == null) {
@@ -67,7 +67,7 @@ public class DeltaSet implements Delta, DataSerializable {
 
   public static long srem(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
-      Collection<ByteArrayWrapper> membersToRemove) {
+      ArrayList<ByteArrayWrapper> membersToRemove) {
     while (true) {
       DeltaSet deltaSet = region.get(key);
       if (deltaSet == null) {
@@ -175,14 +175,14 @@ public class DeltaSet implements Delta, DataSerializable {
 
 
   /**
-   * @param membersToAdd members to add to this set; NOTE must be an ArrayList and it may by
+   * @param membersToAdd members to add to this set; NOTE this list may by
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to add to
    * @return the number of members actually added
    * @throws RetryDueToConcurrentModification if a concurrent modification is detected
    */
-  synchronized long saddInstance(Collection<ByteArrayWrapper> membersToAdd,
+  private synchronized long saddInstance(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     if (region.get(key) != this) {
@@ -192,7 +192,7 @@ public class DeltaSet implements Delta, DataSerializable {
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
       deltasAreAdds = true;
-      deltas = (ArrayList<ByteArrayWrapper>) membersToAdd;
+      deltas = membersToAdd;
       try {
         region.put(key, this);
       } finally {
@@ -203,14 +203,14 @@ public class DeltaSet implements Delta, DataSerializable {
   }
 
   /**
-   * @param membersToRemove members to remove from this set; NOTE must be an ArrayList and it may by
+   * @param membersToRemove members to remove from this set; NOTE this list may by
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to remove from
    * @return the number of members actually removed
    * @throws RetryDueToConcurrentModification if a concurrent modification is detected
    */
-  private synchronized long sremInstance(Collection<ByteArrayWrapper> membersToRemove,
+  private synchronized long sremInstance(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     if (region.get(key) != this) {
@@ -220,7 +220,7 @@ public class DeltaSet implements Delta, DataSerializable {
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
       deltasAreAdds = false;
-      deltas = (ArrayList<ByteArrayWrapper>) membersToRemove;
+      deltas = membersToRemove;
       try {
         region.put(key, this);
       } finally {

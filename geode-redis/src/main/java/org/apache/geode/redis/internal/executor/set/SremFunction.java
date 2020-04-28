@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -36,8 +36,8 @@ class SremFunction implements Function {
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
     Region localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
-    Collection<ByteArrayWrapper> membersToRemove =
-        (Collection<ByteArrayWrapper>) regionFunctionContext.getArguments();
+    ArrayList<ByteArrayWrapper> membersToRemove =
+        (ArrayList<ByteArrayWrapper>) regionFunctionContext.getArguments();
     long membersRemoved = DeltaSet.srem(localRegion, key, membersToRemove);
     regionFunctionContext.getResultSender().lastResult(membersRemoved);
   }

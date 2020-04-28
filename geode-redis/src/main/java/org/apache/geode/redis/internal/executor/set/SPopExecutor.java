@@ -52,7 +52,7 @@ public class SPopExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    List<ByteArrayWrapper> popped = new ArrayList<>();
+    ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
       Region<ByteArrayWrapper, DeltaSet> region = getRegion(context);
       DeltaSet original = region.get(key);
@@ -79,6 +79,10 @@ public class SPopExecutor extends SetExecutor {
             popped.add(setMembers[rand.nextInt(originalSize)]);
           }
         }
+        // The following srem call can modify popped by removing members
+        // from it that were not removed from the set.
+        // But since the set is synchronized all members in popped will be
+        // removed so popped will contains all the members popped.
         DeltaSet.srem(region, key, popped);
       }
     } catch (InterruptedException e) {

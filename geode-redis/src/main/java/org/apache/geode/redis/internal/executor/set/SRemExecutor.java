@@ -41,7 +41,7 @@ public class SRemExecutor extends SetExecutor {
         new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
 
 
-    List<ByteArrayWrapper> membersToRemove =
+    ArrayList<ByteArrayWrapper> membersToRemove =
         new ArrayList<>(commandElements.subList(2, commandElements.size()));
     long membersRemoved = geodeRedisSet.srem(membersToRemove);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), membersRemoved));

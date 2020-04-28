@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -36,8 +36,8 @@ class SaddFunction implements Function {
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
     Region localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
-    Collection<ByteArrayWrapper> membersToAdd =
-        (Collection<ByteArrayWrapper>) regionFunctionContext.getArguments();
+    ArrayList<ByteArrayWrapper> membersToAdd =
+        (ArrayList<ByteArrayWrapper>) regionFunctionContext.getArguments();
     long membersAdded = DeltaSet.sadd(localRegion, key, membersToAdd);
     regionFunctionContext.getResultSender().lastResult(membersAdded);
   }

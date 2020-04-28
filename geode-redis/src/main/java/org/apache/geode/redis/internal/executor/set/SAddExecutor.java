@@ -42,7 +42,7 @@ public class SAddExecutor extends SetExecutor {
     ByteArrayWrapper key = command.getKey();
     RedisSet geodeRedisSet =
         new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
-    List<ByteArrayWrapper> membersToAdd =
+    ArrayList<ByteArrayWrapper> membersToAdd =
         new ArrayList<>(commandElements.subList(2, commandElements.size()));
 
     long entriesAdded = geodeRedisSet.sadd(membersToAdd);
