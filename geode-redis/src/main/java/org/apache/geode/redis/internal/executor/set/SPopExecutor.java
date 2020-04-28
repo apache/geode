@@ -68,7 +68,7 @@ public class SPopExecutor extends SetExecutor {
           return;
         }
 
-        if (popCount > originalSize) {
+        if (popCount >= originalSize) {
           // remove them all
           popped.addAll(original.members());
         } else {
@@ -76,7 +76,12 @@ public class SPopExecutor extends SetExecutor {
               original.members().toArray(new ByteArrayWrapper[originalSize]);
           Random rand = new Random();
           while (popped.size() < popCount) {
-            popped.add(setMembers[rand.nextInt(originalSize)]);
+            int idx = rand.nextInt(originalSize);
+            ByteArrayWrapper memberToPop = setMembers[idx];
+            if (memberToPop != null) {
+              setMembers[idx] = null;
+              popped.add(memberToPop);
+            }
           }
         }
         // The following srem call can modify popped by removing members
