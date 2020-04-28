@@ -79,7 +79,7 @@ public class RestoreRedundancyCommand extends GfshCommand {
         return utils.getNoViableMembersResult(REDUNDANCY_COMMAND_ADDED_VERSION, prInfo.region);
       } else {
         // Update the MemberPRInfo with the viable members
-        prInfo.dsMemberList = (ArrayList<DistributedMember>) viableMembers;
+        prInfo.dsMemberList = viableMembers;
       }
     }
 

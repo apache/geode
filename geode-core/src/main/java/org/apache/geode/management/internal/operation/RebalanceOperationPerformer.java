@@ -285,7 +285,7 @@ public class RebalanceOperationPerformer {
     return dsMemberList.contains(dsMember);
   }
 
-  private static String listOfAllMembers(ArrayList<DistributedMember> dsMemberList) {
+  private static String listOfAllMembers(List<DistributedMember> dsMemberList) {
     StringBuilder listMembersId = new StringBuilder();
     for (int j = 0; j < dsMemberList.size() - 1; j++) {
       listMembersId.append(dsMemberList.get(j).getId());
@@ -463,7 +463,7 @@ public class RebalanceOperationPerformer {
   }
 
   public static class MemberPRInfo {
-    public ArrayList<DistributedMember> dsMemberList;
+    public List<DistributedMember> dsMemberList;
     public String region;
 
     public MemberPRInfo() {
