@@ -52,20 +52,15 @@ public class RedundancyCommandFunction extends CliFunction<Object[]> {
     }
 
     RestoreRedundancyResults results;
-    try {
-      RestoreRedundancyOperation redundancyOperation =
-          context.getCache().getResourceManager().createRestoreRedundancyOperation();
-      redundancyOperation.includeRegions(includeRegionsSet);
-      redundancyOperation.excludeRegions(excludeRegionsSet);
-      if (isStatusCommand) {
-        results = redundancyOperation.redundancyStatus();
-      } else {
-        redundancyOperation.shouldReassignPrimaries(shouldReassignPrimaries);
-        results = redundancyOperation.start().get();
-      }
-    } catch (Exception ex) {
-      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          ex.toString());
+    RestoreRedundancyOperation redundancyOperation =
+        context.getCache().getResourceManager().createRestoreRedundancyOperation();
+    redundancyOperation.includeRegions(includeRegionsSet);
+    redundancyOperation.excludeRegions(excludeRegionsSet);
+    if (isStatusCommand) {
+      results = redundancyOperation.redundancyStatus();
+    } else {
+      redundancyOperation.shouldReassignPrimaries(shouldReassignPrimaries);
+      results = redundancyOperation.start().join();
     }
 
     if (results.getStatus().equals(ERROR)) {

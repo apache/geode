@@ -27,7 +27,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.RedundancyCommandFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.operation.RebalanceOperationPerforme
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StatusRedundancyCommand extends SingleGfshCommand {
+public class StatusRedundancyCommand extends GfshCommand {
   static final String COMMAND_NAME = "status redundancy";
   private static final String COMMAND_HELP =
       "Report the redundancy status for partitioned regions in connected members. The default is to report status for all regions.";

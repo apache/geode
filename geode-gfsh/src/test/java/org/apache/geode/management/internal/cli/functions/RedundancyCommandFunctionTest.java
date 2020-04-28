@@ -16,8 +16,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.apache.geode.management.internal.functions.CliFunctionResult.StatusState.ERROR;
 import static org.apache.geode.management.internal.functions.CliFunctionResult.StatusState.OK;
-import static org.hamcrest.CoreMatchers.both;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -36,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -107,19 +104,6 @@ public class RedundancyCommandFunctionTest {
 
     verify(mockOperation, times(1)).redundancyStatus();
     verify(mockOperation, times(0)).start();
-  }
-
-  @Test
-  public void executeFunctionReturnsErrorWhenRestoreRedundancyThrowsException() {
-    String exceptionMessage = "Expected exception message";
-    CacheClosedException exception = new CacheClosedException(exceptionMessage);
-    when(mockContext.getCache()).thenThrow(exception);
-
-    CliFunctionResult result = function.executeFunction(mockContext);
-
-    assertThat(result.getStatus(), is(ERROR.name()));
-    assertThat(result.getStatusMessage(), both(containsString(exception.getClass().getName()))
-        .and(containsString(exception.getMessage())));
   }
 
   @Test
