@@ -66,7 +66,9 @@ class GeodeRedisSetSynchronized implements RedisSet {
 
     if (members().isEmpty()) {
       RedisDataType type = context.getKeyRegistrar().getType(key);
-      context.getRegionProvider().removeKey(key, type);
+      if (type == RedisDataType.REDIS_SET) {
+        context.getRegionProvider().removeKey(key, type);
+      }
     }
 
     return removedCount.longValue();

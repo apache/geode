@@ -92,7 +92,9 @@ class GeodeRedisHashSynchronized implements RedisHash {
 
     if (hgetall().isEmpty()) {
       RedisDataType type = context.getKeyRegistrar().getType(key);
-      context.getRegionProvider().removeKey(key, type);
+      if (type == RedisDataType.REDIS_HASH) {
+        context.getRegionProvider().removeKey(key, type);
+      }
     }
     return numDeleted.intValue();
   }
