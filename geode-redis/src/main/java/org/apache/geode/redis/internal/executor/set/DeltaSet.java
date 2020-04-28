@@ -219,7 +219,10 @@ public class DeltaSet implements Delta, DataSerializable {
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to remove from
+<<<<<<< HEAD
    * @param setWasDeleted set to true if this method deletes the set
+=======
+>>>>>>> fixed some serialization problems and got rid of an unneeded exception
    * @return the number of members actually removed; -1 if concurrent modification
    */
   private synchronized long sremInstance(ArrayList<ByteArrayWrapper> membersToRemove,
