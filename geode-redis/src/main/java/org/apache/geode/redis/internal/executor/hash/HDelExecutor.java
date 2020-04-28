@@ -21,6 +21,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisDataType;
 
 /**
  * <pre>
@@ -55,6 +56,7 @@ public class HDelExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
+    checkDataType(key, RedisDataType.REDIS_HASH, context);
     RedisHash hash = new GeodeRedisHashSynchronized(key, context);
     int numDeleted = hash.hdel(commandElems.subList(2, commandElems.size()));
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));

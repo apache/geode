@@ -154,6 +154,15 @@ public class HashesIntegrationTest {
   }
 
   @Test
+  public void testHDelErrorMessage_givenIncorrectDataType() {
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> {
+      jedis.hdel("farm", "chicken");
+    }).isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+  }
+
+  @Test
   public void testHDelDeletesKeyWhenHashIsEmpty() {
     jedis.hset("farm", "chicken", "little");
 

@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.ArrayList;
@@ -213,6 +214,15 @@ public class SetsIntegrationTest {
       }
     }
     return successes;
+  }
+
+  @Test
+  public void testSRemErrorMessage_givenIncorrectDataType() {
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> {
+      jedis.srem("farm", "chicken");
+    }).isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 
   @Test

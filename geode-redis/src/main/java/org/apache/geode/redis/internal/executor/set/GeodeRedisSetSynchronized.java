@@ -61,10 +61,6 @@ class GeodeRedisSetSynchronized implements RedisSet {
       newValue.removeAll(membersToRemove);
       removedCount.set(oldValue.size() - newValue.size());
 
-      // if(newValue.isEmpty()) {
-      // context.getRegionProvider().removeKey(key, context.getKeyRegistrar().getType(key));
-      // }
-
       return newValue;
     });
 
