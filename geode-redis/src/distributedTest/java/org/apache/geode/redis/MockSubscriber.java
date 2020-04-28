@@ -41,7 +41,6 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onMessage(String channel, String message) {
-    // System.out.println("***************** GOT MESSAGE: " + message);
     receivedMessages.add(message);
   }
 }
