@@ -1720,7 +1720,7 @@ public class Connection implements Runnable {
         if (inputBuffer != null) {
           getBufferPool().releaseReceiveBuffer(inputBuffer);
         }
-        inputBuffer = getBufferPool().acquireNonDirectReceiveBuffer(packetBufferSize);
+        inputBuffer = getBufferPool().acquireDirectReceiveBuffer(packetBufferSize);
       }
       if (channel.socket().getReceiveBufferSize() < packetBufferSize) {
         channel.socket().setReceiveBufferSize(packetBufferSize);
