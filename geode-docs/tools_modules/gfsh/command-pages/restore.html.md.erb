@@ -21,7 +21,7 @@ limitations under the License.
 
 Restore redundancy to partitioned regions and optionally reassign which members host the primary copies.
 
-The default is for all partitioned regions to have redundancy restored and to reassign primary hosts. If any region that would have redundancy restored is a member of a colocated group, all other regions that are part of that group will also have their redundancy restored. This behaviour takes precedence over any included or excluded regions specified as part of the command. See [Data Colocation Between Regions](../../../developing/partitioned_regions/custom_partitioning_and_data_colocation.html#custom_partitioning_and_data_colocation__section_D2C66951FE38426F9C05050D2B9028D8)
+The default is for all partitioned regions to have redundancy restored and to reassign primary hosts. If any region that would have redundancy restored is a member of a colocated group, all other regions that are part of that group will also have their redundancy restored. This behavior takes precedence over any included or excluded regions specified as part of the command. See [Data Colocation Between Regions](../../../developing/partitioned_regions/custom_partitioning_and_data_colocation.html#custom_partitioning_and_data_colocation__section_D2C66951FE38426F9C05050D2B9028D8)
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 

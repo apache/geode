@@ -89,7 +89,7 @@ You typically want to trigger rebalancing when capacity is increased or reduced 
 
 You may also need to rebalance when you have uneven hashing of data. Uneven hashing can occur if your keys do not have a hash code method, which ensures uniform distribution, or if you use a `PartitionResolver` to colocate your partitioned region data (see [Colocate Data from Different Partitioned Regions](colocating_partitioned_region_data.html#colocating_partitioned_region_data)). In either case, some buckets may receive more data than others. Rebalancing can be used to even out the load between data stores by putting fewer buckets on members that are hosting large buckets.
 
-Rebalancing solely for the purpose of restoring lost redundancy in the case that redundancy is being used for high availability and the region has been configured to not automatically recover redundancy after a loss is not necessary. Instead, the restore redundancy operation should be triggered. See [Restoring Redundancy in Partitioned Regions](restoring_region_redundancy.html).
+Rebalancing solely for the purpose of restoring lost redundancy, when redundancy is being used for high availability and the region has been configured to not automatically recover redundancy after a loss, is not necessary. Instead, the restore redundancy operation should be triggered. See [Restoring Redundancy in Partitioned Regions](restoring_region_redundancy.html).
 
 ## <a id="rebalancing_pr_data__section_495FEE48ED60433BADB7D36C73279C89" class="no-quick-link"></a>How to Simulate Region Rebalancing
 
