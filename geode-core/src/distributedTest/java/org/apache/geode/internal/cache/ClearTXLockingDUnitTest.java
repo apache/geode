@@ -43,7 +43,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
 /**
- * Test class to verify proper locking interaction between transactions and the CLEAR_REGION region
+ * Test class to verify proper locking interaction between transactions and the CLEAR region
  * operation.
  *
  * <p>

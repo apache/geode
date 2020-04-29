@@ -51,7 +51,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
  * Test class to verify proper RVV locking interaction between entry operations such as PUT/REMOVE
- * and the CLEAR_REGION region operation
+ * and the CLEAR region operation
  *
  * GEODE-599: After an operation completed, it would unlock the RVV. This was occurring before the
  * operation was distributed to other members which created a window in which another operation

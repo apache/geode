@@ -78,7 +78,8 @@ public class ClearCommand extends GfshCommand {
     return dataResult.toResultModel();
   }
 
-  DataCommandResult callFunctionForRegion(DataCommandRequest request, DataCommandFunction clearfn, Set<DistributedMember> memberList) {
+  DataCommandResult callFunctionForRegion(DataCommandRequest request, DataCommandFunction clearfn,
+      Set<DistributedMember> memberList) {
     return DataCommandsUtils.callFunctionForRegion(request, clearfn, memberList);
   }
 
