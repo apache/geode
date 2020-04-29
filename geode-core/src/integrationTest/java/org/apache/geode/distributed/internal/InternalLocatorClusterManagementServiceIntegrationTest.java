@@ -13,7 +13,6 @@
  * the License.
  *
  */
-
 package org.apache.geode.distributed.internal;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -41,7 +40,8 @@ import org.apache.geode.logging.internal.LoggingSession;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.BaseManagementService;
 
-public class InternalLocatorTest {
+public class InternalLocatorClusterManagementServiceIntegrationTest {
+
   private InternalLocator internalLocator; // the instance under test
   private DistributionConfigImpl distributionConfig = mock(DistributionConfigImpl.class);
   private InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
@@ -50,7 +50,7 @@ public class InternalLocatorTest {
   private HttpService httpService = mock(HttpService.class);
 
   @After
-  public void cleanup() {
+  public void tearDown() {
     if (internalLocator != null) {
       internalLocator.stop();
     }

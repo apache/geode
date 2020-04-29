@@ -69,6 +69,7 @@ include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
 include 'geode-bootstrapping'
+include 'geode-module'
 
 
 ['1.0.0-incubating',

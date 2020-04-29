@@ -40,8 +40,8 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.WritablePdxInstance;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category({ClientServerTest.class})
-public class JsonPdxConverterJUnitTest {
+@Category(ClientServerTest.class)
+public class JsonPdxConverterIntegrationTest {
 
   private String complexJSONString = "{\n" + "    \"_id\": \"599c7d885df276ac3e0bf10a\",\n"
       + "    \"index\": 0,\n" + "    \"guid\": \"395902d8-36ed-4178-ad70-2f720c557c55\",\n"

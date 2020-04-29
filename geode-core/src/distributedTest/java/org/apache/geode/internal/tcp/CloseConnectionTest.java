@@ -106,7 +106,12 @@ public class CloseConnectionTest implements Serializable {
           .getOtherNormalDistributionManagerIds().iterator().next();
       Connection connection = conTable.getConduit().getConnection(otherMember, true, false,
           System.currentTimeMillis(), 15000, 0);
-      assertThat(connection.hasResidualReaderThread()).isTrue();
+      await().untilAsserted(() -> {
+        // grab the shared, ordered "sender" connection to vm0. It should have a residual
+        // reader thread that exists to detect that the socket has been closed.
+        ConnectionTable.threadWantsSharedResources();
+        assertThat(connection.hasResidualReaderThread()).isTrue();
+      });
     });
   }
 

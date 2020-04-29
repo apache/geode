@@ -951,6 +951,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-module</artifactId>
+        <version>1.13.0-SNAPSHOT</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-old-client-support</artifactId>
         <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>

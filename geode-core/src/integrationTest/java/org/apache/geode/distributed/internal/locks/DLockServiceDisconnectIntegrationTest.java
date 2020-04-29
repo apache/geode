@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.locks;
 
-import static org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID.system;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -28,22 +27,22 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
-public class DLockServiceJUnitTest {
+public class DLockServiceDisconnectIntegrationTest {
 
-  DistributedSystem system;
-  DistributedLockService lockService;
+  private DistributedSystem system;
+  private DistributedLockService lockService;
 
   @Before
-  public void setup() {
+  public void setUp() {
     Properties properties = new Properties();
-    properties.put(ConfigurationProperties.LOCATORS, "");
-    properties.put(ConfigurationProperties.MCAST_PORT, "0");
+    properties.setProperty(ConfigurationProperties.LOCATORS, "");
+    properties.setProperty(ConfigurationProperties.MCAST_PORT, "0");
     system = DistributedSystem.connect(properties);
     lockService = DistributedLockService.create("Test Lock Service", system);
   }
 
   @After
-  public void teardown() {
+  public void tearDown() {
     if (system != null) {
       system.disconnect();
     }
