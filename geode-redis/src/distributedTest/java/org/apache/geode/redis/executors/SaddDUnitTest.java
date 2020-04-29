@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis;
+package org.apache.geode.redis.executors;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
@@ -39,7 +39,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-public class SaddDistDunitTest {
+public class SaddDUnitTest {
 
   @ClassRule
   public static ClusterStartupRule clusterStartUp = new ClusterStartupRule(4);
