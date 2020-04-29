@@ -16,10 +16,12 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
@@ -38,8 +40,11 @@ class SremFunction implements Function {
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
     ArrayList<ByteArrayWrapper> membersToRemove =
         (ArrayList<ByteArrayWrapper>) regionFunctionContext.getArguments();
-    long membersRemoved = DeltaSet.srem(localRegion, key, membersToRemove);
-    regionFunctionContext.getResultSender().lastResult(membersRemoved);
+    AtomicBoolean setWasDeleted = new AtomicBoolean();
+    long membersRemoved = DeltaSet.srem(localRegion, key, membersToRemove, setWasDeleted);
+    ResultSender resultSender = regionFunctionContext.getResultSender();
+    resultSender.sendResult(membersRemoved);
+    resultSender.lastResult(setWasDeleted.get() ? 1L : 0L);
   }
 
   @Override

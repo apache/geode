@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -56,14 +57,14 @@ public class DeltaSet implements Delta, DataSerializable {
 
   public static long srem(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToRemove) {
+      ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
     long result;
     do {
       DeltaSet deltaSet = region.get(key);
       if (deltaSet == null) {
         return 0L;
       }
-      result = deltaSet.sremInstance(membersToRemove, region, key);
+      result = deltaSet.sremInstance(membersToRemove, region, key, setWasDeleted);
     } while (result == -1);
     return result;
   }
@@ -193,23 +194,31 @@ public class DeltaSet implements Delta, DataSerializable {
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to remove from
+   * @param setWasDeleted set to true if this method deletes the set
    * @return the number of members actually removed; -1 if concurrent modification
    */
   private synchronized long sremInstance(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, DeltaSet> region,
-      ByteArrayWrapper key) {
+      ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
     if (region.get(key) != this) {
       return -1;
     }
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      deltasAreAdds = false;
-      deltas = membersToRemove;
-      try {
-        region.put(key, this);
-      } finally {
-        deltas = null;
+      if (members.isEmpty()) {
+        region.remove(key);
+        if (setWasDeleted != null) {
+          setWasDeleted.set(true);
+        }
+      } else {
+        deltasAreAdds = false;
+        deltas = membersToRemove;
+        try {
+          region.put(key, this);
+        } finally {
+          deltas = null;
+        }
       }
     }
     return membersRemoved;

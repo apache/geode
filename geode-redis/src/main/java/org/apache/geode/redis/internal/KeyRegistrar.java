@@ -41,6 +41,10 @@ public class KeyRegistrar {
     return this.redisMetaRegion.remove(key.toString()) != null;
   }
 
+  public boolean unregisterIfType(ByteArrayWrapper key, RedisDataType expectedType) {
+    return redisMetaRegion.remove(key.toString(), expectedType);
+  }
+
   public boolean isRegistered(ByteArrayWrapper key) {
     return this.redisMetaRegion.containsKey(key.toString());
   }

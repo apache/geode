@@ -88,7 +88,8 @@ public class SPopExecutor extends SetExecutor {
         // from it that were not removed from the set.
         // But since the set is synchronized all members in popped will be
         // removed so popped will contains all the members popped.
-        DeltaSet.srem(region, key, popped);
+        DeltaSet.srem(region, key, popped, null);
+        // TODO: what should SPOP do with a source that it empties? We probably need to delete it.
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

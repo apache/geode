@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
@@ -57,13 +58,19 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   @Override
-  public long srem(ArrayList<ByteArrayWrapper> membersToRemove) {
+  public long srem(ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
     ResultCollector<ArrayList<ByteArrayWrapper>, List<Long>> results = FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
         .setArguments(membersToRemove)
         .execute(SremFunction.ID);
-    return results.getResult().get(0);
+    List<Long> resultList = results.getResult();
+    long membersRemoved = resultList.get(0);
+    long wasDeleted = resultList.get(1);
+    if (wasDeleted != 0) {
+      setWasDeleted.set(true);
+    }
+    return membersRemoved;
   }
 
   @Override
