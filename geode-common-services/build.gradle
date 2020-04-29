@@ -26,4 +26,6 @@ repositories {
 
 dependencies {
     compile(project(':geode-common'))
+
+    compile(project(':geode-core'))
 }
