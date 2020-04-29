@@ -16,8 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -60,11 +60,13 @@ public class Ping extends BaseCommand {
             String errorMessage =
                 String.format("Target server " + targetServer + " has different viewId: " + myID);
             logger.warn(errorMessage);
-            writeException(clientMessage, new InternalGemFireException(errorMessage), false,
+            writeException(clientMessage, new ServerOperationException(errorMessage), false,
                 serverConnection);
-          } else {
-            pingCorrectServer(clientMessage, targetServer, serverConnection);
+            serverConnection.setAsTrue(RESPONDED);
+            return;
           }
+
+          pingCorrectServer(clientMessage, targetServer, serverConnection);
           serverConnection.setAsTrue(RESPONDED);
           return;
         }
@@ -99,9 +101,11 @@ public class Ping extends BaseCommand {
           serverConnection.getProxyID(), targetServer);
     }
     if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
-      logger.warn("Unable to ping non-member {} for client {}", targetServer,
-          serverConnection.getProxyID());
-      writeErrorResponse(clientMessage, MessageType.EXCEPTION, serverConnection);
+      String errorMessage = "Unable to ping non-member " + targetServer + " for client "
+          + serverConnection.getProxyID();
+      logger.warn(errorMessage);
+      writeException(clientMessage, new ServerOperationException(errorMessage), false,
+          serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     } else {
       // send a ping message to the server. This is a one-way message that doesn't send a reply

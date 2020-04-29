@@ -14,10 +14,13 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
  * Ping a server to see if it is still alive.
@@ -76,8 +79,23 @@ public class PingOp {
 
     @Override
     protected Object processResponse(Message msg) throws Exception {
-      processAck(msg, "ping");
+      processAck(msg);
       return null;
+    }
+
+    private void processAck(Message msg) throws Exception {
+      final int msgType = msg.getMessageType();
+      if (msgType != MessageType.REPLY) {
+        Part part = msg.getPart(0);
+        if (msgType == MessageType.EXCEPTION) {
+          Throwable t = (Throwable) part.getObject();
+          throw new ServerOperationException("While performing a remote ping: " + t.getMessage(),
+              t);
+        } else {
+          throw new InternalGemFireError(
+              "Unexpected message type " + MessageType.getString(msgType));
+        }
+      }
     }
 
     @Override

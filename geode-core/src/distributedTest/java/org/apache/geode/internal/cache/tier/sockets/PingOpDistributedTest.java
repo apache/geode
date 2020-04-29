@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
@@ -65,6 +67,7 @@ public class PingOpDistributedTest implements Serializable {
   private VM server1, server2;
   private int server1Port, server2Port;
 
+
   private void initServer(int serverPort) throws IOException {
     cacheRule.createCache();
     CacheServer cacheServer = cacheRule.getCache().addCacheServer();
@@ -104,6 +107,39 @@ public class PingOpDistributedTest implements Serializable {
     client.invoke(() -> initClient(poolName, serverPorts));
   }
 
+  public void executePing(String poolName, int serverPort,
+      InternalDistributedMember distributedMember) {
+    PoolImpl poolImpl = (PoolImpl) PoolManager.find(poolName);
+    PingOp.execute(poolImpl, new ServerLocation("localhost", serverPort), distributedMember);
+  }
+
+  public Long getSingleHeartBeat() {
+    ClientHealthMonitor chm = ClientHealthMonitor.getInstance();
+    if (chm.getClientHeartbeats().size() == 0) {
+      return 0L;
+    }
+    assertThat(chm.getClientHeartbeats()).isNotEmpty().hasSize(1);
+
+    return chm.getClientHeartbeats().entrySet().iterator().next().getValue();
+  }
+
+  @Test
+  public void regularPingFlow() {
+    final String poolName = testName.getMethodName();
+    parametrizedSetUp(poolName, Collections.singletonList(server1Port));
+    InternalDistributedMember distributedMember1 = (InternalDistributedMember) server1
+        .invoke(() -> cacheRule.getCache().getDistributedSystem().getDistributedMember());
+
+    client.invoke(() -> executePing(poolName, server1Port, distributedMember1));
+    Long firstHeartbeat = server1.invoke(this::getSingleHeartBeat);
+
+    client.invoke(() -> executePing(poolName, server1Port, distributedMember1));
+    Long secondHeartbeat = server1.invoke(this::getSingleHeartBeat);
+
+    assertThat(secondHeartbeat).isGreaterThan(firstHeartbeat);
+
+  }
+
   @Test
   public void memberShouldNotRedirectPingMessageWhenClientCachedViewIdIsWrong() throws IOException {
     final String poolName = testName.getMethodName();
@@ -116,8 +152,51 @@ public class PingOpDistributedTest implements Serializable {
       distributedMember1.setVmViewId(distributedMember1.getVmViewId() + 1);
       assertThatThrownBy(() -> {
         PingOp.execute(poolImpl, new ServerLocation("localhost", server1Port), distributedMember1);
-      }).isInstanceOf(ServerOperationException.class);
+      }).isInstanceOf(ServerOperationException.class).hasMessageContaining("has different viewId:");
     });
+  }
 
+  @Test
+  public void pingReturnsErrorIfTheTargetServerIsNotAMember() throws IOException {
+    final String poolName = testName.getMethodName();
+    parametrizedSetUp(poolName, Collections.singletonList(server1Port));
+    int notUsedPort = getRandomAvailableTCPPortsForDUnitSite(1)[0];
+    InternalDistributedMember fakeDistributedMember =
+        new InternalDistributedMember("localhost", notUsedPort);
+    client.invoke(() -> {
+      PoolImpl poolImpl = (PoolImpl) PoolManager.find(poolName);
+      assertThatThrownBy(() -> {
+        PingOp.execute(poolImpl, new ServerLocation("localhost", server1Port),
+            fakeDistributedMember);
+      }).isInstanceOf(ServerOperationException.class)
+          .hasMessageContaining("Unable to ping non-member");
+    });
+  }
+
+  @Test
+  public void memberShouldCorrectlyRedirectPingMessage() throws IOException, InterruptedException {
+    final String poolName = testName.getMethodName();
+    parametrizedSetUp(poolName, asList(server1Port, server2Port));
+    InternalDistributedMember distributedMember1 = (InternalDistributedMember) server1
+        .invoke(() -> cacheRule.getCache().getDistributedSystem().getDistributedMember());
+    InternalDistributedMember distributedMember2 = (InternalDistributedMember) server2
+        .invoke(() -> cacheRule.getCache().getDistributedSystem().getDistributedMember());
+
+    // Run two correct pings to ensure both ClientHealthMonitors have a valid value
+    client.invoke(() -> executePing(poolName, server1Port, distributedMember1));
+    client.invoke(() -> executePing(poolName, server2Port, distributedMember2));
+
+    Long firstHeartbeatServer1 = server1.invoke(this::getSingleHeartBeat);
+    Long firstHeartbeatServer2 = server2.invoke(this::getSingleHeartBeat);
+
+    // Ping to be forwarded from server1 to server2
+    client.invoke(() -> executePing(poolName, server1Port, distributedMember2));
+
+    Long secondHeartbeatServer1 = server1.invoke(this::getSingleHeartBeat);
+    Long secondHeartbeatServer2 = server2.invoke(this::getSingleHeartBeat);
+
+    // Heartbeat in server2 changed as the ping was forwarded from server1 to him.
+    assertThat(secondHeartbeatServer1).isEqualTo(firstHeartbeatServer1);
+    assertThat(secondHeartbeatServer2).isGreaterThan(firstHeartbeatServer2);
   }
 }
