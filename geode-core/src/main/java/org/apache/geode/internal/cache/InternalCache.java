@@ -416,7 +416,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
    */
   QueryMonitor getQueryMonitor();
 
-  void close(String reason, Throwable systemFailureCause, boolean keepAlive, boolean keepDS);
+  void close(String reason, Throwable systemFailureCause, boolean keepAlive, boolean keepDS,
+      boolean skipAwait);
 
   JmxManagerAdvisor getJmxManagerAdvisor();
 
