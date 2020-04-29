@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -30,8 +31,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.awaitility.Duration;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.execute.Execution;
@@ -112,7 +111,7 @@ public class CommandServlet extends HttpServlet {
           session = request.getSession();
           SessionManager manager = getSessionManager(session);
           if (!checkQueueDrained(manager, true)) {
-            GeodeAwaitility.await().pollInterval(Duration.TWO_HUNDRED_MILLISECONDS)
+            GeodeAwaitility.await().pollInterval(Duration.ofMillis(200))
                 .untilAsserted(() -> assertThat(checkQueueDrained(manager, false)).isTrue());
           }
           break;

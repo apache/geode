@@ -161,9 +161,10 @@ public abstract class CargoTestBase {
         }
         assertThat(getResponseValue(client, key)).isEqualTo(expectedValue);
         logger.info("verifying container {} for expected value of {}"
-                + " for key {}, but gets response value of {} from client {}. Waiting for update from server.",
+            + " for key {}, but gets response value of {} from client {}. Waiting for update from server.",
             i, expectedValue, key, value, client);
-        await().pollInSameThread().untilAsserted(() -> assertThat(getResponseValue(client, key)).isEqualTo(expectedValue));
+        await().pollInSameThread().untilAsserted(
+            () -> assertThat(getResponseValue(client, key)).isEqualTo(expectedValue));
       } else {
         // either p2p cache or client cache which has proxy/empty region - retrieving session from
         // servers
