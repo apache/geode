@@ -221,8 +221,8 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     Copyright (c) 2002-2007 Marc Prud'hommeaux.
   - Antlr v2.7.7 (http://www.antlr.org), Copyright (c) 2012 Terrence Parr
     and Sam Harwell
-  - ClassGraph v4.0.6 (https://github.com/classgraph/classgraph), Copyright (c)
-    2015 Luke Hutchison
+  - ClassGraph v4.8.68 (https://github.com/classgraph/classgraph), Copyright
+    (c) 2019 Luke Hutchison
   - JLine v2.12 (http://jline.sourceforge.net), Copyright (c) 2002-2006,
     Marc Prud'hommeaux <mwp1@cornell.edu>
   - jQuery Sparklines v2.0 (http://omnipotent.net/jquery.sparkline/),
@@ -264,14 +264,14 @@ The CDDL Version 1.1 (https://javaee.github.io/glassfish/LICENSE)
 Apache Geode bundles the following file under the Common Development and
 Distribution License:
 
-  - jaxb-istack-commons v2.2 (https://javaee.github.io/jaxb-istack-commons/)
+  - jaxb-istack-commons v3.0.11 (https://javaee.github.io/jaxb-istack-commons/)
   - javax.activation v1.2.0
     (https://www.oracle.com/technetwork/java/javase/jaf-135115.html)
   - javax.mail v1.6.2 (http://www.oracle.com/)
   - javax.resource v 1.7.1 (https://glassfish.java.net/)
   - javax.servlet v3.1.0 (https://glassfish.java.net/)
   - javax.transaction v1.3 (https://glassfish.java.net/)
-  - jaxb v2.3.1 (https://javaee.github.io/jaxb-v2/)
+  - jaxb v2.3.2 (https://javaee.github.io/jaxb-v2/)
 
 1. Definitions.
 
@@ -1059,7 +1059,7 @@ Apache Geode bundles the following files under the MIT license:
     Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
-  - SLF4J API v1.7.21 (http://www.slf4j.org), Copyright (c) 2004-2013 QOS.ch
+  - SLF4J API v1.7.30 (http://www.slf4j.org), Copyright (c) 2004-2017 QOS.ch
   - sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
     2015 Nathan Cahill
@@ -1092,7 +1092,7 @@ DEALINGS IN THE SOFTWARE.
 The MX4J License (http://mx4j.sourceforge.net/docs/ch01s06.html)
 ---------------------------------------------------------------------------
 
-Apache Geode bundles the following file under the MX4J license:
+Apache Geode bundles the following files under the MX4J license:
 
   - MX4JModelMBean.java (http://mx4j.sourceforge.net)
   - MX4J v3.0.1 (http://mx4j.sourceforge.net), Copyright (c) MX4J
