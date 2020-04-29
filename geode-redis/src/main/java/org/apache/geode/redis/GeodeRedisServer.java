@@ -96,7 +96,6 @@ import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.Subscriptions;
 import org.apache.geode.redis.internal.executor.set.DeltaSet;
-import org.apache.geode.redis.internal.executor.set.GeodeRedisSetWithFunctions;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -299,10 +298,6 @@ public class GeodeRedisServer {
 
   private KeyRegistrar keyRegistrar;
   private PubSub pubSub;
-  // TODO: This is a bit of a hack just to get the class loaded so the functions
-  // get registered.
-  private final GeodeRedisSetWithFunctions redisSetFunctions =
-      new GeodeRedisSetWithFunctions(null, null);
   private RedisLockService hashLockService;
 
   @VisibleForTesting
