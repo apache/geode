@@ -300,7 +300,7 @@ public class GeodeRedisServer {
   private RedisLockService hashLockService;
 
   @VisibleForTesting
-  protected KeyRegistrar getKeyRegistrar() {
+  public KeyRegistrar getKeyRegistrar() {
     return keyRegistrar;
   }
 
@@ -456,7 +456,7 @@ public class GeodeRedisServer {
   }
 
   @VisibleForTesting
-  protected RegionProvider getRegionCache() {
+  public RegionProvider getRegionCache() {
     return regionCache;
   }
 
