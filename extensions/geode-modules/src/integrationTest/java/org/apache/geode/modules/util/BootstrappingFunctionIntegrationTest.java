@@ -35,7 +35,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-public class BootstrappingFunctionTest {
+public class BootstrappingFunctionIntegrationTest {
+
   private Cache mockCache;
   private DistributionManager distributionManager;
   private BootstrappingFunction bootstrappingFunction;
