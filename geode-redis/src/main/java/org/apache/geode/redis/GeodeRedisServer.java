@@ -515,7 +515,7 @@ public class GeodeRedisServer {
       redisMetaData.put(SET_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HASH_REGION, RedisDataType.REDIS_PROTECTED);
 
-      GeodeRedisSetWithFunctions.registerFunctions();
+      GeodeRedisSetWithFunctions.registerFunctions(hashLockService);
     }
 
     checkForRegions();

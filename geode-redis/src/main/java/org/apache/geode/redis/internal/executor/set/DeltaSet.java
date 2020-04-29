@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.DataSerializable;
@@ -63,51 +64,35 @@ public class DeltaSet implements Delta, DataSerializable {
   public static long sadd(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
-    long result = -1;
-    do {
-      DeltaSet deltaSet = region.get(key);
-      if (deltaSet != null) {
-        // update existing value
-        result = deltaSet.saddInstance(membersToAdd, region, key);
-      } else {
-        // create new set
-        if (region.putIfAbsent(key, new DeltaSet(membersToAdd)) == null) {
-          return membersToAdd.size();
-        } else {
-          // retry since another thread concurrently changed the region
-        }
-      }
-    } while (result == -1);
-    return result;
+    DeltaSet deltaSet = region.get(key);
+    if (deltaSet != null) {
+      // update existing value
+      return deltaSet.saddInstance(membersToAdd, region, key);
+    } else {
+      region.create(key, new DeltaSet(membersToAdd));
+      return membersToAdd.size();
+    }
   }
 
   public static long srem(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    long result;
-    do {
-      DeltaSet deltaSet = region.get(key);
-      if (deltaSet == null) {
-        return 0L;
-      }
-      result = deltaSet.sremInstance(membersToRemove, region, key, setWasDeleted);
-    } while (result == -1);
-    return result;
+    DeltaSet deltaSet = region.get(key);
+    if (deltaSet == null) {
+      return 0L;
+    }
+    return deltaSet.sremInstance(membersToRemove, region, key, setWasDeleted);
   }
 
   private static boolean del(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
-    while (true) {
-      DeltaSet deltaSet = region.get(key);
-      if (deltaSet == null) {
-        return false;
-      }
-      if (deltaSet.delInstance(region, key)) {
-        return true;
-      } else {
-        // retry since another thread concurrently changed the region
-      }
+
+    DeltaSet deltaSet = region.get(key);
+    if (deltaSet == null) {
+      return false;
     }
+    return deltaSet.delInstance(region, key);
+
   }
 
   public static Set<ByteArrayWrapper> members(Region<ByteArrayWrapper, DeltaSet> region,
@@ -120,25 +105,22 @@ public class DeltaSet implements Delta, DataSerializable {
     }
   }
 
-  public synchronized boolean contains(ByteArrayWrapper member) {
+  public boolean contains(ByteArrayWrapper member) {
     return members.contains(member);
   }
 
-  public synchronized int size() {
+  public int size() {
     return members.size();
   }
 
-  private HashSet<ByteArrayWrapper> members;
+  private Set<ByteArrayWrapper> members;
   private transient ArrayList<ByteArrayWrapper> deltas;
   // true if deltas contains adds; false if removes
   private transient boolean deltasAreAdds;
 
   DeltaSet(Collection<ByteArrayWrapper> members) {
-    if (members instanceof HashSet) {
-      this.members = (HashSet<ByteArrayWrapper>) members;
-    } else {
-      this.members = new HashSet<>(members);
-    }
+    this.members = ConcurrentHashMap.newKeySet();
+    this.members.addAll(members);
   }
 
   // for serialization
@@ -157,7 +139,7 @@ public class DeltaSet implements Delta, DataSerializable {
   }
 
   @Override
-  public synchronized void fromDelta(DataInput in)
+  public void fromDelta(DataInput in)
       throws IOException, InvalidDeltaException {
     boolean deltaAdds = DataSerializer.readBoolean(in);
     try {
@@ -178,12 +160,16 @@ public class DeltaSet implements Delta, DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeHashSet(members, out);
+    DataSerializer.writeHashSet(new HashSet<>(members), out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    members = DataSerializer.readHashSet(in);
+    HashSet<ByteArrayWrapper> membersFromWire = DataSerializer.readHashSet(in);
+    this.members = ConcurrentHashMap.newKeySet();
+    this.members.addAll(membersFromWire);
+
+
   }
 
 
@@ -194,12 +180,9 @@ public class DeltaSet implements Delta, DataSerializable {
    * @param key the name of the set to add to
    * @return the number of members actually added; -1 if concurrent modification
    */
-  private synchronized long saddInstance(ArrayList<ByteArrayWrapper> membersToAdd,
+  private long saddInstance(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
-    if (region.get(key) != this) {
-      return -1;
-    }
     membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
@@ -222,12 +205,9 @@ public class DeltaSet implements Delta, DataSerializable {
    * @param setWasDeleted set to true if this method deletes the set
    * @return the number of members actually removed; -1 if concurrent modification
    */
-  private synchronized long sremInstance(ArrayList<ByteArrayWrapper> membersToRemove,
+  private long sremInstance(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
-    if (region.get(key) != this) {
-      return -1;
-    }
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
@@ -255,7 +235,7 @@ public class DeltaSet implements Delta, DataSerializable {
    * @param key the name of the set to delete
    * @return true if set deleted; false if not found
    */
-  private synchronized boolean delInstance(
+  private boolean delInstance(
       Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     return region.remove(key, this);
@@ -267,7 +247,7 @@ public class DeltaSet implements Delta, DataSerializable {
    *
    * @return a set containing all the members in this set
    */
-  synchronized Set<ByteArrayWrapper> members() {
+  Set<ByteArrayWrapper> members() {
     return new HashSet<>(members);
   }
 }
