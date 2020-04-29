@@ -203,10 +203,6 @@ public class RedisSessionDistDUnitTest implements Serializable {
     List<HttpCookie> cookies = HttpCookie.parse(sessionAsCookie);
     byte[] decodedCookie = Base64.getDecoder().decode(cookies.get(0).getValue());
 
-    // Hook up to redis server, confirm session is there...
-    Jedis jedis =
-        new Jedis("localHost", server1Port, JEDIS_TIMEOUT);
-
     Map<String, String> sessionInfo =
         jedis.hgetAll("spring:session:sessions:" + new String(decodedCookie));
 
