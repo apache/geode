@@ -156,6 +156,13 @@ public interface GatewaySender {
       .intValue();
 
   /**
+   * Number of times to retry to get events for a transaction from the gateway sender queue
+   */
+  int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
+          2);
+
+  /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
    *
    * @since GemFire 6.5.1

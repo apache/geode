@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
+import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
 
 import java.util.ArrayList;
 import java.util.Deque;
@@ -455,10 +456,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
       boolean presentLastEventInTransaction = false;
-      final int maxRetries = 2;
       int retries = 0;
       long lastKeyForTransaction = lastKey;
-      while (!presentLastEventInTransaction && ++retries <= maxRetries) {
+      while (!presentLastEventInTransaction
+          && retries++ <= GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
         EventsAndLastKey eventsAndKey =
             peekEventsWithTransactionId(transactionId, lastKeyForTransaction);
 
@@ -475,7 +476,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
         lastKeyForTransaction = eventsAndKey.lastKey;
       }
-      if (retries >= maxRetries) {
+      if (!presentLastEventInTransaction) {
         logger.warn("Not able to retrieve all events for transaction {} after {} retries",
             transactionId, retries);
       }

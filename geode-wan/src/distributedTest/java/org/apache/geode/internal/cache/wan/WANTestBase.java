@@ -1425,6 +1425,18 @@ public class WANTestBase extends DistributedTestCase {
     assertEquals(0, statistics.getBatchesRedistributed());
   }
 
+  public static void checkBatchStats(String senderId, final int batches,
+      boolean isExact,
+      final boolean batchesRedistributed) {
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
+    if (isExact) {
+      assert (statistics.getBatchesDistributed() == batches);
+    } else {
+      assert (statistics.getBatchesDistributed() >= batches);
+    }
+    assertEquals(batchesRedistributed, (statistics.getBatchesRedistributed() > 0));
+  }
+
   public static void checkBatchStats(String senderId, final boolean batchesDistributed,
       final boolean batchesRedistributed) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
