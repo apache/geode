@@ -96,6 +96,7 @@ import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.Subscriptions;
 import org.apache.geode.redis.internal.executor.set.DeltaSet;
+import org.apache.geode.redis.internal.executor.set.GeodeRedisSetWithFunctions;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
