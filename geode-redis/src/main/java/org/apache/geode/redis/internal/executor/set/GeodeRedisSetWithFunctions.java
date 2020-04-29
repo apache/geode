@@ -32,18 +32,18 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   private final ByteArrayWrapper key;
   private final Region<ByteArrayWrapper, DeltaSet> region;
 
-  static {
-    FunctionService.registerFunction(new SaddFunction());
-    FunctionService.registerFunction(new SremFunction());
-    FunctionService.registerFunction(new SmembersFunction());
-    FunctionService.registerFunction(new SdelFunction());
-  }
-
   public GeodeRedisSetWithFunctions(ByteArrayWrapper key,
       Region<ByteArrayWrapper, DeltaSet> region) {
 
     this.key = key;
     this.region = region;
+  }
+
+  public static void registerFunctions() {
+    FunctionService.registerFunction(new SaddFunction());
+    FunctionService.registerFunction(new SremFunction());
+    FunctionService.registerFunction(new SmembersFunction());
+    FunctionService.registerFunction(new SdelFunction());
   }
 
   @Override

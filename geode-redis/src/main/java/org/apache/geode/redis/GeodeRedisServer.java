@@ -518,6 +518,8 @@ public class GeodeRedisServer {
       redisMetaData.put(STRING_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(SET_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HASH_REGION, RedisDataType.REDIS_PROTECTED);
+
+      GeodeRedisSetWithFunctions.registerFunctions();
     }
 
     checkForRegions();
