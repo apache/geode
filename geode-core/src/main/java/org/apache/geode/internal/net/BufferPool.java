@@ -19,13 +19,17 @@ import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class BufferPool {
   private final DMStats stats;
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Buffers may be acquired from the Buffers pool
@@ -144,11 +148,14 @@ public class BufferPool {
         if (defaultSize > size) {
           bb.limit(size);
         }
+        logger.warn("BRUCE: acquiring pooled buffer {} hash {}", bb, Integer.toHexString(System.identityHashCode(bb)));
         return bb;
       }
       ref = bufferTempQueue.poll();
     }
     result = ByteBuffer.allocateDirect(defaultSize);
+    logger.warn("BRUCE: allocating new pooled buffer {} hash {}", result, Integer.toHexString(System.identityHashCode(result)));
+    logger.warn("BRUCE: ", new Exception("stack trace"));
     updateBufferStats(defaultSize, send, true);
     if (defaultSize > size) {
       result.limit(size);
@@ -175,6 +182,7 @@ public class BufferPool {
         if (bb.capacity() > size) {
           bb.limit(size);
         }
+        logger.warn("BRUCE: acquiring pooled buffer {} hash {}", bb, Integer.toHexString(System.identityHashCode(bb)));
         return bb;
       } else {
         // wasn't big enough so put it back in the queue
@@ -192,6 +200,8 @@ public class BufferPool {
       ref = bufferLargeQueue.poll();
     }
     result = ByteBuffer.allocateDirect(size);
+    logger.warn("BRUCE: allocating new pooled buffer {} hash {}", result, Integer.toHexString(System.identityHashCode(result)));
+    logger.warn("BRUCE: ", new Exception("stack trace"));
     updateBufferStats(size, send, true);
     return result;
   }
@@ -295,6 +305,7 @@ public class BufferPool {
   private void releaseBuffer(ByteBuffer bb, boolean send) {
     if (bb.isDirect()) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
+      logger.warn("BRUCE: releasing pooled buffer {} hash {}", bb, Integer.toHexString(System.identityHashCode(bb)));
       if (bb.capacity() <= SMALL_BUFFER_SIZE) {
         bufferSmallQueue.offer(bbRef);
       } else if (bb.capacity() <= MEDIUM_BUFFER_SIZE) {

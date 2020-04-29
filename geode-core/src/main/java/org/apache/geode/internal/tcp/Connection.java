@@ -2725,7 +2725,15 @@ public class Connection implements Runnable {
   private void processInputBuffer() throws ConnectionException, IOException {
     inputBuffer.flip();
 
-    ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
+    ByteBuffer peerDataBuffer;
+    try {
+      peerDataBuffer = ioFilter.unwrap(inputBuffer);
+    } catch (SSLException e) {
+//      if (e.getMessage().contains("bad record MAC")) {
+//        logger.warn("BRUCE: exception unwrapping buffer {} hash {}", inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)));
+//      }
+      throw e;
+    }
     peerDataBuffer.flip();
 
     boolean done = false;
