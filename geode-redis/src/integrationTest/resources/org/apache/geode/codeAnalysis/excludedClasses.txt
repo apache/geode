@@ -7,4 +7,3 @@ org/apache/geode/internal/hll/HyperLogLogPlus$Builder
 org/apache/geode/internal/hll/HyperLogLogPlus$Format
 org/apache/geode/internal/hll/HyperLogLogPlus$HyperLogLogPlusMergeException
 org/apache/geode/internal/hll/HyperLogLogPlus$SerializationHolder
-org/apache/geode/redis/internal/executor/set/SynchronizedRunner
