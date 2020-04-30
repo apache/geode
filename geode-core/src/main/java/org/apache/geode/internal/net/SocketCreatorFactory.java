@@ -29,21 +29,22 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 public class SocketCreatorFactory {
 
   @MakeNotStatic
-  private static SocketCreatorFactory instance = null;
-  @MakeNotStatic
-  private Map<SecurableCommunicationChannel, SocketCreator> socketCreators = new HashMap<>();
+  private static SocketCreatorFactory instance;
+
+  private final Map<SecurableCommunicationChannel, SocketCreator> socketCreators = new HashMap<>();
+
   private DistributionConfig distributionConfig;
 
   /**
    * Here we parse the distribution distributionConfig and setup the required SocketCreators
    */
-  private void initializeSocketCreators(final DistributionConfig distributionConfig) {
+  private SocketCreatorFactory initializeSocketCreators(final DistributionConfig distributionConfig) {
     if (distributionConfig == null) {
       throw new GemFireConfigException(
           "SocketCreatorFactory requires a valid distribution config.");
-    } else {
-      this.distributionConfig = distributionConfig;
     }
+    this.distributionConfig = distributionConfig;
+    return this;
   }
 
   private DistributionConfig getDistributionConfig() {
@@ -86,12 +87,8 @@ public class SocketCreatorFactory {
       if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
           SecurableCommunicationChannel.ALL)) {
         return createSSLSocketCreator(SecurableCommunicationChannel.ALL, sslConfig);
-        // } else if
-        // (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
-        // sslComponent)) {
-      } else {
-        return createSSLSocketCreator(sslComponent, sslConfig);
       }
+      return createSSLSocketCreator(sslComponent, sslConfig);
     }
     return createSSLSocketCreator(sslComponent, sslConfig);
   }
@@ -102,14 +99,13 @@ public class SocketCreatorFactory {
     SocketCreator socketCreator = getRegisteredSocketCreatorForComponent(sslEnabledComponent);
     if (socketCreator == null) {
       return getSSLSocketCreator(sslEnabledComponent, sslConfig);
-    } else {
-      return socketCreator;
     }
+    return socketCreator;
   }
 
   private SocketCreator createSSLSocketCreator(
       final SecurableCommunicationChannel sslEnableComponent, final SSLConfig sslConfig) {
-    SocketCreator socketCreator = null;
+    SocketCreator socketCreator;
     if (sslConfig.isEnabled()) {
       socketCreator = new SocketCreator(sslConfig);
       registerSocketCreatorForComponent(sslEnableComponent, socketCreator);
@@ -135,7 +131,6 @@ public class SocketCreatorFactory {
 
   /**
    * This a legacy SocketCreator initializer.
-   *
    *
    * @return SocketCreator for the defined properties
    *
@@ -163,9 +158,6 @@ public class SocketCreatorFactory {
   }
 
   public static SocketCreatorFactory setDistributionConfig(final DistributionConfig config) {
-    getInstance().initializeSocketCreators(config);
-    return getInstance();
+    return getInstance().initializeSocketCreators(config);
   }
-
-
 }
