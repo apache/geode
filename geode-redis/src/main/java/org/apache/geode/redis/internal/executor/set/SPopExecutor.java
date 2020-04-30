@@ -15,10 +15,8 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
@@ -54,36 +52,45 @@ public class SPopExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    List<ByteArrayWrapper> popped = new ArrayList<>();
+    ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
-
-      Set<ByteArrayWrapper> set = region.get(key);
-
-      if (set == null || set.isEmpty()) {
+      Region<ByteArrayWrapper, DeltaSet> region = getRegion(context);
+      DeltaSet original = region.get(key);
+      if (original == null) {
         command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
         return;
       }
 
-      Random rand = new Random();
-
-      Set<Integer> randomIndexes = new HashSet<>();
-      while (randomIndexes.size() < popCount) {
-        randomIndexes.add(rand.nextInt(set.size()));
-      }
-
-      int counter = 0;
-      for (ByteArrayWrapper entry : set) {
-        if (randomIndexes.contains(counter)) {
-          popped.add(entry);
+      synchronized (original) {
+        int originalSize = original.size();
+        if (originalSize == 0) {
+          command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
+          return;
         }
-        counter++;
+
+        if (popCount >= originalSize) {
+          // remove them all
+          popped.addAll(original.members());
+        } else {
+          ByteArrayWrapper[] setMembers =
+              original.members().toArray(new ByteArrayWrapper[originalSize]);
+          Random rand = new Random();
+          while (popped.size() < popCount) {
+            int idx = rand.nextInt(originalSize);
+            ByteArrayWrapper memberToPop = setMembers[idx];
+            if (memberToPop != null) {
+              setMembers[idx] = null;
+              popped.add(memberToPop);
+            }
+          }
+        }
+        // The following srem call can modify popped by removing members
+        // from it that were not removed from the set.
+        // But since the set is synchronized all members in popped will be
+        // removed so popped will contains all the members popped.
+        DeltaSet.srem(region, key, popped, null);
+        // TODO: what should SPOP do with a source that it empties? We probably need to delete it.
       }
-
-      set.removeAll(popped);
-
-      // save the updated set
-      region.put(key, set);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       command.setResponse(

@@ -14,9 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
@@ -50,37 +50,28 @@ public class SMoveExecutor extends SetExecutor {
     checkDataType(source, RedisDataType.REDIS_SET, context);
     checkDataType(destination, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
+    Region<ByteArrayWrapper, DeltaSet> region = getRegion(context);
 
     try (AutoCloseableLock regionLock = withRegionLock(context, source)) {
-      Set<ByteArrayWrapper> sourceSet = region.get(source);
+      DeltaSet sourceSet = region.get(source);
 
       if (sourceSet == null) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
         return;
       }
 
-      sourceSet = new HashSet<>(sourceSet); // copy to support transactions;
-      boolean removed = sourceSet.remove(member);
+      boolean removed =
+          DeltaSet.srem(region, source, new ArrayList<>(Collections.singletonList(member)),
+              null) == 1;
+      // TODO: what should SMOVE do with a source that it empties? We probably need to delete it.
 
       if (!removed) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
       } else {
         try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
-          Set<ByteArrayWrapper> destinationSet = region.get(destination);
-
-          if (destinationSet == null) {
-            destinationSet = new HashSet<>();
-          } else {
-            destinationSet = new HashSet<>(destinationSet); // copy to support transactions
-          }
-
-          destinationSet.add(member);
-
-          region.put(destination, destinationSet);
+          // TODO: this should invoke a function in case the primary for destination is remote
+          DeltaSet.sadd(region, destination, new ArrayList<>(Collections.singletonList(member)));
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
-
-          region.put(source, sourceSet);
           context.getKeyRegistrar().register(source, RedisDataType.REDIS_SET);
 
           command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));

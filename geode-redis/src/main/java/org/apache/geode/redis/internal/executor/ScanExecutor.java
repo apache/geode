@@ -42,7 +42,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     int cursor = 0;
     Pattern matchPattern = null;
     String globMatchString = null;
-    int count = DEFUALT_COUNT;
+    int count = DEFAULT_COUNT;
     try {
       cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {

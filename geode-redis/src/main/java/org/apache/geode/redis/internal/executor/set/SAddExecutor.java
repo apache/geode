@@ -14,9 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -41,9 +40,10 @@ public class SAddExecutor extends SetExecutor {
     context.getKeyRegistrar().register(command.getKey(), RedisDataType.REDIS_SET);
 
     ByteArrayWrapper key = command.getKey();
-    RedisSet geodeRedisSet = new GeodeRedisSetSynchronized(key, context);
-    Set<ByteArrayWrapper> membersToAdd =
-        new HashSet<>(commandElements.subList(2, commandElements.size()));
+    RedisSet geodeRedisSet =
+        new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
+    ArrayList<ByteArrayWrapper> membersToAdd =
+        new ArrayList<>(commandElements.subList(2, commandElements.size()));
 
     long entriesAdded = geodeRedisSet.sadd(membersToAdd);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), entriesAdded));

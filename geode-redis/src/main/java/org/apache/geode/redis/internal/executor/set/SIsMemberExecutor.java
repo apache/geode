@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -49,9 +48,9 @@ public class SIsMemberExecutor extends SetExecutor {
 
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
 
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = this.getRegion(context);
+    Region<ByteArrayWrapper, DeltaSet> region = this.getRegion(context);
 
-    Set<ByteArrayWrapper> set = region.get(key);
+    DeltaSet set = region.get(key);
 
     if (set == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));

@@ -52,7 +52,6 @@ public class RedisLockServiceIntegrationTest {
     cf.set(LOCATORS, "");
     cache = cf.create();
 
-    System.setProperty(GeodeRedisServer.DEFAULT_REGION_SYS_PROP_NAME, "REPLICATE");
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
     server.start();

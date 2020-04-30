@@ -60,7 +60,7 @@ public class HScanExecutor extends AbstractScanExecutor {
     int cursor = 0;
     Pattern matchPattern = null;
     String globMatchPattern = null;
-    int count = DEFUALT_COUNT;
+    int count = DEFAULT_COUNT;
     try {
       cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {

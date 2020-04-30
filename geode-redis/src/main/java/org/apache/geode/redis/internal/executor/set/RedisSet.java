@@ -15,15 +15,18 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-interface RedisSet {
-  long sadd(Collection<ByteArrayWrapper> membersToAdd);
+public interface RedisSet {
+  long sadd(ArrayList<ByteArrayWrapper> membersToAdd);
 
-  long srem(Collection<ByteArrayWrapper> membersToAdd);
+  long srem(ArrayList<ByteArrayWrapper> membersToAdd, AtomicBoolean setWasDeleted);
 
   Set<ByteArrayWrapper> members();
+
+  boolean del();
 }

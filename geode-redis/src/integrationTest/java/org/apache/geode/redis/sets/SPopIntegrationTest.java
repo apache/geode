@@ -96,7 +96,7 @@ public class SPopIntegrationTest {
   }
 
   @Test
-  public void testSPopWithCount() {
+  public void testSPopAll() {
     int ENTRIES = 10;
 
     List<String> masterSet = new ArrayList<>();
@@ -109,6 +109,39 @@ public class SPopIntegrationTest {
 
     assertThat(jedis.smembers("master").toArray()).isEmpty();
     assertThat(popped.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
+  }
+
+  @Test
+  public void testSPopAllPlusOne() {
+    int ENTRIES = 10;
+
+    List<String> masterSet = new ArrayList<>();
+    for (int i = 0; i < ENTRIES; i++) {
+      masterSet.add("master-" + i);
+    }
+
+    jedis.sadd("master", masterSet.toArray(new String[] {}));
+    Set<String> popped = jedis.spop("master", ENTRIES + 1);
+
+    assertThat(jedis.smembers("master").toArray()).isEmpty();
+    assertThat(popped.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
+  }
+
+  @Test
+  public void testSPopAllMinusOne() {
+    int ENTRIES = 10;
+
+    List<String> masterSet = new ArrayList<>();
+    for (int i = 0; i < ENTRIES; i++) {
+      masterSet.add("master-" + i);
+    }
+
+    jedis.sadd("master", masterSet.toArray(new String[] {}));
+    Set<String> popped = jedis.spop("master", ENTRIES - 1);
+
+    assertThat(jedis.smembers("master").toArray()).hasSize(1);
+    assertThat(popped).hasSize(ENTRIES - 1);
+    assertThat(masterSet).containsAll(popped);
   }
 
   @Test
