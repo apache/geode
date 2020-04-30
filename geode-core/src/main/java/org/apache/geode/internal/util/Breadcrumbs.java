@@ -31,8 +31,8 @@ public class Breadcrumbs {
   private static final ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>();
 
   @MutableForTesting
-  public static boolean ENABLED =
-      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enable-breadcrumbs");
+  public static boolean ENABLED = true; // BRUCE: reenable property
+//      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enable-breadcrumbs");
 
 
   /** delimiter for crumb numbers */

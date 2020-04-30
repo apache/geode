@@ -86,8 +86,8 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void engineUsesHeapBuffers() {
-    assertThat(nioSslEngine.myNetData.isDirect()).isFalse();
+  public void engineUsesDirectBuffers() {
+    assertThat(nioSslEngine.myNetData.isDirect()).isTrue();
   }
 
   @Test
