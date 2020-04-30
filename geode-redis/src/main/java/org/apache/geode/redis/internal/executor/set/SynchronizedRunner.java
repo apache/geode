@@ -18,25 +18,51 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisLockService;
 
 class SynchronizedRunner {
-  private RedisLockService redisLockService;
+  // private RedisLockService redisLockService;
+  private final LockManager lockManager = new LockManager();
 
   public SynchronizedRunner(RedisLockService redisLockService) {
-    this.redisLockService = redisLockService;
+    // this.redisLockService = redisLockService;
   }
 
   public void run(ByteArrayWrapper key, Callable callable, Consumer<Object> callback) {
     Object call;
-    try (AutoCloseableLock ignored = redisLockService.lock(key)) {
-      call = callable.call();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    synchronized (lockManager.getLock(key)) {
+      try {
+        call = callable.call();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
     callback.accept(call);
 
+  }
+
+  private static class LockManager {
+    private static final int DEFAULT_LOCK_COUNT = 4093; // use a prime
+    private final Object[] locks;
+
+    public LockManager() {
+      this(DEFAULT_LOCK_COUNT);
+    }
+
+    public LockManager(int maxLocks) {
+      locks = new Object[maxLocks];
+      for (int i = 0; i < maxLocks; i++) {
+        locks[i] = new Object();
+      }
+    }
+
+    public Object getLock(ByteArrayWrapper key) {
+      int hash = key.hashCode();
+      if (hash < 0) {
+        hash = -hash;
+      }
+      return locks[hash % locks.length];
+    }
   }
 }
