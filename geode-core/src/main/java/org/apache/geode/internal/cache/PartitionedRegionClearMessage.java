@@ -20,26 +20,23 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class ClearPartitionedRegionMessage extends PartitionMessage {
-  private static final Logger logger = LogService.getLogger();
+public class PartitionedRegionClearMessage extends PartitionMessage {
 
-  public static enum OperationType {
+  public enum OperationType {
     OP_LOCK_FOR_PR_CLEAR, OP_UNLOCK_FOR_PR_CLEAR, OP_PR_CLEAR,
   }
 
@@ -58,10 +55,10 @@ public class ClearPartitionedRegionMessage extends PartitionMessage {
     return eventID;
   }
 
-  public ClearPartitionedRegionMessage() {}
+  public PartitionedRegionClearMessage() {}
 
-  ClearPartitionedRegionMessage(Set recipients, PartitionedRegion region,
-      ReplyProcessor21 processor, ClearPartitionedRegionMessage.OperationType operationType,
+  PartitionedRegionClearMessage(Set recipients, PartitionedRegion region,
+      ReplyProcessor21 processor, PartitionedRegionClearMessage.OperationType operationType,
       final RegionEventImpl event) {
     super(recipients, region.getPRId(), processor);
     this.recipients = recipients;
@@ -94,28 +91,29 @@ public class ClearPartitionedRegionMessage extends PartitionMessage {
     return null;
   }
 
-
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
+      PartitionedRegion partitionedRegion,
       long startTime) throws CacheException {
 
-    if (r == null) {
+    if (partitionedRegion == null) {
       return true;
     }
 
-    if (r.isDestroyed()) {
+    if (partitionedRegion.isDestroyed()) {
       return true;
     }
 
     if (op == OperationType.OP_LOCK_FOR_PR_CLEAR) {
-      r.getClearPartitionedRegion().obtainClearLockLocal(getSender());
+      partitionedRegion.getPartitionedRegionClear().obtainClearLockLocal(getSender());
     } else if (op == OperationType.OP_UNLOCK_FOR_PR_CLEAR) {
-      r.getClearPartitionedRegion().releaseClearLockLocal();
+      partitionedRegion.getPartitionedRegionClear().releaseClearLockLocal();
     } else {
       RegionEventImpl event =
-          new RegionEventImpl(r, Operation.REGION_CLEAR, this.cbArg, true, r.getMyId(),
+          new RegionEventImpl(partitionedRegion, Operation.REGION_CLEAR, this.cbArg, true,
+              partitionedRegion.getMyId(),
               getEventID());
-      r.getClearPartitionedRegion().clearRegionLocal(event, false, null);
+      partitionedRegion.getPartitionedRegionClear().clearRegionLocal(event);
     }
     return true;
   }
@@ -123,7 +121,7 @@ public class ClearPartitionedRegionMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; cbArg=").append(this.cbArg).append("; op=").append(this.op);
+    buff.append(" cbArg=").append(this.cbArg).append(" op=").append(this.op);
   }
 
   @Override
@@ -136,7 +134,7 @@ public class ClearPartitionedRegionMessage extends PartitionMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.cbArg = DataSerializer.readObject(in);
-    op = ClearPartitionedRegionMessage.OperationType.values()[in.readByte()];
+    op = PartitionedRegionClearMessage.OperationType.values()[in.readByte()];
     eventID = DataSerializer.readObject(in);
   }
 
@@ -152,25 +150,16 @@ public class ClearPartitionedRegionMessage extends PartitionMessage {
   /**
    * The response on which to wait for all the replies. This response ignores any exceptions
    * received from the "far side"
-   *
-   * @since GemFire 5.0
    */
   public static class ClearPartitionedRegionResponse extends ReplyProcessor21 {
     public ClearPartitionedRegionResponse(InternalDistributedSystem system, Set initMembers) {
       super(system, initMembers);
     }
 
-    /*
-     * @Override
-     * protected void processException(ReplyException ex) {
-     * // retry on ForceReattempt in case the region is still being initialized
-     * if (ex.getRootCause() instanceof ForceReattemptException) {
-     * super.processException(ex);
-     * } else if (logger.isDebugEnabled()) {
-     * logger.debug("DestroyRegionResponse ignoring exception", ex);
-     * }
-     * }
-     */
+    @Override
+    protected void processException(ReplyException ex) {
+      super.processException(ex);
+    }
   }
 
 }

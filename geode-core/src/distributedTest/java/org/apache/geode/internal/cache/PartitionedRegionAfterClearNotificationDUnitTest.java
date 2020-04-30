@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCache;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,7 +108,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
   }
 
   private void verifyRegionSize(boolean isClient, int expectedNum) {
-    GeodeAwaitility.await().atMost(10, SECONDS)
+    GeodeAwaitility.await()
         .untilAsserted(() -> assertThat(getRegion(isClient).size()).isEqualTo(expectedNum));
   }
 
@@ -144,8 +143,6 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
         shortcut = RegionShortcut.PARTITION_REDUNDANT;
       } else if (shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW) {
         shortcut = RegionShortcut.PARTITION_REDUNDANT_OVERFLOW;
-      } else {
-        fail("Wrong region type:" + shortcut);
       }
     }
     getCache().createRegionFactory(shortcut)
@@ -274,10 +271,10 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
     AsyncInvocation ds1ClearAsync = dataStore1.invokeAsync(() -> getRegion(false).clear());
 
-    getBlackboard().waitForGate("CacheClose", 30, SECONDS);
+    getBlackboard().waitForGate("CLOSE_CACHE", 30, SECONDS);
 
     dataStore1.invoke(() -> getCache().close());
-    getBlackboard().signalGate("CacheClosed");
+    getBlackboard().signalGate("CACHE_CLOSED");
 
     // This should not be blocked.
     dataStore2.invoke(() -> feed(false));
@@ -303,10 +300,10 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
     AsyncInvocation ds1ClearAsync = dataStore1.invokeAsync(() -> getRegion(false).clear());
 
-    getBlackboard().waitForGate("CacheClose", 30, SECONDS);
+    getBlackboard().waitForGate("CLOSE_CACHE", 30, SECONDS);
 
     dataStore1.invoke(() -> getCache().close());
-    getBlackboard().signalGate("CacheClosed");
+    getBlackboard().signalGate("CACHE_CLOSED");
 
     // This should not be blocked.
     dataStore2.invoke(() -> feed(false));
@@ -340,13 +337,13 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
       @Override
       public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
-        if (message instanceof ClearPartitionedRegionMessage) {
-          if (((ClearPartitionedRegionMessage) message)
-              .getOp() == ClearPartitionedRegionMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
+        if (message instanceof PartitionedRegionClearMessage) {
+          if (((PartitionedRegionClearMessage) message)
+              .getOp() == PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
             DistributionMessageObserver.setInstance(null);
-            getBlackboard().signalGate("CacheClose");
+            getBlackboard().signalGate("CLOSE_CACHE");
             try {
-              getBlackboard().waitForGate("CacheClosed", 30, SECONDS);
+              getBlackboard().waitForGate("CACHE_CLOSED", 30, SECONDS);
               GeodeAwaitility.await().untilAsserted(
                   () -> assertThat(dm.isCurrentMember(message.getSender())).isFalse());
             } catch (TimeoutException | InterruptedException e) {
@@ -362,13 +359,13 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
     return new DistributionMessageObserver() {
       @Override
       public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
-        if (message instanceof ClearPartitionedRegionMessage) {
-          if (((ClearPartitionedRegionMessage) message)
-              .getOp() == ClearPartitionedRegionMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
+        if (message instanceof PartitionedRegionClearMessage) {
+          if (((PartitionedRegionClearMessage) message)
+              .getOp() == PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
             DistributionMessageObserver.setInstance(null);
-            getBlackboard().signalGate("CacheClose");
+            getBlackboard().signalGate("CLOSE_CACHE");
             try {
-              getBlackboard().waitForGate("CacheClosed", 30, SECONDS);
+              getBlackboard().waitForGate("CACHE_CLOSED", 30, SECONDS);
             } catch (TimeoutException | InterruptedException e) {
               throw new RuntimeException("Failed waiting for signal.");
             }

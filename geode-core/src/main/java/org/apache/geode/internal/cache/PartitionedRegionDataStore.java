@@ -984,7 +984,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     bucketCreationLock.writeLock().lock();
   }
 
-  protected void unLockBucketCreationForRegionClear() {
+  protected void unlockBucketCreationForRegionClear() {
     bucketCreationLock.writeLock().unlock();
   }
 

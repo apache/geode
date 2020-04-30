@@ -834,7 +834,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     });
   }
 
-  public Set adviseAllServersWithInterest() {
+  Set adviseAllServersWithInterest() {
     return adviseFilter(profile -> {
       CacheProfile prof = (CacheProfile) profile;
       return prof.hasCacheServer && prof.filterProfile != null

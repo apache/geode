@@ -53,6 +53,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionedRegionPartialClearException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
@@ -62,6 +63,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -75,7 +77,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 @RunWith(JUnitParamsRunner.class)
 public class PartitionedRegionClearWithExpirationDUnitTest implements Serializable {
   private static final Integer BUCKETS = 13;
-  private static final Integer EXPIRATION_TIME = 30;
+  private static final Integer EXPIRATION_TIME = 5 * 60;
   private static final String REGION_NAME = "PartitionedRegion";
 
   @Rule
@@ -281,6 +283,19 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
     }));
   }
 
+  private void doClear() {
+    Cache cache = cacheRule.getCache();
+    boolean retry;
+    do {
+      retry = false;
+      try {
+        cache.getRegion(REGION_NAME).clear();
+      } catch (PartitionedRegionPartialClearException partialClearException) {
+        retry = true;
+      }
+    } while (retry);
+  }
+
   /**
    * The test does the following (clear coordinator and region type are parametrized):
    * - Populates the Partition Region (entries have expiration).
@@ -303,10 +318,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
     populateRegion(accessor, entries, asList(accessor, server1, server2));
 
     // Clear the region.
-    getVM(coordinatorVM.vmNumber).invoke(() -> {
-      Cache cache = cacheRule.getCache();
-      cache.getRegion(REGION_NAME).clear();
-    });
+    getVM(coordinatorVM.vmNumber).invoke(() -> doClear());
 
     // Assert all expiration tasks were cancelled and none were executed.
     asList(server1, server2).forEach(vm -> vm.invoke(() -> {
@@ -415,10 +427,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
     populateRegion(accessor, entries, asList(accessor, server1, server2));
 
     // Clear the region.
-    getVM(coordinatorVM.vmNumber).invoke(() -> {
-      Cache cache = cacheRule.getCache();
-      cache.getRegion(REGION_NAME).clear();
-    });
+    getVM(coordinatorVM.vmNumber).invoke(() -> doClear());
 
     // Wait for member to get back online and assign buckets.
     server2.invoke(() -> {

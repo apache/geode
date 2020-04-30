@@ -210,7 +210,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
       LocalRegion region = (LocalRegion) event.getRegion();
       switch (this.clearOp) {
         case OP_CLEAR:
-          region.clearRegionLocal((RegionEventImpl) event, false, this.rvv);
+          region.clearRegionLocally((RegionEventImpl) event, false, this.rvv);
           region.notifyBridgeClients((RegionEventImpl) event);
           this.appliedOperation = true;
           break;

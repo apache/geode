@@ -320,7 +320,7 @@ public class PartitionedRegion extends LocalRegion
     }
   };
 
-  private final ClearPartitionedRegion clearPartitionedRegion = new ClearPartitionedRegion(this);
+  private final PartitionedRegionClear partitionedRegionClear = new PartitionedRegionClear(this);
 
   /**
    * Global Region for storing PR config ( PRName->PRConfig). This region would be used to resolve
@@ -10378,15 +10378,15 @@ public class PartitionedRegion extends LocalRegion
     return senderIdMonitor;
   }
 
-  protected ClearPartitionedRegion getClearPartitionedRegion() {
-    return clearPartitionedRegion;
+  protected PartitionedRegionClear getPartitionedRegionClear() {
+    return partitionedRegionClear;
   }
 
   @Override
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     // Synchronized to avoid other threads invoking clear on this vm/node.
     synchronized (clearLock) {
-      clearPartitionedRegion.doClear(regionEvent, cacheWrite, this);
+      partitionedRegionClear.doClear(regionEvent, cacheWrite, this);
     }
   }
 

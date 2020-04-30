@@ -2018,7 +2018,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           // pause all generation of versions and flush from the other members to this one
           try {
             obtainWriteLocksForClear(regionEvent, participants);
-            clearRegionLocal(regionEvent, cacheWrite, null);
+            clearRegionLocally(regionEvent, cacheWrite, null);
             if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
               distributeClearOperation(regionEvent, null, participants);
             }
@@ -2031,7 +2031,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       } else {
         Set<InternalDistributedMember> participants =
             getCacheDistributionAdvisor().adviseInvalidateRegion();
-        clearRegionLocal(regionEvent, cacheWrite, null);
+        clearRegionLocally(regionEvent, cacheWrite, null);
         if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
           DistributedClearOperation.clear(regionEvent, null, participants);
         }

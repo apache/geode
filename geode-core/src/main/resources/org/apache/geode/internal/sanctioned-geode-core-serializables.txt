@@ -79,6 +79,7 @@ org/apache/geode/cache/NoSubscriptionServersAvailableException,true,848408601915
 org/apache/geode/cache/Operation,true,-7521751729852504238,ordinal:byte
 org/apache/geode/cache/OperationAbortedException,true,-8293166225026556949
 org/apache/geode/cache/PartitionedRegionDistributionException,true,-3004093739855972548
+org/apache/geode/cache/PartitionedRegionPartialClearException,false
 org/apache/geode/cache/PartitionedRegionStorageException,true,5905463619475329732
 org/apache/geode/cache/RegionAccessException,true,3142958723089038406
 org/apache/geode/cache/RegionDestroyedException,true,319804842308010754,regionFullPath:java/lang/String
