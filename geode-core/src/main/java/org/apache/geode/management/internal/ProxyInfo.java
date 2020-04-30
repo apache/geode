@@ -19,60 +19,37 @@ import javax.management.ObjectName;
 /**
  * Proxy info class holds details about proxy for quicker access during several Management
  * operations
- *
  */
 public class ProxyInfo {
 
-  /**
-   * Proxy Interface
-   */
-  private Class proxyInterface;
-  /**
-   * proxy instance
-   */
-  private Object proxyInstance;
+  private final Class proxyInterface;
+  private final Object proxyInstance;
+  private final ObjectName objectName;
 
-  /**
-   * JMX name of proxy
-   */
-  private ObjectName objectName;
-
-
-  /**
-   * public constructor
-   *
-   */
   public ProxyInfo(Class proxyInterface, Object proxyInstance, ObjectName objectName) {
-    this.proxyInstance = proxyInstance;
     this.proxyInterface = proxyInterface;
+    this.proxyInstance = proxyInstance;
     this.objectName = objectName;
-
-  }
-
-  /**
-   * get the proxy instance
-   *
-   */
-  public Object getProxyInstance() {
-    return proxyInstance;
-  }
-
-
-  /**
-   * get MBean name
-   *
-   */
-  public ObjectName getObjectName() {
-    return objectName;
   }
 
   public Class getProxyInterface() {
     return proxyInterface;
   }
 
-  public void setProxyInterface(Class proxyInterface) {
-    this.proxyInterface = proxyInterface;
+  public Object getProxyInstance() {
+    return proxyInstance;
   }
 
+  public ObjectName getObjectName() {
+    return objectName;
+  }
 
+  @Override
+  public String toString() {
+    return "ProxyInfo{" +
+        "proxyInterface=" + proxyInterface +
+        ", proxyInstance=" + proxyInstance +
+        ", objectName=" + objectName +
+        '}';
+  }
 }
