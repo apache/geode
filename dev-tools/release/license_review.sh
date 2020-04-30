@@ -22,11 +22,12 @@ usage() {
     echo "  -v   The #.#.#.RC# or #.#.# version number to review -or- a path or URL to .tgz -or- 'HEAD'"
     echo "  -p   The #.#.#.RC# or #.#.# version number to compare against -or- a path or URL to .tgz"
     echo "  -n   No license check (useful if you just want the version comparison)"
+    echo "  -s   No source license check (just check the binary license)"
     exit 1
 }
 
 
-while getopts ":v:p:n" opt; do
+while getopts ":v:p:ns" opt; do
   case ${opt} in
     v )
       NEW_VERSION=$OPTARG
@@ -36,6 +37,9 @@ while getopts ":v:p:n" opt; do
       ;;
     n )
       SKIP_LICENSES=true
+      ;;
+    s )
+      SKIP_SRC_LICENSE=true
       ;;
     \? )
       usage
@@ -57,9 +61,11 @@ root=${root%/dev-tools*}
 function resolve() {
   [ -n "$1" ] || return
   spec=$1
+  suffix=$2
   if [ "HEAD" = "$spec" ] ; then
-    (cd $root && ./gradlew distTar 1>&2)
-    spec=$root/geode-assembly/build/distributions/$(cd $root/geode-assembly/build/distributions && ls -t | grep apache-geode-.*-SNAPSHOT.tgz | tail -1)
+    [ "${suffix}" = "-src" ] && target=srcDistTar || target=distTar
+    (cd $root && ./gradlew ${target} 1>&2)
+    spec=$root/geode-assembly/build/distributions/$(cd $root/geode-assembly/build/distributions && ls -t | grep apache-geode-.*-SNAPSHOT${suffix}.tgz | tail -1)
     [ -r "$spec" ] || echo "Build not found: $spec" 1>&2
     [ -r "$spec" ]
   fi
@@ -67,21 +73,21 @@ function resolve() {
   if [[ $spec =~ ^([0-9]+\.[0-9]+\.[0-9]+)\.(RC[0-9]+)$ ]]; then
     mmp=$(echo $spec | sed 's/.RC.*//')
     #bare RC version -> RC url
-    spec=https://dist.apache.org/repos/dist/dev/geode/${spec}/apache-geode-${mmp}.tgz
+    spec=https://dist.apache.org/repos/dist/dev/geode/${spec}/apache-geode-${mmp}${suffix}.tgz
   elif [[ $spec =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
     #bare released version -> release url
-    spec=https://downloads.apache.org/geode/${spec}/apache-geode-${spec}.tgz
+    spec=https://downloads.apache.org/geode/${spec}/apache-geode-${spec}${suffix}.tgz
   elif echo "$spec" | grep -q '^http.*tgz$' ; then
     #tgz url
-    true
+    echo "$spec" | grep -q -- "${suffix}.tgz$" || return
   elif [ -r "$spec" ] && echo "$spec" | grep -q 'tgz$' ; then
     #tgz file present locally
-    true
+    echo "$spec" | grep -q -- "${suffix}.tgz$" || return
   else
     #unsupported
     return
   fi
-  
+
   #download if url (and not already downloaded)
   if echo "$spec" | grep -q '^http.*tgz$' ; then
     filename=$(echo $spec | sed 's#.*/##')
@@ -92,7 +98,7 @@ function resolve() {
   #extract it (if not already extracted)
   dirname=$(echo $spec | sed -e 's#.*/##' -e 's#.tgz$##')
   [ "${licFromWs}" = "true" ] && rm -Rf ${EXTRACT}/$dirname
-  [ -d ${EXTRACT}/$dirname ] || tar xzf $spec -C ${EXTRACT} 
+  [ -d ${EXTRACT}/$dirname ] || tar xzf $spec -C ${EXTRACT}
   [ -d ${EXTRACT}/$dirname ] && echo ${EXTRACT}/$dirname
 }
 
@@ -100,6 +106,10 @@ NEW_DIR=$(resolve $NEW_VERSION)
 
 if [ -z "${NEW_DIR}" ] || [ ! -d "${NEW_DIR}" ] ; then
     usage
+fi
+
+if [ "${licFromWs}" = "true" ] && ! [ "$SKIP_LICENSES" = "true" ] && ! [ "$SKIP_SRC_LICENSE" = "true" ] ; then
+  NEW_SRC_DIR=$(resolve $NEW_VERSION -src)
 fi
 
 function banner() {
@@ -128,9 +138,15 @@ function extractLicense() {
 function generateList() {
   dir=$1
   banner "Listing 3rd-party deps in ${dir##*/}"
+
+  #also extract geode jar licenses for later checking
+  (cd $dir; find . -name '*.jar' | egrep '(geode|gfsh)-' | sort | sed 's#^./##' | while read geodejar ; do
+    extractLicense $geodejar ${geodejar%.jar}.LICENSE
+  done)
+
   echo "**** ${dir##*/} jars ****" | tr '[:lower:]-' '[:upper:] ' > $dir/report1
   (cd $dir; find . -name '*.jar' | grep -v geode- | grep -v gfsh- | sort | sed 's#^./##' | tee -a report1)
-  
+
   echo "**** ${dir##*/} wars ****" | tr '[:lower:]-' '[:upper:] ' > $dir/report2
   (cd $dir; find . -name '*.war' | sort | sed 's#^./##' | while read war ; do
     listJarsInWar $war | sed 's#-[v0-9][-0-9.SNAPSHOT]*[.]#.#' | sort
@@ -150,6 +166,16 @@ if [ -n "${OLD_VERSION}" ] ; then
 fi
 
 [ "$SKIP_LICENSES" = "true" ] && exit 0
+
+banner "Checking that all binary licenses are identical"
+sizes=$(find $NEW_DIR -name '*LICENSE' | xargs wc -c | grep -v total | awk '{print $1}' | sort -u | wc -l)
+if [ $sizes -gt 1 ] ; then
+  echo "NOT all LICENSES are the same:"
+  (cd $NEW_DIR; find * -name '*LICENSE' | xargs wc -c | grep -v total | sort)
+  result=1
+else
+  echo "All Good!"
+fi
 
 function isApache2() {
   apache="HikariCP
@@ -222,7 +248,7 @@ function shortenDep() {
 for REPORT in report1 report2 ; do
   [ "$REPORT" = "report1" ] && topic=JAR || topic=WAR
   if [ "${licFromWs}" = "true" ] ; then
-    [ "$REPORT" = "report1" ] && LICENSE=${root}/geode-assembly/src/main/dist/LICENSE || LICENSE=${root}/LICENSE
+    LICENSE=${root}/geode-assembly/src/main/dist/LICENSE
    else
     [ "$REPORT" = "report1" ] && LICENSE=${NEW_DIR}/LICENSE || LICENSE=${NEW_DIR}/tools/Pulse/$(cd ${NEW_DIR}/tools/Pulse; ls | grep LICENSE)
   fi
@@ -260,4 +286,39 @@ for REPORT in report1 report2 ; do
     result=1
   fi
 done
+
+if [ "${licFromWs}" = "true" ] ; then
+  banner "Checking that binary license is a superset of src license"
+  SLICENSE=${root}/LICENSE
+  BLICENSE=${root}/geode-assembly/src/main/dist/LICENSE
+  if diff $SLICENSE $BLICENSE | grep -q '^<' ; then
+    echo $(diff $SLICENSE $BLICENSE | grep '^<' | wc -l) "lines appear in $SLICENSE that were not found in $BLICENSE."
+    echo "Please ensure the binary license is a strict superset of the source license."
+    echo "(diff $SLICENSE $BLICENSE)"
+    result=1
+  else
+    echo "All Good!"
+  fi
+
+  banner "Checking that binary license is correct"
+  if diff -q ${BLICENSE} ${NEW_DIR}/LICENSE ; then
+    echo "All Good!"
+  else
+    echo "Incorrect LICENSE in binary distribution"
+    echo "Expected:" $(wc -c ${BLICENSE})
+    echo "Actual:" $(wc -c ${NEW_DIR}/LICENSE)
+  fi
+
+  if ! [ "$SKIP_SRC_LICENSE" = "true" ] ; then
+    banner "Checking that source license is correct"
+    if diff -q ${SLICENSE} ${NEW_SRC_DIR}/LICENSE ; then
+      echo "All Good!"
+    else
+      echo "Incorrect LICENSE in source distribution"
+      echo "Expected:" $(wc -c ${SLICENSE})
+      echo "Actual:" $(wc -c ${NEW_SRC_DIR}/LICENSE)
+    fi
+  fi
+fi
+
 exit $result
