@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.module;
+package org.apache.geode.services.module;
 
 import org.apache.geode.annotations.Experimental;
 
