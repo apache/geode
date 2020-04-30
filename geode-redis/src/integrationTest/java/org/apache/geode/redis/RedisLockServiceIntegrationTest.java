@@ -23,7 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.cache.CacheFactory;
@@ -38,6 +40,9 @@ public class RedisLockServiceIntegrationTest {
   private static GemFireCache cache;
   private static Jedis jedis;
   private static int port = 6379;
+
+  @ClassRule
+  public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @BeforeClass
   public static void setUp() {
