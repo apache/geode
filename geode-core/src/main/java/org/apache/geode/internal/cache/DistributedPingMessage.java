@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -29,6 +30,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
 public class DistributedPingMessage extends HighPriorityDistributionMessage {
+
   private ClientProxyMembershipID proxyID;
 
   public DistributedPingMessage() {
@@ -75,5 +77,10 @@ public class DistributedPingMessage extends HighPriorityDistributionMessage {
   @Override
   public String toString() {
     return super.toString() + "; proxyId=" + proxyID;
+  }
+
+  @VisibleForTesting
+  protected ClientProxyMembershipID getProxyID() {
+    return this.proxyID;
   }
 }
