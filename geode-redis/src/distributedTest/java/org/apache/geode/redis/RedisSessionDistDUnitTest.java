@@ -227,7 +227,7 @@ public class RedisSessionDistDUnitTest implements Serializable {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionAsCookie);
 
-    HttpEntity<String> request2 = new HttpEntity("", requestHeaders);
+    HttpEntity<String> request2 = new HttpEntity<>("", requestHeaders);
 
     String[] sessionNotes = restTemplate
         .exchange(
@@ -253,7 +253,7 @@ public class RedisSessionDistDUnitTest implements Serializable {
     String sessionAsCookie = responseHeaders.get("Set-Cookie").get(0);
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionAsCookie);
-    HttpEntity<String> request2 = new HttpEntity("", requestHeaders);
+    HttpEntity<String> request2 = new HttpEntity<>("", requestHeaders);
 
     cluster.crashVM(indexOfServer2);
 
@@ -284,7 +284,7 @@ public class RedisSessionDistDUnitTest implements Serializable {
     String cookieString = resultHeaders.get("Set-Cookie").get(0);
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", cookieString);
-    HttpEntity<String> request2 = new HttpEntity("noteFromClient1", requestHeaders);
+    HttpEntity<String> request2 = new HttpEntity<>("noteFromClient1", requestHeaders);
 
     cluster.crashVM(indexOfServer2);
 
@@ -298,7 +298,7 @@ public class RedisSessionDistDUnitTest implements Serializable {
         redisPropsForServer2,
         locator.getPort());
 
-    HttpEntity<String> request3 = new HttpEntity("", requestHeaders);
+    HttpEntity<String> request3 = new HttpEntity<>("", requestHeaders);
 
     String[] sessionNotes = restTemplate
         .exchange(
@@ -325,7 +325,7 @@ public class RedisSessionDistDUnitTest implements Serializable {
     String cookieString = resultHeaders.get("Set-Cookie").get(0);
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", cookieString);
-    HttpEntity<String> request2 = new HttpEntity("", requestHeaders);
+    HttpEntity<String> request2 = new HttpEntity<>("", requestHeaders);
 
     cluster.crashVM(indexOfServer2);
 
@@ -346,7 +346,7 @@ public class RedisSessionDistDUnitTest implements Serializable {
   @Test
   public void should_getCorrectSessionData_whenAppInstanceGoesDown_andClientConnectsToDifferentAppInstance() {
 
-    HttpEntity<String> request = new HttpEntity("noteFromClient2");
+    HttpEntity<String> request = new HttpEntity<>("noteFromClient2");
     HttpHeaders responseHeaders = restTemplate
         .postForEntity(
             LOCALHOST + ":" + client2Port + "/addSessionNote",
@@ -357,7 +357,7 @@ public class RedisSessionDistDUnitTest implements Serializable {
     String sessionAsCookie = responseHeaders.get("Set-Cookie").get(0);
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionAsCookie);
-    HttpEntity<String> request2 = new HttpEntity("", requestHeaders);
+    HttpEntity<String> request2 = new HttpEntity<>("", requestHeaders);
 
     client2.invoke(() -> {
       springApplicationContext.close();

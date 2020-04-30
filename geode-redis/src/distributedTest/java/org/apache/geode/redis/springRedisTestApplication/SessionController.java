@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class SessionController {
+  @SuppressWarnings("unchecked")
   @GetMapping("/getSessionNotes")
   public List<String> getSessionNotes(HttpServletRequest request) {
     List<String> notes =
@@ -33,6 +34,7 @@ public class SessionController {
     return notes;
   }
 
+  @SuppressWarnings("unchecked")
   @PostMapping("/addSessionNote")
   public void addSessionNote(@RequestBody String note, HttpServletRequest request) {
     List<String> notes =
