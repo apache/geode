@@ -464,6 +464,6 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void setRegionCreateNotified(boolean notified);
 
-  void clearRegionLocal(RegionEventImpl regionEvent, boolean cacheWrite,
+  void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite,
       RegionVersionVector vector);
 }

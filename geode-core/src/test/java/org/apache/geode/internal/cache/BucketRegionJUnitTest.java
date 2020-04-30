@@ -51,9 +51,9 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     when(ba.getPrimaryMoveReadLock()).thenReturn(primaryMoveReadLock);
     when(ba.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
     when(ba.isPrimary()).thenReturn(true);
-    ClearPartitionedRegion clearPR = mock(ClearPartitionedRegion.class);
+    PartitionedRegionClear clearPR = mock(PartitionedRegionClear.class);
     when(clearPR.isLockedForListenerAndClientNotification()).thenReturn(true);
-    when(pr.getClearPartitionedRegion()).thenReturn(clearPR);
+    when(pr.getPartitionedRegionClear()).thenReturn(clearPR);
     ira.setPartitionedRegion(pr).setPartitionedRegionBucketRedundancy(1).setBucketAdvisor(ba);
   }
 
@@ -145,7 +145,7 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     doReturn(ba).when(region).getBucketAdvisor();
     when(ba.isPrimary()).thenReturn(false);
     region.cmnClearRegion(event, true, true);
-    verify(region, never()).clearRegionLocal(eq(event), eq(true), eq(rvv));
+    verify(region, never()).clearRegionLocally(eq(event), eq(true), eq(rvv));
   }
 
   @Test
@@ -159,10 +159,10 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     doReturn(ba).when(region).getBucketAdvisor();
     doNothing().when(region).distributeClearOperation(any(), any(), any());
     doNothing().when(region).lockLocallyForClear(any(), any(), any());
-    doNothing().when(region).clearRegionLocal(event, true, null);
+    doNothing().when(region).clearRegionLocally(event, true, null);
     when(ba.isPrimary()).thenReturn(true);
     region.cmnClearRegion(event, true, true);
-    verify(region, times(1)).clearRegionLocal(eq(event), eq(true), eq(null));
+    verify(region, times(1)).clearRegionLocally(eq(event), eq(true), eq(null));
   }
 
   @Test
@@ -174,10 +174,10 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     doReturn(ba).when(region).getBucketAdvisor();
     doNothing().when(region).distributeClearOperation(any(), any(), any());
     doNothing().when(region).lockLocallyForClear(any(), any(), any());
-    doNothing().when(region).clearRegionLocal(event, true, null);
+    doNothing().when(region).clearRegionLocally(event, true, null);
     when(ba.isPrimary()).thenReturn(true);
     region.cmnClearRegion(event, true, true);
-    verify(region, times(1)).clearRegionLocal(eq(event), eq(true), eq(null));
+    verify(region, times(1)).clearRegionLocally(eq(event), eq(true), eq(null));
   }
 
   @Test

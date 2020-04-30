@@ -62,11 +62,24 @@ public class PRCacheListenerDistributedTest extends ReplicateCacheListenerDistri
   @Override
   protected Region<String, Integer> createRegion(final String name,
       final CacheListener<String, Integer> listener) {
+    return createPartitionedRegion(name, listener, false);
+  }
+
+  protected Region<String, Integer> createAccessorRegion(final String name,
+      final CacheListener<String, Integer> listener) {
+    return createPartitionedRegion(name, listener, true);
+  }
+
+  private Region<String, Integer> createPartitionedRegion(String name,
+      CacheListener<String, Integer> listener, boolean accessor) {
     LogService.getLogger()
         .info("Params [Redundancy: " + redundancy + " withData:" + withData + "]");
     PartitionAttributesFactory<String, Integer> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(redundancy);
 
+    if (accessor) {
+      paf.setLocalMaxMemory(0);
+    }
     RegionFactory<String, Integer> regionFactory = cacheRule.getCache().createRegionFactory();
     if (listener != null) {
       regionFactory.addCacheListener(listener);
@@ -80,26 +93,10 @@ public class PRCacheListenerDistributedTest extends ReplicateCacheListenerDistri
   private void withData(Region region) {
     if (withData) {
       // Fewer buckets.
-      // Covers case where node doesn';'t have any buckets depending on redundancy.
+      // Covers case where node doesn't have any buckets depending on redundancy.
       region.put("key1", "value1");
       region.put("key2", "value2");
     }
-  }
-
-  protected Region<String, Integer> createAccessorRegion(final String name,
-      final CacheListener<String, Integer> listener) {
-    PartitionAttributesFactory<String, Integer> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(redundancy);
-    paf.setLocalMaxMemory(0);
-
-    RegionFactory<String, Integer> regionFactory = cacheRule.getCache().createRegionFactory();
-    if (listener != null) {
-      regionFactory.addCacheListener(listener);
-    }
-    regionFactory.setDataPolicy(DataPolicy.PARTITION);
-    regionFactory.setPartitionAttributes(paf.create());
-
-    return regionFactory.create(name);
   }
 
   @Override
