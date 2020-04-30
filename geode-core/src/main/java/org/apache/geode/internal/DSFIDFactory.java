@@ -267,10 +267,8 @@ import org.apache.geode.internal.cache.backup.FlushToDiskRequest;
 import org.apache.geode.internal.cache.backup.FlushToDiskResponse;
 import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
 import org.apache.geode.internal.cache.compression.SnappyCompressedCachedDeserializable;
-import org.apache.geode.internal.cache.control.RegionRedundancyStatusImpl;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceProfileMessage;
-import org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
 import org.apache.geode.internal.cache.ha.QueueRemovalMessage;
 import org.apache.geode.internal.cache.locks.TXLockBatch;
@@ -455,8 +453,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
   }
 
   private void registerDSFIDTypes(DSFIDSerializer serializer) {
-    serializer.registerDSFID(REGION_REDUNDANCY_STATUS, RegionRedundancyStatusImpl.class);
-    serializer.registerDSFID(RESTORE_REDUNDANCY_RESULTS, RestoreRedundancyResultsImpl.class);
     serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
     serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
     serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
