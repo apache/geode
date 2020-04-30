@@ -43,8 +43,6 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.nio.Buffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,7 +69,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
-import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -79,15 +76,12 @@ import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DirectReplyMessage;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -149,7 +143,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   @Test
-  public void createEntryAndVerifyUpdate() throws Exception {
+  public void createEntryAndVerifyUpdate() {
     int locatorPort = createLocator(getVM(0));
     for (int i = 1; i <= NUM_SERVERS; i++) {
       createCacheAndRegion(getVM(i), locatorPort);
@@ -163,9 +157,6 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     }
     for (int i = 1; i <= NUM_SERVERS; i++) {
       verifyUpdatedEntry(getVM(i));
-      if (!disableTcp) {
-        verifyBufferType(getVM(i));
-      }
     }
   }
 
@@ -253,28 +244,6 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
   }
-
-  private void verifyBufferType(VM vm) throws Exception {
-    vm.invoke("verify connection type", () -> {
-      assertThat(cache).isNotNull();
-      InternalCache internalCache = (InternalCache) cache;
-      final DistributionImpl distribution =
-          (DistributionImpl) internalCache.getDistributionManager().getDistribution();
-      InternalDistributedMember locatorMember =
-          (InternalDistributedMember) distribution.getCoordinator();
-      final Connection connection =
-          distribution.getDirectChannel().getConduit().getConnection(locatorMember, false, false,
-              System.currentTimeMillis(), 15000, 0);
-      Field inputBufferField = Connection.class.getDeclaredField("inputBuffer");
-      inputBufferField.setAccessible(true);
-      Buffer inputBuffer = (Buffer) inputBufferField.get(connection);
-      // SSL connections use heap buffers for decoding efficiency. Non-SSL connections use
-      // direct buffers since they don't need to be accessed as much
-      assertThat(inputBuffer.isDirect()).isNotEqualTo(useSSL);
-    });
-  }
-
-
 
   private void performCreate(VM memberVM) {
     memberVM.invoke("perform create", () -> cache
