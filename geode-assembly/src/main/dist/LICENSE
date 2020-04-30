@@ -221,6 +221,8 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     Copyright (c) 2002-2007 Marc Prud'hommeaux.
   - Antlr v2.7.7 (http://www.antlr.org), Copyright (c) 2012 Terrence Parr
     and Sam Harwell
+  - ASM v5.0.4 (https://asm.ow2.io) Copyright (c) 2000-2011 INRIA, France
+    Telecom
   - ClassGraph v4.8.68 (https://github.com/classgraph/classgraph), Copyright
     (c) 2019 Luke Hutchison
   - JLine v2.12 (http://jline.sourceforge.net), Copyright (c) 2002-2006,
@@ -264,8 +266,11 @@ The CDDL Version 1.1 (https://javaee.github.io/glassfish/LICENSE)
 Apache Geode bundles the following files under the Common Development and
 Distribution License:
 
+  - activation v1.1.0
+    (https://www.oracle.com/java/technologies/java-beans-activation.html)
   - javax.activation v1.2.0
     (https://www.oracle.com/technetwork/java/javase/jaf-135115.html)
+  - javax.mail v1.6.1 (http://www.oracle.com/)
   - javax.mail v1.6.2 (http://www.oracle.com/)
   - javax.resource v 1.7.1 (https://glassfish.java.net/)
   - javax.servlet v3.1.0 (https://glassfish.java.net/)
@@ -1067,7 +1072,7 @@ Apache Geode bundles the following files under the MIT license:
   - Animal Sniffer Annotations v1.17
     (https://www.mojohaus.org/animal-sniffer/source-repository.html)
     Copyright (c) 2009 codehaus.org
-  - Checker Qual 2.5.2 (https://checkerframework.org), Copyright (c)
+  - Checker Qual 2.10.0 (https://checkerframework.org), Copyright (c)
     2004-present by the Checker Framework developers
   - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/),
     Copyright (c) 2011 Sencha Inc.
