@@ -165,7 +165,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
         }
       }
     } finally {
-      ((GemFireCacheImpl) this.cache).unlockDiskStore(name);
+      this.cache.unlockDiskStore(name);
     }
 
     // Don't allow this disk store to be created
