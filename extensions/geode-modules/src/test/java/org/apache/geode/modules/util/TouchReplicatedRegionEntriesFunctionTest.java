@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.modules.util;
 
 import static org.mockito.Mockito.mock;
@@ -20,45 +19,57 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.util.HashSet;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 
-public class TouchReplicatedRegionEntriesFunctionJUnitTest {
-  private TouchReplicatedRegionEntriesFunction function =
-      spy(new TouchReplicatedRegionEntriesFunction());
-  private FunctionContext context = mock(RegionFunctionContext.class);
-  private Cache cache = mock(Cache.class);
-  private LogWriter logger = mock(LogWriter.class);
-  private Region region = mock(Region.class);
-  private ResultSender resultSender = mock(ResultSender.class);
-  private String regionName = "regionName";
-  private HashSet<String> keys = new HashSet<>();
-  private Object[] arguments = new Object[] {regionName, keys};
+public class TouchReplicatedRegionEntriesFunctionTest {
+
+  private FunctionContext context;
+  private Cache cache;
+  private Region region;
+  private ResultSender resultSender;
+  private String regionName;
+  private HashSet<String> keys;
+
+  private TouchReplicatedRegionEntriesFunction touchReplicatedRegionEntriesFunction;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
   @Before
   public void setUp() {
-    when(context.getArguments()).thenReturn(arguments);
+    cache = mock(Cache.class);
+    context = mock(RegionFunctionContext.class);
+    keys = new HashSet<>();
+    region = mock(Region.class);
+    regionName = "regionName";
+    resultSender = mock(ResultSender.class);
+
+    when(context.getArguments()).thenReturn(new Object[] {regionName, keys});
     when(context.getCache()).thenReturn(cache);
     when(context.getResultSender()).thenReturn(resultSender);
-    when(cache.getLogger()).thenReturn(logger);
-    when(logger.fineEnabled()).thenReturn(false);
+
+    touchReplicatedRegionEntriesFunction = spy(new TouchReplicatedRegionEntriesFunction());
   }
 
   @Test
   public void executeDoesNotThrowExceptionWithProperlyDefinedContext() {
     when(cache.getRegion(regionName)).thenReturn(region);
 
-    function.execute(context);
+    touchReplicatedRegionEntriesFunction.execute(context);
 
     verify(region).getAll(keys);
     verify(resultSender).lastResult(true);
@@ -68,7 +79,7 @@ public class TouchReplicatedRegionEntriesFunctionJUnitTest {
   public void executeDoesNotThrowExceptionWithProperlyDefinedContextAndNullRegion() {
     when(cache.getRegion(regionName)).thenReturn(null);
 
-    function.execute(context);
+    touchReplicatedRegionEntriesFunction.execute(context);
 
     verify(region, times(0)).getAll(keys);
     verify(resultSender).lastResult(true);

@@ -12,72 +12,85 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.modules.util;
 
-
+import static java.util.Collections.addAll;
+import static java.util.Collections.emptySet;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
-import org.apache.geode.LogWriter;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 
-public class TouchPartitionedRegionEntriesFunctionJUnitTest {
+public class TouchPartitionedRegionEntriesFunctionTest {
 
-  private TouchPartitionedRegionEntriesFunction function =
-      spy(new TouchPartitionedRegionEntriesFunction());
-  private FunctionContext context = mock(RegionFunctionContext.class);
-  private Cache cache = mock(Cache.class);
-  private LogWriter logger = mock(LogWriter.class);
-  private Region primaryDataSet = mock(Region.class);
-  private ResultSender resultSender = mock(ResultSender.class);
+  private RegionFunctionContext context;
+  private Region primaryDataSet;
+  private ResultSender resultSender;
+
+  private TouchPartitionedRegionEntriesFunction touchPartitionedRegionEntriesFunction;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
   @Before
   public void setUp() {
-    when(context.getCache()).thenReturn(cache);
-    when(context.getResultSender()).thenReturn(resultSender);
-    when(cache.getLogger()).thenReturn(logger);
-    when(logger.fineEnabled()).thenReturn(false);
-    doReturn(primaryDataSet).when(function)
-        .getLocalDataForContextViaRegionHelper((RegionFunctionContext) context);
+    context = mock(RegionFunctionContext.class);
+    primaryDataSet = mock(Region.class);
+    resultSender = mock(ResultSender.class);
+
+    when(cast(context.getResultSender())).thenReturn(cast(resultSender));
+
+    touchPartitionedRegionEntriesFunction = spy(new TouchPartitionedRegionEntriesFunction());
+
+    doReturn(primaryDataSet)
+        .when(touchPartitionedRegionEntriesFunction)
+        .getLocalDataForContextViaRegionHelper(context);
   }
 
   @Test
   public void executeDoesNotThrowExceptionWithProperlyDefinedContext() {
-    doReturn(new HashSet() {}).when((RegionFunctionContext) context).getFilter();
+    doReturn(emptySet()).when(context).getFilter();
 
-    function.execute(context);
+    touchPartitionedRegionEntriesFunction.execute(context);
 
-    verify(primaryDataSet, times(0)).get(any());
+    verify(primaryDataSet, never()).get(any());
     verify(resultSender).lastResult(true);
   }
 
   @Test
   public void executeDoesNotThrowExceptionWithProperlyDefinedContextAndMultipleKeys() {
-    HashSet<String> keys = new HashSet();
-    keys.add("Key1");
-    keys.add("Key2");
+    Set<String> keys = set("Key1", "Key2");
+    doReturn(keys).when(context).getFilter();
 
-    doReturn(keys).when((RegionFunctionContext) context).getFilter();
-
-    function.execute(context);
+    touchPartitionedRegionEntriesFunction.execute(context);
 
     verify(primaryDataSet, times(keys.size())).get(anyString());
     verify(resultSender).lastResult(true);
+  }
+
+  private static Set<String> set(String... values) {
+    Set<String> set = new HashSet<>();
+    addAll(set, values);
+    return set;
   }
 }

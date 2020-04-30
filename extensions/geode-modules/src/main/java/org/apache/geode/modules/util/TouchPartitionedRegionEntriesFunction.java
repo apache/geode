@@ -14,45 +14,49 @@
  */
 package org.apache.geode.modules.util;
 
+import static java.util.Collections.singletonList;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializable;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * Touches the keys contained in the set of keys by performing a get on the partitioned region.
- *
  */
 public class TouchPartitionedRegionEntriesFunction
     implements Function, Declarable, DataSerializable {
-  private static final long serialVersionUID = -3700389655056961153L;
+  private static final Logger logger = LogService.getLogger();
+
   public static final String ID = "touch-partitioned-region-entries";
 
   @Override
-  @SuppressWarnings("unchecked")
   public void execute(FunctionContext context) {
-    RegionFunctionContext rfc = (RegionFunctionContext) context;
-    Set<String> keys = (Set<String>) rfc.getFilter();
+    RegionFunctionContext regionFunctionContext = (RegionFunctionContext) context;
+    Set<String> keys = cast(regionFunctionContext.getFilter());
 
-    Cache cache = context.getCache();
     // Get local (primary) data for the context
-    Region primaryDataSet = getLocalDataForContextViaRegionHelper(rfc);
+    Region primaryDataSet = getLocalDataForContextViaRegionHelper(regionFunctionContext);
 
-    if (cache.getLogger().fineEnabled()) {
-      String builder = "Function " + ID + " received request to touch "
-          + primaryDataSet.getFullPath() + "->" + keys;
-      cache.getLogger().fine(builder);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Function {} received request to touch {}->{}", ID, primaryDataSet.getFullPath(),
+          keys);
     }
 
     // Retrieve each value to update the lastAccessedTime.
@@ -67,8 +71,7 @@ public class TouchPartitionedRegionEntriesFunction
 
   @Override
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.READ, regionName));
+    return singletonList(new ResourcePermission(Resource.DATA, Operation.READ, regionName));
   }
 
   @Override
@@ -87,18 +90,20 @@ public class TouchPartitionedRegionEntriesFunction
   }
 
   @Override
-  public boolean hasResult() {
-    return true;
+  public void toData(DataOutput out) {
+    // nothing
   }
 
   @Override
-  public void toData(DataOutput out) {}
+  public void fromData(DataInput in) {
+    // nothing
+  }
 
-  @Override
-  public void fromData(DataInput in) {}
-
-  // Helper methods added to improve unit testing of class
+  /** Helper methods added to improve unit testing of class */
+  @VisibleForTesting
   Region getLocalDataForContextViaRegionHelper(RegionFunctionContext rfc) {
     return PartitionRegionHelper.getLocalDataForContext(rfc);
   }
+
+  private static final long serialVersionUID = -3700389655056961153L;
 }

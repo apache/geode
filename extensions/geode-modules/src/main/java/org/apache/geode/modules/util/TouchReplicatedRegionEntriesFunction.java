@@ -14,11 +14,14 @@
  */
 package org.apache.geode.modules.util;
 
+import static java.util.Collections.singletonList;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
@@ -26,33 +29,33 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
 /**
  * Touches the keys contained in the set of keys by performing a get on the replicated region.
  * This is a non-data-aware function invoked using onMembers or onServers.
- *
  */
 public class TouchReplicatedRegionEntriesFunction
     implements Function, Declarable, DataSerializable {
-  private static final long serialVersionUID = -7424895036162243564L;
+  private static final Logger logger = LogService.getLogger();
+
   public static final String ID = "touch-replicated-region-entries";
 
   @Override
-  @SuppressWarnings("unchecked")
   public void execute(FunctionContext context) {
     Object[] arguments = (Object[]) context.getArguments();
     Cache cache = context.getCache();
     String regionName = (String) arguments[0];
-    Set<String> keys = (Set<String>) arguments[1];
-    if (cache.getLogger().fineEnabled()) {
-      String builder = "Function " + ID + " received request to touch " + regionName + "->" + keys;
-      cache.getLogger().fine(builder);
+    Collection<String> keys = cast(arguments[1]);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Function {} received request to touch {}->{}", ID, regionName, keys);
     }
 
     // Retrieve the appropriate Region and value to update the lastAccessedTime
-    Region region = cache.getRegion(regionName);
+    Region<?, ?> region = cache.getRegion(regionName);
     if (region != null) {
       region.getAll(keys);
     }
@@ -62,10 +65,10 @@ public class TouchReplicatedRegionEntriesFunction
   }
 
   @Override
-  // the actual regionName used in the function body is passed in as an function arugment,
-  // this regionName is not really used in function. Hence requiring DATA:READ on all regions
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.DATA_READ);
+    // the actual regionName used in the function body is passed in as an function argument,
+    // this regionName is not really used in function. Hence requiring DATA:READ on all regions
+    return singletonList(ResourcePermissions.DATA_READ);
   }
 
   @Override
@@ -74,25 +77,19 @@ public class TouchReplicatedRegionEntriesFunction
   }
 
   @Override
-  public boolean optimizeForWrite() {
-    return false;
-  }
-
-  @Override
   public boolean isHA() {
     return false;
   }
 
   @Override
-  public boolean hasResult() {
-    // Setting this to false caused the onServers method to only execute the
-    // function on one server.
-    return true;
+  public void toData(DataOutput out) {
+    // nothing
   }
 
   @Override
-  public void toData(DataOutput out) {}
+  public void fromData(DataInput in) {
+    // nothing
+  }
 
-  @Override
-  public void fromData(DataInput in) {}
+  private static final long serialVersionUID = -7424895036162243564L;
 }

@@ -14,16 +14,21 @@
  */
 package org.apache.geode.modules.util;
 
+import static java.util.Collections.singletonList;
+
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
@@ -31,26 +36,84 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
 public class BootstrappingFunction implements Function, MembershipListener, DataSerializable {
+  private static final Logger logger = LogService.getLogger();
 
-  private static final long serialVersionUID = 1856043174458190605L;
-
-  public static final String ID = "bootstrapping-function";
-  private static final ReentrantLock registerFunctionLock = new ReentrantLock();
-
+  private static final String ID = "bootstrapping-function";
   private static final int TIME_TO_WAIT_FOR_CACHE =
       Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
 
-  public BootstrappingFunction() {}
+  private static final Lock registerFunctionLock = new ReentrantLock();
+
+  private final AtomicReference<java.util.function.Function<String, Boolean>> isFunctionRegistered =
+      new AtomicReference<>(functionId -> FunctionService.isRegistered(functionId));
+  private final AtomicReference<Consumer<Function<?>>> registerFunction =
+      new AtomicReference<>(function -> FunctionService.registerFunction(function));
+  private final AtomicReference<java.util.function.Function<DistributedMember, Execution<?, ?, ?>>> onMember =
+      new AtomicReference<>(member -> FunctionService.onMember(member));
+
+  private final AtomicReference<Supplier<Cache>> cacheSingleton =
+      new AtomicReference<>(() -> CacheFactory.getAnyInstance());
+  private final AtomicReference<Supplier<Cache>> cacheFactory =
+      new AtomicReference<>(() -> new CacheFactory().create());
+
+  private final AtomicReference<Supplier<CreateRegionFunction>> createRegionFunctionFactory =
+      new AtomicReference<>(() -> new CreateRegionFunction());
+  private final AtomicReference<Supplier<TouchPartitionedRegionEntriesFunction>> touchPartitionedRegionEntriesFunctionFactory =
+      new AtomicReference<>(() -> new TouchPartitionedRegionEntriesFunction());
+  private final AtomicReference<Supplier<TouchReplicatedRegionEntriesFunction>> touchReplicatedRegionEntriesFunctionFactory =
+      new AtomicReference<>(() -> new TouchReplicatedRegionEntriesFunction());
+  private final AtomicReference<Supplier<RegionSizeFunction>> regionSizeFunctionFactory =
+      new AtomicReference<>(() -> new RegionSizeFunction());
+
+  public BootstrappingFunction() {
+    this(// FunctionService functions
+        functionId -> FunctionService.isRegistered(functionId),
+        function -> FunctionService.registerFunction(function),
+        member -> FunctionService.onMember(member),
+        // Cache singleton and factory
+        () -> CacheFactory.getAnyInstance(),
+        () -> new CacheFactory().create(),
+        // Function factories
+        () -> new CreateRegionFunction(),
+        () -> new TouchPartitionedRegionEntriesFunction(),
+        () -> new TouchReplicatedRegionEntriesFunction(),
+        () -> new RegionSizeFunction());
+  }
+
+  @VisibleForTesting
+  BootstrappingFunction(java.util.function.Function<String, Boolean> isFunctionRegistered,
+      Consumer<Function<?>> registerFunction,
+      java.util.function.Function<DistributedMember, Execution<?, ?, ?>> onMember,
+      Supplier<Cache> cacheSingleton,
+      Supplier<Cache> cacheFactory,
+      Supplier<CreateRegionFunction> createRegionFunctionFactory,
+      Supplier<TouchPartitionedRegionEntriesFunction> touchPartitionedRegionEntriesFunctionFactory,
+      Supplier<TouchReplicatedRegionEntriesFunction> touchReplicatedRegionEntriesFunctionFactory,
+      Supplier<RegionSizeFunction> regionSizeFunctionFactory) {
+    this.isFunctionRegistered.set(isFunctionRegistered);
+    this.registerFunction.set(registerFunction);
+    this.onMember.set(onMember);
+    this.cacheSingleton.set(cacheSingleton);
+    this.cacheFactory.set(cacheFactory);
+    this.createRegionFunctionFactory.set(createRegionFunctionFactory);
+    this.touchPartitionedRegionEntriesFunctionFactory
+        .set(touchPartitionedRegionEntriesFunctionFactory);
+    this.touchReplicatedRegionEntriesFunctionFactory
+        .set(touchReplicatedRegionEntriesFunctionFactory);
+    this.regionSizeFunctionFactory.set(regionSizeFunctionFactory);
+  }
 
   @Override
   public void execute(FunctionContext context) {
@@ -71,18 +134,20 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     context.getResultSender().lastResult(Boolean.TRUE);
   }
 
-  protected boolean isLocator(Cache cache) {
+  @VisibleForTesting
+  boolean isLocator(Cache cache) {
     DistributedSystem system = cache.getDistributedSystem();
     InternalDistributedMember member = (InternalDistributedMember) system.getDistributedMember();
     return member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
   }
 
-  protected Cache verifyCacheExists() {
+  @VisibleForTesting
+  Cache verifyCacheExists() {
     int timeToWait = 0;
     Cache cache = null;
     while (timeToWait < TIME_TO_WAIT_FOR_CACHE) {
       try {
-        cache = CacheFactory.getAnyInstance();
+        cache = cacheSingleton.get().get();
         break;
       } catch (Exception ignore) {
         // keep trying and hope for the best
@@ -97,7 +162,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     }
 
     if (cache == null) {
-      cache = new CacheFactory().create();
+      cache = cacheFactory.get().get();
     }
 
     return cache;
@@ -105,48 +170,48 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
 
   @Override
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.CLUSTER_MANAGE);
+    return singletonList(ResourcePermissions.CLUSTER_MANAGE);
   }
 
   private void registerAsMembershipListener(Cache cache) {
-    DistributionManager dm =
+    DistributionManager distributionManager =
         ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
-    dm.addMembershipListener(this);
+    distributionManager.addMembershipListener(this);
   }
 
-  protected void registerFunctions() {
+  @VisibleForTesting
+  void registerFunctions() {
     // Synchronize so that these functions aren't registered twice. The
     // constructor for the CreateRegionFunction creates a meta region.
     registerFunctionLock.lock();
     try {
       // Register the create region function if it is not already registered
-      if (!FunctionService.isRegistered(CreateRegionFunction.ID)) {
-        FunctionService.registerFunction(new CreateRegionFunction());
+      if (!isFunctionRegistered.get().apply(CreateRegionFunction.ID)) {
+        registerFunction.get().accept(createRegionFunctionFactory.get().get());
       }
 
       // Register the touch partitioned region entries function if it is not already registered
-      if (!FunctionService.isRegistered(TouchPartitionedRegionEntriesFunction.ID)) {
-        FunctionService.registerFunction(new TouchPartitionedRegionEntriesFunction());
+      if (!isFunctionRegistered.get().apply(TouchPartitionedRegionEntriesFunction.ID)) {
+        registerFunction.get().accept(touchPartitionedRegionEntriesFunctionFactory.get().get());
       }
 
       // Register the touch replicated region entries function if it is not already registered
-      if (!FunctionService.isRegistered(TouchReplicatedRegionEntriesFunction.ID)) {
-        FunctionService.registerFunction(new TouchReplicatedRegionEntriesFunction());
+      if (!isFunctionRegistered.get().apply(TouchReplicatedRegionEntriesFunction.ID)) {
+        registerFunction.get().accept(touchReplicatedRegionEntriesFunctionFactory.get().get());
       }
 
       // Register the region size function if it is not already registered
-      if (!FunctionService.isRegistered(RegionSizeFunction.ID)) {
-        FunctionService.registerFunction(new RegionSizeFunction());
+      if (!isFunctionRegistered.get().apply(RegionSizeFunction.ID)) {
+        registerFunction.get().accept(regionSizeFunctionFactory.get().get());
       }
     } finally {
       registerFunctionLock.unlock();
     }
   }
 
-  private void bootstrapMember(InternalDistributedMember member) {
+  private void bootstrapMember(DistributedMember member) {
     // Create and execute the function
-    Cache cache = CacheFactory.getAnyInstance();
-    Execution execution = FunctionService.onMember(member);
+    Execution execution = onMember.get().apply(member);
     ResultCollector collector = execution.execute(this);
 
     // Get the result. Nothing is being done with it.
@@ -154,7 +219,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
       collector.getResult();
     } catch (Exception e) {
       // If an exception occurs in the function, log it.
-      cache.getLogger().warning("Caught unexpected exception:", e);
+      logger.warn("Caught unexpected exception:", e);
     }
   }
 
@@ -164,42 +229,26 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   }
 
   @Override
-  public boolean hasResult() {
-    return true;
-  }
-
-  @Override
   public boolean isHA() {
     return false;
   }
 
   @Override
-  public boolean optimizeForWrite() {
-    return false;
-  }
-
   public int hashCode() {
     // This method is only implemented so that multiple instances of this class
     // don't get added as membership listeners.
     return ID.hashCode();
   }
 
+  @Override
   public boolean equals(Object obj) {
     // This method is only implemented so that multiple instances of this class
     // don't get added as membership listeners.
     if (this == obj) {
       return true;
     }
-
-    if (!(obj instanceof BootstrappingFunction)) {
-      return false;
-    }
-    return true;
+    return obj instanceof BootstrappingFunction;
   }
-
-  @Override
-  public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
-      boolean crashed) {}
 
   @Override
   public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
@@ -207,17 +256,14 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   }
 
   @Override
-  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
-      InternalDistributedMember whoSuspected, String reason) {}
+  public void toData(DataOutput out) {
+    // nothing
+  }
 
   @Override
-  public void quorumLost(DistributionManager distributionManager,
-      Set<InternalDistributedMember> internalDistributedMembers,
-      List<InternalDistributedMember> internalDistributedMembers2) {}
+  public void fromData(DataInput in) {
+    // nothing
+  }
 
-  @Override
-  public void toData(DataOutput out) throws IOException {}
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+  private static final long serialVersionUID = 1856043174458190605L;
 }
