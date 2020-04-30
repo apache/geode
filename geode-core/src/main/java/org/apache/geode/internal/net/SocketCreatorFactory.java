@@ -38,7 +38,8 @@ public class SocketCreatorFactory {
   /**
    * Here we parse the distribution distributionConfig and setup the required SocketCreators
    */
-  private SocketCreatorFactory initializeSocketCreators(final DistributionConfig distributionConfig) {
+  private SocketCreatorFactory initializeSocketCreators(
+      final DistributionConfig distributionConfig) {
     if (distributionConfig == null) {
       throw new GemFireConfigException(
           "SocketCreatorFactory requires a valid distribution config.");
