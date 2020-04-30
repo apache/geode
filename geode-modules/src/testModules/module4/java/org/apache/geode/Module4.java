@@ -13,24 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.services.module;
+package org.apache.geode;
 
-import org.apache.geode.annotations.Experimental;
-
-/**
- * Loads and unloads modules and services in a classloader-isolated manner.
- *
- * @since Geode 1.13.0
- */
-@Experimental
-public interface ModuleService {
-
-  /**
-   * Loads a module from a resource.
-   *
-   * @param moduleDescriptor description of the module to be loaded and information necessary to
-   *        load it.
-   * @return true on success, false if the module could not be loaded.
-   */
-  boolean loadModule(ModuleDescriptor moduleDescriptor);
+public class Module4 {
 }
