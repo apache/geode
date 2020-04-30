@@ -7,5 +7,5 @@ fromData,9
 toData,9
 
 org/apache/geode/redis/internal/executor/set/DeltaSet,2
-toData,16
-fromData,24
+toData,9
+fromData,9
