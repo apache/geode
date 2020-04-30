@@ -143,9 +143,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     this.attrs.name = name;
     DiskStore result;
     try {
-      if (this.cache instanceof GemFireCacheImpl) {
-        ((GemFireCacheImpl) this.cache).lockDiskStore(name);
-      }
+      this.cache.lockDiskStore(name);
       result = findExisting(name);
       if (result == null) {
         if (this.cache instanceof GemFireCacheImpl) {
@@ -167,9 +165,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
         }
       }
     } finally {
-      if (this.cache instanceof GemFireCacheImpl) {
-        ((GemFireCacheImpl) this.cache).unlockDiskStore(name);
-      }
+      ((GemFireCacheImpl) this.cache).unlockDiskStore(name);
     }
 
     // Don't allow this disk store to be created

@@ -1088,6 +1088,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     clientMetadataService = clientMetadataServiceFactory.apply(this);
   }
 
+  @Override
   public void lockDiskStore(String diskStoreName) {
     CountDownLatch countDownLatch = diskStoreLatches.get(diskStoreName);
     if (countDownLatch == null) {
@@ -1108,6 +1109,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public void unlockDiskStore(String diskStoreName) {
     CountDownLatch countDownLatch = diskStoreLatches.get(diskStoreName);
     if (countDownLatch != null) {
