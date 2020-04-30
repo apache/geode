@@ -23,18 +23,18 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-class SaddFunction implements Function {
+class SaddFunction implements Function<ArrayList<ByteArrayWrapper>> {
 
   public static final String ID = "SADD_FUNCTION";
 
   @SuppressWarnings("unchecked")
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<ArrayList<ByteArrayWrapper>> context) {
     RegionFunctionContextImpl regionFunctionContext =
         (RegionFunctionContextImpl) context;
     ByteArrayWrapper key =
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
-    Region localRegion =
+    Region<ByteArrayWrapper, DeltaSet> localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
     ArrayList<ByteArrayWrapper> membersToAdd =
         (ArrayList<ByteArrayWrapper>) regionFunctionContext.getArguments();

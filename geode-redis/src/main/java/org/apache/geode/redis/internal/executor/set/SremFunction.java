@@ -25,24 +25,24 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-class SremFunction implements Function {
+class SremFunction implements Function<ArrayList<ByteArrayWrapper>> {
 
   public static final String ID = "SREM_FUNCTION";
 
   @SuppressWarnings("unchecked")
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<ArrayList<ByteArrayWrapper>> context) {
     RegionFunctionContextImpl regionFunctionContext =
         (RegionFunctionContextImpl) context;
     ByteArrayWrapper key =
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
-    Region localRegion =
+    Region<ByteArrayWrapper, DeltaSet> localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
     ArrayList<ByteArrayWrapper> membersToRemove =
         (ArrayList<ByteArrayWrapper>) regionFunctionContext.getArguments();
     AtomicBoolean setWasDeleted = new AtomicBoolean();
     long membersRemoved = DeltaSet.srem(localRegion, key, membersToRemove, setWasDeleted);
-    ResultSender resultSender = regionFunctionContext.getResultSender();
+    ResultSender<Long> resultSender = regionFunctionContext.getResultSender();
     resultSender.sendResult(membersRemoved);
     resultSender.lastResult(setWasDeleted.get() ? 1L : 0L);
   }

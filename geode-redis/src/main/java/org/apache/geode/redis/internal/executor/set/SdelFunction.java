@@ -21,18 +21,18 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-public class SdelFunction implements Function {
+public class SdelFunction implements Function<Void> {
 
   public static final String ID = "SDEL_FUNCTION";
 
   @SuppressWarnings("unchecked")
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Void> context) {
     RegionFunctionContextImpl regionFunctionContext =
         (RegionFunctionContextImpl) context;
     ByteArrayWrapper key =
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
-    Region localRegion =
+    Region<ByteArrayWrapper, DeltaSet> localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
     Boolean deleteSuccessful = DeltaSet.del(localRegion, key);
     regionFunctionContext.getResultSender().lastResult(deleteSuccessful);
