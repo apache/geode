@@ -155,7 +155,8 @@ public class MsgStreamer extends OutputStream
       int numVersioned = 0;
       for (Object c : cons) {
         con = (Connection) c;
-        if ((version = con.getRemoteVersion()) != null && Version.CURRENT_ORDINAL > version.ordinal()) {
+        if ((version = con.getRemoteVersion()) != null
+            && Version.CURRENT_ORDINAL > version.ordinal()) {
           if (versionToConnMap == null) {
             versionToConnMap = new Object2ObjectOpenHashMap();
           }

@@ -269,8 +269,8 @@ public class NioSslEngine implements NioFilter {
 
     peerAppData.limit(peerAppData.capacity());
     while (wrappedBuffer.hasRemaining()) {
-//      logger.warn("BRUCE: unwrapping buffer {} hash {}",
-//          wrappedBuffer, Integer.toHexString(System.identityHashCode(wrappedBuffer)));
+      // logger.warn("BRUCE: unwrapping buffer {} hash {}",
+      // wrappedBuffer, Integer.toHexString(System.identityHashCode(wrappedBuffer)));
       SSLEngineResult unwrapResult = engine.unwrap(wrappedBuffer, peerAppData);
       switch (unwrapResult.getStatus()) {
         case BUFFER_OVERFLOW:

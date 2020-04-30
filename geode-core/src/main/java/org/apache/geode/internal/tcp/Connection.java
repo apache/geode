@@ -1597,7 +1597,8 @@ public class Connection implements Runnable {
           if (!isInitialRead) {
             String bufferString = buff.toString();
             amountRead = channel.read(buff);
-            logger.info("BRUCE: read {} bytes into {} which is now {}", amountRead, bufferString, buff);
+            logger.info("BRUCE: read {} bytes into {} which is now {}", amountRead, bufferString,
+                buff);
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
@@ -1864,7 +1865,8 @@ public class Connection implements Runnable {
       connectionState = STATE_SENDING;
     }
     logger.info("BRUCE: sendPreserialized writing {} hash {} to {} on local port {} remote port {}",
-        buffer, Integer.toHexString(System.identityHashCode(buffer)), remoteAddr, socket.getLocalPort(), socket.getPort());
+        buffer, Integer.toHexString(System.identityHashCode(buffer)), remoteAddr,
+        socket.getLocalPort(), socket.getPort());
     socketInUse = true;
     try {
       SocketChannel channel = getSocket().getChannel();
@@ -2735,7 +2737,8 @@ public class Connection implements Runnable {
     } catch (SSLException e) {
       if (e.getMessage().contains("bad record MAC")) {
         logger.warn("BRUCE: exception unwrapping buffer {} hash {} socket.isclosed {}",
-            inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)), this.socket.isClosed());
+            inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)),
+            this.socket.isClosed());
       }
       throw e;
     }
