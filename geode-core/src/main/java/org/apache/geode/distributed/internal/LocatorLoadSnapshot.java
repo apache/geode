@@ -30,6 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -252,7 +253,7 @@ public class LocatorLoadSnapshot {
     }
 
     {
-      List bestLHs = findBestServersUsingMemberId(groupServers, excludedServers, 1);
+      List bestLHs = findBestServers(groupServers, excludedServers, 1);
       if (bestLHs.isEmpty()) {
         return null;
       }
@@ -311,7 +312,7 @@ public class LocatorLoadSnapshot {
       return currentServer;
     }
     {
-      List<LoadHolder> bestLHs = findBestServersUsingMemberId(groupServers, excludedServers, 1);
+      List<LoadHolder> bestLHs = findBestServers(groupServers, excludedServers, 1);
       if (bestLHs.isEmpty()) {
         return null;
       }
@@ -505,8 +506,8 @@ public class LocatorLoadSnapshot {
    * @param count how many you want. a negative number means all of them in order of best to worst
    * @return a list of best...worst server LoadHolders
    */
-  private List<LoadHolder> findBestServersUsingMemberId(
-      Map<ServerLocationAndMemberId, LoadHolder> groupServers,
+  private List<LoadHolder> findBestServers(
+      Map<?, LoadHolder> groupServers,
       Set<ServerLocation> excludedServers, int count) {
 
     TreeSet<LoadHolder> bestEntries = new TreeSet<>((l1, l2) -> {
@@ -522,8 +523,17 @@ public class LocatorLoadSnapshot {
     boolean retainAll = (count < 0);
     float lastBestLoad = Float.MAX_VALUE;
 
-    for (Map.Entry<ServerLocationAndMemberId, LoadHolder> loadEntry : groupServers.entrySet()) {
-      ServerLocation location = loadEntry.getKey().getServerLocation();
+    for (Map.Entry<?, LoadHolder> loadEntry : groupServers.entrySet()) {
+      ServerLocation location;
+      Object key = loadEntry.getKey();
+      if (key instanceof ServerLocationAndMemberId) {
+        location = ((ServerLocationAndMemberId) key).getServerLocation();
+      } else if (key instanceof ServerLocation) {
+        location = ((ServerLocation) key);
+      } else {
+        throw new InternalGemFireException(
+            "findBestServers method was called with incorrect type parameters.");
+      }
       if (excludedServers.contains(location)) {
         continue;
       }
@@ -543,52 +553,6 @@ public class LocatorLoadSnapshot {
 
     return new ArrayList<>(bestEntries);
   }
-
-  /**
-   *
-   * @param groupServers the servers to consider
-   * @param excludedServers servers to exclude
-   * @param count how many you want. a negative number means all of them in order of best to worst
-   * @return a list of best...worst server LoadHolders
-   */
-  private List<LoadHolder> findBestServers(Map<ServerLocation, LoadHolder> groupServers,
-      Set<ServerLocation> excludedServers, int count) {
-
-    TreeSet<LoadHolder> bestEntries = new TreeSet<>((l1, l2) -> {
-      int difference = Float.compare(l1.getLoad(), l2.getLoad());
-      if (difference != 0) {
-        return difference;
-      }
-      ServerLocation sl1 = l1.getLocation();
-      ServerLocation sl2 = l2.getLocation();
-      return sl1.compareTo(sl2);
-    });
-
-    boolean retainAll = (count < 0);
-    float lastBestLoad = Float.MAX_VALUE;
-
-    for (Map.Entry<ServerLocation, LoadHolder> loadEntry : groupServers.entrySet()) {
-      ServerLocation location = loadEntry.getKey();
-      if (excludedServers.contains(location)) {
-        continue;
-      }
-
-      LoadHolder nextLoadReference = loadEntry.getValue();
-      float nextLoad = nextLoadReference.getLoad();
-
-      if ((bestEntries.size() < count) || retainAll || (nextLoad < lastBestLoad)) {
-        bestEntries.add(nextLoadReference);
-        if (!retainAll && (bestEntries.size() > count)) {
-          bestEntries.remove(bestEntries.last());
-        }
-        LoadHolder lastBestHolder = bestEntries.last();
-        lastBestLoad = lastBestHolder.getLoad();
-      }
-    }
-
-    return new ArrayList<>(bestEntries);
-  }
-
 
   /**
    * If it is most loaded then return its LoadHolder; otherwise return null;
