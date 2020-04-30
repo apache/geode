@@ -1109,8 +1109,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   public void unlockDiskStore(String diskStoreName) {
-    if (diskStoreLatches.get(diskStoreName) != null) {
-      diskStoreLatches.get(diskStoreName).countDown();
+    CountDownLatch countDownLatch = diskStoreLatches.get(diskStoreName);
+    if (countDownLatch != null) {
+      countDownLatch.countDown();
     }
   }
 

@@ -141,8 +141,6 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
   @Override
   public DiskStore create(String name) {
     this.attrs.name = name;
-    // As a simple fix for 41290, only allow one DiskStore to be created
-    // at a time per cache by syncing on the cache.
     DiskStore result;
     try {
       if (this.cache instanceof GemFireCacheImpl) {
