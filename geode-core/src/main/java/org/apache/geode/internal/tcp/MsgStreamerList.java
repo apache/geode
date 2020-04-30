@@ -39,6 +39,7 @@ public class MsgStreamerList implements BaseMsgStreamer {
   private final List<MsgStreamer> streamers;
 
   MsgStreamerList(List<MsgStreamer> streamers) {
+    logger.fatal("BRUCE: someone created a MsgStreamerList!", new Exception("stack trace"));
     this.streamers = streamers;
   }
 

@@ -1595,7 +1595,9 @@ public class Connection implements Runnable {
           }
           int amountRead;
           if (!isInitialRead) {
+            String bufferString = buff.toString();
             amountRead = channel.read(buff);
+            logger.info("BRUCE: read {} bytes into {} which is now {}", amountRead, bufferString, buff);
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
@@ -1861,6 +1863,8 @@ public class Connection implements Runnable {
       originalState = connectionState;
       connectionState = STATE_SENDING;
     }
+    logger.info("BRUCE: sendPreserialized writing {} hash {} to {} on local port {} remote port {}",
+        buffer, Integer.toHexString(System.identityHashCode(buffer)), remoteAddr, socket.getLocalPort(), socket.getPort());
     socketInUse = true;
     try {
       SocketChannel channel = getSocket().getChannel();
@@ -2729,9 +2733,10 @@ public class Connection implements Runnable {
     try {
       peerDataBuffer = ioFilter.unwrap(inputBuffer);
     } catch (SSLException e) {
-//      if (e.getMessage().contains("bad record MAC")) {
-//        logger.warn("BRUCE: exception unwrapping buffer {} hash {}", inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)));
-//      }
+      if (e.getMessage().contains("bad record MAC")) {
+        logger.warn("BRUCE: exception unwrapping buffer {} hash {} socket.isclosed {}",
+            inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)), this.socket.isClosed());
+      }
       throw e;
     }
     peerDataBuffer.flip();
@@ -3171,7 +3176,7 @@ public class Connection implements Runnable {
     Thread.currentThread().setName(THREAD_KIND_IDENTIFIER + " for " + remoteAddr + " "
         + (sharedResource ? "" : "un") + "shared" + " " + (preserveOrder ? "" : "un")
         + "ordered" + " uid=" + uniqueId + (dominoNumber > 0 ? " dom #" + dominoNumber : "")
-        + " port=" + socket.getPort());
+        + " local port=" + socket.getLocalPort() + " remote port=" + socket.getPort());
   }
 
   private void compactOrResizeBuffer(int messageLength) {
