@@ -202,7 +202,7 @@ spring-
 springfox-
 swagger-annotations
 swagger-models"
-  echo "$1" | egrep -q "(mx4j-remote|$(echo -n "$apache" | tr '\n' '|'))"
+  echo "$1" | egrep -q "(mx4j-remote|jaxb-api|$(echo -n "$apache" | tr '\n' '|'))"
 }
 function shortenDep() {
   echo "$1" | sed \
