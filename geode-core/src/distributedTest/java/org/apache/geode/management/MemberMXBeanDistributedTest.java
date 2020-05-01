@@ -16,6 +16,7 @@
 package org.apache.geode.management;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 
@@ -29,6 +30,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -63,7 +65,7 @@ public class MemberMXBeanDistributedTest implements
   }
 
   @Test
-  public void testBucketCount() throws InterruptedException {
+  public void testBucketCount() {
     String regionName = "testCreateRegion";
 
     gfsh.executeAndAssertThat("create region"
@@ -71,16 +73,21 @@ public class MemberMXBeanDistributedTest implements
         + " --type=PARTITION_PERSISTENT"
         + " --total-num-buckets=1000").statusIsSuccess();
 
-    gfsh.executeAndAssertThat("query --query=\"select * from /" + regionName + "\"")
-        .statusIsSuccess();
+    server1.invoke(() -> createBuckets(regionName));
+    server2.invoke(() -> createBuckets(regionName));
+    server3.invoke(() -> createBuckets(regionName));
+    server4.invoke(() -> createBuckets(regionName));
 
-    server1.invoke(() -> waitBucketsToInitialize(245));
-    server2.invoke(() -> waitBucketsToInitialize(245));
-    server3.invoke(() -> waitBucketsToInitialize(245));
-    server4.invoke(() -> waitBucketsToInitialize(245));
+    await().untilAsserted(() -> {
+      final int sumOfBuckets = server1.invoke(() -> getBucketsInitialized()) +
+          server2.invoke(() -> getBucketsInitialized()) +
+          server3.invoke(() -> getBucketsInitialized()) +
+          server4.invoke(() -> getBucketsInitialized());
+      assertEquals("Expected bucket count is 1000, and actual count is " + sumOfBuckets,
+          sumOfBuckets, 1000);
+    });
 
     for (int i = 1; i < 4; i++) {
-      final String tempname = "/" + regionName + i;
       gfsh.executeAndAssertThat("create region"
           + " --name=" + regionName + i
           + " --type=PARTITION_PERSISTENT"
@@ -88,22 +95,31 @@ public class MemberMXBeanDistributedTest implements
           + " --colocated-with=" + regionName).statusIsSuccess();
     }
 
-    server1.invoke(() -> waitBucketsToInitialize(990));
-    server2.invoke(() -> waitBucketsToInitialize(990));
-    server3.invoke(() -> waitBucketsToInitialize(990));
-    server4.invoke(() -> waitBucketsToInitialize(990));
+    await().untilAsserted(() -> {
+      final int sumOfBuckets = server1.invoke(() -> getBucketsInitialized()) +
+          server2.invoke(() -> getBucketsInitialized()) +
+          server3.invoke(() -> getBucketsInitialized()) +
+          server4.invoke(() -> getBucketsInitialized());
+      assertEquals("Expected bucket count is 4000, and actual count is " + sumOfBuckets,
+          sumOfBuckets, 4000);
+    });
 
   }
 
-  private void waitBucketsToInitialize(int size) {
+  private int getBucketsInitialized() {
     Cache cache = ClusterStartupRule.getCache();
 
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
     ManagementService mgmtService = ManagementService.getManagementService(cache);
-
     ObjectName memberMBeanName = mgmtService.getMemberMBeanName(member);
     MemberMXBean memberMXBean = mgmtService.getMBeanInstance(memberMBeanName, MemberMXBean.class);
 
-    await().until(() -> memberMXBean.getTotalBucketCount() >= size);
+    return memberMXBean.getTotalBucketCount();
   }
+
+  private void createBuckets(String regionName) {
+    Cache cache = ClusterStartupRule.getCache();
+    PartitionRegionHelper.assignBucketsToPartitions(cache.getRegion(regionName));
+  }
+
 }
