@@ -30,9 +30,36 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
 public class DeltaSet implements Delta, DataSerializable {
+
+  public static void sadd(ResultSender<Long> resultSender,
+      Region<ByteArrayWrapper, DeltaSet> localRegion, ByteArrayWrapper key,
+      ArrayList<ByteArrayWrapper> membersToAdd) {
+    resultSender.lastResult(sadd(localRegion, key, membersToAdd));
+  }
+
+  public static void srem(ResultSender<Long> resultSender,
+      Region<ByteArrayWrapper, DeltaSet> localRegion, ByteArrayWrapper key,
+      ArrayList<ByteArrayWrapper> membersToRemove) {
+    AtomicBoolean setWasDeleted = new AtomicBoolean();
+    long membersRemoved = srem(localRegion, key, membersToRemove, setWasDeleted);
+    resultSender.sendResult(membersRemoved);
+    resultSender.lastResult(setWasDeleted.get() ? 1L : 0L);
+  }
+
+  public static void del(ResultSender<Boolean> resultSender,
+      Region<ByteArrayWrapper, DeltaSet> localRegion, ByteArrayWrapper key) {
+    resultSender.lastResult(del(localRegion, key));
+  }
+
+  public static void smembers(ResultSender<Set<ByteArrayWrapper>> resultSender,
+      Region<ByteArrayWrapper, DeltaSet> localRegion, ByteArrayWrapper key) {
+    resultSender.lastResult(DeltaSet.members(localRegion, key));
+  }
+
 
   public static long sadd(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key,
@@ -69,7 +96,7 @@ public class DeltaSet implements Delta, DataSerializable {
     return result;
   }
 
-  public static boolean del(Region<ByteArrayWrapper, DeltaSet> region,
+  private static boolean del(Region<ByteArrayWrapper, DeltaSet> region,
       ByteArrayWrapper key) {
     while (true) {
       DeltaSet deltaSet = region.get(key);
