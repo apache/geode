@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.general;
+package org.apache.geode.redis;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
