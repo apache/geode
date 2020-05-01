@@ -141,7 +141,7 @@ public class PingOpDistributedTest implements Serializable {
   }
 
   @Test
-  public void memberShouldNotRedirectPingMessageWhenClientCachedViewIdIsWrong() throws IOException {
+  public void memberShouldNotRedirectPingMessageWhenClientCachedViewIdIsWrong() {
     final String poolName = testName.getMethodName();
     parametrizedSetUp(poolName, Collections.singletonList(server1Port));
     InternalDistributedMember distributedMember1 = (InternalDistributedMember) server1
@@ -157,7 +157,7 @@ public class PingOpDistributedTest implements Serializable {
   }
 
   @Test
-  public void pingReturnsErrorIfTheTargetServerIsNotAMember() throws IOException {
+  public void pingReturnsErrorIfTheTargetServerIsNotAMember() {
     final String poolName = testName.getMethodName();
     parametrizedSetUp(poolName, Collections.singletonList(server1Port));
     int notUsedPort = getRandomAvailableTCPPortsForDUnitSite(1)[0];
@@ -174,7 +174,7 @@ public class PingOpDistributedTest implements Serializable {
   }
 
   @Test
-  public void memberShouldCorrectlyRedirectPingMessage() throws IOException, InterruptedException {
+  public void memberShouldCorrectlyRedirectPingMessage() {
     final String poolName = testName.getMethodName();
     parametrizedSetUp(poolName, asList(server1Port, server2Port));
     InternalDistributedMember distributedMember1 = (InternalDistributedMember) server1

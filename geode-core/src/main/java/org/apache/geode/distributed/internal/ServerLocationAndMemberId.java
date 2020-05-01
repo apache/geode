@@ -16,10 +16,12 @@ package org.apache.geode.distributed.internal;
 
 public class ServerLocationAndMemberId {
 
-  private ServerLocation serverLocation;
-  private String memberId;
+  private final ServerLocation serverLocation;
+  private final String memberId;
 
-  public ServerLocationAndMemberId() {}
+  public ServerLocationAndMemberId() {
+    this(null);
+  }
 
   public ServerLocationAndMemberId(ServerLocation serverLocation) {
     this.serverLocation = serverLocation;
@@ -27,7 +29,7 @@ public class ServerLocationAndMemberId {
   }
 
   public ServerLocationAndMemberId(ServerLocation serverLocation, String memberId) {
-    this(serverLocation);
+    this.serverLocation = serverLocation;
     this.memberId = memberId;
   }
 

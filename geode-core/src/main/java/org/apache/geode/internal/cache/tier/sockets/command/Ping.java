@@ -41,6 +41,10 @@ public class Ping extends BaseCommand {
 
   private Ping() {}
 
+  protected ClientHealthMonitor getClientHealthMonitor() {
+    return ClientHealthMonitor.getInstance();
+  }
+
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException {
@@ -58,7 +62,7 @@ public class Ping extends BaseCommand {
         if (!myID.equals(targetServer)) {
           if (myID.compareTo(targetServer, true, false) == 0) {
             String errorMessage =
-                String.format("Target server " + targetServer + " has different viewId: " + myID);
+                "Target server " + targetServer + " has different viewId: " + myID;
             logger.warn(errorMessage);
             writeException(clientMessage, new ServerOperationException(errorMessage), false,
                 serverConnection);
@@ -77,7 +81,7 @@ public class Ping extends BaseCommand {
         return;
       }
     }
-    ClientHealthMonitor chm = ClientHealthMonitor.getInstance();
+    ClientHealthMonitor chm = getClientHealthMonitor();
     if (chm != null) {
       chm.receivedPing(serverConnection.getProxyID());
     }

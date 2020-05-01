@@ -434,7 +434,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
           final String otherHost = other.gp.getHost();
           if (thisHost != null) {
             if (thisHost.equals(otherHost)) {
-              return this.getMemberId().equals(other.getMemberId());
+              return this.getMemberId().getUniqueId().equals(other.getMemberId().getUniqueId());
             }
           } else {
             return (otherHost == null);

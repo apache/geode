@@ -25,12 +25,14 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -49,6 +51,8 @@ public class PingTest {
   private DistributionManager distributionManager;
   @Mock
   private Message errorResponseMessage;
+  @Mock
+  private ClientHealthMonitor clientHealthMonitor;
 
   private InternalDistributedMember myID;
   private InternalDistributedMember targetServer;
@@ -56,6 +60,7 @@ public class PingTest {
   @Mock
   private Message replyMessage;
 
+  @Spy
   @InjectMocks
   private Ping ping;
 
@@ -64,9 +69,9 @@ public class PingTest {
     this.ping = (Ping) Ping.getCommand();
     MockitoAnnotations.initMocks(this);
 
+    when(this.ping.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
     when(this.message.getNumberOfParts()).thenReturn(1);
     when(this.message.getPart(eq(0))).thenReturn(this.targetServerPart);
-
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getReplyMessage()).thenReturn(this.replyMessage);
     when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
@@ -82,6 +87,7 @@ public class PingTest {
     this.ping.cmdExecute(this.message, this.serverConnection, null, 0);
 
     verify(this.replyMessage).send(this.serverConnection);
+    verify(ping, times(1)).getClientHealthMonitor();
   }
 
   @Test
@@ -98,6 +104,7 @@ public class PingTest {
     this.ping.cmdExecute(this.message, this.serverConnection, null, 0);
 
     verify(this.replyMessage).send(this.serverConnection);
+    verify(ping, times(0)).getClientHealthMonitor();
   }
 
   @Test
@@ -116,6 +123,7 @@ public class PingTest {
 
     verify(this.errorResponseMessage, times(1)).send(this.serverConnection);
     verify(this.replyMessage, times(0)).send(this.serverConnection);
+    verify(ping, times(0)).getClientHealthMonitor();
   }
 
   @Test
@@ -132,5 +140,6 @@ public class PingTest {
 
     verify(this.errorResponseMessage, times(1)).send(this.serverConnection);
     verify(this.replyMessage, times(0)).send(this.serverConnection);
+    verify(ping, times(0)).getClientHealthMonitor();
   }
 }
