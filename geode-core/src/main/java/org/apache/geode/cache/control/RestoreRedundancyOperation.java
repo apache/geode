@@ -59,4 +59,13 @@ public interface RestoreRedundancyOperation {
    *         operation started by this method.
    */
   CompletableFuture<RestoreRedundancyResults> start();
+
+  /**
+   * Determines the current redundancy status for the partitioned regions associated with this
+   * operation.
+   *
+   * @return The {@link RestoreRedundancyResults} containing the redundancy information for each
+   *         included region.
+   */
+  RestoreRedundancyResults redundancyStatus();
 }

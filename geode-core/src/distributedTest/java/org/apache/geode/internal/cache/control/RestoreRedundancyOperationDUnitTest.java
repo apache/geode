@@ -50,6 +50,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
@@ -253,6 +254,19 @@ public class RestoreRedundancyOperationDUnitTest {
     });
   }
 
+  @Test
+  public void redundancyStatusReportsCorrectRedundancyInformation() {
+    getRedundancyStatusAndAssertIfSatisfied(FAILURE, NO_REDUNDANT_COPIES);
+
+    // Restore redundancy to confirm that the result of the redundancyStatus call has changed to
+    // reflect the new state of the system
+    servers.get(0).invoke(() -> {
+      restoreRedundancyAndGetResults(null, null, true);
+    });
+
+    getRedundancyStatusAndAssertIfSatisfied(SUCCESS, SATISFIED);
+  }
+
   private static RestoreRedundancyResults restoreRedundancyAndGetResults(
       Set<String> includeRegions, Set<String> excludeRegions, boolean shouldReassign)
       throws InterruptedException, ExecutionException {
@@ -331,6 +345,24 @@ public class RestoreRedundancyOperationDUnitTest {
       assertThat("Primaries should not be balanced",
           Math.abs(primariesOnServer - expectedPrimaries), is(not(lessThanOrEqualTo(2))));
     }
+  }
+
+  private void getRedundancyStatusAndAssertIfSatisfied(
+      RestoreRedundancyResults.Status expectedResultStatus,
+      RegionRedundancyStatus.RedundancyStatus expectedRedundancyStatus) {
+    servers.forEach(s -> s.invoke(() -> {
+      RestoreRedundancyResults results = Objects.requireNonNull(ClusterStartupRule.getCache())
+          .getResourceManager()
+          .createRestoreRedundancyOperation()
+          .redundancyStatus();
+      assertThat(results.getStatus(), is(expectedResultStatus));
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(
+          expectedRedundancyStatus));
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(
+          expectedRedundancyStatus));
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(),
+          is(expectedRedundancyStatus));
+    }));
   }
 
   @SuppressWarnings("unused")

@@ -97,6 +97,15 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
     return resultsFuture;
   }
 
+  @Override
+  public RestoreRedundancyResults redundancyStatus() {
+    RegionFilter filter = getRegionFilter();
+    RestoreRedundancyResultsImpl results = getEmptyRestoreRedundancyResults();
+    cache.getPartitionedRegions().stream().filter(filter::include)
+        .forEach(region -> results.addRegionResult(getRegionResult(region)));
+    return results;
+  }
+
   RestoreRedundancyResults doRestoreRedundancy(PartitionedRegion region) {
     try {
       PartitionedRegionRebalanceOp op = getPartitionedRegionRebalanceOp(region);
