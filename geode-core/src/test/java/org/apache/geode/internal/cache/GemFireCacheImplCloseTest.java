@@ -38,6 +38,7 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.junit.MockitoJUnit;
@@ -189,6 +190,7 @@ public class GemFireCacheImplCloseTest {
     verify(internalDistributedSystem).disconnect();
   }
 
+  @Ignore("GEODE-8060: wrong thread wins")
   @Test
   public void close_blocksUntilFirstCallToCloseCompletes() throws Exception {
     gemFireCacheImpl = gemFireCacheImpl(false);
