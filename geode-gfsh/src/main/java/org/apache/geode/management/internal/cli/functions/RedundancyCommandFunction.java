@@ -29,6 +29,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class RedundancyCommandFunction extends CliFunction<Object[]> {
   private static final long serialVersionUID = 5633636343813884996L;
 
+  /*
+   * Expected arguments are, in order:
+   * String[] of regions to include,
+   * String[] of regions to exclude,
+   * boolean indicating whether or not to reassign primaries,
+   * boolean indicating whether or not the command calling the function is the StatusRedundancy
+   * command
+   */
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     Object[] arguments = context.getArguments();
@@ -46,10 +54,7 @@ public class RedundancyCommandFunction extends CliFunction<Object[]> {
 
     boolean shouldReassignPrimaries = (boolean) arguments[2];
 
-    boolean isStatusCommand = false;
-    if (arguments.length > 3) {
-      isStatusCommand = (boolean) arguments[3];
-    }
+    boolean isStatusCommand = (boolean) arguments[3];
 
     RestoreRedundancyResults results;
     RestoreRedundancyOperation redundancyOperation =

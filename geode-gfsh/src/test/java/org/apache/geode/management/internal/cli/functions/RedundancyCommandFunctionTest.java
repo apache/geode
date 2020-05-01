@@ -42,19 +42,19 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class RedundancyCommandFunctionTest {
 
   @SuppressWarnings("unchecked")
-  private FunctionContext<Object[]> mockContext = mock(FunctionContext.class);
-  private Cache mockCache = mock(Cache.class, RETURNS_DEEP_STUBS);
-  private RestoreRedundancyOperation mockOperation =
+  private final FunctionContext<Object[]> mockContext = mock(FunctionContext.class);
+  private final Cache mockCache = mock(Cache.class, RETURNS_DEEP_STUBS);
+  private final RestoreRedundancyOperation mockOperation =
       mock(RestoreRedundancyOperation.class, RETURNS_DEEP_STUBS);
-  private RestoreRedundancyResults mockResults = mock(RestoreRedundancyResults.class);
-  private String message = "expected message";
+  private final RestoreRedundancyResults mockResults = mock(RestoreRedundancyResults.class);
+  private final String message = "expected message";
   private RedundancyCommandFunction function;
 
   @Before
   public void setUp() throws InterruptedException, ExecutionException {
     function = new RedundancyCommandFunction();
     when(mockContext.getCache()).thenReturn(mockCache);
-    when(mockContext.getArguments()).thenReturn(new Object[] {null, null, true});
+    when(mockContext.getArguments()).thenReturn(new Object[] {null, null, true, false});
     when(mockCache.getResourceManager().createRestoreRedundancyOperation())
         .thenReturn(mockOperation);
     CompletableFuture<RestoreRedundancyResults> future =
@@ -73,7 +73,7 @@ public class RedundancyCommandFunctionTest {
     Set<String> expectedExcludedRegions = new HashSet<>(Arrays.asList(excludeRegions));
 
     when(mockContext.getArguments())
-        .thenReturn(new Object[] {includeRegions, excludeRegions, shouldReassign});
+        .thenReturn(new Object[] {includeRegions, excludeRegions, shouldReassign, false});
     when(mockResults.getStatus()).thenReturn(RestoreRedundancyResults.Status.SUCCESS);
 
     function.executeFunction(mockContext);

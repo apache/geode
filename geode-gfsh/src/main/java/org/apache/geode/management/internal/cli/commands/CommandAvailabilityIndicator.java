@@ -55,7 +55,7 @@ public class CommandAvailabilityIndicator extends GfshCommand {
       CreateJndiBindingCommand.CREATE_JNDIBINDING, DestroyJndiBindingCommand.DESTROY_JNDIBINDING,
       DescribeJndiBindingCommand.DESCRIBE_JNDI_BINDING, ListJndiBindingCommand.LIST_JNDIBINDING,
       AlterQueryServiceCommand.COMMAND_NAME, DescribeQueryServiceCommand.COMMAND_NAME,
-      RestoreRedundancyCommand.COMMAND_NAME, StatusRedundancyCommand.COMMAND_NAME})
+      CliStrings.RESTORE_REDUNDANCY, CliStrings.STATUS_REDUNDANCY})
   public boolean available() {
     return isOnlineCommandAvailable();
   }

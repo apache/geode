@@ -19,23 +19,25 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.REDUNDANCY_NOT_SATISFIED_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.REDUNDANCY_SATISFIED_FOR_REGIONS;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.FULLY_SATISFIED_REDUNDANCY;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.NO_MEMBERS_FOR_REGION_HEADER;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.NO_MEMBERS_FOR_REGION_SECTION;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.NO_MEMBERS_HEADER;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.NO_MEMBERS_SECTION;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.PARTIALLY_SATISFIED_REDUNDANCY;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.SATISFIED_REDUNDANCY_SECTION;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.SUMMARY_SECTION;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.UNDER_REDUNDANCY_SECTION;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.ZERO_REDUNDANCY_SECTION;
-import static org.apache.geode.management.internal.cli.commands.RedundancyCommandUtils.ZERO_REDUNDANT_COPIES;
-import static org.apache.geode.management.internal.cli.commands.StatusRedundancyCommand.COMMAND_NAME;
-import static org.apache.geode.management.internal.cli.commands.StatusRedundancyCommand.EXCLUDE_REGION;
-import static org.apache.geode.management.internal.cli.commands.StatusRedundancyCommand.INCLUDE_REGION;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.FULLY_SATISFIED_REDUNDANCY;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.NO_MEMBERS_FOR_REGION_HEADER;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.NO_MEMBERS_FOR_REGION_SECTION;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.NO_MEMBERS_HEADER;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.NO_MEMBERS_SECTION;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.PARTIALLY_SATISFIED_REDUNDANCY;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.PRIMARIES_INFO_SECTION;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.SATISFIED_REDUNDANCY_SECTION;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.SUMMARY_SECTION;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.UNDER_REDUNDANCY_SECTION;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.ZERO_REDUNDANCY_SECTION;
+import static org.apache.geode.management.internal.cli.commands.RedundancyCommand.ZERO_REDUNDANT_COPIES;
+import static org.apache.geode.management.internal.i18n.CliStrings.REDUNDANCY_EXCLUDE_REGION;
+import static org.apache.geode.management.internal.i18n.CliStrings.REDUNDANCY_INCLUDE_REGION;
+import static org.apache.geode.management.internal.i18n.CliStrings.STATUS_REDUNDANCY;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -89,106 +91,79 @@ public class StatusRedundancyCommandDUnitTest {
   public void statusRedundancyWithNoArgumentsReturnsStatusForAllRegions() {
     createAndPopulateRegions();
 
-    String command = new CommandStringBuilder(COMMAND_NAME).getCommandString();
+    String command = new CommandStringBuilder(STATUS_REDUNDANCY).getCommandString();
 
-    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command);
-    commandResult.statusIsSuccess();
+    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    verifySummarySection(commandResult, 1, 1, 2);
+    List<String> satisfiedRegions =
+        Arrays.asList(SATISFIED_REGION, NO_CONFIGURED_REDUNDANCY_REGION);
 
-    InfoResultModelAssert zeroRedundancy = commandResult.hasInfoSection(ZERO_REDUNDANCY_SECTION);
-    zeroRedundancy.hasHeader().isEqualTo(NO_REDUNDANT_COPIES_FOR_REGIONS);
-    zeroRedundancy.hasOutput().contains(ZERO_COPIES_REGION);
-
-    InfoResultModelAssert underRedundancy = commandResult.hasInfoSection(UNDER_REDUNDANCY_SECTION);
-    underRedundancy.hasHeader().isEqualTo(REDUNDANCY_NOT_SATISFIED_FOR_REGIONS);
-    underRedundancy.hasOutput().contains(UNSATISFIED_REGION);
-
-    InfoResultModelAssert satisfiedRedundancy =
-        commandResult.hasInfoSection(SATISFIED_REDUNDANCY_SECTION);
-    satisfiedRedundancy.hasHeader().isEqualTo(REDUNDANCY_SATISFIED_FOR_REGIONS);
-    satisfiedRedundancy.hasOutput().contains(SATISFIED_REGION,
-        NO_CONFIGURED_REDUNDANCY_REGION);
+    verifyGfshOutput(commandResult, Collections.singletonList(ZERO_COPIES_REGION),
+        Collections.singletonList(UNSATISFIED_REGION), satisfiedRegions);
   }
 
   @Test
   public void statusRedundancyWithIncludeRegionArgumentReturnsStatusForOnlyThatRegion() {
     createAndPopulateRegions();
 
-    String command = new CommandStringBuilder(COMMAND_NAME)
-        .addOption(INCLUDE_REGION, SATISFIED_REGION)
+    String includedRegion = SATISFIED_REGION;
+    List<String> nonIncludedRegions = new ArrayList<>(regionNames);
+    nonIncludedRegions.remove(includedRegion);
+
+    String command = new CommandStringBuilder(STATUS_REDUNDANCY)
+        .addOption(REDUNDANCY_INCLUDE_REGION, includedRegion)
         .getCommandString();
 
-    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command);
-    commandResult.statusIsSuccess()
-        .hasNoSection(ZERO_REDUNDANCY_SECTION)
-        .hasNoSection(UNDER_REDUNDANCY_SECTION)
-        .doesNotContainOutput(UNSATISFIED_REGION)
-        .doesNotContainOutput(ZERO_COPIES_REGION)
-        .doesNotContainOutput(NO_CONFIGURED_REDUNDANCY_REGION);
+    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .doesNotContainOutput(nonIncludedRegions.toArray(new String[0]));
 
-    verifySummarySection(commandResult, 0, 0, 1);
-
-    InfoResultModelAssert satisfiedRedundancy =
-        commandResult.hasInfoSection(SATISFIED_REDUNDANCY_SECTION);
-    satisfiedRedundancy.hasHeader().isEqualTo(REDUNDANCY_SATISFIED_FOR_REGIONS);
-    satisfiedRedundancy.hasOutput().contains(SATISFIED_REGION);
+    verifyGfshOutput(commandResult, new ArrayList<>(), new ArrayList<>(),
+        Collections.singletonList(includedRegion));
   }
 
   @Test
   public void statusRedundancyWithExcludeRegionArgumentReturnsStatusForAllExceptThatRegion() {
     createAndPopulateRegions();
 
-    String command = new CommandStringBuilder(COMMAND_NAME)
-        .addOption(EXCLUDE_REGION, ZERO_COPIES_REGION)
+    String excludedRegion = ZERO_COPIES_REGION;
+
+    String command = new CommandStringBuilder(STATUS_REDUNDANCY)
+        .addOption(REDUNDANCY_EXCLUDE_REGION, excludedRegion)
         .getCommandString();
 
-    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command);
-    commandResult.statusIsSuccess()
-        .hasNoSection(ZERO_REDUNDANCY_SECTION)
-        .doesNotContainOutput(ZERO_COPIES_REGION);
+    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .doesNotContainOutput(excludedRegion);
 
-    verifySummarySection(commandResult, 0, 1, 2);
+    List<String> satisfiedRegions =
+        Arrays.asList(SATISFIED_REGION, NO_CONFIGURED_REDUNDANCY_REGION);
 
-    InfoResultModelAssert underRedundancy = commandResult.hasInfoSection(UNDER_REDUNDANCY_SECTION);
-    underRedundancy.hasHeader().isEqualTo(REDUNDANCY_NOT_SATISFIED_FOR_REGIONS);
-    underRedundancy.hasOutput().contains(UNSATISFIED_REGION);
-
-    InfoResultModelAssert satisfiedRedundancy =
-        commandResult.hasInfoSection(SATISFIED_REDUNDANCY_SECTION);
-    satisfiedRedundancy.hasHeader().isEqualTo(REDUNDANCY_SATISFIED_FOR_REGIONS);
-    satisfiedRedundancy.hasOutput().contains(SATISFIED_REGION,
-        NO_CONFIGURED_REDUNDANCY_REGION);
+    verifyGfshOutput(commandResult, new ArrayList<>(),
+        Collections.singletonList(UNSATISFIED_REGION), satisfiedRegions);
   }
 
   @Test
   public void statusRedundancyWithMatchingIncludeAndExcludeRegionArgumentsReturnsStatusForIncludedRegion() {
     createAndPopulateRegions();
 
-    String command = new CommandStringBuilder(COMMAND_NAME)
-        .addOption(INCLUDE_REGION, SATISFIED_REGION)
-        .addOption(EXCLUDE_REGION, SATISFIED_REGION)
+    String includedAndExcludedRegion = SATISFIED_REGION;
+    List<String> nonIncludedRegions = new ArrayList<>(regionNames);
+    nonIncludedRegions.remove(includedAndExcludedRegion);
+
+    String command = new CommandStringBuilder(STATUS_REDUNDANCY)
+        .addOption(REDUNDANCY_INCLUDE_REGION, includedAndExcludedRegion)
+        .addOption(REDUNDANCY_EXCLUDE_REGION, includedAndExcludedRegion)
         .getCommandString();
 
-    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command);
-    commandResult.statusIsSuccess()
-        .hasNoSection(ZERO_REDUNDANCY_SECTION)
-        .hasNoSection(UNDER_REDUNDANCY_SECTION)
-        .doesNotContainOutput(UNSATISFIED_REGION)
-        .doesNotContainOutput(ZERO_COPIES_REGION)
-        .doesNotContainOutput(NO_CONFIGURED_REDUNDANCY_REGION);
+    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .doesNotContainOutput(nonIncludedRegions.toArray(new String[0]));
 
-    verifySummarySection(commandResult, 0, 0, 1);
-
-    InfoResultModelAssert satisfiedRedundancy =
-        commandResult.hasInfoSection(SATISFIED_REDUNDANCY_SECTION);
-    satisfiedRedundancy.hasHeader().isEqualTo(REDUNDANCY_SATISFIED_FOR_REGIONS);
-    satisfiedRedundancy.hasOutput().contains(SATISFIED_REGION);
+    verifyGfshOutput(commandResult, new ArrayList<>(), new ArrayList<>(),
+        Collections.singletonList(includedAndExcludedRegion));
   }
 
   @Test
   public void statusRedundancyWithNoArgumentsReturnsSuccessWhenNoRegionsArePresent() {
-    String command = new CommandStringBuilder(COMMAND_NAME).getCommandString();
+    String command = new CommandStringBuilder(STATUS_REDUNDANCY).getCommandString();
     gfsh.executeAndAssertThat(command).statusIsSuccess().hasInfoSection(NO_MEMBERS_SECTION)
         .hasHeader()
         .isEqualTo(NO_MEMBERS_HEADER);
@@ -199,25 +174,25 @@ public class StatusRedundancyCommandDUnitTest {
     createAndPopulateRegions();
 
     String nonexistentRegion = "fakeRegion";
-    String command = new CommandStringBuilder(COMMAND_NAME)
-        .addOption(INCLUDE_REGION, nonexistentRegion + "," + SATISFIED_REGION)
+
+    String includedRegion = SATISFIED_REGION;
+    List<String> nonIncludedRegions = new ArrayList<>(regionNames);
+    nonIncludedRegions.remove(includedRegion);
+
+    String command = new CommandStringBuilder(STATUS_REDUNDANCY)
+        .addOption(REDUNDANCY_INCLUDE_REGION, nonexistentRegion + "," + includedRegion)
         .getCommandString();
 
     CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsError()
-        .hasNoSection(ZERO_REDUNDANCY_SECTION)
-        .hasNoSection(UNDER_REDUNDANCY_SECTION);
+        .doesNotContainOutput(nonIncludedRegions.toArray(new String[0]));
 
     InfoResultModelAssert noMembersForRegion =
         commandResult.hasInfoSection(NO_MEMBERS_FOR_REGION_SECTION);
     noMembersForRegion.hasHeader().isEqualTo(NO_MEMBERS_FOR_REGION_HEADER);
     noMembersForRegion.hasLines().containsExactly(nonexistentRegion);
 
-    verifySummarySection(commandResult, 0, 0, 1);
-
-    InfoResultModelAssert satisfiedRedundancy =
-        commandResult.hasInfoSection(SATISFIED_REDUNDANCY_SECTION);
-    satisfiedRedundancy.hasHeader().isEqualTo(REDUNDANCY_SATISFIED_FOR_REGIONS);
-    satisfiedRedundancy.hasOutput().contains(SATISFIED_REGION);
+    verifyGfshOutput(commandResult, new ArrayList<>(), new ArrayList<>(),
+        Collections.singletonList(includedRegion));
   }
 
   private void createAndPopulateRegions() {
@@ -271,11 +246,43 @@ public class StatusRedundancyCommandDUnitTest {
     });
   }
 
-  private void verifySummarySection(CommandResultAssert commandResult, int zeroCopies,
-      int partiallySatisfied, int fullySatisfied) {
-    InfoResultModelAssert summary = commandResult.hasInfoSection(SUMMARY_SECTION);
-    summary.hasOutput().contains(ZERO_REDUNDANT_COPIES + zeroCopies);
-    summary.hasOutput().contains(PARTIALLY_SATISFIED_REDUNDANCY + partiallySatisfied);
-    summary.hasOutput().contains(FULLY_SATISFIED_REDUNDANCY + fullySatisfied);
+  private void verifyGfshOutput(CommandResultAssert result, List<String> expectedZeroCopiesRegions,
+      List<String> expectedPartiallySatisfiedRegions, List<String> expectedFullySatisfiedRegions) {
+    // Verify summary section
+    InfoResultModelAssert summary = result.hasInfoSection(SUMMARY_SECTION);
+    summary.hasOutput().contains(ZERO_REDUNDANT_COPIES + expectedZeroCopiesRegions.size());
+    summary.hasOutput()
+        .contains(PARTIALLY_SATISFIED_REDUNDANCY + expectedPartiallySatisfiedRegions.size());
+    summary.hasOutput().contains(FULLY_SATISFIED_REDUNDANCY + expectedFullySatisfiedRegions.size());
+
+    // Verify zero redundancy section
+    if (!expectedZeroCopiesRegions.isEmpty()) {
+      InfoResultModelAssert zeroRedundancy = result.hasInfoSection(ZERO_REDUNDANCY_SECTION);
+      zeroRedundancy.hasHeader().isEqualTo(NO_REDUNDANT_COPIES_FOR_REGIONS);
+      zeroRedundancy.hasOutput().contains(expectedZeroCopiesRegions);
+    } else {
+      result.hasNoSection(ZERO_REDUNDANCY_SECTION);
+    }
+
+    // Verify under redundancy section
+    if (!expectedPartiallySatisfiedRegions.isEmpty()) {
+      InfoResultModelAssert zeroRedundancy = result.hasInfoSection(UNDER_REDUNDANCY_SECTION);
+      zeroRedundancy.hasHeader().isEqualTo(REDUNDANCY_NOT_SATISFIED_FOR_REGIONS);
+      zeroRedundancy.hasOutput().contains(expectedPartiallySatisfiedRegions);
+    } else {
+      result.hasNoSection(UNDER_REDUNDANCY_SECTION);
+    }
+
+    // Verify fully satisfied section
+    if (!expectedFullySatisfiedRegions.isEmpty()) {
+      InfoResultModelAssert zeroRedundancy = result.hasInfoSection(SATISFIED_REDUNDANCY_SECTION);
+      zeroRedundancy.hasHeader().isEqualTo(REDUNDANCY_SATISFIED_FOR_REGIONS);
+      zeroRedundancy.hasOutput().contains(expectedFullySatisfiedRegions);
+    } else {
+      result.hasNoSection(SATISFIED_REDUNDANCY_SECTION);
+    }
+
+    // Verify primaries section is not included
+    result.hasNoSection(PRIMARIES_INFO_SECTION);
   }
 }
