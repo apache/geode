@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 import java.util.Properties;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -38,11 +37,11 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.client.PoolFactory;
@@ -78,7 +77,7 @@ public class GemFireCacheImplCloseTest {
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
   @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule();
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
   @Before
   public void setUp() {
@@ -163,8 +162,6 @@ public class GemFireCacheImplCloseTest {
     meterRegistry = new CompositeMeterRegistry();
     MeterRegistry userRegistry = spy(new SimpleMeterRegistry());
     meterRegistry.add(userRegistry);
-    when(internalDistributedSystem.getMeterRegistry())
-        .thenReturn(meterRegistry);
     gemFireCacheImpl = gemFireCacheImpl(false);
 
     gemFireCacheImpl.close();
@@ -190,41 +187,36 @@ public class GemFireCacheImplCloseTest {
     verify(internalDistributedSystem).disconnect();
   }
 
-  @Ignore("GEODE-8060: wrong thread wins")
   @Test
   public void close_blocksUntilFirstCallToCloseCompletes() throws Exception {
     gemFireCacheImpl = gemFireCacheImpl(false);
     CyclicBarrier cyclicBarrier = new CyclicBarrier(3);
-    AtomicLong winner = new AtomicLong();
 
-    Future<Long> close1 = executorServiceRule.submit(() -> {
+    Future<Boolean> close1 = executorServiceRule.submit(() -> {
       synchronized (GemFireCacheImpl.class) {
-        long threadId = Thread.currentThread().getId();
         cyclicBarrier.await(getTimeout().toMillis(), MILLISECONDS);
-        gemFireCacheImpl.close();
-        winner.compareAndSet(0, threadId);
-        return threadId;
+        return gemFireCacheImpl.doClose("test", null, false, false, false);
       }
     });
 
     await().until(() -> cyclicBarrier.getNumberWaiting() == 1);
 
-    Future<Long> close2 = executorServiceRule.submit(() -> {
-      long threadId = Thread.currentThread().getId();
+    Future<Boolean> close2 = executorServiceRule.submit(() -> {
       cyclicBarrier.await(getTimeout().toMillis(), MILLISECONDS);
-      gemFireCacheImpl.close();
-      winner.compareAndSet(0, threadId);
-      return threadId;
+      return gemFireCacheImpl.doClose("test", null, false, false, false);
     });
 
     cyclicBarrier.await(getTimeout().toMillis(), MILLISECONDS);
 
-    long threadId1 = close1.get();
-    long threadId2 = close2.get();
+    boolean closedCache1 = close1.get();
+    boolean closedCache2 = close2.get();
 
-    assertThat(winner.get())
-        .as("ThreadId1=" + threadId1 + " and threadId2=" + threadId2)
-        .isEqualTo(threadId1);
+    assertThat(closedCache1)
+        .as("closedCache1=" + closedCache1 + " and closedCache2=" + closedCache2)
+        .isTrue();
+    assertThat(closedCache2)
+        .as("closedCache1=" + closedCache1 + " and closedCache2=" + closedCache2)
+        .isFalse();
   }
 
   @SuppressWarnings({"SameParameterValue", "LambdaParameterHidesMemberVariable",
