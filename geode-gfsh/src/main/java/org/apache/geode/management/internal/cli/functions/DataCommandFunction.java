@@ -323,7 +323,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
       logger.debug("Cleared all keys in the region - {}", regionName);
     }
     return DataCommandResult.createRemoveInfoResult(null, null, null,
-        CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_KEYS, regionName), true);
+        CliStrings.format(CliStrings.CLEAR_REGION_CLEARED_ALL_KEYS, regionName), true);
   }
 
   @SuppressWarnings({"rawtypes"})

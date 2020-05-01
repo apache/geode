@@ -49,14 +49,13 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
  * <p>
  * GEODE-1740: It was observed that operations performed within a transaction were not holding
  * region modification locks for the duration of commit processing. This lock is used to ensure
- * region consistency during CLEAR_REGION processing. By not holding the lock for the duration of
- * commit
+ * region consistency during CLEAR processing. By not holding the lock for the duration of commit
  * processing, a window was opened that allowed region operations such as clear to occur in
  * mid-commit.
  *
  * <p>
  * The fix for GEODE-1740 was to acquire and hold read locks for any region involved in the commit.
- * This forces CLEAR_REGION to wait until commit processing is complete.
+ * This forces CLEAR to wait until commit processing is complete.
  *
  * <p>
  * This test performs operations within a transaction and during commit processing schedules a
@@ -274,7 +273,7 @@ public class ClearTXLockingDUnitTest implements Serializable {
   }
 
   /**
-   * Wait to be notified it is time to perform region operation (i.e. CLEAR_REGION)
+   * Wait to be notified it is time to perform region operation (i.e. CLEAR)
    */
   private static void regionOperationWait(CountDownLatch latch) throws InterruptedException {
     latch.await();

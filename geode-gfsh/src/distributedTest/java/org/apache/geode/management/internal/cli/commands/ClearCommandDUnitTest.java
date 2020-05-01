@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
-import static org.apache.geode.management.internal.i18n.CliStrings.REMOVE__MSG__CLEARED_ALL_KEYS;
+import static org.apache.geode.management.internal.i18n.CliStrings.CLEAR_REGION_CLEARED_ALL_KEYS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import junitparams.JUnitParamsRunner;
@@ -103,7 +103,7 @@ public class ClearCommandDUnitTest {
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains(REMOVE__MSG__CLEARED_ALL_KEYS);
+    assertThat(gfsh.getGfshOutput()).contains(CLEAR_REGION_CLEARED_ALL_KEYS);
 
     server1.invoke(() -> verifyAllKeysAreRemoved(regionName));
     server2.invoke(() -> verifyAllKeysAreRemoved(regionName));

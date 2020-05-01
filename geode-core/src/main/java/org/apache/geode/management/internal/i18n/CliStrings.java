@@ -822,6 +822,7 @@ public class CliStrings {
       "Clears/Removes all keys from the specified region.";
   public static final String CLEAR_REGION_REGION_NAME = "name";
   public static final String CLEAR_REGION_REGION_NAME_HELP = "Region to clear keys from.";
+  public static final String CLEAR_REGION_CLEARED_ALL_KEYS = "Cleared all keys in the region";
 
   /* create region */
   public static final String CREATE_REGION = "create region";
@@ -1921,7 +1922,6 @@ public class CliStrings {
   public static final String REMOVE__MSG__KEY_EMPTY = "Key is Null";
   public static final String REMOVE__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
   public static final String REMOVE__MSG__KEY_NOT_FOUND_REGION = "Key is not present in the region";
-  public static final String REMOVE__MSG__CLEARED_ALL_KEYS = "Cleared all keys in the region";
   public static final String REMOVE__MSG__CLEARALL_DEPRECATION_WARNING =
       "Warning: The --all option for the 'remove' command is deprecated. Please"
           + " use the 'clear' command instead.";
