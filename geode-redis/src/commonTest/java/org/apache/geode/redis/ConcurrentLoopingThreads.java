@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.general;
+package org.apache.geode.redis;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -36,10 +36,7 @@ public class ConcurrentLoopingThreads {
     Stream<LoopingThread> loopingThreadStream = Arrays
         .stream(functions)
         .map((r) -> new LoopingThread(r, iterationCount, latch))
-        .map((t) -> {
-          t.start();
-          return t;
-        });
+        .peek(Thread::start);
 
     latch.countDown();
 
@@ -53,10 +50,10 @@ public class ConcurrentLoopingThreads {
 
   }
 
-  private class LoopingRunnable implements Runnable {
+  private static class LoopingRunnable implements Runnable {
     private final Consumer<Integer> runnable;
     private final int iterationCount;
-    private CountDownLatch startLatch;
+    private final CountDownLatch startLatch;
 
     public LoopingRunnable(Consumer<Integer> runnable, int iterationCount,
         CountDownLatch startLatch) {
@@ -79,7 +76,7 @@ public class ConcurrentLoopingThreads {
     }
   }
 
-  private class LoopingThread extends Thread {
+  private static class LoopingThread extends Thread {
     public LoopingThread(Consumer<Integer> runnable, int iterationCount,
         CountDownLatch latch) {
       super(new LoopingRunnable(runnable, iterationCount, latch));
