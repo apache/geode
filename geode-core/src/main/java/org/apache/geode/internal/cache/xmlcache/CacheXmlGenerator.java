@@ -1383,11 +1383,16 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if (generateDefaults() || !sender.getOrderPolicy().equals(GatewaySender.DEFAULT_ORDER_POLICY))
         atts.addAttribute("", "", ORDER_POLICY, "", String.valueOf(sender.getOrderPolicy()));
     }
+
     // group-transaction-events
-    if (generateDefaults()
-        || sender.isGroupTransactionEvents() != GatewaySender.DEFAULT_IS_GROUP_TRANSACTION_EVENTS)
-      atts.addAttribute("", "", GROUP_TRANSACTION_EVENTS, "",
-          String.valueOf(sender.isGroupTransactionEvents()));
+    if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+      if (generateDefaults()
+          || sender
+              .isGroupTransactionEvents() != GatewaySender.DEFAULT_IS_GROUP_TRANSACTION_EVENTS) {
+        atts.addAttribute("", "", GROUP_TRANSACTION_EVENTS, "",
+            String.valueOf(sender.isGroupTransactionEvents()));
+      }
+    }
 
     handler.startElement("", GATEWAY_SENDER, GATEWAY_SENDER, atts);
 

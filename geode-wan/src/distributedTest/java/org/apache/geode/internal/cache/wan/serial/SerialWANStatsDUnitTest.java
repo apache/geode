@@ -155,7 +155,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    int batchTimeInterval = 10000;
+    int batchTimeInterval = 30000;
     boolean isGroupTransactionEvents = true;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
@@ -221,7 +221,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    int batchTimeInterval = 10000;
+    int batchTimeInterval = 30000;
     boolean isGroupTransactionEvents = false;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
