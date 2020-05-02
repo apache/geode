@@ -1090,17 +1090,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void lockDiskStore(String diskStoreName) {
-    CountDownLatch countDownLatch = diskStoreLatches.get(diskStoreName);
-    if (countDownLatch == null) {
-      countDownLatch = diskStoreLatches.putIfAbsent(diskStoreName, new CountDownLatch(1));
-      if (countDownLatch != null) {
-        try {
-          countDownLatch.await();
-        } catch (InterruptedException e) {
-          throw new InternalGemFireError(e);
-        }
-      }
-    } else {
+    CountDownLatch countDownLatch =
+        diskStoreLatches.putIfAbsent(diskStoreName, new CountDownLatch(1));
+    if (countDownLatch != null) {
       try {
         countDownLatch.await();
       } catch (InterruptedException e) {
