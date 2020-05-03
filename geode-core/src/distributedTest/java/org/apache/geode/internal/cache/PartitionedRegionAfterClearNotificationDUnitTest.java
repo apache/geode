@@ -189,7 +189,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
   }
 
   @Test
-  public void normalClearFromDataStore() {
+  public void invokeClearOnDataStoreAndVerifyListenerCount() {
     accessor.invoke(() -> feed(false));
     verifyServerRegionSize(NUM_ENTRIES);
 
@@ -200,7 +200,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
   }
 
   @Test
-  public void normalClearFromAccessor() {
+  public void invokeClearOnAccessorAndVerifyListenerCount() {
     accessor.invoke(() -> feed(false));
     verifyServerRegionSize(NUM_ENTRIES);
     accessor.invoke(() -> getRegion(false).clear());
@@ -209,7 +209,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
   }
 
   @Test
-  public void normalClearFromClient() {
+  public void invokeClearFromClientAndVerifyListenerCount() {
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
@@ -225,7 +225,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
   }
 
   @Test
-  public void clearFromClientWithAccessorAsServer() {
+  public void invokeClearFromClientWithAccessorAsServer() {
     dataStore1.invoke(this::stopServers);
     dataStore2.invoke(this::stopServers);
     dataStore3.invoke(this::stopServers);
@@ -245,7 +245,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
   }
 
   @Test
-  public void normalClearFromDataStoreWithClientInterest() {
+  public void invokeClearFromDataStoreWithClientInterest() {
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
@@ -330,7 +330,6 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
     }
   }
-
 
   private DistributionMessageObserver testHookToKillMemberCallingClearBeforeMessageProcessed() {
     return new DistributionMessageObserver() {

@@ -18,21 +18,30 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PartitionedRegionClearMessage extends PartitionMessage {
 
@@ -49,6 +58,8 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
   private PartitionedRegion partitionedRegion;
 
   private Set<InternalDistributedMember> recipients;
+
+  private ArrayList bucketsCleared;
 
   @Override
   public EventID getEventID() {
@@ -113,7 +124,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
           new RegionEventImpl(partitionedRegion, Operation.REGION_CLEAR, this.cbArg, true,
               partitionedRegion.getMyId(),
               getEventID());
-      partitionedRegion.getPartitionedRegionClear().clearRegionLocal(event);
+      bucketsCleared = partitionedRegion.getPartitionedRegionClear().clearRegionLocal(event);
     }
     return true;
   }
@@ -151,9 +162,22 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
    * The response on which to wait for all the replies. This response ignores any exceptions
    * received from the "far side"
    */
-  public static class ClearPartitionedRegionResponse extends ReplyProcessor21 {
-    public ClearPartitionedRegionResponse(InternalDistributedSystem system, Set initMembers) {
+  public static class PartitionedRegionClearResponse extends ReplyProcessor21 {
+    CopyOnWriteArrayList bucketsCleared = new CopyOnWriteArrayList();
+
+    public PartitionedRegionClearResponse(InternalDistributedSystem system, Set initMembers) {
       super(system, initMembers);
+    }
+
+    @Override
+    public void process(DistributionMessage msg) {
+      if (msg instanceof PartitionedRegionClearReplyMessage) {
+        List buckets = ((PartitionedRegionClearReplyMessage) msg).bucketsCleared;
+        if (buckets != null) {
+          bucketsCleared.addAll(buckets);
+        }
+      }
+      super.process(msg, true);
     }
 
     @Override
@@ -162,4 +186,109 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     }
   }
 
+  @Override
+  protected void sendReply(InternalDistributedMember member, int processorId,
+      DistributionManager distributionManager, ReplyException ex,
+      PartitionedRegion partitionedRegion, long startTime) {
+    if (partitionedRegion != null) {
+      if (startTime > 0) {
+        partitionedRegion.getPrStats().endPartitionMessagesProcessing(startTime);
+      }
+    }
+    PartitionedRegionClearMessage.PartitionedRegionClearReplyMessage
+        .send(member, processorId, getReplySender(distributionManager), op, bucketsCleared,
+            ex);
+  }
+
+  public static class PartitionedRegionClearReplyMessage extends ReplyMessage {
+
+    private ArrayList bucketsCleared;
+
+    private OperationType op;
+
+    @Override
+    public boolean getInlineProcess() {
+      return true;
+    }
+
+    /**
+     * Empty constructor to conform to DataSerializable interface
+     */
+    public PartitionedRegionClearReplyMessage() {}
+
+    private PartitionedRegionClearReplyMessage(int processorId, OperationType op,
+        ArrayList bucketsCleared, ReplyException ex) {
+      super();
+      this.bucketsCleared = bucketsCleared;
+      this.op = op;
+      setProcessorId(processorId);
+      setException(ex);
+    }
+
+    /** Send an ack */
+    public static void send(InternalDistributedMember recipient, int processorId, ReplySender dm,
+        OperationType op, ArrayList bucketsCleared, ReplyException ex) {
+
+      Assert.assertTrue(recipient != null, "partitionedRegionClearReplyMessage NULL reply message");
+
+      PartitionedRegionClearMessage.PartitionedRegionClearReplyMessage m =
+          new PartitionedRegionClearMessage.PartitionedRegionClearReplyMessage(processorId, op,
+              bucketsCleared, ex);
+
+      m.setRecipient(recipient);
+      dm.putOutgoing(m);
+    }
+
+    /**
+     * Processes this message. This method is invoked by the receiver of the message.
+     *
+     * @param dm the distribution manager that is processing the message.
+     */
+    @Override
+    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
+      final long startTime = getTimestamp();
+
+      if (rp == null) {
+        if (LogService.getLogger().isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          LogService.getLogger().trace(LogMarker.DM_VERBOSE, "{}: processor not found", this);
+        }
+        return;
+      }
+
+      rp.process(this);
+
+      dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
+    }
+
+    @Override
+    public int getDSFID() {
+      return CLEAR_PARTITIONED_REGION_REPLY_MESSAGE;
+    }
+
+    @Override
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
+      op = PartitionedRegionClearMessage.OperationType.values()[in.readByte()];
+      bucketsCleared = DataSerializer.readArrayList(in);
+    }
+
+    @Override
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
+      out.writeByte(op.ordinal());
+      DataSerializer.writeArrayList(bucketsCleared, out);
+    }
+
+    @Override
+    public String toString() {
+      StringBuffer sb = new StringBuffer();
+      sb.append("PartitionedRegionClearReplyMessage ").append("processorid=")
+          .append(this.processorId)
+          .append(" bucketsCleared ").append(this.bucketsCleared).append(" exception=")
+          .append(getException());
+      return sb.toString();
+    }
+  }
 }

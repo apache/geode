@@ -77,6 +77,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 public class PartitionedRegionClearWithExpirationDUnitTest implements Serializable {
   private static final Integer BUCKETS = 13;
   private static final Integer EXPIRATION_TIME = 5 * 60;
+  private static final Integer SMALL_EXPIRATION_TIME = 10;
   private static final String REGION_NAME = "PartitionedRegion";
 
   @Rule
@@ -289,7 +290,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
       retry = false;
       try {
         cache.getRegion(REGION_NAME).clear();
-      } catch (PartitionedRegionPartialClearException partialClearException) {
+      } catch (PartitionedRegionPartialClearException | CacheWriterException ex) {
         retry = true;
       }
     } while (retry);
@@ -355,7 +356,8 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   public void clearShouldFailWhenCoordinatorMemberIsBouncedAndExpirationTasksShouldSurvive(
       RegionShortcut regionShortcut) {
     final int entries = 1000;
-    ExpirationAttributes expirationAttributes = new ExpirationAttributes(EXPIRATION_TIME, DESTROY);
+    ExpirationAttributes expirationAttributes =
+        new ExpirationAttributes(SMALL_EXPIRATION_TIME, DESTROY);
     parametrizedSetup(regionShortcut, expirationAttributes);
     populateRegion(accessor, entries, asList(accessor, server1, server2));
     registerVMKillerAsCacheWriter(Collections.singletonList(server1));
@@ -420,6 +422,14 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   public void clearShouldSucceedAndRemoveRegisteredExpirationTasksWhenNonCoordinatorMemberIsBounced(
       TestVM coordinatorVM, RegionShortcut regionShortcut) {
     final int entries = 1500;
+    // To avoid partition offline exception without redundancy.
+    if (regionShortcut == PARTITION_PERSISTENT) {
+      regionShortcut = PARTITION_REDUNDANT_PERSISTENT;
+    } else if (regionShortcut == PARTITION_PERSISTENT_OVERFLOW) {
+      regionShortcut = PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
+    }
+
+    RegionShortcut rs = regionShortcut;
     ExpirationAttributes expirationAttributes = new ExpirationAttributes(EXPIRATION_TIME, DESTROY);
     parametrizedSetup(regionShortcut, expirationAttributes);
     registerVMKillerAsCacheWriter(Collections.singletonList(server2));
@@ -431,7 +441,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
     // Wait for member to get back online and assign buckets.
     server2.invoke(() -> {
       cacheRule.createCache();
-      initDataStore(regionShortcut, expirationAttributes);
+      initDataStore(rs, expirationAttributes);
       await().untilAsserted(
           () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNotNull());
       PartitionRegionHelper.assignBucketsToPartitions(cacheRule.getCache().getRegion(REGION_NAME));
