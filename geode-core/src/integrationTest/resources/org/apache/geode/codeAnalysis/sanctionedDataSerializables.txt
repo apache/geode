@@ -857,10 +857,6 @@ org/apache/geode/internal/cache/CacheServerAdvisor$CacheServerProfile,2
 fromData,54
 toData,43
 
-org/apache/geode/internal/cache/ClearPartitionedRegionMessage,2
-fromData,40
-toData,36
-
 org/apache/geode/internal/cache/ClientRegionEventImpl,2
 fromData,15
 toData,15
@@ -1153,6 +1149,14 @@ toData,97
 org/apache/geode/internal/cache/PartitionRegionConfig,2
 fromData,207
 toData,178
+
+org/apache/geode/internal/cache/PartitionedRegionClearMessage,2
+fromData,40
+toData,36
+
+org/apache/geode/internal/cache/PartitionedRegionClearMessage$PartitionedRegionClearReplyMessage,2
+fromData,29
+toData,28
 
 org/apache/geode/internal/cache/PoolFactoryImpl$PoolAttributes,2
 fromData,153

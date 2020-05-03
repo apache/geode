@@ -677,6 +677,8 @@ public class DSFIDFactory implements DataSerializableFixedID {
         DestroyPartitionedRegionMessage.class);
     serializer.registerDSFID(CLEAR_PARTITIONED_REGION_MESSAGE,
         PartitionedRegionClearMessage.class);
+    serializer.registerDSFID(CLEAR_PARTITIONED_REGION_REPLY_MESSAGE,
+        PartitionedRegionClearMessage.PartitionedRegionClearReplyMessage.class);
     serializer.registerDSFID(INVALIDATE_PARTITIONED_REGION_MESSAGE,
         InvalidatePartitionedRegionMessage.class);
     serializer.registerDSFID(COMMIT_PROCESS_QUERY_MESSAGE, CommitProcessQueryMessage.class);
