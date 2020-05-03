@@ -941,7 +941,7 @@ public class Oplog implements CompactableOplog, Flushable {
         deleteCRF();
 
         // See GEODE-8029.
-        // The drf file needs to be deleted, specially when the disk-store is *only* used by
+        // The drf file needs to be deleted, especially when the disk-store is *only* used by
         // gateway-senders, otherwise there will be orphaned drfs that are never deleted by
         // compaction (unless there are pending events in the queue upon restart, aka there's a crf,
         // or a manual compaction is executed).

@@ -168,6 +168,7 @@ public class PersistentGatewaySenderWithIsolatedDiskStoreDistributedTest impleme
   static Object[] regionAndGatewayTypes() {
     ArrayList<Object[]> parameters = new ArrayList<>();
     parameters.add(new Object[] {RegionShortcut.PARTITION, true});
+    parameters.add(new Object[] {RegionShortcut.PARTITION, false});
     parameters.add(new Object[] {RegionShortcut.REPLICATE, false});
 
     return parameters.toArray();
@@ -268,7 +269,8 @@ public class PersistentGatewaySenderWithIsolatedDiskStoreDistributedTest impleme
   @Test
   @TestCaseName(TEST_CASE_NAME)
   @Parameters(method = "regionAndGatewayTypes")
-  public void anotherTest(RegionShortcut regionShortcut, boolean parallel) throws Exception {
+  public void diskStoreShouldNotBeCompactedOnMemberRestartWhenThereAreNonDispatchedEventsInTheQueue(
+      RegionShortcut regionShortcut, boolean parallel) throws Exception {
     final int entries = 1000;
 
     // Create Region, DiskStore and Gateway on Cluster2

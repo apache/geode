@@ -4271,19 +4271,11 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   public static void validate(String name, File[] dirs) throws Exception {
-    try {
-      DiskStoreImpl dsi = createForOfflineValidate(name, dirs);
-      dsi.validate();
-    } finally {
-      cleanupOffline();
-    }
+    offlineValidate(name, dirs);
   }
 
   /**
    * Validates the disk-store in offline mode, and returns the validated DiskStore instance.
-   * This method is an "almost exact copy" of {@link DiskStoreImpl#validate(String, File[])}.
-   * I've added a new one instead of modfying the existing method to prevent any backward
-   * compatibility issues (even though the class belongs to an internal package).
    *
    * @param name Disk store name.
    * @param dirs Directories of the disk-store to validate.
