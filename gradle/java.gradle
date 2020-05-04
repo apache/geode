@@ -75,7 +75,7 @@ gradle.taskGraph.whenReady({ graph ->
     jar.metaInf {
       from("$rootDir/geode-assembly/src/main/dist/LICENSE")
       if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
-        from("$rootDir/NOTICE")
+        from("$rootDir/geode-assembly/src/main/dist/NOTICE")
       }
     }
   }
