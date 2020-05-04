@@ -64,6 +64,16 @@ public class CommandFunction implements Function<Object[]> {
 //        () -> DeltaSet.sadd(localRegion, key, membersToAdd),
 //        (Object membersAdded) -> regionFunctionContext.getResultSender().lastResult(membersAdded)
 //    );
+
+//    AtomicBoolean setWasDeleted = new AtomicBoolean();
+//    synchronizedRedisCommandRunner.run(key,
+//        () -> DeltaSet.srem(localRegion, key, membersToRemove, setWasDeleted),
+//        (membersRemoved) -> {
+//          ResultSender resultSender = regionFunctionContext.getResultSender();
+//          resultSender.sendResult(membersRemoved);
+//          resultSender.lastResult(setWasDeleted.get() ? 1L : 0L);
+//        });
+
   }
 
   @Override

@@ -20,10 +20,8 @@ import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-class SynchronizedRunner {
+class SynchronizedRedisCommandRunner {
   private final LockManager lockManager = new LockManager();
-
-  public SynchronizedRunner() { }
 
   public void run(ByteArrayWrapper key,
                   Callable redisCommand,

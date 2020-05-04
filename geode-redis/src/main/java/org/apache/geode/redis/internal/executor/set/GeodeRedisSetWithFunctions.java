@@ -46,7 +46,7 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   public static void registerFunctions() {
-    SynchronizedRunner synchronizedRunner = new SynchronizedRunner();
+    SynchronizedRedisCommandRunner synchronizedRedisCommandRunner = new SynchronizedRedisCommandRunner();
     FunctionService.registerFunction(new CommandFunction());
   }
 
