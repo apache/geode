@@ -47,7 +47,9 @@ class NotificationHubClient {
               NotificationBroadCasterProxy.class);
       // Will return null if the Bean is filtered out.
       if (broadcaster != null) {
-        logger.info("KIRK:NotificationHubClient:sendNotification:sendNotification {}", event);
+        logger.info(
+            "KIRK:NotificationHubClient:sendNotification:sendNotification: broadcaster {} sending {}",
+            broadcaster, event);
         broadcaster.sendNotification(event.getNewValue());
       }
 
