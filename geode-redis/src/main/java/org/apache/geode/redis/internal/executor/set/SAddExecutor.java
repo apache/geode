@@ -26,26 +26,47 @@ import org.apache.geode.redis.internal.RedisDataType;
 
 public class SAddExecutor extends SetExecutor {
 
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
+
+    List<ByteArrayWrapper> commandElements =
+        command
+            .getProcessedCommandWrappers();
 
     if (commandElements.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SADD));
-      return;
+      command.setResponse(
+          Coder.getErrorResponse(
+              context.getByteBufAllocator(),
+              ArityDef.SADD));
     }
 
     // Save key
-    context.getKeyRegistrar().register(command.getKey(), RedisDataType.REDIS_SET);
+    context
+        .getKeyRegistrar()
+        .register(
+            command.getKey(),
+            RedisDataType.REDIS_SET);
 
-    ByteArrayWrapper key = command.getKey();
-    RedisSet geodeRedisSet =
-        new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(
+            context
+                .getRegionProvider()
+                .getSetRegion());
+
     ArrayList<ByteArrayWrapper> membersToAdd =
-        new ArrayList<>(commandElements.subList(2, commandElements.size()));
+        new ArrayList<>(
+            commandElements
+                .subList(2,
+                    commandElements.size()));
 
-    long entriesAdded = geodeRedisSet.sadd(membersToAdd);
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), entriesAdded));
+    long entriesAdded =
+        redisSetCommands.sadd(
+            command.getKey(),
+            membersToAdd);
+
+    command.setResponse(
+        Coder.getIntegerResponse(
+            context.getByteBufAllocator(),
+            entriesAdded));
   }
 }

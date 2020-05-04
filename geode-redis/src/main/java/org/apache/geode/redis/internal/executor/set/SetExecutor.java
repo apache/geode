@@ -31,15 +31,22 @@ public abstract class SetExecutor extends AbstractExecutor {
    * @param context the execution handler
    * @return the set Region
    */
-  Region<ByteArrayWrapper, DeltaSet> getRegion(ExecutionHandlerContext context) {
-    return context.getRegionProvider().getSetRegion();
+  Region<ByteArrayWrapper, SetDelta> getRegion(
+      ExecutionHandlerContext context) {
+
+    return context
+        .getRegionProvider()
+        .getSetRegion();
   }
 
-  protected AutoCloseableLock withRegionLock(ExecutionHandlerContext context, ByteArrayWrapper key)
-      throws InterruptedException, TimeoutException {
+  protected AutoCloseableLock withRegionLock(
+      ExecutionHandlerContext context,
+      ByteArrayWrapper key)
+      throws InterruptedException,
+      TimeoutException {
+
     RedisLockService lockService = context.getLockService();
 
     return lockService.lock(key);
   }
-
 }

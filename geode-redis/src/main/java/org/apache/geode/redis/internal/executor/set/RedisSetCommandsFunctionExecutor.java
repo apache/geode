@@ -34,14 +34,11 @@ import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
 @SuppressWarnings("unchecked")
-public class GeodeRedisSetWithFunctions implements RedisSet {
+public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
-  private final ByteArrayWrapper key;
-  private final Region<ByteArrayWrapper, DeltaSet> region;
+  private final Region<ByteArrayWrapper, SetDelta> region;
 
-  public GeodeRedisSetWithFunctions(ByteArrayWrapper key,
-      Region<ByteArrayWrapper, DeltaSet> region) {
-    this.key = key;
+  public RedisSetCommandsFunctionExecutor(Region<ByteArrayWrapper, SetDelta> region) {
     this.region = region;
   }
 
@@ -51,14 +48,15 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   @Override
-  public long sadd(ArrayList<ByteArrayWrapper> membersToAdd) {
-    ResultCollector<Object[], List<Long>> results = executeFunction(SADD, membersToAdd);
+  public long sadd(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd) {
+    ResultCollector<Object[], List<Long>> results = executeFunction(SADD, key, membersToAdd);
     return results.getResult().get(0);
   }
 
   @Override
-  public long srem(ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    ResultCollector<Object[], List<Long>> results = executeFunction(SREM, membersToRemove);
+  public long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove,
+      AtomicBoolean setWasDeleted) {
+    ResultCollector<Object[], List<Long>> results = executeFunction(SREM, key, membersToRemove);
     List<Long> resultList = results.getResult();
     long membersRemoved = resultList.get(0);
     long wasDeleted = resultList.get(1);
@@ -69,19 +67,20 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   @Override
-  public Set<ByteArrayWrapper> members() {
+  public Set<ByteArrayWrapper> members(ByteArrayWrapper key) {
     ResultCollector<Object[], List<Set<ByteArrayWrapper>>> results =
-        executeFunction(SMEMBERS, null);
+          executeFunction(SMEMBERS, key, null);
     return results.getResult().get(0);
   }
 
   @Override
-  public boolean del() {
-    ResultCollector<Object[], List<Boolean>> results = executeFunction(DEL, null);
+  public boolean del(ByteArrayWrapper key) {
+    ResultCollector<Object[], List<Boolean>> results = executeFunction(DEL, key, null);
     return results.getResult().get(0);
   }
 
   private ResultCollector executeFunction(RedisCommandType command,
+      ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> commandArguments) {
     return FunctionService
         .onRegion(region)

@@ -40,9 +40,9 @@ public class SMembersExecutor extends SetExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
 
-    RedisSet geodeRedisSet =
-        new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
-    Set<ByteArrayWrapper> members = geodeRedisSet.members();
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    Set<ByteArrayWrapper> members = redisSetCommands.members(key);
 
     try {
       command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), members));

@@ -24,12 +24,12 @@ class SynchronizedRedisCommandRunner {
   private final LockManager lockManager = new LockManager();
 
   public void run(ByteArrayWrapper key,
-                  Callable redisCommand,
-                  Consumer<Object> resultsSenderCallBack) {
+      Callable redisCommandLambda,
+      Consumer<Object> resultsSenderCallBack) {
     Object resultOfRedisCommand;
     synchronized (lockManager.getLock(key)) {
       try {
-        resultOfRedisCommand = redisCommand.call();
+        resultOfRedisCommand = redisCommandLambda.call();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -57,6 +57,7 @@ class SynchronizedRedisCommandRunner {
       if (hash < 0) {
         hash = -hash;
       }
-      return locks[hash % locks.length];    }
+      return locks[hash % locks.length];
+    }
   }
 }

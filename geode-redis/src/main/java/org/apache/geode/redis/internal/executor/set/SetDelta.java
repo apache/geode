@@ -40,16 +40,16 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
  * class can be removed once readers are changed to
  * also use the SynchronizedRunner.
  */
-public class DeltaSet implements Delta, DataSerializable {
+public class SetDelta implements Delta, DataSerializable {
 
   public static void sadd(ResultSender<Long> resultSender,
-      Region<ByteArrayWrapper, DeltaSet> localRegion, ByteArrayWrapper key,
+      Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
     resultSender.lastResult(sadd(localRegion, key, membersToAdd));
   }
 
   public static void srem(ResultSender<Long> resultSender,
-      Region<ByteArrayWrapper, DeltaSet> localRegion, ByteArrayWrapper key,
+      Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove) {
     AtomicBoolean setWasDeleted = new AtomicBoolean();
     long membersRemoved = srem(localRegion, key, membersToRemove, setWasDeleted);
@@ -58,65 +58,67 @@ public class DeltaSet implements Delta, DataSerializable {
   }
 
   public static void del(ResultSender<Boolean> resultSender,
-      Region<ByteArrayWrapper, DeltaSet> localRegion, ByteArrayWrapper key) {
+      Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key) {
     resultSender.lastResult(del(localRegion, key));
   }
 
   public static void smembers(ResultSender<Set<ByteArrayWrapper>> resultSender,
-      Region<ByteArrayWrapper, DeltaSet> localRegion, ByteArrayWrapper key) {
-    resultSender.lastResult(DeltaSet.members(localRegion, key));
+      Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key) {
+    resultSender.lastResult(members(localRegion, key));
   }
 
   private HashSet<ByteArrayWrapper> members;
   private transient ArrayList<ByteArrayWrapper> deltas;
-  // true if deltas contains adds; false if removes
-  private transient boolean deltasAreAdds;
+  // false if deltas contain only removes @todo: only removes? only adds? clarify...
+  private transient boolean deltasContainAdds;
 
   @SuppressWarnings("unchecked")
-  DeltaSet(Collection<ByteArrayWrapper> members) {
+  SetDelta(Collection<ByteArrayWrapper> members) {
     if (members instanceof HashSet) {
       this.members = (HashSet<ByteArrayWrapper>) members;
     } else {
       this.members = new HashSet<>(members);
     }
   }
-  // for serialization
-  public DeltaSet() {}
 
-  public static long sadd(Region<ByteArrayWrapper,
-      DeltaSet> region,
+  // for serialization
+  public SetDelta() {}
+
+  public static long sadd(Region<ByteArrayWrapper, SetDelta> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
-    DeltaSet deltaSet = region.get(key);
-    if (deltaSet != null) {
+
+    SetDelta setDelta = region.get(key); // is this weird that it contains and instance of itself?
+
+    if (setDelta != null) {
       // update existing value
-      return deltaSet.saddInstance(membersToAdd, region, key);
+      return setDelta.performSaddInGeode(membersToAdd, region, key);
     } else {
-      region.create(key, new DeltaSet(membersToAdd));
+      region.create(key, new SetDelta(membersToAdd));
       return membersToAdd.size();
     }
   }
 
-  public static long srem(Region<ByteArrayWrapper, DeltaSet> region,
+  public static long srem(Region<ByteArrayWrapper, SetDelta> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    DeltaSet deltaSet = region.get(key);
-    if (deltaSet == null) {
+    SetDelta setDelta = region.get(key);
+    if (setDelta == null) {
       return 0L;
     }
-    return deltaSet.sremInstance(membersToRemove, region, key, setWasDeleted);
+    return setDelta.performSremInGeode(membersToRemove, region, key, setWasDeleted);
   }
 
-  private static boolean del(Region<ByteArrayWrapper, DeltaSet> region,
+  public static boolean del(Region<ByteArrayWrapper, SetDelta> region,
       ByteArrayWrapper key) {
     return region.remove(key) != null;
   }
 
-  public static Set<ByteArrayWrapper> members(Region<ByteArrayWrapper, DeltaSet> region,
+  public static Set<ByteArrayWrapper> members(Region<ByteArrayWrapper, SetDelta> region,
       ByteArrayWrapper key) {
-    DeltaSet deltaSet = region.get(key);
-    if (deltaSet != null) {
-      return deltaSet.members();
+    SetDelta setDelta = region.get(key);
+    if (setDelta != null) {
+      return setDelta.members();
     } else {
       return Collections.emptySet();
     }
@@ -138,7 +140,7 @@ public class DeltaSet implements Delta, DataSerializable {
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeBoolean(deltasAreAdds, out);
+    DataSerializer.writeBoolean(deltasContainAdds, out);
     DataSerializer.writeArrayList(deltas, out);
   }
 
@@ -178,13 +180,14 @@ public class DeltaSet implements Delta, DataSerializable {
    * @param key the name of the set to add to
    * @return the number of members actually added; -1 if concurrent modification
    */
-  private synchronized long saddInstance(ArrayList<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, DeltaSet> region,
+  private synchronized long performSaddInGeode(ArrayList<ByteArrayWrapper> membersToAdd,
+      Region<ByteArrayWrapper, SetDelta> region,
       ByteArrayWrapper key) {
+
     membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      deltasAreAdds = true;
+      deltasContainAdds = true;
       deltas = membersToAdd;
       try {
         region.put(key, this);
@@ -203,9 +206,10 @@ public class DeltaSet implements Delta, DataSerializable {
    * @param setWasDeleted set to true if this method deletes the set
    * @return the number of members actually removed; -1 if concurrent modification
    */
-  private synchronized long sremInstance(ArrayList<ByteArrayWrapper> membersToRemove,
-      Region<ByteArrayWrapper, DeltaSet> region,
+  private synchronized long performSremInGeode(ArrayList<ByteArrayWrapper> membersToRemove,
+      Region<ByteArrayWrapper, SetDelta> region,
       ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
+
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
@@ -215,7 +219,7 @@ public class DeltaSet implements Delta, DataSerializable {
           setWasDeleted.set(true);
         }
       } else {
-        deltasAreAdds = false;
+        deltasContainAdds = false;
         deltas = membersToRemove;
         try {
           region.put(key, this);

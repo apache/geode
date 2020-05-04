@@ -21,12 +21,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-public interface RedisSet {
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd);
+public interface RedisSetCommands {
 
-  long srem(ArrayList<ByteArrayWrapper> membersToAdd, AtomicBoolean setWasDeleted);
+  long sadd(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd);
 
-  Set<ByteArrayWrapper> members();
+  long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd,
+      AtomicBoolean setWasDeleted);
 
-  boolean del();
+  Set<ByteArrayWrapper> members(ByteArrayWrapper key);
+
+  boolean del(ByteArrayWrapper key);
 }

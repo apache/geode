@@ -45,8 +45,8 @@ public class SScanExecutor extends AbstractScanExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, DeltaSet> region = getRegion(context);
-    Set<ByteArrayWrapper> set = DeltaSet.members(region, key);
+    Region<ByteArrayWrapper, SetDelta> region = getRegion(context);
+    Set<ByteArrayWrapper> set = SetDelta.members(region, key);
 
     if (set == null) {
       command.setResponse(
@@ -122,7 +122,7 @@ public class SScanExecutor extends AbstractScanExecutor {
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
 
-  private Region<ByteArrayWrapper, DeltaSet> getRegion(
+  private Region<ByteArrayWrapper, SetDelta> getRegion(
       ExecutionHandlerContext context) {
     return context.getRegionProvider().getSetRegion();
   }

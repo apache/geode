@@ -48,9 +48,9 @@ public class SIsMemberExecutor extends SetExecutor {
 
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
 
-    Region<ByteArrayWrapper, DeltaSet> region = this.getRegion(context);
+    Region<ByteArrayWrapper, SetDelta> region = this.getRegion(context);
 
-    DeltaSet set = region.get(key);
+    SetDelta set = region.get(key);
 
     if (set == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
