@@ -72,7 +72,19 @@ public class DeltaSet implements Delta, DataSerializable {
   // true if deltas contains adds; false if removes
   private transient boolean deltasAreAdds;
 
-  public static long sadd(Region<ByteArrayWrapper, DeltaSet> region,
+  @SuppressWarnings("unchecked")
+  DeltaSet(Collection<ByteArrayWrapper> members) {
+    if (members instanceof HashSet) {
+      this.members = (HashSet<ByteArrayWrapper>) members;
+    } else {
+      this.members = new HashSet<>(members);
+    }
+  }
+  // for serialization
+  public DeltaSet() {}
+
+  public static long sadd(Region<ByteArrayWrapper,
+      DeltaSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
     DeltaSet deltaSet = region.get(key);
@@ -118,18 +130,6 @@ public class DeltaSet implements Delta, DataSerializable {
     return members.size();
   }
 
-  @SuppressWarnings("unchecked")
-  DeltaSet(Collection<ByteArrayWrapper> members) {
-    if (members instanceof HashSet) {
-      this.members = (HashSet<ByteArrayWrapper>) members;
-    } else {
-      this.members = new HashSet<>(members);
-    }
-  }
-
-  // for serialization
-  public DeltaSet() {}
-
   // DELTA
   @Override
   public boolean hasDelta() {
@@ -161,7 +161,6 @@ public class DeltaSet implements Delta, DataSerializable {
   }
 
   // DATA SERIALIZABLE
-
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeHashSet(members, out);
@@ -171,7 +170,6 @@ public class DeltaSet implements Delta, DataSerializable {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     members = DataSerializer.readHashSet(in);
   }
-
 
   /**
    * @param membersToAdd members to add to this set; NOTE this list may by

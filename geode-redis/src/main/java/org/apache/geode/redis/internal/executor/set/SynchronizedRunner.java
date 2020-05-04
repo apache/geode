@@ -22,24 +22,24 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisLockService;
 
 class SynchronizedRunner {
-  // private RedisLockService redisLockService;
   private final LockManager lockManager = new LockManager();
 
   public SynchronizedRunner(RedisLockService redisLockService) {
     // this.redisLockService = redisLockService;
   }
 
-  public void run(ByteArrayWrapper key, Callable callable, Consumer<Object> callback) {
-    Object call;
+  public void run(ByteArrayWrapper key,
+                  Callable redisCommand,
+                  Consumer<Object> resultsSenderCallBack) {
+    Object resultOfRedisCommand;
     synchronized (lockManager.getLock(key)) {
       try {
-        call = callable.call();
+        resultOfRedisCommand = redisCommand.call();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
-    callback.accept(call);
-
+    resultsSenderCallBack.accept(resultOfRedisCommand);
   }
 
   private static class LockManager {
@@ -62,7 +62,6 @@ class SynchronizedRunner {
       if (hash < 0) {
         hash = -hash;
       }
-      return locks[hash % locks.length];
-    }
+      return locks[hash % locks.length];    }
   }
 }

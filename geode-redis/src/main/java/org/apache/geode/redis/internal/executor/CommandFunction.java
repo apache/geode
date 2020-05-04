@@ -60,6 +60,10 @@ public class CommandFunction implements Function<Object[]> {
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
+//    synchronizedRunner.run(key,
+//        () -> DeltaSet.sadd(localRegion, key, membersToAdd),
+//        (Object membersAdded) -> regionFunctionContext.getResultSender().lastResult(membersAdded)
+//    );
   }
 
   @Override
