@@ -179,11 +179,6 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
       }
       super.process(msg, true);
     }
-
-    @Override
-    protected void processException(ReplyException ex) {
-      super.processException(ex);
-    }
   }
 
   @Override
