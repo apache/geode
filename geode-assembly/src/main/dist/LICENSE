@@ -1069,10 +1069,7 @@ The MIT License (http://opensource.org/licenses/mit-license.html)
 
 Apache Geode bundles the following files under the MIT License:
 
-  - Animal Sniffer Annotations v1.17
-    (https://www.mojohaus.org/animal-sniffer/source-repository.html)
-    Copyright (c) 2009 codehaus.org
-  - Checker Qual 2.10.0 (https://checkerframework.org), Copyright (c)
+  - Checker Qual v2.10.0 (https://checkerframework.org), Copyright (c)
     2004-present by the Checker Framework developers
   - HTML5 Shiv vpre3.5 (https://github.com/aFarkas/html5shiv), Copyright
     (c) 2014 Alexander Farkas (aFarkas)
@@ -1099,8 +1096,6 @@ Apache Geode bundles the following files under the MIT License:
     Foundation and other contributors, http://jquery.org
   - jScrollPane (http://jscrollpane.kelvinluck.com/), Copyright (c) 2010
     Kelvin Luck
-  - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),
-    Copyright (c) 2012 Scott Jehl
   - MooTools (http://mootools.net), Copyright (c) 2006-2015 Valerio
     Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
