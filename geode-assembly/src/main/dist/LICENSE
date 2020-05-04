@@ -270,7 +270,6 @@ Distribution License:
     (https://www.oracle.com/java/technologies/java-beans-activation.html)
   - javax.activation v1.2.0
     (https://www.oracle.com/technetwork/java/javase/jaf-135115.html)
-  - javax.mail v1.6.1 (http://www.oracle.com/)
   - javax.mail v1.6.2 (http://www.oracle.com/)
   - javax.resource v 1.7.1 (https://glassfish.java.net/)
   - javax.servlet v3.1.0 (https://glassfish.java.net/)
