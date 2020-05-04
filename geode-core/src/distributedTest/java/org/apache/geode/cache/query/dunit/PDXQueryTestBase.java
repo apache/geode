@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.fail;
 
@@ -63,8 +64,8 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
   protected final String rootRegionName = "root";
   protected final String regionName = "PdxTest";
   protected final String regionName2 = "PdxTest2";
-  protected final String regName = "/" + rootRegionName + "/" + regionName;
-  protected final String regName2 = "/" + rootRegionName + "/" + regionName2;
+  protected final String regName = SEPARATOR + rootRegionName + SEPARATOR + regionName;
+  protected final String regName2 = SEPARATOR + rootRegionName + SEPARATOR + regionName2;
   protected final String[] queryString = new String[] {"SELECT DISTINCT id FROM " + regName, // 0
       "SELECT * FROM " + regName, // 1
       "SELECT ticker FROM " + regName, // 2

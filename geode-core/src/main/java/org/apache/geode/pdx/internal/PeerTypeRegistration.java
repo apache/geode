@@ -15,6 +15,8 @@
 
 package org.apache.geode.pdx.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +68,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private static final String LOCK_NAME = "PDX_LOCK";
 
   public static final String REGION_NAME = "PdxTypes";
-  public static final String REGION_FULL_PATH = "/" + REGION_NAME;
+  public static final String REGION_FULL_PATH = SEPARATOR + REGION_NAME;
 
   @VisibleForTesting
   public static final int PLACE_HOLDER_FOR_TYPE_ID = 0xFFFFFF;

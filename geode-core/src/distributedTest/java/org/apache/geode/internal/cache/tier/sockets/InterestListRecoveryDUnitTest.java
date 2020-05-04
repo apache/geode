@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.SystemFailure.initiateFailure;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -176,7 +177,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
      */
     // check whether the primary endpoint is connected to server1 or server2
     try {
-      Region<?, ?> r1 = cache.getRegion("/" + REGION_NAME);
+      Region<?, ?> r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       String poolName = r1.getAttributes().getPoolName();
       assertNotNull(poolName);
       pool = (PoolImpl) PoolManager.find(poolName);
@@ -240,7 +241,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries() {
     try {
-      LocalRegion r1 = (LocalRegion) cache.getRegion("/" + REGION_NAME);
+      LocalRegion r1 = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
       for (int i = 1; i < 6; i++) {
         if (!r1.containsKey("key-" + i)) {
           r1.create("key-" + i, "key-" + i);
@@ -254,7 +255,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   public static void registerK1toK5() {
     try {
-      LocalRegion r = (LocalRegion) cache.getRegion("/" + REGION_NAME);
+      LocalRegion r = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
       for (int i = 1; i < 6; i++) {
         r.registerInterest("key-" + i, InterestResultPolicy.KEYS);
       }
@@ -265,7 +266,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   public static void unregisterK1toK3() {
     try {
-      LocalRegion r = (LocalRegion) cache.getRegion("/" + REGION_NAME);
+      LocalRegion r = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
       for (int i = 1; i < 4; i++) {
         r.unregisterInterest("key-" + i);
       }
@@ -295,7 +296,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   public static void killCurrentEndpoint() {
     try {
-      Region r1 = cache.getRegion("/" + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       String poolName = r1.getAttributes().getPoolName();
       assertNotNull(poolName);
       pool = (PoolImpl) PoolManager.find(poolName);
@@ -308,7 +309,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   public static void put(String key) {
     try {
-      Region r1 = cache.getRegion("/" + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       r1.put(key, "server-" + key);
     } catch (Exception ex) {
       Assert.fail("failed while r.put()", ex);
@@ -343,7 +344,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
   public static void verifyRegionToProxyMapForFullRegistration() {
     Iterator iter = getCacheClientProxies().iterator();
     if (iter.hasNext()) {
-      Set keys = getKeysOfInterestMap((CacheClientProxy) iter.next(), "/" + REGION_NAME);
+      Set keys = getKeysOfInterestMap((CacheClientProxy) iter.next(), SEPARATOR + REGION_NAME);
       assertNotNull(keys);
 
       assertTrue(keys.contains("key-1"));
@@ -382,7 +383,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
   public static void verifyRegisterK4toK5() {
     Iterator iter = getCacheClientProxies().iterator();
     if (iter.hasNext()) {
-      Set keysMap = getKeysOfInterestMap((CacheClientProxy) iter.next(), "/" + REGION_NAME);
+      Set keysMap = getKeysOfInterestMap((CacheClientProxy) iter.next(), SEPARATOR + REGION_NAME);
       assertNotNull(keysMap);
 
       assertFalse(keysMap.contains("key-1"));
@@ -421,7 +422,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
   public static void verifyRegionToProxyMapForNoRegistration() {
     Iterator iter = getCacheClientProxies().iterator();
     if (iter.hasNext()) {
-      Set keysMap = getKeysOfInterestMap((CacheClientProxy) iter.next(), "/" + REGION_NAME);
+      Set keysMap = getKeysOfInterestMap((CacheClientProxy) iter.next(), SEPARATOR + REGION_NAME);
       if (keysMap != null) { // its ok not to have an empty map, just means there is no registration
         assertFalse(keysMap.contains("key-1"));
         assertFalse(keysMap.contains("key-2"));

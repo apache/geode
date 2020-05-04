@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
@@ -1042,7 +1043,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Region region = getCache().getRegion("/" + regions[0]);
+        Region region = getCache().getRegion(SEPARATOR + regions[0]);
         for (int i = 1; i <= numObjects; i++) {
           getCache().getLogger().fine("### DOING PUT with key: " + ("KEY-" + i));
           Portfolio p = new Portfolio(i);
@@ -1056,7 +1057,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         // Check for region destroyed event from server.
-        Region localRegion = getCache().getRegion("/" + regions[0]);
+        Region localRegion = getCache().getRegion(SEPARATOR + regions[0]);
         assertNotNull(localRegion);
 
         CqQueryTestListener cqListener = (CqQueryTestListener) getCache().getQueryService()
@@ -1072,7 +1073,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         // Check for region destroyed event from server.
-        Region localRegion = getCache().getRegion("/" + regions[0]);
+        Region localRegion = getCache().getRegion(SEPARATOR + regions[0]);
         assertNotNull(localRegion);
 
         localRegion.destroyRegion();
@@ -1084,7 +1085,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         // Check for region destroyed event from server.
-        Region localRegion = getCache().getRegion("/" + regions[0]);
+        Region localRegion = getCache().getRegion(SEPARATOR + regions[0]);
         // IF NULL - GOOD
         // ELSE - get listener and wait for destroyed.
         if (localRegion != null) {
@@ -1100,7 +1101,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
           assertNull(
               "Region is still available on client1 even after performing destroyRegion from client2 on server."
                   + "Client1 must have received destroyRegion message from server with CQ parts in it.",
-              getCache().getRegion("/" + regions[0]));
+              getCache().getRegion(SEPARATOR + regions[0]));
         }
       }
     });

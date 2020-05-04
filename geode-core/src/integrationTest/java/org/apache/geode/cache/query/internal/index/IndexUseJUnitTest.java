@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1349,7 +1350,7 @@ public class IndexUseJUnitTest {
     r.put("A0", map0);
     r.put("A1", map1);
     r.put("A2", map2);
-    qs.createIndex("pkIndex", IndexType.PRIMARY_KEY, "p.pk", "/" + regionName + " p");
+    qs.createIndex("pkIndex", IndexType.PRIMARY_KEY, "p.pk", SEPARATOR + regionName + " p");
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
     SelectResults sr = (SelectResults) qs

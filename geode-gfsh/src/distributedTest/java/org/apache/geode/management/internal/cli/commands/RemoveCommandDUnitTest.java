@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,8 +57,8 @@ public class RemoveCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create region --name=" + PARTITIONED_REGION_NAME + " --type=PARTITION").statusIsSuccess();
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + REPLICATE_REGION_NAME, 2);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + PARTITIONED_REGION_NAME, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + REPLICATE_REGION_NAME, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + PARTITIONED_REGION_NAME, 2);
 
     VMProvider.invokeInEveryMember(RemoveCommandDUnitTest::populateTestRegions, server1, server2);
   }

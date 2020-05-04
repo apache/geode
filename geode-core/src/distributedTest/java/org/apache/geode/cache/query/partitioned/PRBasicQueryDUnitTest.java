@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
@@ -379,7 +380,7 @@ public class PRBasicQueryDUnitTest extends CacheTestCase {
 
     vm1.invoke(() -> {
       QueryService qs = getCache().getQueryService();
-      qs.createIndex("index", IndexType.FUNCTIONAL, "ID", "/" + name);
+      qs.createIndex("index", IndexType.FUNCTIONAL, "ID", SEPARATOR + name);
       for (int i = 0; i < 100; i++) {
         Query query = qs.newQuery(
             "SELECT DISTINCT * FROM /" + name + " WHERE ID >= " + i + " ORDER BY ID asc LIMIT 1");

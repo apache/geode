@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
@@ -248,7 +249,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private static String convertRegionPathToName(String regionPath) {
-    if (regionPath.startsWith("/")) {
+    if (regionPath.startsWith(SEPARATOR)) {
       return regionPath.substring(1);
     }
     return regionPath;
@@ -401,7 +402,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingReplicatedUpdatesServiceAndClusterConfigForMultiServerGroup() {
-    String regionName = "/" + GROUP1_GROUP2_REGION;
+    String regionName = SEPARATOR + GROUP1_GROUP2_REGION;
     setupGroupReplicate(regionName, TEST_GROUP1 + "," + TEST_GROUP2);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -437,7 +438,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingPartitionedUpdatesServiceAndClusterConfigForMultiServerGroup() {
-    String regionName = "/" + GROUP1_GROUP2_REGION;
+    String regionName = SEPARATOR + GROUP1_GROUP2_REGION;
     setupGroupPartition(regionName, TEST_GROUP1 + "," + TEST_GROUP2);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -759,7 +760,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingUpdatesServiceAndClusterConfig() {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -786,7 +787,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithDomainClassUpdatesServiceAndClusterConfig() {
-    String regionName = "/" + EMPLOYEE_REGION;
+    String regionName = SEPARATOR + EMPLOYEE_REGION;
     setupReplicate(regionName);
     server1.invoke(() -> {
       ClusterStartupRule.getCache().registerPdxMetaData(new Employee());
@@ -952,7 +953,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createSynchronousMappingUpdatesServiceAndClusterConfig() {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -980,7 +981,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithPartitionUpdatesServiceAndClusterConfig() {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     setupPartition(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -1015,7 +1016,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithNoTable() {
-    String regionName = "/" + "myTable";
+    String regionName = SEPARATOR + "myTable";
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -1048,7 +1049,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createExistingRegionMappingFails() {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -1086,7 +1087,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithoutPdxNameFails() {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -1100,7 +1101,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithNonExistentRegionFails() {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, "bogusRegion");
@@ -1113,7 +1114,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithRegionThatHasALoaderFails() {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     setupReplicate(regionName, true);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -1127,7 +1128,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithExistingQueueFails() {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     setupReplicate(regionName);
     setupAsyncEventQueue(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);

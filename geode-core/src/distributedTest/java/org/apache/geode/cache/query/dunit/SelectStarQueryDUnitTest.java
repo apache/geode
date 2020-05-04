@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
@@ -955,7 +956,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
-          qs.createIndex("status", "status", "/" + regName);
+          qs.createIndex("status", "status", SEPARATOR + regName);
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -1025,7 +1026,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
-          qs.createIndex("status", "status", "/" + regName2);
+          qs.createIndex("status", "status", SEPARATOR + regName2);
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
@@ -91,7 +92,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   public final void postSetUp() throws Exception {
     this.rootRegionName = "root";
     this.regionName = this.getName();
-    this.regName = "/" + this.rootRegionName + "/" + this.regionName;
+    this.regName = SEPARATOR + this.rootRegionName + SEPARATOR + this.regionName;
 
     this.queryString =
         new String[] {"SELECT itr.value FROM " + this.regName + ".entries itr where itr.key = $1", // 0
@@ -177,7 +178,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final int port =
         vm0.invoke("GetCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
-    final String regionName = "/" + rootRegionName + "/" + name;
+    final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
 
     // Create client pool.
     final String poolName = "testRemoteImportQueries";
@@ -297,7 +298,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
-    final String regionName = "/" + rootRegionName + "/" + name;
+    final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
 
     // Create client pool.
     final String poolName = "testRemoteStructQueries";
@@ -445,7 +446,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
-    final String regionName = "/" + rootRegionName + "/" + name;
+    final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
 
     // Create client pool.
     final String poolName = "testRemoteFullRegionQueries";
@@ -1228,8 +1229,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final int port =
         vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
-    final String regionName1 = "/" + rootRegionName + "/" + name + "1";
-    final String regionName2 = "/" + rootRegionName + "/" + name + "2";
+    final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name + "1";
+    final String regionName2 = SEPARATOR + rootRegionName + SEPARATOR + name + "2";
 
     // Create client pool.
     final String poolName = "testRemoteJoinRegionQueries";
@@ -1310,7 +1311,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final int port = vm0.invoke("getCacheServerPort", () -> getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
-    final String regionName = "/" + rootRegionName + "/" + name;
+    final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
 
     // Create client pool.
     final String poolName1 = "testRemoteBridgeClientQueries1";
@@ -1412,8 +1413,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         vm0.invoke("getCachedServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
-    final String regionName1 = "/" + rootRegionName + "/" + name;
-    final String regionName2 = "/" + rootRegionName + "/" + name + "_2";
+    final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name;
+    final String regionName2 = SEPARATOR + rootRegionName + SEPARATOR + name + "_2";
 
     // Create client pool.
     final String poolName = "testBug36969";
@@ -1484,7 +1485,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
-    final String regionName = "/" + rootRegionName + "/" + name;
+    final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
 
     // Create client pool.
     final String poolName = "testRemoteFullRegionQueries";
@@ -1611,7 +1612,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
-    final String regionName1 = "/" + rootRegionName + "/" + name;
+    final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name;
 
     // Create client pool.
     final String poolName = "testUnSupportedOps";

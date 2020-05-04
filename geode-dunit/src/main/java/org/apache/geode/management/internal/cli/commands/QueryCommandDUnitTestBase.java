@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
@@ -57,13 +58,13 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @SuppressWarnings("serial")
 public class QueryCommandDUnitTestBase {
   private static final String DATA_REGION_NAME = "GemfireDataCommandsTestRegion";
-  private static final String DATA_REGION_NAME_PATH = "/" + DATA_REGION_NAME;
+  private static final String DATA_REGION_NAME_PATH = SEPARATOR + DATA_REGION_NAME;
   private static final String DATA_REGION_WITH_EVICTION_NAME =
       "GemfireDataCommandsTestRegionWithEviction";
   private static final String DATA_REGION_WITH_EVICTION_NAME_PATH =
-      "/" + DATA_REGION_WITH_EVICTION_NAME;
+      SEPARATOR + DATA_REGION_WITH_EVICTION_NAME;
   private static final String DATA_PAR_REGION_NAME = "GemfireDataCommandsTestParRegion";
-  private static final String DATA_PAR_REGION_NAME_PATH = "/" + DATA_PAR_REGION_NAME;
+  private static final String DATA_PAR_REGION_NAME_PATH = SEPARATOR + DATA_PAR_REGION_NAME;
 
   private static final String SERIALIZATION_FILTER =
       "org.apache.geode.management.internal.cli.dto.**";

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -104,14 +105,14 @@ public class IndexOnEntrySetJUnitTest {
   @Test
   public void testQueriesOnReplicatedRegion() throws Exception {
     testRegion = createReplicatedRegion(testRegionName);
-    String regionPath = "/" + testRegionName + ".entrySet entry";
+    String regionPath = SEPARATOR + testRegionName + ".entrySet entry";
     executeQueryTest(getQueriesOnRegion(testRegionName), "entry.key.Index", regionPath, 200);
   }
 
   @Test
   public void testEntryDestroyedRaceWithSizeEstimateReplicatedRegion() throws Exception {
     testRegion = createReplicatedRegion(testRegionName);
-    String regionPath = "/" + testRegionName + ".entrySet entry";
+    String regionPath = SEPARATOR + testRegionName + ".entrySet entry";
     executeQueryTestDestroyDuringSizeEstimation(getQueriesOnRegion(testRegionName),
         "entry.key.Index", regionPath, 201);
   }
@@ -123,7 +124,7 @@ public class IndexOnEntrySetJUnitTest {
   @Test
   public void testQueriesOnPartitionedRegion() throws Exception {
     testRegion = createPartitionedRegion(testRegionName);
-    String regionPath = "/" + testRegionName + ".entrySet entry";
+    String regionPath = SEPARATOR + testRegionName + ".entrySet entry";
     executeQueryTest(getQueriesOnRegion(testRegionName), "entry.key.Index", regionPath, 200);
   }
 

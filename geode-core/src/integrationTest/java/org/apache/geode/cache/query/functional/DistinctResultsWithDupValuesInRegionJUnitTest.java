@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -300,7 +301,7 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
     QueryService queryService = cache.getQueryService();
     Query query1 = null;
     try {
-      queryService.createIndex("idIndex", "p.ID", "/" + regionName + " p");
+      queryService.createIndex("idIndex", "p.ID", SEPARATOR + regionName + " p");
       for (String queryStr : queries) {
         query1 = queryService.newQuery(queryStr);
 
@@ -331,7 +332,7 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
     QueryService queryService = cache.getQueryService();
     Query query1 = null;
     try {
-      queryService.createIndex("idIndex", "p.ID", "/" + regionName + " p");
+      queryService.createIndex("idIndex", "p.ID", SEPARATOR + regionName + " p");
       for (String queryStr : queries) {
         query1 = queryService.newQuery(queryStr);
 
@@ -363,7 +364,7 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
     QueryService queryService = cache.getQueryService();
     Query query1 = null;
     try {
-      queryService.createIndex("idIndex", "p.ID", "/" + regionName + " p");
+      queryService.createIndex("idIndex", "p.ID", SEPARATOR + regionName + " p");
       for (String queryStr : queries) {
         query1 = queryService.newQuery(queryStr);
 

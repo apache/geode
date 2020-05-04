@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
@@ -191,7 +192,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void registerInterest() {
     try {
-      Region r = cache.getRegion("/" + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       r.registerInterest("ALL_KEYS");
     } catch (Exception ex) {
@@ -202,7 +203,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
   public static void putEntries() {
     try {
 
-      Region r = cache.getRegion("/" + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < 300; i++) {
         r.put("k" + (i % 10), "v" + i);
@@ -215,7 +216,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries(Long num) {
     try {
-      Region r = cache.getRegion("/" + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < num.longValue(); i++) {
         r.create("k" + i, "v" + i);

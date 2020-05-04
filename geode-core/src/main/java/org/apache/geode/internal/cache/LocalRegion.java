@@ -7500,7 +7500,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
       DiskStoreFactoryImpl diskStoreFactoryImpl = (DiskStoreFactoryImpl) diskStoreFactory;
-      return diskStoreFactoryImpl.createOwnedByRegion(getFullPath().replace('/', '_'),
+      return diskStoreFactoryImpl.createOwnedByRegion(getFullPath().replace(SEPARATOR_CHAR, '_'),
           this instanceof PartitionedRegion, internalRegionArgs);
     }
 

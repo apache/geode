@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.CacheFactory.getAnyInstance;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -316,7 +317,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void put() {
     try {
-      Region r1 = cache.getRegion("/" + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       r1.put("key-1", "server-value-1");
       r1.put("key-2", "server-value-2");
       r1.put("key-3", "server-value-3");

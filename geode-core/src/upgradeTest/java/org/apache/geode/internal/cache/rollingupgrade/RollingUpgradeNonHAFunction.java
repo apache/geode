@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
@@ -96,7 +97,7 @@ public class RollingUpgradeNonHAFunction extends RollingUpgrade2DUnitTestBase {
 
       putDataSerializableAndVerify(currentServer1, regionName, 0, 100, currentServer2, oldServer,
           oldServerAndLocator);
-      runFunction("/" + regionName, currentServer1,
+      runFunction(SEPARATOR + regionName, currentServer1,
           currentServer2, oldServer, oldServerAndLocator);
 
     } finally {

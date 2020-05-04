@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
@@ -202,7 +203,7 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
         assertNotNull(idIndex);
         assertEquals("PrIndexOnID", idIndex.getName());
         assertEquals("p.ID", idIndex.getIndexedExpression());
-        assertEquals("/" + PARTITIONED_REGION_NAME + " p", idIndex.getFromClause());
+        assertEquals(SEPARATOR + PARTITIONED_REGION_NAME + " p", idIndex.getFromClause());
         assertNotNull(idIndex.getStatistics());
 
         // Check for status index
@@ -211,7 +212,7 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
         assertNotNull(statusIndex);
         assertEquals("PrIndexOnStatus", statusIndex.getName());
         assertEquals("p.status", statusIndex.getIndexedExpression());
-        assertEquals("/" + PARTITIONED_REGION_NAME + " p", statusIndex.getFromClause());
+        assertEquals(SEPARATOR + PARTITIONED_REGION_NAME + " p", statusIndex.getFromClause());
         assertNotNull(statusIndex.getStatistics());
 
         // Check for all Indexes on the region.
@@ -535,10 +536,11 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
         portfolio, cnt, cntDest));
 
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
-        PARTITIONED_REGION_NAME, "index8", "k", "/" + PARTITIONED_REGION_NAME + ".keys k", ""));
+        PARTITIONED_REGION_NAME, "index8", "k", SEPARATOR + PARTITIONED_REGION_NAME + ".keys k",
+        ""));
     vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
         PARTITIONED_REGION_NAME, "index7", "nvl(k.status.toString(),'nopes')",
-        "/" + PARTITIONED_REGION_NAME + ".values k", ""));
+        SEPARATOR + PARTITIONED_REGION_NAME + ".values k", ""));
 
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
         portfolio, cnt, cntDest));
@@ -678,7 +680,7 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
 
     vm1.invoke(
         prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
-            "PrIndexOnKeyID", "key.ID", "/" + PARTITIONED_REGION_NAME + ".keys key", null));
+            "PrIndexOnKeyID", "key.ID", SEPARATOR + PARTITIONED_REGION_NAME + ".keys key", null));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
@@ -749,7 +751,7 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
 
     vm1.invoke(
         prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
-            "PrIndexOnKeyID", "key.ID", "/" + PARTITIONED_REGION_NAME + ".keys key", null));
+            "PrIndexOnKeyID", "key.ID", SEPARATOR + PARTITIONED_REGION_NAME + ".keys key", null));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryAndVerifyOrder(
@@ -812,15 +814,17 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
 
     vm1.invoke(
         prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
-            "PrIndexOnKeyID", "key.ID", "/" + PARTITIONED_REGION_NAME + ".keys key", null));
+            "PrIndexOnKeyID", "key.ID", SEPARATOR + PARTITIONED_REGION_NAME + ".keys key", null));
 
     vm1.invoke(
         prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
-            "PrIndexOnKeyStatus", "key.status", "/" + PARTITIONED_REGION_NAME + ".keys key", null));
+            "PrIndexOnKeyStatus", "key.status", SEPARATOR + PARTITIONED_REGION_NAME + ".keys key",
+            null));
 
     vm1.invoke(
         prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
-            "PrIndexOnsecID", "p.position1.secId", "/" + PARTITIONED_REGION_NAME + " p", null));
+            "PrIndexOnsecID", "p.position1.secId", SEPARATOR + PARTITIONED_REGION_NAME + " p",
+            null));
 
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
         "rrIndexOnStatus", "p.status", null, "p"));
@@ -829,13 +833,13 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
         "rrIndexOnID", "p.ID", null, "p"));
 
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
-        "rrIndexOnKeyID", "key.ID", "/" + LOCAL_REGION_NAME + ".keys key", null));
+        "rrIndexOnKeyID", "key.ID", SEPARATOR + LOCAL_REGION_NAME + ".keys key", null));
 
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
-        "rrIndexOnsecID", "p.position1.secId", "/" + LOCAL_REGION_NAME + " p", null));
+        "rrIndexOnsecID", "p.position1.secId", SEPARATOR + LOCAL_REGION_NAME + " p", null));
 
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
-        "rrIndexOnKeyStatus", "key.status", "/" + LOCAL_REGION_NAME + ".keys key", null));
+        "rrIndexOnKeyStatus", "key.status", SEPARATOR + LOCAL_REGION_NAME + ".keys key", null));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryWithLimit(

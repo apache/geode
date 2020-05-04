@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -118,7 +119,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             // Create Indexes
             try {
               Index index =
-                  cache.getQueryService().createIndex("statusIndex", "p.ID", "/" + name + " p");
+                  cache.getQueryService().createIndex("statusIndex", "p.ID",
+                      SEPARATOR + name + " p");
               assertNotNull(index);
             } catch (Exception e1) {
               e1.printStackTrace();
@@ -222,7 +224,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             // Create Indexes
             try {
               Index index =
-                  cache.getQueryService().createIndex("statusIndex", "p.ID", "/" + name + " p");
+                  cache.getQueryService().createIndex("statusIndex", "p.ID",
+                      SEPARATOR + name + " p");
               assertNotNull(index);
             } catch (Exception e1) {
               e1.printStackTrace();
@@ -326,7 +329,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             // Create Indexes
             try {
               Index index =
-                  cache.getQueryService().createIndex("statusIndex", "p.ID", "/" + name + " p");
+                  cache.getQueryService().createIndex("statusIndex", "p.ID",
+                      SEPARATOR + name + " p");
               assertNotNull(index);
             } catch (Exception e1) {
               e1.printStackTrace();
@@ -427,7 +431,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             // Create Indexes
             try {
               Index index =
-                  cache.getQueryService().createIndex("statusIndex", "p.ID", "/" + name + " p");
+                  cache.getQueryService().createIndex("statusIndex", "p.ID",
+                      SEPARATOR + name + " p");
               assertNotNull(index);
             } catch (Exception e1) {
               e1.printStackTrace();
@@ -519,7 +524,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             // Create Indexes
             try {
               Index index =
-                  cache.getQueryService().createIndex("statusIndex", "p.ID", "/" + name + " p");
+                  cache.getQueryService().createIndex("statusIndex", "p.ID",
+                      SEPARATOR + name + " p");
               assertNotNull(index);
             } catch (Exception e1) {
               e1.printStackTrace();
@@ -614,7 +620,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             // Create Indexes
             try {
               Index index =
-                  cache.getQueryService().createIndex("statusIndex", "p.ID", "/" + name + " p");
+                  cache.getQueryService().createIndex("statusIndex", "p.ID",
+                      SEPARATOR + name + " p");
               assertNotNull(index);
             } catch (Exception e1) {
               e1.printStackTrace();

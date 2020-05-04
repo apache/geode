@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -84,8 +85,8 @@ public class RebalanceMembersColocationTest {
           .create(CHILD_REGION_NAME);
     });
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + PARENT_REGION_NAME, 2);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + CHILD_REGION_NAME, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + PARENT_REGION_NAME, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + CHILD_REGION_NAME, 2);
 
     gfsh.connectAndVerify(locator);
 

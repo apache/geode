@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.REGION_NAME;
 
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = DESTROY_MAPPING__GROUPS_NAME__HELP) String[] groups) {
-    if (regionName.startsWith("/")) {
+    if (regionName.startsWith(SEPARATOR)) {
       regionName = regionName.substring(1);
     }
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -61,7 +62,7 @@ public class AsyncIndexUpdaterThreadShutdownJUnitTest {
     assertNotNull("Region ref null", localRegion);
 
     try {
-      cache.getQueryService().createIndex("idIndex", "ID", "/" + name);
+      cache.getQueryService().createIndex("idIndex", "ID", SEPARATOR + name);
     } catch (Exception e) {
       cache.close();
       e.printStackTrace();
@@ -93,7 +94,7 @@ public class AsyncIndexUpdaterThreadShutdownJUnitTest {
     assertNotNull("Region ref null", localRegion);
 
     try {
-      cache.getQueryService().createIndex("idIndex", "ID", "/" + name);
+      cache.getQueryService().createIndex("idIndex", "ID", SEPARATOR + name);
     } catch (Exception e) {
       cache.close();
       e.printStackTrace();

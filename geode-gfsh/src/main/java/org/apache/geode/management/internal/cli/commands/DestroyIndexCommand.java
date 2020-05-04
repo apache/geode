@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.geode.cache.Region.SEPARATOR;
 
 import java.util.List;
 import java.util.Set;
@@ -71,7 +72,7 @@ public class DestroyIndexCommand extends SingleGfshCommand {
 
     String regionName = null;
     if (regionPath != null) {
-      regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
+      regionName = regionPath.startsWith(SEPARATOR) ? regionPath.substring(1) : regionPath;
     }
 
     RegionConfig.Index indexInfo = new RegionConfig.Index();
