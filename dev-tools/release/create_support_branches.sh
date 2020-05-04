@@ -59,8 +59,9 @@ MINOR=${VERSION_MM#*.}
 NEWMAJOR=${MAJOR}
 NEWMINOR=$((MINOR + 1))
 
-NEWVERSION=${NEWMAJOR}.${NEWMINOR}
-NEWVERSION_NODOT=${NEWVERSION//./}
+NEWVERSION_MM=${NEWMAJOR}.${NEWMINOR}
+NEWVERSION_MM_NODOT=${NEWVERSION_MM//./}
+NEWVERSION=${NEWVERSION_MM}.0
 
 set -x
 WORKSPACE=$PWD/support-${VERSION_MM}-workspace
@@ -112,6 +113,7 @@ function failMsg2 {
 trap 'failMsg2 $LINENO' ERR
 
 
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_copyright.sh ${GEODE} ${GEODE_DEVELOP} ${GEODE_EXAMPLES} ${GEODE_EXAMPLES_DEVELOP} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
 set +x
@@ -141,7 +143,7 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git checkout -b support/${VERSION_MM}
-    git push -u origin
+    git push -u origin support/${VERSION_MM}
     set +x
 done
 
@@ -160,8 +162,8 @@ set +x
 #version = 1.13.0-SNAPSHOT
 sed -e "s/^version =.*/version = ${NEWVERSION}-SNAPSHOT/" -i.bak gradle.properties
 
-#  initial_version: 1.13.0-SNAPSHOT
-sed -e "s/^  initial_version:.*/  initial_version: ${NEWVERSION}-SNAPSHOT/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
+#  initial_version: 1.13.0-SNAPSHOT or 1.13.0-((stuff))
+sed -e "s/^  initial_version:[^-]*/  initial_version: ${NEWVERSION}/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
 
 VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
 #add the new ordinal and Version constants and set them as current&highest
@@ -189,15 +191,15 @@ sed -e "s#return Collections.unmodifiableMap(allCommands#allCommands.put(Version
 #  product_version_nodot: '113'
 #  product_version_geode: '1.13'
 sed -E \
-    -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_NODOT}#" \
-    -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION}'#" \
-    -e "s#version_nodot: '[0-9]+'#version_nodot: '${NEWVERSION_NODOT}'#" \
-    -e "s#product_version_geode: '[0-9.]+'#product_version_geode: '${NEWVERSION}'#" \
+    -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" \
+    -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION_MM}'#" \
+    -e "s#version_nodot: '[0-9]+'#version_nodot: '${NEWVERSION_MM_NODOT}'#" \
+    -e "s#product_version_geode: '[0-9.]+'#product_version_geode: '${NEWVERSION_MM}'#" \
     -i.bak geode-book/config.yml
 
 #rewrite '/', '/docs/guide/113/about_geode.html'
 #rewrite '/index.html', '/docs/guide/113/about_geode.html'
-sed -E -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_NODOT}#" -i.bak geode-book/redirects.rb
+sed -E -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" -i.bak geode-book/redirects.rb
 
 rm gradle.properties.bak ci/pipelines/shared/jinja.variables.yml.bak geode-book/config.yml.bak geode-book/redirects.rb.bak $VER.bak* $COM.bak*
 set -x
@@ -239,6 +241,7 @@ echo ""
 echo "============================================================"
 echo "Setting version on support/${VERSION_MM}"
 echo "============================================================"
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_versions.sh -v ${VERSION_MM}.0 -s -w "${WORKSPACE}"
 set +x

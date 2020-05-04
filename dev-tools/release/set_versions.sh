@@ -108,7 +108,6 @@ echo "Setting Geode versions and updating expected pom"
 echo "============================================================"
 set -x
 cd ${GEODE}
-git pull
 set +x
 
 #version = 1.13.0-SNAPSHOT
