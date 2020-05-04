@@ -25,7 +25,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,6 +37,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -149,20 +152,15 @@ public class CreateIndexCommandTest {
 
   @Test
   public void getValidRegionName() {
-    // the existing configuration has a region named /regionA.B
-    doReturn(Collections.singleton("A")).when(command).getGroupsContainingRegion(cms,
-        "/regionA.B");
-    when(cms.list(any(Region.class))).thenReturn(new ClusterManagementListResult<>());
-
-    assertThat(command.getValidRegionName("regionB", cms)).isEqualTo("regionB");
-    assertThat(command.getValidRegionName("/regionB", cms)).isEqualTo("/regionB");
-    assertThat(command.getValidRegionName("/regionB b", cms)).isEqualTo("/regionB");
-    assertThat(command.getValidRegionName("/regionB.entrySet()", cms))
-        .isEqualTo("/regionB");
-    assertThat(command.getValidRegionName("/regionA.B.entrySet() A", cms))
-        .isEqualTo("/regionA.B");
-    assertThat(command.getValidRegionName("/regionA.fieldName.entrySet() B", cms))
-        .isEqualTo("/regionA");
+    assertThat(command.getValidRegionName("regionB")).isEqualTo("regionB");
+    assertThat(command.getValidRegionName("/regionB")).isEqualTo("regionB");
+    assertThat(command.getValidRegionName("/regionB b")).isEqualTo("regionB");
+    assertThat(command.getValidRegionName("/regionB.entrySet()"))
+        .isEqualTo("regionB");
+    assertThat(command.getValidRegionName("/regionA.B.entrySet() A"))
+        .isEqualTo("regionA");
+    assertThat(command.getValidRegionName("/regionA.fieldName.entrySet() B"))
+        .isEqualTo("regionA");
   }
 
   @Test
@@ -198,7 +196,7 @@ public class CreateIndexCommandTest {
     gfshParser.executeAndAssertThat(command,
         "create index --name=index --expression=abc --region=/regionA --groups=group1,group3")
         .statusIsError()
-        .containsOutput("Region /regionA does not exist in some of the groups");
+        .containsOutput("Region regionA does not exist in some of the groups");
 
     verify(ccService, never()).updateCacheConfig(any(), any());
   }
@@ -252,7 +250,7 @@ public class CreateIndexCommandTest {
     when(cms.list(any(Region.class))).thenReturn(listResult);
     when(listResult.getConfigResult()).thenReturn(Collections.singletonList(region));
 
-    doReturn(Sets.newHashSet((String) null)).when(command).getGroupsContainingRegion(any(),
+    doReturn(Sets.newHashSet("cluster")).when(command).getGroupsContainingRegion(any(),
         any());
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
 
@@ -260,8 +258,32 @@ public class CreateIndexCommandTest {
         "create index --name=index --expression=abc --region=/regionA")
         .containsOutput("No Members Found");
 
-
     verify(command).findMembers(new String[] {}, null);
+  }
 
+  @Test
+  public void getGroupsContainingRegion() throws Exception {
+    when(ccService.getGroups()).thenReturn(new HashSet<>(Arrays.asList("group1", "group2")));
+    CacheConfig cacheConfig1 = new CacheConfig();
+    RegionConfig regionA = new RegionConfig("regionA", "REPLICATE");
+    RegionConfig regionB = new RegionConfig("regionB", "REPLICATE");
+    RegionConfig child = new RegionConfig("child", "REPLICATE");
+    regionA.getRegions().add(child);
+    cacheConfig1.getRegions().add(regionA);
+    cacheConfig1.getRegions().add(regionB);
+    CacheConfig cacheConfig2 = new CacheConfig();
+    cacheConfig2.getRegions().add(regionB);
+
+    when(ccService.getCacheConfig("group1", true)).thenReturn(cacheConfig1);
+    when(ccService.getCacheConfig("group2", true)).thenReturn(cacheConfig2);
+
+    assertThat(command.getGroupsContainingRegion(ccService, "regionA"))
+        .containsExactly("group1");
+    assertThat(command.getGroupsContainingRegion(ccService, "regionB"))
+        .containsExactlyInAnyOrder("group1", "group2");
+    assertThat(command.getGroupsContainingRegion(ccService, "regionA/child"))
+        .containsExactly("group1");
+    assertThat(command.getGroupsContainingRegion(ccService, "notExist"))
+        .isEmpty();
   }
 }
