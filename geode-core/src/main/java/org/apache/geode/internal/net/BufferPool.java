@@ -19,13 +19,18 @@ import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPool {
   private final DMStats stats;
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Buffers may be acquired from the Buffers pool
@@ -69,7 +74,8 @@ public class BufferPool {
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
-  public static final boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers");
+  public static final boolean useDirectBuffers = !(Boolean.getBoolean("p2p.nodirectBuffers")
+      || Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "noDirectBuffers"));
 
   /**
    * Should only be called by threads that have currently acquired send permission.
@@ -183,9 +189,6 @@ public class BufferPool {
           alreadySeen = new IdentityHashMap<>();
         }
         if (alreadySeen.put(ref, ref) != null) {
-          // if it returns non-null then we have already seen this item
-          // so we have worked all the way through the queue once.
-          // So it is time to give up and allocate a new buffer.
           break;
         }
       }

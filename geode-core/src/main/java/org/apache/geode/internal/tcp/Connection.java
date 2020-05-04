@@ -1665,8 +1665,8 @@ public class Connection implements Runnable {
             if (logger.isDebugEnabled() && !isIgnorableIOException(e)) {
               logger.debug("{} io exception for {}", p2pReaderName(), this, e);
             }
-            if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {
-              if (logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
+              if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {
                 logger.debug(
                     "{} received unexpected WSACancelBlockingCall exception, which may result in a hang",
                     p2pReaderName());
@@ -3159,7 +3159,7 @@ public class Connection implements Runnable {
     Thread.currentThread().setName(THREAD_KIND_IDENTIFIER + " for " + remoteAddr + " "
         + (sharedResource ? "" : "un") + "shared" + " " + (preserveOrder ? "" : "un")
         + "ordered" + " uid=" + uniqueId + (dominoNumber > 0 ? " dom #" + dominoNumber : "")
-        + " port=" + socket.getPort());
+        + " local port=" + socket.getLocalPort() + " remote port=" + socket.getPort());
   }
 
   private void compactOrResizeBuffer(int messageLength) {

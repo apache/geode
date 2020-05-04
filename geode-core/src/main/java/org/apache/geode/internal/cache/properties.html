@@ -2787,13 +2787,13 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>p2p.nodirectBuffers</strong></dt>
+<dt><strong>p2p.nodirectBuffers</strong> or <strong>gemfire.noDirectBuffers</strong></dt>
 <dd>
 <em>Public:</em> false
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>org.apache.geode.internal.tcp.TCPConduit#useDirectBuffers</code>.
+See <code>org.apache.geode.internal.net.BufferPool#useDirectBuffers</code>.
 <p>
 <pre>
   use direct ByteBuffers instead of heap ByteBuffers for NIO operations
