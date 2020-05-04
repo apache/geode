@@ -14,6 +14,10 @@
  */
 package org.apache.geode.management.internal;
 
+import static org.apache.geode.cache.EvictionAction.LOCAL_DESTROY;
+import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.management.internal.ManagementConstants.NOTIF_REGION_MAX_ENTRIES;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +41,6 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -64,6 +67,9 @@ import org.apache.geode.management.ManagementException;
  */
 public class FederatingManager extends Manager {
   private static final Logger logger = LogService.getLogger();
+
+  private static final EvictionAttributes NOTIFICATION_EVICTION_ATTRIBUTES =
+      createLRUEntryAttributes(NOTIF_REGION_MAX_ENTRIES, LOCAL_DESTROY);
 
   private final Object lock = new Object();
 
@@ -428,12 +434,14 @@ public class FederatingManager extends Manager {
           // Monitoring region for member is created
           InternalRegionFactory<String, Object> monitorFactory =
               cache.createInternalRegionFactory();
+
           monitorFactory.addCacheListener(new ManagementCacheListener(proxyFactory));
           monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
           monitorFactory.setConcurrencyChecksEnabled(false);
           monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
           monitorFactory.setIsUsedForMetaRegion(true);
           monitorFactory.setScope(Scope.DISTRIBUTED_ACK);
+
           Region<String, Object> proxyMonitoringRegion =
               monitorFactory.create(monitoringRegionName);
 
@@ -443,22 +451,21 @@ public class FederatingManager extends Manager {
           // Notification region for member is created
           InternalRegionFactory<NotificationKey, Notification> notificationFactory =
               cache.createInternalRegionFactory();
-          notificationFactory.setConcurrencyChecksEnabled(false);
-          notificationFactory.setDataPolicy(DataPolicy.REPLICATE);
-          notificationFactory.setScope(Scope.DISTRIBUTED_ACK);
-
-          // Fix for issue #49638, evict the internal region _notificationRegion
-          notificationFactory
-              .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
-                  ManagementConstants.NOTIF_REGION_MAX_ENTRIES, EvictionAction.LOCAL_DESTROY));
 
           notificationFactory.addCacheListener(
               new NotificationCacheListener(new NotificationHubClient(proxyFactory)));
           notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
+          notificationFactory.setConcurrencyChecksEnabled(false);
+          notificationFactory.setDataPolicy(DataPolicy.REPLICATE);
           notificationFactory.setIsUsedForMetaRegion(true);
+          notificationFactory.setScope(Scope.DISTRIBUTED_ACK);
+
+          // Fix for issue #49638, evict the internal region _notificationRegion
+          notificationFactory.setEvictionAttributes(NOTIFICATION_EVICTION_ATTRIBUTES);
 
           Region<NotificationKey, Notification> proxyNotificationRegion =
               notificationFactory.create(notificationRegionName);
+
           proxyNotificationRegionCreated = true;
 
           if (logger.isDebugEnabled()) {

@@ -53,7 +53,7 @@ public class LocalManagerTest {
   private InternalCacheForClientAccess cacheForClientAccess;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     repo = mock(ManagementResourceRepo.class);
     system = mock(InternalDistributedSystem.class);
     service = mock(SystemManagementService.class);
@@ -63,15 +63,19 @@ public class LocalManagerTest {
     statisticsFactory = mock(StatisticsFactory.class);
     statisticsClock = mock(StatisticsClock.class);
     cacheForClientAccess = mock(InternalCacheForClientAccess.class);
+
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
     DistributionConfig config = mock(DistributionConfig.class);
 
     when(cache.getCacheForProcessingClientRequests())
         .thenReturn(cacheForClientAccess);
     when(cacheForClientAccess.createInternalRegionFactory())
-        .thenReturn(regionFactory1).thenReturn(regionFactory2);
-    when(regionFactory1.create(any())).thenReturn(mock(Region.class));
-    when(regionFactory2.create(any())).thenReturn(mock(Region.class));
+        .thenReturn(regionFactory1)
+        .thenReturn(regionFactory2);
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     when(config.getJmxManagerUpdateRate())
         .thenReturn(Integer.MAX_VALUE);
     when(distributedSystemMXBean.getAlertLevel())
@@ -83,8 +87,8 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void startLocalManagementCreatesMonitoringRegion() throws Exception {
-    InternalDistributedMember member = member(1, 20);
+  public void startLocalManagementCreatesMonitoringRegion() {
+    InternalDistributedMember member = member(20, 1);
     when(system.getDistributedMember()).thenReturn(member);
     LocalManager localManager =
         new LocalManager(repo, system, service, cache, statisticsFactory, statisticsClock);
@@ -95,8 +99,8 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() throws Exception {
-    InternalDistributedMember member = member(2, 40);
+  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() {
+    InternalDistributedMember member = member(40, 2);
     when(system.getDistributedMember()).thenReturn(member);
     LocalManager localManager =
         new LocalManager(repo, system, service, cache, statisticsFactory, statisticsClock);
@@ -110,8 +114,8 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesNotificationRegion() throws Exception {
-    InternalDistributedMember member = member(3, 60);
+  public void addMemberArtifactsCreatesNotificationRegion() {
+    InternalDistributedMember member = member(60, 3);
     when(system.getDistributedMember()).thenReturn(member);
     LocalManager localManager =
         new LocalManager(repo, system, service, cache, statisticsFactory, statisticsClock);
@@ -122,8 +126,8 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() throws Exception {
-    InternalDistributedMember member = member(4, 80);
+  public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() {
+    InternalDistributedMember member = member(80, 4);
     when(system.getDistributedMember()).thenReturn(member);
     LocalManager localManager =
         new LocalManager(repo, system, service, cache, statisticsFactory, statisticsClock);
@@ -136,11 +140,11 @@ public class LocalManagerTest {
     assertThat(captor.getValue().hasOwnStats()).isTrue();
   }
 
-  private InternalDistributedMember member(int viewId, int port) {
+  private InternalDistributedMember member(int port, int viewId) {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     when(member.getInetAddress()).thenReturn(mock(InetAddress.class));
-    when(member.getVmViewId()).thenReturn(viewId);
     when(member.getMembershipPort()).thenReturn(port);
+    when(member.getVmViewId()).thenReturn(viewId);
     return member;
   }
 }

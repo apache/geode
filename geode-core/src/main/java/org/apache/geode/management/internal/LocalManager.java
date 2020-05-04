@@ -125,22 +125,25 @@ public class LocalManager extends Manager {
         }
       };
 
-      InternalRegionFactory<String, Object> monitorFactory = cache.createInternalRegionFactory();
-      monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-      monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
-      monitorFactory.setConcurrencyChecksEnabled(false);
       CacheListener<String, Object> localListener = new MonitoringRegionCacheListener(service);
+
+      InternalRegionFactory<String, Object> monitorFactory = cache.createInternalRegionFactory();
+
       monitorFactory.addCacheListener(localListener);
-      monitorFactory.setIsUsedForMetaRegion(true);
       monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
+      monitorFactory.setConcurrencyChecksEnabled(false);
+      monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
+      monitorFactory.setIsUsedForMetaRegion(true);
+      monitorFactory.setScope(Scope.DISTRIBUTED_ACK);
 
       InternalRegionFactory<NotificationKey, Notification> notificationFactory =
           cache.createInternalRegionFactory();
-      notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-      notificationFactory.setDataPolicy(DataPolicy.EMPTY);
-      notificationFactory.setConcurrencyChecksEnabled(false);
-      notificationFactory.setIsUsedForMetaRegion(true);
+
       notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
+      notificationFactory.setConcurrencyChecksEnabled(false);
+      notificationFactory.setDataPolicy(DataPolicy.EMPTY);
+      notificationFactory.setIsUsedForMetaRegion(true);
+      notificationFactory.setScope(Scope.DISTRIBUTED_ACK);
 
       String appender = MBeanJMXAdapter.getUniqueIDForMember(system.getDistributedMember());
 
