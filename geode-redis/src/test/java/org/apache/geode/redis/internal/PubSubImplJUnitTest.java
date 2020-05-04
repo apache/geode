@@ -58,6 +58,7 @@ public class PubSubImplJUnitTest {
     assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty();
   }
 
+  @SuppressWarnings("unchecked")
   static class FailingChannelFuture extends DefaultChannelPromise {
     private GenericFutureListener listener;
 
