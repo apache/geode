@@ -162,7 +162,7 @@ public interface ManagementConstants {
 
   String DEFAULT_HOST_NAME = "localhost";
 
-  int NOTIF_REGION_MAX_ENTRIES = 10;
+  int NOTIF_REGION_MAX_ENTRIES = 1000;
 
 
 

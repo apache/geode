@@ -18,7 +18,6 @@ import javax.management.Notification;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -31,11 +30,6 @@ class NotificationCacheListener extends CacheListenerAdapter<NotificationKey, No
 
   private final NotificationHubClient notificationHubClient;
 
-  NotificationCacheListener(MBeanProxyFactory mBeanProxyFactory) {
-    this(new NotificationHubClient(mBeanProxyFactory));
-  }
-
-  @VisibleForTesting
   NotificationCacheListener(NotificationHubClient notificationHubClient) {
     logger.info("KIRK:NotificationCacheListener:ctor");
     this.notificationHubClient = notificationHubClient;

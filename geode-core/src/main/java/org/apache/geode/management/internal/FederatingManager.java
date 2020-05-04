@@ -433,7 +433,7 @@ public class FederatingManager extends Manager {
           monitorFactory.setConcurrencyChecksEnabled(false);
           monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
           monitorFactory.setIsUsedForMetaRegion(true);
-          monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+          monitorFactory.setScope(Scope.DISTRIBUTED_ACK);
           Region<String, Object> proxyMonitoringRegion =
               monitorFactory.create(monitoringRegionName);
 
@@ -445,14 +445,15 @@ public class FederatingManager extends Manager {
               cache.createInternalRegionFactory();
           notificationFactory.setConcurrencyChecksEnabled(false);
           notificationFactory.setDataPolicy(DataPolicy.REPLICATE);
-          notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+          notificationFactory.setScope(Scope.DISTRIBUTED_ACK);
 
           // Fix for issue #49638, evict the internal region _notificationRegion
           notificationFactory
               .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
                   ManagementConstants.NOTIF_REGION_MAX_ENTRIES, EvictionAction.LOCAL_DESTROY));
 
-          notificationFactory.addCacheListener(new NotificationCacheListener(proxyFactory));
+          notificationFactory.addCacheListener(
+              new NotificationCacheListener(new NotificationHubClient(proxyFactory)));
           notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
           notificationFactory.setIsUsedForMetaRegion(true);
 

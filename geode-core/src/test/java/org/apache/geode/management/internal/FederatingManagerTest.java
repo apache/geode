@@ -54,9 +54,7 @@ import org.apache.geode.test.junit.categories.JMXTest;
 public class FederatingManagerTest {
 
   private InternalCache cache;
-  private InternalCacheForClientAccess cacheForClientAccess;
   private ExecutorService executorService;
-  private MBeanJMXAdapter jmxAdapter;
   private MBeanProxyFactory proxyFactory;
   private MemberMessenger messenger;
   private ManagementResourceRepo repo;
@@ -68,11 +66,9 @@ public class FederatingManagerTest {
   private InternalRegionFactory regionFactory2;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     cache = mock(InternalCache.class);
-    cacheForClientAccess = mock(InternalCacheForClientAccess.class);
     executorService = mock(ExecutorService.class);
-    jmxAdapter = mock(MBeanJMXAdapter.class);
     messenger = mock(MemberMessenger.class);
     proxyFactory = mock(MBeanProxyFactory.class);
     repo = mock(ManagementResourceRepo.class);
@@ -83,14 +79,20 @@ public class FederatingManagerTest {
     regionFactory1 = mock(InternalRegionFactory.class);
     regionFactory2 = mock(InternalRegionFactory.class);
 
+    InternalCacheForClientAccess cacheForClientAccess = mock(InternalCacheForClientAccess.class);
+    MBeanJMXAdapter jmxAdapter = mock(MBeanJMXAdapter.class);
+
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
 
     when(cache.getCacheForProcessingClientRequests())
         .thenReturn(cacheForClientAccess);
-    when(cacheForClientAccess.createInternalRegionFactory()).thenReturn(regionFactory1)
+    when(cacheForClientAccess.createInternalRegionFactory())
+        .thenReturn(regionFactory1)
         .thenReturn(regionFactory2);
-    when(regionFactory1.create(any())).thenReturn(mock(Region.class));
-    when(regionFactory2.create(any())).thenReturn(mock(Region.class));
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     when(distributedSystemMXBean.getAlertLevel())
         .thenReturn(AlertLevel.WARNING.name());
     when(jmxAdapter.getDistributedSystemMXBean())
@@ -100,7 +102,7 @@ public class FederatingManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesMonitoringRegion() throws Exception {
+  public void addMemberArtifactsCreatesMonitoringRegion() {
     FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
         statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
     federatingManager.startManager();
@@ -111,7 +113,7 @@ public class FederatingManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() throws Exception {
+  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() {
     FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
         statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
     federatingManager.startManager();
@@ -164,8 +166,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion)
-        .localDestroyRegion();
+    verify(monitoringRegion).localDestroyRegion();
   }
 
   @Test
@@ -183,8 +184,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion)
-        .localDestroyRegion();
+    verify(notificationRegion).localDestroyRegion();
   }
 
   @Test
@@ -204,8 +204,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion)
-        .localDestroyRegion();
+    verify(monitoringRegion).localDestroyRegion();
   }
 
   @Test
@@ -225,8 +224,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion)
-        .localDestroyRegion();
+    verify(notificationRegion).localDestroyRegion();
   }
 
   @Test
@@ -247,8 +245,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory)
-        .removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
   }
 
   @Test
@@ -269,8 +266,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory)
-        .removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
   }
 
   @Test
@@ -290,8 +286,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion)
-        .localDestroyRegion();
+    verify(notificationRegion).localDestroyRegion();
   }
 
   @Test
@@ -311,8 +306,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion)
-        .localDestroyRegion();
+    verify(monitoringRegion).localDestroyRegion();
   }
 
   @Test
@@ -333,8 +327,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory)
-        .removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
   }
 
   @Test
@@ -354,8 +347,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion)
-        .localDestroyRegion();
+    verify(notificationRegion).localDestroyRegion();
   }
 
   @Test
@@ -375,8 +367,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion)
-        .localDestroyRegion();
+    verify(monitoringRegion).localDestroyRegion();
   }
 
   @Test
@@ -393,8 +384,7 @@ public class FederatingManagerTest {
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
-    assertThat(thrown)
-        .isNull();
+    assertThat(thrown).isNull();
   }
 
   @Test
@@ -411,8 +401,7 @@ public class FederatingManagerTest {
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
-    assertThat(thrown)
-        .isNull();
+    assertThat(thrown).isNull();
   }
 
   @Test
