@@ -56,9 +56,13 @@ DOWNLOAD=${WORKSPACE}/download
 EXTRACT=${WORKSPACE}/extracted
 mkdir -p ${DOWNLOAD}
 mkdir -p ${EXTRACT}
-[ "$NEW_VERSION" = "HEAD" ] && licFromWs=true
 root=$0
 root=${root%/dev-tools*}
+
+if [ "$NEW_VERSION" = "HEAD" ] ; then
+  licFromWs=true
+  rm -Rf $root/geode-assembly/build/distributions
+fi
 
 
 function resolve() {
@@ -193,6 +197,7 @@ commons-fileupload
 commons-io
 commons-lang3
 commons-logging
+commons-math3
 commons-modeler
 commons-text
 commons-validator
@@ -203,6 +208,7 @@ fastutil
 findbugs-annotations
 geo
 guava
+grumpy-
 httpclient
 httpcore
 j2objc-annotations
@@ -266,7 +272,7 @@ for REPORT in report1 report2 ; do
       echo $(shortenDep $dep) $ver
     fi
   done | sort -u | while read dep ver ; do
-    if grep -qi "${dep/-/.}.*$ver" $LICENSE ; then
+    if grep -qi "${dep//-/.}.*$ver" $LICENSE ; then
       echo "$dep $ver Found (and version matches)"
     elif grep -qi $dep $LICENSE ; then
       match="$(grep -i $dep $LICENSE | grep -v License | head -1)"
