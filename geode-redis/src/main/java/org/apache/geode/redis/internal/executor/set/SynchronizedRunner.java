@@ -19,14 +19,11 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.RedisLockService;
 
 class SynchronizedRunner {
   private final LockManager lockManager = new LockManager();
 
-  public SynchronizedRunner(RedisLockService redisLockService) {
-    // this.redisLockService = redisLockService;
-  }
+  public SynchronizedRunner() { }
 
   public void run(ByteArrayWrapper key,
                   Callable redisCommand,
