@@ -27,6 +27,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -69,11 +70,53 @@ public class CreateIndexCommandDUnitTest {
   }
 
   @Test
+  public void createIndexOnSubRegion() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=regionB/child --group=group2 --type=REPLICATE")
+        .statusIsSuccess();
+
+    // make sure index on sub region can be created successfully
+    CommandResultAssert commandResultAssert =
+        gfsh.executeAndAssertThat(
+            "create index --name=childIndex --region='/regionB/child c' --expression=id")
+            .statusIsSuccess();
+    commandResultAssert.hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("Index successfully created");
+    commandResultAssert.hasInfoSection("groupStatus")
+        .hasOutput().isEqualTo("Cluster configuration for group 'group2' is updated.");
+
+    // make sure cluster config is updated correctly
+    locator.invoke(() -> {
+      InternalConfigurationPersistenceService configurationService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig cacheConfig = configurationService.getCacheConfig("group2");
+      assertThat(cacheConfig.getRegions()).extracting(RegionConfig::getName)
+          .containsExactly("regionB");
+
+      RegionConfig regionB = cacheConfig.getRegions().get(0);
+      assertThat(regionB.getRegions()).extracting(RegionConfig::getName)
+          .containsExactly("child");
+
+      assertThat(regionB.getRegions().get(0).getRegions()).isEmpty();
+    });
+  }
+
+  @Test
+  // index can't be created on region name with ".".
+  // GEODE-7523
+  public void createIndexOnRegionNameWithDot() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=A.B --type=REPLICATE")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("create index --name=indexWithDot --region=A.B --expression=id")
+        .statusIsError().containsOutput("Region A does not exist");
+  }
+
+  @Test
   public void regionNotExistInClusterConfig() {
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=/noExist")
         .statusIsError()
         .hasInfoSection()
-        .hasOutput().contains("Region /noExist does not exist");
+        .hasOutput().contains("Region noExist does not exist");
   }
 
   @Test
@@ -100,7 +143,7 @@ public class CreateIndexCommandDUnitTest {
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=regionA")
         .statusIsError()
         .hasInfoSection()
-        .hasOutput().contains("Region /regionA does not exist");
+        .hasOutput().contains("Region regionA does not exist");
 
     // you can only create index on regionA when specifying a --member option
     gfsh.executeAndAssertThat(
@@ -160,6 +203,6 @@ public class CreateIndexCommandDUnitTest {
             .statusIsError();
 
     commandAssert.hasInfoSection().hasOutput()
-        .contains("Region /regionB does not exist in some of the groups.");
+        .contains("Region regionB does not exist in some of the groups.");
   }
 }

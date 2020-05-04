@@ -69,7 +69,6 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     gfshCommandRule.connectAndVerify(locator);
     createRegionUsingGfsh(REGION_NAME, regionShortcut, null);
     createIndexUsingGfsh("\"" + REGION_NAME + ".entrySet() z\"", "z.key", INDEX_NAME);
-    String serverName = vm1.getName();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
     gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
     lsRule.stop(1);
