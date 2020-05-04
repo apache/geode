@@ -47,6 +47,9 @@ while getopts ":v:p:ns" opt; do
   esac
 done
 
+if [ -z "${NEW_VERSION}" ] ; then
+    usage
+fi
 
 WORKSPACE=$(PWD)/license_tmp
 DOWNLOAD=${WORKSPACE}/download
@@ -279,13 +282,36 @@ for REPORT in report1 report2 ; do
     fi
   done
   echo $(wc -l < apache-$REPORT) "deps are licensed under Apache 2.0 (no need to mention individually)"
+  rm apache-$REPORT
   if [ $(wc -l < missing-$REPORT) -eq 0 ] ; then
     echo "All Good!"
   else
     cat missing-$REPORT
+    rm missing-$REPORT
     result=1
   fi
 done
+
+function checkMissing() {
+  rm -f missing
+  touch missing
+  grep '^  - ' | sed -e 's/^  - //' -e 's/, .*//' -e 's/ (.*//' -e 's/s* v.*//' -e 's/ /.?/g' | while read f; do 
+    if (cd ${root} && git grep -Eqi "$f" -- ':!LICENSE' ':!**/LICENSE' ':!NOTICE' ':!**/NOTICE') ; then
+      true
+      #echo "${f//\?/} found"
+    else
+      echo "${f//\?/} appears to be unused.  Please remove from $1" >> missing
+    fi
+  done
+  if [ $(wc -l < missing) -eq 0 ] ; then
+    echo "All Good!"
+    rm missing
+  else
+    cat missing
+    rm missing
+    return 1
+  fi
+}
 
 if [ "${licFromWs}" = "true" ] ; then
   banner "Checking that binary license is a superset of src license"
@@ -318,6 +344,12 @@ if [ "${licFromWs}" = "true" ] ; then
       echo "Expected:" $(wc -c ${SLICENSE})
       echo "Actual:" $(wc -c ${NEW_SRC_DIR}/LICENSE)
     fi
+
+    banner "Checking references in source license"
+    cat $SLICENSE | checkMissing $SLICENSE
+
+    banner "Checking references in binary license"
+    cat $SLICENSE $SLICENSE $BLICENSE | sort | uniq -u | checkMissing $BLICENSE
   fi
 fi
 
