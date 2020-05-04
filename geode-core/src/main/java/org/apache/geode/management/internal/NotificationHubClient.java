@@ -27,7 +27,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 class NotificationHubClient {
   private static final Logger logger = LogService.getLogger();
 
-  private MBeanProxyFactory proxyFactory;
+  private final MBeanProxyFactory proxyFactory;
 
   NotificationHubClient(MBeanProxyFactory proxyFactory) {
     this.proxyFactory = proxyFactory;

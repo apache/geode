@@ -14,23 +14,23 @@
  */
 package org.apache.geode.management.internal;
 
+import java.io.Serializable;
+import java.util.Objects;
+
 import javax.management.ObjectName;
 
 /**
  * This class is used as a key for Notification region Only using ObjectName as key will overwrite
  * entries if put rate for notification is high.
- *
- *
  */
-public class NotificationKey implements java.io.Serializable {
+public class NotificationKey implements Serializable {
 
-  private ObjectName objectName;
-
-  private long currentTime;
+  private final ObjectName objectName;
+  private final long currentTime;
 
   public NotificationKey(ObjectName objectName) {
     this.objectName = objectName;
-    this.currentTime = System.nanoTime();
+    currentTime = System.nanoTime();
   }
 
   public ObjectName getObjectName() {
@@ -41,23 +41,31 @@ public class NotificationKey implements java.io.Serializable {
     return currentTime;
   }
 
-  public boolean equals(Object anObject) {
-
-    if (this == anObject) {
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
       return true;
     }
-    if (anObject instanceof NotificationKey) {
-      NotificationKey anotherFedComp = (NotificationKey) anObject;
-      if (anotherFedComp.objectName.equals(this.objectName)
-          && anotherFedComp.currentTime == this.currentTime)
-        return true;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
-
-    return false;
+    NotificationKey other = (NotificationKey) o;
+    return currentTime == other.currentTime &&
+        Objects.equals(objectName, other.objectName);
   }
 
+  @Override
   public int hashCode() {
-    return objectName.hashCode();
+    return Objects.hash(objectName, currentTime);
   }
 
+  @Override
+  public String toString() {
+    return "NotificationKey{" +
+        "objectName=" + objectName +
+        ", currentTime=" + currentTime +
+        '}';
+  }
+
+  private static final long serialVersionUID = 6382673938605954446L;
 }

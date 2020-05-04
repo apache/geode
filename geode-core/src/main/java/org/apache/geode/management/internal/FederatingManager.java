@@ -461,7 +461,7 @@ public class FederatingManager extends Manager {
           notificationFactory.setScope(Scope.DISTRIBUTED_ACK);
 
           // Fix for issue #49638, evict the internal region _notificationRegion
-          notificationFactory.setEvictionAttributes(NOTIFICATION_EVICTION_ATTRIBUTES);
+          // notificationFactory.setEvictionAttributes(NOTIFICATION_EVICTION_ATTRIBUTES);
 
           Region<NotificationKey, Notification> proxyNotificationRegion =
               notificationFactory.create(notificationRegionName);
