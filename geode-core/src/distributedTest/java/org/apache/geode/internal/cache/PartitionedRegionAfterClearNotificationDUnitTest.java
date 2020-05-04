@@ -26,8 +26,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,8 +57,6 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
   protected MemberVM locator;
   protected MemberVM dataStore1, dataStore2, dataStore3, accessor;
   protected ClientVM client1, client2;
-
-  private static final Logger logger = LogManager.getLogger();
 
   private static volatile DUnitBlackboard blackboard;
 
@@ -321,7 +317,6 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
     @Override
     public void afterRegionClear(RegionEvent event) {
-      Region region = event.getRegion();
       clears.incrementAndGet();
     }
 
