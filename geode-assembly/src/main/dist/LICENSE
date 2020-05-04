@@ -221,8 +221,10 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     Copyright (c) 2002-2007 Marc Prud'hommeaux.
   - Antlr v2.7.7 (http://www.antlr.org), Copyright (c) 2012 Terrence Parr
     and Sam Harwell
-  - ClassGraph v4.0.6 (https://github.com/classgraph/classgraph), Copyright (c)
-    2015 Luke Hutchison
+  - ASM v5.0.4 (https://asm.ow2.io) Copyright (c) 2000-2011 INRIA, France
+    Telecom
+  - ClassGraph v4.8.52 (https://github.com/classgraph/classgraph), Copyright
+    (c) 2019 Luke Hutchison
   - JLine v2.12 (http://jline.sourceforge.net), Copyright (c) 2002-2006,
     Marc Prud'hommeaux <mwp1@cornell.edu>
   - jQuery Sparklines v2.0 (http://omnipotent.net/jquery.sparkline/),
@@ -261,17 +263,18 @@ POSSIBILITY OF SUCH DAMAGE.
 The CDDL Version 1.1 (https://javaee.github.io/glassfish/LICENSE)
 ---------------------------------------------------------------------------
 
-Apache Geode bundles the following file under the Common Development and
+Apache Geode bundles the following files under the Common Development and
 Distribution License:
 
-  - jaxb-istack-commons v2.2 (https://javaee.github.io/jaxb-istack-commons/)
+  - activation v1.1.0
+    (https://www.oracle.com/java/technologies/java-beans-activation.html)
   - javax.activation v1.2.0
     (https://www.oracle.com/technetwork/java/javase/jaf-135115.html)
   - javax.mail v1.6.2 (http://www.oracle.com/)
   - javax.resource v 1.7.1 (https://glassfish.java.net/)
   - javax.servlet v3.1.0 (https://glassfish.java.net/)
   - javax.transaction v1.3 (https://glassfish.java.net/)
-  - jaxb v2.3.1 (https://javaee.github.io/jaxb-v2/)
+  - jaxb v2.3.2 (https://javaee.github.io/jaxb-v2/)
 
 1. Definitions.
 
@@ -1020,16 +1023,58 @@ do so.  If you do not wish to do so, delete this exception statement
 from your version.
 
 ---------------------------------------------------------------------------
+The EDL 1.0 License (http://www.eclipse.org/org/documents/edl-v10.php)
+---------------------------------------------------------------------------
+
+Apache Geode bundles the following file under the EDL 1.0 License:
+
+  - istack-commons-runtime v3.0.9
+
+Eclipse Distribution License - v 1.0
+
+Copyright (c) 2007, Eclipse Foundation, Inc. and its licensors.
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+Neither the name of the Eclipse Foundation, Inc. nor the names of its
+contributors may be used to endorse or promote products derived from this
+software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+---------------------------------------------------------------------------
 The MIT License (http://opensource.org/licenses/mit-license.html)
 ---------------------------------------------------------------------------
 
-Apache Geode bundles the following files under the MIT license:
+Apache Geode bundles the following files under the MIT License:
 
-  - Animal Sniffer Annotations v1.17
+  - Animal Sniffer Annotations v1.18
     (https://www.mojohaus.org/animal-sniffer/source-repository.html)
     Copyright (c) 2009 codehaus.org
-  - Checker Qual 2.5.2 (https://checkerframework.org), Copyright (c)
+  - Checker Qual v2.8.1 (https://checkerframework.org), Copyright (c)
     2004-present by the Checker Framework developers
+  - HTML5 Shiv vpre3.5 (https://github.com/aFarkas/html5shiv), Copyright
+    (c) 2014 Alexander Farkas (aFarkas)
   - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/),
     Copyright (c) 2011 Sencha Inc.
   - JOpt Simple (http://pholser.github.io/jopt-simple/), Copyright (c)
@@ -1053,14 +1098,12 @@ Apache Geode bundles the following files under the MIT license:
     Foundation and other contributors, http://jquery.org
   - jScrollPane (http://jscrollpane.kelvinluck.com/), Copyright (c) 2010
     Kelvin Luck
-  - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),
-    Copyright (c) 2012 Scott Jehl
   - MooTools (http://mootools.net), Copyright (c) 2006-2015 Valerio
     Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
-  - SLF4J API v1.7.21 (http://www.slf4j.org), Copyright (c) 2004-2013 QOS.ch
-  - sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
+  - Sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
+  - SLF4J API v1.7.28 (http://www.slf4j.org), Copyright (c) 2004-2017 QOS.ch
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
     2015 Nathan Cahill
   - TableDnD v0.5 (https://github.com/isocra/TableDnD), Copyright (c) 2012
@@ -1092,7 +1135,7 @@ DEALINGS IN THE SOFTWARE.
 The MX4J License (http://mx4j.sourceforge.net/docs/ch01s06.html)
 ---------------------------------------------------------------------------
 
-Apache Geode bundles the following file under the MX4J license:
+Apache Geode bundles the following files under the MX4J License:
 
   - MX4JModelMBean.java (http://mx4j.sourceforge.net)
   - MX4J v3.0.1 (http://mx4j.sourceforge.net), Copyright (c) MX4J
@@ -1102,42 +1145,44 @@ Version 1.0
 Copyright (c) 2001-2004 by the MX4J contributors.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+modification, are permitted provided that the following conditions
+are met:
 
-1. Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
 
 2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
+   notice, this list of conditions and the following disclaimer in
+   the documentation and/or other materials provided with the
+   distribution.
 
-3. The end-user documentation included with the redistribution, if any,
-must include the following acknowledgment:
- "This product includes software developed by the MX4J project
- (http://mx4j.sourceforge.net)."
-Alternately, this acknowledgment may appear in the software itself, if and
-wherever such third-party acknowledgments normally appear.
+3. The end-user documentation included with the redistribution,
+   if any, must include the following acknowledgment:
+      "This product includes software developed by the
+       MX4J project (http://mx4j.sourceforge.net)."
+   Alternately, this acknowledgment may appear in the software itself,
+   if and wherever such third-party acknowledgments normally appear.
 
-4. The name "MX4J" must not be used to endorse or promote products derived
-from this software without prior written permission.
+4. The name "MX4J" must not be used to endorse or promote
+   products derived from this software without prior written
+   permission.
+   For written permission, please contact
+   biorn_steedom [at] users [dot] sourceforge [dot] net
 
-For written permission, please contact biorn_steedom [at] users [dot]
-sourceforge [dot] net
+5. Products derived from this software may not be called "MX4J",
+   nor may "MX4J" appear in their name, without prior written
+   permission of Simone Bordet.
 
-5. Products derived from this software may not be called "MX4J", nor may
-"MX4J" appear in their name, without prior written permission of Simone
-Bordet.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-EVENT SHALL THE MX4J CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE MX4J
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 This software consists of voluntary contributions made by many
 individuals on behalf of the MX4J project. For more information on
