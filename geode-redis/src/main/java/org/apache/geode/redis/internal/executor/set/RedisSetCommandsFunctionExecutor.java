@@ -36,14 +36,15 @@ import org.apache.geode.redis.internal.executor.CommandFunction;
 @SuppressWarnings("unchecked")
 public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
-  private final Region<ByteArrayWrapper, SetDelta> region;
+  private final Region<ByteArrayWrapper, RedisSet> region;
 
-  public RedisSetCommandsFunctionExecutor(Region<ByteArrayWrapper, SetDelta> region) {
+  public RedisSetCommandsFunctionExecutor(Region<ByteArrayWrapper, RedisSet> region) {
     this.region = region;
   }
 
   public static void registerFunctions() {
-    SynchronizedRedisCommandRunner synchronizedRedisCommandRunner = new SynchronizedRedisCommandRunner();
+    RedisCommandRunnerSynchronizedByKey redisCommandRunnerSynchronizedByKey =
+        new RedisCommandRunnerSynchronizedByKey();
     FunctionService.registerFunction(new CommandFunction());
   }
 

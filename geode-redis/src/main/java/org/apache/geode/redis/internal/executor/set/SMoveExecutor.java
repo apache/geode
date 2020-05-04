@@ -50,10 +50,10 @@ public class SMoveExecutor extends SetExecutor {
     checkDataType(source, RedisDataType.REDIS_SET, context);
     checkDataType(destination, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, SetDelta> region = getRegion(context);
+    Region<ByteArrayWrapper, RedisSet> region = getRegion(context);
 
     try (AutoCloseableLock regionLock = withRegionLock(context, source)) {
-      SetDelta sourceSet = region.get(source);
+      RedisSet sourceSet = region.get(source);
 
       if (sourceSet == null) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
@@ -61,7 +61,7 @@ public class SMoveExecutor extends SetExecutor {
       }
 
       boolean removed =
-          SetDelta.srem(region, source, new ArrayList<>(Collections.singletonList(member)),
+          RedisSet.srem(region, source, new ArrayList<>(Collections.singletonList(member)),
               null) == 1;
       // TODO: what should SMOVE do with a source that it empties? We probably need to delete it.
 
@@ -70,7 +70,7 @@ public class SMoveExecutor extends SetExecutor {
       } else {
         try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
           // TODO: this should invoke a function in case the primary for destination is remote
-          SetDelta.sadd(region, destination, new ArrayList<>(Collections.singletonList(member)));
+          RedisSet.sadd(region, destination, new ArrayList<>(Collections.singletonList(member)));
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
           context.getKeyRegistrar().register(source, RedisDataType.REDIS_SET);
 

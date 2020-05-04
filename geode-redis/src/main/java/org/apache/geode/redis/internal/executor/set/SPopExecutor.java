@@ -54,8 +54,8 @@ public class SPopExecutor extends SetExecutor {
 
     ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Region<ByteArrayWrapper, SetDelta> region = getRegion(context);
-      SetDelta original = region.get(key);
+      Region<ByteArrayWrapper, RedisSet> region = getRegion(context);
+      RedisSet original = region.get(key);
       if (original == null) {
         command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
         return;
@@ -88,7 +88,7 @@ public class SPopExecutor extends SetExecutor {
         // from it that were not removed from the set.
         // But since the set is synchronized all members in popped will be
         // removed so popped will contains all the members popped.
-        SetDelta.srem(region, key, popped, null);
+        RedisSet.srem(region, key, popped, null);
         // TODO: what should SPOP do with a source that it empties? We probably need to delete it.
       }
     } catch (InterruptedException e) {

@@ -95,8 +95,8 @@ import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.Subscriptions;
+import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.executor.set.SetDelta;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -469,7 +469,7 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
       Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> redisHash;
       Region<String, RedisDataType> redisMetaData;
-      Region<ByteArrayWrapper, SetDelta> redisSet;
+      Region<ByteArrayWrapper, RedisSet> redisSet;
       InternalCache gemFireCache = (InternalCache) cache;
 
       if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
@@ -490,7 +490,7 @@ public class GeodeRedisServer {
       }
 
       if ((redisSet = cache.getRegion(SET_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, SetDelta> regionFactory =
+        RegionFactory<ByteArrayWrapper, RedisSet> regionFactory =
             gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
         redisSet = regionFactory.create(SET_REGION);
       }

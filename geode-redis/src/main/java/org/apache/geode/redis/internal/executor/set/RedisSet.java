@@ -40,7 +40,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
  * class can be removed once readers are changed to
  * also use the SynchronizedRunner.
  */
-public class SetDelta implements Delta, DataSerializable {
+public class RedisSet implements Delta, DataSerializable {
 
   public static void sadd(ResultSender<Long> resultSender,
       Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key,
@@ -69,11 +69,11 @@ public class SetDelta implements Delta, DataSerializable {
 
   private HashSet<ByteArrayWrapper> members;
   private transient ArrayList<ByteArrayWrapper> deltas;
-  // false if deltas contain only removes @todo: only removes? only adds? clarify...
-  private transient boolean deltasContainAdds;
+  // true if deltas contains adds; false if removes
+  private transient boolean deltasAreAdds;
 
   @SuppressWarnings("unchecked")
-  SetDelta(Collection<ByteArrayWrapper> members) {
+  RedisSet(Collection<ByteArrayWrapper> members) {
     if (members instanceof HashSet) {
       this.members = (HashSet<ByteArrayWrapper>) members;
     } else {
@@ -82,43 +82,43 @@ public class SetDelta implements Delta, DataSerializable {
   }
 
   // for serialization
-  public SetDelta() {}
+  public RedisSet() {}
 
-  public static long sadd(Region<ByteArrayWrapper, SetDelta> region,
+  public static long sadd(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
 
-    SetDelta setDelta = region.get(key); // is this weird that it contains and instance of itself?
+    RedisSet redisSet = region.get(key);
 
-    if (setDelta != null) {
+    if (redisSet != null) {
       // update existing value
-      return setDelta.performSaddInGeode(membersToAdd, region, key);
+      return redisSet.performSaddInGeode(membersToAdd, region, key);
     } else {
-      region.create(key, new SetDelta(membersToAdd));
+      region.create(key, new RedisSet(membersToAdd));
       return membersToAdd.size();
     }
   }
 
-  public static long srem(Region<ByteArrayWrapper, SetDelta> region,
+  public static long srem(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    SetDelta setDelta = region.get(key);
-    if (setDelta == null) {
+    RedisSet redisSet = region.get(key);
+    if (redisSet == null) {
       return 0L;
     }
-    return setDelta.performSremInGeode(membersToRemove, region, key, setWasDeleted);
+    return redisSet.performSremInGeode(membersToRemove, region, key, setWasDeleted);
   }
 
-  public static boolean del(Region<ByteArrayWrapper, SetDelta> region,
+  public static boolean del(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key) {
     return region.remove(key) != null;
   }
 
-  public static Set<ByteArrayWrapper> members(Region<ByteArrayWrapper, SetDelta> region,
+  public static Set<ByteArrayWrapper> members(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key) {
-    SetDelta setDelta = region.get(key);
-    if (setDelta != null) {
-      return setDelta.members();
+    RedisSet redisSet = region.get(key);
+    if (redisSet != null) {
+      return redisSet.members();
     } else {
       return Collections.emptySet();
     }
@@ -140,7 +140,7 @@ public class SetDelta implements Delta, DataSerializable {
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeBoolean(deltasContainAdds, out);
+    DataSerializer.writeBoolean(deltasAreAdds, out);
     DataSerializer.writeArrayList(deltas, out);
   }
 
@@ -181,13 +181,13 @@ public class SetDelta implements Delta, DataSerializable {
    * @return the number of members actually added; -1 if concurrent modification
    */
   private synchronized long performSaddInGeode(ArrayList<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, SetDelta> region,
+      Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key) {
 
     membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      deltasContainAdds = true;
+      deltasAreAdds = true;
       deltas = membersToAdd;
       try {
         region.put(key, this);
@@ -207,7 +207,7 @@ public class SetDelta implements Delta, DataSerializable {
    * @return the number of members actually removed; -1 if concurrent modification
    */
   private synchronized long performSremInGeode(ArrayList<ByteArrayWrapper> membersToRemove,
-      Region<ByteArrayWrapper, SetDelta> region,
+      Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
 
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
@@ -219,7 +219,7 @@ public class SetDelta implements Delta, DataSerializable {
           setWasDeleted.set(true);
         }
       } else {
-        deltasContainAdds = false;
+        deltasAreAdds = false;
         deltas = membersToRemove;
         try {
           region.put(key, this);

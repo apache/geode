@@ -31,7 +31,7 @@ public abstract class SetExecutor extends AbstractExecutor {
    * @param context the execution handler
    * @return the set Region
    */
-  Region<ByteArrayWrapper, SetDelta> getRegion(
+  Region<ByteArrayWrapper, RedisSet> getRegion(
       ExecutionHandlerContext context) {
 
     return context

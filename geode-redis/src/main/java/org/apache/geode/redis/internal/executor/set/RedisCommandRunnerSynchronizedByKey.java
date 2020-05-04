@@ -20,16 +20,19 @@ import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-class SynchronizedRedisCommandRunner {
+class RedisCommandRunnerSynchronizedByKey {
   private final LockManager lockManager = new LockManager();
 
+  /**
+   * concurrent invocations with equal keys will be synchronized
+   */
   public void run(ByteArrayWrapper key,
-      Callable redisCommandLambda,
+      Callable redisCommand,
       Consumer<Object> resultsSenderCallBack) {
     Object resultOfRedisCommand;
     synchronized (lockManager.getLock(key)) {
       try {
-        resultOfRedisCommand = redisCommandLambda.call();
+        resultOfRedisCommand = redisCommand.call();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

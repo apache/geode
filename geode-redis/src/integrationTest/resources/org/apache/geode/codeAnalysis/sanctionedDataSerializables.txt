@@ -6,6 +6,6 @@ org/apache/geode/redis/internal/DoubleWrapper,2
 fromData,9
 toData,9
 
-org/apache/geode/redis/internal/executor/set/DeltaSet,2
+org/apache/geode/redis/internal/executor/set/RedisSet,2
 toData,9
 fromData,9

@@ -48,9 +48,9 @@ import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
+import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.executor.set.SetDelta;
 
 /**
  * This class stands between {@link Executor} and {@link Cache#getRegion(String)}. This is needed
@@ -81,7 +81,7 @@ public class RegionProvider implements Closeable {
   private final Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
 
   private final Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion;
-  private final Region<ByteArrayWrapper, SetDelta> setRegion;
+  private final Region<ByteArrayWrapper, RedisSet> setRegion;
 
   private final Cache cache;
   private final QueryService queryService;
@@ -101,7 +101,7 @@ public class RegionProvider implements Closeable {
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
       Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion,
-      Region<ByteArrayWrapper, SetDelta> setRegion) {
+      Region<ByteArrayWrapper, RedisSet> setRegion) {
 
     this(stringsRegion, hLLRegion, redisMetaRegion, expirationsMap, expirationExecutor,
         defaultShortcut, hashRegion, setRegion, GemFireCacheImpl.getInstance());
@@ -113,7 +113,7 @@ public class RegionProvider implements Closeable {
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
       Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion,
-      Region<ByteArrayWrapper, SetDelta> setRegion, Cache cache) {
+      Region<ByteArrayWrapper, RedisSet> setRegion, Cache cache) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null) {
       throw new NullPointerException();
     }
@@ -487,7 +487,7 @@ public class RegionProvider implements Closeable {
   /**
    * @return the setRegion
    */
-  public Region<ByteArrayWrapper, SetDelta> getSetRegion() {
+  public Region<ByteArrayWrapper, RedisSet> getSetRegion() {
     return setRegion;
   }
 

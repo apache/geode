@@ -71,14 +71,14 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
       List<byte[]> commandElems, int setsStartIndex,
       RegionProvider regionProvider, ByteArrayWrapper destination,
       ByteArrayWrapper firstSetKey) {
-    Region<ByteArrayWrapper, SetDelta> region = this.getRegion(context);
-    Set<ByteArrayWrapper> firstSet = SetDelta.members(region, firstSetKey);
+    Region<ByteArrayWrapper, RedisSet> region = this.getRegion(context);
+    Set<ByteArrayWrapper> firstSet = RedisSet.members(region, firstSetKey);
 
     List<Set<ByteArrayWrapper>> setList = new ArrayList<>();
     for (int i = setsStartIndex; i < commandElems.size(); i++) {
       ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
 
-      Set<ByteArrayWrapper> entry = SetDelta.members(region, key);
+      Set<ByteArrayWrapper> entry = RedisSet.members(region, key);
       if (entry != null) {
         setList.add(entry);
       } else if (this instanceof SInterExecutor) {
@@ -96,7 +96,7 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
       regionProvider.removeKey(destination);
       if (resultSet != null) {
         if (!resultSet.isEmpty()) {
-          region.put(destination, new SetDelta(resultSet));
+          region.put(destination, new RedisSet(resultSet));
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
         }
         command
