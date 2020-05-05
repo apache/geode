@@ -84,7 +84,6 @@ rm /tmp/chromedriver_linux64.zip
 mv /opt/selenium/chromedriver /opt/selenium/chromedriver-${CHROME_DRIVER_VERSION}
 chmod 755 /opt/selenium/chromedriver-${CHROME_DRIVER_VERSION}
 ln -fs /opt/selenium/chromedriver-${CHROME_DRIVER_VERSION} /usr/bin/chromedriver
-deluser --remove-home geode
 adduser --disabled-password --gecos "" --uid ${LOCAL_UID} ${LOCAL_USER}
 usermod -G docker,google-sudoers -a ${LOCAL_USER}
 echo "export PATH=/google-cloud-sdk/bin:${PATH}" > /etc/profile.d/google_sdk_path.sh
