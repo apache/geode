@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class InternalFunctionExecutionServiceImpl
@@ -112,8 +113,13 @@ public class InternalFunctionExecutionServiceImpl
 
   @Override
   public Execution onRegion(Region region) {
-    if (region == null || region.getAttributes() == null) {
+    if (region == null) {
       throw new FunctionException("Region instance passed is null");
+    }
+
+    if (region.getAttributes() == null) {
+      ((LocalRegion) region).getCancelCriterion().checkCancelInProgress();
+      throw new FunctionException("Region attributes is null");
     }
 
     ProxyCache proxyCache = null;
