@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -395,5 +396,317 @@ public class LocatorLoadSnapshotJUnitTest {
     Map<ServerLocation, ServerLoad> loadMap = loadSnapshot.getLoadMap();
     ServerLoad l1Load = loadMap.get(l1);
     assertEquals(l1ConnectionLoad, l1Load.getConnectionLoad(), 0.01);
+  }
+
+  @Test
+  public void testisCurrentServerMostLoaded() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation l1 = new ServerLocation("localhost", 1);
+    final ServerLocation l2 = new ServerLocation("localhost", 2);
+    final ServerLocation l3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
+
+    final ServerLocationAndMemberId sli1 = new ServerLocationAndMemberId(l1, uniqueId1);
+    final ServerLocationAndMemberId sli2 = new ServerLocationAndMemberId(l2, uniqueId2);
+    final ServerLocationAndMemberId sli3 = new ServerLocationAndMemberId(l3, uniqueId3);
+
+    float l1ConnectionLoad = 50;
+    float l2ConnectionLoad = 40;
+    float l3ConnectionLoad = 30;
+
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(l1, l1ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(l2, l2ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(l3, l3ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+
+    groupServers.put(sli1, loadHolder1);
+    groupServers.put(sli2, loadHolder2);
+    groupServers.put(sli3, loadHolder3);
+
+    assertEquals(loadHolder1, loadSnapshot.isCurrentServerMostLoaded(l1, groupServers));
+    assertNull(loadSnapshot.isCurrentServerMostLoaded(l2, groupServers));
+    assertNull(loadSnapshot.isCurrentServerMostLoaded(l3, groupServers));
+  }
+
+  @Test
+  public void testGetReplacementServerForConnection() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation l1 = new ServerLocation("localhost", 1);
+    final ServerLocation l2 = new ServerLocation("localhost", 2);
+    final ServerLocation l3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
+
+    float l1ConnectionLoad = 50;
+    float l2ConnectionLoad = 40;
+    float l3ConnectionLoad = 30;
+
+    loadSnapshot.addServer(l1, uniqueId1, new String[] {"a"},
+        new ServerLoad(l1ConnectionLoad, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
+    loadSnapshot.addServer(l2, uniqueId2, new String[] {"a", "b"},
+        new ServerLoad(l2ConnectionLoad, 1, 0, 1), LOAD_POLL_INTERVAL);
+    loadSnapshot.addServer(l3, uniqueId3, new String[] {"b"},
+        new ServerLoad(l3ConnectionLoad, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
+
+    ServerLocation newServer1 =
+        loadSnapshot.getReplacementServerForConnection(l1, "", Collections.EMPTY_SET);
+    assertEquals(l3, newServer1);
+    ServerLocation newServer2 =
+        loadSnapshot.getReplacementServerForConnection(l1, "a", Collections.EMPTY_SET);
+    assertEquals(l2, newServer2);
+    ServerLocation newServer3 =
+        loadSnapshot.getReplacementServerForConnection(l3, "b", Collections.EMPTY_SET);
+    assertEquals(l3, newServer3);
+    ServerLocation newServer4 =
+        loadSnapshot.getReplacementServerForConnection(l2, "b", Collections.EMPTY_SET);
+    assertEquals(l3, newServer4);
+  }
+
+  @Test
+  public void testFindBestServersReturnOneServer() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation l1 = new ServerLocation("localhost", 1);
+    final ServerLocation l2 = new ServerLocation("localhost", 2);
+    final ServerLocation l3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
+
+    final ServerLocationAndMemberId sli1 = new ServerLocationAndMemberId(l1, uniqueId1);
+    final ServerLocationAndMemberId sli2 = new ServerLocationAndMemberId(l2, uniqueId2);
+    final ServerLocationAndMemberId sli3 = new ServerLocationAndMemberId(l3, uniqueId3);
+
+    float l1ConnectionLoad = 50;
+    float l2ConnectionLoad = 30;
+    float l3ConnectionLoad = 40;
+
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(l1, l1ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(l2, l2ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(l3, l3ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+
+    groupServers.put(sli1, loadHolder1);
+    groupServers.put(sli2, loadHolder2);
+    groupServers.put(sli3, loadHolder3);
+
+    List<LocatorLoadSnapshot.LoadHolder> result =
+        loadSnapshot.findBestServers(groupServers, Collections.EMPTY_SET, 1);
+    assertEquals(1, result.size());
+    assertEquals(loadHolder2, result.get(0));
+  }
+
+  @Test
+  public void testFindBestServersReturnMoreThanOneServer() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation l1 = new ServerLocation("localhost", 1);
+    final ServerLocation l2 = new ServerLocation("localhost", 2);
+    final ServerLocation l3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
+
+    final ServerLocationAndMemberId sli1 = new ServerLocationAndMemberId(l1, uniqueId1);
+    final ServerLocationAndMemberId sli2 = new ServerLocationAndMemberId(l2, uniqueId2);
+    final ServerLocationAndMemberId sli3 = new ServerLocationAndMemberId(l3, uniqueId3);
+
+    float l1ConnectionLoad = 50;
+    float l2ConnectionLoad = 30;
+    float l3ConnectionLoad = 40;
+
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(l1, l1ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(l2, l2ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(l3, l3ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+
+    groupServers.put(sli1, loadHolder1);
+    groupServers.put(sli2, loadHolder2);
+    groupServers.put(sli3, loadHolder3);
+
+    List<LocatorLoadSnapshot.LoadHolder> result =
+        loadSnapshot.findBestServers(groupServers, Collections.EMPTY_SET, 2);
+    assertEquals(2, result.size());
+    assertEquals(loadHolder2, result.get(0));
+    assertEquals(loadHolder3, result.get(1));
+
+    result = loadSnapshot.findBestServers(groupServers, Collections.EMPTY_SET, 0);
+    assertEquals(0, result.size());
+  }
+
+  @Test
+  public void testFindBestServersCalledWithZeroCount() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation l1 = new ServerLocation("localhost", 1);
+    final ServerLocation l2 = new ServerLocation("localhost", 2);
+    final ServerLocation l3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
+
+    final ServerLocationAndMemberId sli1 = new ServerLocationAndMemberId(l1, uniqueId1);
+    final ServerLocationAndMemberId sli2 = new ServerLocationAndMemberId(l2, uniqueId2);
+    final ServerLocationAndMemberId sli3 = new ServerLocationAndMemberId(l3, uniqueId3);
+
+    float l1ConnectionLoad = 50;
+    float l2ConnectionLoad = 30;
+    float l3ConnectionLoad = 40;
+
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(l1, l1ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(l2, l2ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(l3, l3ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+
+    groupServers.put(sli1, loadHolder1);
+    groupServers.put(sli2, loadHolder2);
+    groupServers.put(sli3, loadHolder3);
+
+    List<LocatorLoadSnapshot.LoadHolder> result =
+        loadSnapshot.findBestServers(groupServers, Collections.EMPTY_SET, 0);
+    assertEquals(0, result.size());
+  }
+
+  @Test
+  public void testFindBestServersCalledWithNegativeCount() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation l1 = new ServerLocation("localhost", 1);
+    final ServerLocation l2 = new ServerLocation("localhost", 2);
+    final ServerLocation l3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
+
+    final ServerLocationAndMemberId sli1 = new ServerLocationAndMemberId(l1, uniqueId1);
+    final ServerLocationAndMemberId sli2 = new ServerLocationAndMemberId(l2, uniqueId2);
+    final ServerLocationAndMemberId sli3 = new ServerLocationAndMemberId(l3, uniqueId3);
+
+    float l1ConnectionLoad = 50;
+    float l2ConnectionLoad = 30;
+    float l3ConnectionLoad = 40;
+
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(l1, l1ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(l2, l2ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(l3, l3ConnectionLoad, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+
+    groupServers.put(sli1, loadHolder1);
+    groupServers.put(sli2, loadHolder2);
+    groupServers.put(sli3, loadHolder3);
+
+    List<LocatorLoadSnapshot.LoadHolder> result =
+        loadSnapshot.findBestServers(groupServers, Collections.EMPTY_SET, -1);
+    assertEquals(3, result.size());
+    assertEquals(loadHolder2, result.get(0));
+    assertEquals(loadHolder3, result.get(1));
+    assertEquals(loadHolder1, result.get(2));
+  }
+
+  @Test
+  public void updateMapWithServerLocationAndMemberId() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation serverLocation = new ServerLocation("localhost", 1);
+    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final ServerLocationAndMemberId sli = new ServerLocationAndMemberId(serverLocation, uniqueId);
+    LocatorLoadSnapshot.LoadHolder loadHolder =
+        new LocatorLoadSnapshot.LoadHolder(serverLocation, 50, 1, LOAD_POLL_INTERVAL);
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+    groupServers.put(sli, loadHolder);
+    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> connectionLoadMap =
+        new HashMap<>();
+    connectionLoadMap.put(null, groupServers);
+
+    loadSnapshot.updateMap(connectionLoadMap, serverLocation, uniqueId, 60, 2);
+
+    LocatorLoadSnapshot.LoadHolder expectedLoadHolder =
+        new LocatorLoadSnapshot.LoadHolder(serverLocation, 60, 2, LOAD_POLL_INTERVAL);
+
+    assertEquals(expectedLoadHolder.getLoad(), groupServers.get(sli).getLoad(), 0);
+    assertEquals(expectedLoadHolder.getLoadPerConnection(),
+        groupServers.get(sli).getLoadPerConnection(), 0);
+  }
+
+  @Test
+  public void updateMapWithServerLocationAndMemberIdKeyNotFound() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation serverLocation = new ServerLocation("localhost", 1);
+    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final ServerLocationAndMemberId sli = new ServerLocationAndMemberId(serverLocation, uniqueId);
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> connectionLoadMap =
+        new HashMap<>();
+    connectionLoadMap.put(null, groupServers);
+
+    loadSnapshot.updateMap(connectionLoadMap, serverLocation, uniqueId, 50, 1);
+
+    assertNull(groupServers.get(sli));
+  }
+
+  @Test
+  public void updateMapWithServerLocation() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation serverLocation = new ServerLocation("localhost", 1);
+    LocatorLoadSnapshot.LoadHolder loadHolder =
+        new LocatorLoadSnapshot.LoadHolder(serverLocation, 50, 1, LOAD_POLL_INTERVAL);
+    Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+    groupServers.put(serverLocation, loadHolder);
+    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> connectionLoadMap =
+        new HashMap<>();
+    connectionLoadMap.put(null, groupServers);
+
+    loadSnapshot.updateMap(connectionLoadMap, serverLocation, 60, 2);
+
+    LocatorLoadSnapshot.LoadHolder expectedLoadHolder =
+        new LocatorLoadSnapshot.LoadHolder(serverLocation, 60, 2, LOAD_POLL_INTERVAL);
+
+    assertEquals(expectedLoadHolder.getLoad(), groupServers.get(serverLocation).getLoad(), 0);
+    assertEquals(expectedLoadHolder.getLoadPerConnection(),
+        groupServers.get(serverLocation).getLoadPerConnection(), 0);
+  }
+
+  @Test
+  public void updateMapWithServerLocationKeyNotFound() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation serverLocation = new ServerLocation("localhost", 1);
+    Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> connectionLoadMap =
+        new HashMap<>();
+    connectionLoadMap.put(null, groupServers);
+
+    loadSnapshot.updateMap(connectionLoadMap, serverLocation, 50, 1);
+
+    assertNull(groupServers.get(serverLocation));
   }
 }

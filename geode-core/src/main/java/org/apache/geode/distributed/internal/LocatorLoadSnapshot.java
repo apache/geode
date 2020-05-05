@@ -31,6 +31,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -478,22 +479,23 @@ public class LocatorLoadSnapshot {
     groupMap.remove(locationAndMemberId);
   }
 
-  private void updateMap(Map map, ServerLocation location, float load, float loadPerConnection) {
-    Map groupMap = (Map) map.get(null);
-    LoadHolder holder = (LoadHolder) groupMap.get(location);
-    if (holder != null) {
-      holder.setLoad(load, loadPerConnection);
-    }
+  @VisibleForTesting
+  void updateMap(Map map, ServerLocation location, float load, float loadPerConnection) {
+    updateMap(map, location, "", load, loadPerConnection);
   }
 
-  private void updateMap(Map map, ServerLocation location, String memberId, float load,
+  @VisibleForTesting
+  void updateMap(Map map, ServerLocation location, String memberId, float load,
       float loadPerConnection) {
     Map groupMap = (Map) map.get(null);
-    ServerLocationAndMemberId locationAndMemberId =
-        new ServerLocationAndMemberId(location, memberId);
-    LoadHolder holder =
-        (LoadHolder) groupMap.get(locationAndMemberId);
-
+    LoadHolder holder;
+    if (memberId.equals("")) {
+      holder = (LoadHolder) groupMap.get(location);
+    } else {
+      ServerLocationAndMemberId locationAndMemberId =
+          new ServerLocationAndMemberId(location, memberId);
+      holder = (LoadHolder) groupMap.get(locationAndMemberId);
+    }
     if (holder != null) {
       holder.setLoad(load, loadPerConnection);
     }
@@ -506,9 +508,14 @@ public class LocatorLoadSnapshot {
    * @param count how many you want. a negative number means all of them in order of best to worst
    * @return a list of best...worst server LoadHolders
    */
-  private List<LoadHolder> findBestServers(
+  @VisibleForTesting
+  List<LoadHolder> findBestServers(
       Map<?, LoadHolder> groupServers,
       Set<ServerLocation> excludedServers, int count) {
+
+    if (count == 0) {
+      return new ArrayList<>();
+    }
 
     TreeSet<LoadHolder> bestEntries = new TreeSet<>((l1, l2) -> {
       int difference = Float.compare(l1.getLoad(), l2.getLoad());
@@ -557,7 +564,8 @@ public class LocatorLoadSnapshot {
   /**
    * If it is most loaded then return its LoadHolder; otherwise return null;
    */
-  private LoadHolder isCurrentServerMostLoaded(ServerLocation currentServer,
+  @VisibleForTesting
+  LoadHolder isCurrentServerMostLoaded(ServerLocation currentServer,
       Map<ServerLocationAndMemberId, LoadHolder> groupServers) {
 
     // Check if there are keys in the map that contains currentServer.
@@ -691,7 +699,8 @@ public class LocatorLoadSnapshot {
     }
   }
 
-  private static class LoadHolder {
+  @VisibleForTesting
+  static class LoadHolder {
     private float load;
 
     private float loadPerConnection;
