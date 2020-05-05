@@ -114,10 +114,10 @@ public class PubSubDUnitTest {
     serverProperties3.setProperty("log-level", "error");
     serverProperties4.setProperty("log-level", "error");
 
-    subscriber1 = new Jedis(LOCAL_HOST, ports[0]);
-    subscriber2 = new Jedis(LOCAL_HOST, ports[1]);
-    publisher1 = new Jedis(LOCAL_HOST, ports[2]);
-    publisher2 = new Jedis(LOCAL_HOST, ports[3]);
+    subscriber1 = new Jedis(LOCAL_HOST, ports[0], 120000);
+    subscriber2 = new Jedis(LOCAL_HOST, ports[1], 120000);
+    publisher1 = new Jedis(LOCAL_HOST, ports[2], 120000);
+    publisher2 = new Jedis(LOCAL_HOST, ports[3], 120000);
 
     gfsh.connectAndVerify(locator);
   }
@@ -142,7 +142,7 @@ public class PubSubDUnitTest {
   }
 
   @Test
-  public void shouldContinueToFunction_whenOneSubscriberShutsDownGracefully_givenTwoSubscribersOnePublisher()
+  public void shouldContinueToFunction_whenOneServerShutsDownGracefully_givenTwoSubscribersOnePublisher()
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(2);
 
@@ -173,7 +173,7 @@ public class PubSubDUnitTest {
   }
 
   @Test
-  public void shouldContinueToFunction_whenOneSubscriberShutsDownAbruptly_givenTwoSubscribersOnePublisher()
+  public void shouldContinueToFunction_whenOneServerShutsDownAbruptly_givenTwoSubscribersOnePublisher()
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(2);
 
@@ -192,15 +192,17 @@ public class PubSubDUnitTest {
     Long result = publisher1.publish(CHANNEL_NAME, "hello");
     assertThat(result).isEqualTo(2);
 
-    cluster.crashVM(1);
-    publisher1.publish(CHANNEL_NAME, "hello again");
+    cluster.crashVM(2);
 
-    mockSubscriber2.unsubscribe(CHANNEL_NAME);
+    result = publisher1.publish(CHANNEL_NAME, "hello again");
+    assertThat(result).isEqualTo(1);
 
-    GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
+    mockSubscriber1.unsubscribe(CHANNEL_NAME);
 
-    restartServerVM1();
-    reconnectSubscriber1();
+    GeodeAwaitility.await().untilAsserted(subscriber1Future::get);
+
+    restartServerVM2();
+    reconnectSubscriber2();
   }
 
   private void restartServerVM1() {
@@ -213,12 +215,26 @@ public class PubSubDUnitTest {
             .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4"));
   }
 
+  private void restartServerVM2() {
+    cluster.startServerVM(2, serverProperties2, locator.getPort());
+    await()
+        .untilAsserted(() -> gfsh.executeAndAssertThat("list members")
+            .statusIsSuccess()
+            .hasTableSection()
+            .hasColumn("Name")
+            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4"));
+  }
+
   private void reconnectSubscriber1() {
     subscriber1 = new Jedis(LOCAL_HOST, ports[0]);
   }
 
+  private void reconnectSubscriber2() {
+    subscriber2 = new Jedis(LOCAL_HOST, ports[1]);
+  }
+
   @Test
-  public void shouldContinueToFunction_whenOneSubscriberShutsDownGracefully_givenTwoSubscribersTwoPublishers()
+  public void shouldContinueToFunction_whenOneServerShutsDownGracefully_givenTwoSubscribersTwoPublishers()
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(2);
 
@@ -239,17 +255,17 @@ public class PubSubDUnitTest {
     assertThat(resultPublisher1).isEqualTo(2);
     assertThat(resultPublisher2).isEqualTo(2);
 
-    server1.stop();
+    server2.stop();
 
     publisher1.publish(CHANNEL_NAME, "hello again");
     publisher2.publish(CHANNEL_NAME, "hello again");
 
-    mockSubscriber2.unsubscribe(CHANNEL_NAME);
+    mockSubscriber1.unsubscribe(CHANNEL_NAME);
 
-    GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
+    GeodeAwaitility.await().untilAsserted(subscriber1Future::get);
 
-    restartServerVM1();
-    reconnectSubscriber1();
+    restartServerVM2();
+    reconnectSubscriber2();
   }
 
   @Test
@@ -303,6 +319,7 @@ public class PubSubDUnitTest {
         for (int j = 0; j < ITERATIONS; j++) {
           publisher.publish(CHANNEL_NAME, "hello");
         }
+        publisher.close();
         return null;
       };
 
