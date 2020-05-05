@@ -59,7 +59,7 @@ public class ServerLocationAndMemberId {
     final int prime = 31;
     int result = 1;
     result =
-        prime * result + serverLocation.hashCode() + ((memberId != null) ? memberId.hashCode() : 0);
+        prime * result + serverLocation.hashCode() + memberId.hashCode();
     return result;
   }
 }
