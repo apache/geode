@@ -15,6 +15,11 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.internal.RedisCommandType.DEL;
+import static org.apache.geode.redis.internal.RedisCommandType.SADD;
+import static org.apache.geode.redis.internal.RedisCommandType.SMEMBERS;
+import static org.apache.geode.redis.internal.RedisCommandType.SREM;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +30,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.executor.CommandFunction;
 
 @SuppressWarnings("unchecked")
 public class GeodeRedisSetWithFunctions implements RedisSet {
@@ -40,30 +47,18 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
   }
 
   public static void registerFunctions() {
-    FunctionService.registerFunction(new SaddFunction());
-    FunctionService.registerFunction(new SremFunction());
-    FunctionService.registerFunction(new SmembersFunction());
-    FunctionService.registerFunction(new SdelFunction());
+    FunctionService.registerFunction(new CommandFunction());
   }
 
   @Override
   public long sadd(ArrayList<ByteArrayWrapper> membersToAdd) {
-    ResultCollector<ArrayList<ByteArrayWrapper>, List<Long>> results = FunctionService
-        .onRegion(region)
-        .withFilter(Collections.singleton(key))
-        .setArguments(membersToAdd)
-        .execute(SaddFunction.ID);
-
+    ResultCollector<Object[], List<Long>> results = executeFunction(SADD, membersToAdd);
     return results.getResult().get(0);
   }
 
   @Override
   public long srem(ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    ResultCollector<ArrayList<ByteArrayWrapper>, List<Long>> results = FunctionService
-        .onRegion(region)
-        .withFilter(Collections.singleton(key))
-        .setArguments(membersToRemove)
-        .execute(SremFunction.ID);
+    ResultCollector<Object[], List<Long>> results = executeFunction(SREM, membersToRemove);
     List<Long> resultList = results.getResult();
     long membersRemoved = resultList.get(0);
     long wasDeleted = resultList.get(1);
@@ -75,20 +70,24 @@ public class GeodeRedisSetWithFunctions implements RedisSet {
 
   @Override
   public Set<ByteArrayWrapper> members() {
-    ResultCollector<Void, List<Set<ByteArrayWrapper>>> results = FunctionService
-        .onRegion(region)
-        .withFilter(Collections.singleton(key))
-        .execute(SmembersFunction.ID);
+    ResultCollector<Object[], List<Set<ByteArrayWrapper>>> results =
+        executeFunction(SMEMBERS, null);
     return results.getResult().get(0);
   }
 
   @Override
   public boolean del() {
-    ResultCollector<Void, List<Boolean>> results = FunctionService
+    ResultCollector<Object[], List<Boolean>> results = executeFunction(DEL, null);
+    return results.getResult().get(0);
+  }
+
+  private ResultCollector executeFunction(RedisCommandType command,
+      ArrayList<ByteArrayWrapper> commandArguments) {
+    return FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
-        .execute(SdelFunction.ID);
-    return results.getResult().get(0);
+        .setArguments(new Object[] {command, commandArguments})
+        .execute(CommandFunction.ID);
   }
 
 }
