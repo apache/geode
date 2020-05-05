@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.springRedisTestApplication.config;
+package org.apache.geode.redis.session.springRedisTestApplication.config;
 
 import io.lettuce.core.resource.ClientResources;
 import org.springframework.boot.ApplicationArguments;

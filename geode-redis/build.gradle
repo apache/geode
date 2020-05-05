@@ -62,7 +62,11 @@ dependencies {
   distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')
 
-  distributedTestImplementation('org.springframework.boot:spring-boot-starter-web')
+  distributedTestCompile('javax.servlet:javax.servlet-api')
+  distributedTestImplementation('org.springframework.boot:spring-boot-starter-jetty')
+  distributedTestImplementation('org.springframework.boot:spring-boot-starter-web') {
+    exclude module: 'spring-boot-starter-tomcat'
+  }
   distributedTestImplementation('org.springframework.boot:spring-boot-starter')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-data-redis')
   distributedTestImplementation('org.springframework.session:spring-session-data-redis')
