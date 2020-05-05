@@ -30,15 +30,14 @@ public class SCardExecutor extends SetExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-    Region<ByteArrayWrapper, RedisSet> keyRegion = getRegion(context);
-
-    RedisSet set = keyRegion.get(key);
-    if (set == null) {
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    int size = redisSetCommands.scard(key);
+    if (size == -1) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
+    } else {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
     }
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), set.size()));
   }
 
 }

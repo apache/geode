@@ -77,6 +77,9 @@ public class CommandFunction implements Function<Object[]> {
             () -> RedisSet.members(localRegion, key),
             (members) -> resultSender.lastResult(members));
         break;
+      case SCARD:
+        DeltaSet.scard(resultSender, localRegion, key);
+        break;
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }

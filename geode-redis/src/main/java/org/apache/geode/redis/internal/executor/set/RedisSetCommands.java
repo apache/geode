@@ -31,4 +31,7 @@ public interface RedisSetCommands {
   Set<ByteArrayWrapper> members(ByteArrayWrapper key);
 
   boolean del(ByteArrayWrapper key);
+
+  int scard(ByteArrayWrapper key);
+
 }

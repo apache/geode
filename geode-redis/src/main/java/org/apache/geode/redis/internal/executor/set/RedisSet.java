@@ -98,6 +98,16 @@ public class RedisSet implements Delta, DataSerializable {
     }
   }
 
+  public static int scard(Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key) {
+    RedisSet redisSet = region.get(key);
+    if (redisSet != null) {
+      return redisSet.size();
+    } else {
+      return -1;
+    }
+  }
+
+
   public synchronized boolean contains(ByteArrayWrapper member) {
     return members.contains(member);
   }
