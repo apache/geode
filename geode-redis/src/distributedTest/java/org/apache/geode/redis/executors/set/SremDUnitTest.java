@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.executors;
+package org.apache.geode.redis.executors.set;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
@@ -39,7 +39,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-public class SaddDUnitTest {
+public class SremDUnitTest {
 
   @ClassRule
   public static ClusterStartupRule clusterStartUp = new ClusterStartupRule(4);
@@ -116,17 +116,21 @@ public class SaddDUnitTest {
     String key = "key";
 
     List<String> members = makeMemberList(SET_SIZE, "member1-");
+    List<String> halfOfMembers = makeMemberList(SET_SIZE / 2, "member1-");
+    List<String> otherHalfOfMembers = new ArrayList<>(members);
+    otherHalfOfMembers.removeAll(halfOfMembers);
 
     jedis1.sadd(key, members.toArray(new String[] {}));
+    jedis2.srem(key, halfOfMembers.toArray(new String[] {}));
 
-    Set<String> result = jedis2.smembers(key);
+    Set<String> result = jedis3.smembers(key);
 
-    assertThat(result.toArray()).containsExactlyInAnyOrder(members.toArray());
-
+    assertThat(result.toArray().length).isEqualTo(otherHalfOfMembers.size());
+    assertThat(result.toArray()).containsExactlyInAnyOrder(otherHalfOfMembers.toArray());
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentDataToSameSetConcurrently()
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingDifferentDataFromSameSetConcurrently()
       throws InterruptedException {
 
     String key = "key";
@@ -138,42 +142,45 @@ public class SaddDUnitTest {
     allMembers.addAll(members1);
     allMembers.addAll(members2);
 
+    jedis3.sadd(key, allMembers.toArray(new String[] {}));
+
     CountDownLatch startThreads = new CountDownLatch(1);
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members1, jedis1, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members2, jedis2, startThreads);
+    Runnable removeMembersWithClient1 = makeSRemRunnable(key, members1, jedis1, startThreads);
+    Runnable removeMembersWithClient2 = makeSRemRunnable(key, members2, jedis2, startThreads);
 
-    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+    runConcurrentThreads(startThreads, removeMembersWithClient1, removeMembersWithClient2);
 
     Set<String> results = jedis3.smembers(key);
 
-    assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
-
+    assertThat(results).isEmpty();
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingSameDataToSameSetConcurrently()
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingSameDataFromSameSetConcurrently()
       throws InterruptedException {
 
     String key = "key";
 
     List<String> members = makeMemberList(SET_SIZE, "member-");
 
+    jedis3.sadd(key, members.toArray(new String[] {}));
+
     CountDownLatch startThreads = new CountDownLatch(1);
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members, jedis1, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members, jedis2, startThreads);
+    Runnable removeMembersWithClient1 = makeSRemRunnable(key, members, jedis1, startThreads);
+    Runnable removeMembersWithClient2 = makeSRemRunnable(key, members, jedis2, startThreads);
 
-    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+    runConcurrentThreads(startThreads, removeMembersWithClient1, removeMembersWithClient2);
 
     Set<String> results = jedis3.smembers(key);
 
-    assertThat(results.toArray()).containsExactlyInAnyOrder(members.toArray());
+    assertThat(results).isEmpty();
 
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentSetsConcurrently()
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingFromDifferentSetsConcurrently()
       throws InterruptedException {
 
     String key1 = "key1";
@@ -182,23 +189,26 @@ public class SaddDUnitTest {
     List<String> members1 = makeMemberList(SET_SIZE, "member1-");
     List<String> members2 = makeMemberList(SET_SIZE, "member2-");
 
+    jedis3.sadd(key1, members1.toArray(new String[] {}));
+    jedis3.sadd(key2, members2.toArray(new String[] {}));
+
     CountDownLatch startThreads = new CountDownLatch(1);
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key1, members1, jedis1, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key2, members2, jedis2, startThreads);
+    Runnable removeMembersWithClient1 = makeSRemRunnable(key1, members1, jedis1, startThreads);
+    Runnable removeMembersWithClient2 = makeSRemRunnable(key2, members2, jedis2, startThreads);
 
-    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+    runConcurrentThreads(startThreads, removeMembersWithClient1, removeMembersWithClient2);
 
     Set<String> results1 = jedis3.smembers(key1);
     Set<String> results2 = jedis3.smembers(key2);
 
-    assertThat(results1.toArray()).containsExactlyInAnyOrder(members1.toArray());
-    assertThat(results2.toArray()).containsExactlyInAnyOrder(members2.toArray());
+    assertThat(results1).isEmpty();
+    assertThat(results2).isEmpty();
 
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSetConcurrently()
+  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently()
       throws InterruptedException {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
@@ -207,30 +217,31 @@ public class SaddDUnitTest {
     String key = "key";
 
     List<String> members = makeMemberList(SET_SIZE, "member1-");
+    jedis3.sadd(key, members.toArray(new String[] {}));
 
     CountDownLatch startThreads = new CountDownLatch(1);
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members, jedis1, startThreads);
-    Runnable addSetsWithClient1B = makeSADDRunnable(key, members, jedis1B, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members, jedis2, startThreads);
-    Runnable addSetsWithClient2B = makeSADDRunnable(key, members, jedis2B, startThreads);
+    Runnable removeMembersWithClient1 = makeSRemRunnable(key, members, jedis1, startThreads);
+    Runnable removeMembersWithClient1B = makeSRemRunnable(key, members, jedis1B, startThreads);
+    Runnable removeMembersWithClient2 = makeSRemRunnable(key, members, jedis2, startThreads);
+    Runnable removeMembersWithClient2B = makeSRemRunnable(key, members, jedis2B, startThreads);
 
     runConcurrentThreads(startThreads,
-        addSetsWithClient1,
-        addSetsWithClient1B,
-        addSetsWithClient2,
-        addSetsWithClient2B);
+        removeMembersWithClient1,
+        removeMembersWithClient1B,
+        removeMembersWithClient2,
+        removeMembersWithClient2B);
 
     Set<String> results = jedis3.smembers(key);
 
-    assertThat(results.toArray()).containsExactlyInAnyOrder(members.toArray());
+    assertThat(results).isEmpty();
 
     jedis1B.disconnect();
     jedis2B.disconnect();
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSet_withDifferentData_Concurrently()
+  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently()
       throws InterruptedException {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
@@ -245,22 +256,24 @@ public class SaddDUnitTest {
     allMembers.addAll(members1);
     allMembers.addAll(members2);
 
+    jedis3.sadd(key, allMembers.toArray(new String[] {}));
+
     CountDownLatch startThreads = new CountDownLatch(1);
 
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members1, jedis1, startThreads);
-    Runnable addSetsWithClient1B = makeSADDRunnable(key, members1, jedis1B, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members2, jedis2, startThreads);
-    Runnable addSetsWithClient2B = makeSADDRunnable(key, members2, jedis2B, startThreads);
+    Runnable removeMembersWithClient1 = makeSRemRunnable(key, members1, jedis1, startThreads);
+    Runnable removeMembersWithClient1B = makeSRemRunnable(key, members1, jedis1B, startThreads);
+    Runnable removeMembersWithClient2 = makeSRemRunnable(key, members2, jedis2, startThreads);
+    Runnable removeMembersWithClient2B = makeSRemRunnable(key, members2, jedis2B, startThreads);
 
     runConcurrentThreads(startThreads,
-        addSetsWithClient1,
-        addSetsWithClient1B,
-        addSetsWithClient2,
-        addSetsWithClient2B);
+        removeMembersWithClient1,
+        removeMembersWithClient1B,
+        removeMembersWithClient2,
+        removeMembersWithClient2B);
 
     Set<String> results = jedis3.smembers(key);
 
-    assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
+    assertThat(results).isEmpty();
 
     jedis1B.disconnect();
     jedis2B.disconnect();
@@ -281,7 +294,7 @@ public class SaddDUnitTest {
     }
   }
 
-  private Runnable makeSADDRunnable(String key, List<String> members, Jedis jedis,
+  private Runnable makeSRemRunnable(String key, List<String> members, Jedis jedis,
       CountDownLatch startThread) {
     return () -> {
       try {
@@ -290,7 +303,7 @@ public class SaddDUnitTest {
         e.printStackTrace();
       }
       for (int i = 0; i < members.size(); i++) {
-        jedis.sadd(key, members.get(i));
+        jedis.srem(key, members.get(i));
       }
     };
   }
