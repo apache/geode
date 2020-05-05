@@ -38,66 +38,52 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class RemoveCommand extends GfshCommand {
+public class ClearCommand extends GfshCommand {
   public static final String REGION_NOT_FOUND = "Region <%s> not found in any of the members";
 
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
-  @CliCommand(value = {CliStrings.REMOVE}, help = CliStrings.REMOVE__HELP)
-  public ResultModel remove(
-      @CliOption(key = {CliStrings.REMOVE__KEY}, help = CliStrings.REMOVE__KEY__HELP,
-          specifiedDefaultValue = "") String key,
-      @CliOption(key = {CliStrings.REMOVE__REGION}, mandatory = true,
-          help = CliStrings.REMOVE__REGION__HELP,
-          optionContext = ConverterHint.REGION_PATH) String regionPath,
-      @CliOption(key = CliStrings.REMOVE__ALL, help = CliStrings.REMOVE__ALL__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean removeAllKeys,
-      @CliOption(key = {CliStrings.REMOVE__KEYCLASS},
-          help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
+  @CliCommand(value = {CliStrings.CLEAR_REGION}, help = CliStrings.CLEAR_REGION_HELP)
+  public ResultModel clear(
+      @CliOption(key = {CliStrings.CLEAR_REGION_REGION_NAME}, mandatory = true,
+          help = CliStrings.CLEAR_REGION_REGION_NAME_HELP,
+          optionContext = ConverterHint.REGION_PATH) String regionPath) {
+
     Cache cache = getCache();
 
-    if (!removeAllKeys && (key == null)) {
-      return new ResultModel().createError(CliStrings.REMOVE__MSG__KEY_EMPTY);
-    }
+    authorize(Resource.DATA, Operation.WRITE, regionPath);
 
-    if (removeAllKeys) {
-      authorize(Resource.DATA, Operation.WRITE, regionPath);
-    } else {
-      authorize(Resource.DATA, Operation.WRITE, regionPath, key);
-    }
-
-    key = DataCommandsUtils.makeBrokenJsonCompliant(key);
 
     Region region = cache.getRegion(regionPath);
-    DataCommandFunction removefn = new DataCommandFunction();
+    DataCommandFunction clearfn = createCommandFunction();
     DataCommandResult dataResult;
     if (region == null) {
       Set<DistributedMember> memberList = findAnyMembersForRegion(regionPath);
 
       if (CollectionUtils.isEmpty(memberList)) {
-        return new ResultModel().createError(String.format(REGION_NOT_FOUND, regionPath));
+        return ResultModel.createError(String.format(REGION_NOT_FOUND, regionPath));
       }
 
       DataCommandRequest request = new DataCommandRequest();
       request.setCommand(CliStrings.REMOVE);
-      request.setKey(key);
-      request.setKeyClass(keyClass);
-      request.setRemoveAllKeys(removeAllKeys ? "ALL" : null);
+      request.setRemoveAllKeys("ALL");
       request.setRegionName(regionPath);
-      dataResult = callFunctionForRegion(request, removefn, memberList);
+      dataResult = callFunctionForRegion(request, clearfn, memberList);
     } else {
-      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null,
+      dataResult = clearfn.remove(null, null, regionPath, "ALL",
           (InternalCache) cache);
     }
 
-    dataResult.setKeyClass(keyClass);
-    ResultModel result;
+    dataResult.setKeyClass(null);
 
-    if (removeAllKeys) {
-      result = dataResult.toResultModel(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);
-    } else {
-      result = dataResult.toResultModel();
-    }
+    return dataResult.toResultModel();
+  }
 
-    return result;
+  DataCommandResult callFunctionForRegion(DataCommandRequest request, DataCommandFunction clearfn,
+      Set<DistributedMember> memberList) {
+    return DataCommandsUtils.callFunctionForRegion(request, clearfn, memberList);
+  }
+
+  DataCommandFunction createCommandFunction() {
+    return new DataCommandFunction();
   }
 }
