@@ -19,6 +19,7 @@ import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -40,13 +41,13 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 @RunWith(Parameterized.class)
-public class RebalanceCommandDistributedTest {
+public class RebalanceCommandDistributedTest implements Serializable {
   private static final String REGION_ONE_NAME = "region-1";
   private static final String REGION_TWO_NAME = "region-2";
   private static final String REGION_THREE_NAME = "region-3";
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -180,5 +181,29 @@ public class RebalanceCommandDistributedTest {
     assertThat(rebalanceResult.get("Rebalanced Stats").get(9))
         .isEqualTo(CliStrings.REBALANCE__MSG__MEMBER_COUNT);
     assertThat(rebalanceResult.get("Value").get(9)).isEqualTo("2");
+  }
+
+  /**
+   * See GEODE-8071.
+   * The test asserts that the amount of non-daemon threads on the locator VM remains constant
+   * before and after executing the re-balance command.
+   */
+  @Test
+  public void rebalanceCommandShouldNotLaunchNonDaemonThreads() {
+    long nonDaemonThreadsBeforeCommand = locator.invoke(() -> Thread.getAllStackTraces()
+        .keySet()
+        .stream()
+        .filter(thread -> !thread.isDaemon())
+        .count());
+
+    gfsh.executeAndAssertThat("rebalance").statusIsSuccess();
+
+    long daemonThreadsAfterCommand = locator.invoke(() -> Thread.getAllStackTraces()
+        .keySet()
+        .stream()
+        .filter(thread -> !thread.isDaemon())
+        .count());
+
+    assertThat(daemonThreadsAfterCommand).isEqualTo(nonDaemonThreadsBeforeCommand);
   }
 }
