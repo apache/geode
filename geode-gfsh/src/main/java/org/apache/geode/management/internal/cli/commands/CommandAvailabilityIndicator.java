@@ -26,6 +26,7 @@ public class CommandAvailabilityIndicator extends GfshCommand {
       CliStrings.DESCRIBE_CONFIG, CliStrings.EXPORT_CONFIG, CliStrings.ALTER_RUNTIME_CONFIG,
       CliStrings.ALTER_REGION, CliStrings.CREATE_REGION, CliStrings.DESTROY_REGION,
       CliStrings.REBALANCE, CliStrings.GET, CliStrings.PUT, CliStrings.REMOVE,
+      CliStrings.CLEAR_REGION,
       CliStrings.LOCATE_ENTRY, CliStrings.QUERY, CliStrings.IMPORT_DATA, CliStrings.EXPORT_DATA,
       CliStrings.DEPLOY, CliStrings.UNDEPLOY, CliStrings.LIST_DEPLOYED,
       CliStrings.BACKUP_DISK_STORE, CliStrings.COMPACT_DISK_STORE, CliStrings.DESCRIBE_DISK_STORE,
