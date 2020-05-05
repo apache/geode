@@ -36,9 +36,7 @@ public class ConcurrentLoopingThreads {
     Stream<LoopingThread> loopingThreadStream = Arrays
         .stream(functions)
         .map((r) -> new LoopingThread(r, iterationCount, latch))
-        .peek(Thread::start); //@TODO review comment: it seems like
-                              // forEach would do the same thing here and be a little more
-                              // readable?  I'm reading that peek is intended only for debugging?
+        .peek(Thread::start);
 
     latch.countDown();
 
