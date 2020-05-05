@@ -19,15 +19,6 @@ public class ServerLocationAndMemberId {
   private final ServerLocation serverLocation;
   private final String memberId;
 
-  public ServerLocationAndMemberId() {
-    this(null);
-  }
-
-  public ServerLocationAndMemberId(ServerLocation serverLocation) {
-    this.serverLocation = serverLocation;
-    memberId = "";
-  }
-
   public ServerLocationAndMemberId(ServerLocation serverLocation, String memberId) {
     this.serverLocation = serverLocation;
     this.memberId = memberId;
