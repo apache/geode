@@ -43,13 +43,13 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 public class RedisSet implements Delta, DataSerializable {
 
   public static void sadd(ResultSender<Long> resultSender,
-      Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key,
+      Region<ByteArrayWrapper, RedisSet> localRegion, ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
     resultSender.lastResult(sadd(localRegion, key, membersToAdd));
   }
 
   public static void srem(ResultSender<Long> resultSender,
-      Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key,
+      Region<ByteArrayWrapper, RedisSet> localRegion, ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove) {
     AtomicBoolean setWasDeleted = new AtomicBoolean();
     long membersRemoved = srem(localRegion, key, membersToRemove, setWasDeleted);
@@ -58,12 +58,12 @@ public class RedisSet implements Delta, DataSerializable {
   }
 
   public static void del(ResultSender<Boolean> resultSender,
-      Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key) {
+      Region<ByteArrayWrapper, RedisSet> localRegion, ByteArrayWrapper key) {
     resultSender.lastResult(del(localRegion, key));
   }
 
   public static void smembers(ResultSender<Set<ByteArrayWrapper>> resultSender,
-      Region<ByteArrayWrapper, SetDelta> localRegion, ByteArrayWrapper key) {
+      Region<ByteArrayWrapper, RedisSet> localRegion, ByteArrayWrapper key) {
     resultSender.lastResult(members(localRegion, key));
   }
 

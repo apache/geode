@@ -44,7 +44,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   public static void registerFunctions() {
     StripedExecutor stripedExecutor = new StripedExecutor();
-    FunctionService.registerFunction(new CommandFunction());
+    FunctionService.registerFunction(new CommandFunction(stripedExecutor));
   }
 
   @Override
@@ -69,7 +69,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   @Override
   public Set<ByteArrayWrapper> members(ByteArrayWrapper key) {
     ResultCollector<Object[], List<Set<ByteArrayWrapper>>> results =
-          executeFunction(SMEMBERS, key, null);
+        executeFunction(SMEMBERS, key, null);
     return results.getResult().get(0);
   }
 
