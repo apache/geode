@@ -166,7 +166,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     for (int i = 1; i <= NUM_SERVERS; i++) {
       createCacheAndRegion(getVM(i), locatorPort);
     }
-    performCreateWithLargeValue(getVM(1), locatorPort);
+    performCreateWithLargeValue(getVM(1));
     // fault the value into an empty cache - forces use of message chunking
     for (int i = 1; i <= NUM_SERVERS - 1; i++) {
       verifyCreatedEntry(getVM(i));
@@ -260,14 +260,10 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     });
   }
 
-  private void performCreateWithLargeValue(VM memberVM, int locatorPort) {
+  private void performCreateWithLargeValue(VM memberVM) {
     memberVM.invoke("perform create", () -> {
-      byte[] value = new byte[128000]; // SMALL_BUFFER_SIZE * 20];
+      byte[] value = new byte[SMALL_BUFFER_SIZE * 20];
       Arrays.fill(value, (byte) 1);
-      cache.getRegion(regionName).put("testKey", value);
-      cache.getDistributedSystem().disconnect();
-      cache = createCache(locatorPort);
-      cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
       cache.getRegion(regionName).put("testKey", value);
     });
   }
