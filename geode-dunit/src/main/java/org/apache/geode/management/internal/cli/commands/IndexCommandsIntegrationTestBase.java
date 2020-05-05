@@ -101,7 +101,7 @@ public class IndexCommandsIntegrationTestBase {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, "indexA");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
-        SEPARATOR + regionName + " s, s.history h\"");
+        "\"" + SEPARATOR + regionName + " s, s.history h\"");
 
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
@@ -116,7 +116,9 @@ public class IndexCommandsIntegrationTestBase {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
-        SEPARATOR + regionName + " s, s.history h\"");
+        "\"" + SEPARATOR + regionName + " s, s.history h\"");
+
+    System.out.println("DONAL: " + createStringBuilder.toString());
 
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
