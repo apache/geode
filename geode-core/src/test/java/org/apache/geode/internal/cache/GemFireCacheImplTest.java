@@ -28,10 +28,15 @@ import java.io.NotSerializableException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.After;
@@ -618,6 +623,40 @@ public class GemFireCacheImplTest {
   public void getCacheServers_isCanonical() {
     assertThat(gemFireCacheImpl.getCacheServers())
         .isSameAs(gemFireCacheImpl.getCacheServers());
+  }
+
+  @Test
+  public void testLockDiskStore() throws InterruptedException {
+    int nThread = 10;
+    String diskStoreName = "MyDiskStore";
+    AtomicInteger nTrue = new AtomicInteger();
+    AtomicInteger nFalse = new AtomicInteger();
+    ExecutorService executorService = Executors.newFixedThreadPool(nThread);
+    IntStream.range(0, nThread).forEach(tid -> {
+      executorService.submit(() -> {
+        try {
+          boolean lockResult = gemFireCacheImpl.doLockDiskStore(diskStoreName);
+          if (lockResult) {
+            nTrue.incrementAndGet();
+          } else {
+            nFalse.incrementAndGet();
+          }
+        } finally {
+          boolean unlockResult = gemFireCacheImpl.doUnlockDiskStore(diskStoreName);
+          if (unlockResult) {
+            nTrue.incrementAndGet();
+          } else {
+            nFalse.incrementAndGet();
+          }
+        }
+      });
+    });
+    executorService.shutdown();
+    executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+    // 1 thread returns true for locking, all 10 threads return true for unlocking
+    assertThat(nTrue.get()).isEqualTo(11);
+    // 9 threads return false for locking
+    assertThat(nFalse.get()).isEqualTo(9);
   }
 
   @SuppressWarnings({"LambdaParameterHidesMemberVariable", "OverlyCoupledMethod", "unchecked"})
