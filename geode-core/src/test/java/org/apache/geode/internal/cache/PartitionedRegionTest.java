@@ -584,7 +584,7 @@ public class PartitionedRegionTest {
 
     VersionedObjectList values = mock(VersionedObjectList.class);
     ServerConnection serverConnection = mock(ServerConnection.class);
-    Set<Integer> failures = mock(Set.class);
+    Set<Integer> failures = new HashSet<>();
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     Set<Integer> buckets = new HashSet<>();
     buckets.add(1);
@@ -594,8 +594,8 @@ public class PartitionedRegionTest {
     spyPartitionedRegion.fetchKeysAndValues(values, serverConnection, failures, member, null,
         buckets);
 
-    verify(failures).add(1);
     verify(spyPartitionedRegion, never()).getValuesForKeys(values, serverConnection, null);
+    assertThat(failures.contains(1)).isTrue();
   }
 
   @Test
@@ -604,22 +604,22 @@ public class PartitionedRegionTest {
 
     VersionedObjectList values = mock(VersionedObjectList.class);
     ServerConnection serverConnection = mock(ServerConnection.class);
-    Set<Integer> failures = mock(Set.class);
+    Set<Integer> failures = new HashSet<>();
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     Set<Integer> buckets = new HashSet<>();
     buckets.add(1);
     FetchKeysMessage.FetchKeysResponse fetchKeysResponse =
         mock(FetchKeysMessage.FetchKeysResponse.class);
     doReturn(fetchKeysResponse).when(spyPartitionedRegion).getFetchKeysResponse(member, 1);
-    Set keys = mock(Set.class);
+    Set keys = new HashSet();
     when(fetchKeysResponse.waitForKeys()).thenReturn(keys);
     doNothing().when(spyPartitionedRegion).getValuesForKeys(values, serverConnection, keys);
 
     spyPartitionedRegion.fetchKeysAndValues(values, serverConnection, failures, member, null,
         buckets);
 
-    verify(failures, never()).add(1);
     verify(spyPartitionedRegion).getValuesForKeys(values, serverConnection, keys);
+    assertThat(failures.contains(1)).isFalse();
   }
 
   private static <K> Set<K> asSet(K... values) {
