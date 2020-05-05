@@ -9,6 +9,7 @@ These scripts are intended to be run from the parent directory of your geode dev
 
 Overview of scripts:
 
+license_review.sh: compares versions with a previous release and/or checks that all bundled dependencies are noted in appropriate LICENSE file
 create_support_branches.sh: cuts support/x.y from develop for all projects and walks you through creating pipelines and setting version numbers
   set_copyright.sh updates the copyright year
 set_versions.sh: updates files that need to contain the version number planned for the next release from this support branch
