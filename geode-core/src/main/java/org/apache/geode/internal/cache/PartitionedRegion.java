@@ -4593,39 +4593,58 @@ public class PartitionedRegion extends LocalRegion
         buckets = bucketKeys.keySet();
       }
 
-      for (Integer bucket : buckets) {
-        Set keys = null;
-        if (bucketKeys == null) {
-          try {
-            FetchKeysResponse fkr = FetchKeysMessage.send(member, this, bucket, true);
-            keys = fkr.waitForKeys();
-          } catch (ForceReattemptException ignore) {
-            failures.add(bucket);
-          }
-        } else {
-          keys = bucketKeys.get(bucket);
-        }
-
-        // TODO (ashetkar) Use single Get70 instance for all?
-        for (Object key : keys) {
-          Get70 command = (Get70) Get70.getCommand();
-          Get70.Entry ge = command.getValueAndIsObject(this, key, null, servConn);
-
-          if (ge.keyNotPresent) {
-            values.addObjectPartForAbsentKey(key, ge.value, ge.versionTag);
-          } else {
-            values.addObjectPart(key, ge.value, ge.isObject, ge.versionTag);
-          }
-
-          if (values.size() == BaseCommand.MAXIMUM_CHUNK_SIZE) {
-            BaseCommand.sendNewRegisterInterestResponseChunk(this, "keyList", values, false,
-                servConn);
-            values.clear();
-          }
-        }
-      }
+      fetchKeysAndValues(values, servConn, failures, member, bucketKeys, buckets);
     }
     return failures;
+  }
+
+  void fetchKeysAndValues(VersionedObjectList values, ServerConnection servConn,
+      Set<Integer> failures, InternalDistributedMember member,
+      HashMap<Integer, HashSet> bucketKeys, Set<Integer> buckets)
+      throws IOException {
+    for (Integer bucket : buckets) {
+      Set keys = null;
+      if (bucketKeys == null) {
+        try {
+          FetchKeysResponse fetchKeysResponse = getFetchKeysResponse(member, bucket);
+          keys = fetchKeysResponse.waitForKeys();
+        } catch (ForceReattemptException ignore) {
+          failures.add(bucket);
+        }
+      } else {
+        keys = bucketKeys.get(bucket);
+      }
+      if (keys != null) {
+        getValuesForKeys(values, servConn, keys);
+      }
+    }
+  }
+
+  FetchKeysResponse getFetchKeysResponse(InternalDistributedMember member,
+      Integer bucket)
+      throws ForceReattemptException {
+    return FetchKeysMessage.send(member, this, bucket, true);
+  }
+
+  void getValuesForKeys(VersionedObjectList values, ServerConnection servConn, Set keys)
+      throws IOException {
+    // TODO (ashetkar) Use single Get70 instance for all?
+    for (Object key : keys) {
+      Get70 command = (Get70) Get70.getCommand();
+      Get70.Entry ge = command.getValueAndIsObject(this, key, null, servConn);
+
+      if (ge.keyNotPresent) {
+        values.addObjectPartForAbsentKey(key, ge.value, ge.versionTag);
+      } else {
+        values.addObjectPart(key, ge.value, ge.isObject, ge.versionTag);
+      }
+
+      if (values.size() == BaseCommand.MAXIMUM_CHUNK_SIZE) {
+        BaseCommand.sendNewRegisterInterestResponseChunk(this, "keyList", values, false,
+            servConn);
+        values.clear();
+      }
+    }
   }
 
   /**
