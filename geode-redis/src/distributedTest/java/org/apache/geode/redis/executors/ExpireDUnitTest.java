@@ -31,9 +31,6 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.redis.internal.executor.TTLExecutor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -127,7 +124,6 @@ public class ExpireDUnitTest {
     jedis1.set(key, "value");
     jedis1.expire(key, 2);
 
-    assertThat(jedis2.ttl(key)).isGreaterThan(0);
     GeodeAwaitility.await().until(() -> jedis2.ttl(key) == TTLExecutor.NOT_EXISTS);
   }
 
@@ -165,22 +161,16 @@ public class ExpireDUnitTest {
   }
 
   @Test
-  public void whenExpirationIsSet_andKeyIsDeletedOnAnotherServer_ttlReflectsChanges() {
+  public void whenExpirationIsSet_andKeyIsDeletedOnAnotherServerThenReset_ttlIsRemoved() {
     String key = "key";
 
     jedis1.set(key, "value");
-    jedis1.expire(key, 20);
+    jedis1.expire(key, 10000);
     jedis2.del(key);
+    jedis2.set(key, "newVal");
 
-    server1.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      GeodeRedisService redisService = cache.getService(GeodeRedisService.class);
-      boolean hasExpiration = redisService.getGeodeRedisServer().getRegionCache()
-          .hasExpiration(new ByteArrayWrapper(key.getBytes()));
-      assertThat(hasExpiration).as("expiration should not be set").isFalse();
-    });
-
-    assertThat(jedis1.ttl(key)).isEqualTo(TTLExecutor.NOT_EXISTS);
+    assertThat(jedis1.ttl(key)).isEqualTo(TTLExecutor.NO_TIMEOUT);
+    assertThat(jedis2.ttl(key)).isEqualTo(TTLExecutor.NO_TIMEOUT);
   }
 
 

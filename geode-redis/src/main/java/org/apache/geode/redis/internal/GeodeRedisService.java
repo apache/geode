@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -87,10 +86,5 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   @Override
   public CacheServiceMBeanBase getMBean() {
     return null;
-  }
-
-  @VisibleForTesting
-  public GeodeRedisServer getGeodeRedisServer() {
-    return redisServer;
   }
 }
