@@ -155,7 +155,8 @@ public class MsgStreamer extends OutputStream
       int numVersioned = 0;
       for (Object c : cons) {
         con = (Connection) c;
-        if ((version = con.getRemoteVersion()) != null
+        version = con.getRemoteVersion();
+        if (version != null
             && Version.CURRENT_ORDINAL > version.ordinal()) {
           if (versionToConnMap == null) {
             versionToConnMap = new Object2ObjectOpenHashMap();
@@ -182,15 +183,17 @@ public class MsgStreamer extends OutputStream
         if (numCons > numVersioned) {
           // allocating list of numCons size so that as the result of
           // getSentConnections it may not need to be reallocted later
-          final ArrayList<Object> unversionedCons = new ArrayList<Object>(numCons);
+          final ArrayList<Object> currentVersionConnections = new ArrayList<Object>(numCons);
           for (Object c : cons) {
             con = (Connection) c;
-            if ((version = con.getRemoteVersion()) == null) {
-              unversionedCons.add(con);
+            version = con.getRemoteVersion();
+            if (version == null || version.ordinal() >= Version.CURRENT_ORDINAL) {
+              currentVersionConnections.add(con);
             }
           }
-          streamers.add(new MsgStreamer(unversionedCons, msg, directReply, stats, sendBufferSize,
-              bufferPool));
+          streamers.add(
+              new MsgStreamer(currentVersionConnections, msg, directReply, stats, sendBufferSize,
+                  bufferPool));
         }
         for (ObjectIterator<Object2ObjectMap.Entry> itr =
             versionToConnMap.object2ObjectEntrySet().fastIterator(); itr.hasNext();) {
