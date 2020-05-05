@@ -417,7 +417,8 @@ public class LocatorLoadSnapshot {
     return result;
   }
 
-  private void addGroups(Map<String, Map<ServerLocation, LoadHolder>> map, String[] groups,
+  @VisibleForTesting
+  void addGroups(Map<String, Map<ServerLocation, LoadHolder>> map, String[] groups,
       LoadHolder holder) {
     for (String group : groups) {
       Map<ServerLocation, LoadHolder> groupMap = map.computeIfAbsent(group, k -> new HashMap<>());
@@ -430,7 +431,8 @@ public class LocatorLoadSnapshot {
     }
   }
 
-  private void addGroups(Map<String, Map<ServerLocationAndMemberId, LoadHolder>> map,
+  @VisibleForTesting
+  void addGroups(Map<String, Map<ServerLocationAndMemberId, LoadHolder>> map,
       String[] groups,
       LoadHolder holder, String memberId) {
     for (String group : groups) {
@@ -446,7 +448,8 @@ public class LocatorLoadSnapshot {
     }
   }
 
-  private void removeFromMap(Map<String, Map<ServerLocation, LoadHolder>> map, String[] groups,
+  @VisibleForTesting
+  void removeFromMap(Map<String, Map<ServerLocation, LoadHolder>> map, String[] groups,
       ServerLocation location) {
     for (String group : groups) {
       Map<ServerLocation, LoadHolder> groupMap = map.get(group);
@@ -461,7 +464,8 @@ public class LocatorLoadSnapshot {
     groupMap.remove(location);
   }
 
-  private void removeFromMap(Map<String, Map<ServerLocationAndMemberId, LoadHolder>> map,
+  @VisibleForTesting
+  void removeFromMap(Map<String, Map<ServerLocationAndMemberId, LoadHolder>> map,
       String[] groups,
       ServerLocation location, String memberId) {
     ServerLocationAndMemberId locationAndMemberId =

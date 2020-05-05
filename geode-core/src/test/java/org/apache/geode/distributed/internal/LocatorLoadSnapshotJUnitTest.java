@@ -641,11 +641,11 @@ public class LocatorLoadSnapshotJUnitTest {
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 50, 1, LOAD_POLL_INTERVAL);
     Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
     groupServers.put(sli, loadHolder);
-    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> connectionLoadMap =
+    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> map =
         new HashMap<>();
-    connectionLoadMap.put(null, groupServers);
+    map.put(null, groupServers);
 
-    loadSnapshot.updateMap(connectionLoadMap, serverLocation, uniqueId, 60, 2);
+    loadSnapshot.updateMap(map, serverLocation, uniqueId, 60, 2);
 
     LocatorLoadSnapshot.LoadHolder expectedLoadHolder =
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 60, 2, LOAD_POLL_INTERVAL);
@@ -663,11 +663,11 @@ public class LocatorLoadSnapshotJUnitTest {
     final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();
     final ServerLocationAndMemberId sli = new ServerLocationAndMemberId(serverLocation, uniqueId);
     Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
-    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> connectionLoadMap =
+    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> map =
         new HashMap<>();
-    connectionLoadMap.put(null, groupServers);
+    map.put(null, groupServers);
 
-    loadSnapshot.updateMap(connectionLoadMap, serverLocation, uniqueId, 50, 1);
+    loadSnapshot.updateMap(map, serverLocation, uniqueId, 50, 1);
 
     assertNull(groupServers.get(sli));
   }
@@ -681,11 +681,11 @@ public class LocatorLoadSnapshotJUnitTest {
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 50, 1, LOAD_POLL_INTERVAL);
     Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
     groupServers.put(serverLocation, loadHolder);
-    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> connectionLoadMap =
+    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> map =
         new HashMap<>();
-    connectionLoadMap.put(null, groupServers);
+    map.put(null, groupServers);
 
-    loadSnapshot.updateMap(connectionLoadMap, serverLocation, 60, 2);
+    loadSnapshot.updateMap(map, serverLocation, 60, 2);
 
     LocatorLoadSnapshot.LoadHolder expectedLoadHolder =
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 60, 2, LOAD_POLL_INTERVAL);
@@ -701,12 +701,221 @@ public class LocatorLoadSnapshotJUnitTest {
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
     Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
-    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> connectionLoadMap =
+    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> map =
         new HashMap<>();
-    connectionLoadMap.put(null, groupServers);
+    map.put(null, groupServers);
 
-    loadSnapshot.updateMap(connectionLoadMap, serverLocation, 50, 1);
+    loadSnapshot.updateMap(map, serverLocation, 50, 1);
 
     assertNull(groupServers.get(serverLocation));
+  }
+
+  @Test
+  public void testRemoveFromMapWithServerLocationAndMemberId() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation sl1 = new ServerLocation("localhost", 1);
+    final ServerLocation sl2 = new ServerLocation("localhost", 2);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final ServerLocationAndMemberId sli1 = new ServerLocationAndMemberId(sl1, uniqueId1);
+    final ServerLocationAndMemberId sli2 = new ServerLocationAndMemberId(sl2, uniqueId2);
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(sl1, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(sl2, 50, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+    groupServers.put(sli1, loadHolder1);
+    groupServers.put(sli2, loadHolder2);
+    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> map =
+        new HashMap<>();
+    map.put(null, groupServers);
+
+    loadSnapshot.removeFromMap(map, new String[] {""}, sl1, uniqueId1);
+
+    assertEquals(1, groupServers.size());
+    assertNull(groupServers.get(sli1));
+  }
+
+  @Test
+  public void testRemoveFromMapWithServerLocationAndMemberIdAndGroups() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation sl1 = new ServerLocation("localhost", 1);
+    final ServerLocation sl2 = new ServerLocation("localhost", 2);
+    final ServerLocation sl3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
+    final ServerLocationAndMemberId sli1 = new ServerLocationAndMemberId(sl1, uniqueId1);
+    final ServerLocationAndMemberId sli2 = new ServerLocationAndMemberId(sl2, uniqueId2);
+    final ServerLocationAndMemberId sli3 = new ServerLocationAndMemberId(sl3, uniqueId3);
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(sl1, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(sl2, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(sl2, 50, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+    groupServers.put(sli1, loadHolder1);
+    groupServers.put(sli2, loadHolder2);
+    groupServers.put(sli3, loadHolder3);
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupAServers = new HashMap<>();
+    groupAServers.put(sli1, loadHolder1);
+    groupAServers.put(sli2, loadHolder2);
+
+    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> map =
+        new HashMap<>();
+    map.put(null, groupServers);
+    map.put("a", groupAServers);
+
+    loadSnapshot.removeFromMap(map, new String[] {"a"}, sl1, uniqueId1);
+
+    assertEquals(2, groupServers.size());
+    assertNull(groupServers.get(sli1));
+
+    assertEquals(1, groupAServers.size());
+    assertNull(groupAServers.get(sli1));
+  }
+
+  @Test
+  public void testRemoveFromMapWithServerLocation() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation sl1 = new ServerLocation("localhost", 1);
+    final ServerLocation sl2 = new ServerLocation("localhost", 2);
+
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(sl1, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(sl2, 50, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+    groupServers.put(sl1, loadHolder1);
+    groupServers.put(sl2, loadHolder2);
+    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> map =
+        new HashMap<>();
+    map.put(null, groupServers);
+
+    loadSnapshot.removeFromMap(map, new String[] {""}, sl1);
+
+    assertEquals(1, groupServers.size());
+    assertNull(groupServers.get(sl1));
+  }
+
+  @Test
+  public void testRemoveFromMapWithServerLocationAndGroups() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation sl1 = new ServerLocation("localhost", 1);
+    final ServerLocation sl2 = new ServerLocation("localhost", 2);
+    final ServerLocation sl3 = new ServerLocation("localhost", 3);
+
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(sl1, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(sl2, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(sl3, 50, 1, LOAD_POLL_INTERVAL);
+
+    Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
+    groupServers.put(sl1, loadHolder1);
+    groupServers.put(sl2, loadHolder2);
+    groupServers.put(sl3, loadHolder3);
+
+    Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupAServers = new HashMap<>();
+    groupAServers.put(sl1, loadHolder1);
+    groupAServers.put(sl2, loadHolder2);
+
+    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> map =
+        new HashMap<>();
+    map.put(null, groupServers);
+    map.put("a", groupAServers);
+
+    loadSnapshot.removeFromMap(map, new String[] {"a"}, sl1);
+
+    assertEquals(2, groupServers.size());
+    assertNull(groupServers.get(sl1));
+
+    assertEquals(1, groupAServers.size());
+    assertNull(groupAServers.get(sl1));
+  }
+
+  @Test
+  public void testAddGroupsWithServerLocationAndMemberId() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation sl1 = new ServerLocation("localhost", 1);
+    final ServerLocation sl2 = new ServerLocation("localhost", 2);
+    final ServerLocation sl3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
+    final ServerLocationAndMemberId sli1 = new ServerLocationAndMemberId(sl1, uniqueId1);
+    final ServerLocationAndMemberId sli2 = new ServerLocationAndMemberId(sl2, uniqueId2);
+    final ServerLocationAndMemberId sli3 = new ServerLocationAndMemberId(sl3, uniqueId3);
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(sl1, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(sl2, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(sl3, 50, 1, LOAD_POLL_INTERVAL);
+
+    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> map =
+        new HashMap<>();
+
+    loadSnapshot.addGroups(map, new String[] {"a"}, loadHolder1, uniqueId1);
+    loadSnapshot.addGroups(map, new String[] {"a", "b"}, loadHolder2, uniqueId2);
+    loadSnapshot.addGroups(map, new String[] {}, loadHolder3, uniqueId3);
+
+    assertEquals(3, map.get(null).size());
+    assertEquals(loadHolder1, map.get(null).get(sli1));
+    assertEquals(loadHolder2, map.get(null).get(sli2));
+    assertEquals(loadHolder3, map.get(null).get(sli3));
+
+    assertEquals(2, map.get("a").size());
+    assertEquals(loadHolder1, map.get("a").get(sli1));
+    assertEquals(loadHolder2, map.get("a").get(sli2));
+
+    assertEquals(1, map.get("b").size());
+    assertEquals(loadHolder2, map.get("b").get(sli2));
+  }
+
+  @Test
+  public void testAddGroupsWithServerLocation() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation sl1 = new ServerLocation("localhost", 1);
+    final ServerLocation sl2 = new ServerLocation("localhost", 2);
+    final ServerLocation sl3 = new ServerLocation("localhost", 3);
+
+    LocatorLoadSnapshot.LoadHolder loadHolder1 =
+        new LocatorLoadSnapshot.LoadHolder(sl1, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder2 =
+        new LocatorLoadSnapshot.LoadHolder(sl2, 50, 1, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder loadHolder3 =
+        new LocatorLoadSnapshot.LoadHolder(sl3, 50, 1, LOAD_POLL_INTERVAL);
+
+    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> map =
+        new HashMap<>();
+
+    loadSnapshot.addGroups(map, new String[] {"a"}, loadHolder1);
+    loadSnapshot.addGroups(map, new String[] {"a", "b"}, loadHolder2);
+    loadSnapshot.addGroups(map, new String[] {}, loadHolder3);
+
+    assertEquals(3, map.get(null).size());
+    assertEquals(loadHolder1, map.get(null).get(sl1));
+    assertEquals(loadHolder2, map.get(null).get(sl2));
+    assertEquals(loadHolder3, map.get(null).get(sl3));
+
+    assertEquals(2, map.get("a").size());
+    assertEquals(loadHolder1, map.get("a").get(sl1));
+    assertEquals(loadHolder2, map.get("a").get(sl2));
+
+    assertEquals(1, map.get("b").size());
+    assertEquals(loadHolder2, map.get("b").get(sl2));
   }
 }
