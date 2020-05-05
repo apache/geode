@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.set;
 import static org.apache.geode.redis.internal.RedisCommandType.DEL;
 import static org.apache.geode.redis.internal.RedisCommandType.SADD;
 import static org.apache.geode.redis.internal.RedisCommandType.SCARD;
+import static org.apache.geode.redis.internal.RedisCommandType.SISMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SMEMBERS;
 import static org.apache.geode.redis.internal.RedisCommandType.SREM;
 
@@ -83,6 +84,14 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   @Override
   public int scard(ByteArrayWrapper key) {
     ResultCollector<Object[], List<Integer>> results = executeFunction(SCARD, key,null);
+    return results.getResult().get(0);
+  }
+
+  @Override
+  public boolean sismember(ByteArrayWrapper member) {
+    ArrayList<ByteArrayWrapper> commandArguments = new ArrayList<>();
+    commandArguments.add(member);
+    ResultCollector<Object[], List<Boolean>> results = executeFunction(SISMEMBER, commandArguments);
     return results.getResult().get(0);
   }
 

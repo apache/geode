@@ -45,12 +45,10 @@ public class SIsMemberExecutor extends SetExecutor {
 
     RedisSet set = region.get(key);
 
-    if (set == null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
-    }
-
-    if (set.contains(member)) {
+    RedisSet geodeRedisSet =
+        new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
+    boolean isMember = geodeRedisSet.sismember(member);
+    if (isMember) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
       // save key for next quick lookup
       context.getKeyRegistrar().register(key, RedisDataType.REDIS_SET);

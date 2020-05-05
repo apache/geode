@@ -107,6 +107,16 @@ public class RedisSet implements Delta, DataSerializable {
     }
   }
 
+  public static boolean sismember(Region<ByteArrayWrapper, RedisSet> region,
+                                   ByteArrayWrapper key, ByteArrayWrapper member) {
+    RedisSet redisSet = region.get(key);
+    if (redisSet != null) {
+      return redisSet.contains(member);
+    } else {
+      return false;
+    }
+  }
+
 
   public synchronized boolean contains(ByteArrayWrapper member) {
     return members.contains(member);

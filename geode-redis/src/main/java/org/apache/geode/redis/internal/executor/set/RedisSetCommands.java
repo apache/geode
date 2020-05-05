@@ -34,4 +34,6 @@ public interface RedisSetCommands {
 
   int scard(ByteArrayWrapper key);
 
+  boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member);
+
 }

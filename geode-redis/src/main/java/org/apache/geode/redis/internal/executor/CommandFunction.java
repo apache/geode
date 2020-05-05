@@ -78,7 +78,14 @@ public class CommandFunction implements Function<Object[]> {
             (members) -> resultSender.lastResult(members));
         break;
       case SCARD:
-        DeltaSet.scard(resultSender, localRegion, key);
+        stripedExecutor.execute(key,
+            () -> RedisSet.scard(localRegion, key),
+            (size) -> resultSender.lastResult(size));
+        break;
+      case SISMEMBER:
+        stripedExecutor.execute(key,
+            () -> RedisSet.sismember(localRegion, key, commandArgs.get(0)),
+            (exists) -> resultSender.lastResult(exists));
         break;
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);

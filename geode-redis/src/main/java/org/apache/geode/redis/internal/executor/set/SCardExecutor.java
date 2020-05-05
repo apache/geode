@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.set;
 
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
