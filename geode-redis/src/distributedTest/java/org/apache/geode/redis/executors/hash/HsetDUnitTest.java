@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.executors;
+package org.apache.geode.redis.executors.hash;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
@@ -38,7 +38,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-public class HMsetDUnitTest {
+public class HsetDUnitTest {
 
   @ClassRule
   public static ClusterStartupRule clusterStartUp = new ClusterStartupRule(4);
@@ -116,7 +116,7 @@ public class HMsetDUnitTest {
 
     Map<String, String> testMap = makeHashMap(HASH_SIZE, "field-", "value-");
 
-    jedis1.hmset(key, testMap);
+    jedis1.hset(key, testMap);
 
     Map<String, String> result = jedis2.hgetAll(key);
 
@@ -139,10 +139,11 @@ public class HMsetDUnitTest {
     String[] testMap1Fields = testMap1.keySet().toArray(new String[] {});
     String[] testMap2Fields = testMap2.keySet().toArray(new String[] {});
 
-    Consumer<Integer> consumer1 = makeHMSetConsumer(testMap1, testMap1Fields, key, jedis1);
-    Consumer<Integer> consumer2 = makeHMSetConsumer(testMap2, testMap2Fields, key, jedis2);
+    Consumer<Integer> hsetJedis1Consumer = makeHSetConsumer(testMap1, testMap1Fields, key, jedis1);
+    Consumer<Integer> hsetJedis2Consumer = makeHSetConsumer(testMap2, testMap2Fields, key, jedis2);
 
-    new ConcurrentLoopingThreads(HASH_SIZE, consumer1, consumer2).run();
+
+    new ConcurrentLoopingThreads(HASH_SIZE, hsetJedis1Consumer, hsetJedis2Consumer).run();
 
     Map<String, String> results = jedis3.hgetAll(key);
 
@@ -159,16 +160,15 @@ public class HMsetDUnitTest {
 
     String[] testMapFields = testMap.keySet().toArray(new String[] {});
 
-    Consumer<Integer> consumer1 = makeHMSetConsumer(testMap, testMapFields, key, jedis1);
-    Consumer<Integer> consumer2 = makeHMSetConsumer(testMap, testMapFields, key, jedis2);
+    Consumer<Integer> hsetJedis1Consumer = makeHSetConsumer(testMap, testMapFields, key, jedis1);
+    Consumer<Integer> hsetJedis2Consumer = makeHSetConsumer(testMap, testMapFields, key, jedis2);
 
-    new ConcurrentLoopingThreads(HASH_SIZE, consumer1, consumer2).run();
+    new ConcurrentLoopingThreads(HASH_SIZE, hsetJedis1Consumer, hsetJedis2Consumer).run();
 
     Map<String, String> results = jedis3.hgetAll(key);
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(testMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(testMap.values().toArray());
-
   }
 
   @Test
@@ -183,10 +183,10 @@ public class HMsetDUnitTest {
     String[] testMap1Fields = testMap1.keySet().toArray(new String[] {});
     String[] testMap2Fields = testMap2.keySet().toArray(new String[] {});
 
-    Consumer<Integer> consumer1 = makeHMSetConsumer(testMap1, testMap1Fields, key1, jedis1);
-    Consumer<Integer> consumer2 = makeHMSetConsumer(testMap2, testMap2Fields, key2, jedis2);
+    Consumer<Integer> hsetJedis1Consumer = makeHSetConsumer(testMap1, testMap1Fields, key1, jedis1);
+    Consumer<Integer> hsetJedis2Consumer = makeHSetConsumer(testMap2, testMap2Fields, key2, jedis2);
 
-    new ConcurrentLoopingThreads(HASH_SIZE, consumer1, consumer2).run();
+    new ConcurrentLoopingThreads(HASH_SIZE, hsetJedis1Consumer, hsetJedis2Consumer).run();
 
     Map<String, String> results1 = jedis3.hgetAll(key1);
     Map<String, String> results2 = jedis3.hgetAll(key2);
@@ -209,12 +209,13 @@ public class HMsetDUnitTest {
 
     String[] testMapFields = testMap.keySet().toArray(new String[] {});
 
-    Consumer<Integer> consumer1 = makeHMSetConsumer(testMap, testMapFields, key, jedis1);
-    Consumer<Integer> consumer1B = makeHMSetConsumer(testMap, testMapFields, key, jedis1B);
-    Consumer<Integer> consumer2 = makeHMSetConsumer(testMap, testMapFields, key, jedis2);
-    Consumer<Integer> consumer2B = makeHMSetConsumer(testMap, testMapFields, key, jedis2B);
+    Consumer<Integer> hsetJedis1Consumer = makeHSetConsumer(testMap, testMapFields, key, jedis1);
+    Consumer<Integer> hsetJedis1BConsumer = makeHSetConsumer(testMap, testMapFields, key, jedis1B);
+    Consumer<Integer> hsetJedis2Consumer = makeHSetConsumer(testMap, testMapFields, key, jedis2);
+    Consumer<Integer> hsetJedis2BConsumer = makeHSetConsumer(testMap, testMapFields, key, jedis2B);
 
-    new ConcurrentLoopingThreads(HASH_SIZE, consumer1, consumer1B, consumer2, consumer2B).run();
+    new ConcurrentLoopingThreads(HASH_SIZE, hsetJedis1Consumer, hsetJedis1BConsumer,
+        hsetJedis2Consumer, hsetJedis2BConsumer).run();
 
     Map<String, String> results = jedis3.hgetAll(key);
 
@@ -243,10 +244,10 @@ public class HMsetDUnitTest {
     String[] testMap1Fields = testMap1.keySet().toArray(new String[] {});
     String[] testMap2Fields = testMap2.keySet().toArray(new String[] {});
 
-    Consumer<Integer> consumer1 = makeHMSetConsumer(testMap1, testMap1Fields, key, jedis1);
-    Consumer<Integer> consumer1B = makeHMSetConsumer(testMap1, testMap1Fields, key, jedis1B);
-    Consumer<Integer> consumer2 = makeHMSetConsumer(testMap2, testMap2Fields, key, jedis2);
-    Consumer<Integer> consumer2B = makeHMSetConsumer(testMap2, testMap2Fields, key, jedis2B);
+    Consumer<Integer> consumer1 = makeHSetConsumer(testMap1, testMap1Fields, key, jedis1);
+    Consumer<Integer> consumer1B = makeHSetConsumer(testMap1, testMap1Fields, key, jedis1B);
+    Consumer<Integer> consumer2 = makeHSetConsumer(testMap2, testMap2Fields, key, jedis2);
+    Consumer<Integer> consumer2B = makeHSetConsumer(testMap2, testMap2Fields, key, jedis2B);
 
     new ConcurrentLoopingThreads(HASH_SIZE, consumer1, consumer1B, consumer2, consumer2B).run();
 
@@ -259,13 +260,11 @@ public class HMsetDUnitTest {
     jedis2B.disconnect();
   }
 
-  private Consumer<Integer> makeHMSetConsumer(Map<String, String> testMap, String[] fields,
+  private Consumer<Integer> makeHSetConsumer(Map<String, String> testMap, String[] fields,
       String hashKey, Jedis jedis) {
     Consumer<Integer> consumer = (i) -> {
       String field = fields[i];
-      Map<String, String> mapToAdd = new HashMap<>();
-      mapToAdd.put(field, testMap.get(field));
-      jedis.hmset(hashKey, mapToAdd);
+      jedis.hset(hashKey, field, testMap.get(field));
     };
 
     return consumer;
