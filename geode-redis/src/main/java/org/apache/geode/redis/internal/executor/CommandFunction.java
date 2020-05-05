@@ -33,7 +33,7 @@ public class CommandFunction implements Function<Object[]> {
 
   public static final String ID = "REDIS_COMMAND_FUNCTION";
 
-  private transient final StripedExecutor stripedExecutor;
+  private final transient StripedExecutor stripedExecutor;
 
   public CommandFunction(StripedExecutor stripedExecutor) {
     this.stripedExecutor = stripedExecutor;
@@ -59,7 +59,6 @@ public class CommandFunction implements Function<Object[]> {
             (addedCount) -> resultSender.lastResult(addedCount));
         break;
       case SREM:
-        RedisSet.srem(resultSender, localRegion, key, commandArgs);
         AtomicBoolean setWasDeleted = new AtomicBoolean();
         stripedExecutor.execute(key,
             () -> RedisSet.srem(localRegion, key, commandArgs, setWasDeleted),

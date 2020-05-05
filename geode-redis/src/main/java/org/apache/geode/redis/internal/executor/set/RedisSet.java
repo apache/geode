@@ -30,42 +30,16 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
 /**
  * This class still uses "synchronized" to protect the
  * underlying HashSet even though all writers do so under
- * the SynchronizedRunner. The synchronization on this
+ * the {@link SynchronizedStripedExecutor}. The synchronization on this
  * class can be removed once readers are changed to
- * also use the SynchronizedRunner.
+ * also use the {@link SynchronizedStripedExecutor}.
  */
 public class RedisSet implements Delta, DataSerializable {
-
-  public static void sadd(ResultSender<Long> resultSender,
-      Region<ByteArrayWrapper, RedisSet> localRegion, ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToAdd) {
-    resultSender.lastResult(sadd(localRegion, key, membersToAdd));
-  }
-
-  public static void srem(ResultSender<Long> resultSender,
-      Region<ByteArrayWrapper, RedisSet> localRegion, ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToRemove) {
-    AtomicBoolean setWasDeleted = new AtomicBoolean();
-    long membersRemoved = srem(localRegion, key, membersToRemove, setWasDeleted);
-    resultSender.sendResult(membersRemoved);
-    resultSender.lastResult(setWasDeleted.get() ? 1L : 0L);
-  }
-
-  public static void del(ResultSender<Boolean> resultSender,
-      Region<ByteArrayWrapper, RedisSet> localRegion, ByteArrayWrapper key) {
-    resultSender.lastResult(del(localRegion, key));
-  }
-
-  public static void smembers(ResultSender<Set<ByteArrayWrapper>> resultSender,
-      Region<ByteArrayWrapper, RedisSet> localRegion, ByteArrayWrapper key) {
-    resultSender.lastResult(members(localRegion, key));
-  }
 
   private HashSet<ByteArrayWrapper> members;
   private transient ArrayList<ByteArrayWrapper> deltas;
@@ -92,7 +66,7 @@ public class RedisSet implements Delta, DataSerializable {
 
     if (redisSet != null) {
       // update existing value
-      return redisSet.performSaddInGeode(membersToAdd, region, key);
+      return redisSet.doSadd(membersToAdd, region, key);
     } else {
       region.create(key, new RedisSet(membersToAdd));
       return membersToAdd.size();
@@ -106,7 +80,7 @@ public class RedisSet implements Delta, DataSerializable {
     if (redisSet == null) {
       return 0L;
     }
-    return redisSet.performSremInGeode(membersToRemove, region, key, setWasDeleted);
+    return redisSet.doSrem(membersToRemove, region, key, setWasDeleted);
   }
 
   public static boolean del(Region<ByteArrayWrapper, RedisSet> region,
@@ -180,7 +154,7 @@ public class RedisSet implements Delta, DataSerializable {
    * @param key the name of the set to add to
    * @return the number of members actually added; -1 if concurrent modification
    */
-  private synchronized long performSaddInGeode(ArrayList<ByteArrayWrapper> membersToAdd,
+  private synchronized long doSadd(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key) {
 
@@ -206,7 +180,7 @@ public class RedisSet implements Delta, DataSerializable {
    * @param setWasDeleted set to true if this method deletes the set
    * @return the number of members actually removed; -1 if concurrent modification
    */
-  private synchronized long performSremInGeode(ArrayList<ByteArrayWrapper> membersToRemove,
+  private synchronized long doSrem(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
 

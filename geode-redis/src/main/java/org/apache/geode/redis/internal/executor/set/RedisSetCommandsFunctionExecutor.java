@@ -43,7 +43,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   }
 
   public static void registerFunctions() {
-    StripedExecutor stripedExecutor = new StripedExecutor();
+    SynchronizedStripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     FunctionService.registerFunction(new CommandFunction(stripedExecutor));
   }
 
