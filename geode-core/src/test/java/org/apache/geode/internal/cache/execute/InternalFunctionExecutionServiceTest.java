@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.execute;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -25,7 +24,6 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.Pool;
@@ -50,15 +48,12 @@ public class InternalFunctionExecutionServiceTest {
 
   @Test
   public void onRegionShouldThrowExceptionWhenRegionAttributesIsNull() {
-    LocalRegion mockRegion = mock(LocalRegion.class);
-    when(mockRegion.getAttributes()).thenReturn(null);
-    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
-    when(mockRegion.getCancelCriterion()).thenReturn(cancelCriterion);
-    doCallRealMethod().when(cancelCriterion).checkCancelInProgress();
+    Region mockRegion = mock(Region.class);
+    when(mockRegion.isDestroyed()).thenReturn(true);
 
     assertThatThrownBy(() -> functionExecutionService.onRegion(mockRegion))
         .isInstanceOf(FunctionException.class)
-        .hasMessage("Region attributes is null");
+        .hasMessage("Region is destroyed");
   }
 
   @Test
