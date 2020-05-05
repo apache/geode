@@ -112,7 +112,7 @@ public class InternalFunctionExecutionServiceImpl
 
   @Override
   public Execution onRegion(Region region) {
-    if (region == null) {
+    if (region == null || region.getAttributes() == null) {
       throw new FunctionException("Region instance passed is null");
     }
 
