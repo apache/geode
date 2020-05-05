@@ -218,7 +218,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("this test needs to pass to have feature parity with native redis")
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void settingAnExistingKeyToANewValue_ShouldClearExpirationTime() {
 
     String key = "key";
@@ -236,7 +236,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("this test needs to pass to have feature parity with native redis")
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void callingGETSETonExistingKey_ShouldClearExpirationTime() {
     String key = "key";
     String value = "value";
@@ -385,7 +385,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("this test needs to pass to have feature parity with native redis")
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_Not_InUse() {
     String key = "key";
     String newKeyName = "new key name";
@@ -400,7 +400,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("this test needs to pass to have feature parity with native redis")
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_is_InUse_ButNo_ExpirationSet() {
     String key = "key";
     String key2 = "key2";
@@ -418,7 +418,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("this test needs to pass to have feature parity with native redis")
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_is_InUse_AndHas_ExpirationSet() {
     String key = "key";
     String key2 = "key2";
@@ -437,7 +437,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("this test needs to pass to have feature parity with native redis")
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void SettingExiprationToNegativeValue_ShouldDeleteKey() {
 
     String key = "key";
