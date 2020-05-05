@@ -537,6 +537,31 @@ jobs:
               else
                 echo All good
               fi
+  - name: verify-license
+    serial: true
+    plan:
+      - aggregate:
+          - get: geode
+            trigger: true
+      - task: validate
+        timeout: 1h
+        config:
+          image_resource:
+            type: docker-image
+            source:
+              repository: openjdk
+              tag: 8
+          inputs:
+            - name: geode
+          platform: linux
+          run:
+            path: /bin/bash
+            args:
+            - -ec
+            - |
+              set -e
+              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              geode/dev-tools/release/license_review.sh -v $FULL_VERSION
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML
