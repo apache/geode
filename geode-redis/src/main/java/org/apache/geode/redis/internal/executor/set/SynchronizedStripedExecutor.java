@@ -40,6 +40,7 @@ public class SynchronizedStripedExecutor implements StripedExecutor {
     }
   }
 
+  @Override
   public <T> void execute(Object stripeId,
       Callable<T> callable,
       Consumer<T> resultConsumer) {
