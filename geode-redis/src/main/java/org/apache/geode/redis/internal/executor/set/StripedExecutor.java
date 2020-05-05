@@ -18,13 +18,13 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
 
 /**
  * Allows users to "stripe" their execution in such a way that all tasks belonging to one stripe are
- * executed in-order.
+ * executed in-order. A stripe is identified using the hashCode of an object called the stripeId.
+ * Work submitted for the same stripe is guaranteed to be executed sequentially.
  */
-class StripedExecutor {
+public class StripedExecutor {
   private static final int DEFAULT_CONCURRENCY_LEVEL = 4093; // use a prime
   private final Object[] syncs;
 
@@ -43,28 +43,28 @@ class StripedExecutor {
    * Executes, at some time in the future,
    * the given callable by invoking "call" on it and then passing
    * the result of "call" to "accept" on the given consumer.
-   * Concurrent calls of this method with equal keys will invoke their callables sequentially.
+   * Concurrent calls of this method for the same stripe will invoke their callables sequentially.
    *
-   * @param key defines the "stripe"; only equal keys are guaranteed to be run sequentially
+   * @param stripeId the hashCode of the stripeId defines the "stripe"
    * @param callable the unit of work to do sequentially. May be called after run returns.
    * @param resultConsumer is given the result of the callable.
    */
-  public <T> void execute(ByteArrayWrapper key,
+  public <T> void execute(Object stripeId,
       Callable<T> callable,
       Consumer<T> resultConsumer) {
-    T resultOfRedisCommand;
-    synchronized (getSync(key)) {
+    T resultOfCallable;
+    synchronized (getSync(stripeId)) {
       try {
-        resultOfRedisCommand = callable.call();
+        resultOfCallable = callable.call();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
-    resultConsumer.accept(resultOfRedisCommand);
+    resultConsumer.accept(resultOfCallable);
   }
 
-  private Object getSync(ByteArrayWrapper key) {
-    int hash = key.hashCode();
+  private Object getSync(Object stripeId) {
+    int hash = stripeId.hashCode();
     if (hash < 0) {
       hash = -hash;
     }
