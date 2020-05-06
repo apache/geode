@@ -72,16 +72,13 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-use-http</span></td>
-<td>Connects to a JMX manager HTTP service using the HTTP protocol.</td>
-<td><ul>
-<li>If the parameter is not specified: <code class="ph codeph">false</code></li>
-<li>If the parameter is specified without a value: <code class="ph codeph">true</code></li>
-</ul></td>
+<td><b>Deprecated: inferred by the presence of --url.</b> Connects to a JMX manager HTTP service using the HTTP protocol.</td>
+<td></td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-url</span></td>
-<td>URL used to connect to a JMX manager's HTTP service</td>
-<td><code class="ph codeph">http://localhost:8080/gemfire/v1</code></td>
+<td>URL used to connect to a JMX manager's HTTP service.</td>
+<td></td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-user</span></td>
@@ -185,7 +182,7 @@ Successfully connected to: [host=GemFireStymon, port=1099]
 **Example of connecting to a remote locator over HTTP:**
 
 ``` pre
-gfsh>connect --use-http=true --url="http://myLocatorHost.example.com:8080/gemfire/v1"
+gfsh>connect --url="http://myLocatorHost.example.com:8080/gemfire/v1"
 Successfully connected to: GemFire Manager's HTTP service @ 
 http://myLocatorHost.example.com:8080/gemfire/v1
 ```
