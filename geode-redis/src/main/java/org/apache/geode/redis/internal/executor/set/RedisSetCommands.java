@@ -17,8 +17,10 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
@@ -40,5 +42,7 @@ public interface RedisSetCommands {
   Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count);
 
   Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount);
+
+  List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor);
 
 }

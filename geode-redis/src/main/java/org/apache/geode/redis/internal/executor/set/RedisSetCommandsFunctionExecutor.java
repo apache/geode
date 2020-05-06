@@ -23,6 +23,7 @@ import static org.apache.geode.redis.internal.RedisCommandType.SMEMBERS;
 import static org.apache.geode.redis.internal.RedisCommandType.SPOP;
 import static org.apache.geode.redis.internal.RedisCommandType.SRANDMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SREM;
+import static org.apache.geode.redis.internal.RedisCommandType.SSCAN;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
@@ -107,6 +109,13 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   public Collection<ByteArrayWrapper> spop(int popCount) {
     ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
         executeFunction(SPOP, popCount);
+    return results.getResult().get(0);
+  }
+
+  @Override
+  public List<Object> sscan(Pattern matchPattern, int count, int cursor) {
+    ResultCollector<Object[], List<List<Object>>> results =
+        executeFunction(SSCAN, new Object[] {matchPattern, count, cursor});
     return results.getResult().get(0);
   }
 

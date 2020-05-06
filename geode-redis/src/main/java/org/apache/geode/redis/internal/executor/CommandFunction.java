@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -103,6 +104,15 @@ public class CommandFunction implements Function<Object[]> {
         int popCount = (int) args[1];
         stripedExecutor.execute(key,
             () -> RedisSet.spop(localRegion, key, popCount),
+            (members) -> resultSender.lastResult(members));
+        break;
+      }
+      case SSCAN: {
+        Pattern matchPattern = (Pattern) args[0];
+        int count = (int) args[1];
+        int cursor = (int) args[2];
+        stripedExecutor.execute(key,
+            () -> RedisSet.sscan(localRegion, key, matchPattern, count, cursor),
             (members) -> resultSender.lastResult(members));
         break;
       }

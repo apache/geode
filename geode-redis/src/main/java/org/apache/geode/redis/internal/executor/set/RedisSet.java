@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -32,6 +34,7 @@ import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
 
 /**
  * This class still uses "synchronized" to protect the
@@ -136,6 +139,52 @@ public class RedisSet implements Delta, DataSerializable {
     } else {
       return null;
     }
+  }
+
+  public static List<Object> sscan(Region<ByteArrayWrapper, RedisSet> region,
+                                    ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+    RedisSet RedisSet = region.get(key);
+    if (RedisSet != null) {
+      return RedisSet.doSscan(matchPattern, count, cursor);
+    } else {
+      return null;
+    }
+  }
+
+
+  private synchronized List<Object> doSscan(Pattern matchPattern, int count, int cursor) {
+    List<Object> returnList = new ArrayList<>();
+    int size = members.size();
+    int beforeCursor = 0;
+    int numElements = 0;
+    int i = -1;
+    for (ByteArrayWrapper value : members) {
+      i++;
+      if (beforeCursor < cursor) {
+        beforeCursor++;
+        continue;
+      } else if (numElements < count) {
+        if (matchPattern != null) {
+          String valueAsString = Coder.bytesToString(value.toBytes());
+          if (matchPattern.matcher(valueAsString).matches()) {
+            returnList.add(value);
+            numElements++;
+          }
+        } else {
+          returnList.add(value);
+          numElements++;
+        }
+      } else {
+        break;
+      }
+    }
+
+    if (i == size - 1) {
+      returnList.add(0, String.valueOf(0));
+    } else {
+      returnList.add(0, String.valueOf(i));
+    }
+    return returnList;
   }
 
   private synchronized Collection<ByteArrayWrapper> doSpop(

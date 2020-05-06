@@ -14,10 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.ArrayList;
-import java.util.Collection;
+
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -39,14 +38,6 @@ public class SScanExecutor extends AbstractScanExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, RedisSet> region = getRegion(context);
-    Set<ByteArrayWrapper> set = RedisSet.members(region, key);
-
-    if (set == null) {
-      command.setResponse(
-          Coder.getScanResponse(context.getByteBufAllocator(), new ArrayList<String>()));
-      return;
-    }
     byte[] cAr = commandElems.get(2);
     String cursorString = Coder.bytesToString(cAr);
     int cursor = 0;
@@ -108,53 +99,17 @@ public class SScanExecutor extends AbstractScanExecutor {
       return;
     }
 
-    @SuppressWarnings("unchecked")
-    List<ByteArrayWrapper> returnList =
-        (List<ByteArrayWrapper>) getIteration(new ArrayList<>(set), matchPattern,
-            count, cursor);
-
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    List<Object> returnList = redisSetCommands.sscan(key, matchPattern, count, cursor);
+    if (returnList == null) {
+      returnList = Collections.emptyList();
+    }
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
 
   private Region<ByteArrayWrapper, RedisSet> getRegion(
       ExecutionHandlerContext context) {
     return context.getRegionProvider().getSetRegion();
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  protected List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
-    List<Object> returnList = new ArrayList<>();
-    int size = list.size();
-    int beforeCursor = 0;
-    int numElements = 0;
-    int i = -1;
-    for (ByteArrayWrapper value : (Collection<ByteArrayWrapper>) list) {
-      String key = Coder.bytesToString(value.toBytes());
-      i++;
-      if (beforeCursor < cursor) {
-        beforeCursor++;
-        continue;
-      } else if (numElements < count) {
-        if (matchPattern != null) {
-          if (matchPattern.matcher(key).matches()) {
-            returnList.add(value);
-            numElements++;
-          }
-        } else {
-          returnList.add(value);
-          numElements++;
-        }
-      } else {
-        break;
-      }
-    }
-
-    if (i == size - 1) {
-      returnList.add(0, String.valueOf(0));
-    } else {
-      returnList.add(0, String.valueOf(i));
-    }
-    return returnList;
   }
 }

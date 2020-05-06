@@ -122,8 +122,7 @@ public class ZScanExecutor extends AbstractScanExecutor {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
-  protected List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
+  private List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
     List<Object> returnList = new ArrayList<Object>();
     int size = list.size();
     int beforeCursor = 0;
