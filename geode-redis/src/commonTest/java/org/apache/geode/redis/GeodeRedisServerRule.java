@@ -70,8 +70,8 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     return server.getKeyRegistrar();
   }
 
-  public RegionProvider getRegionCache() {
-    return server.getRegionCache();
+  public RegionProvider getRegionProvider() {
+    return server.getRegionProvider();
   }
 
   public RedisLockService getLockService() {

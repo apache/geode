@@ -54,7 +54,7 @@ public class SRandMemberExecutor extends SetExecutor {
     }
 
     RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
     Collection<ByteArrayWrapper> results = redisSetCommands.srandmember(key, count);
     try {
       if (results.isEmpty()) {

@@ -21,10 +21,11 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.RedisHashInRegion;
 
 /**
  * Executor for handling HASH datatypes
@@ -41,17 +42,28 @@ public abstract class HashExecutor extends AbstractExecutor {
    * @param key the region hash key region:<key>
    * @return the map data
    */
-  protected RedisHash getMap(ExecutionHandlerContext context,
+  protected RedisHash getRedisHash(ExecutionHandlerContext context,
       ByteArrayWrapper key) {
-    Region<ByteArrayWrapper, RedisHash> region =
-        context.getRegionProvider().getHashRegion();
+    Region<ByteArrayWrapper, RedisData> region =
+        context.getRegionProvider().getDataRegion();
 
-    RedisHash map = region.get(key);
-    if (map == null) {
-      map = new RedisHash(emptyList());
+    RedisData data = region.get(key);
+    if (data == null) {
+      return RedisHash.EMPTY;
     }
+    return RedisHashInRegion.checkType(data);
+  }
 
-    return map;
+  protected RedisHash getModifiableRedisHash(ExecutionHandlerContext context,
+      ByteArrayWrapper key) {
+    Region<ByteArrayWrapper, RedisData> region =
+        context.getRegionProvider().getDataRegion();
+
+    RedisData data = region.get(key);
+    if (data == null) {
+      return new RedisHash(emptyList());
+    }
+    return RedisHashInRegion.checkType(data);
   }
 
   protected AutoCloseableLock withRegionLock(ExecutionHandlerContext context, ByteArrayWrapper key)
@@ -63,22 +75,22 @@ public abstract class HashExecutor extends AbstractExecutor {
 
 
   /**
-   * Save the map information to a region
+   * Save the redisHash information to a region
    *
-   * @param map the map to save
+   * @param redisHash the redisHash to save
    * @param context the execution handler context
    * @param key the raw HASH key
    */
-  protected void saveMap(RedisHash map,
-      ExecutionHandlerContext context, ByteArrayWrapper key) {
+  protected void saveRedishHash(RedisHash redisHash,
+      ExecutionHandlerContext context,
+      ByteArrayWrapper key) {
 
-    if (map == null) {
+    if (redisHash == null) {
       return;
     }
 
     RegionProvider rp = context.getRegionProvider();
 
-    rp.getHashRegion().put(key, map);
-    context.getKeyRegistrar().register(key, RedisDataType.REDIS_HASH);
+    rp.getDataRegion().put(key, redisHash);
   }
 }

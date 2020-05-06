@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import static java.util.Collections.emptyList;
+import static org.apache.geode.redis.internal.RedisDataType.REDIS_SET;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -26,16 +27,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.RedisDataType;
 
 /**
  * This class still uses "synchronized" to protect the
@@ -44,7 +44,7 @@ import org.apache.geode.redis.internal.Coder;
  * class can be removed once readers are changed to
  * also use the {@link SynchronizedStripedExecutor}.
  */
-public class RedisSet implements Delta, DataSerializable {
+public class RedisSet implements RedisData {
 
   public static transient RedisSet EMPTY = new EmptyRedisSet();
   private HashSet<ByteArrayWrapper> members;
@@ -65,6 +65,7 @@ public class RedisSet implements Delta, DataSerializable {
   public RedisSet() {}
 
   synchronized List<Object> sscan(Pattern matchPattern, int count, int cursor) {
+
     List<Object> returnList = new ArrayList<>();
     int size = members.size();
     int beforeCursor = 0;
@@ -100,14 +101,13 @@ public class RedisSet implements Delta, DataSerializable {
   }
 
   synchronized Collection<ByteArrayWrapper> spop(
-      Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key, int popCount) {
+      Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key, int popCount) {
     int originalSize = scard();
     if (originalSize == 0) {
       return emptyList();
     }
 
     if (popCount >= originalSize) {
-      // TODO: need to also cause key to be removed from the metaregion
       region.remove(key, this);
       return this.members;
     }
@@ -218,10 +218,10 @@ public class RedisSet implements Delta, DataSerializable {
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to add to
-   * @return the number of members actually added; -1 if concurrent modification
+   * @return the number of members actually added
    */
   synchronized long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, RedisSet> region,
+      Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
     membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
@@ -243,21 +243,17 @@ public class RedisSet implements Delta, DataSerializable {
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to remove from
-   * @param setWasDeleted set to true if this method deletes the set
-   * @return the number of members actually removed; -1 if concurrent modification
+   * @return the number of members actually removed
    */
   synchronized long srem(ArrayList<ByteArrayWrapper> membersToRemove,
-      Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
+      Region<ByteArrayWrapper, RedisData> region,
+      ByteArrayWrapper key) {
 
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
       if (members.isEmpty()) {
         region.remove(key);
-        if (setWasDeleted != null) {
-          setWasDeleted.set(true);
-        }
       } else {
         deltasAreAdds = false;
         deltas = membersToRemove;
@@ -279,5 +275,10 @@ public class RedisSet implements Delta, DataSerializable {
    */
   synchronized Set<ByteArrayWrapper> smembers() {
     return new HashSet<>(members);
+  }
+
+  @Override
+  public RedisDataType getType() {
+    return REDIS_SET;
   }
 }

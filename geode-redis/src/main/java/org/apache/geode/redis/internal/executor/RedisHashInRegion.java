@@ -16,35 +16,40 @@
 package org.apache.geode.redis.internal.executor;
 
 
+import static org.apache.geode.redis.internal.RedisDataType.REDIS_HASH;
+
 import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.hash.RedisHash;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 
 public class RedisHashInRegion implements RedisHashCommands {
-  private final Region<ByteArrayWrapper, RedisHash> localRegion;
+  private final Region<ByteArrayWrapper, RedisData> region;
 
-  public RedisHashInRegion(Region<ByteArrayWrapper, RedisHash> localRegion) {
-    this.localRegion = localRegion;
+  public RedisHashInRegion(Region<ByteArrayWrapper, RedisData> region) {
+    this.region = region;
   }
 
   @Override
   public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    RedisHash hash = localRegion.get(key);
+    RedisHash hash = checkType(region.get(key));
     if (hash != null) {
-      return hash.hset(localRegion, key, fieldsToSet, NX);
+      return hash.hset(region, key, fieldsToSet, NX);
     } else {
-      localRegion.put(key, new RedisHash(fieldsToSet));
+      region.put(key, new RedisHash(fieldsToSet));
       return fieldsToSet.size() / 2;
     }
   }
 
   @Override
   public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
-    return getRedisHash(key).hdel(localRegion, key, fieldsToRemove);
+    return getRedisHash(key).hdel(region, key, fieldsToRemove);
   }
 
   @Override
@@ -54,10 +59,21 @@ public class RedisHashInRegion implements RedisHashCommands {
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    return localRegion.remove(key) != null;
+    return region.remove(key) != null;
   }
 
   private RedisHash getRedisHash(ByteArrayWrapper key) {
-    return localRegion.getOrDefault(key, RedisHash.EMPTY);
+    return checkType(region.getOrDefault(key, RedisHash.EMPTY));
   }
+
+  public static RedisHash checkType(RedisData redisData) {
+    if (redisData == null) {
+      return null;
+    }
+    if (redisData.getType() != REDIS_HASH) {
+      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+    }
+    return (RedisHash) redisData;
+  }
+
 }

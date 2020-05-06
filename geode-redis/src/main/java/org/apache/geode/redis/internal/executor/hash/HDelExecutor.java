@@ -21,7 +21,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 
 /**
  * <pre>
@@ -47,17 +46,11 @@ public class HDelExecutor extends HashExecutor {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
     RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
     ArrayList<ByteArrayWrapper> fieldsToDelete =
         new ArrayList<>(commandElems.subList(2, commandElems.size()));
     int numDeleted = redisHashCommands.hdel(key, fieldsToDelete);
-    if (numDeleted != 0) {
-      if (!context.getRegionProvider().getHashRegion().containsKey(key)) {
-        context.getKeyRegistrar().unregisterIfType(key, RedisDataType.REDIS_HASH);
-      }
-    }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }
 

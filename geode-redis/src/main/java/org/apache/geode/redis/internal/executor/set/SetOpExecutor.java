@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public abstract class SetOpExecutor extends SetExecutor {
@@ -65,7 +65,7 @@ public abstract class SetOpExecutor extends SetExecutor {
       List<byte[]> commandElems, int setsStartIndex,
       RegionProvider regionProvider, ByteArrayWrapper destination,
       ByteArrayWrapper firstSetKey) {
-    Region<ByteArrayWrapper, RedisSet> region = this.getRegion(context);
+    Region<ByteArrayWrapper, RedisData> region = this.getRegion(context);
     Set<ByteArrayWrapper> firstSet = new RedisSetInRegion(region).smembers(firstSetKey);
 
     List<Set<ByteArrayWrapper>> setList = new ArrayList<>();
@@ -91,7 +91,6 @@ public abstract class SetOpExecutor extends SetExecutor {
       if (resultSet != null) {
         if (!resultSet.isEmpty()) {
           region.put(destination, new RedisSet(resultSet));
-          context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
         }
         command
             .setResponse(
