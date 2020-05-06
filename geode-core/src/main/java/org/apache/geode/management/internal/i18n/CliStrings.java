@@ -553,8 +553,7 @@ public class CliStrings {
   public static final String CONNECT__DEFAULT_SSL_BASE_URL =
       "https://localhost:" + DistributionConfig.DEFAULT_HTTP_SERVICE_PORT + "/geode-mgmt/v1";
   public static final String CONNECT__URL__HELP =
-      "Indicates the base URL to the Manager's HTTP service.  For example: 'http://<host>:<port>/gemfire/v1' Default is '"
-          + CONNECT__DEFAULT_BASE_URL + "'";
+      "Indicates the base URL to the Manager's HTTP service.  For example: 'http://<host>:<port>/geode-mgmt/v1'";
   public static final String CONNECT__USE_HTTP = "use-http";
   public static final String CONNECT__USE_HTTP__HELP =
       "[Deprecated: inferred by the presence of --url]. Connects to Manager by sending HTTP requests to HTTP service hosting the Management REST API. You must first 'disconnect' in order to reconnect to the Manager via locator or jmx-manager using JMX.";
