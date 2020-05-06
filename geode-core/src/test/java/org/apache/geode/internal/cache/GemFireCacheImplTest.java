@@ -63,6 +63,7 @@ import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Unit tests for {@link GemFireCacheImpl}.
@@ -626,7 +627,7 @@ public class GemFireCacheImplTest {
   }
 
   @Test
-  public void testLockDiskStore() throws InterruptedException {
+  public void testMultiThreadLockUnlockDiskStore() throws InterruptedException {
     int nThread = 10;
     String diskStoreName = "MyDiskStore";
     AtomicInteger nTrue = new AtomicInteger();
@@ -652,7 +653,7 @@ public class GemFireCacheImplTest {
       });
     });
     executorService.shutdown();
-    executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+    executorService.awaitTermination(GeodeAwaitility.getTimeout().toNanos(), TimeUnit.NANOSECONDS);
     // 1 thread returns true for locking, all 10 threads return true for unlocking
     assertThat(nTrue.get()).isEqualTo(11);
     // 9 threads return false for locking
