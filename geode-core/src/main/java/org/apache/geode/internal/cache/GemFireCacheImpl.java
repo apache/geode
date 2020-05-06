@@ -2063,13 +2063,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS, boolean skipAwait) {
+    doClose(reason, systemFailureCause, keepAlive, keepDS, skipAwait);
+  }
+
+  /**
+   * Returns true if the caller performed the actual closing of the cache. Returns false if the
+   * caller simply waited for another thread to perform the close.
+   */
+  @VisibleForTesting
+  boolean doClose(String reason, Throwable systemFailureCause, boolean keepAlive,
+      boolean keepDS, boolean skipAwait) {
     securityService.close();
 
-    if (isClosed()) {
-      if (!skipAwait && !Thread.currentThread().equals(CLOSING_THREAD.get())) {
-        waitUntilClosed();
-      }
-      return;
+    if (waitIfClosing(skipAwait)) {
+      return false;
     }
 
     if (!keepDS && systemFailureCause == null
@@ -2082,17 +2089,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       if (system.getReconnectedSystem() != null) {
         system.getReconnectedSystem().disconnect();
       }
-      return;
+      return false;
     }
 
     synchronized (GemFireCacheImpl.class) {
       // ALL CODE FOR CLOSE SHOULD NOW BE UNDER STATIC SYNCHRONIZATION OF GemFireCacheImpl.class
       // static synchronization is necessary due to static resources
-      if (isClosed()) {
-        if (!skipAwait && !Thread.currentThread().equals(CLOSING_THREAD.get())) {
-          waitUntilClosed();
-        }
-        return;
+      if (waitIfClosing(skipAwait)) {
+        return false;
       }
 
       CLOSING_THREAD.set(Thread.currentThread());
@@ -2377,15 +2381,30 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       } finally {
         CLOSING_THREAD.remove();
       }
+      return true;
     }
   }
 
-  private void waitUntilClosed() {
-    try {
-      isClosedLatch.await();
-    } catch (InterruptedException ignore) {
-      // ignored
+  /**
+   * Returns true if caller waited on the {@code isClosedLatch}.
+   */
+  private boolean waitIfClosing(boolean skipAwait) {
+    if (isClosing) {
+      if (!skipAwait && !Thread.currentThread().equals(CLOSING_THREAD.get())) {
+        boolean interrupted = false;
+        try {
+          isClosedLatch.await();
+        } catch (InterruptedException e) {
+          interrupted = true;
+        } finally {
+          if (interrupted) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      }
+      return true;
     }
+    return false;
   }
 
   private void stopServices() {
