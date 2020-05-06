@@ -42,6 +42,7 @@ import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 @RunWith(Parameterized.class)
 public class RebalanceCommandDistributedTest implements Serializable {
+  private static final int ENTRIES_PER_REGION = 200;
   private static final String REGION_ONE_NAME = "region-1";
   private static final String REGION_TWO_NAME = "region-2";
   private static final String REGION_THREE_NAME = "region-3";
@@ -68,13 +69,12 @@ public class RebalanceCommandDistributedTest implements Serializable {
       assertThat(cache).isNotNull();
       RegionFactory<String, String> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region<String, String> region = dataRegionFactory.create(REGION_ONE_NAME);
-      for (int i = 0; i < 10; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-      region = dataRegionFactory.create(REGION_TWO_NAME);
-      for (int i = 0; i < 100; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
+      Region<String, String> region1 = dataRegionFactory.create(REGION_ONE_NAME);
+      Region<String, String> region2 = dataRegionFactory.create(REGION_TWO_NAME);
+
+      for (int i = 0; i < ENTRIES_PER_REGION; i++) {
+        region1.put("key" + i, "Value" + i);
+        region2.put("key" + i, "Value" + i);
       }
     });
 
@@ -84,13 +84,11 @@ public class RebalanceCommandDistributedTest implements Serializable {
       assertThat(cache).isNotNull();
       RegionFactory<String, String> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region<String, String> region = dataRegionFactory.create(REGION_ONE_NAME);
-      for (int i = 0; i < 100; i++) {
-        region.put("key" + (i + 400), "value" + (i + 400));
-      }
-      region = dataRegionFactory.create(REGION_THREE_NAME);
-      for (int i = 0; i < 10; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
+      dataRegionFactory.create(REGION_ONE_NAME);
+      Region<String, String> region3 = dataRegionFactory.create(REGION_THREE_NAME);
+
+      for (int i = 0; i < ENTRIES_PER_REGION; i++) {
+        region3.put("key" + i, "Value" + i);
       }
     });
   }
