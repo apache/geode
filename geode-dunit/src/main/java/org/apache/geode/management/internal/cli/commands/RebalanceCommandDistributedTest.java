@@ -14,17 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -35,40 +38,89 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
-@SuppressWarnings("serial")
-public class RebalanceCommandDistributedTestBase {
+@RunWith(Parameterized.class)
+public class RebalanceCommandDistributedTest implements Serializable {
+  private static final int ENTRIES_PER_REGION = 200;
+  private static final String REGION_ONE_NAME = "region-1";
+  private static final String REGION_TWO_NAME = "region-2";
+  private static final String REGION_THREE_NAME = "region-3";
 
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  @Rule
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  protected static MemberVM locator, server1, server2, server3;
+  protected MemberVM locator, server1, server2;
 
-  @BeforeClass
-  public static void beforeClass() {
-    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
+  @Parameterized.Parameters(name = "ConnectionType:{0}")
+  public static GfshCommandRule.PortType[] connectionTypes() {
+    return new GfshCommandRule.PortType[] {http, jmxManager};
+  }
 
-    int locatorPort = locator.getPort();
-    server1 = cluster.startServerVM(1, "localhost", locatorPort);
-    server2 = cluster.startServerVM(2, "localhost", locatorPort);
+  @Parameterized.Parameter
+  public static GfshCommandRule.PortType portType;
 
-    setUpRegions();
+  private void setUpRegions() {
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      assertThat(cache).isNotNull();
+      RegionFactory<String, String> dataRegionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+      Region<String, String> region1 = dataRegionFactory.create(REGION_ONE_NAME);
+      Region<String, String> region2 = dataRegionFactory.create(REGION_TWO_NAME);
+
+      for (int i = 0; i < ENTRIES_PER_REGION; i++) {
+        region1.put("key" + i, "Value" + i);
+        region2.put("key" + i, "Value" + i);
+      }
+    });
+
+    server2.invoke(() -> {
+      // no need to close cache as it will be closed as part of teardown2
+      Cache cache = ClusterStartupRule.getCache();
+      assertThat(cache).isNotNull();
+      RegionFactory<String, String> dataRegionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+      dataRegionFactory.create(REGION_ONE_NAME);
+      Region<String, String> region3 = dataRegionFactory.create(REGION_THREE_NAME);
+
+      for (int i = 0; i < ENTRIES_PER_REGION; i++) {
+        region3.put("key" + i, "Value" + i);
+      }
+    });
   }
 
   @Before
-  public void before() throws Exception {
-    gfsh.connect(locator.getJmxPort(), jmxManager);
+  public void setUp() throws Exception {
+    locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    int locatorPort = locator.getPort();
+
+    server1 = cluster.startServerVM(1, "localhost", locatorPort);
+    server2 = cluster.startServerVM(2, "localhost", locatorPort);
+    setUpRegions();
+
+    switch (portType) {
+      case http:
+        gfsh.connectAndVerify(locator.getHttpPort(), http);
+        break;
+      case jmxManager:
+        gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
+        break;
+
+      default:
+        throw new IllegalArgumentException("Invalid PortType Configured");
+    }
   }
 
   @Test
   public void testSimulateForEntireDSWithTimeout() {
     // check if DistributedRegionMXBean is available so that command will not fail
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-1", 2);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-2", 1);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-3", 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + REGION_ONE_NAME, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + REGION_TWO_NAME, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + REGION_THREE_NAME, 1);
 
     String command = "rebalance --simulate=true --time-out=-1";
 
@@ -78,7 +130,7 @@ public class RebalanceCommandDistributedTestBase {
   @Test
   public void testRebalanceResultOutput() {
     // check if DistributedRegionMXBean is available so that command will not fail
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-1", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + REGION_ONE_NAME, 2);
 
     String command = "rebalance";
 
@@ -100,18 +152,15 @@ public class RebalanceCommandDistributedTestBase {
 
   @Test
   public void testRebalanceResultOutputMemberCount() {
-    server3 = cluster.startServerVM(3, "localhost", locator.getPort());
+    MemberVM server3 = cluster.startServerVM(3, "localhost", locator.getPort());
     server3.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
-          cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region region = dataRegionFactory.create("region-1");
-      for (int i = 0; i < 100; i++) {
-        region.put("key" + (i + 400), "value" + (i + 400));
-      }
+      assertThat(cache).isNotNull();
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_ONE_NAME);
     });
+
     // check if DistributedRegionMXBean is available so that command will not fail
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-1", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + REGION_ONE_NAME, 3);
 
     Map<String, List<String>> listMembersResult = gfsh.executeAndAssertThat("list members")
         .hasTableSection().getActual().getContent();
@@ -132,33 +181,27 @@ public class RebalanceCommandDistributedTestBase {
     assertThat(rebalanceResult.get("Value").get(9)).isEqualTo("2");
   }
 
-  private static void setUpRegions() {
-    server1.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
-          cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region region = dataRegionFactory.create("region-1");
-      for (int i = 0; i < 10; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-      region = dataRegionFactory.create("region-2");
-      for (int i = 0; i < 100; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-    });
-    server2.invoke(() -> {
-      // no need to close cache as it will be closed as part of teardown2
-      Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
-          cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region region = dataRegionFactory.create("region-1");
-      for (int i = 0; i < 100; i++) {
-        region.put("key" + (i + 400), "value" + (i + 400));
-      }
-      region = dataRegionFactory.create("region-3");
-      for (int i = 0; i < 10; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-    });
+  /**
+   * See GEODE-8071.
+   * The test asserts that the amount of non-daemon threads on the locator VM remains constant
+   * before and after executing the re-balance command.
+   */
+  @Test
+  public void rebalanceCommandShouldNotLaunchNonDaemonThreads() {
+    long nonDaemonThreadsBeforeCommand = locator.invoke(() -> Thread.getAllStackTraces()
+        .keySet()
+        .stream()
+        .filter(thread -> !thread.isDaemon())
+        .count());
+
+    gfsh.executeAndAssertThat("rebalance").statusIsSuccess();
+
+    long daemonThreadsAfterCommand = locator.invoke(() -> Thread.getAllStackTraces()
+        .keySet()
+        .stream()
+        .filter(thread -> !thread.isDaemon())
+        .count());
+
+    assertThat(daemonThreadsAfterCommand).isEqualTo(nonDaemonThreadsBeforeCommand);
   }
 }
