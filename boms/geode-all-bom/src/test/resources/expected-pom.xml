@@ -885,12 +885,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-common-services</artifactId>
-        <version>1.14.0-SNAPSHOT</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
         <artifactId>geode-concurrency-test</artifactId>
         <version>1.14.0-SNAPSHOT</version>
         <scope>compile</scope>
