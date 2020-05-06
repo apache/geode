@@ -357,7 +357,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         if (requiresOneHopForMissingEntry(event)) {
           // bug #45704: see if a one-hop must be done for this operation
           RegionEntry re = getRegionEntry(event.getKey());
-          if (re == null /* || re.isTombstone() */ || !generateVersionTag) {
+          if (re == null /* || re.isTombstone() */ || !generateVersionTag
+              || this.getDataPolicy() == DataPolicy.NORMAL
+              || this.getDataPolicy() == DataPolicy.PRELOADED) {
+            // Let NORMAL and PRELOAD to behave the same as EMPTY
             if (!event.isBulkOpInProgress() || getDataPolicy().withStorage()) {
               // putAll will send a single one-hop for empty regions. for other missing entries
               // we need to get a valid version number before modifying the local cache
@@ -1684,7 +1687,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       if (requiresOneHopForMissingEntry(event)) {
         // bug #45704: see if a one-hop must be done for this operation
         RegionEntry re = getRegionEntry(event.getKey());
-        if (re == null /* || re.isTombstone() */ || !generateVersionTag) {
+        if (re == null /* || re.isTombstone() */ || !generateVersionTag
+            || this.getDataPolicy() == DataPolicy.NORMAL
+            || this.getDataPolicy() == DataPolicy.PRELOADED) {
           if (getServerProxy() == null) {
             // only assert for non-client regions.
             Assert.assertTrue(!getDataPolicy().withReplication() || !generateVersionTag);

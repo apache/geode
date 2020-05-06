@@ -353,13 +353,13 @@ public class LocalRegionDataView implements InternalDataView {
       successfulPuts.clear();
       putallOp.fillVersionedObjectList(successfulPuts);
     }
-    if (reg.getDataPolicy() == DataPolicy.NORMAL || reg.getDataPolicy() == DataPolicy.PRELOADED) {
-      return;
-    }
     // BR & DR's putAll
     long token = -1;
     try {
-      token = reg.postPutAllSend(putallOp, successfulPuts);
+      if (reg.getServerProxy() != null || (reg.getDataPolicy() != DataPolicy.NORMAL
+          && reg.getDataPolicy() != DataPolicy.PRELOADED)) {
+        token = reg.postPutAllSend(putallOp, successfulPuts);
+      }
       reg.postPutAllFireEvents(putallOp, successfulPuts);
     } finally {
       if (token != -1 && reg instanceof DistributedRegion) {
@@ -378,13 +378,13 @@ public class LocalRegionDataView implements InternalDataView {
       successfulOps.clear();
       op.fillVersionedObjectList(successfulOps);
     }
-    if (reg.getDataPolicy() == DataPolicy.NORMAL || reg.getDataPolicy() == DataPolicy.PRELOADED) {
-      return;
-    }
     // BR, DR's removeAll
     long token = -1;
     try {
-      token = reg.postRemoveAllSend(op, successfulOps);
+      if (reg.getServerProxy() != null || (reg.getDataPolicy() != DataPolicy.NORMAL
+          && reg.getDataPolicy() != DataPolicy.PRELOADED)) {
+        token = reg.postRemoveAllSend(op, successfulOps);
+      }
       reg.postRemoveAllFireEvents(op, successfulOps);
     } finally {
       if (token != -1 && reg instanceof DistributedRegion) {
