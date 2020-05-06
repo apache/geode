@@ -14,15 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
@@ -40,73 +34,41 @@ public class SRandMemberExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Region<ByteArrayWrapper, RedisSet> region = getRegion(context);
+    int count = 1;
 
-      int count = 1;
-
-      if (commandElems.size() > 2) {
-        try {
-          count = Coder.bytesToInt(commandElems.get(2));
-        } catch (NumberFormatException e) {
-          command.setResponse(
-              Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
-          return;
-        }
-      }
-
-      Set<ByteArrayWrapper> set = RedisSet.members(region, key);
-
-      if (set == null || count == 0) {
-        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-        return;
-      }
-
-      int members = set.size();
-
-      if (members <= count && count != 1) {
-        respondBulkStrings(command, context, new HashSet<ByteArrayWrapper>(set));
-        return;
-      }
-
-      Random rand = new Random();
-
-      ByteArrayWrapper[] entries = set.toArray(new ByteArrayWrapper[members]);
-
+    if (commandElems.size() > 2) {
       try {
-        if (count == 1) {
-          ByteArrayWrapper randEntry = entries[rand.nextInt(entries.length)];
-          command.setResponse(
-              Coder.getBulkStringResponse(context.getByteBufAllocator(), randEntry.toBytes()));
-        } else if (count > 0) {
-          Set<ByteArrayWrapper> randEntries = new HashSet<>();
-          do {
-            ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
-            randEntries.add(s);
-          } while (randEntries.size() < count);
-          command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), randEntries));
-        } else {
-          count = -count;
-          List<ByteArrayWrapper> randEntries = new ArrayList<>();
-          for (int i = 0; i < count; i++) {
-            ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
-            randEntries.add(s);
-          }
-          command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), randEntries));
-        }
-      } catch (CoderException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-            RedisConstants.SERVER_ERROR_MESSAGE));
+        count = Coder.bytesToInt(commandElems.get(2));
+      } catch (NumberFormatException e) {
+        command.setResponse(
+            Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
+        return;
       }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+    }
+    if (count == 0) {
+      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;
-    } catch (TimeoutException e) {
+    }
+    if (count < 0) {
+      count = -count;
+    }
+
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    Collection<ByteArrayWrapper> results = redisSetCommands.srandmember(key, count);
+    try {
+      if (results == null || results.isEmpty()) {
+        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
+      } else if (count == 1) {
+        command.setResponse(
+            Coder.getBulkStringResponse(context.getByteBufAllocator(),
+                results.iterator().next().toBytes()));
+      } else {
+        command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), results));
+      }
+    } catch (CoderException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
+          RedisConstants.SERVER_ERROR_MESSAGE));
     }
   }
 }

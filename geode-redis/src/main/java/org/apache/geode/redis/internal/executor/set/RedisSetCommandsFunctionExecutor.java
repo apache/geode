@@ -20,9 +20,11 @@ import static org.apache.geode.redis.internal.RedisCommandType.SADD;
 import static org.apache.geode.redis.internal.RedisCommandType.SCARD;
 import static org.apache.geode.redis.internal.RedisCommandType.SISMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SMEMBERS;
+import static org.apache.geode.redis.internal.RedisCommandType.SRANDMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SREM;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -88,16 +90,21 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   }
 
   @Override
-  public boolean sismember(ByteArrayWrapper member) {
-    ArrayList<ByteArrayWrapper> commandArguments = new ArrayList<>();
-    commandArguments.add(member);
-    ResultCollector<Object[], List<Boolean>> results = executeFunction(SISMEMBER, commandArguments);
+  public boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member) {
+    ResultCollector<Object[], List<Boolean>> results = executeFunction(SISMEMBER, key, member);
+    return results.getResult().get(0);
+  }
+
+  @Override
+  public Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count) {
+    ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
+        executeFunction(SRANDMEMBER, key, count);
     return results.getResult().get(0);
   }
 
   private ResultCollector executeFunction(RedisCommandType command,
       ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> commandArguments) {
+      Object commandArguments) {
     return FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))

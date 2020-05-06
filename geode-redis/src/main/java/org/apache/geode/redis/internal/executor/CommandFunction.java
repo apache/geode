@@ -51,22 +51,25 @@ public class CommandFunction implements Function<Object[]> {
     ResultSender resultSender = regionFunctionContext.getResultSender();
     Object[] args = context.getArguments();
     RedisCommandType command = (RedisCommandType) args[0];
-    ArrayList<ByteArrayWrapper> commandArgs = (ArrayList<ByteArrayWrapper>) args[1];
     switch (command) {
-      case SADD:
+      case SADD: {
+        ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
         stripedExecutor.execute(key,
-            () -> RedisSet.sadd(localRegion, key, commandArgs),
+            () -> RedisSet.sadd(localRegion, key, membersToAdd),
             (addedCount) -> resultSender.lastResult(addedCount));
         break;
-      case SREM:
+      }
+      case SREM: {
+        ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
         AtomicBoolean setWasDeleted = new AtomicBoolean();
         stripedExecutor.execute(key,
-            () -> RedisSet.srem(localRegion, key, commandArgs, setWasDeleted),
+            () -> RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted),
             (removedCount) -> {
               resultSender.sendResult(removedCount);
               resultSender.lastResult(setWasDeleted.get() ? 1L : 0L);
             });
         break;
+      }
       case DEL:
         stripedExecutor.execute(key,
             () -> RedisSet.del(localRegion, key),
@@ -82,11 +85,20 @@ public class CommandFunction implements Function<Object[]> {
             () -> RedisSet.scard(localRegion, key),
             (size) -> resultSender.lastResult(size));
         break;
-      case SISMEMBER:
+      case SISMEMBER: {
+        ByteArrayWrapper member = (ByteArrayWrapper) args[1];
         stripedExecutor.execute(key,
-            () -> RedisSet.sismember(localRegion, key, commandArgs.get(0)),
+            () -> RedisSet.sismember(localRegion, key, member),
             (exists) -> resultSender.lastResult(exists));
         break;
+      }
+      case SRANDMEMBER: {
+        int count = (int) args[1];
+        stripedExecutor.execute(key,
+            () -> RedisSet.srandmember(localRegion, key, count),
+            (members) -> resultSender.lastResult(members));
+        break;
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }

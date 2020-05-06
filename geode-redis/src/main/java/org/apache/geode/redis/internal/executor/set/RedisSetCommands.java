@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,5 +36,7 @@ public interface RedisSetCommands {
   int scard(ByteArrayWrapper key);
 
   boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member);
+
+  Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count);
 
 }

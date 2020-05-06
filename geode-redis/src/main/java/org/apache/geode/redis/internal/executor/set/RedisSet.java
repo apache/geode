@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -117,6 +118,44 @@ public class RedisSet implements Delta, DataSerializable {
     }
   }
 
+  public static Collection<ByteArrayWrapper> srandmember(Region<ByteArrayWrapper, RedisSet> region,
+                                                          ByteArrayWrapper key, int count) {
+    RedisSet redisSet = region.get(key);
+    if (redisSet != null) {
+      return redisSet.srandmember(count);
+    } else {
+      return null;
+    }
+  }
+
+
+  private synchronized Collection<ByteArrayWrapper> srandmember(int count) {
+    int membersSize = members.size();
+
+    if (membersSize <= count && count != 1) {
+      return new ArrayList<>(members);
+    }
+
+    Random rand = new Random();
+
+    ByteArrayWrapper[] entries = members.toArray(new ByteArrayWrapper[membersSize]);
+
+    if (count == 1) {
+      ByteArrayWrapper randEntry = entries[rand.nextInt(entries.length)];
+      // Note using ArrayList because Collections.singleton has serialization issues.
+      ArrayList<ByteArrayWrapper> result = new ArrayList<>(1);
+      result.add(randEntry);
+      return result;
+    }
+    Set<ByteArrayWrapper> result = new HashSet<>();
+    // Note that rand.nextInt can return duplicates when "count" is high
+    // so we need to use a Set to collect the results.
+    while (result.size() < count) {
+      ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
+      result.add(s);
+    }
+    return result;
+  }
 
   public synchronized boolean contains(ByteArrayWrapper member) {
     return members.contains(member);
