@@ -128,7 +128,7 @@ public class RedisSet implements Delta, DataSerializable {
     }
   }
 
-  private static Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisSet> region,
+  public static Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisSet> region,
                                                    ByteArrayWrapper key, int popCount) {
     RedisSet redisSet = region.get(key);
     if (redisSet != null) {
@@ -140,19 +140,18 @@ public class RedisSet implements Delta, DataSerializable {
 
   private synchronized Collection<ByteArrayWrapper> doSpop(
       Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key, int popCount) {
-    ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
     int originalSize = size();
     if (originalSize == 0) {
       return null;
     }
 
     if (popCount >= originalSize) {
-      popped.addAll(members);
-      members.clear();
-      region.remove(key, this); // TODO remove from key registry
-      return popped;
+      // TODO: need to also cause key to be removed from the metaregion
+      region.remove(key, this);
+      return this.members;
     }
 
+    ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
     ByteArrayWrapper[] setMembers = members.toArray(new ByteArrayWrapper[originalSize]);
     Random rand = new Random();
     while (popped.size() < popCount) {
