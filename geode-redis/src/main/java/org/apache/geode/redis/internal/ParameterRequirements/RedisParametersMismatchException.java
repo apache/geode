@@ -12,14 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
 
+package org.apache.geode.redis.internal.ParameterRequirements;
 
+public class RedisParametersMismatchException extends RuntimeException {
+  private static final long serialVersionUID = -643700717871858072L;
 
-public class SInterStoreExecutor extends SInterExecutor {
-
-  @Override
-  protected boolean isStorage() {
-    return true;
+  public RedisParametersMismatchException(String message) {
+    super(message);
   }
 }

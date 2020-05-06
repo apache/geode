@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class SInterExecutor extends SetOpExecutor {
 
@@ -42,11 +41,6 @@ public class SInterExecutor extends SetOpExecutor {
       copy.retainAll(set);
     }
     return copy;
-  }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.SINTER;
   }
 
 }
