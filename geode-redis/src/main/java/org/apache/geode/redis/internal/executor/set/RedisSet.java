@@ -128,6 +128,53 @@ public class RedisSet implements Delta, DataSerializable {
     }
   }
 
+  private static Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisSet> region,
+                                                   ByteArrayWrapper key, int popCount) {
+    RedisSet redisSet = region.get(key);
+    if (redisSet != null) {
+      return redisSet.doSpop(region, key, popCount);
+    } else {
+      return null;
+    }
+  }
+
+  private synchronized Collection<ByteArrayWrapper> doSpop(
+      Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key, int popCount) {
+    ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
+    int originalSize = size();
+    if (originalSize == 0) {
+      return null;
+    }
+
+    if (popCount >= originalSize) {
+      popped.addAll(members);
+      members.clear();
+      region.remove(key, this); // TODO remove from key registry
+      return popped;
+    }
+
+    ByteArrayWrapper[] setMembers = members.toArray(new ByteArrayWrapper[originalSize]);
+    Random rand = new Random();
+    while (popped.size() < popCount) {
+      int idx = rand.nextInt(originalSize);
+      ByteArrayWrapper memberToPop = setMembers[idx];
+      if (memberToPop != null) {
+        setMembers[idx] = null;
+        popped.add(memberToPop);
+        members.remove(memberToPop);
+      }
+    }
+    if (!popped.isEmpty()) {
+      this.deltasAreAdds = false;
+      this.deltas = popped;
+      try {
+        region.put(key, this);
+      } finally {
+        this.deltas = null;
+      }
+    }
+    return popped;
+  }
 
   private synchronized Collection<ByteArrayWrapper> srandmember(int count) {
     int membersSize = members.size();

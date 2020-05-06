@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisCommandType.SADD;
 import static org.apache.geode.redis.internal.RedisCommandType.SCARD;
 import static org.apache.geode.redis.internal.RedisCommandType.SISMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SMEMBERS;
+import static org.apache.geode.redis.internal.RedisCommandType.SPOP;
 import static org.apache.geode.redis.internal.RedisCommandType.SRANDMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SREM;
 
@@ -99,6 +100,13 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   public Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count) {
     ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
         executeFunction(SRANDMEMBER, key, count);
+    return results.getResult().get(0);
+  }
+
+  @Override
+  public Collection<ByteArrayWrapper> spop(int popCount) {
+    ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
+        executeFunction(SPOP, popCount);
     return results.getResult().get(0);
   }
 

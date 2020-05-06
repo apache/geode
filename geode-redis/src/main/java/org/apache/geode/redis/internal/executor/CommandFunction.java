@@ -99,6 +99,13 @@ public class CommandFunction implements Function<Object[]> {
             (members) -> resultSender.lastResult(members));
         break;
       }
+      case SPOP: {
+        int popCount = (int) args[1];
+        stripedExecutor.execute(key,
+            () -> RedisSet.spop(localRegion, key, popCount),
+            (members) -> resultSender.lastResult(members));
+        break;
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }

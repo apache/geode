@@ -39,4 +39,6 @@ public interface RedisSetCommands {
 
   Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count);
 
+  Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount);
+
 }

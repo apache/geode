@@ -14,13 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
@@ -39,61 +35,17 @@ public class SPopExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-
-    ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Region<ByteArrayWrapper, RedisSet> region = getRegion(context);
-      RedisSet original = region.get(key);
-      if (original == null) {
-        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-        return;
-      }
-
-      synchronized (original) {
-        int originalSize = original.size();
-        if (originalSize == 0) {
-          command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-          return;
-        }
-
-        if (popCount >= originalSize) {
-          // remove them all
-          popped.addAll(original.members());
-        } else {
-          ByteArrayWrapper[] setMembers =
-              original.members().toArray(new ByteArrayWrapper[originalSize]);
-          Random rand = new Random();
-          while (popped.size() < popCount) {
-            int idx = rand.nextInt(originalSize);
-            ByteArrayWrapper memberToPop = setMembers[idx];
-            if (memberToPop != null) {
-              setMembers[idx] = null;
-              popped.add(memberToPop);
-            }
-          }
-        }
-        // The following srem call can modify popped by removing members
-        // from it that were not removed from the set.
-        // But since the set is synchronized all members in popped will be
-        // removed so popped will contains all the members popped.
-        RedisSet.srem(region, key, popped, null);
-        // TODO: what should SPOP do with a source that it empties? We probably need to delete it.
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
+    if (popped == null || popped.isEmpty()) {
+      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;
     }
-
     try {
       if (popCount == 1) {
-        command
-            .setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), popped.get(0)));
+        command.setResponse(
+            Coder.getBulkStringResponse(context.getByteBufAllocator(), popped.iterator().next()));
       } else {
         command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), popped));
       }
