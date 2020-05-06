@@ -204,7 +204,7 @@ sed -E -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" -i.bak geode-
 rm gradle.properties.bak ci/pipelines/shared/jinja.variables.yml.bak geode-book/config.yml.bak geode-book/redirects.rb.bak $VER.bak* $COM.bak*
 set -x
 git add .
-git diff --staged
+git diff --no-pager --staged
 
 ./gradlew updateExpectedPom
 
@@ -231,7 +231,7 @@ sed \
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-git diff --staged
+git diff --no-pager --staged
 git commit -m "point develop examples to ${NEWVERSION}-SNAPSHOT now that support/${VERSION_MM} has been created"
 git push -u origin
 set +x

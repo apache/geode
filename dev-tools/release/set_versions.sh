@@ -116,13 +116,13 @@ sed -e "s/^version =.*/version = ${VERSION}${SNAPSHOT}/" -i.bak gradle.propertie
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-git diff --staged
+git diff --no-pager --staged
 
 ./gradlew updateExpectedPom
 git add .
-echo "$(git diff --staged | wc -l)-line diff of expected-pom changes will also be committed (not shown)"
+echo "$(git diff --no-pager --staged | wc -l)-line diff of expected-pom changes will also be committed (not shown)"
 
-if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+if [ $(git diff --no-pager --staged | wc -l) -gt 0 ] ; then
   git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
@@ -147,8 +147,8 @@ sed -e "s/^version = .*/version = ${VERSION}${SNAPSHOT}/" \
 rm gradle.properties.bak
 set -x
 git add .
-git diff --staged
-if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+git diff --no-pager --staged
+if [ $(git diff --no-pager --staged | wc -l) -gt 0 ] ; then
   git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi

@@ -101,7 +101,7 @@ sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl = https://repository.apach
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-git diff --staged
+git diff --no-pager --staged
 git commit -m "temporarily point to staging repo for CI purposes"
 git push
 set +x

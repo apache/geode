@@ -49,8 +49,8 @@ for DIR in $@ ; do
       -i.bak NOTICE
     rm -f NOTICE.bak
     git add NOTICE
-    git diff --staged
-    if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+    git diff --no-pager --staged
+    if [ $(git diff --no-pager --staged | wc -l) -gt 0 ] ; then
       git commit -a -m "Bumping copyright year to ${year}"
     fi
 done

@@ -185,7 +185,7 @@ if [ "${FULL_VERSION##*.RC}" -gt 1 ] ; then
     rm gradle.properties.bak
     set -x
     git add gradle.properties
-    git diff --staged
+    git diff --no-pager --staged
     git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
     set +x
 fi
