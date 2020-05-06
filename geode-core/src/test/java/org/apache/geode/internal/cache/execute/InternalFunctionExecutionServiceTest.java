@@ -47,6 +47,16 @@ public class InternalFunctionExecutionServiceTest {
   }
 
   @Test
+  public void onRegionShouldThrowExceptionWhenRegionAttributesIsNull() {
+    Region mockRegion = mock(Region.class);
+    when(mockRegion.isDestroyed()).thenReturn(true);
+
+    assertThatThrownBy(() -> functionExecutionService.onRegion(mockRegion))
+        .isInstanceOf(FunctionException.class)
+        .hasMessage("Region is destroyed");
+  }
+
+  @Test
   public void onRegionShouldThrowExceptionWhenThePoolAssociatedWithTheRegionCanNotBeFound() {
     when(functionExecutionService.findPool(any())).thenReturn(null);
 
