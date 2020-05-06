@@ -225,7 +225,6 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
-    // assertNull(c.getRegion(SEPARATOR+clientMembershipId));
     assertEquals(0, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
   }
 

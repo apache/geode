@@ -285,7 +285,6 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
       Iterator iter_prox = bs.getAcceptor().getCacheClientNotifier().getClientProxies().iterator();
       if (iter_prox.hasNext()) {
         CacheClientProxy proxy = (CacheClientProxy) iter_prox.next();
-        // if (proxy._interestList._keysOfInterest.get(SEPARATOR+REGION_NAME) != null) {
         if (proxy.isPrimary()) {
           Iterator iter = cache.getCacheServers().iterator();
           if (iter.hasNext()) {
@@ -399,7 +398,6 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
       // only one server thats why if and not while
       if (iter.hasNext()) {
         CacheClientProxy proxy = (CacheClientProxy) iter.next();
-        // if (proxy._interestList._keysOfInterest.get(SEPARATOR+ REGION_NAME) == null) {
         if (!proxy.isPrimary()) {
           Region r = cache.getRegion(SEPARATOR + REGION_NAME);
           r.put(k1, server_k1);
