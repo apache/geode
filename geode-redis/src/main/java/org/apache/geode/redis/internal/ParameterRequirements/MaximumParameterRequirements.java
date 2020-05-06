@@ -17,8 +17,6 @@ package org.apache.geode.redis.internal.ParameterRequirements;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
-import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 
 public class MaximumParameterRequirements implements ParameterRequirements {
   private int maximum;

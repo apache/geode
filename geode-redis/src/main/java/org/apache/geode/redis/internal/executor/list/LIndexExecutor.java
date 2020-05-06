@@ -24,7 +24,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.ListQuery;
 
@@ -35,11 +34,6 @@ public class LIndexExecutor extends ListExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.LINDEX));
-      return;
-    }
 
     ByteArrayWrapper key = command.getKey();
     byte[] indexArray = commandElems.get(2);

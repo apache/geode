@@ -17,18 +17,17 @@ package org.apache.geode.redis.internal.ParameterRequirements;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
 
 public class ExactParameterRequirements implements ParameterRequirements {
-  private int requiredNumber;
+  private int number;
 
-  public ExactParameterRequirements(int requiredNumber) {
-    this.requiredNumber = requiredNumber;
+  public ExactParameterRequirements(int number) {
+    this.number = number;
   }
 
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (command.getProcessedCommand().size() != requiredNumber) {
+    if (command.getProcessedCommand().size() != number) {
       throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsError());
     }
   }

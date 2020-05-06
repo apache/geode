@@ -17,12 +17,11 @@ package org.apache.geode.redis.internal.ParameterRequirements;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
 
 public class UnspecifiedParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command,
-                              ExecutionHandlerContext executionHandlerContext) {
+      ExecutionHandlerContext executionHandlerContext) {
     return;
   }
 }

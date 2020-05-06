@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.ParameterRequirements;
 
 public class RedisParametersMismatchException extends RuntimeException {
   private static final long serialVersionUID = -643700717871858072L;
+
   public RedisParametersMismatchException(String message) {
     super(message);
   }

@@ -183,7 +183,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
       response =
           Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_SHUTDOWN);
-    } else if (cause instanceof IllegalStateException || cause instanceof RedisParametersMismatchException) {
+    } else if (cause instanceof IllegalStateException
+        || cause instanceof RedisParametersMismatchException) {
       response = Coder.getErrorResponse(this.byteBufAllocator, cause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {

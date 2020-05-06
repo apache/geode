@@ -14,27 +14,17 @@
  */
 package org.apache.geode.redis.internal.executor.list;
 
-import java.util.List;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisDataType;
 
-public abstract class PopExecutor extends ListExecutor implements Extendable {
+public abstract class PopExecutor extends ListExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
-      return;
-    }
-
     ByteArrayWrapper key = command.getKey();
 
     checkDataType(key, RedisDataType.REDIS_LIST, context);

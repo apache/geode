@@ -233,19 +233,19 @@ public enum RedisCommandType {
    *************** Lists *****************
    ***************************************/
 
-  LINDEX(new LIndexExecutor()),
+  LINDEX(new LIndexExecutor(), new MinimumParameterRequirements(3)),
   LINSERT(new LInsertExecutor()),
-  LLEN(new LLenExecutor()),
-  LPOP(new LPopExecutor()),
-  LPUSH(new LPushExecutor()),
-  LPUSHX(new LPushXExecutor()),
-  LRANGE(new LRangeExecutor()),
-  LREM(new LRemExecutor()),
-  LSET(new LSetExecutor()),
-  LTRIM(new LTrimExecutor()),
-  RPOP(new RPopExecutor()),
-  RPUSH(new RPushExecutor()),
-  RPUSHX(new RPushXExecutor()),
+  LLEN(new LLenExecutor(), new MinimumParameterRequirements(2)),
+  LPOP(new LPopExecutor(), new MinimumParameterRequirements(2)),
+  LPUSH(new LPushExecutor(), new MinimumParameterRequirements(3)),
+  LPUSHX(new LPushXExecutor(), new MinimumParameterRequirements(3)),
+  LRANGE(new LRangeExecutor(), new MinimumParameterRequirements(4)),
+  LREM(new LRemExecutor(), new MinimumParameterRequirements(4)),
+  LSET(new LSetExecutor(), new MinimumParameterRequirements(4)),
+  LTRIM(new LTrimExecutor(), new MinimumParameterRequirements(4)),
+  RPOP(new RPopExecutor(), new MinimumParameterRequirements(2)),
+  RPUSH(new RPushExecutor(), new MinimumParameterRequirements(3)),
+  RPUSHX(new RPushXExecutor(), new MinimumParameterRequirements(3)),
 
   /***************************************
    **************** Sets *****************

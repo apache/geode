@@ -156,35 +156,6 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the PFMERGE command is \"PFMERGE destkey sourcekey [sourcekey ...]\"";
 
     /*
-     * List
-     */
-    public static final String LINDEX =
-        "The wrong number of arguments or syntax was provided, the format for the LINDEX command is \"LINDEX key index";
-    public static final String LINSERT = null;
-    public static final String LLEN =
-        "The wrong number of arguments or syntax was provided, the format for the LLEN command is \"LLEN key";
-    public static final String LPOP =
-        "The wrong number of arguments or syntax was provided, the format for the LPOP command is \"LPOP key";
-    public static final String LPUSH =
-        "The wrong number of arguments or syntax was provided, the format for the LPUSH command is \"LPUSH key value [value ...]";
-    public static final String LPUSHX =
-        "The wrong number of arguments or syntax was provided, the format for the LPUSHX command is \"LPUSHX key value";
-    public static final String LRANGE =
-        "The wrong number of arguments or syntax was provided, the format for the LRANGE command is \"LRANGE key start stop\"";
-    public static final String LREM =
-        "The wrong number of arguments or syntax was provided, the format for the LREM command is \"LREM key count value\"";
-    public static final String LSET =
-        "The wrong number of arguments or syntax was provided, the format for the LSET command is \"LSET key index value\"";
-    public static final String LTRIM =
-        "The wrong number of arguments or syntax was provided, the format for the LTRIM command is \"LTRIM key start stop\"";
-    public static final String RPOP =
-        "The wrong number of arguments or syntax was provided, the format for the RPOP command is \"RPOP key";
-    public static final String RPUSH =
-        "The wrong number of arguments or syntax was provided, the format for the RPUSH command is \"RPUSH key value [value ...]";
-    public static final String RPUSHX =
-        "The wrong number of arguments or syntax was provided, the format for the RPUSHX command is \"RPUSHX key value";
-
-    /*
      * Sorted set
      */
     public static final String ZADD =
