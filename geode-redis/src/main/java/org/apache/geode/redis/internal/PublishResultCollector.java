@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class PublishResultCollector {
   private final CountDownLatch countDownLatch;
-  private Subscriptions subscriptions;
+  private final Subscriptions subscriptions;
   private final AtomicLong successCount = new AtomicLong();
 
   public PublishResultCollector(int resultsExpected, Subscriptions subscriptions) {

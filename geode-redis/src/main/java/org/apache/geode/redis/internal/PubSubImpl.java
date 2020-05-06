@@ -18,11 +18,14 @@ package org.apache.geode.redis.internal;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
 /**
@@ -32,6 +35,8 @@ import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
  */
 public class PubSubImpl implements PubSub {
   public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
+
+  private static final Logger logger = LogService.getLogger();
 
   private final Subscriptions subscriptions;
 
@@ -49,7 +54,13 @@ public class PubSubImpl implements PubSub {
         .setArguments(new Object[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
-    List<Long> subscriberCounts = subscriberCountCollector.getResult();
+    List<Long> subscriberCounts = null;
+    try {
+      subscriberCounts = subscriberCountCollector.getResult();
+    } catch (Exception e) {
+      logger.warn("Failed to execute publish function {}", e.getMessage());
+      return 0;
+    }
 
     return subscriberCounts.stream().mapToLong(x -> x).sum();
   }
@@ -89,6 +100,11 @@ public class PubSubImpl implements PubSub {
             publishMessageToSubscribers((String) publishMessage[0], (byte[]) publishMessage[1]);
         context.getResultSender().lastResult(subscriberCount);
       }
+
+      @Override
+      public boolean isHA() {
+        return false;
+      }
     });
   }
 
@@ -117,9 +133,7 @@ public class PubSubImpl implements PubSub {
         new PublishResultCollector(foundSubscriptions.size(), subscriptions);
 
     foundSubscriptions.forEach(
-        subscription -> {
-          subscription.publishMessage(channel, message, publishResultCollector);
-        });
+        subscription -> subscription.publishMessage(channel, message, publishResultCollector));
 
     return publishResultCollector.getSuccessCount();
   }

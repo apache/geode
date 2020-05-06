@@ -147,9 +147,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       }
       executeCommand(ctx, command);
     } catch (Exception e) {
-      logger.error(
-          "Execution of  Redis command " + command + " failed",
-          e);
+      logger.warn("Execution of Redis command {} failed: {}", command, e);
       throw e;
     }
 
