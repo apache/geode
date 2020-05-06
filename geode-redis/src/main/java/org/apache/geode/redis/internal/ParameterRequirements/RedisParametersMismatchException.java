@@ -13,19 +13,11 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.ParameterRequirements;
 
-public class ExactParameterRequirements implements ParameterRequirements {
-  private int requiredNumber;
-
-  public ExactParameterRequirements(int requiredNumber) {
-    this.requiredNumber = requiredNumber;
-  }
-
-  @Override
-  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (command.getProcessedCommand().size() != requiredNumber) {
-      throw new RuntimeException(command.wrongNumberOfArgumentsError());
-    }
+public class RedisParametersMismatchException extends RuntimeException {
+  private static final long serialVersionUID = -643700717871858072L;
+  public RedisParametersMismatchException(String message) {
+    super(message);
   }
 }

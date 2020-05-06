@@ -13,7 +13,10 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.ParameterRequirements;
+
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
 
 public class MultipleRequirements implements ParameterRequirements {
   private final ParameterRequirements parameterRequirements;
@@ -27,8 +30,8 @@ public class MultipleRequirements implements ParameterRequirements {
 
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    this.parameterRequirements.checkParameters(command, executionHandlerContext);
     this.moreRequirements.checkParameters(command, executionHandlerContext);
+    this.parameterRequirements.checkParameters(command, executionHandlerContext);
   }
 
   @Override

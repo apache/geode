@@ -13,11 +13,14 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.ParameterRequirements;
 
-interface ParameterRequirements {
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
+
+public interface ParameterRequirements {
   void checkParameters(Command command,
-      ExecutionHandlerContext executionHandlerContext);
+                       ExecutionHandlerContext executionHandlerContext);
 
   default ParameterRequirements and(ParameterRequirements moreRequirements) {
     return new MultipleRequirements(this, moreRequirements);

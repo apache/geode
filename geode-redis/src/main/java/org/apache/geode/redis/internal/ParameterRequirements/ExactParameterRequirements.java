@@ -13,16 +13,23 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.ParameterRequirements;
 
-public class SpopParameterRequirements implements ParameterRequirements {
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
+
+public class ExactParameterRequirements implements ParameterRequirements {
+  private int requiredNumber;
+
+  public ExactParameterRequirements(int requiredNumber) {
+    this.requiredNumber = requiredNumber;
+  }
+
   @Override
-  public void checkParameters(Command command, ExecutionHandlerContext context) {
-    try {
-      Integer.parseInt(new String(command.getProcessedCommand().get(2)));
-
-    } catch (NumberFormatException nex) {
-      throw new RuntimeException("ERR value is not an integer or out of range");
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    if (command.getProcessedCommand().size() != requiredNumber) {
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsError());
     }
   }
 }

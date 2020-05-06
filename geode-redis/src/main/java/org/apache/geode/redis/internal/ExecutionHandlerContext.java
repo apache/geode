@@ -39,6 +39,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 
 /**
  * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is the last part of the
@@ -182,7 +183,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
       response =
           Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_SHUTDOWN);
-    } else if (cause instanceof IllegalStateException) {
+    } else if (cause instanceof IllegalStateException || cause instanceof RedisParametersMismatchException) {
       response = Coder.getErrorResponse(this.byteBufAllocator, cause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {

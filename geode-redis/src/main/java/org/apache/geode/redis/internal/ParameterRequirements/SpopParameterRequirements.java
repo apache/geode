@@ -13,20 +13,20 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.ParameterRequirements;
 
-public class MinimumParameterRequirements implements ParameterRequirements {
-  private int minimum;
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
 
-  MinimumParameterRequirements(int minimum) {
-    this.minimum = minimum;
-  }
-
+public class SpopParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext context) {
-    if (command.getProcessedCommand().size() < minimum) {
-      throw new RedisDataTypeMismatchException(command.wrongNumberOfArgumentsError());
+    if (command.getProcessedCommand().size() == 3) {
+      try {
+        Integer.parseInt(new String(command.getProcessedCommand().get(2)));
+      } catch (NumberFormatException nex) {
+        throw new RedisParametersMismatchException("value is not an integer or out of range");
+      }
     }
   }
-
 }

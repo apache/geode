@@ -33,7 +33,10 @@ public class SPopExecutor extends SetExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    int popCount = Integer.parseInt(new String(commandElems.get(2)));
+    int popCount = 1;
+    if (commandElems.size() == 3) {
+      popCount = Integer.parseInt(new String(commandElems.get(2)));
+    }
 
     ByteArrayWrapper key = command.getKey();
 

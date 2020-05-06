@@ -167,8 +167,8 @@ public class Command {
     return type == getCommandType();
   }
 
-  String wrongNumberOfArgumentsError() {
-    return String.format("ERR wrong number of arguments for '%s' command",
+  public String wrongNumberOfArgumentsError() {
+    return String.format("wrong number of arguments for '%s' command",
         getCommandType().toString().toLowerCase());
   }
 

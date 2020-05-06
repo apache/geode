@@ -13,19 +13,16 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.ParameterRequirements;
 
-public class MaximumParameterRequirements implements ParameterRequirements {
-  private int maximum;
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
 
-  public MaximumParameterRequirements(int maximum) {
-    this.maximum = maximum;
-  }
-
+public class UnspecifiedParameterRequirements implements ParameterRequirements {
   @Override
-  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (command.getProcessedCommand().size() > maximum) {
-      throw new RedisDataTypeMismatchException(command.wrongNumberOfArgumentsError());
-    }
+  public void checkParameters(Command command,
+                              ExecutionHandlerContext executionHandlerContext) {
+    return;
   }
 }
