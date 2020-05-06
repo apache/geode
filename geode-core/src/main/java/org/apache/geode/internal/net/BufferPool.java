@@ -74,8 +74,8 @@ public class BufferPool {
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
-  public static final boolean useDirectBuffers = !(Boolean.getBoolean("p2p.nodirectBuffers")
-      || Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "noDirectBuffers"));
+  public static final boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers")
+      || Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers");
 
   /**
    * Should only be called by threads that have currently acquired send permission.
