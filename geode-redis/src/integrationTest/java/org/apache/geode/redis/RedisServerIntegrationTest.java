@@ -59,11 +59,11 @@ public class RedisServerIntegrationTest {
   }
 
   @Test
-  public void initializeRedisCreatesFourRegions() {
-    redisServer = new GeodeRedisServer();
+  public void initializeRedisCreatesTwoRegions() {
+    redisServer = new GeodeRedisServer(redisPort);
     redisServer.start();
-    assertThat(cache.rootRegions()).hasSize(4);
-    assertThat(cache.getRegion(GeodeRedisServer.REDIS_META_DATA_REGION)).isNotNull();
+    assertThat(cache.rootRegions()).hasSize(2);
+    assertThat(cache.getRegion(GeodeRedisServer.REDIS_DATA_REGION)).isNotNull();
   }
 
   @Test

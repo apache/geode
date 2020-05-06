@@ -29,19 +29,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
 public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
-  private final Region<ByteArrayWrapper, RedisSet> region;
+  private final Region<ByteArrayWrapper, RedisData> region;
 
-  public RedisSetCommandsFunctionExecutor(Region<ByteArrayWrapper, RedisSet> region) {
+  public RedisSetCommandsFunctionExecutor(Region<ByteArrayWrapper, RedisData> region) {
     this.region = region;
   }
 
@@ -52,15 +52,8 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   @SuppressWarnings("unchecked")
   @Override
-  public long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove,
-      AtomicBoolean setWasDeleted) {
-    Object[] resultList =
-        CommandFunction.execute(SREM, key, membersToRemove, region);
-
-    long membersRemoved = (long) resultList[0];
-    Boolean wasDeleted = (Boolean) resultList[1];
-    setWasDeleted.set(wasDeleted);
-    return membersRemoved;
+  public long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove) {
+    return CommandFunction.execute(SREM, key, membersToRemove, region);
   }
 
   @Override

@@ -25,15 +25,16 @@ import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
 @SuppressWarnings("unchecked")
 public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
 
-  private final Region<ByteArrayWrapper, RedisHash> region;
+  private final Region<ByteArrayWrapper, RedisData> region;
 
-  public RedisHashCommandsFunctionExecutor(Region region) {
+  public RedisHashCommandsFunctionExecutor(Region<ByteArrayWrapper, RedisData> region) {
     this.region = region;
   }
 

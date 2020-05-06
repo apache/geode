@@ -76,7 +76,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
     double value;
 
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      RedisHash map = getMap(context, key);
+      RedisHash redisHash = getModifiableRedisHash(context, key);
 
       byte[] byteField = commandElems.get(FIELD_INDEX);
       ByteArrayWrapper field = new ByteArrayWrapper(byteField);
@@ -85,12 +85,13 @@ public class HIncrByFloatExecutor extends HashExecutor {
        * Put increment as value if field doesn't exist
        */
 
-      ByteArrayWrapper oldValue = map.get(field);
+      ByteArrayWrapper oldValue = redisHash.get(field);
 
       if (oldValue == null) {
-        map.put(field, new ByteArrayWrapper(incrArray));
+        ByteArrayWrapper newValue = new ByteArrayWrapper(incrArray);
+        redisHash.put(field, newValue);
 
-        this.saveMap(map, context, key);
+        saveRedishHash(redisHash, context, key);
 
         respondBulkStrings(command, context, increment);
         return;
@@ -115,9 +116,9 @@ public class HIncrByFloatExecutor extends HashExecutor {
       }
 
       value += increment;
-      map.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
+      redisHash.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
 
-      this.saveMap(map, context, key);
+      saveRedishHash(redisHash, context, key);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       command.setResponse(

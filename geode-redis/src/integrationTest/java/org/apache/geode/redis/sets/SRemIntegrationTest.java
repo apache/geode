@@ -187,7 +187,7 @@ public class SRemIntegrationTest {
     AtomicLong errorCount = new AtomicLong();
     CyclicBarrier startCyclicBarrier = new CyclicBarrier(2, () -> {
       boolean keyIsRegistered = server.getKeyRegistrar().isRegistered(keyAsByteArray);
-      boolean containsKey = server.getRegionCache().getSetRegion().containsKey(keyAsByteArray);
+      boolean containsKey = server.getRegionProvider().getDataRegion().containsKey(keyAsByteArray);
 
       if (keyIsRegistered != containsKey) {
         errorCount.getAndIncrement();

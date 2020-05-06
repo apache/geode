@@ -47,10 +47,8 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
-import org.apache.geode.redis.internal.executor.hash.RedisHash;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
 
@@ -61,7 +59,7 @@ import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExec
  * synchronized, which is done away with and abstracted by this class.
  */
 public class RegionProvider implements Closeable {
-  private final ConcurrentHashMap<ByteArrayWrapper, Region<Object, Object>> regions;
+  private final ConcurrentHashMap<ByteArrayWrapper, Region<Object, Object>> dynamicRegions;
 
   /**
    * This is the Redis meta data {@link Region} that holds the {@link RedisDataType} information for
@@ -82,8 +80,7 @@ public class RegionProvider implements Closeable {
    */
   private final Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
 
-  private final Region<ByteArrayWrapper, RedisHash> hashRegion;
-  private final Region<ByteArrayWrapper, RedisSet> setRegion;
+  private final Region<ByteArrayWrapper, RedisData> dataRegion;
 
   private final Cache cache;
   private final QueryService queryService;
@@ -94,7 +91,7 @@ public class RegionProvider implements Closeable {
   private final RegionShortcut defaultRegionType;
   @Immutable
   private static final CreateRegionCommand createRegionCmd = new CreateRegionCommand();
-  private final ConcurrentHashMap<String, Lock> locks;
+  private final ConcurrentHashMap<ByteArrayWrapper, Lock> dynamicRegionLocks;
 
   @SuppressWarnings("deprecation")
   public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
@@ -102,11 +99,10 @@ public class RegionProvider implements Closeable {
       KeyRegistrar redisMetaRegion,
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
-      Region<ByteArrayWrapper, RedisHash> hashRegion,
-      Region<ByteArrayWrapper, RedisSet> setRegion) {
+      Region<ByteArrayWrapper, RedisData> dataRegion) {
 
     this(stringsRegion, hLLRegion, redisMetaRegion, expirationsMap, expirationExecutor,
-        defaultShortcut, hashRegion, setRegion, GemFireCacheImpl.getInstance());
+        defaultShortcut, dataRegion, GemFireCacheImpl.getInstance());
   }
 
   public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
@@ -114,14 +110,12 @@ public class RegionProvider implements Closeable {
       KeyRegistrar redisMetaRegion,
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
-      Region<ByteArrayWrapper, RedisHash> hashRegion,
-      Region<ByteArrayWrapper, RedisSet> setRegion, Cache cache) {
+      Region<ByteArrayWrapper, RedisData> dataRegion, Cache cache) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null) {
       throw new NullPointerException();
     }
-    this.hashRegion = hashRegion;
-    this.setRegion = setRegion;
-    regions = new ConcurrentHashMap<>();
+    this.dataRegion = dataRegion;
+    dynamicRegions = new ConcurrentHashMap<>();
     this.stringsRegion = stringsRegion;
     this.hLLRegion = hLLRegion;
     keyRegistrar = redisMetaRegion;
@@ -130,7 +124,7 @@ public class RegionProvider implements Closeable {
     this.expirationsMap = expirationsMap;
     this.expirationExecutor = expirationExecutor;
     defaultRegionType = defaultShortcut;
-    locks = new ConcurrentHashMap<>();
+    dynamicRegionLocks = new ConcurrentHashMap<>();
   }
 
   public Region<?, ?> getRegion(ByteArrayWrapper key) {
@@ -138,7 +132,7 @@ public class RegionProvider implements Closeable {
       return null;
     }
 
-    return regions.get(key);
+    return dynamicRegions.get(key);
 
   }
 
@@ -152,11 +146,8 @@ public class RegionProvider implements Closeable {
         return stringsRegion;
 
       case REDIS_HASH:
-        return hashRegion;
-
       case REDIS_SET:
-      case REDIS_SORTEDSET:
-        return setRegion;
+        return dataRegion;
 
       case REDIS_HLL:
         return hLLRegion;
@@ -165,28 +156,34 @@ public class RegionProvider implements Closeable {
       case REDIS_PUBSUB:
       case NONE:
       case REDIS_LIST:
+      case REDIS_SORTEDSET:
       default:
         return null;
     }
   }
 
   public void removeRegionReferenceLocally(ByteArrayWrapper key, RedisDataType type) {
-    Lock lock = locks.get(key.toString());
-    boolean locked = false;
-    try {
-      if (lock != null) {
-        locked = lock.tryLock();
-      }
+    if (!typeUsesDynamicRegions(type)) {
+      return;
+    }
+    if (getRegion(key) == null) {
+      return;
+    }
+    Lock lock = dynamicRegionLocks.get(key);
+    if (lock == null) {
+      return;
+    }
+    boolean locked = lock.tryLock();
+    if (!locked) {
       // If we cannot get the lock we ignore this remote event, this key has local event
       // that started independently, ignore this event to prevent deadlock
-      if (locked) {
-        cancelKeyExpiration(key);
-        removeRegionState(key, type);
-      }
+      return;
+    }
+    try {
+      cancelKeyExpiration(key);
+      removeRegionState(key, type);
     } finally {
-      if (locked) {
-        lock.unlock();
-      }
+      lock.unlock();
     }
   }
 
@@ -199,16 +196,28 @@ public class RegionProvider implements Closeable {
     return removeKey(key, type, true);
   }
 
+  private boolean typeStoresDataInKeyRegistrar(RedisDataType type) {
+    if (type == RedisDataType.REDIS_SET) {
+      return true;
+    }
+    if (type == RedisDataType.REDIS_HASH) {
+      return true;
+    }
+    return false;
+  }
+
   public boolean removeKey(ByteArrayWrapper key, RedisDataType type, boolean cancelExpiration) {
     if (type == RedisDataType.REDIS_PROTECTED) {
       return false;
     }
-    Lock lock = locks.get(key.toString());
+    Lock lock = dynamicRegionLocks.get(key);
     try {
-      if (lock != null) {// Strings/hlls will not have locks
+      if (lock != null) { // only typeUsesDynamicRegions will have a lock
         lock.lock();
       }
-      keyRegistrar.unregister(key);
+      if (!typeStoresDataInKeyRegistrar(type)) {
+        keyRegistrar.unregister(key);
+      }
       try {
         if (type == RedisDataType.REDIS_STRING) {
           return stringsRegion.remove(key) != null;
@@ -218,11 +227,11 @@ public class RegionProvider implements Closeable {
           return destroyRegion(key, type);
         } else if (type == RedisDataType.REDIS_SET) {
           RedisSetCommands redisSetCommands =
-              new RedisSetCommandsFunctionExecutor(setRegion);
+              new RedisSetCommandsFunctionExecutor(dataRegion);
           return redisSetCommands.del(key);
         } else if (type == RedisDataType.REDIS_HASH) {
           RedisHashCommands redisHashCommands =
-              new RedisHashCommandsFunctionExecutor(hashRegion);
+              new RedisHashCommandsFunctionExecutor(dataRegion);
           return redisHashCommands.del(key);
         } else {
           return false;
@@ -236,7 +245,7 @@ public class RegionProvider implements Closeable {
           removeKeyExpiration(key);
         }
         if (lock != null) {
-          locks.remove(key.toString());
+          dynamicRegionLocks.remove(key);
         }
       }
     } finally {
@@ -251,50 +260,54 @@ public class RegionProvider implements Closeable {
     return getOrCreateRegion0(key, type, context, true);
   }
 
+  public boolean typeUsesDynamicRegions(RedisDataType type) {
+    return type == RedisDataType.REDIS_LIST || type == RedisDataType.REDIS_SORTEDSET;
+  }
+
   public void createRemoteRegionReferenceLocally(ByteArrayWrapper key, RedisDataType type) {
-    if (type == null || type == RedisDataType.REDIS_STRING || type == RedisDataType.REDIS_HLL) {
+    if (!typeUsesDynamicRegions(type)) {
       return;
     }
-    Region<Object, Object> r = regions.get(key);
+    Region<Object, Object> r = dynamicRegions.get(key);
     if (r != null) {
       return;
     }
-    if (!regions.containsKey(key)) {
-      String stringKey = key.toString();
-      Lock lock = locks.get(stringKey);
+    Lock lock = dynamicRegionLocks.get(key);
+    if (lock == null) {
+      Lock newLock = new ReentrantLock();
+      lock = dynamicRegionLocks.putIfAbsent(key, newLock);
       if (lock == null) {
-        locks.putIfAbsent(stringKey, new ReentrantLock());
-        lock = locks.get(stringKey);
+        lock = newLock;
       }
-      boolean locked = false;
+    }
+    boolean locked = lock.tryLock();
+    // If we cannot get the lock then this remote event may have been initialized
+    // independently on this machine, so if we wait on the lock it is more than
+    // likely we will deadlock just to do the same task. This event can be ignored
+    if (locked) {
       try {
-        locked = lock.tryLock();
-        // If we cannot get the lock then this remote event may have been initialized
-        // independently on this machine, so if we wait on the lock it is more than
-        // likely we will deadlock just to do the same task. This event can be ignored
-        if (locked) {
-          r = cache.getRegion(key.toString());
-          // If r is null, this implies that we are after a create/destroy
-          // simply ignore. Calls to getRegion or getOrCreate will work correctly
-          if (r == null) {
-            return;
-          }
+        r = cache.getRegion(key.toString());
+        // If r is null, this implies that we are after a create/destroy
+        // simply ignore. Calls to getRegion or getOrCreate will work correctly
+        if (r == null) {
+          // TODO: one caller of this method only calls it if getRegion returned null. It was
+          // expecting us to create it locally. If someone else will create it locally then this
+          // method does not need to be called.
+          return;
+        }
 
-          if (type == RedisDataType.REDIS_LIST) {
-            doInitializeList(key, r);
-          } else if (type == RedisDataType.REDIS_SORTEDSET) {
-            try {
-              doInitializeSortedSet(key, r);
-            } catch (RegionNotFoundException | IndexInvalidException e) {
-              // ignore
-            }
+        if (type == RedisDataType.REDIS_LIST) {
+          doInitializeList(key, r);
+        } else if (type == RedisDataType.REDIS_SORTEDSET) {
+          try {
+            doInitializeSortedSet(key, r);
+          } catch (RegionNotFoundException | IndexInvalidException e) {
+            // ignore
           }
-          regions.put(key, r);
         }
+        dynamicRegions.put(key, r);
       } finally {
-        if (locked) {
-          lock.unlock();
-        }
+        lock.unlock();
       }
     }
   }
@@ -302,24 +315,25 @@ public class RegionProvider implements Closeable {
   private Region<?, ?> getOrCreateRegion0(ByteArrayWrapper key, RedisDataType type,
       ExecutionHandlerContext context, boolean addToMeta) {
 
-    String regionName = key.toString();
     keyRegistrar.validate(key, type);
-    Region<Object, Object> r = regions.get(key);
+    Region<Object, Object> r = dynamicRegions.get(key);
     if (r != null && r.isDestroyed()) {
       removeKey(key, type);
       r = null;
     }
     if (r == null) {
-      String stringKey = key.toString();
-      Lock lock = locks.get(stringKey);
+      Lock lock = dynamicRegionLocks.get(key);
       if (lock == null) {
-        locks.putIfAbsent(stringKey, new ReentrantLock());
-        lock = locks.get(stringKey);
+        Lock newLock = new ReentrantLock();
+        lock = dynamicRegionLocks.putIfAbsent(key, newLock);
+        if (lock == null) {
+          lock = newLock;
+        }
       }
 
+      lock.lock();
       try {
-        lock.lock();
-        r = regions.get(key);
+        r = dynamicRegions.get(key);
         if (r == null) {
           boolean hasTransaction = context != null && context.hasTransaction(); // Can create
           // without context
@@ -334,7 +348,7 @@ public class RegionProvider implements Closeable {
             do {
               concurrentCreateDestroyException = null;
 
-              r = createRegionGlobally(regionName);
+              r = createRegionGlobally(key.toString());
 
               try {
                 if (type == RedisDataType.REDIS_LIST) {
@@ -352,7 +366,7 @@ public class RegionProvider implements Closeable {
                 }
               }
             } while (concurrentCreateDestroyException != null);
-            regions.put(key, r);
+            dynamicRegions.put(key, r);
             if (addToMeta) {
               keyRegistrar.register(key, type);
             }
@@ -370,14 +384,14 @@ public class RegionProvider implements Closeable {
   }
 
   /**
-   * SYNCHRONIZE EXTERNALLY OF this.locks.get(key.toString())!!!!!
+   * SYNCHRONIZE EXTERNALLY OF this.locks.get(key)!!!!!
    *
    * @param key Key of region to destroy
    * @param type Type of region to destroyu
    * @return Flag if destroyed
    */
   private boolean destroyRegion(ByteArrayWrapper key, RedisDataType type) {
-    Region<?, ?> r = regions.get(key);
+    Region<?, ?> r = dynamicRegions.get(key);
     if (r != null) {
       try {
         r.destroyRegion();
@@ -398,7 +412,7 @@ public class RegionProvider implements Closeable {
    */
   private void removeRegionState(ByteArrayWrapper key, RedisDataType type) {
     preparedQueries.remove(key);
-    regions.remove(key);
+    dynamicRegions.remove(key);
   }
 
   private void doInitializeSortedSet(ByteArrayWrapper key, Region<?, ?> r)
@@ -472,25 +486,15 @@ public class RegionProvider implements Closeable {
   }
 
   public boolean regionExists(ByteArrayWrapper key) {
-    return regions.containsKey(key);
+    return dynamicRegions.containsKey(key);
   }
 
   public Region<ByteArrayWrapper, ByteArrayWrapper> getStringsRegion() {
     return stringsRegion;
   }
 
-  /**
-   * @return the hashRegion
-   */
-  public Region<ByteArrayWrapper, RedisHash> getHashRegion() {
-    return hashRegion;
-  }
-
-  /**
-   * @return the setRegion
-   */
-  public Region<ByteArrayWrapper, RedisSet> getSetRegion() {
-    return setRegion;
+  public Region<ByteArrayWrapper, RedisData> getDataRegion() {
+    return dataRegion;
   }
 
   public Region<ByteArrayWrapper, HyperLogLogPlus> gethLLRegion() {
@@ -592,7 +596,7 @@ public class RegionProvider implements Closeable {
 
   public String dumpRegionsCache() {
     StringBuilder builder = new StringBuilder();
-    for (Entry<ByteArrayWrapper, Region<Object, Object>> e : regions.entrySet()) {
+    for (Entry<ByteArrayWrapper, Region<Object, Object>> e : dynamicRegions.entrySet()) {
       builder.append(e.getKey()).append(" --> {").append(e.getValue()).append("}\n");
     }
     return builder.toString();

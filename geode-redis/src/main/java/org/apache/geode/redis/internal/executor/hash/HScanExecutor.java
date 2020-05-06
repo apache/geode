@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import static org.apache.geode.redis.internal.executor.RedisHashInRegion.checkType;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,10 +42,9 @@ public class HScanExecutor extends AbstractScanExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisHash hash =
-        context.getRegionProvider().getHashRegion().get(key);
+    RedisHash hash = checkType(context.getRegionProvider().getDataRegion().get(key));
 
-    if (hash == null || hash.isEmpty()) {
+    if (hash.isEmpty()) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
       return;
     }

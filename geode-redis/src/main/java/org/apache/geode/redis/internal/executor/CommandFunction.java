@@ -20,13 +20,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.set.RedisSetInRegion;
 import org.apache.geode.redis.internal.executor.set.SingleResultCollector;
@@ -45,10 +45,9 @@ public class CommandFunction extends SingleResultRedisFunction {
     FunctionService.registerFunction(new CommandFunction(stripedExecutor));
   }
 
-  @SuppressWarnings("unchecked")
   public static <T> T execute(RedisCommandType command,
       ByteArrayWrapper key,
-      Object commandArguments, Region region) {
+      Object commandArguments, Region<ByteArrayWrapper, RedisData> region) {
     SingleResultCollector<T> rc = new SingleResultCollector<>();
     FunctionService
         .onRegion(region)
@@ -82,11 +81,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       }
       case SREM: {
         ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
-        callable = () -> {
-          AtomicBoolean setWasDeleted = new AtomicBoolean();
-          long srem = new RedisSetInRegion(localRegion).srem(key, membersToRemove, setWasDeleted);
-          return new Object[] {srem, setWasDeleted.get()};
-        };
+        callable = () -> new RedisSetInRegion(localRegion).srem(key, membersToRemove);
         break;
       }
       case DEL:
@@ -145,7 +140,6 @@ public class CommandFunction extends SingleResultRedisFunction {
   }
 
 
-  @SuppressWarnings("unchecked")
   private Callable<Object> executeDel(ByteArrayWrapper key, Region localRegion,
       RedisDataType delType) {
     switch (delType) {

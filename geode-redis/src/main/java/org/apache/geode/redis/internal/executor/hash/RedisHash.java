@@ -26,15 +26,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.EmptyRedisHash;
 
-public class RedisHash implements Delta, DataSerializable {
+public class RedisHash implements RedisData {
   public static final RedisHash EMPTY = new EmptyRedisHash();
   private HashMap<ByteArrayWrapper, ByteArrayWrapper> hash;
   /**
@@ -101,7 +101,7 @@ public class RedisHash implements Delta, DataSerializable {
     }
   }
 
-  public synchronized int hset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
     Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
@@ -127,7 +127,7 @@ public class RedisHash implements Delta, DataSerializable {
     return fieldsAdded;
   }
 
-  public synchronized int hdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int hdel(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
     for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
@@ -152,7 +152,7 @@ public class RedisHash implements Delta, DataSerializable {
     return result;
   }
 
-  private void storeChanges(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       boolean doingAdds) {
     if (hasDelta()) {
       if (!doingAdds && hash.isEmpty()) {
@@ -200,5 +200,10 @@ public class RedisHash implements Delta, DataSerializable {
 
   public synchronized boolean containsKey(ByteArrayWrapper field) {
     return hash.containsKey(field);
+  }
+
+  @Override
+  public RedisDataType getType() {
+    return RedisDataType.REDIS_HASH;
   }
 }

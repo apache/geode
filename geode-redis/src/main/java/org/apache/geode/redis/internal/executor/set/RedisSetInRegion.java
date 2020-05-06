@@ -15,15 +15,19 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.internal.RedisDataType.REDIS_SET;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 
 /**
  * This class still uses "synchronized" to protect the underlying HashSet even though all writers do
@@ -31,10 +35,10 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
  * removed once readers are changed to also use the {@link SynchronizedStripedExecutor}.
  */
 public class RedisSetInRegion implements RedisSetCommands {
-  private final Region<ByteArrayWrapper, RedisSet> region;
+  private final Region<ByteArrayWrapper, RedisData> region;
 
   @SuppressWarnings("unchecked")
-  public RedisSetInRegion(Region<ByteArrayWrapper, RedisSet> region) {
+  public RedisSetInRegion(Region<ByteArrayWrapper, RedisData> region) {
     this.region = region;
   }
 
@@ -43,7 +47,7 @@ public class RedisSetInRegion implements RedisSetCommands {
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
 
-    RedisSet redisSet = region.get(key);
+    RedisSet redisSet = checkType(region.get(key));
 
     if (redisSet != null) {
       return redisSet.sadd(membersToAdd, region, key);
@@ -56,8 +60,8 @@ public class RedisSetInRegion implements RedisSetCommands {
   @Override
   public long srem(
       ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    return getRedisSet(key).srem(membersToRemove, region, key, setWasDeleted);
+      ArrayList<ByteArrayWrapper> membersToRemove) {
+    return getRedisSet(key).srem(membersToRemove, region, key);
   }
 
   @Override
@@ -101,6 +105,17 @@ public class RedisSetInRegion implements RedisSetCommands {
   }
 
   private RedisSet getRedisSet(ByteArrayWrapper key) {
-    return region.getOrDefault(key, RedisSet.EMPTY);
+    return checkType(region.getOrDefault(key, RedisSet.EMPTY));
   }
+
+  private RedisSet checkType(RedisData redisData) {
+    if (redisData == null) {
+      return null;
+    }
+    if (redisData.getType() != REDIS_SET) {
+      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+    }
+    return (RedisSet) redisData;
+  }
+
 }

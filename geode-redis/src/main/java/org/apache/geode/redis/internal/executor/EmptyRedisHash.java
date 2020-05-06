@@ -22,17 +22,18 @@ import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.executor.hash.RedisHash;
 
 public class EmptyRedisHash extends RedisHash {
   @Override
-  public synchronized int hset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public synchronized int hdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int hdel(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToRemove) {
     return 0;
   }
@@ -41,4 +42,25 @@ public class EmptyRedisHash extends RedisHash {
   public synchronized Collection<ByteArrayWrapper> hgetall() {
     return emptyList();
   }
+
+  @Override
+  public synchronized boolean isEmpty() {
+    return true;
+  }
+
+  @Override
+  public synchronized boolean containsKey(ByteArrayWrapper field) {
+    return false;
+  }
+
+  @Override
+  public synchronized ByteArrayWrapper get(ByteArrayWrapper field) {
+    return null;
+  }
+
+  @Override
+  public synchronized int size() {
+    return 0;
+  }
+
 }

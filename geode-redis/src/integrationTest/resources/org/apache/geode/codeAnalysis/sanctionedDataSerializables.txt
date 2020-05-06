@@ -6,6 +6,10 @@ org/apache/geode/redis/internal/DoubleWrapper,2
 fromData,9
 toData,9
 
+org/apache/geode/redis/internal/KeyRegistrar$RedisDataTransformer,2
+fromData,14
+toData,9
+
 org/apache/geode/redis/internal/executor/hash/RedisHash,2
 fromData,9
 toData,9

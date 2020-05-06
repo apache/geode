@@ -29,8 +29,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.redis.internal.executor.hash.RedisHash;
-import org.apache.geode.redis.internal.executor.set.RedisSet;
 
 
 /**
@@ -46,8 +44,7 @@ public class RegionProviderJUnitTest {
 
   private ExecutionHandlerContext context;
 
-  private Region<ByteArrayWrapper, RedisHash> hashRegion;
-  private Region<ByteArrayWrapper, RedisSet> setRegion;
+  private Region<ByteArrayWrapper, RedisData> dataRegion;
 
   /**
    * Setup data, objects mocks for the test case
@@ -66,16 +63,14 @@ public class RegionProviderJUnitTest {
     Cache cache = Mockito.mock(Cache.class);
     Region<Object, Object> newRegion = org.mockito.Mockito.mock(Region.class);
 
-    setRegion = Mockito.mock(Region.class);
+    dataRegion = Mockito.mock(Region.class);
 
     Mockito.when(cache.getRegion(NEW_REGION_NM)).thenReturn(newRegion);
 
     RegionShortcut defaultShortcut = RegionShortcut.PARTITION;
 
-    hashRegion = Mockito.mock(Region.class);
-
     regionProvider = new RegionProvider(stringsRegion, hLLRegion, keyRegistrar, expirationsMap,
-        expirationExecutor, defaultShortcut, hashRegion, setRegion, cache);
+        expirationExecutor, defaultShortcut, dataRegion, cache);
     context = Mockito.mock(ExecutionHandlerContext.class);
 
   }

@@ -110,6 +110,7 @@ public class RedisDistDUnitTest implements Serializable {
   }
 
   @Test
+  @Ignore("GEODE-8127")
   public void testConcurrentSaddOperations_runWithoutException_orDataLoss()
       throws InterruptedException {
     List<String> set1 = new ArrayList<>();
@@ -118,14 +119,14 @@ public class RedisDistDUnitTest implements Serializable {
 
     final String setName = "keyset";
 
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+
     AsyncInvocation<Void> remoteSaddInvocation =
         client1.invokeAsync(new ConcurrentSADDOperation(server1Port, setName, set1));
 
     client2.invoke(new ConcurrentSADDOperation(server2Port, setName, set2));
 
     remoteSaddInvocation.await();
-
-    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
 
     Set<String> smembers = jedis.smembers(setName);
 
