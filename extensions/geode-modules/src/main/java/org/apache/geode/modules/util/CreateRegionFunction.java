@@ -204,7 +204,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       } else {
         status = RegionStatus.VALID;
         try {
-          RegionHelper.validateRegion(cache, configuration, region); // TODO:KIRK
+          validateRegion.accept(cache, configuration, region);
         } catch (Exception e) {
           if (!e.getMessage().equals("CacheListeners are not the same")) {
             logger.warn(e);
