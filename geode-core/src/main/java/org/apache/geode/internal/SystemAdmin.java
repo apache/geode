@@ -1153,112 +1153,110 @@ public class SystemAdmin {
           "The -persample and -nofilter options are mutually exclusive.");
     }
     StatSpec[] specs = createSpecs(cmdLineSpecs);
-    if (archiveOption != null) {
-      if (directory != null) {
-        throw new IllegalArgumentException(
-            "The -archive= and -dir= options are mutually exclusive.");
+    if (directory != null) {
+      throw new IllegalArgumentException(
+          "The -archive= and -dir= options are mutually exclusive.");
+    }
+    StatArchiveReader reader = null;
+    boolean interrupted = false;
+    try {
+      reader = new StatArchiveReader((File[]) archiveNames.toArray(new File[0]),
+          specs, !monitor);
+      // Runtime.getRuntime().gc(); System.out.println("DEBUG: heap size=" +
+      // (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+      if (specs.length == 0) {
+        if (details) {
+          StatArchiveReader.StatArchiveFile[] archives = reader.getArchives();
+          for (int i = 0; i < archives.length; i++) {
+            System.out.println(archives[i].getArchiveInfo().toString());
+          }
+        }
       }
-      StatArchiveReader reader = null;
-      boolean interrupted = false;
-      try {
-        reader = new StatArchiveReader((File[]) archiveNames.toArray(new File[0]),
-            specs, !monitor);
-        // Runtime.getRuntime().gc(); System.out.println("DEBUG: heap size=" +
-        // (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+      do {
         if (specs.length == 0) {
-          if (details) {
-            StatArchiveReader.StatArchiveFile[] archives = reader.getArchives();
-            for (int i = 0; i < archives.length; i++) {
-              System.out.println(archives[i].getArchiveInfo().toString());
+          Iterator it = reader.getResourceInstList().iterator();
+          while (it.hasNext()) {
+            ResourceInst inst = (ResourceInst) it.next();
+            StatValue values[] = inst.getStatValues();
+            boolean firstTime = true;
+            for (int i = 0; i < values.length; i++) {
+              if (values[i] != null && values[i].hasValueChanged()) {
+                if (firstTime) {
+                  firstTime = false;
+                  System.out.println(inst.toString());
+                }
+                printStatValue(values[i], startTime, endTime, nofilter, persec, persample,
+                    prunezeros, details);
+              }
+            }
+          }
+        } else {
+          Map<CombinedResources, List<StatValue>> allSpecsMap =
+              new HashMap<CombinedResources, List<StatValue>>();
+          for (int i = 0; i < specs.length; i++) {
+            StatValue[] values = reader.matchSpec(specs[i]);
+            if (values.length == 0) {
+              if (!quiet) {
+                System.err.println(String.format("[warning] No stats matched %s.",
+                    specs[i].cmdLineSpec));
+              }
+            } else {
+              Map<CombinedResources, List<StatValue>> specMap =
+                  new HashMap<CombinedResources, List<StatValue>>();
+              for (StatValue v : values) {
+                CombinedResources key = new CombinedResources(v);
+                List<StatArchiveReader.StatValue> list = specMap.get(key);
+                if (list != null) {
+                  list.add(v);
+                } else {
+                  specMap.put(key, new ArrayList<StatValue>(Collections.singletonList(v)));
+                }
+              }
+              if (!quiet) {
+                System.out.println(
+                    String.format("[info] Found %s instances matching %s:",
+                        new Object[] {Integer.valueOf(specMap.size()), specs[i].cmdLineSpec}));
+              }
+              for (Map.Entry<CombinedResources, List<StatValue>> me : specMap.entrySet()) {
+                List<StatArchiveReader.StatValue> list = allSpecsMap.get(me.getKey());
+                if (list != null) {
+                  list.addAll(me.getValue());
+                } else {
+                  allSpecsMap.put(me.getKey(), me.getValue());
+                }
+              }
+            }
+          }
+          for (Map.Entry<CombinedResources, List<StatValue>> me : allSpecsMap.entrySet()) {
+            System.out.println(me.getKey());
+            for (StatValue v : me.getValue()) {
+              printStatValue(v, startTime, endTime, nofilter, persec, persample, prunezeros,
+                  details);
             }
           }
         }
-        do {
-          if (specs.length == 0) {
-            Iterator it = reader.getResourceInstList().iterator();
-            while (it.hasNext()) {
-              ResourceInst inst = (ResourceInst) it.next();
-              StatValue values[] = inst.getStatValues();
-              boolean firstTime = true;
-              for (int i = 0; i < values.length; i++) {
-                if (values[i] != null && values[i].hasValueChanged()) {
-                  if (firstTime) {
-                    firstTime = false;
-                    System.out.println(inst.toString());
-                  }
-                  printStatValue(values[i], startTime, endTime, nofilter, persec, persample,
-                      prunezeros, details);
-                }
-              }
+        if (monitor) {
+          while (!reader.update()) {
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException ignore) {
+              interrupted = true;
             }
-          } else {
-            Map<CombinedResources, List<StatValue>> allSpecsMap =
-                new HashMap<CombinedResources, List<StatValue>>();
-            for (int i = 0; i < specs.length; i++) {
-              StatValue[] values = reader.matchSpec(specs[i]);
-              if (values.length == 0) {
-                if (!quiet) {
-                  System.err.println(String.format("[warning] No stats matched %s.",
-                      specs[i].cmdLineSpec));
-                }
-              } else {
-                Map<CombinedResources, List<StatValue>> specMap =
-                    new HashMap<CombinedResources, List<StatValue>>();
-                for (StatValue v : values) {
-                  CombinedResources key = new CombinedResources(v);
-                  List<StatArchiveReader.StatValue> list = specMap.get(key);
-                  if (list != null) {
-                    list.add(v);
-                  } else {
-                    specMap.put(key, new ArrayList<StatValue>(Collections.singletonList(v)));
-                  }
-                }
-                if (!quiet) {
-                  System.out.println(
-                      String.format("[info] Found %s instances matching %s:",
-                          new Object[] {Integer.valueOf(specMap.size()), specs[i].cmdLineSpec}));
-                }
-                for (Map.Entry<CombinedResources, List<StatValue>> me : specMap.entrySet()) {
-                  List<StatArchiveReader.StatValue> list = allSpecsMap.get(me.getKey());
-                  if (list != null) {
-                    list.addAll(me.getValue());
-                  } else {
-                    allSpecsMap.put(me.getKey(), me.getValue());
-                  }
-                }
-              }
-            }
-            for (Map.Entry<CombinedResources, List<StatValue>> me : allSpecsMap.entrySet()) {
-              System.out.println(me.getKey());
-              for (StatValue v : me.getValue()) {
-                printStatValue(v, startTime, endTime, nofilter, persec, persample, prunezeros,
-                    details);
-              }
-            }
-          }
-          if (monitor) {
-            while (!reader.update()) {
-              try {
-                Thread.sleep(1000);
-              } catch (InterruptedException ignore) {
-                interrupted = true;
-              }
-            }
-          }
-        } while (monitor && !interrupted);
-      } catch (IOException ex) {
-        throw new GemFireIOException(
-            String.format("Failed reading %s", archiveOption), ex);
-      } finally {
-        if (reader != null) {
-          try {
-            reader.close();
-          } catch (IOException ignore) {
           }
         }
-        if (interrupted) {
-          Thread.currentThread().interrupt();
+      } while (monitor && !interrupted);
+    } catch (IOException ex) {
+      throw new GemFireIOException(
+          String.format("Failed reading %s", archiveOption), ex);
+    } finally {
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (IOException ignore) {
         }
+      }
+      if (interrupted) {
+        Thread.currentThread().interrupt();
       }
     }
   }

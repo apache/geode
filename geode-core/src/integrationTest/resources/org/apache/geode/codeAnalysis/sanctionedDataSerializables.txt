@@ -72,7 +72,7 @@ toData,33
 
 org/apache/geode/cache/query/internal/CumulativeNonDistinctResults,2
 fromData,144
-toData,145
+toData,146
 
 org/apache/geode/cache/query/internal/LinkedResultSet,2
 fromData,58
@@ -84,7 +84,7 @@ toData,84
 
 org/apache/geode/cache/query/internal/NWayMergeResults,2
 fromData,152
-toData,153
+toData,154
 
 org/apache/geode/cache/query/internal/NullToken,2
 fromData,1
@@ -1351,6 +1351,10 @@ toData,31
 org/apache/geode/internal/cache/control/MemoryThresholds$MemoryState,1
 toData,12
 
+org/apache/geode/internal/cache/control/RegionRedundancyStatusImpl,2
+fromData,42
+toData,37
+
 org/apache/geode/internal/cache/control/ResourceAdvisor$ResourceManagerProfile,2
 fromData,67
 toData,100
@@ -1358,6 +1362,10 @@ toData,100
 org/apache/geode/internal/cache/control/ResourceAdvisor$ResourceProfileMessage,2
 fromData,88
 toData,72
+
+org/apache/geode/internal/cache/control/RestoreRedundancyResultsImpl,2
+fromData,46
+toData,43
 
 org/apache/geode/internal/cache/event/EventSequenceNumberHolder,2
 fromData,22

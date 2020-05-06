@@ -15,6 +15,9 @@
 
 package org.apache.geode.redis.general;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.AfterClass;
@@ -22,6 +25,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.GeodeRedisServer;
 
@@ -30,10 +35,17 @@ public class PexpireIntegrationTest {
   public static Jedis jedis;
   public static int REDIS_CLIENT_TIMEOUT = 10000000;
   private static GeodeRedisServer server;
+  private static GemFireCache cache;
 
   @BeforeClass
   public static void setUp() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
+
+    CacheFactory cf = new CacheFactory();
+    cf.set(LOG_LEVEL, "error");
+    cf.set(MCAST_PORT, "0");
+    cf.set(LOCATORS, "");
+    cache = cf.create();
 
     server = new GeodeRedisServer("localhost", port);
     server.start();
@@ -43,6 +55,7 @@ public class PexpireIntegrationTest {
   @AfterClass
   public static void classLevelTearDown() {
     jedis.close();
+    cache.close();
     server.shutdown();
   }
 

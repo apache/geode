@@ -1,5 +1,5 @@
 ---
-title: Geode Redis Adapter
+title: Redis Adapter
 ---
 
 <!--
@@ -39,7 +39,7 @@ To use the Redis Adapter, you will need three pieces of information:
 
 The IP address and port number should be the same ones coded in the Redis clients.
 
-In order to take advantage of <%=vars.product_name%>’s scaling capabilities, you should specify the <%=vars.product_name%> region as one of the types that use the PARTITION data policy. PARTITION is the default. Other possibilities include PARTITION\_REDUNDANT and PARTITION\_PERSISTENT. (See [“Region Shortcuts Quick Reference”](../reference/topics/region_shortcuts_table.html) for a complete list.)
+In order to take advantage of <%=vars.product_name%>’s scaling capabilities, you should specify the <%=vars.product_name%> region as one of the types that use the PARTITION data policy. PARTITION\_REDUNDANT is the default. Other possibilities include PARTITION and PARTITION\_PERSISTENT. (See [“Region Shortcuts Quick Reference”](../reference/topics/region_shortcuts_table.html) for a complete list.)
 
 To implement a <%=vars.product_name%> instance using the Redis Adapter:
 
@@ -47,7 +47,7 @@ To implement a <%=vars.product_name%> instance using the Redis Adapter:
 2.  Use gfsh to start a <%=vars.product_name%> server, specifying the three configuration options described above:
     -   Use `--redis-port` to specify the port. This parameter is required -- the <%=vars.product_name%> server will listen on this port for Redis commands.
     -   Use `--redis-bind-address` to specify the IP address of the server host. This parameter is optional. If not specified, the default is determined from the /etc/hosts file.
-    -   Use `--J=-Dgemfireredis.regiontype` to specify the region type. This parameter is optional. If not specified, regiontype is set to PARTITION.
+    -   Use `--J=-Dgemfireredis.regiontype` to specify the region type. This parameter is optional. If not specified, regiontype is set to PARTITION\_REDUNDANT.
 
 For example:
 

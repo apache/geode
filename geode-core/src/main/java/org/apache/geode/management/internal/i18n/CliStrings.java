@@ -1897,6 +1897,23 @@ public class CliStrings {
   public static final String REBALANCE__MSG__EXCEPTION_OCCURRED_WHILE_REBALANCING_0 =
       "Exception occurred while rebalancing. Reason : {0}";
 
+  /* redundancy commands */
+  public static final String STATUS_REDUNDANCY = "status redundancy";
+  public static final String STATUS_REDUNDANCY_HELP =
+      "Report the redundancy status for partitioned regions in connected members. The default is to report status for all regions.";
+  public static final String RESTORE_REDUNDANCY = "restore redundancy";
+  public static final String RESTORE_REDUNDANCY_HELP =
+      "Restore redundancy and optionally reassign primary bucket hosting for partitioned regions in connected members. The default is for all regions to have redundancy restored and for primary buckets to be reassigned for better load balance.";
+  public static final String REDUNDANCY_INCLUDE_REGION = "include-region";
+  public static final String REDUNDANCY_INCLUDE_REGION_HELP =
+      "Partitioned regions to be included in the operation. Includes take precedence over excludes.";
+  public static final String REDUNDANCY_EXCLUDE_REGION = "exclude-region";
+  public static final String REDUNDANCY_EXCLUDE_REGION_HELP =
+      "Partitioned regions to be excluded from the operation.";
+  public static final String REDUNDANCY_REASSIGN_PRIMARIES = "reassign-primaries";
+  public static final String REDUNDANCY_REASSIGN_PRIMARIES_HELP =
+      "If false, this operation will not attempt to reassign which members host primary buckets.";
+
   /* remove command */
   public static final String REMOVE = "remove";
   public static final String REMOVE__HELP =

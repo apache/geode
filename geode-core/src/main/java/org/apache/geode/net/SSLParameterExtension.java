@@ -15,9 +15,9 @@
 
 package org.apache.geode.net;
 
-import javax.net.ssl.SSLParameters;
+import java.util.Properties;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import javax.net.ssl.SSLParameters;
 
 /**
  * User implementation of a SSLParameter extension logic.
@@ -29,9 +29,9 @@ public interface SSLParameterExtension {
   /**
    * Initialize the SSLParameterExtension.
    *
-   * @param config the DistributionConfig
+   * @param properties the Properties
    */
-  default void init(DistributionConfig config) {}
+  default void init(Properties properties) {}
 
   default SSLParameters modifySSLClientSocketParameters(SSLParameters parameters) {
     return parameters;

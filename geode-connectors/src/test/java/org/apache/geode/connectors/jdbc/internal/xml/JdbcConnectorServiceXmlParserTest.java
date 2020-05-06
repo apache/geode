@@ -18,7 +18,7 @@ import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAP
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAMESPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Stack;
@@ -87,7 +87,7 @@ public class JdbcConnectorServiceXmlParserTest {
     parser.endElement(NAMESPACE, JDBC_MAPPING.getTypeName(), null);
 
     assertThat(stack.pop()).isEqualTo(regionCreation);
-    verifyZeroInteractions(regionMapping);
+    verifyNoMoreInteractions(regionMapping);
   }
 
   @Test
@@ -101,6 +101,6 @@ public class JdbcConnectorServiceXmlParserTest {
     parser.endElement("wrongNamespace", JDBC_MAPPING.getTypeName(), null);
 
     assertThat(stack.pop()).isEqualTo(regionMapping);
-    verifyZeroInteractions(regionMapping);
+    verifyNoMoreInteractions(regionMapping);
   }
 }

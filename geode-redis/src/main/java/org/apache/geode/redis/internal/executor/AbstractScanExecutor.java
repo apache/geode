@@ -29,7 +29,7 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
   protected final String ERROR_INVALID_CURSOR =
       "Cursor is invalid, dataset may have been altered if this is cursor from a previous scan";
 
-  protected final int DEFUALT_COUNT = 10;
+  protected final int DEFAULT_COUNT = 10;
 
   protected abstract List<?> getIteration(Collection<?> list, Pattern matchPatter, int count,
       int cursor);

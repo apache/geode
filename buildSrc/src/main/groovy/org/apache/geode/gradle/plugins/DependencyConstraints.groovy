@@ -101,6 +101,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.nimbusds', name:'nimbus-jose-jwt', version:'8.11')
         api(group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0')
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '3.0.11')
+        api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
         api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.12.0')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '3.4.2')
@@ -154,7 +155,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
-        api(group: 'org.mockito', name: 'mockito-core', version: '2.23.0')
+        api(group: 'org.mockito', name: 'mockito-core', version: '3.3.3')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
         api(group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.23')
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
@@ -258,6 +259,16 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-tx')
       entry('spring-web')
       entry('spring-webmvc')
+    }
+
+    dependencySet(group: 'org.springframework.boot', version: '2.2.1.RELEASE') {
+      entry('spring-boot-starter')
+      entry('spring-boot-starter-web')
+      entry('spring-boot-starter-data-redis')
+    }
+
+    dependencySet(group: 'org.springframework.session', version: '2.2.1.RELEASE') {
+      entry('spring-session-data-redis')
     }
   }
 }

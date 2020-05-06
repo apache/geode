@@ -1060,15 +1060,19 @@ These statistics are for outgoing gateway queue and its connection. The primary 
 
 Statistics related to the <%=vars.product_name%>'s resource manager. Use these to help analyze and tune your JVM memory settings and the <%=vars.product_name%> resource manager settings. The primary statistics are:
 
-| Statistic             | Description                                                                                                  |
-|-----------------------|--------------------------------------------------------------------------------------------------------------|
-| `criticalThreshold`   | The cache resource-manager setting critical-heap-percentage.                                                 |
-| `evictionStartEvents` | Number of times eviction activities were started due to the heap use going over the eviction threshold.      |
-| `evictionStopEvents`  | Number of times eviction activities were stopped due to the heap use going below the eviction threshold.     |
-| `evictionThreshold`   | The cache resource-manager setting eviction-heap-percentage.                                                 |
-| `heapCriticalEvents`  | Number of times incoming cache activities were blocked due to heap use going over the critical threshold.    |
-| `heapSafeEvents`      | Number of times incoming cache activities were unblocked due to heap use going under the critical threshold. |
-| `tenuredHeapUsed`     | Percentage of tenured heap currently in use.                                                                 |
+| Statistic                       | Description                                                                                                  |
+|---------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `criticalThreshold`             | The cache resource-manager setting critical-heap-percentage.                                                 |
+| `evictionStartEvents`           | Number of times eviction activities were started due to the heap use going over the eviction threshold.      |
+| `evictionStopEvents`            | Number of times eviction activities were stopped due to the heap use going below the eviction threshold.     |
+| `evictionThreshold`             | The cache resource-manager setting eviction-heap-percentage.                                                 |
+| `heapCriticalEvents`            | Number of times incoming cache activities were blocked due to heap use going over the critical threshold.    |
+| `heapSafeEvents`                | Number of times incoming cache activities were unblocked due to heap use going under the critical threshold. |
+| `rebalancesCompleted`           | Total number of cache rebalance operations that have occurred.                                               |
+| `rebalancesInProgress`          | Current number of cache rebalance operations in process.                                                     |
+| `restoreRedundanciesCompleted`  | Total number of cache restore redundancy operations that have occurred.                                      |
+| `restoreRedundanciesInProgress` | Current number of cache restore redundancy operations in process.                                            |
+| `tenuredHeapUsed`               | Percentage of tenured heap currently in use.                                                                 |
 
 ## JVM Java Runtime (VMStats)
 

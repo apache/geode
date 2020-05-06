@@ -98,12 +98,16 @@ fi
 set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
-GEODE_DEVELOP=$WORKSPACE/geode-develop
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
+if which shasum >/dev/null; then
+  SHASUM="shasum -a 256"
+else
+  SHASUM=sha256sum
+fi
 set +x
 
 
@@ -139,6 +143,21 @@ git clone --single-branch --branch master git@github.com:Homebrew/homebrew-core.
 svn checkout https://dist.apache.org/repos/dist --depth empty
 svn update --set-depth immediates --parents dist/release/geode
 svn update --set-depth infinity --parents dist/dev/geode
+set +x
+
+
+set -x
+${0%/*}/set_copyright.sh ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
+
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Removing -SNAPSHOT"
+echo "============================================================"
+set -x
+${0%/*}/set_versions.sh -v ${VERSION} -n -w ${WORKSPACE}
 set +x
 
 
@@ -193,25 +212,18 @@ which brew >/dev/null && OPENSSL_ROOT_DIR=$(brew --prefix openssl) || OPENSSL_RO
 cd ${GEODE_NATIVE}/build
 cmake .. -DPRODUCT_VERSION=${VERSION} -DOPENSSL_ROOT_DIR=$OPENSSL_ROOT_DIR -DGEODE_ROOT=${GEODE}/geode-assembly/build/install/apache-geode
 cpack -G TGZ --config CPackSourceConfig.cmake
-NCTAR=apache-geode-native-${VERSION}-src.tar.gz
+NCOUT=apache-geode-native-${VERSION}-src.tar.gz
+NCTGZ=apache-geode-native-${VERSION}-src.tgz
 mkdir repkg-temp
 cd repkg-temp
-tar xzf ../${NCTAR}
-rm ../${NCTAR}
-mv apache-geode-native apache-geode-native-${VERSION}
-tar czf ../${NCTAR} *
+tar xzf ../${NCOUT}
+rm ../${NCOUT}*
+mv apache-geode-native apache-geode-native-${VERSION}-src
+tar czf ../${NCTGZ} *
 cd ..
 rm -Rf repkg-temp
-gpg --armor -u ${SIGNING_KEY} -b ${NCTAR}
-
-if which shasum >/dev/null; then
-  SHASUM=shasum
-  SHASUM_OPTS="-a 512"
-else
-  SHASUM=sha512sum
-  SHASUM_OPTS=""
-fi
-${SHASUM} ${SHASUM_OPTS} ${NCTAR} > ${NCTAR}.sha512
+gpg --armor -u ${SIGNING_KEY} -b ${NCTGZ}
+${SHASUM} ${NCTGZ} > ${NCTGZ}.sha256
 set +x
 
 
@@ -229,14 +241,7 @@ cp -r .travis.yml * ../${BMDIR}
 tar czf ${BMTAR} -C .. ${BMDIR}
 rm -Rf ../${BMDIR}
 gpg --armor -u ${SIGNING_KEY} -b ${BMTAR}
-if which shasum >/dev/null; then
-  SHASUM=shasum
-  SHASUM_OPTS="-a 256"
-else
-  SHASUM=sha256sum
-  SHASUM_OPTS=""
-fi
-${SHASUM} ${SHASUM_OPTS} ${BMTAR} > ${BMTAR}.sha256
+${SHASUM} ${BMTAR} > ${BMTAR}.sha256
 set +x
 
 
@@ -276,9 +281,9 @@ cp ${GEODE_BENCHMARKS}/apache-geode-benchmarks-${VERSION}* ${FULL_VERSION}
 set +x
 
 # verify all files are signed.  sometimes gradle "forgets" to make the .asc file
-for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ; do
-  if ! [ -r $f.sha256 ] && ! [ -r $f.sha512 ] ; then
-    echo missing $f.sha256 or $f.sha512
+for f in ${FULL_VERSION}/*.tgz ; do
+  if ! [ -r $f.sha256 ] ; then
+    echo missing $f.sha256
     exit 1
   fi
   if ! [ -r $f.asc ] ; then

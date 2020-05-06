@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage.RemoveBuc
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorImpl;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorWrapper;
+import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.ParallelBucketOperator;
 import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
@@ -187,20 +188,25 @@ public class PartitionedRegionRebalanceOp {
       // TODO rebalance - we should really add a membership listener to ALL of
       // the colocated regions.
       leaderRegion.getRegionAdvisor().addMembershipListener(listener);
-      PartitionedRegionLoadModel model = null;
+      PartitionedRegionLoadModel loadModel = null;
 
       InternalCache cache = leaderRegion.getCache();
       Map<PartitionedRegion, InternalPRInfo> detailsMap = fetchDetails(cache);
       BucketOperatorWrapper serialOperator = getBucketOperator(detailsMap);
       ParallelBucketOperator parallelOperator = new ParallelBucketOperator(MAX_PARALLEL_OPERATIONS,
           cache.getDistributionManager().getExecutors().getWaitingThreadPool(), serialOperator);
-      model = buildModel(parallelOperator, detailsMap, resourceManager);
+      loadModel = buildModel(parallelOperator, detailsMap, resourceManager);
       for (PartitionRebalanceDetailsImpl details : serialOperator.getDetailSet()) {
         details.setPartitionMemberDetailsBefore(
-            model.getPartitionedMemberDetails(details.getRegionPath()));
+            loadModel.getPartitionedMemberDetails(details.getRegionPath()));
       }
 
-      director.initialize(model);
+      director.initialize(loadModel);
+      String operationType = "Rebalancing";
+      if (director instanceof CompositeDirector
+          && ((CompositeDirector) director).isRestoreRedundancy()) {
+        operationType = "Restoring redundancy";
+      }
 
       for (;;) {
         if (cancelled.get()) {
@@ -210,21 +216,22 @@ public class PartitionedRegionRebalanceOp {
           membershipChange = false;
           // refetch the partitioned region details after
           // a membership change.
-          debug("Rebalancing {} detected membership changes. Refetching details", leaderRegion);
+          debug(operationType + " {} detected membership changes. Refetching details",
+              leaderRegion);
           if (this.stats != null) {
             this.stats.incRebalanceMembershipChanges(1);
           }
-          model.waitForOperations();
+          loadModel.waitForOperations();
           detailsMap = fetchDetails(cache);
-          model = buildModel(parallelOperator, detailsMap, resourceManager);
-          director.membershipChanged(model);
+          loadModel = buildModel(parallelOperator, detailsMap, resourceManager);
+          director.membershipChanged(loadModel);
         }
 
         leaderRegion.checkClosed();
         cache.getCancelCriterion().checkCancelInProgress(null);
 
         if (logger.isDebugEnabled()) {
-          logger.debug("Rebalancing {} Model:{}\n", leaderRegion, model);
+          logger.debug(operationType + " {} Model:{}\n", leaderRegion, loadModel);
         }
 
         if (!director.nextStep()) {
@@ -233,7 +240,7 @@ public class PartitionedRegionRebalanceOp {
         }
       }
 
-      debug("Rebalancing {} complete. Model:{}\n", leaderRegion, model);
+      debug(operationType + " {} complete. Model:{}\n", leaderRegion, loadModel);
       long end = System.nanoTime();
 
       for (PartitionRebalanceDetailsImpl details : serialOperator.getDetailSet()) {
@@ -241,7 +248,7 @@ public class PartitionedRegionRebalanceOp {
           details.setTime(end - start);
         }
         details.setPartitionMemberDetailsAfter(
-            model.getPartitionedMemberDetails(details.getRegionPath()));
+            loadModel.getPartitionedMemberDetails(details.getRegionPath()));
       }
 
       return Collections.<PartitionRebalanceInfo>unmodifiableSet(serialOperator.getDetailSet());
@@ -599,6 +606,10 @@ public class PartitionedRegionRebalanceOp {
 
   public PartitionedRegion getLeaderRegion() {
     return leaderRegion;
+  }
+
+  public PartitionedRegion getTargetRegion() {
+    return targetRegion;
   }
 
   private class MembershipChangeListener implements MembershipListener {

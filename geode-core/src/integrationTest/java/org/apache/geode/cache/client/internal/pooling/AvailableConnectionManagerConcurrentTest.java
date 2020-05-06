@@ -12,26 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.client.internal.pooling;
 
 import static org.apache.geode.test.concurrency.Utilities.availableProcessors;
 import static org.apache.geode.test.concurrency.Utilities.repeat;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ConnectionStats;
+import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.Op;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
 
 @RunWith(ConcurrentTestRunner.class)
 public class AvailableConnectionManagerConcurrentTest {
+
   private final int parallelCount = availableProcessors();
   private final int iterationCount = 250;
   private final AvailableConnectionManager instance = new AvailableConnectionManager();
@@ -43,7 +52,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        PooledConnection used = instance.useFirst();
+        Connection used = instance.useFirst();
         instance.addFirst(used, true);
       }, iterationCount);
     }, parallelCount);
@@ -59,7 +68,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        PooledConnection used = instance.useFirst(c -> true);
+        Connection used = instance.useFirst(c -> true);
         instance.addFirst(used, true);
       }, iterationCount);
     }, parallelCount);
@@ -75,7 +84,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        PooledConnection used = instance.useFirst();
+        Connection used = instance.useFirst();
         instance.addLast(used, true);
       }, iterationCount);
     }, parallelCount);
@@ -94,7 +103,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        PooledConnection used = instance.useFirst();
+        Connection used = instance.useFirst();
         if (used != null) {
           Thread.yield();
           instance.addFirst(used, true);
@@ -116,7 +125,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        PooledConnection used = instance.useFirst(c -> true);
+        Connection used = instance.useFirst(c -> true);
         if (used != null) {
           Thread.yield();
           instance.addFirst(used, true);
@@ -137,14 +146,13 @@ public class AvailableConnectionManagerConcurrentTest {
     repeat(() -> instance.addFirst(createConnection(), false), connectionCount);
     // now add a bunch of connections that will not match the predicate
     repeat(() -> {
-      PooledConnection nonMatchingConnection = createConnection();
-      when(nonMatchingConnection.getBirthDate()).thenReturn(1L);
+      Connection nonMatchingConnection = createConnection(1);
       instance.addFirst(nonMatchingConnection, false);
     }, connectionCount);
 
     executor.inParallel(() -> {
       repeat(() -> {
-        PooledConnection used = instance.useFirst(c -> c.getBirthDate() == 0L);
+        Connection used = instance.useFirst(c -> c.getBirthDate() == 0L);
         if (used != null) {
           Thread.yield();
           assertThat(used.getBirthDate()).isEqualTo(0L);
@@ -161,16 +169,16 @@ public class AvailableConnectionManagerConcurrentTest {
   public void addLastRemoveDoesNotRemoveOtherConnections(ParallelExecutor executor)
       throws ExecutionException, InterruptedException {
     int originalCount = 7;
-    ArrayList<PooledConnection> originalConnections = new ArrayList<>();
+    Collection<Connection> originalConnections = new ArrayList<>();
     repeat(() -> {
-      PooledConnection original = createConnection();
+      Connection original = createConnection();
       originalConnections.add(original);
       instance.addFirst(original, false);
     }, originalCount);
 
     executor.inParallel(() -> {
       repeat(() -> {
-        PooledConnection removed = createConnection();
+        Connection removed = createConnection();
         instance.addLast(removed, true);
         assertThat(instance.remove(removed)).isTrue();
       }, iterationCount);
@@ -180,10 +188,116 @@ public class AvailableConnectionManagerConcurrentTest {
     assertThat(instance.getDeque()).containsExactlyInAnyOrderElementsOf(originalConnections);
   }
 
-  private PooledConnection createConnection() {
-    PooledConnection result = mock(PooledConnection.class);
-    when(result.activate()).thenReturn(true);
-    when(result.isActive()).thenReturn(true);
-    return result;
+  private Connection createConnection() {
+    return createConnection(0);
+  }
+
+  private Connection createConnection(long birthDate) {
+    return new Connection() {
+      @Override
+      public Socket getSocket() {
+        return null;
+      }
+
+      @Override
+      public long getBirthDate() {
+        return birthDate;
+      }
+
+      @Override
+      public void setBirthDate(long ts) {
+        // nothing
+      }
+
+      @Override
+      public ByteBuffer getCommBuffer() {
+        return null;
+      }
+
+      @Override
+      public ConnectionStats getStats() {
+        return null;
+      }
+
+      @Override
+      public boolean isActive() {
+        return true;
+      }
+
+      @Override
+      public void destroy() {
+        // nothing
+      }
+
+      @Override
+      public boolean isDestroyed() {
+        return false;
+      }
+
+      @Override
+      public void close(boolean keepAlive) {
+        // nothing
+      }
+
+      @Override
+      public ServerLocation getServer() {
+        return null;
+      }
+
+      @Override
+      public Endpoint getEndpoint() {
+        return null;
+      }
+
+      @Override
+      public ServerQueueStatus getQueueStatus() {
+        return null;
+      }
+
+      @Override
+      public Object execute(Op op) {
+        return null;
+      }
+
+      @Override
+      public void emergencyClose() {
+        // nothing
+      }
+
+      @Override
+      public short getWanSiteVersion() {
+        return 0;
+      }
+
+      @Override
+      public void setWanSiteVersion(short wanSiteVersion) {
+        // nothing
+      }
+
+      @Override
+      public int getDistributedSystemId() {
+        return 0;
+      }
+
+      @Override
+      public OutputStream getOutputStream() {
+        return null;
+      }
+
+      @Override
+      public InputStream getInputStream() {
+        return null;
+      }
+
+      @Override
+      public void setConnectionID(long id) {
+        // nothing
+      }
+
+      @Override
+      public long getConnectionID() {
+        return 0;
+      }
+    };
   }
 }

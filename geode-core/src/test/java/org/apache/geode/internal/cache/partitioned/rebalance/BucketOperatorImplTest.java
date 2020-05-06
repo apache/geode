@@ -116,11 +116,8 @@ public class BucketOperatorImplTest {
 
   @Test
   public void createBucketShouldInvokeOnFailureIfCreateBucketFails() {
-    doReturn(false).when(rebalanceOp).createRedundantBucketForRegion(targetMember, bucketId); // return
-                                                                                              // false
-                                                                                              // for
-                                                                                              // create
-                                                                                              // fail
+    // return false for create fail
+    doReturn(false).when(rebalanceOp).createRedundantBucketForRegion(targetMember, bucketId);
 
     operator.createRedundantBucket(targetMember, bucketId, colocatedRegionBytes, completion);
 

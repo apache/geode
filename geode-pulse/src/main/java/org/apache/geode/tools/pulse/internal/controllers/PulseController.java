@@ -34,6 +34,9 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -106,6 +109,10 @@ public class PulseController {
         try {
           PulseService pulseService = pulseServiceFactory.getPulseServiceInstance(serviceName);
           responseMap.set(serviceName, pulseService.execute(request));
+        } catch (OAuth2AuthenticationException | OAuth2AuthorizationException e) {
+          logger.warn("serviceException [for service {}] = {}", serviceName, e.getMessage());
+          response.setStatus(HttpStatus.UNAUTHORIZED.value());
+          return;
         } catch (Exception serviceException) {
           logger.warn("serviceException [for service {}] = {}", serviceName,
               serviceException.getMessage());

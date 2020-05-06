@@ -98,7 +98,7 @@ groups:
   - {{ build_test.name }}
   {{- all_gating_jobs() | indent(2) }}
   - UpdatePassingTokens
-  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
   - PublishArtifacts
   {%- endif %}
   {%- for flavor in (benchmarks.flavors) %}
@@ -113,7 +113,7 @@ groups:
     {%- endfor -%}
   {%- endfor %}
   - UpdatePassingTokens
-  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
   - PublishArtifacts
   {%- endif %}
   {%- for flavor in (benchmarks.flavors) %}
@@ -398,7 +398,7 @@ jobs:
     - get: alpine-tools-image
     - get: geode
       passed: &update-token-passed-anchor
-{%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+{%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
       - PublishArtifacts
 {% else %}
       {% for flavor in (benchmarks.flavors) %}
@@ -519,7 +519,7 @@ jobs:
             - name: concourse-metadata-resource
             - name: results
 {% endfor %}
-{% if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+{% if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
 - name: PublishArtifacts
   public: true
   plan:

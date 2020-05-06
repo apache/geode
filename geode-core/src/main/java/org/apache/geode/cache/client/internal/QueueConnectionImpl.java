@@ -157,6 +157,16 @@ public class QueueConnectionImpl implements Connection {
   }
 
   @Override
+  public long getBirthDate() {
+    return 0;
+  }
+
+  @Override
+  public void setBirthDate(long ts) {
+    // nothing
+  }
+
+  @Override
   public OutputStream getOutputStream() {
     return getConnection().getOutputStream();
   }
@@ -169,6 +179,11 @@ public class QueueConnectionImpl implements Connection {
   @Override
   public ConnectionStats getStats() {
     return getEndpoint().getStats();
+  }
+
+  @Override
+  public boolean isActive() {
+    return false;
   }
 
   @Override
