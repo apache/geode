@@ -56,7 +56,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private static final Logger logger = LogService.getLogger();
   private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
   private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS; // 60
-                                                                                          // seconds
+  // seconds
   private final RedisLockService lockService;
 
   private final Cache cache;
@@ -99,15 +99,24 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    *        can initiate a shutdwon
    * @param password Authentication password for each context, can be null
    */
-  public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
-      GeodeRedisServer server, byte[] password, KeyRegistrar keyRegistrar, PubSub pubSub,
+  public ExecutionHandlerContext(
+      Channel channel,
+      Cache cache,
+      RegionProvider regionProvider,
+      GeodeRedisServer server,
+      byte[] password,
+      KeyRegistrar keyRegistrar,
+      PubSub pubSub,
       RedisLockService lockService) {
+
     this.keyRegistrar = keyRegistrar;
     this.lockService = lockService;
     this.pubSub = pubSub;
+
     if (channel == null || cache == null || regionProvider == null || server == null) {
       throw new IllegalArgumentException("Only the authentication password may be null");
     }
+
     this.cache = cache;
     this.server = server;
     this.channel = channel;
@@ -118,7 +127,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.regionProvider = regionProvider;
     this.authPassword = password;
     this.isAuthenticated = password != null ? false : true;
-
   }
 
   public RedisLockService getLockService() {
