@@ -157,4 +157,22 @@ public class Command {
     }
     return b.toString();
   }
+
+  void execute(ExecutionHandlerContext executionHandlerContext) {
+    RedisCommandType type = getCommandType();
+    type.executeCommand(this, executionHandlerContext);
+  }
+
+  boolean isOfType(RedisCommandType type) {
+    return type == getCommandType();
+  }
+
+  String wrongNumberOfArgumentsError() {
+    return String.format("ERR wrong number of arguments for '%s' command",
+        getCommandType().toString().toLowerCase());
+  }
+
+  boolean isTransactional() {
+    return getCommandType().isTransactional();
+  }
 }

@@ -12,14 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
 
+package org.apache.geode.redis.internal;
 
+public class MinimumParameterRequirements implements ParameterRequirements {
+  private int minimum;
 
-public class SInterStoreExecutor extends SInterExecutor {
+  MinimumParameterRequirements(int minimum) {
+    this.minimum = minimum;
+  }
 
   @Override
-  protected boolean isStorage() {
-    return true;
+  public void checkParameters(Command command, ExecutionHandlerContext context) {
+    if (command.getProcessedCommand().size() < minimum) {
+      throw new RedisDataTypeMismatchException(command.wrongNumberOfArgumentsError());
+    }
   }
+
 }

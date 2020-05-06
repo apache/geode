@@ -12,14 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
 
+package org.apache.geode.redis.internal;
 
+public class MaximumParameterRequirements implements ParameterRequirements {
+  private int maximum;
 
-public class SInterStoreExecutor extends SInterExecutor {
+  public MaximumParameterRequirements(int maximum) {
+    this.maximum = maximum;
+  }
 
   @Override
-  protected boolean isStorage() {
-    return true;
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    if (command.getProcessedCommand().size() > maximum) {
+      throw new RedisDataTypeMismatchException(command.wrongNumberOfArgumentsError());
+    }
   }
 }

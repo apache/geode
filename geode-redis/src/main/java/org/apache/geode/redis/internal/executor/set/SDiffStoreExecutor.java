@@ -14,18 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-
-
 public class SDiffStoreExecutor extends SDiffExecutor {
 
   @Override
   protected boolean isStorage() {
     return true;
-  }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.SDIFFSTORE;
   }
 }

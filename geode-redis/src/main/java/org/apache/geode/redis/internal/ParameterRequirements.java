@@ -12,14 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
 
+package org.apache.geode.redis.internal;
 
+interface ParameterRequirements {
+  void checkParameters(Command command,
+      ExecutionHandlerContext executionHandlerContext);
 
-public class SInterStoreExecutor extends SInterExecutor {
-
-  @Override
-  protected boolean isStorage() {
-    return true;
+  default ParameterRequirements and(ParameterRequirements moreRequirements) {
+    return new MultipleRequirements(this, moreRequirements);
   }
+
 }

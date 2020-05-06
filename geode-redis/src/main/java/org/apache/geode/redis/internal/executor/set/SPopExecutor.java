@@ -27,28 +27,13 @@ import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class SPopExecutor extends SetExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    int popCount = 1;
-
-    if (commandElems.size() < 2 || commandElems.size() > 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SPOP));
-      return;
-    }
-
-    if (commandElems.size() == 3) {
-      try {
-        popCount = Integer.parseInt(new String(commandElems.get(2)));
-      } catch (NumberFormatException nex) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SPOP));
-        return;
-      }
-    }
+    int popCount = Integer.parseInt(new String(commandElems.get(2)));
 
     ByteArrayWrapper key = command.getKey();
 

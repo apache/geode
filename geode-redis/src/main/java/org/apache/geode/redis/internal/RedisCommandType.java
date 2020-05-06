@@ -137,6 +137,7 @@ import org.apache.geode.redis.internal.executor.string.StrlenExecutor;
 import org.apache.geode.redis.internal.executor.transactions.DiscardExecutor;
 import org.apache.geode.redis.internal.executor.transactions.ExecExecutor;
 import org.apache.geode.redis.internal.executor.transactions.MultiExecutor;
+import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 import org.apache.geode.redis.internal.executor.transactions.UnwatchExecutor;
 import org.apache.geode.redis.internal.executor.transactions.WatchExecutor;
 
@@ -244,21 +245,23 @@ public enum RedisCommandType {
    **************** Sets *****************
    ***************************************/
 
-  SADD(new SAddExecutor()),
-  SCARD(new SCardExecutor()),
-  SDIFF(new SDiffExecutor()),
-  SDIFFSTORE(new SDiffStoreExecutor()),
-  SISMEMBER(new SIsMemberExecutor()),
-  SINTER(new SInterExecutor()),
-  SINTERSTORE(new SInterStoreExecutor()),
-  SMEMBERS(new SMembersExecutor()),
-  SMOVE(new SMoveExecutor()),
-  SPOP(new SPopExecutor()),
-  SRANDMEMBER(new SRandMemberExecutor()),
-  SUNION(new SUnionExecutor()),
-  SUNIONSTORE(new SUnionStoreExecutor()),
-  SSCAN(new SScanExecutor()),
-  SREM(new SRemExecutor()),
+  SADD(new SAddExecutor(), new MinimumParameterRequirements(3)),
+  SCARD(new SCardExecutor(), new ExactParameterRequirements(2)),
+  SDIFF(new SDiffExecutor(), new MinimumParameterRequirements(2)),
+  SDIFFSTORE(new SDiffStoreExecutor(), new MinimumParameterRequirements(3)),
+  SISMEMBER(new SIsMemberExecutor(), new ExactParameterRequirements(3)),
+  SINTER(new SInterExecutor(), new MinimumParameterRequirements(2)),
+  SINTERSTORE(new SInterStoreExecutor(), new MinimumParameterRequirements(3)),
+  SMEMBERS(new SMembersExecutor(), new ExactParameterRequirements(2)),
+  SMOVE(new SMoveExecutor(), new ExactParameterRequirements(4)),
+  SPOP(new SPopExecutor(),
+      new MinimumParameterRequirements(2).and(new MaximumParameterRequirements(3))
+          .and(new SpopParameterRequirements())),
+  SRANDMEMBER(new SRandMemberExecutor(), new MinimumParameterRequirements(2)),
+  SUNION(new SUnionExecutor(), new MinimumParameterRequirements(2)),
+  SUNIONSTORE(new SUnionStoreExecutor(), new MinimumParameterRequirements(3)),
+  SSCAN(new SScanExecutor(), new MinimumParameterRequirements(3)),
+  SREM(new SRemExecutor(), new MinimumParameterRequirements(3)),
 
   /***************************************
    ************* Sorted Sets *************
@@ -327,15 +330,23 @@ public enum RedisCommandType {
   UNKNOWN(new UnkownExecutor());
 
   private final Executor executor;
-
-  /**
-   * @return {@link Executor} for the command type
-   */
-  public Executor getExecutor() {
-    return executor;
-  };
+  private final ParameterRequirements parameterRequirements;
 
   private RedisCommandType(Executor executor) {
+    this(executor, new UnspecifiedParameterRequirements());
+  }
+
+  private RedisCommandType(Executor executor, ParameterRequirements parameterRequirements) {
     this.executor = executor;
+    this.parameterRequirements = parameterRequirements;
+  }
+
+  public void executeCommand(Command command, ExecutionHandlerContext executionHandlerContext) {
+    parameterRequirements.checkParameters(command, executionHandlerContext);
+    executor.executeCommand(command, executionHandlerContext);
+  }
+
+  public boolean isTransactional() {
+    return executor instanceof TransactionExecutor;
   }
 }

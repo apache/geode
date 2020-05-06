@@ -12,14 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
 
+package org.apache.geode.redis.internal;
 
-
-public class SInterStoreExecutor extends SInterExecutor {
-
+public class SpopParameterRequirements implements ParameterRequirements {
   @Override
-  protected boolean isStorage() {
-    return true;
+  public void checkParameters(Command command, ExecutionHandlerContext context) {
+    try {
+      Integer.parseInt(new String(command.getProcessedCommand().get(2)));
+
+    } catch (NumberFormatException nex) {
+      throw new RuntimeException("ERR value is not an integer or out of range");
+    }
   }
 }

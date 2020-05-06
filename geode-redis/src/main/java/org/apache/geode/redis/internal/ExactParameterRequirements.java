@@ -12,14 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
 
+package org.apache.geode.redis.internal;
 
+public class ExactParameterRequirements implements ParameterRequirements {
+  private int requiredNumber;
 
-public class SInterStoreExecutor extends SInterExecutor {
+  public ExactParameterRequirements(int requiredNumber) {
+    this.requiredNumber = requiredNumber;
+  }
 
   @Override
-  protected boolean isStorage() {
-    return true;
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    if (command.getProcessedCommand().size() != requiredNumber) {
+      throw new RuntimeException(command.wrongNumberOfArgumentsError());
+    }
   }
 }

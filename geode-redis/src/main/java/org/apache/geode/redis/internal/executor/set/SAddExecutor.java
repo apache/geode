@@ -21,7 +21,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class SAddExecutor extends SetExecutor {
@@ -30,11 +29,6 @@ public class SAddExecutor extends SetExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
-
-    if (commandElements.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SADD));
-      return;
-    }
 
     // Save key
     context.getKeyRegistrar().register(command.getKey(), RedisDataType.REDIS_SET);

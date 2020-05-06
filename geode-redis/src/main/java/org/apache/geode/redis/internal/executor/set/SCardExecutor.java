@@ -14,14 +14,12 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class SCardExecutor extends SetExecutor {
@@ -30,13 +28,6 @@ public class SCardExecutor extends SetExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() != 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SCARD));
-      return;
-    }
-
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
     Region<ByteArrayWrapper, DeltaSet> keyRegion = getRegion(context);

@@ -26,21 +26,15 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 
-public abstract class SetOpExecutor extends SetExecutor implements Extendable {
+public abstract class SetOpExecutor extends SetExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int setsStartIndex = isStorage() ? 2 : 1;
-
-    if (commandElems.size() < setsStartIndex + 1) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
-      return;
-    }
 
     RegionProvider regionProvider = context.getRegionProvider();
     ByteArrayWrapper destination = null;

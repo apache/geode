@@ -185,40 +185,6 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the RPUSHX command is \"RPUSHX key value";
 
     /*
-     * Set
-     */
-    public static final String SADD =
-        "The wrong number of arguments or syntax was provided, the format for the SADD command is \"SADD key member [member ...]\"";
-    public static final String SCARD =
-        "The wrong number of arguments or syntax was provided, the format for the SCARD command is \"SCARD key\"";
-    public static final String SDIFF =
-        "The wrong number of arguments or syntax was provided, the format for the SDIFF command is \"SDIFF key [key ...]\"";
-    public static final String SDIFFSTORE =
-        "The wrong number of arguments or syntax was provided, the format for the SDIFF command is \"SDIFFSTORE destination key [key ...]\"";
-    public static final String SINTER =
-        "The wrong number of arguments or syntax was provided, the format for the SINTER command is \"SINTER key [key ...]\"";
-    public static final String SINTERSTORE =
-        "The wrong number of arguments or syntax was provided, the format for the SINTERSTORE command is \"SINTERSTORE destination key [key ...]\"";
-    public static final String SISMEMBER =
-        "The wrong number of arguments or syntax was provided, the format for the SISMEMBER command is \"SISMEMBER key member\"";
-    public static final String SMEMBERS =
-        "The wrong number of arguments or syntax was provided, the format for the SMEMBERS command is \"SMEMBERS key\"";
-    public static final String SMOVE =
-        "The wrong number of arguments or syntax was provided, the format for the SMOVE command is \"SMOVE source destination member\"";
-    public static final String SPOP =
-        "The wrong number of arguments or syntax was provided, the format for the SPOP command is \"SPOP key [count]\"";
-    public static final String SRANDMEMBER =
-        "The wrong number of arguments or syntax was provided, the format for the SRANDMEMBER command is \"SRANDMEMBER key [count]\"";
-    public static final String SREM =
-        "The wrong number of arguments or syntax was provided, the format for the SREM command is \"SREM key member [member ...]\"";
-    public static final String SSCAN =
-        "The wrong number of arguments or syntax was provided, the format for the SSCAN command is \"SSCAN key cursor [MATCH pattern] [COUNT count]\"";
-    public static final String SUNION =
-        "The wrong number of arguments or syntax was provided, the format for the SUNION command is \"SUNION key [key ...]\"";
-    public static final String SUNIONSTORE =
-        "The wrong number of arguments or syntax was provided, the format for the SUNIONSTORE command is \"SUNIONSTORE destination key [key ...]\"";
-
-    /*
      * Sorted set
      */
     public static final String ZADD =
