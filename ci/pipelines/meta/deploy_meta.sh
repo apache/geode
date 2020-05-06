@@ -279,7 +279,6 @@ unpausePipeline ${PIPELINE_PREFIX}main
 if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
   if [[ "${PUBLIC}" == "true" ]]; then
     exposePipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}images
-    enableFeature metrics
     enableFeature examples
   fi
   if [[ "$GEODE_BRANCH" == "develop" ]]; then
