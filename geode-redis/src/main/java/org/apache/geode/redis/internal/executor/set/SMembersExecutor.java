@@ -33,7 +33,7 @@ public class SMembersExecutor extends SetExecutor {
 
     RedisSetCommands redisSetCommands =
         new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
-    Set<ByteArrayWrapper> members = redisSetCommands.members(key);
+    Set<ByteArrayWrapper> members = redisSetCommands.smembers(key);
 
     try {
       command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), members));

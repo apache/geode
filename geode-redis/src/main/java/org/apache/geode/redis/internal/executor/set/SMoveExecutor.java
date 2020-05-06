@@ -57,7 +57,7 @@ public class SMoveExecutor extends SetExecutor {
       boolean removed =
           RedisSet.srem(region, source, new ArrayList<>(Collections.singletonList(member)),
               null) == 1;
-      // TODO: what should SMOVE do with a source that it empties? We probably need to delete it.
+      // TODO: native redis SMOVE that empties the src set causes it to no longer exist
 
       if (!removed) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));

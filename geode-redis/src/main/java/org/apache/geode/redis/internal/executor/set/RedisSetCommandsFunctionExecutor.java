@@ -74,7 +74,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   }
 
   @Override
-  public Set<ByteArrayWrapper> members(ByteArrayWrapper key) {
+  public Set<ByteArrayWrapper> smembers(ByteArrayWrapper key) {
     ResultCollector<Object[], List<Set<ByteArrayWrapper>>> results =
         executeFunction(SMEMBERS, key, null);
     return results.getResult().get(0);
@@ -106,16 +106,16 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   }
 
   @Override
-  public Collection<ByteArrayWrapper> spop(int popCount) {
+  public Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount) {
     ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
-        executeFunction(SPOP, popCount);
+        executeFunction(SPOP, key, popCount);
     return results.getResult().get(0);
   }
 
   @Override
-  public List<Object> sscan(Pattern matchPattern, int count, int cursor) {
+  public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     ResultCollector<Object[], List<List<Object>>> results =
-        executeFunction(SSCAN, new Object[] {matchPattern, count, cursor});
+        executeFunction(SSCAN, key, new Object[] {matchPattern, count, cursor});
     return results.getResult().get(0);
   }
 

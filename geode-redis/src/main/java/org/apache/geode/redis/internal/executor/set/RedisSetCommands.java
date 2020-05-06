@@ -31,7 +31,7 @@ public interface RedisSetCommands {
   long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd,
       AtomicBoolean setWasDeleted);
 
-  Set<ByteArrayWrapper> members(ByteArrayWrapper key);
+  Set<ByteArrayWrapper> smembers(ByteArrayWrapper key);
 
   boolean del(ByteArrayWrapper key);
 
