@@ -248,7 +248,8 @@ set +x
 function failMsg2 {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 116-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 120-$(( errln - 1 ))) and try again"
+  echo "For this script only (prepare_rc.sh), it's also safe to just try again from the top"
 }
 trap 'failMsg2 $LINENO' ERR
 
