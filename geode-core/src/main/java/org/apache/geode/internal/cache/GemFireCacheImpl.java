@@ -2391,10 +2391,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private boolean waitIfClosing(boolean skipAwait) {
     if (isClosing) {
       if (!skipAwait && !Thread.currentThread().equals(CLOSING_THREAD.get())) {
+        boolean interrupted = false;
         try {
           isClosedLatch.await();
-        } catch (InterruptedException ignore) {
-          // ignored
+        } catch (InterruptedException e) {
+          interrupted = true;
+        } finally {
+          if (interrupted) {
+            Thread.currentThread().interrupt();
+          }
         }
       }
       return true;
