@@ -161,7 +161,7 @@ public class WANConfigurationJUnitTest {
 
     assertThatThrownBy(() -> regionFactory.create("test_GatewaySender_Parallel_DistributedRegion"))
         .isInstanceOf(GatewaySenderConfigurationException.class).hasMessage(
-            "Parallel gateway sender NYSender can not be used with replicated region /test_GatewaySender_Parallel_DistributedRegion");
+            "Parallel Gateway Sender NYSender can not be used with replicated region /test_GatewaySender_Parallel_DistributedRegion");
   }
 
   @Test

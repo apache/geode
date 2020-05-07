@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan.misc;
 
 import static java.util.Arrays.asList;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,8 +43,10 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.SenderIdMonitor;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.Filter70;
 import org.apache.geode.internal.cache.wan.GatewayReceiverException;
+import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.MyGatewayTransportFilter3;
 import org.apache.geode.internal.cache.wan.MyGatewayTransportFilter4;
@@ -72,7 +75,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
   private void verifyIdConsistencyWarning(String regionName, boolean expected,
       boolean gatewaySenderId) {
-    Region<Object, Object> r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
     SenderIdMonitor senderIdMonitor = getSenderIdMonitor(r);
 
     if (gatewaySenderId) {
@@ -975,6 +978,44 @@ public class WanValidationsDUnitTest extends WANTestBase {
     int vm7size = vm7.invoke(() -> getAsyncEventListenerMapSize("ln"));
 
     assertThat(vm4size + vm5size + vm6size + vm7size).isEqualTo(256);
+  }
+
+  @Test
+  public void parallelGatewaySenderAssociationToReplicateRegionTroughAttributesMutatorShouldFail() {
+    IgnoredException.addIgnoredException("could not get remote locator information");
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+
+    createCacheInVMs(lnPort, vm1);
+    String regionName = getTestMethodName() + "_RR";
+    String gatewaySenderId = getTestMethodName() + "_gateway";
+    vm1.invoke(() -> {
+      createReplicatedRegion(regionName, null, isOffHeap());
+      createSender(gatewaySenderId, 2, true, 100, 10, false, false, null, false);
+
+      assertThatThrownBy(() -> addSenderThroughAttributesMutator(regionName, gatewaySenderId))
+          .isInstanceOf(GatewaySenderConfigurationException.class)
+          .hasMessage("Parallel Gateway Sender " + gatewaySenderId
+              + " can not be used with replicated region " + SEPARATOR + regionName);
+    });
+  }
+
+  @Test
+  public void parallelAsyncEventQueueAssociationToReplicateRegionTroughAttributesMutatorShouldFail() {
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+
+    createCacheInVMs(lnPort, vm1);
+    String regionName = getTestMethodName() + "_RR";
+    String asyncEventQueueId = getTestMethodName() + "_asyncEventQueue";
+    vm1.invoke(() -> {
+      createReplicatedRegion(regionName, null, isOffHeap());
+      createAsyncEventQueue(asyncEventQueueId, true, 100, 100, false, false, null, false);
+
+      assertThatThrownBy(
+          () -> addAsyncEventQueueThroughAttributesMutator(regionName, asyncEventQueueId))
+              .isInstanceOf(AsyncEventQueueConfigurationException.class)
+              .hasMessage("Parallel Async Event Queue " + asyncEventQueueId
+                  + " can not be used with replicated region " + SEPARATOR + regionName);
+    });
   }
 
   @Test
