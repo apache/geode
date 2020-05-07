@@ -12,33 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
 
+package org.apache.geode.redis.internal.ParameterRequirements;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 
-public class SCardExecutor extends SetExecutor {
+public class MultipleParameterRequirements implements ParameterRequirements {
+  private final ParameterRequirements parameterRequirements;
+  private final ParameterRequirements moreRequirements;
 
-  private static final int NOT_EXISTS = 0;
-
-  @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_SET, context);
-    Region<ByteArrayWrapper, RedisSet> keyRegion = getRegion(context);
-
-    RedisSet set = keyRegion.get(key);
-    if (set == null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
-    }
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), set.size()));
+  public MultipleParameterRequirements(
+      ParameterRequirements parameterRequirements, ParameterRequirements moreRequirements) {
+    this.parameterRequirements = parameterRequirements;
+    this.moreRequirements = moreRequirements;
   }
 
+  @Override
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    this.moreRequirements.checkParameters(command, executionHandlerContext);
+    this.parameterRequirements.checkParameters(command, executionHandlerContext);
+  }
 }

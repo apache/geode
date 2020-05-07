@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class SDiffExecutor extends SetOpExecutor {
 
@@ -40,10 +39,4 @@ public class SDiffExecutor extends SetOpExecutor {
     }
     return copy;
   }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.SDIFF;
-  }
-
 }

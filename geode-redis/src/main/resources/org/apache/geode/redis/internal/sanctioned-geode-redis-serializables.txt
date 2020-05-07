@@ -1,9 +1,10 @@
 org/apache/geode/internal/hll/CardinalityMergeException,false
 org/apache/geode/redis/internal/CoderException,true,4707944288714910949
 org/apache/geode/redis/internal/MemberNotFoundException,true,4707944288714910949
+org/apache/geode/redis/internal/ParameterRequirements/RedisParametersMismatchException,true,-643700717871858072
 org/apache/geode/redis/internal/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/PubSubImpl
 org/apache/geode/redis/internal/RedisCommandParserException,true,4707944288714910949
-org/apache/geode/redis/internal/RedisCommandType,false,executor:org/apache/geode/redis/internal/Executor
+org/apache/geode/redis/internal/RedisCommandType,false,executor:org/apache/geode/redis/internal/Executor,parameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements
 org/apache/geode/redis/internal/RedisDataType,false
 org/apache/geode/redis/internal/RedisDataType$1,false
 org/apache/geode/redis/internal/RedisDataType$2,false
