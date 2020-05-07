@@ -21,11 +21,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,6 +33,7 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -126,8 +125,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentDataToSameSetConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentDataToSameSetConcurrently() {
 
     String key = "key";
 
@@ -138,33 +136,25 @@ public class SaddDUnitTest {
     allMembers.addAll(members1);
     allMembers.addAll(members2);
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members1, jedis1, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members2, jedis2, startThreads);
-
-    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.sadd(key, members1.get(i)),
+        (i) -> jedis2.sadd(key, members2.get(i))).run();
 
     Set<String> results = jedis3.smembers(key);
 
     assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
-
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingSameDataToSameSetConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingSameDataToSameSetConcurrently() {
 
     String key = "key";
 
     List<String> members = makeMemberList(SET_SIZE, "member-");
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members, jedis1, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members, jedis2, startThreads);
-
-    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.sadd(key, members.get(i)),
+        (i) -> jedis2.sadd(key, members.get(i))).run();
 
     Set<String> results = jedis3.smembers(key);
 
@@ -173,8 +163,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentSetsConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentSetsConcurrently() {
 
     String key1 = "key1";
     String key2 = "key2";
@@ -182,12 +171,9 @@ public class SaddDUnitTest {
     List<String> members1 = makeMemberList(SET_SIZE, "member1-");
     List<String> members2 = makeMemberList(SET_SIZE, "member2-");
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable addSetsWithClient1 = makeSADDRunnable(key1, members1, jedis1, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key2, members2, jedis2, startThreads);
-
-    runConcurrentThreads(startThreads, addSetsWithClient1, addSetsWithClient2);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.sadd(key1, members1.get(i)),
+        (i) -> jedis2.sadd(key2, members2.get(i))).run();
 
     Set<String> results1 = jedis3.smembers(key1);
     Set<String> results2 = jedis3.smembers(key2);
@@ -198,8 +184,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSetConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSetConcurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
     Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
@@ -208,18 +193,11 @@ public class SaddDUnitTest {
 
     List<String> members = makeMemberList(SET_SIZE, "member1-");
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members, jedis1, startThreads);
-    Runnable addSetsWithClient1B = makeSADDRunnable(key, members, jedis1B, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members, jedis2, startThreads);
-    Runnable addSetsWithClient2B = makeSADDRunnable(key, members, jedis2B, startThreads);
-
-    runConcurrentThreads(startThreads,
-        addSetsWithClient1,
-        addSetsWithClient1B,
-        addSetsWithClient2,
-        addSetsWithClient2B);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.sadd(key, members.get(i)),
+        (i) -> jedis1B.sadd(key, members.get(i)),
+        (i) -> jedis2.sadd(key, members.get(i)),
+        (i) -> jedis2B.sadd(key, members.get(i))).run();
 
     Set<String> results = jedis3.smembers(key);
 
@@ -230,8 +208,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSet_withDifferentData_Concurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSet_withDifferentData_Concurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
     Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
@@ -245,18 +222,11 @@ public class SaddDUnitTest {
     allMembers.addAll(members1);
     allMembers.addAll(members2);
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable addSetsWithClient1 = makeSADDRunnable(key, members1, jedis1, startThreads);
-    Runnable addSetsWithClient1B = makeSADDRunnable(key, members1, jedis1B, startThreads);
-    Runnable addSetsWithClient2 = makeSADDRunnable(key, members2, jedis2, startThreads);
-    Runnable addSetsWithClient2B = makeSADDRunnable(key, members2, jedis2B, startThreads);
-
-    runConcurrentThreads(startThreads,
-        addSetsWithClient1,
-        addSetsWithClient1B,
-        addSetsWithClient2,
-        addSetsWithClient2B);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.sadd(key, members1.get(i)),
+        (i) -> jedis1B.sadd(key, members1.get(i)),
+        (i) -> jedis2.sadd(key, members2.get(i)),
+        (i) -> jedis2B.sadd(key, members2.get(i))).run();
 
     Set<String> results = jedis3.smembers(key);
 
@@ -264,35 +234,6 @@ public class SaddDUnitTest {
 
     jedis1B.disconnect();
     jedis2B.disconnect();
-  }
-
-  private void runConcurrentThreads(CountDownLatch startThread, Runnable... runnables)
-      throws InterruptedException {
-    List<Thread> threads = new ArrayList<>();
-
-    Arrays.stream(runnables).forEach(runnable -> threads.add(new Thread(runnable)));
-
-    threads.forEach((thread -> thread.start()));
-
-    startThread.countDown();
-
-    for (Thread thread : threads) {
-      thread.join();
-    }
-  }
-
-  private Runnable makeSADDRunnable(String key, List<String> members, Jedis jedis,
-      CountDownLatch startThread) {
-    return () -> {
-      try {
-        startThread.await();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      for (int i = 0; i < members.size(); i++) {
-        jedis.sadd(key, members.get(i));
-      }
-    };
   }
 
   private List<String> makeMemberList(int setSize, String baseString) {

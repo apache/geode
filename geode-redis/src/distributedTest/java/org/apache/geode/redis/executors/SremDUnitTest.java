@@ -21,11 +21,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,6 +33,7 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -130,8 +129,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingDifferentDataFromSameSetConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingDifferentDataFromSameSetConcurrently() {
 
     String key = "key";
 
@@ -144,12 +142,9 @@ public class SremDUnitTest {
 
     jedis3.sadd(key, allMembers.toArray(new String[] {}));
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable removeMembersWithClient1 = makeSRemRunnable(key, members1, jedis1, startThreads);
-    Runnable removeMembersWithClient2 = makeSRemRunnable(key, members2, jedis2, startThreads);
-
-    runConcurrentThreads(startThreads, removeMembersWithClient1, removeMembersWithClient2);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.srem(key, members1.get(i)),
+        (i) -> jedis2.srem(key, members2.get(i))).run();
 
     Set<String> results = jedis3.smembers(key);
 
@@ -157,8 +152,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingSameDataFromSameSetConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingSameDataFromSameSetConcurrently() {
 
     String key = "key";
 
@@ -166,22 +160,17 @@ public class SremDUnitTest {
 
     jedis3.sadd(key, members.toArray(new String[] {}));
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable removeMembersWithClient1 = makeSRemRunnable(key, members, jedis1, startThreads);
-    Runnable removeMembersWithClient2 = makeSRemRunnable(key, members, jedis2, startThreads);
-
-    runConcurrentThreads(startThreads, removeMembersWithClient1, removeMembersWithClient2);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.srem(key, members.get(i)),
+        (i) -> jedis2.srem(key, members.get(i))).run();
 
     Set<String> results = jedis3.smembers(key);
 
     assertThat(results).isEmpty();
-
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingFromDifferentSetsConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingFromDifferentSetsConcurrently() {
 
     String key1 = "key1";
     String key2 = "key2";
@@ -192,12 +181,9 @@ public class SremDUnitTest {
     jedis3.sadd(key1, members1.toArray(new String[] {}));
     jedis3.sadd(key2, members2.toArray(new String[] {}));
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable removeMembersWithClient1 = makeSRemRunnable(key1, members1, jedis1, startThreads);
-    Runnable removeMembersWithClient2 = makeSRemRunnable(key2, members2, jedis2, startThreads);
-
-    runConcurrentThreads(startThreads, removeMembersWithClient1, removeMembersWithClient2);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.srem(key1, members1.get(i)),
+        (i) -> jedis2.srem(key2, members2.get(i))).run();
 
     Set<String> results1 = jedis3.smembers(key1);
     Set<String> results2 = jedis3.smembers(key2);
@@ -208,8 +194,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
     Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
@@ -219,18 +204,11 @@ public class SremDUnitTest {
     List<String> members = makeMemberList(SET_SIZE, "member1-");
     jedis3.sadd(key, members.toArray(new String[] {}));
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable removeMembersWithClient1 = makeSRemRunnable(key, members, jedis1, startThreads);
-    Runnable removeMembersWithClient1B = makeSRemRunnable(key, members, jedis1B, startThreads);
-    Runnable removeMembersWithClient2 = makeSRemRunnable(key, members, jedis2, startThreads);
-    Runnable removeMembersWithClient2B = makeSRemRunnable(key, members, jedis2B, startThreads);
-
-    runConcurrentThreads(startThreads,
-        removeMembersWithClient1,
-        removeMembersWithClient1B,
-        removeMembersWithClient2,
-        removeMembersWithClient2B);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.srem(key, members.get(i)),
+        (i) -> jedis1B.srem(key, members.get(i)),
+        (i) -> jedis2.srem(key, members.get(i)),
+        (i) -> jedis2B.srem(key, members.get(i))).run();
 
     Set<String> results = jedis3.smembers(key);
 
@@ -241,8 +219,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently()
-      throws InterruptedException {
+  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
     Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
@@ -258,18 +235,11 @@ public class SremDUnitTest {
 
     jedis3.sadd(key, allMembers.toArray(new String[] {}));
 
-    CountDownLatch startThreads = new CountDownLatch(1);
-
-    Runnable removeMembersWithClient1 = makeSRemRunnable(key, members1, jedis1, startThreads);
-    Runnable removeMembersWithClient1B = makeSRemRunnable(key, members1, jedis1B, startThreads);
-    Runnable removeMembersWithClient2 = makeSRemRunnable(key, members2, jedis2, startThreads);
-    Runnable removeMembersWithClient2B = makeSRemRunnable(key, members2, jedis2B, startThreads);
-
-    runConcurrentThreads(startThreads,
-        removeMembersWithClient1,
-        removeMembersWithClient1B,
-        removeMembersWithClient2,
-        removeMembersWithClient2B);
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis1.srem(key, members1.get(i)),
+        (i) -> jedis1B.srem(key, members1.get(i)),
+        (i) -> jedis2.srem(key, members2.get(i)),
+        (i) -> jedis2B.srem(key, members2.get(i))).run();
 
     Set<String> results = jedis3.smembers(key);
 
@@ -277,35 +247,6 @@ public class SremDUnitTest {
 
     jedis1B.disconnect();
     jedis2B.disconnect();
-  }
-
-  private void runConcurrentThreads(CountDownLatch startThread, Runnable... runnables)
-      throws InterruptedException {
-    List<Thread> threads = new ArrayList<>();
-
-    Arrays.stream(runnables).forEach(runnable -> threads.add(new Thread(runnable)));
-
-    threads.forEach((thread -> thread.start()));
-
-    startThread.countDown();
-
-    for (Thread thread : threads) {
-      thread.join();
-    }
-  }
-
-  private Runnable makeSRemRunnable(String key, List<String> members, Jedis jedis,
-      CountDownLatch startThread) {
-    return () -> {
-      try {
-        startThread.await();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      for (int i = 0; i < members.size(); i++) {
-        jedis.srem(key, members.get(i));
-      }
-    };
   }
 
   private List<String> makeMemberList(int setSize, String baseString) {
