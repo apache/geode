@@ -54,7 +54,7 @@ public class NioSslEngine implements NioFilter {
 
   private final BufferPool bufferPool;
 
-  private volatile boolean closed;
+  private boolean closed;
 
   SSLEngine engine;
 
@@ -212,7 +212,7 @@ public class NioSslEngine implements NioFilter {
     return bufferPool.expandWriteBufferIfNeeded(type, existing, desiredCapacity);
   }
 
-  void checkClosed() throws IOException {
+  synchronized void checkClosed() throws IOException {
     if (closed) {
       throw new IOException("NioSslEngine has been closed");
     }
@@ -364,7 +364,7 @@ public class NioSslEngine implements NioFilter {
 
 
   @Override
-  public void close(SocketChannel socketChannel) {
+  public synchronized void close(SocketChannel socketChannel) {
     if (closed) {
       return;
     }
@@ -398,6 +398,7 @@ public class NioSslEngine implements NioFilter {
     } finally {
       bufferPool.releaseBuffer(TRACKED_SENDER, myNetData);
       bufferPool.releaseBuffer(TRACKED_RECEIVER, peerAppData);
+      myNetData = null;
       this.closed = true;
     }
   }

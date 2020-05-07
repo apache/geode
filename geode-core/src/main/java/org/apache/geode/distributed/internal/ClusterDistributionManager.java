@@ -608,9 +608,8 @@ public class ClusterDistributionManager implements DistributionManager {
     }
     if (member != getDistributionManagerId()) {
       String relationship = areInSameZone(getDistributionManagerId(), member) ? "" : "not ";
-      Object[] logArgs = new Object[] {member, relationship};
-      logger.info("Member {} is {} equivalent or in the same redundancy zone.",
-          logArgs);
+      logger.info("Member {} is {}equivalent or in the same redundancy zone.",
+          member, relationship);
     }
   }
 

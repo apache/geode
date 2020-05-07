@@ -86,6 +86,11 @@ public class NioSslEngineTest {
   }
 
   @Test
+  public void engineUsesDirectBuffers() {
+    assertThat(nioSslEngine.myNetData.isDirect()).isTrue();
+  }
+
+  @Test
   public void handshake() throws Exception {
     SocketChannel mockChannel = mock(SocketChannel.class);
     when(mockChannel.read(any(ByteBuffer.class))).thenReturn(100, 100, 100, 0);
