@@ -331,7 +331,7 @@ public class GeodeRedisServer {
    * Helper method to set the number of worker threads
    *
    * @return If the System property {@value #NUM_THREADS_SYS_PROP_NAME} is set then that number is
-   *         used, otherwise 4 * # of cores
+   * used, otherwise 4 * # of cores
    */
   private int setNumWorkerThreads() {
     String prop = System.getProperty(NUM_THREADS_SYS_PROP_NAME);
@@ -353,7 +353,7 @@ public class GeodeRedisServer {
    * to the first non-loopback address
    *
    * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by
-   *        default
+   *             default
    */
   public GeodeRedisServer(int port) {
     this(null, port, null);
@@ -364,8 +364,8 @@ public class GeodeRedisServer {
    * address and port
    *
    * @param bindAddress The address to which the server will attempt to bind to
-   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
-   *        by default if argument is less than or equal to 0
+   * @param port        The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
+   *                    by default if argument is less than or equal to 0
    */
   public GeodeRedisServer(String bindAddress, int port) {
     this(bindAddress, port, null);
@@ -378,9 +378,9 @@ public class GeodeRedisServer {
    * effect.
    *
    * @param bindAddress The address to which the server will attempt to bind to
-   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
-   *        by default if argument is less than or equal to 0
-   * @param logLevel The logging level to be used by GemFire
+   * @param port        The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
+   *                    by default if argument is less than or equal to 0
+   * @param logLevel    The logging level to be used by GemFire
    */
   public GeodeRedisServer(String bindAddress, int port, String logLevel) {
     serverPort = port <= 0 ? DEFAULT_REDIS_SERVER_PORT : port;
@@ -563,7 +563,7 @@ public class GeodeRedisServer {
    * specified by {@link GeodeRedisServer#serverPort}
    */
   private void startRedisServer() throws IOException, InterruptedException {
-    Class<? extends ServerChannel> socketClass = initializeNioEventLoopGroups();
+    Class<? extends ServerChannel> socketClass = initializeEventLoopGroups();
 
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
     String redisPassword = system.getConfig().getRedisPassword();
@@ -578,11 +578,11 @@ public class GeodeRedisServer {
         .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, GeodeRedisServer.connectTimeoutMillis)
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
-    bindAndAcceptIncomingConnections(serverBootstrap);
+    serverChannel = createBoundChannel(serverBootstrap);
   }
 
   @SuppressWarnings("deprecation")
-  private Class<? extends ServerChannel> initializeNioEventLoopGroups() {
+  private Class<? extends ServerChannel> initializeEventLoopGroups() {
     ThreadFactory selectorThreadFactory =
         new NamedThreadFactory("GeodeRedisServer-SelectorThread-", true);
 
@@ -591,10 +591,10 @@ public class GeodeRedisServer {
 
     Class<? extends ServerChannel> socketClass;
     if (singleThreadPerConnection) {
-        bossGroup = new OioEventLoopGroup(Integer.MAX_VALUE, selectorThreadFactory);
-        workerGroup = new OioEventLoopGroup(Integer.MAX_VALUE, workerThreadFactory);
-        socketClass = OioServerSocketChannel.class;
-      } else {
+      bossGroup = new OioEventLoopGroup(Integer.MAX_VALUE, selectorThreadFactory);
+      workerGroup = new OioEventLoopGroup(Integer.MAX_VALUE, workerThreadFactory);
+      socketClass = OioServerSocketChannel.class;
+    } else {
       bossGroup = new NioEventLoopGroup(numSelectorThreads, selectorThreadFactory);
       workerGroup = new NioEventLoopGroup(numWorkerThreads, workerThreadFactory);
       socketClass = NioServerSocketChannel.class;
@@ -602,12 +602,12 @@ public class GeodeRedisServer {
     return socketClass;
   }
 
-  private void bindAndAcceptIncomingConnections(ServerBootstrap serverBootstrap)
+  private Channel createBoundChannel(ServerBootstrap serverBootstrap)
       throws InterruptedException, UnknownHostException {
     ChannelFuture channelFuture =
         serverBootstrap.bind(new InetSocketAddress(getBindAddress(), serverPort)).sync();
     logStartupMessage();
-    serverChannel = channelFuture.channel();
+    return channelFuture.channel();
   }
 
   private void logStartupMessage() throws UnknownHostException {
@@ -628,14 +628,16 @@ public class GeodeRedisServer {
       @Override
       public void initChannel(SocketChannel socketChannel) {
         if (logger.fineEnabled()) {
-          logger.fine("GeodeRedisServer-Connection established with " + socketChannel.remoteAddress());
+          logger.fine(
+              "GeodeRedisServer-Connection established with " + socketChannel.remoteAddress());
         }
         ChannelPipeline pipeline = socketChannel.pipeline();
         addSSLIfEnabled(socketChannel, pipeline);
         pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
-            new ExecutionHandlerContext(socketChannel, cache, regionCache, GeodeRedisServer.this, redisPasswordBytes,
+            new ExecutionHandlerContext(socketChannel, cache, regionCache, GeodeRedisServer.this,
+                redisPasswordBytes,
                 keyRegistrar, pubSub, hashLockService));
       }
     };
@@ -768,9 +770,7 @@ public class GeodeRedisServer {
    * Static main method that allows the {@code GeodeRedisServer} to be started from the command
    * line. The supported command line arguments are
    * <p>
-   * -port= <br>
-   * -bind-address= <br>
-   * -log-level=
+   * -port= <br> -bind-address= <br> -log-level=
    *
    * @param args Command line args
    */
@@ -805,7 +805,7 @@ public class GeodeRedisServer {
    *
    * @param arg String where the argument is
    * @return The port number when the correct syntax was used, otherwise will return {@link
-   *         #DEFAULT_REDIS_SERVER_PORT}
+   * #DEFAULT_REDIS_SERVER_PORT}
    */
   private static int getPort(String arg) {
     int port = DEFAULT_REDIS_SERVER_PORT;
