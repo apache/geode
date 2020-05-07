@@ -69,14 +69,7 @@ public class ParallelDiskStoreRecoveryDUnitTest {
 
     populateRegion(NUM_ENTRIES, regionName1, regionName2);
 
-    assertRegionSize(regionName1);
-
-    assertRegionSize(regionName2);
-
-    assertDiskStore(server1.getName(), diskStoreName1, regionName1, regionName2);
-    assertDiskStore(server1.getName(), diskStoreName2, regionName2, regionName1);
-    assertDiskStore(server2.getName(), diskStoreName1, regionName1, regionName2);
-    assertDiskStore(server2.getName(), diskStoreName2, regionName2, regionName1);
+    AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
 
     server1.stop(false);
     server2.stop(false);
@@ -97,6 +90,15 @@ public class ParallelDiskStoreRecoveryDUnitTest {
 
     result2.get();
 
+    AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
+
+    gfsh.connectAndVerify(locator);
+    gfsh.execute("shutdown --include-locators");
+
+  }
+
+  private void AssertRegionSizeAndDiskStore(String diskStoreName1, String diskStoreName2,
+      String regionName1, String regionName2) {
     assertRegionSize(regionName1);
 
     assertRegionSize(regionName2);
@@ -105,10 +107,6 @@ public class ParallelDiskStoreRecoveryDUnitTest {
     assertDiskStore(server1.getName(), diskStoreName2, regionName2, regionName1);
     assertDiskStore(server2.getName(), diskStoreName1, regionName1, regionName2);
     assertDiskStore(server2.getName(), diskStoreName2, regionName2, regionName1);
-
-    gfsh.connectAndVerify(locator);
-    gfsh.execute("shutdown --include-locators");
-
   }
 
   private void assertDiskStore(String serverName, String diskStoreName, String expected,
@@ -164,6 +162,7 @@ public class ParallelDiskStoreRecoveryDUnitTest {
     command = new CommandStringBuilder("create disk-store")
         .addOption("name", diskStoreName)
         .addOption("dir", diskStoreName)
+        .addOption("max-oplog-size", "1")
         .getCommandString();
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
