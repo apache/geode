@@ -16,18 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.apache.geode.redis.internal.RedisCommandType.SADD;
-import static org.apache.geode.redis.internal.RedisCommandType.SCARD;
-import static org.apache.geode.redis.internal.RedisCommandType.SDIFF;
-import static org.apache.geode.redis.internal.RedisCommandType.SDIFFSTORE;
-import static org.apache.geode.redis.internal.RedisCommandType.SINTERSTORE;
-import static org.apache.geode.redis.internal.RedisCommandType.SISMEMBER;
-import static org.apache.geode.redis.internal.RedisCommandType.SMEMBERS;
-import static org.apache.geode.redis.internal.RedisCommandType.SMOVE;
-import static org.apache.geode.redis.internal.RedisCommandType.SPOP;
-import static org.apache.geode.redis.internal.RedisCommandType.SREM;
-import static org.apache.geode.redis.internal.RedisCommandType.SUNION;
-import static org.apache.geode.redis.internal.RedisCommandType.SUNIONSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
