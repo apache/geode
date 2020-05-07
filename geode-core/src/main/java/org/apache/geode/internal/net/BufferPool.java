@@ -24,6 +24,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPool {
   private final DMStats stats;
@@ -54,7 +55,8 @@ public class BufferPool {
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
-  public static final boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers");
+  public static final boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers")
+      || Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers");
 
   /**
    * Should only be called by threads that have currently acquired send permission.
