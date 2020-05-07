@@ -23,7 +23,7 @@ public interface ParameterRequirements {
       ExecutionHandlerContext executionHandlerContext);
 
   default ParameterRequirements and(ParameterRequirements moreRequirements) {
-    return new MultipleRequirements(this, moreRequirements);
+    return new MultipleParameterRequirements(this, moreRequirements);
   }
 
 }
