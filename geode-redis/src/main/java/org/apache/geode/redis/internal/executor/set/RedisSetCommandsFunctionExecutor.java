@@ -49,11 +49,6 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
     this.region = region;
   }
 
-  public static void registerFunctions() {
-    SynchronizedStripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
-    FunctionService.registerFunction(new CommandFunction(stripedExecutor));
-  }
-
   @Override
   public long sadd(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd) {
     ResultCollector<Object[], List<Long>> results = executeFunction(SADD, key, membersToAdd);
@@ -62,7 +57,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   @Override
   public long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove,
-      AtomicBoolean setWasDeleted) {
+                   AtomicBoolean setWasDeleted) {
     ResultCollector<Object[], List<Long>> results = executeFunction(SREM, key, membersToRemove);
     List<Long> resultList = results.getResult();
     long membersRemoved = resultList.get(0);
@@ -115,17 +110,13 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   @Override
   public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     ResultCollector<Object[], List<List<Object>>> results =
-        executeFunction(SSCAN, key, new Object[] {matchPattern, count, cursor});
+        executeFunction(SSCAN, key, new Object[]{matchPattern, count, cursor});
     return results.getResult().get(0);
   }
 
   private ResultCollector executeFunction(RedisCommandType command,
-      ByteArrayWrapper key,
-      Object commandArguments) {
-    return FunctionService
-        .onRegion(region)
-        .withFilter(Collections.singleton(key))
-        .setArguments(new Object[] {command, commandArguments})
-        .execute(CommandFunction.ID);
+                                          ByteArrayWrapper key,
+                                          Object commandArguments) {
+    return CommandFunction.execute(region, command, key, commandArguments);
   }
 }

@@ -48,7 +48,7 @@ public class HGetAllExecutor extends HashExecutor {
     Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries;
     ByteArrayWrapper key = command.getKey();
 
-    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
+    RedisHashCommands hash = new GeodeRedisHashCommandsSynchronized(key, context);
     entries = hash.hgetall();
     command.setResponse(Coder.getKeyValArrayResponse(context.getByteBufAllocator(), entries));
   }

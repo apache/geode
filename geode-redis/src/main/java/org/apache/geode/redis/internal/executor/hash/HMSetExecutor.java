@@ -50,7 +50,7 @@ public class HMSetExecutor extends HashExecutor {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     ByteArrayWrapper key = command.getKey();
-    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
+    RedisHashCommands hash = new GeodeRedisHashCommandsSynchronized(key, context);
     hash.hset(commandElems.subList(2, commandElems.size()), false);
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
   }

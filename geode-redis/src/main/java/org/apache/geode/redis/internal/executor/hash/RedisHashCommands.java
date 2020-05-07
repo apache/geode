@@ -11,10 +11,20 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.executor.hash;
 
-public class RedisHash {
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+
+public interface RedisHashCommands {
+  int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX);
+
+  int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> subList);
+
+  Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall(ByteArrayWrapper key);
 }

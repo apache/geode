@@ -44,7 +44,7 @@ public class HSetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
+    RedisHashCommands hash = new GeodeRedisHashCommandsSynchronized(key, context);
 
     int fieldsAdded = hash.hset(commandElems.subList(2, commandElems.size()), onlySetOnAbsent());
 

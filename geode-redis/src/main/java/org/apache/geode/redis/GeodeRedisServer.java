@@ -95,8 +95,8 @@ import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.Subscriptions;
+import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
-import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
 
 /**
@@ -505,7 +505,7 @@ public class GeodeRedisServer {
       redisMetaData.put(SET_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HASH_REGION, RedisDataType.REDIS_PROTECTED);
 
-      RedisSetCommandsFunctionExecutor.registerFunctions();
+      CommandFunction.register();
     }
 
     checkForRegions();

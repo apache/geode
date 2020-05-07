@@ -28,11 +28,11 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 
-class GeodeRedisHashSynchronized implements RedisHash {
+class GeodeRedisHashCommandsSynchronized implements RedisHashCommands {
   private final ByteArrayWrapper key;
   private final ExecutionHandlerContext context;
 
-  public GeodeRedisHashSynchronized(ByteArrayWrapper key, ExecutionHandlerContext context) {
+  public GeodeRedisHashCommandsSynchronized(ByteArrayWrapper key, ExecutionHandlerContext context) {
     this.key = key;
     this.context = context;
   }

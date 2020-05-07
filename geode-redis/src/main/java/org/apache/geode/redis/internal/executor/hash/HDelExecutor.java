@@ -50,7 +50,7 @@ public class HDelExecutor extends HashExecutor {
     ByteArrayWrapper key = command.getKey();
 
     checkDataType(key, RedisDataType.REDIS_HASH, context);
-    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
+    RedisHashCommands hash = new GeodeRedisHashCommandsSynchronized(key, context);
     int numDeleted = hash.hdel(commandElems.subList(2, commandElems.size()));
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }
