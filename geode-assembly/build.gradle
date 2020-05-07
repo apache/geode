@@ -15,19 +15,12 @@
  * limitations under the License.
  */
 
-import me.champeau.gradle.japicmp.JapicmpTask
-import me.champeau.gradle.japicmp.report.Severity
-
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
-
 import org.apache.geode.gradle.plugins.DependencyConstraints
-import org.apache.maven.artifact.versioning.ComparableVersion
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 
 import java.nio.file.Paths
-import org.gradle.api.file.FileCollection
 
 // This project aggressively reaches into many other projects and must wait for those configurations
 // to be evaluated and resolved.  Evaluation depends on each of these subprojects.
@@ -703,77 +696,4 @@ acceptanceTest {
   dependsOn(tasks.docker)
 }
 
-// For the list of 'old-versions' find the newest using semver
-// If the newest old release is a differnt major # than us, we can do what we want
-// otherwise, fail on x,y,z
-
-def mostRecentReleaseProj = project(':geode-old-versions').subprojects.max(){ v -> new ComparableVersion(v.name)}
-def newest = mostRecentReleaseProj.name
-
-import me.champeau.gradle.japicmp.report.ViolationRule
-import me.champeau.gradle.japicmp.report.Violation
-import japicmp.model.JApiCompatibility
-import japicmp.model.JApiMethod
-
-class AllowMajorBreakingChanges implements ViolationRule {
-  @Override
-  Violation maybeViolation(final JApiCompatibility member) {
-    if (!member.binaryCompatible()) {
-      Violation.notBinaryCompatible(member, Severity.warning)
-    }
-  }
-}
-tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask) {
-  inputs.files { tasks.named('distTar') }
-  def ourUnpackTaskProvider = project(":geode-old-versions:${newest}").tasks.named('downloadAndUnzipFile')
-  inputs.files { ourUnpackTaskProvider }
-
-  def d = Paths.get(project(":geode-old-versions:${newest}").buildDir.path.toString(), "apache-geode-${newest}", 'lib')
-  oldClasspath = files()
-  oldArchives = files()
-  doFirst {
-    oldClasspath = files(file(d).listFiles())
-    oldArchives = files(file(d).listFiles(new FilenameFilter() {
-      public boolean accept(File dir, String name) {
-        return name.toLowerCase().startsWith("geode-") && name.toLowerCase().endsWith(".jar");
-      };
-    }))
-  }
-
-  newClasspath = configurations.geodeArchives
-  newArchives = configurations.geodeArchives.filter { File f ->
-    f.toString().contains("geode-") && f.toString().endsWith(".jar")
-  }
-
-  ignoreMissingClasses = true
-  onlyModified = true
-  accessModifier = "protected"
-
-  def allowMajorBreaking = false
-  if (new DefaultArtifactVersion(version).majorVersion > new DefaultArtifactVersion(newest).majorVersion) {
-    logger.error("disable fail on binary breaking changes")
-    allowMajorBreaking = true
-  }
-  failOnModification = allowMajorBreaking
-  failOnSourceIncompatibility = allowMajorBreaking
-
-//  onlyBinaryIncompatibleModified = true
-//  includeSynthetic = true
-
-  def reportFileName = "japi-v${newest}-${version}"
-  txtOutputFile = file("$buildDir/reports/${reportFileName}.txt")
-  htmlOutputFile = file("$buildDir/reports/${reportFileName}.html")
-  packageExcludes = ["*internal*"]
-  packageIncludes = ["org.apache.geode.*"]
-  annotationExcludes = ["@Experimental"]
-
- richReport {
-   title = "Geode API Compatibility Report"
-   description = "Comparing current ${version} against downloaded v${newest}."
-   reportName = "rich-report-${reportFileName}.html"
-   if (allowMajorBreaking) {
-     addRule(AllowMajorBreakingChanges)
-//     addDefaultRules = failBuild
-   }
- }
-}
+apply from: Paths.get("${rootDir}", 'gradle', 'japicmp.gradle')
