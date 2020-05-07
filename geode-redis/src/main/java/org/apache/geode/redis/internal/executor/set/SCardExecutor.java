@@ -38,5 +38,4 @@ public class SCardExecutor extends SetExecutor {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
     }
   }
-
 }

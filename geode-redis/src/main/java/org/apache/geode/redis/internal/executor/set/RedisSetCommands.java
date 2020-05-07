@@ -44,5 +44,4 @@ public interface RedisSetCommands {
   Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount);
 
   List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor);
-
 }

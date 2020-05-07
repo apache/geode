@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -40,14 +39,9 @@ public class SIsMemberExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
-
-    Region<ByteArrayWrapper, RedisSet> region = this.getRegion(context);
-
-    RedisSet set = region.get(key);
-
-    RedisSet geodeRedisSet =
-        new GeodeRedisSetWithFunctions(key, context.getRegionProvider().getSetRegion());
-    boolean isMember = geodeRedisSet.sismember(member);
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    boolean isMember = redisSetCommands.sismember(key, member);
     if (isMember) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
       // save key for next quick lookup
