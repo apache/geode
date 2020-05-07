@@ -590,17 +590,9 @@ public class GeodeRedisServer {
   }
 
   private Class<? extends ServerChannel> initializeThreadFactoriesAndGroups() {
-    ThreadFactory selectorThreadFactory = new ThreadFactory() {
-      private final AtomicInteger counter = new AtomicInteger();
 
-      @Override
-      public Thread newThread(Runnable r) {
-        Thread t = new Thread(r);
-        t.setName("GeodeRedisServer-SelectorThread-" + counter.incrementAndGet());
-        t.setDaemon(true);
-        return t;
-      }
-    };
+    ThreadFactory selectorThreadFactory =
+        getSelectorThreadFactory("GeodeRedisServer-SelectorThread-", );
 
     ThreadFactory workerThreadFactory = new ThreadFactory() {
       private final AtomicInteger counter = new AtomicInteger();
@@ -625,6 +617,20 @@ public class GeodeRedisServer {
       socketClass = NioServerSocketChannel.class;
     }
     return socketClass;
+  }
+
+  private ThreadFactory getSelectorThreadFactory(String threadBaseName, boolean isDaemon) {
+    return new ThreadFactory() {
+      private final AtomicInteger counter = new AtomicInteger();
+
+      @Override
+      public Thread newThread(Runnable runnable) {
+        Thread thread = new Thread(runnable);
+        thread.setName(threadBaseName + counter.incrementAndGet());
+        thread.setDaemon(isDaemon);
+        return thread;
+      }
+    };
   }
 
   private void bindAndAcceptIncomingConnections(ServerBootstrap serverBootstrap)
