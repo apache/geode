@@ -123,6 +123,11 @@ pushd ${GEODE_BUILD}/build/reports/combined
   gsutil -q -m cp -r * gs://${TEST_RESULTS_DESTINATION}
 popd
 
+API_CHECK_REPORT=$(ls ${GEODE_BUILD}/geode-assembly/build/reports/rich-report-japi*.html)
+if [ -n "${API_CHECK_REPORT}" ]; then
+  gsutil -q cp ${API_CHECK_REPORT} gs://${TEST_RESULTS_DESTINATION}api_check_report.html
+fi
+
 gsutil cp ${DEST_DIR}/${FILENAME} gs://${TEST_ARTIFACTS_DESTINATION}
 
 set +x
@@ -133,6 +138,12 @@ printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=  Test Results URI =-=-=-=-=-=-=-=-
 printf "\033[92m${ARTIFACT_SCHEME}://${TEST_RESULTS_DESTINATION}\033[0m\n"
 printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
 printf "\n"
+
+if [ -n "${API_CHECK_REPORT}" ]; then
+  printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=  API Check Results URI -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
+  printf "\033[92m${ARTIFACT_SCHEME}://${TEST_RESULTS_DESTINATION}api_check_report.html\033[0m\n"
+  printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
+fi
 
 printf "\033[92mTest report artifacts from this job are available at:\033[0m\n"
 printf "\n"
