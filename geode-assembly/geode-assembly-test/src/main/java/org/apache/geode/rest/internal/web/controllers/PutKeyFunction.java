@@ -30,7 +30,6 @@ public class PutKeyFunction implements Function {
 
   private static final String ID = "PutKeyFunction";
 
-  @SuppressWarnings("unchecked")
   @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext regionContext = (RegionFunctionContext) context;
