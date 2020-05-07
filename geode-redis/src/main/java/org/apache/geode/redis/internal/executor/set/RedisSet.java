@@ -15,18 +15,203 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
-public interface RedisSet {
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd);
+/**
+ * This class still uses "synchronized" to protect the
+ * underlying HashSet even though all writers do so under
+ * the {@link SynchronizedStripedExecutor}. The synchronization on this
+ * class can be removed once readers are changed to
+ * also use the {@link SynchronizedStripedExecutor}.
+ */
+public class RedisSet implements Delta, DataSerializable {
 
-  long srem(ArrayList<ByteArrayWrapper> membersToAdd, AtomicBoolean setWasDeleted);
+  private HashSet<ByteArrayWrapper> members;
+  private transient ArrayList<ByteArrayWrapper> deltas;
+  // true if deltas contains adds; false if removes
+  private transient boolean deltasAreAdds;
 
-  Set<ByteArrayWrapper> members();
+  @SuppressWarnings("unchecked")
+  RedisSet(Collection<ByteArrayWrapper> members) {
+    if (members instanceof HashSet) {
+      this.members = (HashSet<ByteArrayWrapper>) members;
+    } else {
+      this.members = new HashSet<>(members);
+    }
+  }
 
-  boolean del();
+  // for serialization
+  public RedisSet() {}
+
+  public static long sadd(Region<ByteArrayWrapper, RedisSet> region,
+      ByteArrayWrapper key,
+      ArrayList<ByteArrayWrapper> membersToAdd) {
+
+    RedisSet redisSet = region.get(key);
+
+    if (redisSet != null) {
+      // update existing value
+      return redisSet.doSadd(membersToAdd, region, key);
+    } else {
+      region.create(key, new RedisSet(membersToAdd));
+      return membersToAdd.size();
+    }
+  }
+
+  public static long srem(Region<ByteArrayWrapper, RedisSet> region,
+      ByteArrayWrapper key,
+      ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
+    RedisSet redisSet = region.get(key);
+    if (redisSet == null) {
+      return 0L;
+    }
+    return redisSet.doSrem(membersToRemove, region, key, setWasDeleted);
+  }
+
+  public static boolean del(Region<ByteArrayWrapper, RedisSet> region,
+      ByteArrayWrapper key) {
+    return region.remove(key) != null;
+  }
+
+  public static Set<ByteArrayWrapper> members(Region<ByteArrayWrapper, RedisSet> region,
+      ByteArrayWrapper key) {
+    RedisSet redisSet = region.get(key);
+    if (redisSet != null) {
+      return redisSet.members();
+    } else {
+      return Collections.emptySet();
+    }
+  }
+
+  public synchronized boolean contains(ByteArrayWrapper member) {
+    return members.contains(member);
+  }
+
+  public synchronized int size() {
+    return members.size();
+  }
+
+  // DELTA
+  @Override
+  public boolean hasDelta() {
+    return deltas != null;
+  }
+
+  @Override
+  public void toDelta(DataOutput out) throws IOException {
+    DataSerializer.writeBoolean(deltasAreAdds, out);
+    DataSerializer.writeArrayList(deltas, out);
+  }
+
+  @Override
+  public synchronized void fromDelta(DataInput in)
+      throws IOException, InvalidDeltaException {
+    boolean deltaAdds = DataSerializer.readBoolean(in);
+    try {
+      ArrayList<ByteArrayWrapper> deltas = DataSerializer.readArrayList(in);
+      if (deltas != null) {
+        if (deltaAdds) {
+          members.addAll(deltas);
+        } else {
+          members.removeAll(deltas);
+        }
+      }
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  // DATA SERIALIZABLE
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeHashSet(members, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    members = DataSerializer.readHashSet(in);
+  }
+
+  /**
+   * @param membersToAdd members to add to this set; NOTE this list may by
+   *        modified by this call
+   * @param region the region this instance is stored in
+   * @param key the name of the set to add to
+   * @return the number of members actually added; -1 if concurrent modification
+   */
+  private synchronized long doSadd(ArrayList<ByteArrayWrapper> membersToAdd,
+      Region<ByteArrayWrapper, RedisSet> region,
+      ByteArrayWrapper key) {
+
+    membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
+    int membersAdded = membersToAdd.size();
+    if (membersAdded != 0) {
+      deltasAreAdds = true;
+      deltas = membersToAdd;
+      try {
+        region.put(key, this);
+      } finally {
+        deltas = null;
+      }
+    }
+    return membersAdded;
+  }
+
+  /**
+   * @param membersToRemove members to remove from this set; NOTE this list may by
+   *        modified by this call
+   * @param region the region this instance is stored in
+   * @param key the name of the set to remove from
+   * @param setWasDeleted set to true if this method deletes the set
+   * @return the number of members actually removed; -1 if concurrent modification
+   */
+  private synchronized long doSrem(ArrayList<ByteArrayWrapper> membersToRemove,
+      Region<ByteArrayWrapper, RedisSet> region,
+      ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
+
+    membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
+    int membersRemoved = membersToRemove.size();
+    if (membersRemoved != 0) {
+      if (members.isEmpty()) {
+        region.remove(key);
+        if (setWasDeleted != null) {
+          setWasDeleted.set(true);
+        }
+      } else {
+        deltasAreAdds = false;
+        deltas = membersToRemove;
+        try {
+          region.put(key, this);
+        } finally {
+          deltas = null;
+        }
+      }
+    }
+    return membersRemoved;
+  }
+
+  /**
+   * The returned set is a copy and will not be changed
+   * by future changes to this DeltaSet.
+   *
+   * @return a set containing all the members in this set
+   */
+  synchronized Set<ByteArrayWrapper> members() {
+    return new HashSet<>(members);
+  }
 }

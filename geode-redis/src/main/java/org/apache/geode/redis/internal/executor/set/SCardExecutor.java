@@ -39,9 +39,9 @@ public class SCardExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-    Region<ByteArrayWrapper, DeltaSet> keyRegion = getRegion(context);
+    Region<ByteArrayWrapper, RedisSet> keyRegion = getRegion(context);
 
-    DeltaSet set = keyRegion.get(key);
+    RedisSet set = keyRegion.get(key);
     if (set == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
       return;

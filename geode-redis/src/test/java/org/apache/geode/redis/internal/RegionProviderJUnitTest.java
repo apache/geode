@@ -30,7 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.redis.internal.executor.set.DeltaSet;
+import org.apache.geode.redis.internal.executor.set.RedisSet;
 
 
 /**
@@ -47,7 +47,7 @@ public class RegionProviderJUnitTest {
   private ExecutionHandlerContext context;
 
   private Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion;
-  private Region<ByteArrayWrapper, DeltaSet> setRegion;
+  private Region<ByteArrayWrapper, RedisSet> setRegion;
 
   /**
    * Setup data, objects mocks for the test case

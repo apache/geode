@@ -48,7 +48,7 @@ public class SRandMemberExecutor extends SetExecutor {
     ByteArrayWrapper key = command.getKey();
 
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Region<ByteArrayWrapper, DeltaSet> region = getRegion(context);
+      Region<ByteArrayWrapper, RedisSet> region = getRegion(context);
 
       int count = 1;
 
@@ -62,7 +62,7 @@ public class SRandMemberExecutor extends SetExecutor {
         }
       }
 
-      Set<ByteArrayWrapper> set = DeltaSet.members(region, key);
+      Set<ByteArrayWrapper> set = RedisSet.members(region, key);
 
       if (set == null || count == 0) {
         command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
