@@ -390,18 +390,8 @@ public class GeodeRedisServer {
     metaListener = new MetaCacheListener();
     expirationFutures = new ConcurrentHashMap<>();
     expirationExecutor =
-        Executors.newScheduledThreadPool(numExpirationThreads, new ThreadFactory() {
-          private final AtomicInteger counter = new AtomicInteger();
-
-          @Override
-          public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setName("GemFireRedis-ScheduledExecutor-" + counter.incrementAndGet());
-            t.setDaemon(true);
-            return t;
-          }
-
-        });
+        Executors.newScheduledThreadPool(numExpirationThreads,
+            createThreadFactory("GemFireRedis-ScheduledExecutor-", true));
     DEFAULT_REGION_TYPE = setRegionType();
     shutdown = false;
     started = false;
@@ -571,7 +561,7 @@ public class GeodeRedisServer {
    * specified by {@link GeodeRedisServer#serverPort}
    */
   private void startRedisServer() throws IOException, InterruptedException {
-    Class<? extends ServerChannel> socketClass = initializeThreadFactoriesAndGroups();
+    Class<? extends ServerChannel> socketClass = initializeNioEventLoopGroups();
 
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
     String redisPassword = system.getConfig().getRedisPassword();
@@ -589,29 +579,22 @@ public class GeodeRedisServer {
     bindAndAcceptIncomingConnections(serverBootstrap);
   }
 
-  private Class<? extends ServerChannel> initializeThreadFactoriesAndGroups() {
+  private Class<? extends ServerChannel> initializeNioEventLoopGroups() {
 
     ThreadFactory selectorThreadFactory =
-        getSelectorThreadFactory("GeodeRedisServer-SelectorThread-", );
+        createThreadFactory("GeodeRedisServer-SelectorThread-", true);
 
-    ThreadFactory workerThreadFactory = new ThreadFactory() {
-      private final AtomicInteger counter = new AtomicInteger();
+    ThreadFactory workerThreadFactory =
+        createThreadFactory("GeodeRedisServer-WorkerThread-", false);
 
-      @Override
-      public Thread newThread(Runnable r) {
-        Thread t = new Thread(r);
-        t.setName("GeodeRedisServer-WorkerThread-" + counter.incrementAndGet());
-        return t;
-      }
-    };
-
-    bossGroup = null;
-    workerGroup = null;
     Class<? extends ServerChannel> socketClass;
     if (singleThreadPerConnection) {
-      socketClass =
-          startRedisServiceSingleThreadPerConnection(selectorThreadFactory, workerThreadFactory);
-    } else {
+        bossGroup =
+            new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, selectorThreadFactory);
+        workerGroup =
+            new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, workerThreadFactory);
+        socketClass = io.netty.channel.socket.oio.OioServerSocketChannel.class;
+      } else {
       bossGroup = new NioEventLoopGroup(numSelectorThreads, selectorThreadFactory);
       workerGroup = new NioEventLoopGroup(numWorkerThreads, workerThreadFactory);
       socketClass = NioServerSocketChannel.class;
@@ -619,7 +602,7 @@ public class GeodeRedisServer {
     return socketClass;
   }
 
-  private ThreadFactory getSelectorThreadFactory(String threadBaseName, boolean isDaemon) {
+  private ThreadFactory createThreadFactory(String threadBaseName, boolean isDaemon) {
     return new ThreadFactory() {
       private final AtomicInteger counter = new AtomicInteger();
 
