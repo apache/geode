@@ -39,6 +39,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
@@ -520,8 +521,15 @@ public class CacheCreation implements InternalCache {
     DiskStoreAttributesCreation pdxRegDSC = initializePdxDiskStore(cache);
 
     cache.initializePdxRegistry();
-
-    diskStores.values().parallelStream().forEach(diskStore -> {
+    Stream<DiskStore> diskStoreStream;
+    boolean parallelDiskStoreRecovery =
+        cache.getInternalDistributedSystem().getConfig().getParallelDiskStoreRecovery();
+    if (parallelDiskStoreRecovery) {
+      diskStoreStream = diskStores.values().parallelStream();
+    } else {
+      diskStoreStream = diskStores.values().stream();
+    }
+    diskStoreStream.forEach(diskStore -> {
       DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
       if (creation != pdxRegDSC) {
         createDiskStore(creation, cache);

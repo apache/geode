@@ -2239,4 +2239,18 @@ public interface ConfigurationProperties {
    * <p>
    */
   String THREAD_MONITOR_TIME_LIMIT = "thread-monitor-time-limit-ms";
+  /**
+   * The static String definition of the <i>"parallel-disk-store-recovery"</i> property <a
+   * name="parallel-disk-store-recovery"/a>
+   * </p>
+   * <U>Description</U>: "true" enables parallel disk store recovery. The disk store will be
+   * recovered in parallel by multiple threads when the Geode cluster restarts.
+   * </p>
+   * <U>Default</U>: "true"
+   * </p>
+   * <U>Allowed values</U>: true or false
+   * </p>
+   * <U>Since</U>: Geode 1.14
+   */
+  String PARALLEL_DISK_STORE_RECOVERY = "parallel-disk-store-recovery";
 }

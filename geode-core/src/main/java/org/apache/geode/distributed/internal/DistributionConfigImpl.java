@@ -668,6 +668,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    */
   private int threadMonitorTimeLimit = DEFAULT_THREAD_MONITOR_TIME_LIMIT;
 
+  private boolean parallelDiskStoreRecovery = DEFAULT_PARALLEL_DISK_STORE_RECOVERY;
+
   /**
    * Create a new <code>DistributionConfigImpl</code> from the contents of another
    * <code>DistributionConfig</code>.
@@ -879,6 +881,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
     enableManagementRestService = other.getEnableManagementRestService();
     securityAuthTokenEnabledComponents = other.getSecurityAuthTokenEnabledComponents();
+    parallelDiskStoreRecovery = other.getParallelDiskStoreRecovery();
   }
 
   /**
@@ -3908,5 +3911,15 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setThreadMonitorTimeLimit(int newValue) {
     threadMonitorTimeLimit = newValue;
+  }
+
+  @Override
+  public void setParallelDiskStoreRecovery(boolean value) {
+    parallelDiskStoreRecovery = value;
+  }
+
+  @Override
+  public boolean getParallelDiskStoreRecovery() {
+    return parallelDiskStoreRecovery;
   }
 }

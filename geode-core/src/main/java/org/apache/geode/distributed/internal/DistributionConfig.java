@@ -111,6 +111,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_POR
 import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PROTOCOL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.PARALLEL_DISK_STORE_RECOVERY;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
@@ -5334,6 +5335,29 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Current value is a pattern for rejecting everything <code>"!*"</code>
    */
   String DEFAULT_SERIALIZABLE_OBJECT_FILTER = "!*";
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#PARALLEL_DISK_STORE_RECOVERY} property
+   */
+  @ConfigAttributeGetter(name = PARALLEL_DISK_STORE_RECOVERY)
+  boolean getParallelDiskStoreRecovery();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#PARALLEL_DISK_STORE_RECOVERY} property
+   */
+  @ConfigAttributeSetter(name = PARALLEL_DISK_STORE_RECOVERY)
+  void setParallelDiskStoreRecovery(boolean value);
+
+  /**
+   * The name of the {@link ConfigurationProperties#PARALLEL_DISK_STORE_RECOVERY} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String PARALLEL_DISK_STORE_RECOVERY_NAME = PARALLEL_DISK_STORE_RECOVERY;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#PARALLEL_DISK_STORE_RECOVERY} property
+   */
+  boolean DEFAULT_PARALLEL_DISK_STORE_RECOVERY = true;
 
   /**
    * Returns true if locators and mcast-port are not configured.
