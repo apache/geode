@@ -139,6 +139,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
 
   }
 
+  @SuppressWarnings("deprecation")
   ResultModel doStartLocator(
       String memberName,
       String bindAddress,
