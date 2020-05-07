@@ -61,7 +61,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SADD".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SADD.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -74,7 +74,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("key1".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SADD.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -86,7 +86,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SCARD".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SCARD.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -100,7 +100,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("key2".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SCARD.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -112,7 +112,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SMEMBERS".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SMEMBERS.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -126,7 +126,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("key2".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SMEMBERS.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -138,7 +138,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SISMEMBER".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SISMEMBER.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -151,7 +151,7 @@ public class SetExecutorJUnitTest {
     Command command = new Command(commandsAsBytes);
     commandsAsBytes.add("key1".getBytes());
 
-    Throwable thrown = catchThrowable(() -> SISMEMBER.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -166,7 +166,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("member2".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SISMEMBER.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -178,7 +178,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SMOVE".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SMOVE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -191,7 +191,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("source".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SMOVE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -205,7 +205,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("dest".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SMOVE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -221,7 +221,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("field2".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SMOVE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -233,7 +233,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SDIFF".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SDIFF.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -245,7 +245,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SDIFFSTORE".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SDIFFSTORE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -258,7 +258,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("key1".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SDIFFSTORE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -270,7 +270,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SINTER".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SINTERSTORE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -282,7 +282,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SINTERSTORE".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SINTERSTORE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -295,7 +295,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("key1".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SINTERSTORE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -307,7 +307,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SUNION".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SUNION.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -319,7 +319,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SUNIONSTORE".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SUNIONSTORE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -332,7 +332,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("key1".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SUNIONSTORE.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -344,7 +344,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SPOP".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SPOP.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -358,7 +358,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("NAN".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SPOP.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("value is not an integer or out of range");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -373,7 +373,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("invalid".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SPOP.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -385,7 +385,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("SREM".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SREM.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
@@ -398,7 +398,7 @@ public class SetExecutorJUnitTest {
     commandsAsBytes.add("key1".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> SREM.executeCommand(command, context));
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
     assertThat(thrown).hasMessageContaining("wrong number of arguments");
     assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);

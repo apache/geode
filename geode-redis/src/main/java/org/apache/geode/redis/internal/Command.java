@@ -158,7 +158,7 @@ public class Command {
     return b.toString();
   }
 
-  void execute(ExecutionHandlerContext executionHandlerContext) {
+  public void execute(ExecutionHandlerContext executionHandlerContext) {
     RedisCommandType type = getCommandType();
     type.executeCommand(this, executionHandlerContext);
   }
