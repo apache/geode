@@ -207,21 +207,22 @@ public enum RedisCommandType {
    **************** Hashes ***************
    ***************************************/
 
-  HDEL(new HDelExecutor()),
-  HEXISTS(new HExistsExecutor()),
-  HGET(new HGetExecutor()),
-  HGETALL(new HGetAllExecutor()),
-  HINCRBY(new HIncrByExecutor()),
-  HINCRBYFLOAT(new HIncrByFloatExecutor()),
-  HKEYS(new HKeysExecutor()),
-  HLEN(new HLenExecutor()),
-  HMGET(new HMGetExecutor()),
-  HMSET(new HMSetExecutor()),
+  HDEL(new HDelExecutor(), new MinimumParameterRequirements(3)),
+  HEXISTS(new HExistsExecutor(), new ExactParameterRequirements(3)),
+  HGET(new HGetExecutor(), new ExactParameterRequirements(3)),
+  HGETALL(new HGetAllExecutor(), new ExactParameterRequirements(2)),
+  HINCRBY(new HIncrByExecutor(), new ExactParameterRequirements(4)),
+  HINCRBYFLOAT(new HIncrByFloatExecutor(), new ExactParameterRequirements(4)),
+  HKEYS(new HKeysExecutor(), new ExactParameterRequirements(2)),
+  HLEN(new HLenExecutor(), new ExactParameterRequirements(2)),
+  HMGET(new HMGetExecutor(), new MinimumParameterRequirements(3)),
+  HMSET(new HMSetExecutor(),
+      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
   HSCAN(new HScanExecutor()),
   HSET(new HSetExecutor(),
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
   HSETNX(new HSetNXExecutor(), new ExactParameterRequirements(4)),
-  HVALS(new HValsExecutor()),
+  HVALS(new HValsExecutor(), new ExactParameterRequirements(2)),
 
   /***************************************
    *********** HyperLogLogs **************
