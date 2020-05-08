@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -38,6 +39,7 @@ import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category({RedisTest.class})
 public class PubSubIntegrationTest {
@@ -47,6 +49,9 @@ public class PubSubIntegrationTest {
   private static GeodeRedisServer server;
   private static GemFireCache cache;
   private static int port = 6379;
+
+  @ClassRule
+  public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @BeforeClass
   public static void setUp() {

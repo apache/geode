@@ -26,9 +26,8 @@ public class DummySubscription implements Subscription {
   }
 
   @Override
-  public PublishResult publishMessage(String channel, byte[] message) {
-    return null;
-  }
+  public void publishMessage(String channel, byte[] message,
+      PublishResultCollector publishResultCollector) {}
 
   @Override
   public boolean matchesClient(Client client) {
