@@ -15,12 +15,14 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -98,7 +100,7 @@ public class RedisSet implements Delta, DataSerializable {
     if (redisSet != null) {
       return redisSet.members();
     } else {
-      return Collections.emptySet();
+      return emptySet();
     }
   }
 
@@ -107,7 +109,7 @@ public class RedisSet implements Delta, DataSerializable {
     if (redisSet != null) {
       return redisSet.size();
     } else {
-      return -1;
+      return 0;
     }
   }
 
@@ -127,7 +129,7 @@ public class RedisSet implements Delta, DataSerializable {
     if (redisSet != null) {
       return redisSet.srandmember(count);
     } else {
-      return null;
+      return emptyList();
     }
   }
 
@@ -137,7 +139,7 @@ public class RedisSet implements Delta, DataSerializable {
     if (redisSet != null) {
       return redisSet.doSpop(region, key, popCount);
     } else {
-      return null;
+      return emptyList();
     }
   }
 
@@ -147,7 +149,7 @@ public class RedisSet implements Delta, DataSerializable {
     if (RedisSet != null) {
       return RedisSet.doSscan(matchPattern, count, cursor);
     } else {
-      return null;
+      return emptyList();
     }
   }
 
@@ -191,7 +193,7 @@ public class RedisSet implements Delta, DataSerializable {
       Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key, int popCount) {
     int originalSize = size();
     if (originalSize == 0) {
-      return null;
+      return emptyList();
     }
 
     if (popCount >= originalSize) {

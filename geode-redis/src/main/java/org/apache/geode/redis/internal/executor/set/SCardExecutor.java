@@ -23,8 +23,6 @@ import org.apache.geode.redis.internal.RedisDataType;
 
 public class SCardExecutor extends SetExecutor {
 
-  private static final int NOT_EXISTS = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
@@ -32,10 +30,6 @@ public class SCardExecutor extends SetExecutor {
     RedisSetCommands redisSetCommands =
         new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
     int size = redisSetCommands.scard(key);
-    if (size == -1) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-    } else {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
-    }
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
   }
 }

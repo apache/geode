@@ -57,7 +57,7 @@ public class SRandMemberExecutor extends SetExecutor {
         new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
     Collection<ByteArrayWrapper> results = redisSetCommands.srandmember(key, count);
     try {
-      if (results == null || results.isEmpty()) {
+      if (results.isEmpty()) {
         command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       } else if (count == 1) {
         command.setResponse(

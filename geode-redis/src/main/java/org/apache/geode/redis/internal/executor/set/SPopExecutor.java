@@ -38,7 +38,7 @@ public class SPopExecutor extends SetExecutor {
     RedisSetCommands redisSetCommands =
         new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
     Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
-    if (popped == null || popped.isEmpty()) {
+    if (popped.isEmpty()) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;
     }
@@ -54,5 +54,4 @@ public class SPopExecutor extends SetExecutor {
           RedisConstants.SERVER_ERROR_MESSAGE));
     }
   }
-
 }
