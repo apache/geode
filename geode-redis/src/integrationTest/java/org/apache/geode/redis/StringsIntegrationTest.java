@@ -280,7 +280,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  @Ignore
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void testSET_with_KEEPTTL_shouldRetainPreviousTTL_OnSuccess() {
     String key = "key";
     String value = "value";
