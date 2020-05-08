@@ -175,16 +175,16 @@ gfsh>connect
 ``` pre
 gfsh>connect
 Connecting to Locator at [host=localhost, port=10334] ..
-Connecting to Manager at [host=GemFireStymon, port=1099] ..
-Successfully connected to: [host=GemFireStymon, port=1099]
+Connecting to Manager at [host=GeodeStymon, port=1099] ..
+Successfully connected to: [host=GeodeStymon, port=1099]
 ```
 
 **Example of connecting to a remote locator over HTTP:**
 
 ``` pre
-gfsh>connect --url="http://myLocatorHost.example.com:8080/gemfire/v1"
-Successfully connected to: GemFire Manager's HTTP service @ 
-http://myLocatorHost.example.com:8080/gemfire/v1
+gfsh>connect --url="http://myLocatorHost.example.com:8080/geode-mgmt/v1"
+Successfully connected to: Geode Manager's HTTP service @
+http://myLocatorHost.example.com:8080/geode-mgmt/v1
 ```
 
 **Error Messages:**
@@ -193,8 +193,8 @@ http://myLocatorHost.example.com:8080/gemfire/v1
 "Locator could not find a JMX Manager";
 "jmx password must be specified.";
 "Could not connect to : {0}. {1}";
-"Could not find a GemFire jmx-manager service running at {0}.";
+"Could not find a Geode jmx-manager service running at {0}.";
 "--token requires a value, for example --token=foo";
 "--token cannot be combined with --user or --password";
-"Could not connect to GemFire Locator service at {0}."
+"Could not connect to Geode Locator service at {0}."
 ```
