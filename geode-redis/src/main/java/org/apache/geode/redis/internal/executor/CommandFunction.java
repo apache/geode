@@ -159,11 +159,18 @@ public class CommandFunction implements Function<Object[]> {
             (deletedCount) -> resultSender.lastResult(deletedCount));
         break;
       }
+      case HGETALL: {
+        stripedExecutor.execute(key,
+            () -> RedisHash.hgetall(localRegion, key),
+            (entries) -> resultSender.lastResult(entries));
+        break;
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
   }
 
+  @SuppressWarnings("unchecked")
   private void executeDel(ByteArrayWrapper key, Region localRegion, ResultSender resultSender,
       RedisDataType delType) {
     switch (delType) {

@@ -147,7 +147,7 @@ public class RedisHash implements Delta, DataSerializable {
       if (nx) {
         added = hash.putIfAbsent(field, value) == null;
       } else {
-        added = hash.put(iterator.next(), iterator.next()) == null;
+        added = hash.put(field, value) == null;
       }
       if (added) {
         if (deltas == null) {

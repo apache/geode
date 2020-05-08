@@ -50,6 +50,11 @@ public class HDelExecutor extends HashExecutor {
     RedisHashCommands redisHashCommands =
         new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
     int numDeleted = redisHashCommands.hdel(key, commandElems.subList(2, commandElems.size()));
+    if (numDeleted != 0) {
+      if (!context.getRegionProvider().getHashRegion().containsKey(key)) {
+        context.getKeyRegistrar().unregisterIfType(key, RedisDataType.REDIS_HASH);
+      }
+    }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }
 
