@@ -66,6 +66,7 @@ class GeodeRedisHashCommandsSynchronized implements RedisHashCommands {
           if (oldHash == null) {
             fieldsAdded.set(newHash.size());
           } else {
+            // this is correct; only fields created are counted; updates of existing fields are not
             fieldsAdded.set(newHash.size() - oldHash.size());
           }
           return newHash;
