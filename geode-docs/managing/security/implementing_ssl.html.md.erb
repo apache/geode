@@ -102,12 +102,12 @@ overrides the ssl-default-alias for the _component_ specified.
 For example, ssl-locator-alias would specify a name for the locator component's certificate in the system key store.</dd>
 
 <dt>**ssl-ciphers**</dt>
-<dd>A comma-separated list of the valid SSL ciphers for SSL-enabled component connections. A setting of 'any'
+<dd>A comma-separated list of the valid ciphers for TCP/IP connections with TLS enabled (see ssl-enabled-components). A setting of 'any'
 allows the JSSE provider to select an appropriate cipher that it supports.</dd>
 
 <dt>**ssl-protocols**</dt>
-<dd>A comma-separated list of the valid SSL-enabled component connections. A setting of 'any' attempts
-to use your JSSE provider's TLSv1.3, or TLSv1.2 if v1.3 is not available.</dd>
+<dd>A comma-separated list of the valid protocol versions for TCP/IP connections with TLS enabled (see ssl-enabled-components).
+A setting of 'any' attempts to use your JSSE provider's TLSv1.3, or TLSv1.2 if v1.3 is not available.</dd>
 
 <dt>**ssl-keystore, ssl-keystore-password**</dt>
 <dd>The path to the key store and the key store password, specified as strings</dd>
