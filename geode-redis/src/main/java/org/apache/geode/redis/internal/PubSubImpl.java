@@ -101,6 +101,12 @@ public class PubSubImpl implements PubSub {
         context.getResultSender().lastResult(subscriberCount);
       }
 
+      /**
+       * Since the publish process uses an onMembers function call, we don't want to re-publish
+       * to members if one fails.
+       * TODO: Revisit this in the event that we instead use an onMember call against individual
+       * members.
+       */
       @Override
       public boolean isHA() {
         return false;
