@@ -92,7 +92,7 @@ public class RedisSet implements Delta, DataSerializable {
     return region.remove(key) != null;
   }
 
-  public static Set<ByteArrayWrapper> members(Region<ByteArrayWrapper, RedisSet> region,
+  public static Set<ByteArrayWrapper> smembers(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key) {
     RedisSet redisSet = region.get(key);
     if (redisSet != null) {
@@ -365,7 +365,7 @@ public class RedisSet implements Delta, DataSerializable {
    *
    * @return a set containing all the members in this set
    */
-  synchronized Set<ByteArrayWrapper> members() {
+  private synchronized Set<ByteArrayWrapper> members() {
     return new HashSet<>(members);
   }
 }

@@ -78,7 +78,7 @@ public class CommandFunction implements Function<Object[]> {
         break;
       case SMEMBERS:
         stripedExecutor.execute(key,
-            () -> RedisSet.members(localRegion, key),
+            () -> RedisSet.smembers(localRegion, key),
             (members) -> resultSender.lastResult(members));
         break;
       case SCARD:
