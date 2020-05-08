@@ -23,7 +23,7 @@ import org.apache.geode.distributed.DistributedMember;
 
 class SingleResultCollector<T> implements ResultCollector<T, T> {
 
- T result;
+  T result;
 
   @Override
   public T getResult() throws FunctionException {
@@ -38,15 +38,14 @@ class SingleResultCollector<T> implements ResultCollector<T, T> {
 
   @Override
   public void addResult(DistributedMember memberID, T resultOfSingleExecution) {
-   result = resultOfSingleExecution;
+    result = resultOfSingleExecution;
   }
 
   @Override
-  public void endResults() {
-  }
+  public void endResults() {}
 
   @Override
   public void clearResults() {
-     throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException();
   }
 }
