@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -52,14 +53,20 @@ public class LocatorLoadSnapshotIntegrationTest {
     final ServerLocation l1 = new ServerLocation("localhost", 1);
     final ServerLocation l2 = new ServerLocation("localhost", 2);
     final ServerLocation l3 = new ServerLocation("localhost", 3);
+    final String uniqueId1 = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final String uniqueId2 = new InternalDistributedMember("localhost", 2).getUniqueId();
+    final String uniqueId3 = new InternalDistributedMember("localhost", 3).getUniqueId();
 
     int initialLoad1 = (int) (Math.random() * (NUM_REQUESTS / 2));
     int initialLoad2 = (int) (Math.random() * (NUM_REQUESTS / 2));
     int initialLoad3 = (int) (Math.random() * (NUM_REQUESTS / 2));
 
-    sn.addServer(l1, "", new String[0], new ServerLoad(initialLoad1, 1, 0, 1), LOAD_POLL_INTERVAL);
-    sn.addServer(l2, "", new String[0], new ServerLoad(initialLoad2, 1, 0, 1), LOAD_POLL_INTERVAL);
-    sn.addServer(l3, "", new String[0], new ServerLoad(initialLoad3, 1, 0, 1), LOAD_POLL_INTERVAL);
+    sn.addServer(l1, uniqueId1, new String[0], new ServerLoad(initialLoad1, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
+    sn.addServer(l2, uniqueId2, new String[0], new ServerLoad(initialLoad2, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
+    sn.addServer(l3, uniqueId3, new String[0], new ServerLoad(initialLoad3, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
 
     final Map loadCounts = new HashMap();
     loadCounts.put(l1, new AtomicInteger(initialLoad1));

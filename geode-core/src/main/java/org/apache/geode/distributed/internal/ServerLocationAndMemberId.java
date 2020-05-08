@@ -16,18 +16,12 @@ package org.apache.geode.distributed.internal;
 
 public class ServerLocationAndMemberId {
 
-  private ServerLocation serverLocation;
-  private String memberId;
 
-  public ServerLocationAndMemberId() {}
-
-  public ServerLocationAndMemberId(ServerLocation serverLocation) {
-    this.serverLocation = serverLocation;
-    memberId = "";
-  }
+  private final ServerLocation serverLocation;
+  private final String memberId;
 
   public ServerLocationAndMemberId(ServerLocation serverLocation, String memberId) {
-    this(serverLocation);
+    this.serverLocation = serverLocation;
     this.memberId = memberId;
   }
 
@@ -66,7 +60,7 @@ public class ServerLocationAndMemberId {
     final int prime = 31;
     int result = 1;
     result =
-        prime * result + serverLocation.hashCode() + ((memberId != null) ? memberId.hashCode() : 0);
+        prime * result + serverLocation.hashCode() + memberId.hashCode();
     return result;
   }
 }

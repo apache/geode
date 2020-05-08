@@ -17,8 +17,10 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPingMessage;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -39,6 +41,10 @@ public class Ping extends BaseCommand {
 
   private Ping() {}
 
+  protected ClientHealthMonitor getClientHealthMonitor() {
+    return ClientHealthMonitor.getInstance();
+  }
+
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException {
@@ -50,22 +56,33 @@ public class Ping extends BaseCommand {
     }
     if (clientMessage.getNumberOfParts() > 0) {
       try {
-        DistributedMember targetServer = (DistributedMember) clientMessage.getPart(0).getObject();
-        DistributedMember myID = serverConnection.getCache().getMyId();
+        InternalDistributedMember targetServer =
+            (InternalDistributedMember) clientMessage.getPart(0).getObject();
+        InternalDistributedMember myID = serverConnection.getCache().getMyId();
         if (!myID.equals(targetServer)) {
+          if (myID.compareTo(targetServer, true, false) == 0) {
+            String errorMessage =
+                "Target server " + targetServer + " has different viewId: " + myID;
+            logger.warn(errorMessage);
+            writeException(clientMessage, new ServerOperationException(errorMessage), false,
+                serverConnection);
+            serverConnection.setAsTrue(RESPONDED);
+            return;
+          }
+
           pingCorrectServer(clientMessage, targetServer, serverConnection);
-          writeReply(clientMessage, serverConnection);
           serverConnection.setAsTrue(RESPONDED);
           return;
         }
       } catch (ClassNotFoundException e) {
         logger.warn("Unable to deserialize message from " + serverConnection.getProxyID());
-        writeErrorResponse(clientMessage, MessageType.PING, serverConnection);
+        writeException(clientMessage, e, false, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
         return;
       }
     }
-    ClientHealthMonitor chm = ClientHealthMonitor.getInstance();
+
+    ClientHealthMonitor chm = getClientHealthMonitor();
     if (chm != null) {
       chm.receivedPing(serverConnection.getProxyID());
     }
@@ -89,9 +106,11 @@ public class Ping extends BaseCommand {
           serverConnection.getProxyID(), targetServer);
     }
     if (!serverConnection.getCache().getDistributionManager().isCurrentMember(targetServer)) {
-      logger.warn("Unable to ping non-member {} for client {}", targetServer,
-          serverConnection.getProxyID());
-      writeErrorResponse(clientMessage, MessageType.PING, serverConnection);
+      String errorMessage = "Unable to ping non-member " + targetServer + " for client "
+          + serverConnection.getProxyID();
+      logger.warn(errorMessage);
+      writeException(clientMessage, new ServerOperationException(errorMessage), false,
+          serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     } else {
       // send a ping message to the server. This is a one-way message that doesn't send a reply
