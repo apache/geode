@@ -214,48 +214,48 @@ public class SingleHopClientExecutor {
       ClientMetadataService cms,
       LocalRegion region,
       Map<ServerLocation, RuntimeException> failedServers) {
-        if (callableTasks != null && !callableTasks.isEmpty()) {
+    if (callableTasks != null && !callableTasks.isEmpty()) {
       Map<ServerLocation, Object> resultMap = new HashMap<>();
       boolean anyPartialResults = false;
       List futures;
-            try {
-                futures = execService.invokeAll(callableTasks);
+      try {
+        futures = execService.invokeAll(callableTasks);
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }
-            Iterator futureItr = futures.iterator();
+      Iterator futureItr = futures.iterator();
       Iterator taskItr = callableTasks.iterator();
       RuntimeException rte = null;
-            while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
-                Future fut = (Future) futureItr.next();
+      while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
+        Future fut = (Future) futureItr.next();
         SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
-                ServerLocation server = task.getServer();
-                try {
+        ServerLocation server = task.getServer();
+        try {
           VersionedObjectList versions = (VersionedObjectList) fut.get();
-                    if (logger.isDebugEnabled()) {
+          if (logger.isDebugEnabled()) {
             logger.debug("submitBulkOp#got result from {}:{}", server, versions);
           }
           resultMap.put(server, versions);
-                  } catch (InterruptedException e) {
+        } catch (InterruptedException e) {
           InternalGemFireException ige = new InternalGemFireException(e);
           // only to make this server as failed server, not to throw right now
           failedServers.put(server, ige);
-                    if (rte == null) {
+          if (rte == null) {
             rte = ige;
           }
-                  } catch (ExecutionException ee) {
+        } catch (ExecutionException ee) {
           if (ee.getCause() instanceof ServerOperationException) {
             if (logger.isDebugEnabled()) {
               logger.debug("submitBulkOp#ExecutionException from server {}", server, ee);
             }
-                        ServerOperationException soe = (ServerOperationException) ee.getCause();
+            ServerOperationException soe = (ServerOperationException) ee.getCause();
             // only to make this server as failed server, not to throw right now
             failedServers.put(server, soe);
             if (rte == null) {
               rte = soe;
             }
           } else if (ee.getCause() instanceof ServerConnectivityException) {
-                        if (logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
               logger.debug("submitBulkOp#ExecutionException for server {}", server, ee);
             }
             cms = region.getCache().getClientMetadataService();
@@ -263,14 +263,14 @@ public class SingleHopClientExecutor {
             cms.scheduleGetPRMetaData(region, false);
             failedServers.put(server, (ServerConnectivityException) ee.getCause());
           } else {
-                        Throwable t = ee.getCause();
+            Throwable t = ee.getCause();
             if (t instanceof PutAllPartialResultException) {
               resultMap.put(server, t);
               anyPartialResults = true;
-                            failedServers.put(server, (PutAllPartialResultException) t);
+              failedServers.put(server, (PutAllPartialResultException) t);
             } else {
               RuntimeException other_rte = executionThrowable(ee.getCause());
-                            failedServers.put(server, other_rte);
+              failedServers.put(server, other_rte);
               if (rte == null) {
                 rte = other_rte;
               }
@@ -283,7 +283,7 @@ public class SingleHopClientExecutor {
       if (rte != null && !anyPartialResults) {
         throw rte;
       }
-            return resultMap;
+      return resultMap;
     }
     return null;
   }
