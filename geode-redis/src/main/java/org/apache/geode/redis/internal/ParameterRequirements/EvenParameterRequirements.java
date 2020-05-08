@@ -21,12 +21,12 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 public class EvenParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (isEven(command.getProcessedCommand().size())) {
+    if (!isEven(command.getProcessedCommand().size())) {
       throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsError());
     }
   }
 
   private boolean isEven(int n) {
-    return n % 2 != 0;
+    return n % 2 == 0;
   }
 }
