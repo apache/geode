@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -25,24 +28,30 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
+import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 
 
 public class DistributedRegionTest {
-  private RegionVersionVector vector;
-  private RegionVersionHolder holder;
-  private VersionSource lostMemberVersionID;
+  private RegionVersionVector<VersionSource<Object>> vector;
+  private RegionVersionHolder<VersionSource<Object>> holder;
+  private VersionSource<Object> lostMemberVersionID;
   private InternalDistributedMember member;
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setup() {
     vector = mock(RegionVersionVector.class);
     holder = mock(RegionVersionHolder.class);
@@ -56,7 +65,7 @@ public class DistributedRegionTest {
     EntryEventImpl mockEntryEventImpl = mock(EntryEventImpl.class);
     Object returnValue = new Object();
 
-    when(mockDistributedRegion.validatedDestroy(anyObject(), eq(mockEntryEventImpl)))
+    when(mockDistributedRegion.validatedDestroy(any(), eq(mockEntryEventImpl)))
         .thenReturn(returnValue);
 
     assertThat(mockDistributedRegion.validatedDestroy(new Object(), mockEntryEventImpl))
@@ -179,5 +188,76 @@ public class DistributedRegionTest {
     distributedRegion.performSynchronizeForLostMemberTask(member, lostMemberVersionID);
 
     verify(distributedRegion, never()).synchronizeForLostMember(member, lostMemberVersionID);
+  }
+
+  @Test
+  public void validateAsynchronousEventDispatcherShouldDoNothingWhenDispatcherIdCanNotBeFound() {
+    InternalCache internalCache = mock(InternalCache.class);
+    when(internalCache.getAllGatewaySenders())
+        .thenReturn(Collections.singleton(mock(GatewaySender.class)));
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getCache()).thenReturn(internalCache);
+    doCallRealMethod().when(distributedRegion).validateAsynchronousEventDispatcher(anyString());
+
+    distributedRegion.validateAsynchronousEventDispatcher("nonExistingDispatcher");
+  }
+
+  @Test
+  public void validateAsynchronousEventDispatcherShouldDoNothingWhenFoundDispatcherIsSerial() {
+    String senderId = "mySender";
+    GatewaySender serialSender = mock(GatewaySender.class);
+    when(serialSender.isParallel()).thenReturn(false);
+    when(serialSender.getId()).thenReturn(senderId);
+    InternalCache internalCache = mock(InternalCache.class);
+    when(internalCache.getAllGatewaySenders()).thenReturn(Collections.singleton(serialSender));
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getCache()).thenReturn(internalCache);
+    doCallRealMethod().when(distributedRegion).validateAsynchronousEventDispatcher(anyString());
+
+    distributedRegion.validateAsynchronousEventDispatcher(senderId);
+  }
+
+  @Test
+  public void validateAsynchronousEventDispatcherShouldThrowExceptionWhenDispatcherIdMatchesAnExistingParallelAsyncEventQueue() {
+    String senderId = "senderId";
+    String regionPath = "thisRegion";
+    String internalSenderId = getSenderIdFromAsyncEventQueueId(senderId);
+    GatewaySender parallelAsyncEventQueue = mock(GatewaySender.class);
+    when(parallelAsyncEventQueue.isParallel()).thenReturn(true);
+    when(parallelAsyncEventQueue.getId()).thenReturn(internalSenderId);
+    InternalCache internalCache = mock(InternalCache.class);
+    when(internalCache.getAllGatewaySenders())
+        .thenReturn(Collections.singleton(parallelAsyncEventQueue));
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getCache()).thenReturn(internalCache);
+    when(distributedRegion.getFullPath()).thenReturn(regionPath);
+    doCallRealMethod().when(distributedRegion).validateAsynchronousEventDispatcher(anyString());
+
+    assertThatThrownBy(
+        () -> distributedRegion.validateAsynchronousEventDispatcher(internalSenderId))
+            .isInstanceOf(AsyncEventQueueConfigurationException.class)
+            .hasMessage("Parallel Async Event Queue " + senderId
+                + " can not be used with replicated region " + regionPath);
+  }
+
+  @Test
+  public void validateAsynchronousEventDispatcherShouldThrowExceptionWhenDispatcherIdMatchesAnExistingParallelGatewaySender() {
+    String senderId = "senderId";
+    String regionPath = "thisRegion";
+    GatewaySender parallelGatewaySender = mock(GatewaySender.class);
+    when(parallelGatewaySender.isParallel()).thenReturn(true);
+    when(parallelGatewaySender.getId()).thenReturn(senderId);
+    InternalCache internalCache = mock(InternalCache.class);
+    when(internalCache.getAllGatewaySenders())
+        .thenReturn(Collections.singleton(parallelGatewaySender));
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getCache()).thenReturn(internalCache);
+    when(distributedRegion.getFullPath()).thenReturn(regionPath);
+    doCallRealMethod().when(distributedRegion).validateAsynchronousEventDispatcher(anyString());
+
+    assertThatThrownBy(() -> distributedRegion.validateAsynchronousEventDispatcher(senderId))
+        .isInstanceOf(GatewaySenderConfigurationException.class)
+        .hasMessage("Parallel Gateway Sender " + senderId
+            + " can not be used with replicated region " + regionPath);
   }
 }

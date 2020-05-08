@@ -40,7 +40,6 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -2047,27 +2046,6 @@ public class WANTestBase extends DistributedTestCase {
           "Test " + getTestMethodName() + " failed to start GatewayReceiver on port " + port, e);
     }
     return port;
-  }
-
-  public static void createReceiverWithBindAddress(int locPort) {
-    WANTestBase test = new WANTestBase();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
-
-    InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
-    GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    fact.setStartPort(port);
-    fact.setEndPort(port);
-    fact.setManualStart(true);
-    fact.setBindAddress("200.112.204.10");
-    GatewayReceiver receiver = fact.create();
-    assertThatThrownBy(receiver::start)
-        .isInstanceOf(GatewayReceiverException.class)
-        .hasMessageContaining("No available free port found in the given range");
   }
 
   public static int createReceiverWithSSL(int locPort) {

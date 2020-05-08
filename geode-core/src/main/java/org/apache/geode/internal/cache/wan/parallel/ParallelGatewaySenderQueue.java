@@ -260,16 +260,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // Fix for Bug#51491. Once decided to support this configuration we have call
         // addShadowPartitionedRegionForUserRR
         if (this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
-          throw new AsyncEventQueueConfigurationException(
-              String.format(
-                  "Parallel Async Event Queue %s can not be used with replicated region %s",
-                  new Object[] {
-                      AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(this.sender.getId()),
-                      userRegion.getFullPath()}));
+          throw new AsyncEventQueueConfigurationException(String.format(
+              "Parallel Async Event Queue %s can not be used with replicated region %s",
+              AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(this.sender.getId()),
+              userRegion.getFullPath()));
         }
         throw new GatewaySenderConfigurationException(
-            String.format("Parallel gateway sender %s can not be used with replicated region %s",
-                new Object[] {this.sender.getId(), userRegion.getFullPath()}));
+            String.format("Parallel Gateway Sender %s can not be used with replicated region %s",
+                this.sender.getId(), userRegion.getFullPath()));
       }
     }
 
