@@ -16,5 +16,26 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+
 public class RedisHash {
+  public static int del(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key) {
+    return 0;
+  }
+
+  public static int hset(Region localRegion, ByteArrayWrapper key,
+                         List<ByteArrayWrapper> fieldsToSet, boolean nx) {
+    return 0;
+  }
+
+  public static Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall(
+      Region localRegion, ByteArrayWrapper key) {
+    return null;
+  }
+
 }

@@ -38,6 +38,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
 @SuppressWarnings("unchecked")
@@ -77,7 +78,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Boolean>> results = executeFunction(DEL, key, null);
+    ResultCollector<Object[], List<Boolean>> results = executeFunction(DEL, key, RedisDataType.REDIS_SET);
     return results.getResult().get(0);
   }
 

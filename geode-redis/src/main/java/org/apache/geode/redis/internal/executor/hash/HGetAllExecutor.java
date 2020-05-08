@@ -45,11 +45,10 @@ public class HGetAllExecutor extends HashExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries;
     ByteArrayWrapper key = command.getKey();
-
-    RedisHashCommands hash = new GeodeRedisHashCommandsSynchronized(key, context);
-    entries = hash.hgetall();
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
+    Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries = redisHashCommands.hgetall(key);
     command.setResponse(Coder.getKeyValArrayResponse(context.getByteBufAllocator(), entries));
   }
 

@@ -44,9 +44,10 @@ public class HSetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisHashCommands hash = new GeodeRedisHashCommandsSynchronized(key, context);
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
 
-    int fieldsAdded = hash.hset(commandElems.subList(2, commandElems.size()), onlySetOnAbsent());
+    int fieldsAdded = redisHashCommands.hset(key, commandElems.subList(2, commandElems.size()), onlySetOnAbsent());
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), fieldsAdded));
   }

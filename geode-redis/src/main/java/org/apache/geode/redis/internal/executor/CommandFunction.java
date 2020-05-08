@@ -16,8 +16,11 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.RedisCommandType.HSET;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
@@ -30,6 +33,8 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.executor.hash.RedisHash;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.executor.set.StripedExecutor;
 import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
@@ -49,7 +54,7 @@ public class CommandFunction implements Function<Object[]> {
   public static ResultCollector execute(Region<?,?> region,
                                           RedisCommandType command,
                                           ByteArrayWrapper key,
-                                          ArrayList<ByteArrayWrapper> commandArguments) {
+                                          Object commandArguments) {
     return FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
@@ -69,7 +74,7 @@ public class CommandFunction implements Function<Object[]> {
         (RegionFunctionContextImpl) context;
     ByteArrayWrapper key =
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
-    Region<ByteArrayWrapper, RedisSet> localRegion =
+    Region localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
     ResultSender resultSender = regionFunctionContext.getResultSender();
     Object[] args = context.getArguments();
@@ -93,11 +98,23 @@ public class CommandFunction implements Function<Object[]> {
             });
         break;
       }
-      case DEL:
-        stripedExecutor.execute(key,
-            () -> RedisSet.del(localRegion, key),
-            (deleted) -> resultSender.lastResult(deleted));
+      case DEL: {
+        RedisDataType delType = (RedisDataType) args[1];
+        switch (delType) {
+          case REDIS_SET:
+            stripedExecutor.execute(key,
+                () -> RedisSet.del(localRegion, key),
+                (deleted) -> resultSender.lastResult(deleted));
+            break;
+          case REDIS_HASH:
+            stripedExecutor.execute(key,
+                () -> RedisHash.del(localRegion, key),
+                (deleted) -> resultSender.lastResult(deleted));
+            break;
+          default: throw new UnsupportedOperationException("DEL does not support " + delType);
+        }
         break;
+      }
       case SMEMBERS:
         stripedExecutor.execute(key,
             () -> RedisSet.smembers(localRegion, key),
@@ -135,6 +152,15 @@ public class CommandFunction implements Function<Object[]> {
         int cursor = (int) args[2];
         stripedExecutor.execute(key,
             () -> RedisSet.sscan(localRegion, key, matchPattern, count, cursor),
+            (members) -> resultSender.lastResult(members));
+        break;
+      }
+      case HSET: {
+        Object[] hsetArgs = (Object[]) args[1];
+        List<ByteArrayWrapper> fieldsToSet = (List<ByteArrayWrapper>) hsetArgs[0];
+        boolean NX = (boolean) hsetArgs[1];
+        stripedExecutor.execute(key,
+            () -> RedisHash.hset(localRegion, key, fieldsToSet, NX),
             (members) -> resultSender.lastResult(members));
         break;
       }
