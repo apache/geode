@@ -48,6 +48,8 @@ import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
+import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
+import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
@@ -219,9 +221,9 @@ public class RegionProvider implements Closeable {
               new RedisSetCommandsFunctionExecutor(setRegion);
           return redisSetCommands.del(key);
         } else if (type == RedisDataType.REDIS_HASH) {
-          // Check hash
-          hashRegion.remove(key);
-          return true;
+          RedisHashCommands redisHashCommands =
+              new RedisHashCommandsFunctionExecutor(hashRegion);
+          return redisHashCommands.del(key);
         } else {
           return false;
         }

@@ -51,10 +51,10 @@ public class CommandFunction implements Function<Object[]> {
   }
 
   @SuppressWarnings("unchecked")
-  public static ResultCollector execute(Region<?,?> region,
-                                          RedisCommandType command,
-                                          ByteArrayWrapper key,
-                                          Object commandArguments) {
+  public static ResultCollector execute(Region<?, ?> region,
+      RedisCommandType command,
+      ByteArrayWrapper key,
+      Object commandArguments) {
     return FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
@@ -100,19 +100,7 @@ public class CommandFunction implements Function<Object[]> {
       }
       case DEL: {
         RedisDataType delType = (RedisDataType) args[1];
-        switch (delType) {
-          case REDIS_SET:
-            stripedExecutor.execute(key,
-                () -> RedisSet.del(localRegion, key),
-                (deleted) -> resultSender.lastResult(deleted));
-            break;
-          case REDIS_HASH:
-            stripedExecutor.execute(key,
-                () -> RedisHash.del(localRegion, key),
-                (deleted) -> resultSender.lastResult(deleted));
-            break;
-          default: throw new UnsupportedOperationException("DEL does not support " + delType);
-        }
+        executeDel(key, localRegion, resultSender, delType);
         break;
       }
       case SMEMBERS:
@@ -164,8 +152,33 @@ public class CommandFunction implements Function<Object[]> {
             (members) -> resultSender.lastResult(members));
         break;
       }
+      case HDEL: {
+        List<ByteArrayWrapper> fieldsToRemove = (List<ByteArrayWrapper>) args[1];
+        stripedExecutor.execute(key,
+            () -> RedisHash.hdel(localRegion, key, fieldsToRemove),
+            (deletedCount) -> resultSender.lastResult(deletedCount));
+        break;
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
+    }
+  }
+
+  private void executeDel(ByteArrayWrapper key, Region localRegion, ResultSender resultSender,
+      RedisDataType delType) {
+    switch (delType) {
+      case REDIS_SET:
+        stripedExecutor.execute(key,
+            () -> RedisSet.del(localRegion, key),
+            (deleted) -> resultSender.lastResult(deleted));
+        break;
+      case REDIS_HASH:
+        stripedExecutor.execute(key,
+            () -> RedisHash.del(localRegion, key),
+            (deleted) -> resultSender.lastResult(deleted));
+        break;
+      default:
+        throw new UnsupportedOperationException("DEL does not support " + delType);
     }
   }
 

@@ -52,7 +52,7 @@ public class HMSetExecutor extends HashExecutor {
     ByteArrayWrapper key = command.getKey();
     RedisHashCommands redisHashCommands =
         new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
-    redisHashCommands.hset(key, commandElems.subList(2, commandElems.size()),false);
+    redisHashCommands.hset(key, commandElems.subList(2, commandElems.size()), false);
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
   }
 

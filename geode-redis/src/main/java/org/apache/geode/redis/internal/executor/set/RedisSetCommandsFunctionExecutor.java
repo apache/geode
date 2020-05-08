@@ -27,14 +27,12 @@ import static org.apache.geode.redis.internal.RedisCommandType.SSCAN;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
@@ -58,7 +56,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   @Override
   public long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove,
-                   AtomicBoolean setWasDeleted) {
+      AtomicBoolean setWasDeleted) {
     ResultCollector<Object[], List<Long>> results = executeFunction(SREM, key, membersToRemove);
     List<Long> resultList = results.getResult();
     long membersRemoved = resultList.get(0);
@@ -78,7 +76,8 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Boolean>> results = executeFunction(DEL, key, RedisDataType.REDIS_SET);
+    ResultCollector<Object[], List<Boolean>> results =
+        executeFunction(DEL, key, RedisDataType.REDIS_SET);
     return results.getResult().get(0);
   }
 
@@ -111,13 +110,13 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   @Override
   public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     ResultCollector<Object[], List<List<Object>>> results =
-        executeFunction(SSCAN, key, new Object[]{matchPattern, count, cursor});
+        executeFunction(SSCAN, key, new Object[] {matchPattern, count, cursor});
     return results.getResult().get(0);
   }
 
   private ResultCollector executeFunction(RedisCommandType command,
-                                          ByteArrayWrapper key,
-                                          Object commandArguments) {
+      ByteArrayWrapper key,
+      Object commandArguments) {
     return CommandFunction.execute(region, command, key, commandArguments);
   }
 }

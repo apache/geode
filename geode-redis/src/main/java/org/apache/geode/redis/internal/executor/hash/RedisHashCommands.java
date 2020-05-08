@@ -24,7 +24,10 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 public interface RedisHashCommands {
   int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX);
 
-  int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> subList);
+  int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove);
+
+  // TODO: refactor this onto something like RedisKeyCommands
+  boolean del(ByteArrayWrapper key);
 
   Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall(ByteArrayWrapper key);
 }

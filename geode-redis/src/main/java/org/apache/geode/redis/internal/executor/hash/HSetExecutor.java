@@ -47,7 +47,8 @@ public class HSetExecutor extends HashExecutor {
     RedisHashCommands redisHashCommands =
         new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
 
-    int fieldsAdded = redisHashCommands.hset(key, commandElems.subList(2, commandElems.size()), onlySetOnAbsent());
+    int fieldsAdded = redisHashCommands.hset(key, commandElems.subList(2, commandElems.size()),
+        onlySetOnAbsent());
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), fieldsAdded));
   }

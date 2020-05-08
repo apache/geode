@@ -24,17 +24,22 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
 public class RedisHash {
-  public static int del(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key) {
+  public static boolean del(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key) {
+    return false;
+  }
+
+  public static int hset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+      List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     return 0;
   }
 
-  public static int hset(Region localRegion, ByteArrayWrapper key,
-                         List<ByteArrayWrapper> fieldsToSet, boolean nx) {
+  public static int hdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+      List<ByteArrayWrapper> fieldsToRemove) {
     return 0;
   }
 
   public static Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall(
-      Region localRegion, ByteArrayWrapper key) {
+      Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key) {
     return null;
   }
 

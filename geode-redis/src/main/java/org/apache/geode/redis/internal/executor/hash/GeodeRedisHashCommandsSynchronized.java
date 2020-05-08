@@ -38,7 +38,7 @@ class GeodeRedisHashCommandsSynchronized implements RedisHashCommands {
   }
 
   @Override
-  public int hset(List<ByteArrayWrapper> fieldsToSet,
+  public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet,
       boolean NX) {
     AtomicInteger fieldsAdded = new AtomicInteger();
 
@@ -79,7 +79,7 @@ class GeodeRedisHashCommandsSynchronized implements RedisHashCommands {
   }
 
   @Override
-  public int hdel(List<ByteArrayWrapper> subList) {
+  public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> subList) {
     AtomicLong numDeleted = new AtomicLong();
     region().computeIfPresent(key, (_unused_, oldHash) -> {
       HashMap<ByteArrayWrapper, ByteArrayWrapper> newHash = new HashMap<>(oldHash);
@@ -90,7 +90,7 @@ class GeodeRedisHashCommandsSynchronized implements RedisHashCommands {
       return newHash;
     });
 
-    if (hgetall().isEmpty()) {
+    if (hgetall(key).isEmpty()) {
       RedisDataType type = context.getKeyRegistrar().getType(key);
       if (type == RedisDataType.REDIS_HASH) {
         context.getRegionProvider().removeKey(key, type);
@@ -100,7 +100,12 @@ class GeodeRedisHashCommandsSynchronized implements RedisHashCommands {
   }
 
   @Override
-  public Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall() {
+  public boolean del(ByteArrayWrapper key) {
+    return false;
+  }
+
+  @Override
+  public Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall(ByteArrayWrapper key) {
     return region().getOrDefault(key, Collections.emptyMap()).entrySet();
   }
 

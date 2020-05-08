@@ -41,17 +41,15 @@ import org.apache.geode.redis.internal.RedisDataType;
  */
 public class HDelExecutor extends HashExecutor {
 
-  private final int START_FIELDS_INDEX = 2;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     ByteArrayWrapper key = command.getKey();
-
     checkDataType(key, RedisDataType.REDIS_HASH, context);
-    RedisHashCommands hash = new GeodeRedisHashCommandsSynchronized(key, context);
-    int numDeleted = hash.hdel(commandElems.subList(2, commandElems.size()));
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
+    int numDeleted = redisHashCommands.hdel(key, commandElems.subList(2, commandElems.size()));
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }
 
