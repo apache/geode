@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.net;
 
 import java.io.FileInputStream;
 import java.security.KeyStore;
@@ -30,42 +30,57 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.admin.SSLConfig;
 
-/**
- *
- * @since GemFire 8.1
- */
 public class SSLUtil {
-  public static SSLContext getSSLContextInstance(SSLConfig sslConfig) {
+  /**
+   * This is a list of the algorithms that are tried, in order, when "any" is specified. Update
+   * this list as new algorithms become available and are supported by Geode. Remove old,
+   * no-longer trusted algorithms.
+   */
+  protected static final String[] DEFAULT_ALGORITMS = {
+      "TLSv1.3",
+      "TLSv1.2"}; // TLSv1.3 is not available in JDK 8 at this time
+
+
+
+  public static SSLContext getSSLContextInstance(SSLConfig sslConfig)
+      throws NoSuchAlgorithmException {
     String[] protocols = sslConfig.getProtocolsAsStringArray();
-    SSLContext sslContext = null;
-    if (protocols != null && protocols.length > 0) {
-      for (String protocol : protocols) {
-        if (!protocol.equals("any")) {
-          try {
-            sslContext = SSLContext.getInstance(protocol);
-            break;
-          } catch (NoSuchAlgorithmException e) {
-            // continue
-          }
+    return findSSLContextForProtocols(protocols, DEFAULT_ALGORITMS);
+  }
+
+  /**
+   * Search for a context supporting one of the given prioritized list of
+   * protocols. The second argument is a list of protocols to try if the
+   * first list contains "any". The second argument should also be in prioritized
+   * order. If there are no matches for any of the protocols in the second
+   * argument we will continue in the first argument list.
+   * with a first argument of A, B, any, C
+   * and a second argument of D, E
+   * the search order would be A, B, D, E, C
+   */
+  @VisibleForTesting
+  protected static SSLContext findSSLContextForProtocols(final String[] protocols,
+      final String[] protocolsForAny)
+      throws NoSuchAlgorithmException {
+    for (String protocol : protocols) {
+      if (protocol.equalsIgnoreCase("any")) {
+        try {
+          return findSSLContextForProtocols(protocolsForAny, new String[0]);
+        } catch (NoSuchAlgorithmException e) {
+          // none of the default algorithms is available - continue to see if there
+          // are any others in the requested list
         }
       }
-    }
-    if (sslContext != null) {
-      return sslContext;
-    }
-    // lookup known algorithms
-    String[] knownAlgorithms = {"SSL", "SSLv2", "SSLv3", "TLS", "TLSv1", "TLSv1.1", "TLSv1.2"};
-    for (String algo : knownAlgorithms) {
       try {
-        sslContext = SSLContext.getInstance(algo);
-        break;
+        return SSLContext.getInstance(protocol);
       } catch (NoSuchAlgorithmException e) {
         // continue
       }
     }
-    return sslContext;
+    throw new NoSuchAlgorithmException();
   }
 
   /** Read an array of values from a string, whitespace or comma separated. */

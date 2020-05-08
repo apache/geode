@@ -84,7 +84,6 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.net.SSLParameterExtension;
 import org.apache.geode.util.internal.GeodeGlossary;
 
