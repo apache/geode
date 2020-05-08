@@ -112,7 +112,7 @@ public class RedisSet implements Delta, DataSerializable {
   }
 
   public static boolean sismember(Region<ByteArrayWrapper, RedisSet> region,
-                                   ByteArrayWrapper key, ByteArrayWrapper member) {
+      ByteArrayWrapper key, ByteArrayWrapper member) {
     RedisSet redisSet = region.get(key);
     if (redisSet != null) {
       return redisSet.contains(member);
@@ -122,7 +122,7 @@ public class RedisSet implements Delta, DataSerializable {
   }
 
   public static Collection<ByteArrayWrapper> srandmember(Region<ByteArrayWrapper, RedisSet> region,
-                                                          ByteArrayWrapper key, int count) {
+      ByteArrayWrapper key, int count) {
     RedisSet redisSet = region.get(key);
     if (redisSet != null) {
       return redisSet.srandmember(count);
@@ -132,7 +132,7 @@ public class RedisSet implements Delta, DataSerializable {
   }
 
   public static Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisSet> region,
-                                                   ByteArrayWrapper key, int popCount) {
+      ByteArrayWrapper key, int popCount) {
     RedisSet redisSet = region.get(key);
     if (redisSet != null) {
       return redisSet.doSpop(region, key, popCount);
@@ -142,7 +142,7 @@ public class RedisSet implements Delta, DataSerializable {
   }
 
   public static List<Object> sscan(Region<ByteArrayWrapper, RedisSet> region,
-                                    ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+      ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     RedisSet RedisSet = region.get(key);
     if (RedisSet != null) {
       return RedisSet.doSscan(matchPattern, count, cursor);

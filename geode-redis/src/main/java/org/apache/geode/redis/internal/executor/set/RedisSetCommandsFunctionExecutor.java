@@ -88,7 +88,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   @Override
   public int scard(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Integer>> results = executeFunction(SCARD, key,null);
+    ResultCollector<Object[], List<Integer>> results = executeFunction(SCARD, key, null);
     return results.getResult().get(0);
   }
 
