@@ -846,10 +846,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     Subject subject = null;
     try {
       subject = cache.getSecurityService().getSubject();
-    } catch (AuthenticationRequiredException exception) {
+    } catch (AuthenticationRequiredException e) {
       // ignored. No user logged in for the deployment
       // this would happen for offline commands like "start locator" and loading the cluster config
       // from a directory
+      logger.debug(e.getMessage());
     }
     return subject == null ? null : subject.getPrincipal().toString();
   }
