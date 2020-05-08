@@ -42,7 +42,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class MemberMXBeanDistributedTest implements
     Serializable {
 
-  private static MemberVM locator, server1, server2, server3, server4;
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  private static MemberVM server3;
+  private static MemberVM server4;
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();

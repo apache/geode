@@ -460,11 +460,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
    */
   boolean shouldSyncForCrashedMember(InternalDistributedMember id);
 
-  default boolean isRegionCreateNotified() {
-    return false;
-  }
+  boolean isRegionCreateNotified();
 
-  default void setRegionCreateNotified(boolean notified) {
-    // do nothing
-  }
+  void setRegionCreateNotified(boolean notified);
 }
