@@ -64,6 +64,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
  * Unit tests for {@link GemFireCacheImpl}.
@@ -80,6 +81,9 @@ public class GemFireCacheImplTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Before
   public void setUp() {
@@ -632,9 +636,8 @@ public class GemFireCacheImplTest {
     String diskStoreName = "MyDiskStore";
     AtomicInteger nTrue = new AtomicInteger();
     AtomicInteger nFalse = new AtomicInteger();
-    ExecutorService executorService = Executors.newFixedThreadPool(nThread);
     IntStream.range(0, nThread).forEach(tid -> {
-      executorService.submit(() -> {
+      executorServiceRule.submit(() -> {
         try {
           boolean lockResult = gemFireCacheImpl.doLockDiskStore(diskStoreName);
           if (lockResult) {
@@ -652,8 +655,8 @@ public class GemFireCacheImplTest {
         }
       });
     });
-    executorService.shutdown();
-    executorService.awaitTermination(GeodeAwaitility.getTimeout().toNanos(), TimeUnit.NANOSECONDS);
+    executorServiceRule.getExecutorService().shutdown();
+    executorServiceRule.getExecutorService().awaitTermination(GeodeAwaitility.getTimeout().toNanos(), TimeUnit.NANOSECONDS);
     // 1 thread returns true for locking, all 10 threads return true for unlocking
     assertThat(nTrue.get()).isEqualTo(11);
     // 9 threads return false for locking
