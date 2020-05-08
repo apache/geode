@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.execute;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -24,8 +26,12 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -44,6 +50,33 @@ public class InternalFunctionExecutionServiceTest {
     assertThatThrownBy(() -> functionExecutionService.onRegion(null))
         .isInstanceOf(FunctionException.class)
         .hasMessage("Region instance passed is null");
+  }
+
+  @Test
+  public void onRegionShouldThrowCancelExceptionWhenCacheIsClosed() {
+    LocalRegion mockRegion = mock(LocalRegion.class);
+    when(mockRegion.isDestroyed()).thenReturn(true);
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(mockRegion.getCache()).thenReturn(null);
+    when(mockRegion.getCancelCriterion()).thenReturn(cancelCriterion);
+    doThrow(new CacheClosedException("Region is destroyed")).when(cancelCriterion)
+        .checkCancelInProgress(null);
+    doCallRealMethod().when(cancelCriterion).checkCancelInProgress();
+    doCallRealMethod().when(cancelCriterion).checkCancelInProgress();
+    assertThatThrownBy(() -> functionExecutionService.onRegion(mockRegion))
+        .isInstanceOf(CancelException.class).hasMessageContaining("Region is destroyed");
+  }
+
+  @Test
+  public void onRegionShouldThrowRegionDestroyedExceptionWhenRegionIsPurposelyDestroyed() {
+    LocalRegion mockRegion = mock(LocalRegion.class);
+    when(mockRegion.isDestroyed()).thenReturn(true);
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(mockRegion.getCache()).thenReturn(null);
+    when(mockRegion.getCancelCriterion()).thenReturn(cancelCriterion);
+    doCallRealMethod().when(cancelCriterion).checkCancelInProgress();
+    assertThatThrownBy(() -> functionExecutionService.onRegion(mockRegion))
+        .isInstanceOf(RegionDestroyedException.class).hasMessageContaining("Region is destroyed");
   }
 
   @Test
