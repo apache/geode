@@ -13,11 +13,11 @@ public class NamedThreadFactory implements ThreadFactory {
     this.isDaemon = isDaemon;
   }
 
-    @Override
-    public Thread newThread(Runnable runnable) {
-      Thread thread = new Thread(runnable);
-      thread.setName(baseName + counter.incrementAndGet());
-      thread.setDaemon(isDaemon);
-      return thread;
-    }
+  @Override
+  public Thread newThread(Runnable runnable) {
+    Thread thread = new Thread(runnable);
+    thread.setName(baseName + counter.incrementAndGet());
+    thread.setDaemon(isDaemon);
+    return thread;
+  }
 }
