@@ -20,12 +20,17 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.junit.Test;
@@ -41,6 +46,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -63,8 +69,8 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> PutAllMultiVmDUnitTest.createCache());
-    vm1.invoke(() -> PutAllMultiVmDUnitTest.createCache());
+    vm0.invoke(() -> PutAllMultiVmDUnitTest.createCache(DataPolicy.REPLICATE));
+    vm1.invoke(() -> PutAllMultiVmDUnitTest.createCache(DataPolicy.REPLICATE));
   }
 
   @Override
@@ -83,15 +89,16 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
     });
   }
 
-  public static void createCache() {
+  public static void createCache(DataPolicy dataPolicy) {
     try {
+      props.setProperty("log-level", "info");
       ds = (new PutAllMultiVmDUnitTest()).getSystem(props);
       cache = CacheFactory.create(ds);
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setDataPolicy(dataPolicy);
       RegionAttributes attr = factory.create();
       region = cache.createRegion("map", attr);
-
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -120,8 +127,228 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
     }
   }// end of closeCache
 
+  private AsyncInvocation invokeClear(VM vm) {
+    AsyncInvocation async = vm.invokeAsync(() -> region.clear());
+    return async;
+  }
+
+  private AsyncInvocation invokeBulkOp(VM vm) {
+    AsyncInvocation async = vm.invokeAsync(() -> {
+      Map m = new HashMap();
+      for (int i = 0; i < 20; i++) {
+        m.put(new Integer(i), new String("map" + i));
+      }
+      region.putAll(m);
+
+      HashSet m2 = new HashSet();
+      for (int i = 0; i < 10; i++) {
+        m2.add(new Integer(i));
+      }
+      region.removeAll(m2);
+    });
+    return async;
+  }
+
+  private void testBulkOpFromNonDataStore(final DataPolicy dataPolicy) throws InterruptedException {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+
+    vm2.invoke(() -> PutAllMultiVmDUnitTest.createCache(dataPolicy));
+    Random rand = new Random();
+    for (int k = 0; k < 100; k++) {
+      int shuffle = rand.nextInt(2);
+      AsyncInvocation a1 = null;
+      AsyncInvocation a2 = null;
+      if (shuffle == 1) {
+        a1 = invokeClear(vm1);
+        a2 = invokeBulkOp(vm2);
+      } else {
+        a2 = invokeBulkOp(vm2);
+        a1 = invokeClear(vm1);
+      }
+      a1.await();
+      a2.await();
+
+      // verify vm0 and vm1 has the same keys
+      await().untilAsserted(() -> {
+        Set vm0Contents = vm0.invoke(() -> {
+          final HashSet<Object> keys = new HashSet<>();
+          for (Object o : region.keySet()) {
+            keys.add(o);
+          }
+          return keys;
+        }); // replicated
+        Set vm1Contents = vm1.invoke(() -> {
+          final HashSet<Object> keys = new HashSet<>();
+          for (Object o : region.keySet()) {
+            keys.add(o);
+          }
+          return keys;
+        }); // replicated
+        assertThat(vm0Contents).isEqualTo(vm1Contents);
+      });
+    }
+  }
 
   // tests methods
+  @Test
+  public void putAllAndPutDistributionToNormalMemberShouldBeSame() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+    VM vm3 = host.getVM(3);
+
+    vm2.invoke(() -> PutAllMultiVmDUnitTest.createCache(DataPolicy.NORMAL));
+    vm3.invoke(() -> PutAllMultiVmDUnitTest.createCache(DataPolicy.NORMAL));
+
+    vm2.invoke(() -> {
+      // create from NORMAL
+      region.put("putKeyFromNormal", "value1");
+    });
+
+    vm3.invoke(() -> {
+      // verify create is not distributed from NORMAL to NORMAL
+      Region.Entry entry = region.getEntry("putKeyFromNormal");
+      assertThat(entry).isEqualTo(null);
+
+      // add putKeyFromNormal to local cache
+      region.put("putKeyFromNormal", "vm3value1");
+    });
+
+    vm2.invoke(() -> {
+      // update from NORMAL
+      region.put("putKeyFromNormal", "value2");
+    });
+
+    vm3.invoke(() -> {
+      // verify update is distributed from NORMAL to NORMAL
+      Object value = region.getEntry("putKeyFromNormal").getValue();
+      assertThat(value).isEqualTo("value2");
+    });
+
+    vm1.invoke(() -> {
+      // verify update is distributed from NORMAL to REPLICATE
+      Object value = region.getEntry("putKeyFromNormal").getValue();
+      assertThat(value).isEqualTo("value2");
+    });
+
+    vm2.invoke(() -> {
+      // create some PUTALL_CREATE events
+      Map m = new HashMap();
+      for (int i = 0; i < 20; i++) {
+        m.put("putAllKeysFromNormal" + i, new String("map" + i));
+      }
+      region.putAll(m);
+
+    });
+
+    vm1.invoke(() -> {
+      // let REPLICATE member to create some keys that NORMAL member does not have
+      region.put("putKeyFromReplicate", "value1");
+    });
+
+    vm3.invoke(() -> {
+      // verify NORMAL member received no events
+      for (int i = 0; i < 20; i++) {
+        Region.Entry entry = region.getEntry("putAllKeysFromNormal" + i);
+        assertThat(entry).isNull();
+      }
+
+      // verify NORMAL member will not receive update for keys not in its local cache
+      Region.Entry entry = region.getEntry("putKeyFromReplicate");
+      assertThat(entry).isNull();
+      Object value = region.getEntry("putKeyFromNormal").getValue();
+      assertThat(value).isEqualTo("value2");
+
+      // create keys in local cache
+      Map m = new HashMap();
+      for (int i = 0; i < 20; i++) {
+        m.put("putAllKeysFromNormal" + i, new String("v3map" + i));
+      }
+      region.putAll(m);
+    });
+
+    vm2.invoke(() -> {
+      // create some PUTALL_UPDATE events
+      HashMap m = new HashMap();
+      for (int i = 0; i < 20; i++) {
+        m.put("putAllKeysFromNormal" + i, new String("newmap" + i));
+      }
+      region.putAll(m);
+
+      // removeAll to remove a few existing entries
+      HashSet m2 = new HashSet();
+      for (int i = 0; i < 10; i++) {
+        m2.add("putAllKeysFromNormal" + i);
+      }
+      region.removeAll(m2);
+      for (int i = 0; i < 10; i++) {
+        assertThat(region.getEntry("putAllKeysFromNormal" + i)).isNull();
+      }
+
+      // NORMAL starts a REMOVEALL with one key in its local cache, one key is not
+      Object value = region.getEntry("putKeyFromNormal").getValue();
+      assertThat(value).isEqualTo("value2");
+      Region.Entry entry = region.getEntry("putKeyFromReplicate");
+      assertThat(entry).isNull();
+
+      m2 = new HashSet();
+      m2.add("putKeyFromNormal");
+      m2.add("putKeyFromReplicate");
+
+      region.removeAll(m2);
+      entry = region.getEntry("putKeyFromNormal");
+      assertThat(entry).isNull();
+      entry = region.getEntry("putKeyFromReplicate");
+      assertThat(entry).isNull();
+    });
+
+    vm1.invoke(() -> {
+      // verify REPLICATE member received ReomeAll event for both keys
+      Region.Entry entry = region.getEntry("putKeyFromNormal");
+      assertThat(entry).isNull();
+      entry = region.getEntry("putKeyFromReplicate");
+      assertThat(entry).isNull();
+    });
+
+    vm3.invoke(() -> {
+      for (int i = 10; i < 20; i++) {
+        Object value = region.getEntry("putAllKeysFromNormal" + i).getValue();
+        assertThat(value).isEqualTo("newmap" + i);
+      }
+
+      // Note: removeAll will now distribute to NORMAL member
+      for (int i = 0; i < 10; i++) {
+        Region.Entry entry = region.getEntry("putAllKeysFromNormal" + i);
+        assertThat(entry).isNull();
+      }
+
+      // verify NORMAL member received PUTALL_UPDATE only
+      // ReomeAll event will now distribute to NORMAL member
+      Region.Entry entry = region.getEntry("putKeyFromNormal");
+      assertThat(entry).isNull();
+      entry = region.getEntry("putKeyFromReplicate");
+      assertThat(entry).isNull();
+    });
+  }
+
+  @Test
+  public void testPutAllFromAccessor() throws InterruptedException {
+    testBulkOpFromNonDataStore(DataPolicy.EMPTY);
+  }
+
+  @Test
+  public void testPutAllFromNormal() throws InterruptedException {
+    testBulkOpFromNonDataStore(DataPolicy.NORMAL);
+  }
+
+  @Test
+  public void testPutAllFromPreload() throws InterruptedException {
+    testBulkOpFromNonDataStore(DataPolicy.PRELOADED);
+  }
 
   @Test
   public void testSimplePutAll() {

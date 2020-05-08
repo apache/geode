@@ -1254,6 +1254,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     AttributesFactory fac = new AttributesFactory();
     fac.setMembershipAttributes(ra);
     fac.setScope(getRegionScope());
+    fac.setDataPolicy(DataPolicy.REPLICATE);
     // fac.addCacheListener(listener);
     RegionAttributes attr = fac.create();
     Region region = createRootRegion(name, attr);
@@ -1267,6 +1268,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(getRegionScope());
+        fac.setDataPolicy(DataPolicy.REPLICATE);
         RegionAttributes attr = fac.create();
         createRootRegion(name, attr);
       }
