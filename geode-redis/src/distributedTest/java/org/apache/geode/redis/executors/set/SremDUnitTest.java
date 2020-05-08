@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.executors;
+package org.apache.geode.redis.executors.set;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
