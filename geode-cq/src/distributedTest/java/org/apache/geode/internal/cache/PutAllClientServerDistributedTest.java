@@ -2309,12 +2309,13 @@ public class PutAllClientServerDistributedTest implements Serializable {
               creates -> closeCacheConditionally(creates, 10))));
     });
 
+
     // server2 add slow listener
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
           .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
-              creates -> closeCacheConditionally(creates, 30))));
+              creates -> closeCacheConditionally(creates, 20))));
     });
 
     // server3 add slow listener
