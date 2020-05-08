@@ -16,8 +16,11 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
@@ -28,7 +31,17 @@ public interface RedisSetCommands {
   long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd,
       AtomicBoolean setWasDeleted);
 
-  Set<ByteArrayWrapper> members(ByteArrayWrapper key);
+  Set<ByteArrayWrapper> smembers(ByteArrayWrapper key);
 
   boolean del(ByteArrayWrapper key);
+
+  int scard(ByteArrayWrapper key);
+
+  boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member);
+
+  Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count);
+
+  Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount);
+
+  List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor);
 }

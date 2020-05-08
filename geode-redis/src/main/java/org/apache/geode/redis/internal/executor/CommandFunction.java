@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -51,22 +52,25 @@ public class CommandFunction implements Function<Object[]> {
     ResultSender resultSender = regionFunctionContext.getResultSender();
     Object[] args = context.getArguments();
     RedisCommandType command = (RedisCommandType) args[0];
-    ArrayList<ByteArrayWrapper> commandArgs = (ArrayList<ByteArrayWrapper>) args[1];
     switch (command) {
-      case SADD:
+      case SADD: {
+        ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
         stripedExecutor.execute(key,
-            () -> RedisSet.sadd(localRegion, key, commandArgs),
+            () -> RedisSet.sadd(localRegion, key, membersToAdd),
             (addedCount) -> resultSender.lastResult(addedCount));
         break;
-      case SREM:
+      }
+      case SREM: {
+        ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
         AtomicBoolean setWasDeleted = new AtomicBoolean();
         stripedExecutor.execute(key,
-            () -> RedisSet.srem(localRegion, key, commandArgs, setWasDeleted),
+            () -> RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted),
             (removedCount) -> {
               resultSender.sendResult(removedCount);
               resultSender.lastResult(setWasDeleted.get() ? 1L : 0L);
             });
         break;
+      }
       case DEL:
         stripedExecutor.execute(key,
             () -> RedisSet.del(localRegion, key),
@@ -74,9 +78,44 @@ public class CommandFunction implements Function<Object[]> {
         break;
       case SMEMBERS:
         stripedExecutor.execute(key,
-            () -> RedisSet.members(localRegion, key),
+            () -> RedisSet.smembers(localRegion, key),
             (members) -> resultSender.lastResult(members));
         break;
+      case SCARD:
+        stripedExecutor.execute(key,
+            () -> RedisSet.scard(localRegion, key),
+            (size) -> resultSender.lastResult(size));
+        break;
+      case SISMEMBER: {
+        ByteArrayWrapper member = (ByteArrayWrapper) args[1];
+        stripedExecutor.execute(key,
+            () -> RedisSet.sismember(localRegion, key, member),
+            (exists) -> resultSender.lastResult(exists));
+        break;
+      }
+      case SRANDMEMBER: {
+        int count = (int) args[1];
+        stripedExecutor.execute(key,
+            () -> RedisSet.srandmember(localRegion, key, count),
+            (members) -> resultSender.lastResult(members));
+        break;
+      }
+      case SPOP: {
+        int popCount = (int) args[1];
+        stripedExecutor.execute(key,
+            () -> RedisSet.spop(localRegion, key, popCount),
+            (members) -> resultSender.lastResult(members));
+        break;
+      }
+      case SSCAN: {
+        Pattern matchPattern = (Pattern) args[0];
+        int count = (int) args[1];
+        int cursor = (int) args[2];
+        stripedExecutor.execute(key,
+            () -> RedisSet.sscan(localRegion, key, matchPattern, count, cursor),
+            (members) -> resultSender.lastResult(members));
+        break;
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }

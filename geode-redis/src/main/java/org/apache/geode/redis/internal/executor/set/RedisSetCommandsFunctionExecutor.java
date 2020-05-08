@@ -17,14 +17,21 @@ package org.apache.geode.redis.internal.executor.set;
 
 import static org.apache.geode.redis.internal.RedisCommandType.DEL;
 import static org.apache.geode.redis.internal.RedisCommandType.SADD;
+import static org.apache.geode.redis.internal.RedisCommandType.SCARD;
+import static org.apache.geode.redis.internal.RedisCommandType.SISMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SMEMBERS;
+import static org.apache.geode.redis.internal.RedisCommandType.SPOP;
+import static org.apache.geode.redis.internal.RedisCommandType.SRANDMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SREM;
+import static org.apache.geode.redis.internal.RedisCommandType.SSCAN;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
@@ -67,7 +74,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   }
 
   @Override
-  public Set<ByteArrayWrapper> members(ByteArrayWrapper key) {
+  public Set<ByteArrayWrapper> smembers(ByteArrayWrapper key) {
     ResultCollector<Object[], List<Set<ByteArrayWrapper>>> results =
         executeFunction(SMEMBERS, key, null);
     return results.getResult().get(0);
@@ -79,9 +86,42 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
     return results.getResult().get(0);
   }
 
+  @Override
+  public int scard(ByteArrayWrapper key) {
+    ResultCollector<Object[], List<Integer>> results = executeFunction(SCARD, key, null);
+    return results.getResult().get(0);
+  }
+
+  @Override
+  public boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member) {
+    ResultCollector<Object[], List<Boolean>> results = executeFunction(SISMEMBER, key, member);
+    return results.getResult().get(0);
+  }
+
+  @Override
+  public Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count) {
+    ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
+        executeFunction(SRANDMEMBER, key, count);
+    return results.getResult().get(0);
+  }
+
+  @Override
+  public Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount) {
+    ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
+        executeFunction(SPOP, key, popCount);
+    return results.getResult().get(0);
+  }
+
+  @Override
+  public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+    ResultCollector<Object[], List<List<Object>>> results =
+        executeFunction(SSCAN, key, new Object[] {matchPattern, count, cursor});
+    return results.getResult().get(0);
+  }
+
   private ResultCollector executeFunction(RedisCommandType command,
       ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> commandArguments) {
+      Object commandArguments) {
     return FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))

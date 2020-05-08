@@ -106,8 +106,7 @@ public class ScanExecutor extends AbstractScanExecutor {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
-  protected List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
+  private List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
     List<String> returnList = new ArrayList<String>();
     int size = list.size();
     int beforeCursor = 0;

@@ -126,7 +126,6 @@ public class HScanExecutor extends AbstractScanExecutor {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
   protected List<Object> getIteration(Collection<?> list, Pattern matchPattern, int count,
       int cursor) {
     List<Object> returnList = new ArrayList<Object>();
