@@ -116,10 +116,6 @@ public class InternalFunctionExecutionServiceImpl
       throw new FunctionException("Region instance passed is null");
     }
 
-    if (region.isDestroyed()) {
-      throw new FunctionException("Region is destroyed");
-    }
-
     ProxyCache proxyCache = null;
     String poolName = region.getAttributes().getPoolName();
     if (poolName != null) {
