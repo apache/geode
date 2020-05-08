@@ -48,6 +48,7 @@ import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
+import org.apache.geode.redis.internal.executor.hash.RedisHash;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
@@ -82,7 +83,7 @@ public class RegionProvider implements Closeable {
    */
   private final Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
 
-  private final Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion;
+  private final Region<ByteArrayWrapper, RedisHash> hashRegion;
   private final Region<ByteArrayWrapper, RedisSet> setRegion;
 
   private final Cache cache;
@@ -102,7 +103,7 @@ public class RegionProvider implements Closeable {
       KeyRegistrar redisMetaRegion,
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
-      Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion,
+      Region<ByteArrayWrapper, RedisHash> hashRegion,
       Region<ByteArrayWrapper, RedisSet> setRegion) {
 
     this(stringsRegion, hLLRegion, redisMetaRegion, expirationsMap, expirationExecutor,
@@ -114,7 +115,7 @@ public class RegionProvider implements Closeable {
       KeyRegistrar redisMetaRegion,
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
-      Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion,
+      Region<ByteArrayWrapper, RedisHash> hashRegion,
       Region<ByteArrayWrapper, RedisSet> setRegion, Cache cache) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null) {
       throw new NullPointerException();
@@ -482,7 +483,7 @@ public class RegionProvider implements Closeable {
   /**
    * @return the hashRegion
    */
-  public Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getHashRegion() {
+  public Region<ByteArrayWrapper, RedisHash> getHashRegion() {
     return hashRegion;
   }
 

@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -48,7 +47,7 @@ public class HGetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> entry = getMap(context, key);
+    RedisHash entry = getMap(context, key);
 
     if (entry == null) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));

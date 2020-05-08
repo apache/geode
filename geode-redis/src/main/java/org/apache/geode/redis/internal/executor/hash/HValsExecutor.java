@@ -14,9 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -55,7 +53,7 @@ public class HValsExecutor extends HashExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_HASH, context);
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map =
+    RedisHash map =
         context.getRegionProvider().getHashRegion().get(key);
 
     if (map == null) {
@@ -63,7 +61,7 @@ public class HValsExecutor extends HashExecutor {
       return;
     }
 
-    Collection<ByteArrayWrapper> vals = new ArrayList<ByteArrayWrapper>(map.values());
+    Collection<ByteArrayWrapper> vals = map.values();
     if (vals.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;

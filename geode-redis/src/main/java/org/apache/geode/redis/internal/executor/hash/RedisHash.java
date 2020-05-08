@@ -198,4 +198,37 @@ public class RedisHash implements Delta, DataSerializable {
     }
   }
 
+  // the following are needed because not all the hash commands have been converted to functions.
+
+  public synchronized boolean isEmpty() {
+    return hash.isEmpty();
+  }
+
+  public synchronized Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> entries() {
+    return doHgetall();
+  }
+
+  public synchronized ByteArrayWrapper get(ByteArrayWrapper field) {
+    return hash.get(field);
+  }
+
+  public synchronized void put(ByteArrayWrapper field, ByteArrayWrapper value) {
+    hash.put(field, value);
+  }
+
+  public synchronized List<ByteArrayWrapper> keys() {
+    return new ArrayList<>(hash.keySet());
+  }
+
+  public synchronized int size() {
+    return hash.size();
+  }
+
+  public synchronized Collection<ByteArrayWrapper> values() {
+    return new ArrayList<>(hash.values());
+  }
+
+  public synchronized boolean containsKey(ByteArrayWrapper field) {
+    return hash.containsKey(field);
+  }
 }
