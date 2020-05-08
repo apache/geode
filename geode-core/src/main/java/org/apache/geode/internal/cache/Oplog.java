@@ -937,14 +937,20 @@ public class Oplog implements CompactableOplog, Flushable {
         // this.crf.raf.seek(this.crf.currSize);
       } else if (!offline) {
         // drf exists but crf has been deleted (because it was empty).
-        // I don't think the drf needs to be opened. It is only used during
-        // recovery.
-        // At some point the compacter my identify that it can be deleted.
         this.crf.RAFClosed = true;
         deleteCRF();
+
+        // See GEODE-8029.
+        // The drf file needs to be deleted, especially when the disk-store is *only* used by
+        // gateway-senders, otherwise there will be orphaned drfs that are never deleted by
+        // compaction (unless there are pending events in the queue upon restart - crf exists - or
+        // a manual compaction is executed).
+        deleteDRF();
+
         this.closed = true;
         this.deleted.set(true);
       }
+
       this.drf.RAFClosed = true; // since we never open it on a recovered oplog
     } catch (IOException ex) {
       getParent().getCancelCriterion().checkCancelInProgress(ex);
@@ -5586,10 +5592,16 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   public void deleteCRF() {
+    String crfFilePath =
+        ((this.crf != null) && (this.crf.f != null)) ? this.crf.f.getAbsolutePath() : "null";
+    logger.info("JUAN: Deleting crf {} for opLogId {}...", crfFilePath, oplogId, new Throwable());
+
     oplogSet.crfDelete(this.oplogId);
     if (!getInternalCache().getBackupService().deferCrfDelete(getParent(), this)) {
       deleteCRFFileOnly();
     }
+
+    logger.info("JUAN: Deleting crf {} for opLogId {}...Done!", crfFilePath, oplogId);
   }
 
   public void deleteCRFFileOnly() {
@@ -5619,10 +5631,16 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   public void deleteDRF() {
+    String drfFilePath =
+        ((this.drf != null) && (this.drf.f != null)) ? this.drf.f.getAbsolutePath() : "null";
+    logger.info("JUAN: Deleting drf {} for opLogId {}...", drfFilePath, oplogId, new Throwable());
+
     getOplogSet().drfDelete(this.oplogId);
     if (!getInternalCache().getBackupService().deferDrfDelete(getParent(), this)) {
       deleteDRFFileOnly();
     }
+
+    logger.info("JUAN: Deleting drf {} for opLogId {}... Done!", drfFilePath, oplogId);
   }
 
   public void deleteDRFFileOnly() {
