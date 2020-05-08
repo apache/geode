@@ -26,11 +26,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
+import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -354,18 +357,27 @@ public class AlterRegionCommandDUnitTest {
     String regionName = testName.getMethodName();
     String gatewaySenderId = testName.getMethodName() + "_parallelGatewaySender";
 
-    gfsh.executeAndAssertThat(
-        "create gateway-sender --parallel=true --enable-persistence=false --remote-distributed-system-id=2 --id="
-            + gatewaySenderId)
+    CommandStringBuilder createSenderBuilder = new CommandStringBuilder("create gateway-sender")
+        .addOption("id", gatewaySenderId)
+        .addOption("parallel", "true")
+        .addOption("enable-persistence", "false")
+        .addOption("remote-distributed-system-id", "2");
+    gfsh.executeAndAssertThat(createSenderBuilder.getCommandString())
         .statusIsSuccess().doesNotContainOutput("Did not complete waiting");
-    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + regionName)
-        .statusIsSuccess();
+
+    CommandStringBuilder createRegionBuilder = new CommandStringBuilder("create region")
+        .addOption("name", regionName)
+        .addOption("type", RegionShortcut.REPLICATE.toString());
+    gfsh.executeAndAssertThat(createRegionBuilder.getCommandString()).statusIsSuccess();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Associate the gateway-sender
-    gfsh.executeAndAssertThat(
-        "alter region --name=" + regionName + " --gateway-sender-id=" + gatewaySenderId)
-        .statusIsError().containsOutput("server-1", "Parallel Gateway Sender " + gatewaySenderId
+    CommandStringBuilder alterRegionBuilder = new CommandStringBuilder("alter region")
+        .addOption("name", regionName)
+        .addOption("gateway-sender-id", gatewaySenderId);
+    gfsh.executeAndAssertThat(alterRegionBuilder.getCommandString())
+        .statusIsError()
+        .containsOutput("server-1", "Parallel Gateway Sender " + gatewaySenderId
             + " can not be used with replicated region " + SEPARATOR + regionName);
 
     // Check the cluster configuration service.
@@ -388,19 +400,26 @@ public class AlterRegionCommandDUnitTest {
     String regionName = testName.getMethodName();
     String asyncEventQueueName = testName.getMethodName() + "_asyncEventQueue";
 
-    gfsh.executeAndAssertThat(
-        "create async-event-queue --parallel=true --persistent=false --listener=org.apache.geode.internal.cache.wan.MyAsyncEventListener --id="
-            + asyncEventQueueName)
-        .statusIsSuccess();
+    CommandStringBuilder createAsyncQueueBuilder =
+        new CommandStringBuilder("create async-event-queue")
+            .addOption("id", asyncEventQueueName)
+            .addOption("parallel", "true")
+            .addOption("persistent", "false")
+            .addOption("listener", MyAsyncEventListener.class.getCanonicalName());
+    gfsh.executeAndAssertThat(createAsyncQueueBuilder.getCommandString()).statusIsSuccess();
     locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(asyncEventQueueName, 1);
 
-    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + regionName)
-        .statusIsSuccess();
+    CommandStringBuilder createRegionBuilder = new CommandStringBuilder("create region")
+        .addOption("name", regionName)
+        .addOption("type", RegionShortcut.REPLICATE.toString());
+    gfsh.executeAndAssertThat(createRegionBuilder.getCommandString()).statusIsSuccess();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Associate the async-event-queue
-    gfsh.executeAndAssertThat(
-        "alter region --name=" + regionName + " --async-event-queue-id=" + asyncEventQueueName)
+    CommandStringBuilder alterRegionBuilder = new CommandStringBuilder("alter region")
+        .addOption("name", regionName)
+        .addOption("async-event-queue-id", asyncEventQueueName);
+    gfsh.executeAndAssertThat(alterRegionBuilder.getCommandString())
         .statusIsError()
         .containsOutput("server-1", "Parallel Async Event Queue " + asyncEventQueueName
             + " can not be used with replicated region " + SEPARATOR + regionName);
