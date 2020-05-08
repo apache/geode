@@ -203,6 +203,7 @@ import org.apache.geode.internal.cache.DistTXPrecommitMessage.DistTxPrecommitRes
 import org.apache.geode.internal.cache.DistTXRollbackMessage;
 import org.apache.geode.internal.cache.DistributedClearOperation.ClearRegionMessage;
 import org.apache.geode.internal.cache.DistributedClearOperation.ClearRegionWithContextMessage;
+import org.apache.geode.internal.cache.DistributedPingMessage;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllMessage;
 import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage;
@@ -978,6 +979,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
         GatewaySenderQueueEntrySynchronizationOperation.GatewaySenderQueueEntrySynchronizationEntry.class);
     serializer.registerDSFID(ABORT_BACKUP_REQUEST, AbortBackupRequest.class);
     serializer.registerDSFID(HOST_AND_PORT, HostAndPort.class);
+    serializer.registerDSFID(DISTRIBUTED_PING_MESSAGE, DistributedPingMessage.class);
   }
 
   /**
