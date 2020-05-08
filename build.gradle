@@ -45,9 +45,8 @@ wrapper {
 
 allprojects {
   ext.isReleaseVersion = true
-  if(version.contains("SNAPSHOT")) {
+  if(version.contains("build")) {
     ext.isReleaseVersion = false
-    version = (version as String).replaceFirst(/SNAPSHOT.*/, 'SNAPSHOT')
   }
 
   repositories {
