@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -92,10 +94,7 @@ public class CommandFunction implements Function<Object[]> {
         AtomicBoolean setWasDeleted = new AtomicBoolean();
         stripedExecutor.execute(key,
             () -> RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted),
-            (removedCount) -> {
-              resultSender.sendResult(removedCount);
-              resultSender.lastResult(setWasDeleted.get() ? 1L : 0L);
-            });
+            (removedCount) -> resultSender.lastResult(Pair.of(removedCount, setWasDeleted.get())));
         break;
       }
       case DEL: {

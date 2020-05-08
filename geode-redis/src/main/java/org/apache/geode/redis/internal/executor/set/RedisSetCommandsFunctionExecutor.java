@@ -33,13 +33,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
-@SuppressWarnings("unchecked")
 public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   private final Region<ByteArrayWrapper, RedisSet> region;
@@ -50,73 +50,70 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   @Override
   public long sadd(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd) {
-    ResultCollector<Object[], List<Long>> results = executeFunction(SADD, key, membersToAdd);
-    return results.getResult().get(0);
+    return executeFunction(SADD, key, membersToAdd);
   }
 
   @Override
   public long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove,
-      AtomicBoolean setWasDeleted) {
-    ResultCollector<Object[], List<Long>> results = executeFunction(SREM, key, membersToRemove);
-    List<Long> resultList = results.getResult();
-    long membersRemoved = resultList.get(0);
-    long wasDeleted = resultList.get(1);
-    if (wasDeleted != 0) {
-      setWasDeleted.set(true);
-    }
+                   AtomicBoolean setWasDeleted) {
+    Pair<Long, Boolean> resultList =
+        executeFunction(SREM, key, membersToRemove);
+
+    long membersRemoved = resultList.getLeft();
+    Boolean wasDeleted = resultList.getRight();
+    setWasDeleted.set(wasDeleted);
     return membersRemoved;
   }
 
   @Override
   public Set<ByteArrayWrapper> smembers(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Set<ByteArrayWrapper>>> results =
-        executeFunction(SMEMBERS, key, null);
-    return results.getResult().get(0);
+    return executeFunction(SMEMBERS, key, null);
   }
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Boolean>> results =
+    return
         executeFunction(DEL, key, RedisDataType.REDIS_SET);
-    return results.getResult().get(0);
   }
 
   @Override
   public int scard(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Integer>> results = executeFunction(SCARD, key, null);
-    return results.getResult().get(0);
+    return executeFunction(SCARD, key, null);
   }
 
   @Override
   public boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member) {
-    ResultCollector<Object[], List<Boolean>> results = executeFunction(SISMEMBER, key, member);
-    return results.getResult().get(0);
+    return executeFunction(SISMEMBER, key, member);
   }
 
   @Override
   public Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count) {
-    ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
-        executeFunction(SRANDMEMBER, key, count);
-    return results.getResult().get(0);
+    return executeFunction(SRANDMEMBER, key, count);
   }
 
   @Override
   public Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount) {
-    ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
-        executeFunction(SPOP, key, popCount);
-    return results.getResult().get(0);
+    return executeFunction(SPOP, key, popCount);
   }
 
   @Override
   public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
-    ResultCollector<Object[], List<List<Object>>> results =
-        executeFunction(SSCAN, key, new Object[] {matchPattern, count, cursor});
-    return results.getResult().get(0);
+    return executeFunction(SSCAN, key, new Object[]{matchPattern, count, cursor});
   }
 
-  private ResultCollector executeFunction(RedisCommandType command,
-      ByteArrayWrapper key,
-      Object commandArguments) {
-    return CommandFunction.execute(region, command, key, commandArguments);
+  @SuppressWarnings("unchecked")
+  private <T> T executeFunction(RedisCommandType command,
+                            ByteArrayWrapper key,
+                            Object commandArguments) {
+    SingleResultCollector<T> rc = new SingleResultCollector<>();
+    FunctionService
+        .onRegion(region)
+        .withFilter(Collections.singleton(key))
+        .setArguments(new Object[]{command, commandArguments})
+        .withCollector(rc)
+        .execute(CommandFunction.ID);
+    return rc.getResult();
   }
+
+
 }
