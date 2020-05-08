@@ -338,7 +338,7 @@ public class SSLConfig {
         this.sslParameterExtension = null;
         return this;
       }
-      sslParameterExtension.init(ids.getConfig().toProperties());
+      sslParameterExtension.init(ids.getConfig());
       this.sslParameterExtension = sslParameterExtension;
       return this;
     }
