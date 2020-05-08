@@ -12,30 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.hash;
 
+package org.apache.geode.redis.internal.ParameterRequirements;
 
-/**
- * <pre>
- * Implements the HSETNX Redis command.
- * This command sets field in the hash stored at key with the given value
- *
- * A new key holding a hash is created if key does not exist, .
- * Nothing will be changed if field already exists.
- *
- * Examples:
- *
- * redis> HSETNX myhash field "Hello"
- * (integer) 1
- * redis> HSETNX myhash field "World"
- * (integer) 0
- * redis> HGET myhash field
- * </pre>
- */
-public class HSetNXExecutor extends HSetExecutor {
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
 
+public class EvenParameterRequirements implements ParameterRequirements {
   @Override
-  protected boolean onlySetOnAbsent() {
-    return true;
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    if (isEven(command.getProcessedCommand().size())) {
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsError());
+    }
+  }
+
+  private boolean isEven(int n) {
+    return n % 2 != 0;
   }
 }

@@ -138,10 +138,6 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the HMSET command is \"HMSET key field value [field value ...]\", or not every field is associated with a value";
     public static final String HSCAN =
         "The wrong number of arguments or syntax was provided, the format for the SSCAN command is \"SSCAN key cursor [MATCH pattern] [COUNT count]\"";
-    public static final String HSET =
-        "The wrong number of arguments or syntax was provided, the format for the HSET command is \"HSET key field value\"";
-    public static final String HSETNX =
-        "The wrong number of arguments or syntax was provided, the format for the HSETNX command is \"HSETNX key field value\"";
     public static final String HVALS =
         "The wrong number of arguments or syntax was provided, the format for the HVALS command is \"HVALS key\"";
 

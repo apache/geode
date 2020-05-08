@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal;
 
+import org.apache.geode.redis.internal.ParameterRequirements.EvenParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ExactParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MinimumParameterRequirements;
@@ -217,8 +218,9 @@ public enum RedisCommandType {
   HMGET(new HMGetExecutor()),
   HMSET(new HMSetExecutor()),
   HSCAN(new HScanExecutor()),
-  HSET(new HSetExecutor()),
-  HSETNX(new HSetNXExecutor()),
+  HSET(new HSetExecutor(),
+      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
+  HSETNX(new HSetNXExecutor(), new ExactParameterRequirements(4)),
   HVALS(new HValsExecutor()),
 
   /***************************************
