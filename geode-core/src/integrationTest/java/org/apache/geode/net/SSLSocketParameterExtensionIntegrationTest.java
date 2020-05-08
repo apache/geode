@@ -216,17 +216,17 @@ public class SSLSocketParameterExtensionIntegrationTest {
   }
 
   public static class MySSLParameterExtension implements SSLParameterExtension {
-    Properties properties;
+    DistributionConfig config;
 
     @Override
-    public void init(Properties properties) {
-      this.properties = properties;
+    public void init(DistributionConfig config) {
+      this.config = config;
     }
 
     @Override
     public SSLParameters modifySSLClientSocketParameters(SSLParameters parameters) {
       List<SNIServerName> serverNames = new ArrayList<>(1);
-      SNIHostName serverName = new SNIHostName(properties.getProperty(DISTRIBUTED_SYSTEM_ID));
+      SNIHostName serverName = new SNIHostName(String.valueOf(config.getDistributedSystemId()));
       serverNames.add(serverName);
       parameters.setServerNames(serverNames);
       return parameters;
