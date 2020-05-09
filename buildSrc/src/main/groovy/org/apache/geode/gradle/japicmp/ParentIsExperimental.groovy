@@ -38,14 +38,12 @@ class ParentIsExperimental extends AbstractRecordingSeenMembers {
       }
 
       if (isExperimental) {
-        println("return accept [${member}]")
         return Violation.accept(member, "Parent class is @Experimental")
       }
     }
   }
 
   boolean isClassExperimental(final JApiClass member) {
-    println("  member annotations: [${member.annotations}]")
     boolean isExperimental = false
     if (!member.annotations.find {
       it.fullyQualifiedName == 'org.apache.geode.annotations.Experimental'
