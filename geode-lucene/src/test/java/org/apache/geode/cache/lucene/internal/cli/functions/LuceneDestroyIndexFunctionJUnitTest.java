@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
@@ -66,7 +67,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testDestroyIndex() throws Throwable {
     String indexName = "index1";
-    String regionPath = "/region1";
+    String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
@@ -83,7 +84,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testDestroyIndexFailure() throws Throwable {
     String indexName = "index1";
-    String regionPath = "/region1";
+    String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
@@ -96,7 +97,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   public void testDestroyDefinedIndex() throws Throwable {
     String indexName = "index1";
-    String regionPath = "/region1";
+    String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
@@ -113,7 +114,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexFailure() throws Throwable {
     String indexName = "index1";
-    String regionPath = "/region1";
+    String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
@@ -126,7 +127,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyIndexes() throws Throwable {
-    String regionPath = "/region1";
+    String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
@@ -142,7 +143,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyIndexesFailure() throws Throwable {
-    String regionPath = "/region1";
+    String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
@@ -155,7 +156,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexes() throws Throwable {
-    String regionPath = "/region1";
+    String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
@@ -171,7 +172,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexesFailure() throws Throwable {
-    String regionPath = "/region1";
+    String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
@@ -183,7 +184,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   @Test
   public void getXmlEntity() throws Exception {
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    XmlEntity entity1 = function.getXmlEntity("index", "/region");
+    XmlEntity entity1 = function.getXmlEntity("index", SEPARATOR + "region");
     XmlEntity entity2 = function.getXmlEntity("index", "region");
     assertThat(entity1).isEqualTo(entity2);
     assertThat(entity1.getSearchString()).isEqualTo(entity2.getSearchString());

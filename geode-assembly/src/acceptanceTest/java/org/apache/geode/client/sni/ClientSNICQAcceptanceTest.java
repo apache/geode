@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -211,7 +212,7 @@ public class ClientSNICQAcceptanceTest {
 
     String cqName = "jellyTracker";
 
-    String queryStr = "SELECT * FROM /jellyfish i where i > 37";
+    String queryStr = "SELECT * FROM " + SEPARATOR + "jellyfish i where i > 37";
 
     QueryService queryService = region.getRegionService().getQueryService();
     cqTracker = queryService.newCq(cqName, queryStr, cqa);

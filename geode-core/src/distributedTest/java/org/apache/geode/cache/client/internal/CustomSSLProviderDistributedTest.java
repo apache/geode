@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.security.SecurableCommunicationChannels.ALL;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -84,7 +85,7 @@ public class CustomSSLProviderDistributedTest {
 
     // create region
     server.invoke(CustomSSLProviderDistributedTest::createServerRegion);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region", 1);
   }
 
   private static void createServerRegion() {

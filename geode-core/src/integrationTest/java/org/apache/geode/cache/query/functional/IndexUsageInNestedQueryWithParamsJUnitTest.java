@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
@@ -52,8 +53,9 @@ public class IndexUsageInNestedQueryWithParamsJUnitTest {
         CacheUtils.createRegion("portfolio", PortfolioForParameterizedQueries.class);
     Region intBoundRegion = CacheUtils.createRegion("intBound", IntermediateBound.class);
     QueryService queryService = CacheUtils.getQueryService();
-    queryService.defineIndex("portfolioIdIndex", "p.ID", "/portfolio p");
-    queryService.defineIndex("temporaryOriginalBoundIdIdx", "ib.originalId", "/intBound ib");
+    queryService.defineIndex("portfolioIdIndex", "p.ID", SEPARATOR + "portfolio p");
+    queryService.defineIndex("temporaryOriginalBoundIdIdx", "ib.originalId",
+        SEPARATOR + "intBound ib");
     queryService.createDefinedIndexes();
     PortfolioForParameterizedQueries p = new PortfolioForParameterizedQueries(1L);
     p.setDataList(Arrays
@@ -75,7 +77,8 @@ public class IndexUsageInNestedQueryWithParamsJUnitTest {
 
     QueryService queryService = CacheUtils.getQueryService();
     Query query = queryService.newQuery(
-        "<TRACE>select l.ID from /portfolio p, p.dataList dl, ($1).getConcatenatedBoundsAndIntermediateBounds(dl) l WHERE p.ID IN SET(1L,2L)");
+        "<TRACE>select l.ID from " + SEPARATOR
+            + "portfolio p, p.dataList dl, ($1).getConcatenatedBoundsAndIntermediateBounds(dl) l WHERE p.ID IN SET(1L,2L)");
     QueryParameterProvider querySupportService = new QueryParameterProvider(CacheUtils.getCache());
     Object[] params = new Object[] {querySupportService.createQueryParameter()};
     SelectResults result = (SelectResults) query.execute(params);
@@ -168,7 +171,7 @@ public class IndexUsageInNestedQueryWithParamsJUnitTest {
 
     public QueryParameter createQueryParameter() {
       return new QueryParameter(
-          "<TRACE>select distinct ib from /intBound ib where ib.originalId in $1");
+          "<TRACE>select distinct ib from " + SEPARATOR + "intBound ib where ib.originalId in $1");
     }
 
     public class QueryParameter {

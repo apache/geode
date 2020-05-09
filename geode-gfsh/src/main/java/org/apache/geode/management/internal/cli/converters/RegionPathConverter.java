@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +26,6 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -45,12 +46,12 @@ public class RegionPathConverter implements Converter<String> {
       return null;
     }
 
-    if (value.equals(Region.SEPARATOR)) {
+    if (value.equals(SEPARATOR)) {
       throw new IllegalArgumentException("invalid region path: " + value);
     }
 
-    if (!value.startsWith(Region.SEPARATOR)) {
-      value = Region.SEPARATOR + value;
+    if (!value.startsWith(SEPARATOR)) {
+      value = SEPARATOR + value;
     }
     return value;
   }

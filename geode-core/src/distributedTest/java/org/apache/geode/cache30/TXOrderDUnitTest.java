@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -297,7 +298,7 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
     public void afterCommit(TransactionEvent event) {
       List<CacheEvent<?, ?>> events = event.getEvents();
       for (CacheEvent<?, ?> e : events) {
-        if (!"/testTxEventForRegion".equals(e.getRegion().getFullPath())) {
+        if (!(SEPARATOR + "testTxEventForRegion").equals(e.getRegion().getFullPath())) {
           exceptionOccurred = true;
         }
       }
@@ -319,7 +320,7 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
     }
 
     private void verifyRegion(EntryEvent event) {
-      if (!"/testTxEventForRegion".equals(event.getRegion().getFullPath())) {
+      if (!(SEPARATOR + "testTxEventForRegion").equals(event.getRegion().getFullPath())) {
         exceptionOccurred = true;
       }
     }
@@ -355,7 +356,7 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
         af.setScope(Scope.DISTRIBUTED_ACK);
         Region region = createRootRegion("sample", af.create());
         QueryService qs = getCache().getQueryService();
-        qs.createIndex("foo", IndexType.FUNCTIONAL, "age", "/sample");
+        qs.createIndex("foo", IndexType.FUNCTIONAL, "age", SEPARATOR + "sample");
         return null;
       }
     };
@@ -374,7 +375,7 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
         region.create(x, new Person("xyz", 45));
         utx.commit();
         QueryService qs = getCache().getQueryService();
-        Query q = qs.newQuery("select * from /sample where age < 50");
+        Query q = qs.newQuery("select * from " + SEPARATOR + "sample where age < 50");
         assertEquals(1, ((SelectResults) q.execute()).size());
         Person dsample = (Person) CopyHelper.copy(region.get(x));
         dsample.setAge(55);
@@ -403,7 +404,7 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         QueryService qs = getCache().getQueryService();
-        Query q = qs.newQuery("select * from /sample where age < 50");
+        Query q = qs.newQuery("select * from " + SEPARATOR + "sample where age < 50");
         assertEquals(0, ((SelectResults) q.execute()).size());
         return null;
       }

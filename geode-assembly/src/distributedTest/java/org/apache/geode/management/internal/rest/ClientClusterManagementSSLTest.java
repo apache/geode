@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.lang.Identifiable.find;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -245,7 +246,7 @@ public class ClientClusterManagementSSLTest {
       cmsClient.create(region);
 
       // verify that the region is created on the server
-      assertThat(ClusterStartupRule.getCache().getRegion("/orders")).isNotNull();
+      assertThat(ClusterStartupRule.getCache().getRegion(SEPARATOR + "orders")).isNotNull();
     });
 
     // verify that the configuration is persisted on the locator

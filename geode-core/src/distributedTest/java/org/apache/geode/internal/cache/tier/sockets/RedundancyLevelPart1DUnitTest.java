@@ -23,6 +23,7 @@ import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -392,7 +393,7 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   }
 
   private void createEntriesK1andK2() {
-    Region<String, String> r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<String, String> r1 = cache.getRegion(SEPARATOR + REGION_NAME);
 
     assertThat(r1).isNotNull();
 
@@ -417,7 +418,7 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   }
 
   private static void unregisterInterest() {
-    Region<String, String> r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<String, String> r = cache.getRegion(SEPARATOR + REGION_NAME);
     r.unregisterInterest("k1");
   }
 

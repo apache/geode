@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isA;
@@ -86,7 +87,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
     String[] analyzers = new String[3];
     analyzerNames.toArray(analyzers);
-    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", "/region1",
+    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", SEPARATOR + "region1",
         new String[] {"field1", "field2", "field3"}, analyzers, null);
     when(context.getArguments()).thenReturn(indexInfo);
 
@@ -98,7 +99,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     verify(factory).addField(eq("field1"), isA(StandardAnalyzer.class));
     verify(factory).addField(eq("field2"), isA(KeywordAnalyzer.class));
     verify(factory).addField(eq("field3"), isA(StandardAnalyzer.class));
-    verify(factory).create(eq("index1"), eq("/region1"), eq(false));
+    verify(factory).create(eq("index1"), eq(SEPARATOR + "region1"), eq(false));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
     verify(resultSender).lastResult(resultCaptor.capture());
@@ -111,7 +112,8 @@ public class LuceneCreateIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testExecuteWithoutAnalyzer() throws Throwable {
     String fields[] = new String[] {"field1", "field2", "field3"};
-    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", "/region1", fields, null, null);
+    LuceneIndexInfo indexInfo =
+        new LuceneIndexInfo("index1", SEPARATOR + "region1", fields, null, null);
     when(context.getArguments()).thenReturn(indexInfo);
 
     LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
@@ -120,7 +122,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     verify(factory).addField(eq("field1"));
     verify(factory).addField(eq("field2"));
     verify(factory).addField(eq("field3"));
-    verify(factory).create(eq("index1"), eq("/region1"), eq(false));
+    verify(factory).create(eq("index1"), eq(SEPARATOR + "region1"), eq(false));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
     verify(resultSender).lastResult(resultCaptor.capture());
@@ -133,7 +135,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testExecuteWithSerializer() throws Throwable {
     String fields[] = new String[] {"field1", "field2", "field3"};
-    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", "/region1", fields, null,
+    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", SEPARATOR + "region1", fields, null,
         PrimitiveSerializer.class.getCanonicalName());
     when(context.getArguments()).thenReturn(indexInfo);
 
@@ -144,7 +146,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     verify(factory).addField(eq("field2"));
     verify(factory).addField(eq("field3"));
     verify(factory).setLuceneSerializer(isA(PrimitiveSerializer.class));
-    verify(factory).create(eq("index1"), eq("/region1"), eq(false));
+    verify(factory).create(eq("index1"), eq(SEPARATOR + "region1"), eq(false));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
     verify(resultSender).lastResult(resultCaptor.capture());

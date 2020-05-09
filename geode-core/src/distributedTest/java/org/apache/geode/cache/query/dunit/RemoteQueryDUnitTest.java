@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1334,7 +1335,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
-        String queryString = "select distinct * from /" + name;
+        String queryString = "select distinct * from " + SEPARATOR + name;
         // SelectResults results = null;
         try {
           region.query(queryString);

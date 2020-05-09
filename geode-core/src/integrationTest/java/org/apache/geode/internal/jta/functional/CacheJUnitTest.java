@@ -19,7 +19,7 @@
  */
 package org.apache.geode.internal.jta.functional;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -82,7 +82,7 @@ public class CacheJUnitTest {
     assertNotNull(this.cache);
 
     this.currRegion = this.cache.getRegion("root");
-    assertTrue(this.currRegion.getFullPath().equals("/root"));
+    assertTrue(this.currRegion.getFullPath().equals(SEPARATOR + "root"));
   }
 
   @After

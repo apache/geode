@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal;
 import static java.util.Arrays.asList;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -694,7 +695,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         status.compareAndSet(SharedConfigurationStatus.STARTED,
             SharedConfigurationStatus.WAITING);
         Set<PersistentMemberID> persMemIds =
-            waitingRegions.get(Region.SEPARATOR_CHAR + CONFIG_REGION_NAME);
+            waitingRegions.get(SEPARATOR_CHAR + CONFIG_REGION_NAME);
         for (PersistentMemberID persMemId : persMemIds) {
           newerSharedConfigurationLocatorInfo.add(new PersistentMemberPattern(persMemId));
         }

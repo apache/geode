@@ -36,6 +36,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.util.GeodePublicGlossary;
 
 /**
  * Manages subregions and cached data. Each region can contain multiple subregions and entries for
@@ -141,11 +142,21 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
  */
 
 public interface Region<K, V> extends ConcurrentMap<K, V> {
-  /** The region name separator character. */
-  char SEPARATOR_CHAR = '/';
+  /**
+   * The region name separator character.
+   *
+   * @deprecated Use {@link GeodePublicGlossary#SEPARATOR_CHAR} instead
+   */
+  @Deprecated
+  char SEPARATOR_CHAR = GeodePublicGlossary.SEPARATOR_CHAR;
 
-  /** The region name separator character, represented as a string for convenience. */
-  String SEPARATOR = "/";
+  /**
+   * The region name separator character, represented as a string for convenience.
+   *
+   * @deprecated Use {@link GeodePublicGlossary#SEPARATOR} instead
+   */
+  @Deprecated
+  String SEPARATOR = GeodePublicGlossary.SEPARATOR;
 
   /**
    * Returns the name of this region. A region's name can be any non-empty String providing it does

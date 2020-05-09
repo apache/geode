@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.configuration;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,8 +81,8 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
       return;
     }
 
-    boolean regionPrefixedWithSlash = value.startsWith("/");
-    String[] regionSplit = value.split("/");
+    boolean regionPrefixedWithSlash = value.startsWith(SEPARATOR);
+    String[] regionSplit = value.split(SEPARATOR);
 
     boolean hasSubRegions =
         regionPrefixedWithSlash ? regionSplit.length > 2 : regionSplit.length > 1;

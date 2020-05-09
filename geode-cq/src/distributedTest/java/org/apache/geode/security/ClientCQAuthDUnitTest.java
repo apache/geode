@@ -15,6 +15,7 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class ClientCQAuthDUnitTest {
 
   @Test
   public void verifyCQPermissions() throws Exception {
-    String query = "select * from /AuthRegion";
+    String query = "select * from " + SEPARATOR + "AuthRegion";
     int serverPort = server.getPort();
 
     client1 = cluster.startClientVM(1, c2 -> c2.withCredential("test", "test")

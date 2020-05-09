@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -128,7 +130,7 @@ public class DataQueryEngine {
         }
       } else {
         return new JsonisedErrorMessage(String.format("Query is invalid due to error : %s",
-            "Region mentioned in query probably missing /")).toString();
+            "Region mentioned in query probably missing " + SEPARATOR)).toString();
       }
 
       // Validate

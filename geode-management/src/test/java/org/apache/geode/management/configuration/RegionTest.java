@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.configuration;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
@@ -35,17 +36,17 @@ public class RegionTest {
   }
 
   @Test
-  public void regionNameSwallowsSlash() {
-    regionConfig.setName("/regionA");
+  public void regionNameSwallowsSeparator() {
+    regionConfig.setName(SEPARATOR + "regionA");
     assertThat(regionConfig.getName()).isEqualTo("regionA");
   }
 
   @Test
   public void subRegionsUnsupported() {
     regionConfig = new Region();
-    assertThatThrownBy(() -> regionConfig.setName("/Parent/Child"))
+    assertThatThrownBy(() -> regionConfig.setName(SEPARATOR + "Parent" + SEPARATOR + "Child"))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> regionConfig.setName("Parent/Child"))
+    assertThatThrownBy(() -> regionConfig.setName("Parent" + SEPARATOR + "Child"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

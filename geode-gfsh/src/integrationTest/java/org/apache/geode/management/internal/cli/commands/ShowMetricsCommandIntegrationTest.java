@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -77,7 +78,7 @@ public class ShowMetricsCommandIntegrationTest {
   @Test
   public void getRegionMetricsShowsExactlyDefaultCategories() {
     // Use --region and --member to get RegionMetricsFromMember
-    String cmd = "show metrics --region=/" + REGION_NAME + " --member=" + MEMBER_NAME;
+    String cmd = "show metrics --region=" + SEPARATOR + REGION_NAME + " --member=" + MEMBER_NAME;
     List<String> expectedCategories =
         ShowMetricsInterceptor.getValidCategoriesAsStrings(true, true, false);
     // Blank lines are permitted for grouping.
@@ -91,7 +92,7 @@ public class ShowMetricsCommandIntegrationTest {
   @Test
   public void getSystemRegionMetricsShowsExactlyDefaultCategories() {
     // Use --region alone to get SystemRegionMetrics
-    String cmd = "show metrics --region=/" + REGION_NAME;
+    String cmd = "show metrics --region=" + SEPARATOR + REGION_NAME;
     List<String> expectedCategories =
         ShowMetricsInterceptor.getValidCategoriesAsStrings(true, false, false);
     // Blank lines are permitted for grouping.

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -246,7 +247,7 @@ public class DestroyIndexCommandsDUnitTest {
       Cache cache = ClusterStartupRule.getCache();
       RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
       factory.create("REGION3");
-      cache.getQueryService().createIndex("INDEX3", "key", "/REGION3");
+      cache.getQueryService().createIndex("INDEX3", "key", SEPARATOR + "REGION3");
     });
 
     gfsh.executeAndAssertThat("destroy index --name=INDEX3" + " --region=REGION3").statusIsSuccess()

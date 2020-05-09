@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.Iterator;
@@ -292,7 +293,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
    * @throws Exception - thrown if any exception occurs in doing PUTs
    */
   public static void doEntryOperations(String keyPrefix) throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     for (int i = 0; i < PUTS_PER_SERVER; i++) {
       r1.put(keyPrefix + i, keyPrefix + "val-" + i);
     }

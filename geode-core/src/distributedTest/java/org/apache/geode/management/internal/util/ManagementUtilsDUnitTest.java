@@ -16,6 +16,7 @@
  */
 package org.apache.geode.management.internal.util;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -78,9 +79,9 @@ public class ManagementUtilsDUnitTest {
     gfsh.executeAndAssertThat("create region --name=group2Region --group=group2 --type=REPLICATE")
         .statusIsSuccess();
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/commonRegion", 4);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/group1Region", 2);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/group2Region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "commonRegion", 4);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "group1Region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "group2Region", 2);
   }
 
   @Test
@@ -183,7 +184,7 @@ public class ManagementUtilsDUnitTest {
     locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Set<String> regions = new HashSet<String>();
-      regions.add("/asdfghjkl");
+      regions.add(SEPARATOR + "asdfghjkl");
 
       members = ManagementUtils.getQueryRegionsAssociatedMembers(regions, cache, true);
       assertThat(members).isEmpty();
@@ -198,8 +199,8 @@ public class ManagementUtilsDUnitTest {
     locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Set<String> regions = new HashSet<String>();
-      regions.add("/asdfghjkl");
-      regions.add("/asdfghjklmn");
+      regions.add(SEPARATOR + "asdfghjkl");
+      regions.add(SEPARATOR + "asdfghjklmn");
 
       members = ManagementUtils.getQueryRegionsAssociatedMembers(regions, cache, true);
       assertThat(members).isEmpty();
@@ -214,8 +215,8 @@ public class ManagementUtilsDUnitTest {
     locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Set<String> regions = new HashSet<String>();
-      regions.add("/asdfghjkl");
-      regions.add("/commonRegion");
+      regions.add(SEPARATOR + "asdfghjkl");
+      regions.add(SEPARATOR + "commonRegion");
 
       members = ManagementUtils.getQueryRegionsAssociatedMembers(regions, cache, true);
       assertThat(members).isEmpty();

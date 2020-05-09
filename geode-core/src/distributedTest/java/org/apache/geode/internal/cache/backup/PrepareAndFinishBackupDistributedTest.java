@@ -18,6 +18,7 @@ import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getController;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -269,7 +270,7 @@ public class PrepareAndFinishBackupDistributedTest {
 
   private void queryCheck() {
     try {
-      region.query("select * from /" + regionName);
+      region.query("select * from " + SEPARATOR + regionName);
     } catch (FunctionDomainException | TypeMismatchException | NameResolutionException
         | QueryInvocationTargetException e) {
       throw new RuntimeException(e);

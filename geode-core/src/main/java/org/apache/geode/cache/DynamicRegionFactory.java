@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.File;
 import java.util.ArrayList;

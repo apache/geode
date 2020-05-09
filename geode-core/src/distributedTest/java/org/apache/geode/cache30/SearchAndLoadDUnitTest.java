@@ -15,6 +15,7 @@
 package org.apache.geode.cache30;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -225,7 +226,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           new CacheSerializableRunnable() {
             @Override
             public void run2() {
-              Region<Object, Object> region = getCache().getRegion("root/" + name);
+              Region<Object, Object> region = getCache().getRegion("root" + SEPARATOR + name);
 
               logger.info("t1 is invoking get(" + objectName + ")");
               try {
@@ -243,7 +244,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           "Concurrently invoke the loader on the same key - t2", new CacheSerializableRunnable() {
             @Override
             public void run2() {
-              final Region<Object, Object> region = getCache().getRegion("root/" + name);
+              final Region<Object, Object> region = getCache().getRegion("root" + SEPARATOR + name);
               final Object[] valueHolder = new Object[1];
 
               // wait for vm1 to cause the loader to be invoked

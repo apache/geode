@@ -15,9 +15,9 @@
 
 package org.apache.geode.cache.lucene.internal;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.CREATE_REGION_MESSAGE_LUCENE;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.util.ArrayList;
 import java.util.Collection;

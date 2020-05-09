@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,7 +99,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   protected final Map<String, PartitionedRegion> userRegionNameToShadowPRMap =
       new ConcurrentHashMap<>();
   private static final String SHADOW_BUCKET_PATH_PREFIX =
-      Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR;
+      SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR;
 
   // <PartitionedRegion, Map<Integer, List<Object>>>
   private final Map regionToDispatchedKeysMap = new ConcurrentHashMap();

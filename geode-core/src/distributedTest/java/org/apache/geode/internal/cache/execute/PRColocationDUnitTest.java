@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -149,20 +150,20 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     createPartitionedRegion(attributeObjects);
 
     regionName = "B";
-    colocatedWith = "/A";
+    colocatedWith = SEPARATOR + "A";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "C";
-    colocatedWith = "/A";
+    colocatedWith = SEPARATOR + "A";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
-    attributeObjects = new Object[] {"/A"};
+    attributeObjects = new Object[] {SEPARATOR + "A"};
     dataStore1.invoke(PRColocationDUnitTest.class, "destroyPR", attributeObjects);
   }
 
@@ -184,97 +185,97 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     createPartitionedRegion(attributeObjects);
 
     regionName = "B";
-    colocatedWith = "/A";
+    colocatedWith = SEPARATOR + "A";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "C";
-    colocatedWith = "/A";
+    colocatedWith = SEPARATOR + "A";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "D";
-    colocatedWith = "/B";
+    colocatedWith = SEPARATOR + "B";
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "E";
-    colocatedWith = "/B";
+    colocatedWith = SEPARATOR + "B";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "F";
-    colocatedWith = "/B";
+    colocatedWith = SEPARATOR + "B";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "G";
-    colocatedWith = "/C";
+    colocatedWith = SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "H";
-    colocatedWith = "/C";
+    colocatedWith = SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "I";
-    colocatedWith = "/C";
+    colocatedWith = SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "J";
-    colocatedWith = "/D";
+    colocatedWith = SEPARATOR + "D";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "K";
-    colocatedWith = "/D";
+    colocatedWith = SEPARATOR + "D";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "L";
-    colocatedWith = "/E";
+    colocatedWith = SEPARATOR + "E";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "M";
-    colocatedWith = "/F";
+    colocatedWith = SEPARATOR + "F";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "N";
-    colocatedWith = "/G";
+    colocatedWith = SEPARATOR + "G";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createPartitionedRegion(attributeObjects);
 
     regionName = "O";
-    colocatedWith = "/I";
+    colocatedWith = SEPARATOR + "I";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
@@ -431,111 +432,116 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "B";
-    colocatedWith = "/rootA/A";
+    colocatedWith = SEPARATOR + "rootA" + SEPARATOR + "A";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "C";
-    colocatedWith = "/rootA/A";
+    colocatedWith = SEPARATOR + "rootA" + SEPARATOR + "A";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "D";
-    colocatedWith = "/rootB/B";
+    colocatedWith = SEPARATOR + "rootB" + SEPARATOR + "B";
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "E";
-    colocatedWith = "/rootB/B";
+    colocatedWith = SEPARATOR + "rootB" + SEPARATOR + "B";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "F";
-    colocatedWith = "/rootB/B";
+    colocatedWith = SEPARATOR + "rootB" + SEPARATOR + "B";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "G";
-    colocatedWith = "/rootC/C";
+    colocatedWith = SEPARATOR + "rootC" + SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "H";
-    colocatedWith = "/rootC/C";
+    colocatedWith = SEPARATOR + "rootC" + SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "I";
-    colocatedWith = "/rootC/C";
+    colocatedWith = SEPARATOR + "rootC" + SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "J";
-    colocatedWith = "/rootD/D";
+    colocatedWith = SEPARATOR + "rootD" + SEPARATOR + "D";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "K";
-    colocatedWith = "/rootD/D";
+    colocatedWith = SEPARATOR + "rootD" + SEPARATOR + "D";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "L";
-    colocatedWith = "/rootE/E";
+    colocatedWith = SEPARATOR + "rootE" + SEPARATOR + "E";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "M";
-    colocatedWith = "/rootF/F";
+    colocatedWith = SEPARATOR + "rootF" + SEPARATOR + "F";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "N";
-    colocatedWith = "/rootG/G";
+    colocatedWith = SEPARATOR + "rootG" + SEPARATOR + "G";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "O";
-    colocatedWith = "/rootI/I";
+    colocatedWith = SEPARATOR + "rootI" + SEPARATOR + "I";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootA/A"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootA" + SEPARATOR + "A"));
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootD/D"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootD" + SEPARATOR + "D"));
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootH/H"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootH" + SEPARATOR + "H"));
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootB/B"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootB" + SEPARATOR + "B"));
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootK/K"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootK" + SEPARATOR + "K"));
   }
 
   @Test
@@ -553,111 +559,116 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "B";
-    colocatedWith = "rootA/A";
+    colocatedWith = "rootA" + SEPARATOR + "A";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "C";
-    colocatedWith = "rootA/A";
+    colocatedWith = "rootA" + SEPARATOR + "A";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "D";
-    colocatedWith = "rootB/B";
+    colocatedWith = "rootB" + SEPARATOR + "B";
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "E";
-    colocatedWith = "rootB/B";
+    colocatedWith = "rootB" + SEPARATOR + "B";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "F";
-    colocatedWith = "rootB/B";
+    colocatedWith = "rootB" + SEPARATOR + "B";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "G";
-    colocatedWith = "rootC/C";
+    colocatedWith = "rootC" + SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "H";
-    colocatedWith = "rootC/C";
+    colocatedWith = "rootC" + SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "I";
-    colocatedWith = "rootC/C";
+    colocatedWith = "rootC" + SEPARATOR + "C";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "J";
-    colocatedWith = "rootD/D";
+    colocatedWith = "rootD" + SEPARATOR + "D";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "K";
-    colocatedWith = "rootD/D";
+    colocatedWith = "rootD" + SEPARATOR + "D";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "L";
-    colocatedWith = "rootE/E";
+    colocatedWith = "rootE" + SEPARATOR + "E";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "M";
-    colocatedWith = "rootF/F";
+    colocatedWith = "rootF" + SEPARATOR + "F";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "N";
-    colocatedWith = "rootG/G";
+    colocatedWith = "rootG" + SEPARATOR + "G";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
     regionName = "O";
-    colocatedWith = "rootI/I";
+    colocatedWith = "rootI" + SEPARATOR + "I";
     isPartitionResolver = new Boolean(true);
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver};
     createSubPartitionedRegion(attributeObjects);
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootA/A"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootA" + SEPARATOR + "A"));
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootD/D"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootD" + SEPARATOR + "D"));
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootH/H"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootH" + SEPARATOR + "H"));
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootB/B"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootB" + SEPARATOR + "B"));
 
-    accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootK/K"));
+    accessor
+        .invoke(() -> PRColocationDUnitTest.validateColocatedRegions("rootK" + SEPARATOR + "K"));
   }
 
   @Test
@@ -967,7 +978,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() {
         Region partitionedregion =
-            basicGetCache().getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+            basicGetCache().getRegion(SEPARATOR + OrderPartitionedRegionName);
         try {
           partitionedregion.localDestroyRegion();
           fail("It should have thrown an Exception saying: " + expectedExMessage);
@@ -982,7 +993,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() {
         Region partitionedregion =
-            basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+            basicGetCache().getRegion(SEPARATOR + CustomerPartitionedRegionName);
         try {
           partitionedregion.localDestroyRegion();
           fail("It should have thrown an Exception saying: " + expectedExMessage);
@@ -1037,7 +1048,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() {
         Region partitionedregion =
-            basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+            basicGetCache().getRegion(SEPARATOR + CustomerPartitionedRegionName);
         try {
           partitionedregion.destroyRegion();
           fail("It should have thrown an Exception saying: " + expectedExMessage);
@@ -1053,7 +1064,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() {
         Region partitionedregion =
-            basicGetCache().getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+            basicGetCache().getRegion(SEPARATOR + OrderPartitionedRegionName);
         try {
           partitionedregion.destroyRegion();
         } catch (Exception unexpected) {
@@ -1068,7 +1079,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() {
         Region partitionedregion =
-            basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+            basicGetCache().getRegion(SEPARATOR + CustomerPartitionedRegionName);
         try {
           partitionedregion.destroyRegion();
         } catch (Exception unexpected) {
@@ -1981,11 +1992,11 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     PartitionedRegion shipmentPartitionedregion = null;
     try {
       customerPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + customerPartitionedRegionName);
+          .getRegion(SEPARATOR + customerPartitionedRegionName);
       orderPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + orderPartitionedRegionName);
+          .getRegion(SEPARATOR + orderPartitionedRegionName);
       shipmentPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
+          .getRegion(SEPARATOR + shipmentPartitionedRegionName);
     } catch (Exception e) {
       fail("validateDataStore : Failed while getting the region from basicGetCache()");
     }
@@ -2143,11 +2154,11 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     PartitionedRegion shipmentPartitionedregion = null;
     try {
       customerPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + customerPartitionedRegionName);
+          .getRegion(SEPARATOR + customerPartitionedRegionName);
       orderPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + orderPartitionedRegionName);
+          .getRegion(SEPARATOR + orderPartitionedRegionName);
       shipmentPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
+          .getRegion(SEPARATOR + shipmentPartitionedRegionName);
     } catch (Exception e) {
       fail("validateDataStore : Failed while getting the region from cache");
     }
@@ -2214,7 +2225,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   public static void validateColocatedRegions(String partitionedRegionName) {
     PartitionedRegion partitionedRegion =
-        (PartitionedRegion) basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
+        (PartitionedRegion) basicGetCache().getRegion(SEPARATOR + partitionedRegionName);
     Map colocatedRegions;
 
     colocatedRegions = ColocationHelper.getAllColocationRegions(partitionedRegion);
@@ -2240,7 +2251,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     PartitionedRegion partitionedregion = null;
     try {
       partitionedregion =
-          (PartitionedRegion) basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
+          (PartitionedRegion) basicGetCache().getRegion(SEPARATOR + partitionedRegionName);
     } catch (Exception e) {
       Assert.fail(
           "validateBeforePutCustomerPartitionedRegion : Failed while getting the region from cache",
@@ -2261,11 +2272,11 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     PartitionedRegion shipmentPartitionedregion = null;
     try {
       customerPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + customerPartitionedRegionName);
+          .getRegion(SEPARATOR + customerPartitionedRegionName);
       orderPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + orderPartitionedRegionName);
+          .getRegion(SEPARATOR + orderPartitionedRegionName);
       shipmentPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
+          .getRegion(SEPARATOR + shipmentPartitionedRegionName);
     } catch (Exception e) {
       Assert.fail("validateAfterPutPartitionedRegion : failed while getting the region", e);
     }
@@ -2340,7 +2351,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   public static void closeRegion(String partitionedRegionName) {
     assertNotNull(basicGetCache());
-    Region partitionedregion = basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = basicGetCache().getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     try {
       partitionedregion.close();
@@ -2352,7 +2363,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   public static void closeRegionWithColocatedRegions(String partitionedRegionName,
       boolean destroy) {
     assertNotNull(basicGetCache());
-    Region partitionedregion = basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = basicGetCache().getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     boolean exceptionThrown = false;
     try {
@@ -2373,7 +2384,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   public static void putCustomerPartitionedRegion(String partitionedRegionName, int numOfRecord) {
     assertNotNull(basicGetCache());
-    Region partitionedregion = basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = basicGetCache().getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     for (int i = 1; i <= numOfRecord; i++) {
       CustId custid = new CustId(i);
@@ -2397,7 +2408,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   public static void putOrderPartitionedRegion(String partitionedRegionName, int numOfCust) {
     assertNotNull(basicGetCache());
-    Region partitionedregion = basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = basicGetCache().getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     for (int i = 1; i <= numOfCust; i++) {
       CustId custid = new CustId(i);
@@ -2422,7 +2433,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   public static void putOrderPartitionedRegion2(String partitionedRegionName) {
     assertNotNull(basicGetCache());
-    Region partitionedregion = basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = basicGetCache().getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     for (int i = 11; i <= 100; i++) {
       CustId custid = new CustId(i);
@@ -2447,7 +2458,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   public static void putShipmentPartitionedRegion(String partitionedRegionName) {
     assertNotNull(basicGetCache());
-    Region partitionedregion = basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = basicGetCache().getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     for (int i = 1; i <= 10; i++) {
       CustId custid = new CustId(i);

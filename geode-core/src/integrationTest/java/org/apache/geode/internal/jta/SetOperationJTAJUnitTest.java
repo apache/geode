@@ -15,6 +15,7 @@
 package org.apache.geode.internal.jta;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -200,7 +201,7 @@ public class SetOperationJTAJUnitTest {
   private void verifyRegionValuesWhenSetOperationStartsJTA() throws Exception {
     Context ctx = cache.getJNDIContext();
     UserTransaction userTX = startUserTransaction(ctx);
-    Region<Long, String> region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = cache.getRegion(SEPARATOR + REGION_NAME);
     try {
       userTX.begin();
       Collection<String> set = region.values();
@@ -225,7 +226,7 @@ public class SetOperationJTAJUnitTest {
   private void verifyRegionValuesWhenSetOperationDoesNotStartJTA() throws Exception {
     Context ctx = cache.getJNDIContext();
     UserTransaction userTX = startUserTransaction(ctx);
-    Region<Long, String> region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = cache.getRegion(SEPARATOR + REGION_NAME);
     try {
       userTX.begin();
       Collection<String> set = region.values();

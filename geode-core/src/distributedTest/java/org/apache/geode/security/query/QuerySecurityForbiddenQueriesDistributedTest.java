@@ -16,6 +16,7 @@ package org.apache.geode.security.query;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,44 +79,44 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   /* ----- Implicit Getter Tests ----- */
   @Test
   public void queryWithImplicitMethodInvocationOnWhereClauseShouldThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.name = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.name = 'Beth'";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query,
         regexForExpectedExceptions);
   }
 
   @Test
   public void queryWithImplicitMethodInvocationOnSelectClauseShouldThrowSecurityException() {
-    String query = "SELECT r.name FROM /" + regionName + " r";
+    String query = "SELECT r.name FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query,
         regexForExpectedExceptions);
   }
 
   @Test
   public void queriesWithImplicitMethodInvocationUsedWithinAggregateFunctionsShouldThrowSecurityException() {
-    String queryCount = "SELECT COUNT(r.name) FROM /" + regionName + " r";
+    String queryCount = "SELECT COUNT(r.name) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryCount,
         regexForExpectedExceptions);
 
-    String queryMax = "SELECT MAX(r.name) FROM /" + regionName + " r";
+    String queryMax = "SELECT MAX(r.name) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryMax,
         regexForExpectedExceptions);
 
-    String queryMin = "SELECT MIN(r.name) FROM /" + regionName + " r";
+    String queryMin = "SELECT MIN(r.name) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryMin,
         regexForExpectedExceptions);
 
-    String queryAvg = "SELECT AVG(r.name) FROM /" + regionName + " r";
+    String queryAvg = "SELECT AVG(r.name) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryAvg,
         regexForExpectedExceptions);
 
-    String querySum = "SELECT SUM(r.name) FROM /" + regionName + " r";
+    String querySum = "SELECT SUM(r.name) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, querySum,
         regexForExpectedExceptions);
   }
 
   @Test
   public void queryWithImplicitMethodInvocationUsedWithinDistinctClauseShouldThrowSecurityException() {
-    String query = "<TRACE> SELECT DISTINCT * from /" + regionName
+    String query = "<TRACE> SELECT DISTINCT * from " + SEPARATOR + regionName
         + " r WHERE r.name IN SET('John', 'Beth') ORDER BY r.id asc LIMIT 2";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query,
         regexForExpectedExceptions);
@@ -123,7 +124,8 @@ public class QuerySecurityForbiddenQueriesDistributedTest
 
   @Test
   public void queryWithImplicitMethodInvocationOnInnerQueriesShouldThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName + " r1 WHERE r1.name IN (SELECT r2.name FROM /"
+    String query = "SELECT * FROM " + SEPARATOR + regionName
+        + " r1 WHERE r1.name IN (SELECT r2.name FROM " + SEPARATOR
         + regionName + " r2)";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query,
         regexForExpectedExceptions);
@@ -132,44 +134,44 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   /* ----- Direct Getter Tests ----- */
   @Test
   public void queryWithExplicitMethodInvocationOnWhereClauseShouldThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.getName = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getName = 'Beth'";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query,
         regexForExpectedExceptions);
   }
 
   @Test
   public void queryWithExplicitMethodInvocationOnSelectClauseShouldThrowSecurityException() {
-    String query = "SELECT r.getName FROM /" + regionName + " r";
+    String query = "SELECT r.getName FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query,
         regexForExpectedExceptions);
   }
 
   @Test
   public void queriesWithExplicitMethodInvocationUsedWithinAggregateFunctionsShouldThrowSecurityException() {
-    String queryCount = "SELECT COUNT(r.getName) FROM /" + regionName + " r";
+    String queryCount = "SELECT COUNT(r.getName) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryCount,
         regexForExpectedExceptions);
 
-    String queryMax = "SELECT MAX(r.getName) FROM /" + regionName + " r";
+    String queryMax = "SELECT MAX(r.getName) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryMax,
         regexForExpectedExceptions);
 
-    String queryMin = "SELECT MIN(r.getName) FROM /" + regionName + " r";
+    String queryMin = "SELECT MIN(r.getName) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryMin,
         regexForExpectedExceptions);
 
-    String queryAvg = "SELECT AVG(r.getName) FROM /" + regionName + " r";
+    String queryAvg = "SELECT AVG(r.getName) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryAvg,
         regexForExpectedExceptions);
 
-    String querySum = "SELECT SUM(r.getName) FROM /" + regionName + " r";
+    String querySum = "SELECT SUM(r.getName) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, querySum,
         regexForExpectedExceptions);
   }
 
   @Test
   public void queryWithExplicitMethodInvocationUsedWithinDistinctClauseShouldThrowSecurityException() {
-    String query = "<TRACE> SELECT DISTINCT * from /" + regionName
+    String query = "<TRACE> SELECT DISTINCT * from " + SEPARATOR + regionName
         + " r WHERE r.getName IN SET('John', 'Beth') ORDER BY r.id asc LIMIT 2";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query,
         regexForExpectedExceptions);
@@ -177,8 +179,8 @@ public class QuerySecurityForbiddenQueriesDistributedTest
 
   @Test
   public void queryWithExplicitMethodInvocationOnInnerQueriesShouldThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName
-        + " r1 WHERE r1.getName IN (SELECT r2.getName FROM /" + regionName + " r2)";
+    String query = "SELECT * FROM " + SEPARATOR + regionName
+        + " r1 WHERE r1.getName IN (SELECT r2.getName FROM " + SEPARATOR + regionName + " r2)";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query,
         regexForExpectedExceptions);
   }
@@ -188,41 +190,42 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   public void queriesWithAllowedRegionMethodInvocationsShouldThrowSecurityExceptionForNonAuthorizedUsers() {
     Assume.assumeTrue(user.equals("dataReaderRegionKey"));
 
-    String queryValues = "SELECT * FROM /" + regionName + ".values";
+    String queryValues = "SELECT * FROM " + SEPARATOR + regionName + ".values";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryValues,
         regexForExpectedExceptions);
 
-    String queryKeySet = "SELECT * FROM /" + regionName + ".keySet";
+    String queryKeySet = "SELECT * FROM " + SEPARATOR + regionName + ".keySet";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryKeySet,
         regexForExpectedExceptions);
 
-    String queryContainsKey = "SELECT * FROM /" + regionName + ".containsKey('" + keys[0] + "')";
+    String queryContainsKey =
+        "SELECT * FROM " + SEPARATOR + regionName + ".containsKey('" + keys[0] + "')";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryContainsKey,
         regexForExpectedExceptions);
 
-    String queryEntrySet = "SELECT * FROM /" + regionName + ".get('" + keys[0] + "')";
+    String queryEntrySet = "SELECT * FROM " + SEPARATOR + regionName + ".get('" + keys[0] + "')";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryEntrySet,
         regexForExpectedExceptions);
   }
 
   @Test
   public void queriesWithRegionMutatorMethodInvocationsShouldThrowSecurityException() {
-    String queryCreate = "SELECT * FROM /" + regionName + ".create('key2', 15)";
+    String queryCreate = "SELECT * FROM " + SEPARATOR + regionName + ".create('key2', 15)";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryCreate,
         regexForExpectedExceptions);
     assertRegionData(superUserClient, Arrays.asList(values));
 
-    String queryPut = "SELECT * FROM /" + regionName + ".put('key-2', 'something')";
+    String queryPut = "SELECT * FROM " + SEPARATOR + regionName + ".put('key-2', 'something')";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryPut,
         regexForExpectedExceptions);
     assertRegionData(superUserClient, Arrays.asList(values));
 
-    String queryRemove = "SELECT * FROM /" + regionName + ".remove('key-0')";
+    String queryRemove = "SELECT * FROM " + SEPARATOR + regionName + ".remove('key-0')";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryRemove,
         regexForExpectedExceptions);
     assertRegionData(superUserClient, Arrays.asList(values));
 
-    String queryDestroy = "SELECT * FROM /" + regionName + ".destroyRegion()";
+    String queryDestroy = "SELECT * FROM " + SEPARATOR + regionName + ".destroyRegion()";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, queryDestroy,
         regexForExpectedExceptions);
   }
@@ -230,27 +233,27 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   /* ----- Other Forbidden Methods ----- */
   @Test
   public void queryWithGetClassShouldThrowSecurityException() {
-    String query1 = "SELECT * FROM /" + regionName + " r WHERE r.getClass != '1'";
+    String query1 = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getClass != '1'";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query1,
         regexForExpectedExceptions);
 
-    String query2 = "SELECT r.getClass FROM /" + regionName + " r";
+    String query2 = "SELECT r.getClass FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query2,
         regexForExpectedExceptions);
 
-    String query3 = "SELECT r.getClass() FROM /" + regionName + " r";
+    String query3 = "SELECT r.getClass() FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query3,
         regexForExpectedExceptions);
 
-    String query4 = "SELECT * FROM /" + regionName + " r WHERE r.getClass != 'blah'";
+    String query4 = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getClass != 'blah'";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query4,
         regexForExpectedExceptions);
 
-    String query5 = "SELECT * FROM /" + regionName + " r WHERE r.getClass() != '1'";
+    String query5 = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getClass() != '1'";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query5,
         regexForExpectedExceptions);
 
-    String query6 = "SELECT * FROM /" + regionName + " r WHERE r.Class != '1'";
+    String query6 = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.Class != '1'";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query6,
         regexForExpectedExceptions);
   }
@@ -258,7 +261,7 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   @Test
   public void queryWithExplicitNonExistingMethodInvocationShouldReturnUndefined() {
     Assume.assumeFalse(user.equals("dataReaderRegionKey"));
-    String query = "SELECT r.getInterestListRegex() FROM /" + regionName + " r";
+    String query = "SELECT r.getInterestListRegex() FROM " + SEPARATOR + regionName + " r";
     List<Object> expectedResults = Arrays.asList(QueryService.UNDEFINED, QueryService.UNDEFINED);
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
   }
@@ -266,7 +269,7 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   @Test
   public void queryWithCloneMethodOnQRegionShouldReturnEmptyResult() {
     Assume.assumeFalse(user.equals("dataReaderRegionKey"));
-    String query = "SELECT * FROM /" + regionName + ".clone";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + ".clone";
     List<Object> expectedResults = Collections.emptyList();
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
   }
@@ -274,7 +277,7 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   @Test
   public void queryWithExplicitNonExistingMethodInvocationOnQRegionShouldReturnEmptyResult() {
     Assume.assumeFalse(user.equals("dataReaderRegionKey"));
-    String query = "SELECT * FROM /" + regionName + ".getKey('" + keys[0] + "')";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + ".getKey('" + keys[0] + "')";
     List<Object> expectedResults = Collections.emptyList();
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
   }
@@ -282,7 +285,7 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   @Test
   public void queryWithExplicitCreateMethodInvocationOnRegionShouldReturnUndefinedAndDoNotModifyRegion() {
     Assume.assumeFalse(user.equals("dataReaderRegionKey"));
-    String query = "SELECT r.create('key2', 15) FROM /" + regionName + " r";
+    String query = "SELECT r.create('key2', 15) FROM " + SEPARATOR + regionName + " r";
     List<Object> expectedResults = Arrays.asList(QueryService.UNDEFINED, QueryService.UNDEFINED);
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
     assertRegionData(specificUserClient, Arrays.asList(values));
@@ -291,16 +294,19 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   @Test
   public void queryWithExplicitMutatorMethodInvocationsOnRegionShouldReturnEmptyResultAndDoNotModifyRegion() {
     Assume.assumeFalse(user.equals("dataReaderRegionKey"));
-    String queryDestroy = "SELECT * FROM /" + regionName + ".destroyKey('" + keys[0] + "')";
+    String queryDestroy =
+        "SELECT * FROM " + SEPARATOR + regionName + ".destroyKey('" + keys[0] + "')";
     executeQueryAndAssertExpectedResults(specificUserClient, queryDestroy, Collections.emptyList());
     assertRegionData(superUserClient, Arrays.asList(values));
 
-    String queryPutIfAbsent = "SELECT * FROM /" + regionName + ".putIfAbsent('key-2', 'something')";
+    String queryPutIfAbsent =
+        "SELECT * FROM " + SEPARATOR + regionName + ".putIfAbsent('key-2', 'something')";
     executeQueryAndAssertExpectedResults(specificUserClient, queryPutIfAbsent,
         Collections.emptyList());
     assertRegionData(superUserClient, Arrays.asList(values));
 
-    String queryReplace = "SELECT * FROM /" + regionName + ".replace('key-0', 'something')";
+    String queryReplace =
+        "SELECT * FROM " + SEPARATOR + regionName + ".replace('key-0', 'something')";
     executeQueryAndAssertExpectedResults(specificUserClient, queryReplace, Collections.emptyList());
     assertRegionData(superUserClient, Arrays.asList(values));
   }

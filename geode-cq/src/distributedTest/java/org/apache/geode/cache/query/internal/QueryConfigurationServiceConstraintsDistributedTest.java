@@ -24,6 +24,7 @@ import static org.apache.geode.security.templates.UserPasswordAuthInit.USER_NAME
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -117,7 +118,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
     regionName = testName.getMethodName();
     queryString = String.join(" ",
-        "SELECT * FROM /" + regionName + " object",
+        "SELECT * FROM " + SEPARATOR + regionName + " object",
         "WHERE object." + GET_ID_METHOD + " > -1");
 
     int serverPort = getRandomAvailableTCPPort();

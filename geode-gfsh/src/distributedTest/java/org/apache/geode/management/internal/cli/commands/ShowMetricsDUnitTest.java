@@ -16,8 +16,8 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -149,6 +149,7 @@ public class ShowMetricsDUnitTest {
   public void testShowMetricsRegionFromMember() throws Exception {
     gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --region=REGION1")
         .statusIsSuccess();
-    assertThat(gfsh.getGfshOutput()).contains("Metrics for region:/REGION1 On Member server-1");
+    assertThat(gfsh.getGfshOutput())
+        .contains("Metrics for region:" + SEPARATOR + "REGION1 On Member server-1");
   }
 }

@@ -18,6 +18,7 @@ package org.apache.geode.management;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -120,7 +121,8 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
     // do puts in server
     server.invoke(() -> {
-      Region<String, String> region = ClusterStartupRule.getCache().getRegion("/regionA");
+      Region<String, String> region =
+          ClusterStartupRule.getCache().getRegion(SEPARATOR + "regionA");
 
       Thread thread1 = new Thread(() -> {
         for (int i = 0; i < NUMBER_PUTS; i++) {
@@ -153,7 +155,8 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
     // resume puts on serverVM, add another 100.
     server.invoke(() -> {
-      Region<String, String> region = ClusterStartupRule.getCache().getRegion("/regionA");
+      Region<String, String> region =
+          ClusterStartupRule.getCache().getRegion(SEPARATOR + "regionA");
       for (int i = 0; i < NUMBER_PUTS; i++) {
         region.put("NEWKEY_" + i, "NEWVALUE_" + i);
       }

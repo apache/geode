@@ -17,6 +17,7 @@ package org.apache.geode.cache30;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -572,8 +573,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     setXmlFile(findFile("ewtest.xml"));
 
-    String regionName_west = "orders/west";
-    String regionName_east = "orders/east";
+    String regionName_west = "orders" + SEPARATOR + "west";
+    String regionName_east = "orders" + SEPARATOR + "east";
 
     Cache cache = getCache();
 
@@ -2094,9 +2095,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Cache c = getCache();
     assertNotNull(c);
 
-    Region cust = c.getRegion(Region.SEPARATOR + "Customer");
+    Region cust = c.getRegion(SEPARATOR + "Customer");
     assertNotNull(cust);
-    Region order = c.getRegion(Region.SEPARATOR + "Order");
+    Region order = c.getRegion(SEPARATOR + "Order");
     assertNotNull(order);
     String coLocatedRegion = order.getAttributes().getPartitionAttributes().getColocatedWith();
     assertEquals("Customer", coLocatedRegion);
@@ -2108,9 +2109,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     setXmlFile(findFile("coLocation.xml"));
     Cache c = getCache();
     assertNotNull(c);
-    Region cust = c.getRegion(Region.SEPARATOR + "Customer");
+    Region cust = c.getRegion(SEPARATOR + "Customer");
     assertNotNull(cust);
-    Region order = c.getRegion(Region.SEPARATOR + "Order");
+    Region order = c.getRegion(SEPARATOR + "Order");
     assertNotNull(order);
 
     assertTrue(cust.getAttributes().getPartitionAttributes().getColocatedWith() == null);

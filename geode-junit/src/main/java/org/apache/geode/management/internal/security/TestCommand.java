@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -125,7 +127,8 @@ public class TestCommand {
     createTestCommand("create region --name=region123 --type=PARTITION_PERSISTENT",
         ResourcePermissions.DATA_MANAGE, clusterWriteDisk);
     // This command requires an existing persistent region named "persistentRegion"
-    createTestCommand("create region --name=region1234 --template-region=/persistentRegion",
+    createTestCommand(
+        "create region --name=region1234 --template-region=" + SEPARATOR + "persistentRegion",
         ResourcePermissions.DATA_MANAGE, clusterWriteDisk);
     createTestCommand("destroy region --name=value", ResourcePermissions.DATA_MANAGE);
 
@@ -138,7 +141,7 @@ public class TestCommand {
     createTestCommand("put --key=key1 --value=value1 --region=RegionA", regionAWrite);
     createTestCommand("get --key=key1 --region=RegionA", regionARead);
     createTestCommand("remove --region=RegionA --key=key1", regionAWrite);
-    createTestCommand("query --query='SELECT * FROM /RegionA'", regionARead);
+    createTestCommand("query --query='SELECT * FROM " + SEPARATOR + "RegionA'", regionARead);
     createTestCommand("locate entry --key=k1 --region=RegionA", regionARead);
 
     // Deploy commands
@@ -197,7 +200,8 @@ public class TestCommand {
     createTestCommand(
         "create index --name=myKeyIndex --expression=region1.Id --region=RegionA --type=key",
         clusterManageQuery);
-    createTestCommand("define index --name=myIndex1 --expression=exp1 --region=/RegionA",
+    createTestCommand(
+        "define index --name=myIndex1 --expression=exp1 --region=" + SEPARATOR + "RegionA",
         clusterManageQuery);
     createTestCommand("destroy index --member=server2", clusterManageQuery);
     createTestCommand("destroy index --region=RegionA --member=server2", clusterManageQuery);

@@ -20,6 +20,7 @@
 
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -65,12 +66,12 @@ public class IndexCreationInternalsJUnitTest {
   public void testLoneFromClause() throws Exception {
     // compileFromClause returns a List<CompiledIteratorDef>
     QCompiler compiler = new QCompiler();
-    List list = compiler.compileFromClause("/pos p, p.positions");
+    List list = compiler.compileFromClause(SEPARATOR + "pos p, p.positions");
     assertEquals(2, list.size());
 
     CompiledIteratorDef first = (CompiledIteratorDef) list.get(0);
     assertEquals("p", first.getName());
-    assertEquals("/pos", ((CompiledRegion) first.getCollectionExpr()).getRegionPath());
+    assertEquals(SEPARATOR + "pos", ((CompiledRegion) first.getCollectionExpr()).getRegionPath());
     assertEquals(TypeUtils.OBJECT_TYPE, first.getElementType());
 
     CompiledIteratorDef second = (CompiledIteratorDef) list.get(1);

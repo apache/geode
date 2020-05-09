@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.doReturn;
@@ -74,7 +75,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     // Create a batch of conflatable events with duplicates
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
     LocalRegion lr = mock(LocalRegion.class);
-    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
     when(lr.getCache()).thenReturn(this.cache);
 
     Object lastUpdateValue = "Object_13964_5";
@@ -122,7 +123,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     List<GatewaySenderEventImpl> events = new ArrayList<GatewaySenderEventImpl>();
 
     LocalRegion lr = mock(LocalRegion.class);
-    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
     when(lr.getCache()).thenReturn(this.cache);
 
     // Create two events for the same key, so that conflation will be needed. Mock the getRegion()
@@ -162,7 +163,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     // Create a batch of non-conflatable events with one duplicate (not including the shadowKey)
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
     LocalRegion lr = mock(LocalRegion.class);
-    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
     when(lr.getCache()).thenReturn(this.cache);
 
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
@@ -201,7 +202,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
 
     // Create mock region
     LocalRegion lr = mock(LocalRegion.class);
-    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
     when(lr.getCache()).thenReturn(this.cache);
 
     // Create a batch of conflatable and non-conflatable events with one duplicate conflatable event
@@ -255,7 +256,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
 
     // Create mock region
     LocalRegion lr = mock(LocalRegion.class);
-    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
     when(lr.getCache()).thenReturn(this.cache);
 
     // Create a batch of conflatable events with duplicate create and destroy events on the same key

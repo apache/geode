@@ -14,11 +14,11 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -383,7 +383,8 @@ public class PRBasicQueryDUnitTest extends CacheTestCase {
       qs.createIndex("index", IndexType.FUNCTIONAL, "ID", SEPARATOR + name);
       for (int i = 0; i < 100; i++) {
         Query query = qs.newQuery(
-            "SELECT DISTINCT * FROM /" + name + " WHERE ID >= " + i + " ORDER BY ID asc LIMIT 1");
+            "SELECT DISTINCT * FROM " + SEPARATOR + name + " WHERE ID >= " + i
+                + " ORDER BY ID asc LIMIT 1");
         SelectResults results = (SelectResults) query.execute();
         int expectedValue = i;
         for (Object o : results) {

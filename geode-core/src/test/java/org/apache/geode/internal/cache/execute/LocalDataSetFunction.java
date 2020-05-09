@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -48,13 +50,13 @@ public class LocalDataSetFunction extends FunctionAdapter {
     Set custKeySet = cust.keySet();
     Set localCustKeySet = localCust.keySet();
 
-    Region ord = colocatedRegions.get("/OrderPR");
-    Region localOrd = localColocatedRegions.get("/OrderPR");
+    Region ord = colocatedRegions.get(SEPARATOR + "OrderPR");
+    Region localOrd = localColocatedRegions.get(SEPARATOR + "OrderPR");
     Set ordKeySet = ord.keySet();
     Set localOrdKeySet = localOrd.keySet();
 
-    Region ship = colocatedRegions.get("/ShipmentPR");
-    Region localShip = localColocatedRegions.get("/ShipmentPR");
+    Region ship = colocatedRegions.get(SEPARATOR + "ShipmentPR");
+    Region localShip = localColocatedRegions.get(SEPARATOR + "ShipmentPR");
     Set shipKeySet = ship.keySet();
     Set localShipKeySet = localShip.keySet();
 

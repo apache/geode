@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.getInstance;
 import static org.apache.geode.management.ManagementService.getManagementService;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getClientServiceMBeanName;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -366,7 +367,8 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
         ManagementService service = ManagementService.getManagementService(cache);
         QueryService qs = cache.getQueryService();
         try {
-          qs.createIndex(indexName, "p.ID", "/root/" + cqDUnitTest.regions[0]);
+          qs.createIndex(indexName, "p.ID",
+              SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         } catch (RegionNotFoundException e) {
           fail("Failed With Exception " + e);
         } catch (IndexInvalidException e) {

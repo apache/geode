@@ -18,6 +18,7 @@ import static java.lang.Thread.yield;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -421,7 +422,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   }
 
   public static void commitTransactionOnClient() {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     try {
       cache.getCacheTransactionManager().begin();
@@ -436,7 +437,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   }
 
   public static void verifyUpdatesOnServer() {
-    final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    final Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     try {
       getLogWriter().info("vlaue for the key k1" + r1.getEntry(k1).getValue());
@@ -474,7 +475,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
 
 
   public static void putInTransaction(String server) {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     cache.getCacheTransactionManager().begin();
     if (server.equals("server1")) {
@@ -491,7 +492,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   }
 
   public static void invalidateInTransaction(String server) throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     cache.getCacheTransactionManager().begin();
     if (server.equals("server1")) {
@@ -506,7 +507,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   }
 
   public static void destroyInTransaction(String server) throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     cache.getCacheTransactionManager().begin();
     if (server.equals("server1")) {
@@ -540,7 +541,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   }
 
   public static void verifyNotUpdated() {
-    final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    final Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     try {
       getLogWriter().info("vlaue for the key k1" + r1.getEntry(k1).getValue());
@@ -580,7 +581,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   }
 
   public static void verifyUpdates() {
-    final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    final Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
 
     try {
@@ -774,7 +775,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
 
   public static void createEntries() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       if (!r.containsKey(k1)) {
         r.create(k1, k1);
@@ -797,7 +798,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   public static void registerKeys() {
     List keys = new ArrayList();
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       keys.add(k1);
       keys.add(k2);

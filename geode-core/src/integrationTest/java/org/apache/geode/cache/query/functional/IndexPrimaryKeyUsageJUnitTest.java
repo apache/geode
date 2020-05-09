@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -67,10 +68,13 @@ public class IndexPrimaryKeyUsageJUnitTest {
     // Task ID: PKI 1
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {"select distinct * from /portfolios x, x.positions.values where x.pk = '1'",
-        "select distinct * from /portfolios x, x.positions.values where x.pkid = '1'",
+    String queries[] = {
+        "select distinct * from " + SEPARATOR + "portfolios x, x.positions.values where x.pk = '1'",
+        "select distinct * from " + SEPARATOR
+            + "portfolios x, x.positions.values where x.pkid = '1'",
         // BUG # 32707: FIXED
-        "select distinct * from /portfolios p, p.positions.values where p.pkid != '53'"};
+        "select distinct * from " + SEPARATOR
+            + "portfolios p, p.positions.values where p.pkid != '53'"};
     SelectResults r[][] = new SelectResults[queries.length][2];
 
     for (int i = 0; i < queries.length; i++) {
@@ -98,8 +102,8 @@ public class IndexPrimaryKeyUsageJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    qs.createIndex("pkIndex", IndexType.PRIMARY_KEY, "pk", "/portfolios");
-    qs.createIndex("pkidIndex", IndexType.PRIMARY_KEY, "pkid", "/portfolios");
+    qs.createIndex("pkIndex", IndexType.PRIMARY_KEY, "pk", SEPARATOR + "portfolios");
+    qs.createIndex("pkidIndex", IndexType.PRIMARY_KEY, "pkid", SEPARATOR + "portfolios");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -131,11 +135,14 @@ public class IndexPrimaryKeyUsageJUnitTest {
     Object r[] = new Object[5];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {"select distinct * from /portfolios x, x.positions.values where x.pk = '1'",
-        "select distinct * from /portfolios.entries x, x.value.positions.values where x.value.pkid = '1'",
-        "select distinct * from /portfolios.entries x, x.value.positions.values where x.key = '1'",};
+    String queries[] = {
+        "select distinct * from " + SEPARATOR + "portfolios x, x.positions.values where x.pk = '1'",
+        "select distinct * from " + SEPARATOR
+            + "portfolios.entries x, x.value.positions.values where x.value.pkid = '1'",
+        "select distinct * from " + SEPARATOR
+            + "portfolios.entries x, x.value.positions.values where x.key = '1'",};
     qs = CacheUtils.getQueryService();
-    qs.createIndex("pkidIndex", IndexType.PRIMARY_KEY, "pkid", "/portfolios");
+    qs.createIndex("pkidIndex", IndexType.PRIMARY_KEY, "pkid", SEPARATOR + "portfolios");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -163,9 +170,10 @@ public class IndexPrimaryKeyUsageJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] =
-        {"select distinct * from /portfolios x, x.positions.values where x.pkid = '1'",};
+        {"select distinct * from " + SEPARATOR
+            + "portfolios x, x.positions.values where x.pkid = '1'",};
     qs = CacheUtils.getQueryService();
-    qs.createIndex("pkIndex", IndexType.PRIMARY_KEY, "pk", "/portfolios");
+    qs.createIndex("pkIndex", IndexType.PRIMARY_KEY, "pk", SEPARATOR + "portfolios");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -195,15 +203,19 @@ public class IndexPrimaryKeyUsageJUnitTest {
     Object r[] = new Object[7];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {"select distinct * from /portfolios p, p.positions.values where p.ID > 1 ",
-        "select distinct * from /portfolios p, p.positions.values where p.ID < 3 ",
-        "select distinct * from /portfolios p, p.positions.values where p.ID >= 1 ",
-        "select distinct * from /portfolios p, p.positions.values where p.ID <= 1 ",
+    String queries[] =
+        {"select distinct * from " + SEPARATOR + "portfolios p, p.positions.values where p.ID > 1 ",
+            "select distinct * from " + SEPARATOR
+                + "portfolios p, p.positions.values where p.ID < 3 ",
+            "select distinct * from " + SEPARATOR
+                + "portfolios p, p.positions.values where p.ID >= 1 ",
+            "select distinct * from " + SEPARATOR
+                + "portfolios p, p.positions.values where p.ID <= 1 ",
 
-    };
+        };
     qs = CacheUtils.getQueryService();
-    qs.createIndex("IDPRKIndex", IndexType.PRIMARY_KEY, "pkid", "/portfolios");
-    qs.createIndex("IDFNLIndex", IndexType.FUNCTIONAL, "ID", "/portfolios");
+    qs.createIndex("IDPRKIndex", IndexType.PRIMARY_KEY, "pkid", SEPARATOR + "portfolios");
+    qs.createIndex("IDFNLIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolios");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -245,10 +257,11 @@ public class IndexPrimaryKeyUsageJUnitTest {
     Object r[] = new Object[5];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {"select distinct * from /portfolios p, /employees e  where p.pkid = '1' ",};
+    String queries[] = {"select distinct * from " + SEPARATOR + "portfolios p, " + SEPARATOR
+        + "employees e  where p.pkid = '1' ",};
     qs = CacheUtils.getQueryService();
-    qs.createIndex("IDFNLIndex", IndexType.FUNCTIONAL, "pkid", "/portfolios");
-    qs.createIndex("IDPRKIndex", IndexType.PRIMARY_KEY, "pkid", "/portfolios");
+    qs.createIndex("IDFNLIndex", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolios");
+    qs.createIndex("IDPRKIndex", IndexType.PRIMARY_KEY, "pkid", SEPARATOR + "portfolios");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;

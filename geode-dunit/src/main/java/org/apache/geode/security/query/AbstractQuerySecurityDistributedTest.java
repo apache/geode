@@ -15,6 +15,7 @@
 package org.apache.geode.security.query;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -145,7 +146,7 @@ public abstract class AbstractQuerySecurityDistributedTest implements Serializab
   }
 
   protected void assertRegionData(ClientVM vm, List<Object> expectedRegionResults) {
-    vm.invoke(() -> assertQueryResults(getClientCache(), "SELECT * FROM /" + regionName,
+    vm.invoke(() -> assertQueryResults(getClientCache(), "SELECT * FROM " + SEPARATOR + regionName,
         expectedRegionResults));
   }
 

@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.internal.index;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
@@ -98,13 +99,15 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     helpTestPRQueryOnLocalNode(utils.queries.get("546"), 100, 100, true);
     helpTestPRQueryOnLocalNode(utils.queries.get("543"), 100, 100, true);
     helpTestPRQueryOnLocalNode(utils.queries.get("544"), 100, 100, true);
-    helpTestPRQueryOnLocalNode("select * from /portfolios p where p.ID = 1", 100, 1, true);
+    helpTestPRQueryOnLocalNode("select * from " + SEPARATOR + "portfolios p where p.ID = 1", 100, 1,
+        true);
 
     helpTestPRQueryOnLocalNode(utils.queries.get("545"), 100, 100, false);
     helpTestPRQueryOnLocalNode(utils.queries.get("546"), 100, 100, false);
     helpTestPRQueryOnLocalNode(utils.queries.get("543"), 100, 100, false);
     helpTestPRQueryOnLocalNode(utils.queries.get("544"), 100, 100, false);
-    helpTestPRQueryOnLocalNode("select * from /portfolios p where p.ID = 1", 100, 1, false);
+    helpTestPRQueryOnLocalNode("select * from " + SEPARATOR + "portfolios p where p.ID = 1", 100, 1,
+        false);
   }
 
   // tests different queries with a transaction for replicated region
@@ -116,14 +119,16 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("546"), 100, 100, true);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("543"), 100, 100, true);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("544"), 100, 100, true);
-    helpTestTransactionsOnReplicatedRegion("select * from /portfolios p where p.ID = 1", 100, 1,
+    helpTestTransactionsOnReplicatedRegion(
+        "select * from " + SEPARATOR + "portfolios p where p.ID = 1", 100, 1,
         true);
 
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("545"), 100, 100, false);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("546"), 100, 100, false);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("543"), 100, 100, false);
     helpTestTransactionsOnReplicatedRegion(utils.queries.get("544"), 100, 100, false);
-    helpTestTransactionsOnReplicatedRegion("select * from /portfolios p where p.ID = 1", 100, 1,
+    helpTestTransactionsOnReplicatedRegion(
+        "select * from " + SEPARATOR + "portfolios p where p.ID = 1", 100, 1,
         false);
   }
 
@@ -154,7 +159,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         @Override
         public Object call() throws Exception {
           QueryTestUtils utils = new QueryTestUtils();
-          utils.createIndex("idIndex", "p.ID", "/portfolios p");
+          utils.createIndex("idIndex", "p.ID", SEPARATOR + "portfolios p");
           return null;
         }
       });
@@ -163,7 +168,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         for (int i = 0; i < numPortfoliosPerVM; i++) {
           Portfolio p = new Portfolio(i);
           p.status = "testStatus";
@@ -192,7 +197,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         for (int i = numPortfoliosPerVM; i < numPortfolios; i++) {
           Portfolio p = new Portfolio(i);
           p.status = "testStatus";
@@ -208,7 +213,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           Index index = getCache().getQueryService().getIndex(region, "idIndex");
           if (index == null) {
             QueryTestUtils utils = new QueryTestUtils();
-            index = utils.createIndex("idIndex", "p.ID", "/portfolios p");
+            index = utils.createIndex("idIndex", "p.ID", SEPARATOR + "portfolios p");
           }
           GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(
               (int) index.getStatistics().getNumberOfValues() + numPortfoliosPerVM));
@@ -225,7 +230,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         QueryService qs = getCache().getQueryService();
         Query query = qs.newQuery(queryString);
         SelectResults results = (SelectResults) query.execute();
@@ -269,7 +274,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         if (hasIndex) {
           // After vm0 executed the query, we already had the values deserialized in our cache
           // So it's the same total as before
@@ -287,7 +292,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         QueryService qs = getCache().getQueryService();
         Query query = qs.newQuery(queryString);
         SelectResults results = (SelectResults) query.execute();
@@ -353,7 +358,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         @Override
         public Object call() throws Exception {
           QueryTestUtils utils = new QueryTestUtils();
-          utils.createHashIndex("idIndex", "p.ID", "/portfolios p");
+          utils.createHashIndex("idIndex", "p.ID", SEPARATOR + "portfolios p");
           return null;
         }
       });
@@ -363,7 +368,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         @Override
         public Object call() throws Exception {
           QueryTestUtils utils = new QueryTestUtils();
-          utils.createHashIndex("idIndex", "p.ID", "/portfolios p");
+          utils.createHashIndex("idIndex", "p.ID", SEPARATOR + "portfolios p");
           return null;
         }
       });
@@ -373,7 +378,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         for (int i = 0; i < numPortfolios; i++) {
           Portfolio p = new Portfolio(i);
           p.status = "testStatus";
@@ -392,7 +397,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         // At this point, we should only have serialized values in this vm
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(0));
         return null;
       }
@@ -402,7 +407,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         // There is an index for vm2, so we should have deserialized values at this point,
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         if (hasIndex) {
           GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(numPortfolios));
         } else {
@@ -419,7 +424,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         CacheTransactionManager txManager = region.getCache().getCacheTransactionManager();
         try {
           txManager.begin();
@@ -456,7 +461,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         QueryService qs = getCache().getQueryService();
         Query query = qs.newQuery(queryString);
         SelectResults results = (SelectResults) query.execute();
@@ -503,7 +508,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm2.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         QueryService qs = getCache().getQueryService();
         Query query = qs.newQuery(queryString);
         SelectResults results = (SelectResults) query.execute();
@@ -557,7 +562,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Region region = getCache().getRegion("/portfolios");
+        Region region = getCache().getRegion(SEPARATOR + "portfolios");
         QueryService qs = getCache().getQueryService();
         Query query = qs.newQuery(queryString);
         SelectResults results = (SelectResults) query.execute();
@@ -590,7 +595,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         public Object call() throws Exception {
           QueryTestUtils utils = new QueryTestUtils();
           utils.getCache().getQueryService().removeIndexes();
-          Region region = getCache().getRegion("/portfolios");
+          Region region = getCache().getRegion(SEPARATOR + "portfolios");
           region.destroyRegion();
           return null;
         }

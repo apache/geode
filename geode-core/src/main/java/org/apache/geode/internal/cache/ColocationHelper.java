@@ -15,8 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.Serializable;
 import java.util.ArrayList;

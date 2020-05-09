@@ -14,12 +14,12 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertArrayEquals;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -141,7 +141,7 @@ public class LuceneIndexCommandsIntegrationTest {
     CommandResult result = gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .tableHasColumnOnlyWithValues("Index Name", INDEX_NAME)
         .tableHasColumnOnlyWithValues("Status", "INITIALIZED")
-        .tableHasColumnOnlyWithValues("Region Path", "/region")
+        .tableHasColumnOnlyWithValues("Region Path", SEPARATOR + "region")
         .tableHasColumnOnlyWithValues("Query Executions", "1")
         .getCommandResult();
 
@@ -555,7 +555,7 @@ public class LuceneIndexCommandsIntegrationTest {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
-        .containsOutput(getRegionNotFoundErrorMessage("/region"));
+        .containsOutput(getRegionNotFoundErrorMessage(SEPARATOR + "region"));
   }
 
   @Test
@@ -614,7 +614,7 @@ public class LuceneIndexCommandsIntegrationTest {
 
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        new Object[] {"index", "/region"});
+        new Object[] {"index", SEPARATOR + "region"});
     gfsh.executeAndAssertThat("destroy lucene index --name=index --region=region").statusIsSuccess()
         .containsOutput(expectedStatus);
   }
@@ -631,14 +631,14 @@ public class LuceneIndexCommandsIntegrationTest {
     // Verify destroy all indexes is successful
     String expectedOutput = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-        new Object[] {"/region"});
+        new Object[] {SEPARATOR + "region"});
 
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
 
     // Verify destroy all indexes again reports no indexes exist
     expectedOutput = String.format("No Lucene indexes were found in region %s",
-        new Object[] {"/region"});
+        new Object[] {SEPARATOR + "region"});
 
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
@@ -659,7 +659,7 @@ public class LuceneIndexCommandsIntegrationTest {
     createRegion();
 
     String expectedOutput = String.format("No Lucene indexes were found in region %s",
-        new Object[] {"/region"});
+        new Object[] {SEPARATOR + "region"});
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
   }

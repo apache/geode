@@ -17,6 +17,7 @@ package org.apache.geode.rest.internal.web;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URLEncoder;
@@ -134,7 +135,8 @@ public class RestSecurityPostProcessorTest {
   @Test
   public void adhocQuery() throws Exception {
     String query = "/queries/adhoc?q="
-        + URLEncoder.encode("SELECT * FROM /customers order by customerId", "UTF-8");
+        + URLEncoder.encode("SELECT * FROM " + SEPARATOR + "customers order by customerId",
+            "UTF-8");
     JsonNode jsonArray = assertResponse(restClient.doGet(query, "dataReader", "1234567"))
         .hasStatusCode(200)
         .hasContentType(APPLICATION_JSON_UTF8_VALUE)
@@ -151,7 +153,7 @@ public class RestSecurityPostProcessorTest {
   @Test
   public void namedQuery() throws Exception {
     // Declare the named query
-    String namedQuery = "SELECT c FROM /customers c WHERE c.customerId = $1";
+    String namedQuery = "SELECT c FROM " + SEPARATOR + "customers c WHERE c.customerId = $1";
 
     // Install the named query
     assertResponse(

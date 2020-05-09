@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -91,7 +92,7 @@ public class NoShowValue1PostProcessorDUnitTest extends JUnit4DistributedTestCas
       assertNull(values.get("key1"));
 
       // post process for query
-      String query = "select * from /AuthRegion";
+      String query = "select * from " + SEPARATOR + "AuthRegion";
       SelectResults result = region.query(query);
       System.out.println("query result: " + result);
       assertEquals(5, result.size());

@@ -16,6 +16,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
@@ -98,11 +99,11 @@ public class ExportDataIntegrationTest {
   public void testNonExistentRegion() {
     String nonExistentRegionCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
         .addOption(CliStrings.MEMBER, server.getName())
-        .addOption(CliStrings.EXPORT_DATA__REGION, "/nonExistentRegion")
+        .addOption(CliStrings.EXPORT_DATA__REGION, SEPARATOR + "nonExistentRegion")
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeAndAssertThat(nonExistentRegionCommand).statusIsError()
         .hasTableSection().hasColumn("Message")
-        .containsExactlyInAnyOrder("Region : /nonExistentRegion not found");
+        .containsExactlyInAnyOrder("Region : " + SEPARATOR + "nonExistentRegion not found");
   }
 
   @Test

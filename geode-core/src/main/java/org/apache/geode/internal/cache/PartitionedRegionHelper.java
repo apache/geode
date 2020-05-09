@@ -15,6 +15,8 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -722,7 +724,7 @@ public class PartitionedRegionHelper {
   }
 
   private static final String BUCKET_FULL_PATH_PREFIX =
-      PR_ROOT_REGION_NAME + Region.SEPARATOR + BUCKET_REGION_PREFIX;
+      PR_ROOT_REGION_NAME + SEPARATOR + BUCKET_REGION_PREFIX;
 
   /**
    * Get the bucket string by parsing the region fullPath
@@ -737,7 +739,7 @@ public class PartitionedRegionHelper {
     int idxStartRoot = bucketFullPath.indexOf(BUCKET_FULL_PATH_PREFIX);
     // parse bucketString
     if (idxStartRoot != -1) {
-      int idxEndRoot = idxStartRoot + PR_ROOT_REGION_NAME.length() + Region.SEPARATOR.length();
+      int idxEndRoot = idxStartRoot + PR_ROOT_REGION_NAME.length() + SEPARATOR.length();
       return bucketFullPath.substring(idxEndRoot);
     }
 
@@ -750,7 +752,7 @@ public class PartitionedRegionHelper {
   public static String getBucketFullPath(String prFullPath, int bucketId) {
     String name = getBucketName(prFullPath, bucketId);
     if (name != null)
-      return Region.SEPARATOR + PR_ROOT_REGION_NAME + Region.SEPARATOR + name;
+      return SEPARATOR + PR_ROOT_REGION_NAME + SEPARATOR + name;
 
     return null;
 
@@ -758,15 +760,15 @@ public class PartitionedRegionHelper {
 
   public static String escapePRPath(String prFullPath) {
     String escaped = prFullPath.replace("_", "__");
-    escaped = escaped.replace(Region.SEPARATOR_CHAR, '_');
+    escaped = escaped.replace(SEPARATOR_CHAR, '_');
     return escaped;
   }
 
 
-  public static final String TWO_SEPARATORS = Region.SEPARATOR + Region.SEPARATOR;
+  public static final String TWO_SEPARATORS = SEPARATOR + SEPARATOR;
 
   public static String unescapePRPath(String escapedPath) {
-    String path = escapedPath.replace('_', Region.SEPARATOR_CHAR);
+    String path = escapedPath.replace('_', SEPARATOR_CHAR);
     path = path.replace(TWO_SEPARATORS, "_");
     return path;
   }
@@ -811,7 +813,7 @@ public class PartitionedRegionHelper {
   public static boolean isSubRegion(String fullPath) {
     boolean isSubRegion = false;
     if (null != fullPath) {
-      int idx = fullPath.indexOf(Region.SEPARATOR, Region.SEPARATOR.length());
+      int idx = fullPath.indexOf(SEPARATOR, SEPARATOR.length());
       if (idx >= 0)
         isSubRegion = true;
     }

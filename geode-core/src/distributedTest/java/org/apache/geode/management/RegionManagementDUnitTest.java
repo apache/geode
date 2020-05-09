@@ -17,7 +17,6 @@ package org.apache.geode.management;
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.Calendar.MONTH;
 import static org.apache.geode.cache.EvictionAction.LOCAL_DESTROY;
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.LOCAL;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
@@ -36,6 +35,7 @@ import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 

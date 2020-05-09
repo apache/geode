@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -135,7 +136,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
       Region region = createProxyRegion(cache, REGION_NAME);
 
       // post process for query
-      String query = "select * from /AuthRegion";
+      String query = "select * from " + SEPARATOR + "AuthRegion";
       SelectResults result = region.query(query);
 
       Iterator itr = result.iterator();
@@ -224,7 +225,8 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
       gfsh.executeAndAssertThat("get --key=key2 --region=AuthRegion").statusIsSuccess()
           .containsOutput("byte[]");
 
-      gfsh.executeAndAssertThat("query --query=\"select * from /AuthRegion\"").statusIsSuccess();
+      gfsh.executeAndAssertThat("query --query=\"select * from " + SEPARATOR + "AuthRegion\"")
+          .statusIsSuccess();
       gfsh.close();
     });
 

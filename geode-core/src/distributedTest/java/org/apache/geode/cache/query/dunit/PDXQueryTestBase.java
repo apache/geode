@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.IOException;
 import java.util.HashMap;

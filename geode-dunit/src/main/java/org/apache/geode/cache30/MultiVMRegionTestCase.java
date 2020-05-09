@@ -18,6 +18,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.lang.ThrowableUtils.hasCauseMessage;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
@@ -223,7 +224,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
     }
 
-    concurrentMapTest("/R1");
+    concurrentMapTest(SEPARATOR + "R1");
   }
 
   /**

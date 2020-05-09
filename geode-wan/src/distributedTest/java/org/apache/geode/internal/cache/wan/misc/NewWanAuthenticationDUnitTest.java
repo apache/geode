@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.LongAdder;
@@ -131,7 +132,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> doPuts(regionName, 1));
     receiver.invoke(() -> {
-      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       await().untilAsserted(() -> assertTrue(r.size() > 0));
     });
   }
@@ -159,7 +160,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     sender.invoke(() -> doPuts(regionName, 1));
 
     receiver.invoke(() -> {
-      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       await().untilAsserted(() -> assertTrue(r.size() > 0));
     });
   }

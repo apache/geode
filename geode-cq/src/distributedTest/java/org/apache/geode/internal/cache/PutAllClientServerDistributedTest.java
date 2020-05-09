@@ -33,6 +33,7 @@ import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.rules.DistributedRule.getDistributedSystemProperties;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
@@ -263,7 +264,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       String cqName = "EOInfoTracker";
       String query = String.join(" ",
-          "SELECT ALL * FROM /" + regionName + " ii",
+          "SELECT ALL * FROM " + SEPARATOR + regionName + " ii",
           "WHERE ii.getTicker() >= '10' and ii.getTicker() < '20'");
 
       CqQuery cqQuery = getClientCache().getQueryService().newCq(cqName, query, cqAttributes);

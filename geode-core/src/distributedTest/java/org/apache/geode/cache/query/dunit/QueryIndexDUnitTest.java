@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -293,14 +293,15 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
           }
         }
 
-        String[] qString = new String[] {"SELECT * FROM /REGION_NAME pf WHERE pf.ID = 1",
-            "SELECT ID FROM /REGION_NAME pf WHERE pf.ID = 1",
-            "SELECT * FROM /REGION_NAME pf WHERE pf.ID > 5",
-            "SELECT ID FROM /REGION_NAME pf WHERE pf.ID > 5",
-            "SELECT * FROM /REGION_NAME.keys key WHERE key.ID = 1",
-            "SELECT ID FROM /REGION_NAME.keys key WHERE key.ID = 1",
-            "SELECT * FROM /REGION_NAME.keys key WHERE key.ID > 5",
-            "SELECT ID FROM /REGION_NAME.keys key WHERE key.ID > 5",};
+        String[] qString =
+            new String[] {"SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID = 1",
+                "SELECT ID FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID = 1",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID > 5",
+                "SELECT ID FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID > 5",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID = 1",
+                "SELECT ID FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID = 1",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID > 5",
+                "SELECT ID FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID > 5",};
 
         // Execute Query without index.
         SelectResults[] srWithoutIndex = new SelectResults[qString.length * regionNames.length];
@@ -461,15 +462,20 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
           }
         }
 
-        String[] qString = new String[] {"SELECT * FROM /REGION_NAME pf WHERE pf = 'XX1'",
-            "SELECT * FROM /REGION_NAME pf WHERE pf IN SET( 'XX5', 'XX6', 'XX7')",
-            "SELECT * FROM /REGION_NAME.values pf WHERE pf IN SET( 'XX5', 'XX6', 'XX7')",
-            "SELECT * FROM /REGION_NAME.keys k WHERE k.ID = 1",
-            "SELECT key.ID FROM /REGION_NAME.keys key WHERE key.ID = 1",
-            "SELECT ID, status FROM /REGION_NAME.keys WHERE ID = 1",
-            "SELECT k.ID, k.status FROM /REGION_NAME.keys k WHERE k.ID = 1 and k.status = 'active'",
-            "SELECT * FROM /REGION_NAME.keys key WHERE key.ID > 5",
-            "SELECT key.ID FROM /REGION_NAME.keys key WHERE key.ID > 5 and key.status = 'active'",};
+        String[] qString =
+            new String[] {"SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf = 'XX1'",
+                "SELECT * FROM " + SEPARATOR
+                    + "REGION_NAME pf WHERE pf IN SET( 'XX5', 'XX6', 'XX7')",
+                "SELECT * FROM " + SEPARATOR
+                    + "REGION_NAME.values pf WHERE pf IN SET( 'XX5', 'XX6', 'XX7')",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys k WHERE k.ID = 1",
+                "SELECT key.ID FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID = 1",
+                "SELECT ID, status FROM " + SEPARATOR + "REGION_NAME.keys WHERE ID = 1",
+                "SELECT k.ID, k.status FROM " + SEPARATOR
+                    + "REGION_NAME.keys k WHERE k.ID = 1 and k.status = 'active'",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID > 5",
+                "SELECT key.ID FROM " + SEPARATOR
+                    + "REGION_NAME.keys key WHERE key.ID > 5 and key.status = 'active'",};
 
         // Execute Query without index.
         SelectResults[] srWithoutIndex = new SelectResults[qString.length * regionNames.length];
@@ -632,14 +638,15 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         Region region = null;
 
 
-        String[] qString = new String[] {"SELECT * FROM /REGION_NAME pf WHERE pf.ID = 1",
-            "SELECT ID FROM /REGION_NAME pf WHERE pf.ID = 1",
-            "SELECT * FROM /REGION_NAME pf WHERE pf.ID > 5",
-            "SELECT ID FROM /REGION_NAME pf WHERE pf.ID > 5",
-            "SELECT * FROM /REGION_NAME.keys key WHERE key.ID = 1",
-            "SELECT ID FROM /REGION_NAME.keys key WHERE key.ID = 1",
-            "SELECT * FROM /REGION_NAME.keys key WHERE key.ID > 5",
-            "SELECT ID FROM /REGION_NAME.keys key WHERE key.ID > 5",};
+        String[] qString =
+            new String[] {"SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID = 1",
+                "SELECT ID FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID = 1",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID > 5",
+                "SELECT ID FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID > 5",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID = 1",
+                "SELECT ID FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID = 1",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID > 5",
+                "SELECT ID FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID > 5",};
 
         // Execute Query without index.
         SelectResults[] srWithoutIndex = new SelectResults[qString.length * regionNames.length];
@@ -792,15 +799,18 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
           }
         }
 
-        String[] qString = new String[] {"SELECT * FROM /REGION_NAME pf WHERE pf = $1",
-            "SELECT * FROM /REGION_NAME pf WHERE pf > $1",
-            "SELECT * FROM /REGION_NAME.values pf WHERE pf < $1",
-            "SELECT * FROM /REGION_NAME.keys k WHERE k.ID = $1",
-            "SELECT key.ID FROM /REGION_NAME.keys key WHERE key.ID = $1",
-            "SELECT ID, status FROM /REGION_NAME.keys WHERE ID = $1",
-            "SELECT k.ID, k.status FROM /REGION_NAME.keys k WHERE k.ID = $1 and k.status = $2",
-            "SELECT * FROM /REGION_NAME.keys key WHERE key.ID > $1",
-            "SELECT key.ID FROM /REGION_NAME.keys key WHERE key.ID > $1 and key.status = $2",};
+        String[] qString =
+            new String[] {"SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf = $1",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf > $1",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.values pf WHERE pf < $1",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys k WHERE k.ID = $1",
+                "SELECT key.ID FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID = $1",
+                "SELECT ID, status FROM " + SEPARATOR + "REGION_NAME.keys WHERE ID = $1",
+                "SELECT k.ID, k.status FROM " + SEPARATOR
+                    + "REGION_NAME.keys k WHERE k.ID = $1 and k.status = $2",
+                "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID > $1",
+                "SELECT key.ID FROM " + SEPARATOR
+                    + "REGION_NAME.keys key WHERE key.ID > $1 and key.status = $2",};
 
         // Execute Query without index.
         SelectResults[] srWithoutIndex = new SelectResults[qString.length * regionNames.length];
@@ -1066,19 +1076,25 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     QueryService qs = cache.getQueryService();
     Region region = null;
 
-    String[] qString = new String[] {"SELECT * FROM /REGION_NAME pf WHERE pf.ID = 1",
-        "SELECT ID FROM /REGION_NAME pf WHERE pf.ID = 1",
-        "SELECT * FROM /REGION_NAME pf WHERE pf.ID > 10",
-        "SELECT ID FROM /REGION_NAME pf WHERE pf.ID > 10",
-        "SELECT * FROM /REGION_NAME.keys key WHERE key.ID = 1",
-        "SELECT ID FROM /REGION_NAME.keys key WHERE key.ID = 1",
-        "SELECT * FROM /REGION_NAME.keys key WHERE key.ID > 10",
-        "SELECT ID FROM /REGION_NAME.keys key WHERE key.ID > 10",
-        "SELECT entry.value FROM /REGION_NAME.entries entry WHERE entry.value.ID = 1",
-        "SELECT entry.key FROM /REGION_NAME.entries entry WHERE entry.value.ID > 10",
-        "SELECT entry.getValue() FROM /REGION_NAME.entries entry WHERE entry.getValue().getID() = 1",
-        "SELECT entry.getKey() FROM /REGION_NAME.entries entry WHERE entry.getValue().getID() > 10",
-        "SELECT entry.getValue() FROM /REGION_NAME.entries entry WHERE entry.getValue().boolFunction('active') = false",};
+    String[] qString =
+        new String[] {"SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID = 1",
+            "SELECT ID FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID = 1",
+            "SELECT * FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID > 10",
+            "SELECT ID FROM " + SEPARATOR + "REGION_NAME pf WHERE pf.ID > 10",
+            "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID = 1",
+            "SELECT ID FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID = 1",
+            "SELECT * FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID > 10",
+            "SELECT ID FROM " + SEPARATOR + "REGION_NAME.keys key WHERE key.ID > 10",
+            "SELECT entry.value FROM " + SEPARATOR
+                + "REGION_NAME.entries entry WHERE entry.value.ID = 1",
+            "SELECT entry.key FROM " + SEPARATOR
+                + "REGION_NAME.entries entry WHERE entry.value.ID > 10",
+            "SELECT entry.getValue() FROM " + SEPARATOR
+                + "REGION_NAME.entries entry WHERE entry.getValue().getID() = 1",
+            "SELECT entry.getKey() FROM " + SEPARATOR
+                + "REGION_NAME.entries entry WHERE entry.getValue().getID() > 10",
+            "SELECT entry.getValue() FROM " + SEPARATOR
+                + "REGION_NAME.entries entry WHERE entry.getValue().boolFunction('active') = false",};
 
     for (int q = 0; q < qString.length; q++) {
       for (int i = 0; i < regionNames.length; i++) {
@@ -1211,7 +1227,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
   private static void validateIndexUpdate(Integer a, Integer b) {
     QueryService qs = basicGetCache().getQueryService();
-    Query q = qs.newQuery("SELECT DISTINCT * FROM /portfolios where status = 'active'");
+    Query q =
+        qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "portfolios where status = 'active'");
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
     Object r;
@@ -1228,7 +1245,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
       fail("Index not used for query");
     }
 
-    q = qs.newQuery("SELECT DISTINCT * FROM /portfolios where status = 'inactive'");
+    q = qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "portfolios where status = 'inactive'");
     observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
 
@@ -1256,7 +1273,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         QueryService qs = basicGetCache().getQueryService();
         if (qs != null) {
           try {
-            qs.createIndex("statusIndex", "status", "/portfolios");
+            qs.createIndex("statusIndex", "status", SEPARATOR + "portfolios");
             logger.info("Index statusIndex Created successfully");
           } catch (IndexNameConflictException e) {
             Assert.fail("Caught IndexNameConflictException", e);
@@ -1269,14 +1286,15 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
           fail("Could not obtain QueryService for the cache ");
         }
       } else {
-        fail("Region.isDestroyed() returned true for region : " + "/portfolios");
+        fail("Region.isDestroyed() returned true for region : " + SEPARATOR + "portfolios");
       }
     }
   }
 
   private static void validateIndexUsage() {
     QueryService qs = basicGetCache().getQueryService();
-    Query q = qs.newQuery("SELECT DISTINCT * FROM /portfolios where status = 'active'");
+    Query q =
+        qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "portfolios where status = 'active'");
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
     Object r;

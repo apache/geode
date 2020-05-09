@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static java.lang.Thread.sleep;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
-import static org.apache.geode.internal.cache.tier.sockets.InterestRegrListenerDUnitTest.getListenerMapTask;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -142,7 +142,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     LogWriterUtils.getLogWriter()
         .info("Total ClientSessions " + cacheServer.getAllClientSessions().size());
     for (ClientSession c : this.cacheServer.getAllClientSessions()) {
-      c.registerInterestRegex("/serverRegion", ".*", isDurable);
+      c.registerInterestRegex(SEPARATOR + "serverRegion", ".*", isDurable);
     }
   }
 

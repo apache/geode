@@ -16,6 +16,7 @@
 package org.apache.geode.tools.pulse;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,7 +34,7 @@ import org.apache.geode.tools.pulse.internal.data.Cluster;
 
 @Category({SecurityTest.class, PulseTest.class})
 public class EmbeddedPulseClusterSecurityTest {
-  private static final String QUERY = "select * from /regionA a order by a";
+  private static final String QUERY = "select * from " + SEPARATOR + "regionA a order by a";
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule()

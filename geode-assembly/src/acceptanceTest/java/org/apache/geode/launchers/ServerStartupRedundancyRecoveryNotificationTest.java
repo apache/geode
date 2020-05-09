@@ -15,6 +15,7 @@
 package org.apache.geode.launchers;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -145,11 +146,13 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
         Pattern.compile("^\\[info .*].*Server " + SERVER_1_NAME + " startup completed in \\d+ ms");
     Pattern redundancyRestoredPattern =
         Pattern.compile(
-            "^\\[info .*].*Configured redundancy of 2 copies has been restored to /" + regionName
+            "^\\[info .*].*Configured redundancy of 2 copies has been restored to " + SEPARATOR
+                + regionName
                 + ".*");
     Pattern redundancyRestoredSecondRegionPattern =
         Pattern.compile(
-            "^\\[info .*].*Configured redundancy of 2 copies has been restored to /" + regionNameTwo
+            "^\\[info .*].*Configured redundancy of 2 copies has been restored to " + SEPARATOR
+                + regionNameTwo
                 + ".*");
 
     Path logFile = server1Folder.resolve(SERVER_1_NAME + ".log");

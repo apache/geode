@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
+import org.apache.geode.util.GeodePublicGlossary;
 
 /**
  * Represents a {@link Region} that is created declaratively. Notice that it implements the
@@ -113,10 +114,10 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   public RegionCreation(CacheCreation cache, RegionCreation parent, String name, String refid) {
     this.cache = cache;
     if (parent != null) {
-      this.fullPath = parent.getFullPath() + SEPARATOR + name;
+      this.fullPath = parent.getFullPath() + GeodePublicGlossary.SEPARATOR + name;
 
     } else {
-      this.fullPath = SEPARATOR + name;
+      this.fullPath = GeodePublicGlossary.SEPARATOR + name;
     }
     this.name = name;
     this.refid = refid;

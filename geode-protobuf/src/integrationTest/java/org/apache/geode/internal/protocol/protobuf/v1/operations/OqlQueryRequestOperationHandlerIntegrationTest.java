@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -71,33 +72,33 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
   @Test
   public void queryForSingleObject() throws DecodingException,
       InvalidExecutionContextException, EncodingException {
-    checkResults("(select * from /region).size", 2);
+    checkResults("(select * from " + SEPARATOR + "region).size", 2);
   }
 
   @Test
   public void queryForMultipleWholeObjects() throws DecodingException,
       InvalidExecutionContextException, EncodingException {
-    checkResults("select ID from /region order by ID", 0, 1);
+    checkResults("select ID from " + SEPARATOR + "region order by ID", 0, 1);
   }
 
   @Test
   public void queryForMultipleProjectionFields() throws DecodingException,
       InvalidExecutionContextException, EncodingException {
-    checkResults("select ID,status from /region order by ID", new EncodedValue[] {},
+    checkResults("select ID,status from " + SEPARATOR + "region order by ID", new EncodedValue[] {},
         new String[] {"ID", "status"}, new Object[] {0, "active"}, new Object[] {1, "inactive"});
   }
 
   @Test
   public void queryForSingleStruct() throws DecodingException,
       InvalidExecutionContextException, EncodingException {
-    checkResults("select count(*),min(ID) from /region", new EncodedValue[] {},
+    checkResults("select count(*),min(ID) from " + SEPARATOR + "region", new EncodedValue[] {},
         new String[] {"0", "ID"}, new Object[] {2, 0});
   }
 
   @Test
   public void queryWithBindParameters() throws DecodingException,
       InvalidExecutionContextException, EncodingException {
-    checkResults("select ID,status from /region where ID=$1",
+    checkResults("select ID,status from " + SEPARATOR + "region where ID=$1",
         new EncodedValue[] {new ProtobufSerializationService().encode(0)},
         new String[] {"ID", "status"}, new Object[] {0, "active"});
   }

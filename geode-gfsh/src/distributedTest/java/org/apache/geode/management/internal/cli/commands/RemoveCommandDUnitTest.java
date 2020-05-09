@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -81,7 +81,7 @@ public class RemoveCommandDUnitTest {
     String command = "remove --all --region=NotAValidRegion";
 
     gfsh.executeAndAssertThat(command).statusIsError()
-        .containsOutput(String.format(REGION_NOT_FOUND, "/NotAValidRegion"));
+        .containsOutput(String.format(REGION_NOT_FOUND, SEPARATOR + "NotAValidRegion"));
   }
 
   @Test

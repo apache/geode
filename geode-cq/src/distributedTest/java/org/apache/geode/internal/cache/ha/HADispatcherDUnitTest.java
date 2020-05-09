@@ -25,6 +25,7 @@ import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -219,7 +220,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     vm.invoke(new CacheSerializableRunnable("putFromClient") {
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         assertNotNull(region);
         region.put(key, value);
       }
@@ -231,7 +232,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     vm.invoke(new CacheSerializableRunnable("checkFromClient") {
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         assertNotNull(region);
         cache.getLogger().fine("starting the wait");
         synchronized (dummyObj) {
@@ -335,7 +336,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     }
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
 
     {
@@ -394,7 +395,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     CqAttributes cqa = cqf.create();
 
     String cqName = "CQForHARegionQueueTest";
-    String queryStr = "Select * from " + Region.SEPARATOR + REGION_NAME;
+    String queryStr = "Select * from " + SEPARATOR + REGION_NAME;
 
     // Create CQ.
     CqQuery cq1 = cqService.newCq(cqName, queryStr, cqa);

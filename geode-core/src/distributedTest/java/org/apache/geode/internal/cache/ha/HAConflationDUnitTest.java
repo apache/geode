@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.cache.ha.HAConflationDUnitTest.LOCK;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -202,7 +202,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     CacheSerializableRunnable performPut = new CacheSerializableRunnable("putFromServer") {
       @Override
       public void run2() throws CacheException {
-        Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
+        Region region = basicGetCache().getRegion(SEPARATOR + regionName);
         assertNotNull(region);
         basicGetCache().getLogger().info("starting put()");
         region.put(key, value);
@@ -218,7 +218,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
         new CacheSerializableRunnable("invalidateFromServer") {
           @Override
           public void run2() throws CacheException {
-            Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
+            Region region = basicGetCache().getRegion(SEPARATOR + regionName);
             assertNotNull(region);
             region.invalidate(key);
             basicGetCache().getLogger().info("done invalidate() successfully");
@@ -233,7 +233,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     CacheSerializableRunnable performDestroy = new CacheSerializableRunnable("performDestroy") {
       @Override
       public void run2() throws CacheException {
-        Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
+        Region region = basicGetCache().getRegion(SEPARATOR + regionName);
         assertNotNull(region);
         region.destroy(key);
         basicGetCache().getLogger().info("done destroy successfully");
@@ -311,7 +311,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     }
     RegionAttributes attrs = factory.create();
     basicGetCache().createRegion(regionName, attrs);
-    Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
+    Region region = basicGetCache().getRegion(SEPARATOR + regionName);
     assertNotNull(region);
 
     region.registerInterest(KEY1);

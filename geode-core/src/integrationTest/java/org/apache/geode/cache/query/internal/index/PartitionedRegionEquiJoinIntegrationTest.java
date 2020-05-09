@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.util.ArrayList;
 
 import org.junit.Test;
@@ -55,7 +57,8 @@ public class PartitionedRegionEquiJoinIntegrationTest extends EquiJoinIntegratio
     createRegions();
 
     String[] queries = new String[] {
-        "select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid or c.pkid in set (1,2,3,4)",};
+        "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid=1 and c.pkid = s.pkid or c.pkid in set (1,2,3,4)",};
 
     for (int i = 0; i < 1000; i++) {
       region1.put(i, new Customer(i, i));

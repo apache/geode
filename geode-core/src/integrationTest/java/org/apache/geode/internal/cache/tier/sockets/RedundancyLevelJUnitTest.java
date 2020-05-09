@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FIL
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -111,7 +112,7 @@ public class RedundancyLevelJUnitTest {
 
       cache = CacheFactory.create(system);
       assertNotNull("cache was null", cache);
-      Region region = cache.getRegion("/root/exampleRegion");
+      Region region = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "exampleRegion");
       assertNotNull(region);
       Pool pool = PoolManager.find("clientPool");
       assertEquals("Redundancy level not matching the one specified in cache-xml", 6,

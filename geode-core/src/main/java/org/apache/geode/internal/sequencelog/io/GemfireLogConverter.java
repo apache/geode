@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.sequencelog.io;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -192,7 +194,7 @@ public class GemfireLogConverter {
     // [info 2011/05/09 00:12:19.789 GMT+05:30 peergemfire_2_1_pcc40_11040
     // <vm_6_thr_10_peer_2_1_pcc40_11040> tid=0x18] Partitioned Region /Region_GlobalVillage is
     // created with prId=1
-    tests.add(new Test("Partitioned Region /(.*) is created with") {
+    tests.add(new Test("Partitioned Region " + SEPARATOR + "(.*) is created with") {
       @Override
       public void process(Context context, long timestamp, Matcher matcher) throws IOException {
         String region = matcher.group(1);
@@ -237,7 +239,8 @@ public class GemfireLogConverter {
     // TODO, need to clean this up. We're logging full paths with this message, but only region
     // name with other messages.
     tests.add(new Test(
-        " Region /__PR/(.*) was created on this member with the persistent id .* diskStoreId (.*)\\.") {
+        " Region " + SEPARATOR + "__PR" + SEPARATOR
+            + "(.*) was created on this member with the persistent id .* diskStoreId (.*)\\.") {
       @Override
       public void process(Context context, long timestamp, Matcher matcher) throws IOException {
         String region = matcher.group(1);
@@ -256,7 +259,8 @@ public class GemfireLogConverter {
     // hs20e.gemstone.com/10.138.45.5:/export/hs20e2/users/lynn/class_versioning_dev_Mar11_5/parRegPdxInstance/2011-04-26-14-46-03/serialParRegHAPersistPdx-0427-003656/vm_3_dataStore3_disk_1
     // created at timestamp 1303890815750 version 0 diskStoreId 0b21e233-e1a9-4b2e-9190-13a191219760
     tests.add(new Test(
-        " Region /__PR/(.*) recovered from the local disk. .* new persistent ID.*diskStoreId (.*)") {
+        " Region " + SEPARATOR + "__PR" + SEPARATOR
+            + "(.*) recovered from the local disk. .* new persistent ID.*diskStoreId (.*)") {
       @Override
       public void process(Context context, long timestamp, Matcher matcher) throws IOException {
         String region = matcher.group(1);

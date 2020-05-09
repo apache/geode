@@ -14,7 +14,6 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.OTHER_EXCEPTION;
@@ -24,6 +23,7 @@ import static org.apache.geode.security.SecurityTestUtils.createCacheClient;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.Iterator;

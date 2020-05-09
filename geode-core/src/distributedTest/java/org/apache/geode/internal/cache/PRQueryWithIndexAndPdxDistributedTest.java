@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -132,33 +133,33 @@ public class PRQueryWithIndexAndPdxDistributedTest implements Serializable {
     HASH_INDEX((cache) -> {
       try {
         cache.getQueryService().createHashIndex("ContractDocumentIndex", "document",
-            Region.SEPARATOR + REGION_NAME);
+            SEPARATOR + REGION_NAME);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-    }, "select assetId, document from " + Region.SEPARATOR + REGION_NAME
+    }, "select assetId, document from " + SEPARATOR + REGION_NAME
         + " where document='B' limit 1000",
         i -> new PdxNotDeserializableAsset(i, Integer.toString(i))),
 
     RANGE_INDEX((cache) -> {
       try {
         cache.getQueryService().createIndex("ContractDocumentIndex", "ref",
-            Region.SEPARATOR + REGION_NAME + " r, r.references ref");
+            SEPARATOR + REGION_NAME + " r, r.references ref");
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-    }, "select r.assetId, r.document from " + Region.SEPARATOR + REGION_NAME
+    }, "select r.assetId, r.document from " + SEPARATOR + REGION_NAME
         + " r, r.references ref where ref='B_2' limit 1000",
         i -> new PdxNotDeserializableAsset(i, Integer.toString(i))),
 
     RANGE_INDEX_WITH_PDX((cache) -> {
       try {
         cache.getQueryService().createIndex("ContractDocumentIndex", "ref",
-            Region.SEPARATOR + REGION_NAME + " r, r.references ref");
+            SEPARATOR + REGION_NAME + " r, r.references ref");
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-    }, "select r from " + Region.SEPARATOR + REGION_NAME
+    }, "select r from " + SEPARATOR + REGION_NAME
         + " r, r.references ref where ref='B_2' limit 1000",
         i -> new PdxAsset(i, Integer.toString(i)));
 

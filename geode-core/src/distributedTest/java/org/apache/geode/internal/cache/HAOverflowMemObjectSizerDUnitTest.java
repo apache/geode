@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -146,7 +147,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
      * storing capacity controller reference
      */
     cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(
-        Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries)
+        SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries)
             .getEvictionController();
     return new Integer(server1.getPort());
   }
@@ -225,7 +226,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
    */
   public static void sizerTestForMemCapacityController(Integer port) {
     region = cache.getRegion(
-        Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
+        SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
     assertNotNull(region);
     Set entries = region.entrySet();
     assertTrue(entries.size() > 0);
@@ -278,7 +279,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
   public static void performPut(Long lowerLimit, Long higerlimit) {
     assertNotNull(lowerLimit);
     assertNotNull(higerlimit);
-    LocalRegion region = (LocalRegion) cache.getRegion(Region.SEPARATOR + regionName);
+    LocalRegion region = (LocalRegion) cache.getRegion(SEPARATOR + regionName);
     assertNotNull(region);
     for (long i = lowerLimit.longValue(); i < higerlimit.longValue(); i++) {
       region.put(new Long(i), new Long(i));

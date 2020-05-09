@@ -15,7 +15,7 @@
 
 package org.apache.geode.modules.session.catalina;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;

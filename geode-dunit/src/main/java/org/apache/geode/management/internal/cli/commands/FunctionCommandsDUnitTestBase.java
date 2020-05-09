@@ -20,6 +20,7 @@ import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTI
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS;
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_RETURN_ARGS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.Properties;
 
@@ -135,7 +136,8 @@ public class FunctionCommandsDUnitTestBase {
   @Test
   public void testExecuteFunctionOnRegion() throws Exception {
     gfsh.executeAndAssertThat(
-        "execute function --id=" + TEST_FUNCTION1 + " --region=/" + REGION_ONE).statusIsSuccess()
+        "execute function --id=" + TEST_FUNCTION1 + " --region=" + SEPARATOR + REGION_ONE)
+        .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
         .hasAnyRow().contains("OK", "[false, false]");
@@ -143,7 +145,8 @@ public class FunctionCommandsDUnitTestBase {
 
   @Test
   public void testExecuteFunctionOnUnknownRegion() throws Exception {
-    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1 + " --region=/UNKNOWN")
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + TEST_FUNCTION1 + " --region=" + SEPARATOR + "UNKNOWN")
         .statusIsError().containsOutput("No members found");
   }
 

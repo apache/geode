@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.DataInput;
 import java.io.DataOutput;

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.beans;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
@@ -82,7 +83,8 @@ public class RegionMBeanAttributesTest {
     Set<String> eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();
     assertThat(eventQueueIds).containsExactly("AEQ1");
 
-    gfsh.executeAndAssertThat("alter region --name=/FOO --async-event-queue-id=").statusIsSuccess();
+    gfsh.executeAndAssertThat("alter region --name=" + SEPARATOR + "FOO --async-event-queue-id=")
+        .statusIsSuccess();
 
     eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();
     assertThat(eventQueueIds).isNotNull().isEmpty();

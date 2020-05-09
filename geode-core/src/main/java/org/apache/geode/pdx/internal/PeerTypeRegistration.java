@@ -15,7 +15,7 @@
 
 package org.apache.geode.pdx.internal;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.Collections;
 import java.util.HashMap;

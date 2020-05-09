@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -63,71 +64,96 @@ public class IndependentOperandsInWhereClause2JUnitTest {
     }
     QueryService qs = CacheUtils.getQueryService();
     String queries[] = {
-        /* 1 */ "select distinct * from /portfolios pf, positions.values pos where  (pf.ID > 1 or status = 'active') or (true AND pos.secId ='IBM')", // size
-                                                                                                                                                      // 6
-                                                                                                                                                      // noi
-                                                                                                                                                      // 3
+        /* 1 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos where  (pf.ID > 1 or status = 'active') or (true AND pos.secId ='IBM')", // size
+        // 6
+        // noi
+        // 3
         /* 2 */ "Select distinct structset.sos, structset.key "
-            + "from /portfolios pfos, pfos.positions.values outerPos, "
+            + "from " + SEPARATOR + "portfolios pfos, pfos.positions.values outerPos, "
             + "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
-            + "from /portfolios.entries pf, pf.value.positions.values pos "
+            + "from " + SEPARATOR + "portfolios.entries pf, pf.value.positions.values pos "
             + "where outerPos.secId != 'IBM' AND "
             + "pf.key IN (select distinct * from pf.value.collectionHolderMap['0'].arr)) structset "
             + "where structset.sos > 2000", // size 6 numof indexes 0.
-        /* 3 */ "Select distinct * " + "from /portfolios pfos, pfos.positions.values outerPos, "
+        /* 3 */ "Select distinct * " + "from " + SEPARATOR
+            + "portfolios pfos, pfos.positions.values outerPos, "
             + "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
-            + "from /portfolios.entries pf, pf.value.positions.values pos "
+            + "from " + SEPARATOR + "portfolios.entries pf, pf.value.positions.values pos "
             + "where outerPos.secId != 'IBM' AND "
             + "pf.key IN (select distinct * from pf.value.collectionHolderMap['0'].arr)) structset "
             + "where structset.sos > 2000", // size 42 numof indexes 0.
-        /* 4 */ "select distinct * from /portfolios pf where true and ID = 0 ", // size 1, noi 1
-        /* 5 */ "select distinct * from /portfolios pf, positions.values pos where true = true and pos.secId ='IBM'", // size
-                                                                                                                      // 1
-                                                                                                                      // noi
-                                                                                                                      // 1
-        /* 6 */ "select distinct * from /portfolios pf, positions.values pos where false and pos.secId ='IBM'", // size
-                                                                                                                // 0
-                                                                                                                // noi
-        /* 7 */ "select distinct * from /portfolios pf where true or ID = 0 ", // size 4
-        /* 8 */ "select distinct * from /portfolios pf, positions.values pos  where true = true and pf.ID > 1 and pos.secId ='IBM'", // size
-                                                                                                                                     // 0
-        /* 9 */ "select distinct * from /portfolios pf, positions.values pos where true = false and pf.ID > 1 and pos.secId ='IBM'", // size
-                                                                                                                                     // 0
-        /* 10 */ "select distinct * from /portfolios pf, positions.values pos where true = true and pf.ID > 1 or pos.secId ='IBM'", // size
-                                                                                                                                    // 5
-        /* 11 */ "select distinct * from /portfolios pf, positions.values pos where true = false and pf.ID > 1 or pos.secId ='IBM'", // size
-                                                                                                                                     // 1
-        /* 12 */ "select distinct * from /portfolios pf, positions.values pos where  (true AND pos.secId ='SUN') or (pf.ID > 1 and status != 'active')", // size
-                                                                                                                                                         // 2
-        /* 13 */ "select distinct * from /portfolios pf, positions.values pos  where  (pf.ID > 1 or status = 'active') or (false AND pos.secId ='IBM')", // size
-                                                                                                                                                         // 6
-        /* 14 */ "SELECT DISTINCT * FROM /portfolios pf, pf.positions.values position "
+        /* 4 */ "select distinct * from " + SEPARATOR + "portfolios pf where true and ID = 0 ", // size
+                                                                                                // 1,
+                                                                                                // noi
+                                                                                                // 1
+        /* 5 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos where true = true and pos.secId ='IBM'", // size
+        // 1
+        // noi
+        // 1
+        /* 6 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos where false and pos.secId ='IBM'", // size
+        // 0
+        // noi
+        /* 7 */ "select distinct * from " + SEPARATOR + "portfolios pf where true or ID = 0 ", // size
+                                                                                               // 4
+        /* 8 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos  where true = true and pf.ID > 1 and pos.secId ='IBM'", // size
+        // 0
+        /* 9 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos where true = false and pf.ID > 1 and pos.secId ='IBM'", // size
+        // 0
+        /* 10 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos where true = true and pf.ID > 1 or pos.secId ='IBM'", // size
+        // 5
+        /* 11 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos where true = false and pf.ID > 1 or pos.secId ='IBM'", // size
+        // 1
+        /* 12 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos where  (true AND pos.secId ='SUN') or (pf.ID > 1 and status != 'active')", // size
+        // 2
+        /* 13 */ "select distinct * from " + SEPARATOR
+            + "portfolios pf, positions.values pos  where  (pf.ID > 1 or status = 'active') or (false AND pos.secId ='IBM')", // size
+        // 6
+        /* 14 */ "SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolios pf, pf.positions.values position "
             + "WHERE true = null OR position.secId = 'SUN'", // size 1
-        /* 15 */ "SELECT DISTINCT * FROM /portfolios pf, pf.positions.values position "
+        /* 15 */ "SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolios pf, pf.positions.values position "
             + "WHERE (true = null OR position.secId = 'SUN') AND true", // size 1
-        /* 16 */ "SELECT DISTINCT * FROM /portfolios pf, pf.positions.values position "
+        /* 16 */ "SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolios pf, pf.positions.values position "
             + "WHERE (ID > 0 OR position.secId = 'SUN') OR false", // size 6
-        /* 17 */ "SELECT DISTINCT * FROM /portfolios pf, pf.positions.values position "
+        /* 17 */ "SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolios pf, pf.positions.values position "
             + "WHERE (true = null OR position.secId = 'SUN') OR true", // size 8
-        /* 18 */ "SELECT DISTINCT * FROM /portfolios pf, pf.positions.values position "
+        /* 18 */ "SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolios pf, pf.positions.values position "
             + "WHERE (true = null OR position.secId = 'SUN') OR false", // size 1
-        /* 19 */ "select distinct * from /portfolios pf, positions.values pos "
+        /* 19 */ "select distinct * from " + SEPARATOR + "portfolios pf, positions.values pos "
             + "where (pf.ID < 1 and status = 'active') and (false or pos.secId = 'IBM')", // size 1
-        /* 20 */ "select distinct * from /portfolios pf where false and ID = 0 ", // size 0
-        /* 21 */ "select distinct * from /portfolios pf where false or ID = 0 ", // size 1
-        /* 22 */ "select distinct * from /portfolios pf where ID = 0 and false  ", // size 0
-        /* 23 */ "select distinct * from /portfolios pf where ID = 0 or false", // size 1
-        /* 24 */ "select distinct * from /portfolios pf, positions.values pos "
+        /* 20 */ "select distinct * from " + SEPARATOR + "portfolios pf where false and ID = 0 ", // size
+                                                                                                  // 0
+        /* 21 */ "select distinct * from " + SEPARATOR + "portfolios pf where false or ID = 0 ", // size
+                                                                                                 // 1
+        /* 22 */ "select distinct * from " + SEPARATOR + "portfolios pf where ID = 0 and false  ", // size
+                                                                                                   // 0
+        /* 23 */ "select distinct * from " + SEPARATOR + "portfolios pf where ID = 0 or false", // size
+                                                                                                // 1
+        /* 24 */ "select distinct * from " + SEPARATOR + "portfolios pf, positions.values pos "
             + "where (ID = 2 and true) and (status = 'active' or (pos.secId != 'IBM' and true))  ", // size
                                                                                                     // 2
-        /* 25 */ "select distinct * from /portfolios pf, positions.values pos "
+        /* 25 */ "select distinct * from " + SEPARATOR + "portfolios pf, positions.values pos "
             + "where (ID = 2 or false) or (status = 'active' and (pos.secId != 'IBM' or true))  ", // size
                                                                                                    // 2
-        /* 26 */ "SELECT DISTINCT * FROM /portfolios pf,"
-            + " (SELECT DISTINCT * FROM /portfolios ptf, ptf.positions pos where pf.ID != 1 and pos.value.sharesOutstanding > 2000) as x"
+        /* 26 */ "SELECT DISTINCT * FROM " + SEPARATOR + "portfolios pf,"
+            + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolios ptf, ptf.positions pos where pf.ID != 1 and pos.value.sharesOutstanding > 2000) as x"
             + " WHERE pos.value.secId = 'IBM'", // size 0
-        /* 27 */ "SELECT DISTINCT * FROM /portfolios pf,"
-            + " (SELECT DISTINCT * FROM /portfolios ptf, ptf.positions pos where pf.ID != 1 and pos.value.sharesOutstanding > 2000)as y"
+        /* 27 */ "SELECT DISTINCT * FROM " + SEPARATOR + "portfolios pf,"
+            + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolios ptf, ptf.positions pos where pf.ID != 1 and pos.value.sharesOutstanding > 2000)as y"
             + " WHERE pos.value.secId = 'HP'", // size 3
     };
 
@@ -154,11 +180,12 @@ public class IndependentOperandsInWhereClause2JUnitTest {
     // Index index1 = (Index) qs.createIndex("secIdIndex", IndexType.FUNCTIONAL,
     // "b.secId", "/portfolios.entries pf, pf.value.positions.values b");
     qs.createIndex("secIdIdx", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios pf, pf.positions.values b");
-    qs.createIndex("IdIdx", IndexType.FUNCTIONAL, "pf.ID", "/portfolios pf, pf.positions.values b");
+        SEPARATOR + "portfolios pf, pf.positions.values b");
+    qs.createIndex("IdIdx", IndexType.FUNCTIONAL, "pf.ID",
+        SEPARATOR + "portfolios pf, pf.positions.values b");
     qs.createIndex("statusIdx", IndexType.FUNCTIONAL, "pf.status",
-        "/portfolios pf, pf.positions.values b");
-    qs.createIndex("Idindex2", IndexType.FUNCTIONAL, "pf.ID", "/portfolios pf");
+        SEPARATOR + "portfolios pf, pf.positions.values b");
+    qs.createIndex("Idindex2", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "portfolios pf");
     for (int j = 0; j < queries.length; j++) {
       Query q2 = null;
       q2 = CacheUtils.getQueryService().newQuery(queries[j]);

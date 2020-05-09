@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -133,7 +134,7 @@ public class SingleServerSNIAcceptanceTest {
    */
   @Test
   public void query() throws Exception {
-    final SelectResults<String> results = region.query("SELECT * from /jellyfish");
+    final SelectResults<String> results = region.query("SELECT * from " + SEPARATOR + "jellyfish");
     assertThat(results).hasSize(bulkData.size());
     for (String result : results) {
       assertThat(bulkData.containsValue(result)).isTrue();

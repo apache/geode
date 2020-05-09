@@ -15,6 +15,7 @@
 package org.apache.geode;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -7179,7 +7180,7 @@ public class TXJUnitTest {
     public void afterCommit(TransactionEvent event) {
       List<CacheEvent<?, ?>> events = event.getEvents();
       for (CacheEvent<?, ?> e : events) {
-        if (!"/testTxEventForRegion".equals(e.getRegion().getFullPath())) {
+        if (!(SEPARATOR + "testTxEventForRegion").equals(e.getRegion().getFullPath())) {
           exceptionOccurred = true;
         }
       }
@@ -7200,7 +7201,7 @@ public class TXJUnitTest {
     }
 
     private void verifyRegion(EntryEvent event) {
-      if (!"/testTxEventForRegion".equals(event.getRegion().getFullPath())) {
+      if (!(SEPARATOR + "testTxEventForRegion").equals(event.getRegion().getFullPath())) {
         exceptionOccurred = true;
       }
     }

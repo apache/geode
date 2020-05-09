@@ -14,11 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.CONTINUOUS_QUERIES_RUNNING_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.AUTHORIZER_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.COMMAND_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.FORCE_UPDATE;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
@@ -140,7 +140,7 @@ public class AlterQueryServiceCommandDistributedTest {
   public void commandShouldFailWhenThereAreCqsRunningAndForceUpdateFlagIsFalse(String regionName,
       boolean initialResults) {
     verifyCurrentAuthorizerClass(DEFAULT_AUTHORIZER_CLASS);
-    createClientCq("SELECT * FROM /" + regionName, initialResults);
+    createClientCq("SELECT * FROM " + SEPARATOR + regionName, initialResults);
     String command = buildCommand(DummyMethodAuthorizer.class.getName(), false);
 
     gfsh.executeAndAssertThat(command).statusIsError()
@@ -154,7 +154,7 @@ public class AlterQueryServiceCommandDistributedTest {
   public void commandShouldSucceedWhenThereAreCqsRunningAndForceUpdateFlagIsTrue(String regionName,
       boolean initialResults) {
     verifyCurrentAuthorizerClass(DEFAULT_AUTHORIZER_CLASS);
-    createClientCq("SELECT * FROM /" + regionName, initialResults);
+    createClientCq("SELECT * FROM " + SEPARATOR + regionName, initialResults);
     String command = buildCommand(DummyMethodAuthorizer.class.getName(), true);
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();

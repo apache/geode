@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.xml;
 
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAMESPACE;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -43,7 +44,7 @@ public class JdbcConnectorServiceXmlParserTest {
   public void setup() {
     attributes = mock(Attributes.class);
     regionCreation = mock(RegionCreation.class);
-    when(regionCreation.getFullPath()).thenReturn("/region");
+    when(regionCreation.getFullPath()).thenReturn(SEPARATOR + "region");
     ExtensionPoint<Region<?, ?>> extensionPoint = mock(ExtensionPoint.class);
     when(regionCreation.getExtensionPoint()).thenReturn(extensionPoint);
     stack = new Stack<>();

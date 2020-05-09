@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.api;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.lang.Identifiable.find;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
@@ -104,7 +105,8 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
     server1.invoke(new CacheSerializableRunnable("Update Region") {
       @Override
       public void run2() throws CacheException {
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
           Portfolio p = new Portfolio(i);
           region.put("" + i, p);
@@ -116,7 +118,8 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
     server1.invokeAsync(new CacheSerializableRunnable("Update Region") {
       @Override
       public void run2() throws CacheException {
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         // Update (totalObjects - 1) entries.
         for (int i = 1; i < totalObjects; i++) {
           // Destroy entries.
@@ -157,7 +160,8 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
         }
 
         // Wait till all the region update is performed.
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         while (true) {
           if (region.get("" + totalObjects) == null) {
             try {
@@ -216,7 +220,8 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
         }
 
         // Wait till all the region update is performed.
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         while (true) {
           if (region.get("" + totalObjects) == null) {
             try {

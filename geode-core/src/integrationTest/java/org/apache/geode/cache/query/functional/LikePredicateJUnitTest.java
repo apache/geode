@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -113,7 +113,8 @@ public class LikePredicateJUnitTest {
       predicate = " 'abc%'";
     }
 
-    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
     SelectResults results;
     if (useBindParam) {
       results = (SelectResults) q.execute(new Object[] {"abc%"});
@@ -130,7 +131,7 @@ public class LikePredicateJUnitTest {
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
@@ -204,7 +205,8 @@ public class LikePredicateJUnitTest {
       predicate = " '%'";
     }
 
-    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
     SelectResults results;
     if (useBindParam) {
       results = (SelectResults) q.execute(new Object[] {"%"});
@@ -221,7 +223,7 @@ public class LikePredicateJUnitTest {
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
@@ -295,7 +297,8 @@ public class LikePredicateJUnitTest {
       predicate = " 'abc%'";
     }
     Query q = qs.newQuery(
-        "SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate + " OR ps.ID > 6");
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate
+            + " OR ps.ID > 6");
     SelectResults results;
     if (useBindPrm) {
       results = (SelectResults) q.execute(new Object[] {"abc%"});
@@ -314,7 +317,7 @@ public class LikePredicateJUnitTest {
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
 
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
@@ -339,7 +342,7 @@ public class LikePredicateJUnitTest {
     rs[0][0] = results;
     rs[0][1] = expectedResults;
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
-    qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", "/pos ps");
+    qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", SEPARATOR + "pos ps");
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean[] indexCalled = new boolean[] {false, false};
 
@@ -420,8 +423,9 @@ public class LikePredicateJUnitTest {
     } else {
       predicate = " 'abc%'";
     }
-    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate
-        + " AND ps.ID > 2 AND ps.ID < 150");
+    Query q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate
+            + " AND ps.ID > 2 AND ps.ID < 150");
     SelectResults results;
     if (useBindPrm) {
       results = (SelectResults) q.execute(new Object[] {"abc%"});
@@ -438,7 +442,7 @@ public class LikePredicateJUnitTest {
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean[] indexCalled = new boolean[] {false, false};
 
@@ -465,7 +469,7 @@ public class LikePredicateJUnitTest {
     rs[0][0] = results;
     rs[0][1] = expectedResults;
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
-    qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", "/pos ps");
+    qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", SEPARATOR + "pos ps");
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean[] indexCalled = new boolean[] {false, false};
 
@@ -533,7 +537,8 @@ public class LikePredicateJUnitTest {
     } else {
       predicate = " 'a%c%'";
     }
-    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
 
     SelectResults results;
     if (useBindPrm) {
@@ -551,9 +556,10 @@ public class LikePredicateJUnitTest {
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     // Create Index
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
 
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
 
     if (useBindPrm) {
       results = (SelectResults) q.execute(new Object[] {"a%bc%"});
@@ -569,7 +575,8 @@ public class LikePredicateJUnitTest {
     } else {
       predicate = "'abc_'";
     }
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
 
     if (useBindPrm) {
       results = (SelectResults) q.execute(new Object[] {"abc_"});
@@ -585,7 +592,8 @@ public class LikePredicateJUnitTest {
     } else {
       predicate = "'_bc_'";
     }
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
     if (useBindPrm) {
       results = (SelectResults) q.execute(new Object[] {"_bc_"});
     } else {
@@ -642,7 +650,8 @@ public class LikePredicateJUnitTest {
     } else {
       predicate = " 'abcd'";
     }
-    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
     SelectResults results;
     if (useBindPrms) {
       results = (SelectResults) q.execute(new Object[] {"abcd"});
@@ -660,7 +669,7 @@ public class LikePredicateJUnitTest {
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
@@ -731,7 +740,8 @@ public class LikePredicateJUnitTest {
     } else {
       predicate = " 'abcd\\_'";
     }
-    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
     SelectResults results;
     if (useBindPrms) {
       results = (SelectResults) q.execute(new Object[] {"abcd\\_"});
@@ -755,7 +765,8 @@ public class LikePredicateJUnitTest {
     } else {
       predicate = " 'abcd\\%'";
     }
-    Query q1 = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q1 = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
     if (useBindPrms) {
       results = (SelectResults) q1.execute(new Object[] {"abcd\\%"});
     } else {
@@ -773,7 +784,7 @@ public class LikePredicateJUnitTest {
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs1, this);
 
     // Create Index
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
@@ -847,10 +858,11 @@ public class LikePredicateJUnitTest {
 
     for (int i = 0; i < values.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos.values p where p like '" + values[i] + "'");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos.values p where p like '" + values[i] + "'");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos.values p where p like $1");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
         results = (SelectResults) q.execute(new Object[] {values[i]});
       }
       List r = results.asList();
@@ -861,14 +873,15 @@ public class LikePredicateJUnitTest {
     }
 
     // Create Index
-    qs.createIndex("p", IndexType.FUNCTIONAL, "p", "/pos.values p");
+    qs.createIndex("p", IndexType.FUNCTIONAL, "p", SEPARATOR + "pos.values p");
 
     for (int i = 0; i < values.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos.values p where p like '" + values[i] + "'");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos.values p where p like '" + values[i] + "'");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos.values p where p like $1");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
         results = (SelectResults) q.execute(new Object[] {values[i]});
       }
       List r = results.asList();
@@ -914,10 +927,11 @@ public class LikePredicateJUnitTest {
         "a%iv_", "a_tiv%", "%", "ac%",};
     for (int i = 0; i < likePredicates.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos.values p where p like '" + likePredicates[i] + "'");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos.values p where p like '" + likePredicates[i] + "'");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos.values p where p like $1");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
         results = (SelectResults) q.execute(new Object[] {likePredicates[i]});
       }
       List r = results.asList();
@@ -929,14 +943,15 @@ public class LikePredicateJUnitTest {
     }
 
     // Create Index
-    qs.createIndex("p", IndexType.FUNCTIONAL, "p", "/pos.values p");
+    qs.createIndex("p", IndexType.FUNCTIONAL, "p", SEPARATOR + "pos.values p");
 
     for (int i = 0; i < likePredicates.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos.values p where p like '" + likePredicates[i] + "'");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos.values p where p like '" + likePredicates[i] + "'");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos.values p where p like $1");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
         results = (SelectResults) q.execute(new Object[] {likePredicates[i]});
       }
       List r = results.asList();
@@ -982,10 +997,11 @@ public class LikePredicateJUnitTest {
         "X%X", "Z\\\\\\%Z", "inact\\\\%+ive", "1inact\\\\_+ive",};
     for (int i = 0; i < likePredicates.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos.values p where p like '" + likePredicates[i] + "'");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos.values p where p like '" + likePredicates[i] + "'");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos.values p where p like $1");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
         results = (SelectResults) q.execute(new Object[] {likePredicates[i]});
       }
       List r = results.asList();
@@ -997,14 +1013,15 @@ public class LikePredicateJUnitTest {
     }
 
     // Create Index
-    qs.createIndex("p", IndexType.FUNCTIONAL, "p", "/pos.values p");
+    qs.createIndex("p", IndexType.FUNCTIONAL, "p", SEPARATOR + "pos.values p");
 
     for (int i = 0; i < likePredicates.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos.values p where p like '" + likePredicates[i] + "'");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos.values p where p like '" + likePredicates[i] + "'");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos.values p where p like $1");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
         results = (SelectResults) q.execute(new Object[] {likePredicates[i]});
       }
       List r = results.asList();
@@ -1041,14 +1058,15 @@ public class LikePredicateJUnitTest {
 
     QueryService qs = cache.getQueryService();
 
-    Query q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%'");
+    Query q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%'");
     SelectResults results = (SelectResults) q.execute();
     int expectedResultSize = 2;
     if (results.size() != expectedResultSize) {
       fail("Unexpected result. expected :" + expectedResultSize + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' or ps.pkid = '2' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' or ps.pkid = '2' ");
     results = (SelectResults) q.execute();
     if (results.size() != (expectedResultSize * 2)) {
       fail("Unexpected result. expected :" + (expectedResultSize * 2) + " found : "
@@ -1056,7 +1074,8 @@ public class LikePredicateJUnitTest {
     }
 
     // Query to be compared with indexed results.
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' and ps.pkid = '1' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' and ps.pkid = '1' ");
     SelectResults expectedResults = (SelectResults) q.execute();
     if (expectedResults.size() != expectedResultSize) {
       fail("Unexpected result. expected :" + expectedResultSize + " found : "
@@ -1064,7 +1083,7 @@ public class LikePredicateJUnitTest {
     }
 
     // Create Index
-    qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", "/pos ps");
+    qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", SEPARATOR + "pos ps");
 
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
@@ -1091,7 +1110,8 @@ public class LikePredicateJUnitTest {
     // compare results.
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' or ps.pkid = '2' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' or ps.pkid = '2' ");
     results = (SelectResults) q.execute();
     if (results.size() != (expectedResultSize * 2)) {
       fail("Unexpected result. expected :" + (expectedResultSize * 2) + " found : "
@@ -1127,40 +1147,45 @@ public class LikePredicateJUnitTest {
 
     QueryService qs = cache.getQueryService();
 
-    Query q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%'");
+    Query q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%'");
     SelectResults results = (SelectResults) q.execute();
     int expectedResultSize = 2;
     if (results.size() != expectedResultSize) {
       fail("Unexpected result. expected :" + expectedResultSize + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' or ps.pkid = '2' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' or ps.pkid = '2' ");
     results = (SelectResults) q.execute();
     if (results.size() != (expectedResultSize * 2)) {
       fail("Unexpected result. expected :" + (expectedResultSize * 2) + " found : "
           + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' or ps.ID > 0 ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' or ps.ID > 0 ");
     results = (SelectResults) q.execute();
     if (results.size() != size) {
       fail("Unexpected result. expected :" + size + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' or ps.ID > 4 ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' or ps.ID > 4 ");
     results = (SelectResults) q.execute();
     if (results.size() != 7) {
       fail("Unexpected result. expected :" + 7 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' and ps.ID > 3 ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' and ps.ID > 3 ");
     results = (SelectResults) q.execute();
     if (results.size() != 2) {
       fail("Unexpected result. expected :" + 2 + " found : " + results.size());
     }
 
     // Query to be compared with indexed results.
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' and ps.pkid = '1' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' and ps.pkid = '1' ");
     SelectResults expectedResults = (SelectResults) q.execute();
     if (expectedResults.size() != expectedResultSize) {
       fail("Unexpected result. expected :" + expectedResultSize + " found : "
@@ -1168,9 +1193,9 @@ public class LikePredicateJUnitTest {
     }
 
     // Create Index
-    qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", "/pos ps");
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
-    qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", "/pos ps");
+    qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", SEPARATOR + "pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
+    qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", SEPARATOR + "pos ps");
 
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
@@ -1197,26 +1222,30 @@ public class LikePredicateJUnitTest {
     // compare results.
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '_b_' or ps.pkid = '2' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '_b_' or ps.pkid = '2' ");
     results = (SelectResults) q.execute();
     if (results.size() != (expectedResultSize * 2)) {
       fail("Unexpected result. expected :" + (expectedResultSize * 2) + " found : "
           + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' or ps.ID > 0 ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' or ps.ID > 0 ");
     results = (SelectResults) q.execute();
     if (results.size() != size) {
       fail("Unexpected result. expected :" + size + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' or ps.ID > 4 ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' or ps.ID > 4 ");
     results = (SelectResults) q.execute();
     if (results.size() != 7) {
       fail("Unexpected result. expected :" + 7 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' and ps.ID > 3 ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE ps.status like '%b%' and ps.ID > 3 ");
     results = (SelectResults) q.execute();
     if (results.size() != 2) {
       fail("Unexpected result. expected :" + 2 + " found : " + results.size());
@@ -1234,34 +1263,45 @@ public class LikePredicateJUnitTest {
     Region region = cache.createRegion("pos", regionAttributes);
     QueryService qs = cache.getQueryService();
     String[] queries = new String[] {
-        " SELECT  status, pkid FROM /pos  WHERE status like 'inactive' and pkid like '1' ",
-        " SELECT  status, pkid FROM /pos  WHERE status like 'active' or pkid like '1' ",
-        " SELECT  status, pkid FROM /pos  WHERE status like 'in%' and pkid like '1' ",
-        " SELECT  status  FROM /pos  WHERE status like 'in%' or pkid like '1'",
-        " SELECT  pkid FROM /pos  WHERE status like 'inact%' and pkid like '1%' ",
-        " SELECT  *  FROM /pos  WHERE status like 'inact%' or pkid like '1%' ",
-        " SELECT  *  FROM /pos  WHERE status like 'inactiv_' or pkid like '1%' ",
-        " SELECT  status, pkid  FROM /pos  WHERE status like '_nactive' or pkid like '1%' ",
-        " SELECT  *  FROM /pos  WHERE status like '_nac%ive' or pkid like '1%' ",
-        " SELECT  *  FROM /pos  WHERE status like 'in_ctive' or pkid like '1%' ",
-        " SELECT  *  FROM /pos  WHERE status like 'in_ctive' or pkid like '1_' ",
-        " SELECT  status, pkid FROM /pos  WHERE status like '%ctive' and pkid like '1%' ",
-        " SELECT  *  FROM /pos  WHERE NOT (status like 'active' or pkid like '1') ",
-        " SELECT  *  FROM /pos  WHERE NOT (status like 'active' or pkid like '1%') ",
-        " SELECT  *  FROM /pos  WHERE NOT (status like 'acti%' and pkid like '1%') ",
-        " SELECT  *  FROM /pos  WHERE NOT (status like 'acti%' or pkid like '1%') ",
-        " SELECT  *  FROM /pos  WHERE NOT (status like 'active' and pkid like '1%') ",
-        " SELECT  *  FROM /pos  WHERE NOT (status like 'active' or pkid like '1%') ",
-        " SELECT  *  FROM /pos  WHERE NOT (status like 'active' or pkid like '11' or pkid like '1') ",
-        " SELECT  *  FROM /pos  WHERE status like '%' and pkid like '1%' ",
-        " SELECT  *  FROM /pos  WHERE pkid like '_'",
-        " SELECT  *  FROM /pos  WHERE status like '.*tive' ",
-        " SELECT  *  FROM /pos  WHERE pkid like '1+' ",
-        " SELECT  *  FROM /pos  WHERE unicodeṤtring like 'ṤṶẐ' ",
-        " SELECT  *  FROM /pos  WHERE unicodeṤtring like 'ṤṶ%' ",
-        " SELECT  *  FROM /pos p, p.positions.values v  WHERE v.secId like 'I%' ",
-        " SELECT  *  FROM /pos p, p.positions.values v  WHERE v.secId like '%L' ",
-        " SELECT  *  FROM /pos p, p.positions.values v  WHERE v.secId like 'A%L' ",};
+        " SELECT  status, pkid FROM " + SEPARATOR
+            + "pos  WHERE status like 'inactive' and pkid like '1' ",
+        " SELECT  status, pkid FROM " + SEPARATOR
+            + "pos  WHERE status like 'active' or pkid like '1' ",
+        " SELECT  status, pkid FROM " + SEPARATOR
+            + "pos  WHERE status like 'in%' and pkid like '1' ",
+        " SELECT  status  FROM " + SEPARATOR + "pos  WHERE status like 'in%' or pkid like '1'",
+        " SELECT  pkid FROM " + SEPARATOR + "pos  WHERE status like 'inact%' and pkid like '1%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'inact%' or pkid like '1%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'inactiv_' or pkid like '1%' ",
+        " SELECT  status, pkid  FROM " + SEPARATOR
+            + "pos  WHERE status like '_nactive' or pkid like '1%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like '_nac%ive' or pkid like '1%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'in_ctive' or pkid like '1%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'in_ctive' or pkid like '1_' ",
+        " SELECT  status, pkid FROM " + SEPARATOR
+            + "pos  WHERE status like '%ctive' and pkid like '1%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE NOT (status like 'active' or pkid like '1') ",
+        " SELECT  *  FROM " + SEPARATOR
+            + "pos  WHERE NOT (status like 'active' or pkid like '1%') ",
+        " SELECT  *  FROM " + SEPARATOR
+            + "pos  WHERE NOT (status like 'acti%' and pkid like '1%') ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE NOT (status like 'acti%' or pkid like '1%') ",
+        " SELECT  *  FROM " + SEPARATOR
+            + "pos  WHERE NOT (status like 'active' and pkid like '1%') ",
+        " SELECT  *  FROM " + SEPARATOR
+            + "pos  WHERE NOT (status like 'active' or pkid like '1%') ",
+        " SELECT  *  FROM " + SEPARATOR
+            + "pos  WHERE NOT (status like 'active' or pkid like '11' or pkid like '1') ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like '%' and pkid like '1%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE pkid like '_'",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like '.*tive' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE pkid like '1+' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE unicodeṤtring like 'ṤṶẐ' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE unicodeṤtring like 'ṤṶ%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos p, p.positions.values v  WHERE v.secId like 'I%' ",
+        " SELECT  *  FROM " + SEPARATOR + "pos p, p.positions.values v  WHERE v.secId like '%L' ",
+        " SELECT  *  FROM " + SEPARATOR
+            + "pos p, p.positions.values v  WHERE v.secId like 'A%L' ",};
     SelectResults[][] sr = new SelectResults[queries.length][2];
 
     for (int i = 0; i < 20; i++) {
@@ -1276,10 +1316,10 @@ public class LikePredicateJUnitTest {
     }
 
     // Create index.
-    qs.createIndex("pkidIndex", "pkid", "/pos");
-    qs.createIndex("statusIndex", "status", "/pos");
-    qs.createIndex("unicodeṤtringIndex", "unicodeṤtring", "/pos");
-    qs.createIndex("secIdIndex", "v.secId", "/pos p, p.positions.values v");
+    qs.createIndex("pkidIndex", "pkid", SEPARATOR + "pos");
+    qs.createIndex("statusIndex", "status", SEPARATOR + "pos");
+    qs.createIndex("unicodeṤtringIndex", "unicodeṤtring", SEPARATOR + "pos");
+    qs.createIndex("secIdIndex", "v.secId", SEPARATOR + "pos p, p.positions.values v");
 
     for (int i = 0; i < queries.length; i++) {
       q = qs.newQuery(queries[i]);
@@ -1293,140 +1333,160 @@ public class LikePredicateJUnitTest {
     // compare results.
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
 
-    q = qs.newQuery("SELECT  status  FROM /pos  WHERE status like 'inactive' and pkid like '1' ");
+    q = qs.newQuery("SELECT  status  FROM " + SEPARATOR
+        + "pos  WHERE status like 'inactive' and pkid like '1' ");
     SelectResults results = (SelectResults) q.execute();
     if (results.size() != 1) {
       fail("Unexpected result. expected :" + 1 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  pkid  FROM /pos  WHERE status like 'active' or pkid like '1' ");
+    q = qs.newQuery(
+        " SELECT  pkid  FROM " + SEPARATOR + "pos  WHERE status like 'active' or pkid like '1' ");
     results = (SelectResults) q.execute();
     if (results.size() != 11) {
       fail("Unexpected result. expected :" + 11 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like 'in%' and pkid like '1' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'in%' and pkid like '1' ");
     results = (SelectResults) q.execute();
     if (results.size() != 1) {
       fail("Unexpected result. expected :" + 1 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like 'in%' or pkid like '1' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'in%' or pkid like '1' ");
     results = (SelectResults) q.execute();
     if (results.size() != 10) {
       fail("Unexpected result. expected :" + 10 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like 'inact%' and pkid like '1%' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'inact%' and pkid like '1%' ");
     results = (SelectResults) q.execute();
     if (results.size() != 6) {
       fail("Unexpected result. expected :" + 6 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like 'inact%' or pkid like '1%' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'inact%' or pkid like '1%' ");
     results = (SelectResults) q.execute();
     if (results.size() != 15) {
       fail("Unexpected result. expected :" + 15 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like 'inactiv_' or pkid like '1%' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'inactiv_' or pkid like '1%' ");
     results = (SelectResults) q.execute();
     if (results.size() != 15) {
       fail("Unexpected result. expected :" + 15 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like '_nactive' or pkid like '1%' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like '_nactive' or pkid like '1%' ");
     results = (SelectResults) q.execute();
     if (results.size() != 15) {
       fail("Unexpected result. expected :" + 15 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like '_nac%ive' or pkid like '1%' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like '_nac%ive' or pkid like '1%' ");
     results = (SelectResults) q.execute();
     if (results.size() != 15) {
       fail("Unexpected result. expected :" + 15 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like 'in_ctive' or pkid like '1%' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'in_ctive' or pkid like '1%' ");
     results = (SelectResults) q.execute();
     if (results.size() != 15) {
       fail("Unexpected result. expected :" + 15 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like 'in_ctive' or pkid like '1_' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like 'in_ctive' or pkid like '1_' ");
     results = (SelectResults) q.execute();
     if (results.size() != 15) {
       fail("Unexpected result. expected :" + 15 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like '%ctive' and pkid like '1%' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like '%ctive' and pkid like '1%' ");
     results = (SelectResults) q.execute();
     if (results.size() != 11) {
       fail("Unexpected result. expected :" + 11 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE NOT (status like 'active' or pkid like '1') ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos  WHERE NOT (status like 'active' or pkid like '1') ");
     results = (SelectResults) q.execute();
     if (results.size() != 9) {
       fail("Unexpected result. expected :" + 9 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE NOT (status like 'active' or pkid like '1%') ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos  WHERE NOT (status like 'active' or pkid like '1%') ");
     results = (SelectResults) q.execute();
     if (results.size() != 4) {
       fail("Unexpected result. expected :" + 4 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE NOT (status like 'acti%' and pkid like '1%') ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos  WHERE NOT (status like 'acti%' and pkid like '1%') ");
     results = (SelectResults) q.execute();
     if (results.size() != 15) {
       fail("Unexpected result. expected :" + 15 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE NOT (status like 'acti%' or pkid like '1%') ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos  WHERE NOT (status like 'acti%' or pkid like '1%') ");
     results = (SelectResults) q.execute();
     if (results.size() != 4) {
       fail("Unexpected result. expected :" + 4 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE NOT (status like 'active' and pkid like '1%') ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos  WHERE NOT (status like 'active' and pkid like '1%') ");
     results = (SelectResults) q.execute();
     if (results.size() != 15) {
       fail("Unexpected result. expected :" + 15 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE NOT (status like 'active' or pkid like '1%') ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos  WHERE NOT (status like 'active' or pkid like '1%') ");
     results = (SelectResults) q.execute();
     if (results.size() != 4) {
       fail("Unexpected result. expected :" + 4 + " found : " + results.size());
     }
 
     q = qs.newQuery(
-        " SELECT  *  FROM /pos  WHERE NOT (status like 'active' or pkid like '11' or pkid like '1') ");
+        " SELECT  *  FROM " + SEPARATOR
+            + "pos  WHERE NOT (status like 'active' or pkid like '11' or pkid like '1') ");
     results = (SelectResults) q.execute();
     if (results.size() != 8) {
       fail("Unexpected result. expected :" + 8 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE status like '%' and pkid like '1%' ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos  WHERE status like '%' and pkid like '1%' ");
     results = (SelectResults) q.execute();
     if (results.size() != 11) {
       fail("Unexpected result. expected :" + 11 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE pkid like '_' ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR + "pos  WHERE pkid like '_' ");
     results = (SelectResults) q.execute();
     if (results.size() != 10) {
       fail("Unexpected result. expected :" + 10 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE pkid like '.*tive' ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR + "pos  WHERE pkid like '.*tive' ");
     results = (SelectResults) q.execute();
     if (results.size() != 0) {
       fail("Unexpected result. expected :" + 0 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos  WHERE pkid like '1+' ");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR + "pos  WHERE pkid like '1+' ");
     results = (SelectResults) q.execute();
     if (results.size() != 0) {
       fail("Unexpected result. expected :" + 0 + " found : " + results.size());
@@ -1459,15 +1519,21 @@ public class LikePredicateJUnitTest {
     Query q;
     SelectResults results;
 
-    String query[] = new String[] {"SELECT distinct *  FROM /pos ps WHERE ps.pkid like '%b%'",
-        "SELECT * FROM /pos ps WHERE ps.pkid like '%b%' and ps.status like '%ctiv%'",
-        "SELECT * FROM /pos ps WHERE ps.pkid like '_bc'",
-        "SELECT pkid FROM /pos ps WHERE ps.pkid like 'abc%'",
-        "SELECT pkid FROM /pos ps WHERE ps.pkid = 'abc'",
-        "SELECT pkid FROM /pos ps WHERE ps.pkid like '%b%' and ps.status = 'like'",
-        "SELECT pkid FROM /pos ps WHERE ps.pkid like '%b%' and ps.status like '%ike'",
-        "SELECT pkid FROM /pos ps WHERE ps.pkid like '%b%' and ps.pkid like '_bc'",
-        "SELECT pkid FROM /pos ps WHERE ps.pkid like 'ml%' or ps.status = 'like'",};
+    String query[] =
+        new String[] {"SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.pkid like '%b%'",
+            "SELECT * FROM " + SEPARATOR
+                + "pos ps WHERE ps.pkid like '%b%' and ps.status like '%ctiv%'",
+            "SELECT * FROM " + SEPARATOR + "pos ps WHERE ps.pkid like '_bc'",
+            "SELECT pkid FROM " + SEPARATOR + "pos ps WHERE ps.pkid like 'abc%'",
+            "SELECT pkid FROM " + SEPARATOR + "pos ps WHERE ps.pkid = 'abc'",
+            "SELECT pkid FROM " + SEPARATOR
+                + "pos ps WHERE ps.pkid like '%b%' and ps.status = 'like'",
+            "SELECT pkid FROM " + SEPARATOR
+                + "pos ps WHERE ps.pkid like '%b%' and ps.status like '%ike'",
+            "SELECT pkid FROM " + SEPARATOR
+                + "pos ps WHERE ps.pkid like '%b%' and ps.pkid like '_bc'",
+            "SELECT pkid FROM " + SEPARATOR
+                + "pos ps WHERE ps.pkid like 'ml%' or ps.status = 'like'",};
 
     // null check
     for (int i = 0; i < query.length; i++) {
@@ -1485,8 +1551,8 @@ public class LikePredicateJUnitTest {
     assertEquals("Result size is not as expected", 2, results.size());
 
     // Create index.
-    qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", "/pos ps");
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+    qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", SEPARATOR + "pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
 
     for (int i = 0; i < query.length; i++) {
       q = qs.newQuery(query[i]);
@@ -1518,7 +1584,7 @@ public class LikePredicateJUnitTest {
     QueryService qs = cache.getQueryService();
 
     if (useIndex) {
-      qs.createIndex("p", IndexType.FUNCTIONAL, "p", "/pos.values p");
+      qs.createIndex("p", IndexType.FUNCTIONAL, "p", SEPARATOR + "pos.values p");
     }
     Query q;
     SelectResults results;
@@ -1527,10 +1593,11 @@ public class LikePredicateJUnitTest {
         "act__e", "a%iv_", "a_tiv%", "ac%",};
     for (int i = 0; i < likePredicates1.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos p where NOT (p like '" + likePredicates1[i] + "')");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos p where NOT (p like '" + likePredicates1[i] + "')");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos p where NOT (p like $1)");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos p where NOT (p like $1)");
         results = (SelectResults) q.execute(new Object[] {likePredicates1[i]});
       }
       List r = results.asList();
@@ -1544,10 +1611,11 @@ public class LikePredicateJUnitTest {
     String[] likePredicates2 = new String[] {"%ctiv%", "%c%iv%", "%ctive", "%%ti%", "%",};
     for (int i = 0; i < likePredicates2.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos p where NOT (p like '" + likePredicates2[i] + "')");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos p where NOT (p like '" + likePredicates2[i] + "')");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos p where NOT (p like $1)");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos p where NOT (p like $1)");
         results = (SelectResults) q.execute(new Object[] {likePredicates2[i]});
       }
       List r = results.asList();
@@ -1560,10 +1628,11 @@ public class LikePredicateJUnitTest {
     String[] likePredicates3 = new String[] {"___ctive", "___c_iv_", "___ctiv%", "____tive",};
     for (int i = 0; i < likePredicates3.length; i++) {
       if (!useBindPrms) {
-        q = qs.newQuery("select p from /pos p where NOT (p like '" + likePredicates3[i] + "')");
+        q = qs.newQuery(
+            "select p from " + SEPARATOR + "pos p where NOT (p like '" + likePredicates3[i] + "')");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos p where NOT (p like $1)");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos p where NOT (p like $1)");
         results = (SelectResults) q.execute(new Object[] {likePredicates3[i]});
       }
       List r = results.asList();
@@ -1624,7 +1693,7 @@ public class LikePredicateJUnitTest {
 
     QueryService qs = cache.getQueryService();
     if (useIndex) {
-      qs.createIndex("p", IndexType.FUNCTIONAL, "p", "/pos.values p");
+      qs.createIndex("p", IndexType.FUNCTIONAL, "p", SEPARATOR + "pos.values p");
     }
     String[] likePredicates = new String[] {"ac\\\\tive", "ac\\\\%", "ac_tive", "Y\\%Y", "X__X",
         "X%X", "Z\\\\\\%Z", "inact\\\\%+ive", "1inact\\\\_+ive",};
@@ -1633,10 +1702,11 @@ public class LikePredicateJUnitTest {
       Query q;
       if (!useBindPrms) {
         q = qs
-            .newQuery("select p from /pos.values p where NOT (p like '" + likePredicates[i] + "')");
+            .newQuery("select p from " + SEPARATOR + "pos.values p where NOT (p like '"
+                + likePredicates[i] + "')");
         results = (SelectResults) q.execute();
       } else {
-        q = qs.newQuery("select p from /pos.values p where NOT (p like $1)");
+        q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where NOT (p like $1)");
         results = (SelectResults) q.execute(new Object[] {likePredicates[i]});
       }
       List r = results.asList();
@@ -1672,49 +1742,55 @@ public class LikePredicateJUnitTest {
 
     QueryService qs = cache.getQueryService();
 
-    Query q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%')");
+    Query q =
+        qs.newQuery(" SELECT  *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status like '%b%')");
     SelectResults results = (SelectResults) q.execute();
     int expectedResultSize = 2;
     if (results.size() != expectedResultSize * 4) {
       fail("Unexpected result. expected :" + expectedResultSize * 4 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%' or ps.pkid = '2')");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos ps WHERE NOT (ps.status like '%b%' or ps.pkid = '2')");
     results = (SelectResults) q.execute();
     if (results.size() != (expectedResultSize * 3)) {
       fail("Unexpected result. expected :" + (expectedResultSize * 3) + " found : "
           + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%' or ps.ID > 0 )");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status like '%b%' or ps.ID > 0 )");
     results = (SelectResults) q.execute();
     if (results.size() != 0) {
       fail("Unexpected result. expected :" + 0 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%') or ps.ID > 4 ");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status like '%b%') or ps.ID > 4 ");
     results = (SelectResults) q.execute();
     if (results.size() != 9) {
       fail("Unexpected result. expected :" + 9 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%' and ps.ID > 3 )");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status like '%b%' and ps.ID > 3 )");
     results = (SelectResults) q.execute();
     if (results.size() != 8) {
       fail("Unexpected result. expected :" + 5 + " found : " + results.size());
     }
 
     // Query to be compared with indexed results.
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%' and ps.pkid = '1' )");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos ps WHERE NOT (ps.status like '%b%' and ps.pkid = '1' )");
     SelectResults expectedResults = (SelectResults) q.execute();
     if (expectedResults.size() != 8) {
       fail("Unexpected result. expected :" + size + " found : " + expectedResults.size());
     }
 
     // Create Index
-    qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", "/pos ps");
-    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
-    qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", "/pos ps");
+    qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", SEPARATOR + "pos ps");
+    qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
+    qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", SEPARATOR + "pos ps");
 
     results = (SelectResults) q.execute();
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
@@ -1725,7 +1801,8 @@ public class LikePredicateJUnitTest {
     // compare results.
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%' and ps.ID > 3 )");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status like '%b%' and ps.ID > 3 )");
     results = (SelectResults) q.execute();
     if (results.size() != 8) {
       fail("Unexpected result. expected :" + 5 + " found : " + results.size());
@@ -1746,20 +1823,23 @@ public class LikePredicateJUnitTest {
       }
     });
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '_b_' or ps.pkid = '2')");
+    q = qs.newQuery(" SELECT  *  FROM " + SEPARATOR
+        + "pos ps WHERE NOT (ps.status like '_b_' or ps.pkid = '2')");
     results = (SelectResults) q.execute();
     if (results.size() != (expectedResultSize * 3)) {
       fail("Unexpected result. expected :" + (expectedResultSize * 3) + " found : "
           + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%' or ps.ID > 0 )");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status like '%b%' or ps.ID > 0 )");
     results = (SelectResults) q.execute();
     if (results.size() != 0) {
       fail("Unexpected result. expected :" + 0 + " found : " + results.size());
     }
 
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%') or ps.ID > 4");
+    q = qs.newQuery(
+        " SELECT  *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status like '%b%') or ps.ID > 4");
     results = (SelectResults) q.execute();
     if (results.size() != 9) {
       fail("Unexpected result. expected :" + 9 + " found : " + results.size());
@@ -1790,40 +1870,40 @@ public class LikePredicateJUnitTest {
     region.put("mns", "opq\n");
     QueryService qs = cache.getQueryService();
     if (useIndex) {
-      qs.createIndex("p", IndexType.FUNCTIONAL, "p", "/pos p");
+      qs.createIndex("p", IndexType.FUNCTIONAL, "p", SEPARATOR + "pos p");
     }
-    Query query = qs.newQuery("select * from /pos a where a like '%bc%'");
+    Query query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%bc%'");
     SelectResults sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 1);
-    query = qs.newQuery("select * from /pos a where a like '%bc\n%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%bc\n%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 1);
-    query = qs.newQuery("select * from /pos a where a like '%bcde%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%bcde%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 0); // no results as newline is required
                                 // whitespace
-    query = qs.newQuery("select * from /pos a where a like '%bc\nde%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%bc\nde%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 1);
-    query = qs.newQuery("select * from /pos a where a like '%de%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%de%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 1);
-    query = qs.newQuery("select * from /pos a where a like '%\nde%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%\nde%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 1);
-    query = qs.newQuery("select * from /pos a where a like '%bc%de%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%bc%de%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 1);
-    query = qs.newQuery("select * from /pos a where a like '%zyx%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%zyx%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 0);
-    query = qs.newQuery("select * from /pos a where a like '%\n%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%\n%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 3); // find newline anywhere in string
-    query = qs.newQuery("select * from /pos a where a like '\n%'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '\n%'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 1);
-    query = qs.newQuery("select * from /pos a where a like '%\n'");
+    query = qs.newQuery("select * from " + SEPARATOR + "pos a where a like '%\n'");
     sr = (SelectResults) query.execute();
     assertEquals(sr.size(), 1);
   }
@@ -1914,11 +1994,12 @@ public class LikePredicateJUnitTest {
 
     // Create Index
     Index i1 =
-        cache.getQueryService().createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+        cache.getQueryService().createIndex("status", IndexType.FUNCTIONAL, "ps.status",
+            SEPARATOR + "pos ps");
     Index i2 = cache.getQueryService().createIndex("description", IndexType.FUNCTIONAL,
-        "ps.description", "/pos ps");
+        "ps.description", SEPARATOR + "pos ps");
     Index i3 = cache.getQueryService().createIndex("description2", IndexType.FUNCTIONAL,
-        "ps2.description", "/pos2 ps2");
+        "ps2.description", SEPARATOR + "pos2 ps2");
 
     for (int i = 0; i < 10; i++) {
       Portfolio p = new Portfolio(i);
@@ -1926,27 +2007,32 @@ public class LikePredicateJUnitTest {
       region2.put("key-" + i, p);
     }
 
-    executeQueryMultipleTimes("SELECT distinct *  FROM /pos ps WHERE ps.status like 'in%ve'",
+    executeQueryMultipleTimes(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like 'in%ve'",
         false);
     assertEquals(2, i1.getStatistics().getTotalUses());
     assertEquals(0, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
     executeQueryMultipleTimes(
-        "SELECT distinct *  FROM /pos ps WHERE ps.status like 'in%ve' or ps.description like 'X%X'",
+        "SELECT distinct *  FROM " + SEPARATOR
+            + "pos ps WHERE ps.status like 'in%ve' or ps.description like 'X%X'",
         false);
     assertEquals(4, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
     executeQueryMultipleTimes(
-        "SELECT distinct *  FROM /pos ps WHERE ps.ID >= 0 and ps.status like 'in%ve'", false);
+        "SELECT distinct *  FROM " + SEPARATOR
+            + "pos ps WHERE ps.ID >= 0 and ps.status like 'in%ve'",
+        false);
     assertEquals(6, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
     executeQueryMultipleTimes(
-        "SELECT distinct *  FROM /pos ps1, /pos2 ps2 WHERE ps1.status like 'in%ve' or ps2.description like 'X%X'",
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps1, " + SEPARATOR
+            + "pos2 ps2 WHERE ps1.status like 'in%ve' or ps2.description like 'X%X'",
         false);
     assertEquals(8, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
@@ -1964,11 +2050,12 @@ public class LikePredicateJUnitTest {
 
     // Create Index
     Index i1 =
-        cache.getQueryService().createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
+        cache.getQueryService().createIndex("status", IndexType.FUNCTIONAL, "ps.status",
+            SEPARATOR + "pos ps");
     Index i2 = cache.getQueryService().createIndex("description", IndexType.FUNCTIONAL,
-        "ps.description", "/pos ps");
+        "ps.description", SEPARATOR + "pos ps");
     Index i3 = cache.getQueryService().createIndex("description2", IndexType.FUNCTIONAL,
-        "ps2.description", "/pos2 ps2");
+        "ps2.description", SEPARATOR + "pos2 ps2");
 
     for (int i = 0; i < 10; i++) {
       Portfolio p = new Portfolio(i);
@@ -1976,25 +2063,30 @@ public class LikePredicateJUnitTest {
       region2.put("key-" + i, p);
     }
 
-    executeQueryMultipleTimes("SELECT distinct *  FROM /pos ps WHERE ps.status like $1", true);
+    executeQueryMultipleTimes(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like $1", true);
     assertEquals(2, i1.getStatistics().getTotalUses());
     assertEquals(0, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
     executeQueryMultipleTimes(
-        "SELECT distinct *  FROM /pos ps WHERE ps.status like $1 or ps.description like $2", true);
+        "SELECT distinct *  FROM " + SEPARATOR
+            + "pos ps WHERE ps.status like $1 or ps.description like $2",
+        true);
     assertEquals(4, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
     executeQueryMultipleTimes(
-        "SELECT distinct *  FROM /pos ps WHERE ps.ID >= 0 and ps.status like $1", true);
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.ID >= 0 and ps.status like $1",
+        true);
     assertEquals(6, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
     executeQueryMultipleTimes(
-        "SELECT distinct *  FROM /pos ps1, /pos2 ps2 WHERE ps1.status like $1 or ps2.description like $2",
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps1, " + SEPARATOR
+            + "pos2 ps2 WHERE ps1.status like $1 or ps2.description like $2",
         true);
     assertEquals(8, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
@@ -2056,12 +2148,16 @@ public class LikePredicateJUnitTest {
     }
 
     Query[] q = new Query[4];
-    q[0] = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
-    q[1] = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status = " + predicate2);
+    q[0] = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status like " + predicate);
+    q[1] = qs.newQuery(
+        "SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.status = " + predicate2);
     q[2] =
-        qs.newQuery("SELECT distinct *  FROM /pos ps WHERE NOT (ps.status like " + predicate + ")");
+        qs.newQuery("SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status like "
+            + predicate + ")");
     q[3] =
-        qs.newQuery("SELECT distinct *  FROM /pos ps WHERE NOT (ps.status = " + predicate2 + ")");
+        qs.newQuery("SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE NOT (ps.status = "
+            + predicate2 + ")");
     SelectResults[][] results = new SelectResults[2][2];
     if (useBindParam) {
       results[0][0] = (SelectResults) q[0].execute(new Object[] {"%nactive"});
@@ -2077,7 +2173,7 @@ public class LikePredicateJUnitTest {
     assertTrue(results[0][0].size() > 0);
     assertTrue(CacheUtils.compareResultsOfWithAndWithoutIndex(results));
 
-    qs.createIndex("IDindex", "ps.ID", "/pos ps");
+    qs.createIndex("IDindex", "ps.ID", SEPARATOR + "pos ps");
 
     if (useBindParam) {
       results[0][0] = (SelectResults) q[0].execute(new Object[] {"%nactive"});
@@ -2115,19 +2211,23 @@ public class LikePredicateJUnitTest {
       region.put("key-" + i, p);
     }
 
-    String[] queries = {"select * from /pos where status.toUpperCase() like '%ACT%'",
-        "select * from /pos where status.toUpperCase() like 'ACT%'",
-        "select * from /pos where status.toUpperCase() like '%IVE'",
-        "select * from /pos where status.toUpperCase() like 'ACT_VE'",
-        "select * from /pos where status like '%CT%'",
-        "select * from /pos where status like 'ACT%'",
-        "select * from /pos where status like 'ACT_VE'",
-        "select * from /pos where position1.secId like '%B%'",
-        "select * from /pos where position1.secId like 'IB%'",
-        "select * from /pos where position1.secId like 'I_M'",
-        "select * from /pos p, p.positions.values pos where pos.secId like '%B%'",
-        "select * from /pos p, p.positions.values pos where pos.secId like 'IB%'",
-        "select * from /pos p, p.positions.values pos where pos.secId like 'I_M'",};
+    String[] queries =
+        {"select * from " + SEPARATOR + "pos where status.toUpperCase() like '%ACT%'",
+            "select * from " + SEPARATOR + "pos where status.toUpperCase() like 'ACT%'",
+            "select * from " + SEPARATOR + "pos where status.toUpperCase() like '%IVE'",
+            "select * from " + SEPARATOR + "pos where status.toUpperCase() like 'ACT_VE'",
+            "select * from " + SEPARATOR + "pos where status like '%CT%'",
+            "select * from " + SEPARATOR + "pos where status like 'ACT%'",
+            "select * from " + SEPARATOR + "pos where status like 'ACT_VE'",
+            "select * from " + SEPARATOR + "pos where position1.secId like '%B%'",
+            "select * from " + SEPARATOR + "pos where position1.secId like 'IB%'",
+            "select * from " + SEPARATOR + "pos where position1.secId like 'I_M'",
+            "select * from " + SEPARATOR
+                + "pos p, p.positions.values pos where pos.secId like '%B%'",
+            "select * from " + SEPARATOR
+                + "pos p, p.positions.values pos where pos.secId like 'IB%'",
+            "select * from " + SEPARATOR
+                + "pos p, p.positions.values pos where pos.secId like 'I_M'",};
     SelectResults[][] res = new SelectResults[queries.length][2];
 
     QueryService qs = CacheUtils.getCache().getQueryService();

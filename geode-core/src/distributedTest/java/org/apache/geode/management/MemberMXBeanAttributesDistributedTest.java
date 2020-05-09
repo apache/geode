@@ -27,6 +27,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.apache.geode.internal.process.ProcessUtils.identifyPidAsUnchecked;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.management.ManagementFactory;
@@ -74,13 +75,13 @@ public class MemberMXBeanAttributesDistributedTest extends CacheTestCase {
     regionFactory.create("testRegion2");
     regionFactory.create("testRegion3");
 
-    Region<Number, Number> region1 = getCache().getRegion("/testRegion1");
+    Region<Number, Number> region1 = getCache().getRegion(SEPARATOR + "testRegion1");
     regionFactory.createSubregion(region1, "testSubRegion1");
 
-    Region<Number, Number> region2 = getCache().getRegion("/testRegion2");
+    Region<Number, Number> region2 = getCache().getRegion(SEPARATOR + "testRegion2");
     regionFactory.createSubregion(region2, "testSubRegion2");
 
-    Region<Number, Number> region3 = getCache().getRegion("/testRegion3");
+    Region<Number, Number> region3 = getCache().getRegion(SEPARATOR + "testRegion3");
     regionFactory.createSubregion(region3, "testSubRegion3");
 
     for (int i = 1; i < 1 + 200; i++) {
@@ -108,9 +109,9 @@ public class MemberMXBeanAttributesDistributedTest extends CacheTestCase {
     regionFactory.create("testPRRegion2");
     regionFactory.create("testPRRegion3");
 
-    Region<Number, Number> region1 = getCache().getRegion("/testPRRegion1");
-    Region<Number, Number> region2 = getCache().getRegion("/testPRRegion2");
-    Region<Number, Number> region3 = getCache().getRegion("/testPRRegion3");
+    Region<Number, Number> region1 = getCache().getRegion(SEPARATOR + "testPRRegion1");
+    Region<Number, Number> region2 = getCache().getRegion(SEPARATOR + "testPRRegion2");
+    Region<Number, Number> region3 = getCache().getRegion(SEPARATOR + "testPRRegion3");
 
     for (int i = 1; i < 1 + 200; i++) {
       region1.put(i, i);

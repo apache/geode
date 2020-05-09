@@ -25,6 +25,7 @@ import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL_PERSISTEN
 import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -432,7 +433,7 @@ public class ClientRegionFactoryJUnitTest {
     QueryService qs = c.getLocalQueryService();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL);
     r1 = factory.create("localRegion");
-    Query q = qs.newQuery("SELECT * from /localRegion");
+    Query q = qs.newQuery("SELECT * from " + SEPARATOR + "localRegion");
     assertThatCode(q::execute).doesNotThrowAnyException();
   }
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.atLeastOnce;
@@ -231,10 +232,10 @@ public class DescribeDiskStoreFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   private Set<DiskStoreDetails.RegionDetails> setupRegionsForTestExecute(
       final InternalCache mockCache, final String diskStoreName) {
-    final Region<Object, Object> mockUserRegion = mock(Region.class, "/UserRegion");
-    final Region<Object, Object> mockGuestRegion = mock(Region.class, "/GuestRegion");
+    final Region<Object, Object> mockUserRegion = mock(Region.class, SEPARATOR + "UserRegion");
+    final Region<Object, Object> mockGuestRegion = mock(Region.class, SEPARATOR + "GuestRegion");
     final Region<Object, Object> mockSessionRegion =
-        mock(Region.class, "/UserRegion/SessionRegion");
+        mock(Region.class, SEPARATOR + "UserRegion" + SEPARATOR + "SessionRegion");
     final RegionAttributes<Object, Object> mockUserRegionAttributes =
         mock(RegionAttributes.class, "UserRegionAttributes");
     final RegionAttributes<Object, Object> mockSessionRegionAttributes =
@@ -251,7 +252,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockCache.rootRegions())
         .thenReturn(CollectionUtils.asSet(mockUserRegion, mockGuestRegion));
     when(mockUserRegion.getAttributes()).thenReturn(mockUserRegionAttributes);
-    when(mockUserRegion.getFullPath()).thenReturn("/UserRegion");
+    when(mockUserRegion.getFullPath()).thenReturn(SEPARATOR + "UserRegion");
     when(mockUserRegion.getName()).thenReturn("UserRegion");
     when(mockUserRegion.subregions(false)).thenReturn(CollectionUtils.asSet(mockSessionRegion));
     when(mockUserRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
@@ -259,7 +260,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockUserRegionAttributes.getEvictionAttributes()).thenReturn(mockUserEvictionAttributes);
     when(mockUserEvictionAttributes.getAction()).thenReturn(EvictionAction.LOCAL_DESTROY);
     when(mockSessionRegion.getAttributes()).thenReturn(mockSessionRegionAttributes);
-    when(mockSessionRegion.getFullPath()).thenReturn("/UserRegion/SessionRegion");
+    when(mockSessionRegion.getFullPath())
+        .thenReturn(SEPARATOR + "UserRegion" + SEPARATOR + "SessionRegion");
     when(mockSessionRegion.getName()).thenReturn("SessionRegion");
     when(mockSessionRegion.subregions(false)).thenReturn(Collections.emptySet());
     when(mockSessionRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
@@ -275,8 +277,10 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockGuestRegionAttributes.getEvictionAttributes()).thenReturn(mockGuestEvictionAttributes);
     when(mockGuestEvictionAttributes.getAction()).thenReturn(EvictionAction.OVERFLOW_TO_DISK);
 
-    return CollectionUtils.asSet(createRegionDetails("/UserRegion", "UserRegion", true, false),
-        createRegionDetails("/UserRegion/SessionRegion", "SessionRegion", false, true));
+    return CollectionUtils.asSet(
+        createRegionDetails(SEPARATOR + "UserRegion", "UserRegion", true, false),
+        createRegionDetails(SEPARATOR + "UserRegion" + SEPARATOR + "SessionRegion", "SessionRegion",
+            false, true));
   }
 
   private Set<DiskStoreDetails.GatewayDetails> setupGatewaysForTestExecute(
@@ -783,14 +787,15 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final String diskStoreName = "companyDiskStore";
 
     @SuppressWarnings("unchecked")
-    final Region<Object, Object> mockCompanyRegion = mock(Region.class, "/CompanyRegion");
+    final Region<Object, Object> mockCompanyRegion =
+        mock(Region.class, SEPARATOR + "CompanyRegion");
     @SuppressWarnings("unchecked")
     final RegionAttributes<Object, Object> mockCompanyRegionAttributes =
         mock(RegionAttributes.class, "CompanyRegionAttributes");
     final EvictionAttributes mockCompanyEvictionAttributes =
         mock(EvictionAttributes.class, "CompanyEvictionAttributes");
     when(mockCompanyRegion.getAttributes()).thenReturn(mockCompanyRegionAttributes);
-    when(mockCompanyRegion.getFullPath()).thenReturn("/CompanyRegion");
+    when(mockCompanyRegion.getFullPath()).thenReturn(SEPARATOR + "CompanyRegion");
     when(mockCompanyRegion.getName()).thenReturn("CompanyRegion");
     when(mockCompanyRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(mockCompanyRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
@@ -800,14 +805,15 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     @SuppressWarnings("unchecked")
     final Region<Object, Object> mockEmployeeRegion =
-        mock(Region.class, "/CompanyRegion/EmployeeRegion");
+        mock(Region.class, SEPARATOR + "CompanyRegion" + SEPARATOR + "EmployeeRegion");
     when(mockEmployeeRegion.getAttributes()).thenReturn(mockCompanyRegionAttributes);
-    when(mockEmployeeRegion.getFullPath()).thenReturn("/CompanyRegion/EmployeeRegion");
+    when(mockEmployeeRegion.getFullPath())
+        .thenReturn(SEPARATOR + "CompanyRegion" + SEPARATOR + "EmployeeRegion");
     when(mockEmployeeRegion.getName()).thenReturn("EmployeeRegion");
 
     @SuppressWarnings("unchecked")
     final Region<Object, Object> mockProductsRegion =
-        mock(Region.class, "/CompanyRegion/ProductsRegion");
+        mock(Region.class, SEPARATOR + "CompanyRegion" + SEPARATOR + "ProductsRegion");
     @SuppressWarnings("unchecked")
     final RegionAttributes<Object, Object> mockProductsServicesRegionAttributes =
         mock(RegionAttributes.class, "ProductsServicesRegionAttributes");
@@ -820,20 +826,21 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     @SuppressWarnings("unchecked")
     final Region<Object, Object> mockServicesRegion =
-        mock(Region.class, "/CompanyRegion/ServicesRegion");
+        mock(Region.class, SEPARATOR + "CompanyRegion" + SEPARATOR + "ServicesRegion");
     when(mockServicesRegion.getAttributes()).thenReturn(mockProductsServicesRegionAttributes);
     when(mockServicesRegion.subregions(false)).thenReturn(Collections.emptySet());
 
     @SuppressWarnings("unchecked")
     final Region<Object, Object> mockContractorsRegion =
-        mock(Region.class, "/CompanyRegion/ContractorsRegion");
+        mock(Region.class, SEPARATOR + "CompanyRegion" + SEPARATOR + "ContractorsRegion");
     @SuppressWarnings("unchecked")
     final RegionAttributes<Object, Object> mockContractorsRegionAttributes =
         mock(RegionAttributes.class, "ContractorsRegionAttributes");
     final EvictionAttributes mockContractorsEvictionAttributes =
         mock(EvictionAttributes.class, "ContractorsEvictionAttributes");
     when(mockContractorsRegion.getAttributes()).thenReturn(mockContractorsRegionAttributes);
-    when(mockContractorsRegion.getFullPath()).thenReturn("/CompanyRegion/ContractorsRegion");
+    when(mockContractorsRegion.getFullPath())
+        .thenReturn(SEPARATOR + "CompanyRegion" + SEPARATOR + "ContractorsRegion");
     when(mockContractorsRegion.getName()).thenReturn("ContractorsRegion");
     when(mockContractorsRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(mockContractorsRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
@@ -843,14 +850,17 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     @SuppressWarnings("unchecked")
     final Region<Object, Object> mockRolesRegion =
-        mock(Region.class, "/CompanyRegion/EmployeeRegion/RolesRegion");
+        mock(Region.class,
+            SEPARATOR + "CompanyRegion" + SEPARATOR + "EmployeeRegion" + SEPARATOR + "RolesRegion");
     when(mockRolesRegion.getAttributes()).thenReturn(mockCompanyRegionAttributes);
-    when(mockRolesRegion.getFullPath()).thenReturn("/CompanyRegion/EmployeeRegion/RolesRegion");
+    when(mockRolesRegion.getFullPath()).thenReturn(
+        SEPARATOR + "CompanyRegion" + SEPARATOR + "EmployeeRegion" + SEPARATOR + "RolesRegion");
     when(mockRolesRegion.getName()).thenReturn("RolesRegion");
     when(mockRolesRegion.subregions(false)).thenReturn(Collections.emptySet());
 
     @SuppressWarnings("unchecked")
-    final Region<Object, Object> mockPartnersRegion = mock(Region.class, "/PartnersRegion");
+    final Region<Object, Object> mockPartnersRegion =
+        mock(Region.class, SEPARATOR + "PartnersRegion");
     @SuppressWarnings("unchecked")
     final RegionAttributes<Object, Object> mockPartnersRegionAttributes =
         mock(RegionAttributes.class, "PartnersRegionAttributes");
@@ -860,7 +870,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockPartnersRegionAttributes.getDiskStoreName()).thenReturn("");
 
     @SuppressWarnings("unchecked")
-    final Region<Object, Object> mockCustomersRegion = mock(Region.class, "/CustomersRegion");
+    final Region<Object, Object> mockCustomersRegion =
+        mock(Region.class, SEPARATOR + "CustomersRegion");
     @SuppressWarnings("unchecked")
     final RegionAttributes<Object, Object> mockCustomersRegionAttributes =
         mock(RegionAttributes.class, "CustomersRegionAttributes");
@@ -889,11 +900,15 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     // Execute Region and assert results
     final Set<DiskStoreDetails.RegionDetails> expectedRegionDetails = CollectionUtils.asSet(
-        createRegionDetails("/CompanyRegion", "CompanyRegion", true, false),
-        createRegionDetails("/CompanyRegion/EmployeeRegion", "EmployeeRegion", true, false),
-        createRegionDetails("/CompanyRegion/EmployeeRegion/RolesRegion", "RolesRegion", true,
+        createRegionDetails(SEPARATOR + "CompanyRegion", "CompanyRegion", true, false),
+        createRegionDetails(SEPARATOR + "CompanyRegion" + SEPARATOR + "EmployeeRegion",
+            "EmployeeRegion", true, false),
+        createRegionDetails(
+            SEPARATOR + "CompanyRegion" + SEPARATOR + "EmployeeRegion" + SEPARATOR + "RolesRegion",
+            "RolesRegion", true,
             false),
-        createRegionDetails("/CompanyRegion/ContractorsRegion", "ContractorsRegion", false, true));
+        createRegionDetails(SEPARATOR + "CompanyRegion" + SEPARATOR + "ContractorsRegion",
+            "ContractorsRegion", false, true));
     final DiskStoreDetails diskStoreDetails = new DiskStoreDetails(diskStoreName, "memberOne");
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
     function.setRegionDetails(mockCache, mockDiskStore, diskStoreDetails);

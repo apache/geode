@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -138,7 +139,8 @@ public class QueryMonitorIntegrationTest {
   public void monitorMultipleQueryExecutionsThenStopMonitoringNoRemainingCancellationTasksRunning() {
     cache = (InternalCache) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
     final DefaultQuery query =
-        (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
+        (DefaultQuery) cache.getQueryService()
+            .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "exampleRegion");
     executionContext = new QueryExecutionContext(null, cache, query);
     final ExecutionContext executionContext2 = new QueryExecutionContext(null, cache, query);
 

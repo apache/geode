@@ -18,6 +18,7 @@ import static java.net.InetAddress.getLocalHost;
 import static java.util.Arrays.asList;
 import static java.util.Collections.addAll;
 import static java.util.UUID.randomUUID;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
@@ -152,7 +153,7 @@ public class ShowMissingDiskStoresFunctionTest {
     when(cache.getMyId()).thenReturn(member);
     when(cache.getPartitionedRegions()).thenReturn(asSet(region1, region2));
     when(cache.getPersistentMemberManager()).thenReturn(persistentMemberManager);
-    when(region1.getFullPath()).thenReturn("/pr1");
+    when(region1.getFullPath()).thenReturn(SEPARATOR + "pr1");
     when(region1.getMissingColocatedChildren()).thenReturn(asList("child1", "child2"));
 
     showMissingDiskStoresFunction.execute(functionContext);
@@ -166,8 +167,8 @@ public class ShowMissingDiskStoresFunctionTest {
         .as("results element [0]: missingColocatedRegions")
         .hasSize(2)
         .containsExactlyInAnyOrder(
-            new ColocatedRegionDetails("host1", "name1", "/pr1", "child1"),
-            new ColocatedRegionDetails("host1", "name1", "/pr1", "child2"));
+            new ColocatedRegionDetails("host1", "name1", SEPARATOR + "pr1", "child1"),
+            new ColocatedRegionDetails("host1", "name1", SEPARATOR + "pr1", "child2"));
   }
 
   @Test
@@ -183,7 +184,7 @@ public class ShowMissingDiskStoresFunctionTest {
     when(cache.getPartitionedRegions()).thenReturn(asSet(region1, region2));
     when(cache.getPersistentMemberManager()).thenReturn(persistentMemberManager);
     when(persistentMemberManager.getWaitingRegions()).thenReturn(waitingRegions);
-    when(region2.getFullPath()).thenReturn("/pr2");
+    when(region2.getFullPath()).thenReturn(SEPARATOR + "pr2");
     when(region2.getMissingColocatedChildren()).thenReturn(asList("child1", "child2"));
 
     showMissingDiskStoresFunction.execute(functionContext);
@@ -205,8 +206,8 @@ public class ShowMissingDiskStoresFunctionTest {
         .as("results element [1]: missingColocatedRegions")
         .hasSize(2)
         .containsExactlyInAnyOrder(
-            new ColocatedRegionDetails("host2", "name2", "/pr2", "child1"),
-            new ColocatedRegionDetails("host2", "name2", "/pr2", "child2"));
+            new ColocatedRegionDetails("host2", "name2", SEPARATOR + "pr2", "child1"),
+            new ColocatedRegionDetails("host2", "name2", SEPARATOR + "pr2", "child2"));
   }
 
   @Test

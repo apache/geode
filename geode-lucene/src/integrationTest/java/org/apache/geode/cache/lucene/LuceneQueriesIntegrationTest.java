@@ -18,6 +18,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIE
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.IntRangeQueryProvider;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQueryKeyAndValues;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQueryKeys;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -349,7 +350,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
           "Should have got the exception because the queue does not exist for the non created index ");
     } catch (Exception ex) {
       assertEquals(ex.getMessage(),
-          "java.lang.IllegalStateException: The AEQ does not exist for the index index2 region /index");
+          "java.lang.IllegalStateException: The AEQ does not exist for the index index2 region "
+              + SEPARATOR + "index");
       assertFalse(result);
     }
   }

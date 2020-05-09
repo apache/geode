@@ -26,6 +26,7 @@ import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.c
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.pause;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
@@ -843,9 +844,9 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testCloseCacheProxy() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start a server
     server1Port = this.server1VM
@@ -900,10 +901,13 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     checkNumDurableCqs(server1VM, durableClientId, 0);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
 
     // Before sending client ready, lets make sure the stats already reflect 0 queued events

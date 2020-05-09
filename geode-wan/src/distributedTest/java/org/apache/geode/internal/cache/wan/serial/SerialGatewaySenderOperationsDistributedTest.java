@@ -34,6 +34,7 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.Matchers.greaterThan;
@@ -948,7 +949,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   private void doPuts(String regionName, int count) {
     try (IgnoredException ie1 = addIgnoredException(GatewaySenderException.class);
         IgnoredException ie2 = addIgnoredException(InterruptedException.class)) {
-      Region<Number, String> region = getCache().getRegion(Region.SEPARATOR + regionName);
+      Region<Number, String> region = getCache().getRegion(SEPARATOR + regionName);
       for (int i = 0; i < count; i++) {
         region.put(i, "Value_" + i);
       }
@@ -956,7 +957,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   }
 
   private void doPuts(String regionName, int from, int count) {
-    Region<Number, String> region = getCache().getRegion(Region.SEPARATOR + regionName);
+    Region<Number, String> region = getCache().getRegion(SEPARATOR + regionName);
     for (int i = from; i < count; i++) {
       region.put(i, "Value_" + i);
     }
@@ -1162,7 +1163,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   private void validateRegionSize(String regionName, int regionSize) {
     try (IgnoredException ie1 = addIgnoredException(CacheClosedException.class);
         IgnoredException ie2 = addIgnoredException(ForceReattemptException.class)) {
-      Region region = getCache().getRegion(Region.SEPARATOR + regionName);
+      Region region = getCache().getRegion(SEPARATOR + regionName);
 
       await()
           .untilAsserted(() -> {

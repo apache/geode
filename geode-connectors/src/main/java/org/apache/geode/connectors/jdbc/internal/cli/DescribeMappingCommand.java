@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.ID_NAME;
@@ -24,6 +23,7 @@ import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SCH
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SPECIFIED_ID_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.TABLE_NAME;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

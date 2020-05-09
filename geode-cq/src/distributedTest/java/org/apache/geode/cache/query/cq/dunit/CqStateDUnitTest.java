@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
@@ -67,7 +68,7 @@ public class CqStateDUnitTest extends HelperTestCase {
 
     final String host0 = NetworkUtils.getServerHostName(serverA.getHost());
     startClient(client, new VM[] {serverA, serverB}, ports, 1, getClientProperties());
-    createCQ(client, cqName, "select * from /" + regionName, null);
+    createCQ(client, cqName, "select * from " + SEPARATOR + regionName, null);
 
     // create the cacheserver but regions must be present first or else cq execute will fail with no
     // region found

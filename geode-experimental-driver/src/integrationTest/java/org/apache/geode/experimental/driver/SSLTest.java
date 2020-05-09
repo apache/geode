@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -144,7 +145,7 @@ public class SSLTest {
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(DEFAULT_KEY_STORE).setKeyStorePath(DEFAULT_KEY_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
-    assertEquals(Collections.singleton("/region"), regionsOnServer);
+    assertEquals(Collections.singleton(SEPARATOR + "region"), regionsOnServer);
     assertTrue(driver.isConnected());
   }
 
@@ -176,7 +177,7 @@ public class SSLTest {
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(DEFAULT_KEY_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
-    assertEquals(Collections.singleton("/region"), regionsOnServer);
+    assertEquals(Collections.singleton(SEPARATOR + "region"), regionsOnServer);
     assertTrue(driver.isConnected());
   }
 

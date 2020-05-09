@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -118,7 +119,8 @@ public class IndexHintJUnitTest {
   private void verifyQueryIndexHint() throws Exception {
     QueryService qs = CacheUtils.getQueryService();
     DefaultQuery query = (DefaultQuery) qs
-        .newQuery("<hint 'FirstIndex'> select * from /Portfolios p where p.ID > 10");
+        .newQuery(
+            "<hint 'FirstIndex'> select * from " + SEPARATOR + "Portfolios p where p.ID > 10");
     QueryExecutionContext qec =
         new QueryExecutionContext(new Object[1], CacheUtils.getCache(), query);
     query.executeUsingContext(qec);
@@ -133,7 +135,8 @@ public class IndexHintJUnitTest {
     createRegion();
     QueryService qs = CacheUtils.getQueryService();
     DefaultQuery query = (DefaultQuery) qs
-        .newQuery("<hint 'FirstIndex', 'SecondIndex'> select * from /Portfolios p where p.ID > 10");
+        .newQuery("<hint 'FirstIndex', 'SecondIndex'> select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10");
     QueryExecutionContext qec =
         new QueryExecutionContext(new Object[1], CacheUtils.getCache(), query);
     query.executeUsingContext(qec);
@@ -148,7 +151,8 @@ public class IndexHintJUnitTest {
     createRegion();
     QueryService qs = CacheUtils.getQueryService();
     DefaultQuery query = (DefaultQuery) qs.newQuery(
-        "<hint 'FirstIndex','SecondIndex','ThirdIndex','FourthIndex'>select * from /Portfolios p where p.ID > 10");
+        "<hint 'FirstIndex','SecondIndex','ThirdIndex','FourthIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10");
     QueryExecutionContext qec =
         new QueryExecutionContext(new Object[1], CacheUtils.getCache(), query);
     query.executeUsingContext(qec);
@@ -171,13 +175,14 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
     // execute query
     QueryService qs = CacheUtils.getQueryService();
-    Query query = qs.newQuery("<hint 'IDIndex'>select * from /Portfolios p where p.ID > 10");
+    Query query =
+        qs.newQuery("<hint 'IDIndex'>select * from " + SEPARATOR + "Portfolios p where p.ID > 10");
     query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
@@ -191,14 +196,15 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.secId", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.secId", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
     // execute query
     QueryService qs = CacheUtils.getQueryService();
-    Query query = qs.newQuery("<hint 'SecIndex'>select * from /Portfolios p where p.ID > 10");
+    Query query =
+        qs.newQuery("<hint 'SecIndex'>select * from " + SEPARATOR + "Portfolios p where p.ID > 10");
     query.execute();
     // verify index usage
     assertFalse(observer.wasIndexUsed("SecIndex"));
@@ -213,8 +219,8 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.status", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.status", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -222,14 +228,16 @@ public class IndexHintJUnitTest {
     SelectResults[][] results = new SelectResults[1][2];
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(
-        "<hint 'IDIndex'>select * from /Portfolios p where p.ID > 10 and p.status = 'inactive'");
+        "<hint 'IDIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.status = 'inactive'");
     results[0][0] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
     observer.reset();
 
     query = qs.newQuery(
-        "<hint 'SecIndex'>select * from /Portfolios p where p.ID > 10 and p.status = 'inactive'");
+        "<hint 'SecIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.status = 'inactive'");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("SecIndex"));
@@ -249,8 +257,8 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.status", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.status", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -258,14 +266,16 @@ public class IndexHintJUnitTest {
     SelectResults[][] results = new SelectResults[1][2];
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(
-        "<hint 'IDIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive'");
+        "<hint 'IDIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive'");
     results[0][0] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
     observer.reset();
 
     query = qs.newQuery(
-        "<hint 'SecIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive'");
+        "<hint 'SecIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive'");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("SecIndex"));
@@ -285,8 +295,8 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.status", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.status", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -294,7 +304,8 @@ public class IndexHintJUnitTest {
     SelectResults[][] results = new SelectResults[1][2];
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(
-        "<hint 'IDIndex', 'SecIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive'");
+        "<hint 'IDIndex', 'SecIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive'");
     results[0][0] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
@@ -302,7 +313,8 @@ public class IndexHintJUnitTest {
     observer.reset();
 
     query = qs.newQuery(
-        "<hint 'IDIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive'");
+        "<hint 'IDIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive'");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
@@ -321,9 +333,9 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.status", "/Portfolios p");
-    createIndex("DescriptionIndex", "p.description", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.status", SEPARATOR + "Portfolios p");
+    createIndex("DescriptionIndex", "p.description", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -331,14 +343,16 @@ public class IndexHintJUnitTest {
     SelectResults[][] results = new SelectResults[1][2];
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(
-        "<hint 'IDIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN SET ('XXXX', 'XXXY')");
+        "<hint 'IDIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN SET ('XXXX', 'XXXY')");
     results[0][0] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
     observer.reset();
 
     query = qs.newQuery(
-        "<hint 'SecIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN SET ('XXXX', 'XXXY')");
+        "<hint 'SecIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN SET ('XXXX', 'XXXY')");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("SecIndex"));
@@ -354,7 +368,8 @@ public class IndexHintJUnitTest {
         new String[] {"<query with hints>"});
 
     query = qs.newQuery(
-        "<hint 'DescriptionIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN SET ('XXXX', 'XXXY')");
+        "<hint 'DescriptionIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN SET ('XXXX', 'XXXY')");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("DescriptionIndex"));
@@ -369,9 +384,9 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.status", "/Portfolios p");
-    createIndex("DescriptionIndex", "p.description", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.status", SEPARATOR + "Portfolios p");
+    createIndex("DescriptionIndex", "p.description", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -379,14 +394,18 @@ public class IndexHintJUnitTest {
     SelectResults[][] results = new SelectResults[1][2];
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(
-        "<hint 'IDIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from /Portfolios p where p.ID > 10)");
+        "<hint 'IDIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from "
+            + SEPARATOR + "Portfolios p where p.ID > 10)");
     results[0][0] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
     observer.reset();
 
     query = qs.newQuery(
-        "<hint 'SecIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from /Portfolios p where p.ID > 10)");
+        "<hint 'SecIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from "
+            + SEPARATOR + "Portfolios p where p.ID > 10)");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("SecIndex"));
@@ -402,7 +421,9 @@ public class IndexHintJUnitTest {
         new String[] {"<query with hints>"});
 
     query = qs.newQuery(
-        "<hint 'DescriptionIndex'>select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from /Portfolios p where p.ID > 10) ");
+        "<hint 'DescriptionIndex'>select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from "
+            + SEPARATOR + "Portfolios p where p.ID > 10) ");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("DescriptionIndex"));
@@ -417,9 +438,9 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.status", "/Portfolios p");
-    createIndex("DescriptionIndex", "p.description", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.status", SEPARATOR + "Portfolios p");
+    createIndex("DescriptionIndex", "p.description", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -427,7 +448,9 @@ public class IndexHintJUnitTest {
     SelectResults[][] results = new SelectResults[1][2];
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(
-        "select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (<hint 'IDIndex', 'SecIndex', 'DescriptionIndex'>select p.description from /Portfolios p where p.ID > 10)");
+        "select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (<hint 'IDIndex', 'SecIndex', 'DescriptionIndex'>select p.description from "
+            + SEPARATOR + "Portfolios p where p.ID > 10)");
     results[0][0] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
@@ -435,7 +458,9 @@ public class IndexHintJUnitTest {
     observer.reset();
 
     query = qs.newQuery(
-        "select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from /Portfolios p where p.ID > 10)");
+        "select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from "
+            + SEPARATOR + "Portfolios p where p.ID > 10)");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("SecIndex"));
@@ -453,7 +478,9 @@ public class IndexHintJUnitTest {
         new String[] {"<query with hints>"});
 
     query = qs.newQuery(
-        "select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (<hint 'DescriptionIndex'>select p.description from /Portfolios p where p.ID > 10)");
+        "select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (<hint 'DescriptionIndex'>select p.description from "
+            + SEPARATOR + "Portfolios p where p.ID > 10)");
     results[0][1] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("DescriptionIndex"));
@@ -473,9 +500,9 @@ public class IndexHintJUnitTest {
     createRegion();
     populateData(1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.status", "/Portfolios p");
-    createIndex("DescriptionIndex", "p.description", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.status", SEPARATOR + "Portfolios p");
+    createIndex("DescriptionIndex", "p.description", SEPARATOR + "Portfolios p");
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -483,7 +510,9 @@ public class IndexHintJUnitTest {
     SelectResults[][] results = new SelectResults[1][2];
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(
-        "select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (<hint 'IDIndex', 'SecIndex', 'DescriptionIndex'>select p.description from /Portfolios p where p.ID > 10)");
+        "select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (<hint 'IDIndex', 'SecIndex', 'DescriptionIndex'>select p.description from "
+            + SEPARATOR + "Portfolios p where p.ID > 10)");
     results[0][0] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("IDIndex"));
@@ -494,7 +523,9 @@ public class IndexHintJUnitTest {
 
     // query again with no hints for a "bare" comparison
     query = qs.newQuery(
-        "select * from /Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from /Portfolios p where p.ID > 10)");
+        "select * from " + SEPARATOR
+            + "Portfolios p where p.ID > 10 and p.ID < 200 and p.status = 'inactive' and p.description IN (select p.description from "
+            + SEPARATOR + "Portfolios p where p.ID > 10)");
     results[0][1] = (SelectResults) query.execute();
     observer.reset();
 
@@ -515,11 +546,11 @@ public class IndexHintJUnitTest {
     populateData(1000);
     populateData(portfolios2, 1000);
     // create index
-    createIndex("IDIndex", "p.ID", "/Portfolios p");
-    createIndex("SecIndex", "p.status", "/Portfolios p");
-    createIndex("DescriptionIndex", "p.description", "/Portfolios p");
+    createIndex("IDIndex", "p.ID", SEPARATOR + "Portfolios p");
+    createIndex("SecIndex", "p.status", SEPARATOR + "Portfolios p");
+    createIndex("DescriptionIndex", "p.description", SEPARATOR + "Portfolios p");
 
-    createIndex("IDIndexOnPortfolios2", "p.ID", "/Portfolios_2 p");
+    createIndex("IDIndexOnPortfolios2", "p.ID", SEPARATOR + "Portfolios_2 p");
 
     // set observer
     QueryObserverImpl observer = new QueryObserverImpl();
@@ -528,7 +559,8 @@ public class IndexHintJUnitTest {
     SelectResults[][] results = new SelectResults[1][2];
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(
-        "<hint 'SecIndex'>select * from /Portfolios p, /Portfolios_2 p2 where p.ID = p2.ID and p.status = 'inactive'");
+        "<hint 'SecIndex'>select * from " + SEPARATOR + "Portfolios p, " + SEPARATOR
+            + "Portfolios_2 p2 where p.ID = p2.ID and p.status = 'inactive'");
     results[0][0] = (SelectResults) query.execute();
     // verify index usage
     assertTrue(observer.wasIndexUsed("SecIndex"));
@@ -536,7 +568,8 @@ public class IndexHintJUnitTest {
 
     // query again with no hints for a "bare" comparison
     query = qs.newQuery(
-        "select * from /Portfolios p, /Portfolios_2 p2 where p.ID = p2.ID and p.status = 'inactive'");
+        "select * from " + SEPARATOR + "Portfolios p, " + SEPARATOR
+            + "Portfolios_2 p2 where p.ID = p2.ID and p.status = 'inactive'");
     results[0][1] = (SelectResults) query.execute();
     observer.reset();
 

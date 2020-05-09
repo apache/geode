@@ -14,11 +14,11 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -498,8 +498,8 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
     exps.add("nvl(k.status.toString(),'nopes')");
 
     ArrayList<String> fromClause = new ArrayList<>();
-    fromClause.add("/PartionedPortfolios.keys k");
-    fromClause.add("/PartionedPortfolios.values k");
+    fromClause.add(SEPARATOR + "PartionedPortfolios.keys k");
+    fromClause.add(SEPARATOR + "PartionedPortfolios.values k");
 
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForDefineIndex(name, names, exps, fromClause));
 

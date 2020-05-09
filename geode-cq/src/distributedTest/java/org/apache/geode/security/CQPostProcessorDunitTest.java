@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -80,7 +81,7 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testPostProcess() {
-    String query = "select * from /AuthRegion";
+    String query = "select * from " + SEPARATOR + "AuthRegion";
     client1.invoke(() -> {
       ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
@@ -122,7 +123,7 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testMultiUserPostProcess() {
-    String query = "select * from /" + REGION_NAME;
+    String query = "select * from " + SEPARATOR + REGION_NAME;
     client1.invoke(() -> {
       Properties props = new Properties();
       props.setProperty(LOCATORS, "");

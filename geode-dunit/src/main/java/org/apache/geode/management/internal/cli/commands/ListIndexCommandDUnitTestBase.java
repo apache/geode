@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,7 +37,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ListIndexCommandDUnitTestBase {
 
   private static final String REGION_1 = "REGION1";
-  private static final String INDEX_REGION_NAME = "/REGION1";
+  private static final String INDEX_REGION_NAME = SEPARATOR + "REGION1";
   private static final String INDEX_1 = "INDEX1";
 
   private MemberVM locator, server;

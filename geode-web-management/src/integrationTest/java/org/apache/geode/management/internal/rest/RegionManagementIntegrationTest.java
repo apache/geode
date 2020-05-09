@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -161,7 +162,7 @@ public class RegionManagementIntegrationTest {
   @Test
   public void postToIndexRegionEndPoint() throws Exception {
     index.setName("index");
-    index.setRegionPath("/customers");
+    index.setRegionPath(SEPARATOR + "customers");
     index.setExpression("id");
     context.perform(post("/v1/regions/products/indexes").content(mapper.writeValueAsString(index)))
         .andExpect(status().isBadRequest())

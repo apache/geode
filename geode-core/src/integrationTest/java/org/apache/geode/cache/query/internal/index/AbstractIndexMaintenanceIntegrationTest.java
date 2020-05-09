@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal.index;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.After;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public abstract class AbstractIndexMaintenanceIntegrationTest {
         (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE).create("portfolios");
     QueryService qs = cache.getQueryService();
     AbstractIndex statusIndex =
-        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+        createIndex(qs, "statusIndex", "value.status", SEPARATOR + "portfolios.entrySet()");
 
     statusIndex.setPdxStringFlag("StringKey");
     assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
@@ -72,7 +73,7 @@ public abstract class AbstractIndexMaintenanceIntegrationTest {
         (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE).create("portfolios");
     QueryService qs = cache.getQueryService();
     AbstractIndex statusIndex =
-        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+        createIndex(qs, "statusIndex", "value.status", SEPARATOR + "portfolios.entrySet()");
 
     statusIndex.setPdxStringFlag(new PdxString("PdxString Key"));
     assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
@@ -91,7 +92,7 @@ public abstract class AbstractIndexMaintenanceIntegrationTest {
         .create("portfolios");
     QueryService qs = cache.getQueryService();
     AbstractIndex statusIndex =
-        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+        createIndex(qs, "statusIndex", "value.status", SEPARATOR + "portfolios.entrySet()");
 
     statusIndex.setPdxStringFlag(new PdxString("PdxString Key"));
     assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
@@ -107,7 +108,7 @@ public abstract class AbstractIndexMaintenanceIntegrationTest {
         (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE).create("portfolios");
     QueryService qs = cache.getQueryService();
     AbstractIndex statusIndex =
-        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+        createIndex(qs, "statusIndex", "value.status", SEPARATOR + "portfolios.entrySet()");
 
     PortfolioPdx p = new PortfolioPdx(1);
     region.put("KEY-1", p);
@@ -127,7 +128,7 @@ public abstract class AbstractIndexMaintenanceIntegrationTest {
             .create("portfolios");
     QueryService qs = cache.getQueryService();
     AbstractIndex statusIndex =
-        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+        createIndex(qs, "statusIndex", "value.status", SEPARATOR + "portfolios.entrySet()");
 
     statusIndex.setPdxStringFlag(new PdxString("IndexKey"));
     assertFalse(statusIndex.isIndexOnPdxKeys());

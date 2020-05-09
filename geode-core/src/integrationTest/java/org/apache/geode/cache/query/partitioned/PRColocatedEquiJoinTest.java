@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.partitioned;
 
 import static org.apache.geode.cache.query.Utils.createNewPortfoliosAndPositions;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 
@@ -49,10 +50,10 @@ public class PRColocatedEquiJoinTest {
     // create a local and Partition region for 1st select query
     Region<Integer, Portfolio> r1 = server.createRegion(RegionShortcut.LOCAL, "region1",
         rf -> rf.setValueConstraint(Portfolio.class));
-    qs.createIndex("IdIndex1", "r.ID", "/region1 r, r.positions.values pos");
+    qs.createIndex("IdIndex1", "r.ID", SEPARATOR + "region1 r, r.positions.values pos");
     Region<Integer, NewPortfolio> r2 = server.createRegion(RegionShortcut.PARTITION, "region2",
         rf -> rf.setValueConstraint(NewPortfolio.class));
-    qs.createIndex("IdIndex2", "r.id", "/region2 r");
+    qs.createIndex("IdIndex2", "r.id", SEPARATOR + "region2 r");
 
     // create two local regions for 2nd select query to compare the result set
     Region<Integer, Portfolio> r3 = server.createRegion(RegionShortcut.LOCAL, "region3",
@@ -77,7 +78,8 @@ public class PRColocatedEquiJoinTest {
       SelectResults<ArrayList<ArrayList<?>>> selectResults =
           (SelectResults<ArrayList<ArrayList<?>>>) qs.newQuery("<trace> Select "
               + (whereClauses[i].contains("ORDER BY") ? "DISTINCT" : "")
-              + "* from /region1 r1, /region2 r2 where " + whereClauses[i])
+              + "* from " + SEPARATOR + "region1 r1, " + SEPARATOR + "region2 r2 where "
+              + whereClauses[i])
               .execute();
       results[i][0] = (ArrayList<?>) selectResults.asList();
 
@@ -86,7 +88,8 @@ public class PRColocatedEquiJoinTest {
       SelectResults<ArrayList<ArrayList<?>>> queryResult =
           (SelectResults<ArrayList<ArrayList<?>>>) qs.newQuery("<trace> Select "
               + (whereClauses[i].contains("ORDER BY") ? "DISTINCT" : "")
-              + "* from /region3 r1, /region4 r2 where " + whereClauses[i])
+              + "* from " + SEPARATOR + "region3 r1, " + SEPARATOR + "region4 r2 where "
+              + whereClauses[i])
               .execute();
       results[i][1] = (ArrayList<?>) queryResult.asList();
     }

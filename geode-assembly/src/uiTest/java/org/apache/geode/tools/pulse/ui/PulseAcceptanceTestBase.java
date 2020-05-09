@@ -35,6 +35,7 @@ import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.MEMBER_VI
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.MEMBER_VIEW_SOCKETS_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.REDUNDANCY_GRID_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.SERVER_GROUP_GRID_ID;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -252,7 +253,7 @@ public abstract class PulseAcceptanceTestBase {
       searchByIdAndClick(DATA_BROWSER_REGION1_CHECKBOX);
       List<WebElement> memberList =
           getWebDriver().findElements(By.xpath("//ul[@id='membersList']/li"));
-      assertThat(getCluster().getClusterRegion("/FOO").getMemberCount())
+      assertThat(getCluster().getClusterRegion(SEPARATOR + "FOO").getMemberCount())
           .isEqualTo(memberList.size());
       String DataBrowserMember1Name1 =
           getWebDriver().findElement(By.xpath("//label[@for='Member0']")).getText();
@@ -261,7 +262,7 @@ public abstract class PulseAcceptanceTestBase {
 
       // execute a query
       WebElement queryTextArea = getWebDriver().findElement(By.id("dataBrowserQueryText"));
-      queryTextArea.sendKeys("select * from /FOO");
+      queryTextArea.sendKeys("select * from " + SEPARATOR + "FOO");
       WebElement executeButton = getWebDriver().findElement(By.id("btnExecuteQuery"));
       executeButton.click();
       String queryResultHeader = getWebDriver()
@@ -283,7 +284,7 @@ public abstract class PulseAcceptanceTestBase {
   @Test
   public void testDataViewTreeMapPopUpData() {
     if (getCluster().getTotalRegionCount() > 0) {
-      Cluster.Region actualRegion = getCluster().getClusterRegion("/FOO");
+      Cluster.Region actualRegion = getCluster().getClusterRegion(SEPARATOR + "FOO");
       searchByLinkAndClick(CLUSTER_VIEW_LABEL);
       searchByLinkAndClick(DATA_DROPDOWN_ID);
       WebElement TreeMapMember =

@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import java.io.Serializable;
@@ -62,18 +63,21 @@ public class GemfireDataCommandsDUnitTestBase {
   private static final String DATA_REGION_NAME = "GemfireDataCommandsTestRegion";
   private static final String DATA_REGION_NAME_VM1 = "GemfireDataCommandsTestRegion_Vm1";
   private static final String DATA_REGION_NAME_VM2 = "GemfireDataCommandsTestRegion_Vm2";
-  private static final String DATA_REGION_NAME_PATH = "/GemfireDataCommandsTestRegion";
-  private static final String DATA_REGION_NAME_VM1_PATH = "/GemfireDataCommandsTestRegion_Vm1";
-  private static final String DATA_REGION_NAME_VM2_PATH = "/GemfireDataCommandsTestRegion_Vm2";
+  private static final String DATA_REGION_NAME_PATH = SEPARATOR + "GemfireDataCommandsTestRegion";
+  private static final String DATA_REGION_NAME_VM1_PATH =
+      SEPARATOR + "GemfireDataCommandsTestRegion_Vm1";
+  private static final String DATA_REGION_NAME_VM2_PATH =
+      SEPARATOR + "GemfireDataCommandsTestRegion_Vm2";
 
   private static final String DATA_PAR_REGION_NAME = "GemfireDataCommandsTestParRegion";
   private static final String DATA_PAR_REGION_NAME_VM1 = "GemfireDataCommandsTestParRegion_Vm1";
   private static final String DATA_PAR_REGION_NAME_VM2 = "GemfireDataCommandsTestParRegion_Vm2";
-  private static final String DATA_PAR_REGION_NAME_PATH = "/GemfireDataCommandsTestParRegion";
+  private static final String DATA_PAR_REGION_NAME_PATH =
+      SEPARATOR + "GemfireDataCommandsTestParRegion";
   private static final String DATA_PAR_REGION_NAME_VM1_PATH =
-      "/GemfireDataCommandsTestParRegion_Vm1";
+      SEPARATOR + "GemfireDataCommandsTestParRegion_Vm1";
   private static final String DATA_PAR_REGION_NAME_VM2_PATH =
-      "/GemfireDataCommandsTestParRegion_Vm2";
+      SEPARATOR + "GemfireDataCommandsTestParRegion_Vm2";
 
   private static final String DATA_REGION_NAME_CHILD_1 = "ChildRegionRegion1";
   private static final String DATA_REGION_NAME_CHILD_1_2 = "ChildRegionRegion12";

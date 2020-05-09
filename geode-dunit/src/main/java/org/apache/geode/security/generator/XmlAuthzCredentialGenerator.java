@@ -15,6 +15,7 @@
 package org.apache.geode.security.generator;
 
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -32,7 +33,8 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   private static final String pkcsXml = "authz-pkcs.xml";
   private static final String sslXml = "authz-ssl.xml";
 
-  private static final String[] QUERY_REGIONS = {"/Portfolios", "/Positions", "/AuthRegion"};
+  private static final String[] QUERY_REGIONS =
+      {SEPARATOR + "Portfolios", SEPARATOR + "Positions", SEPARATOR + "AuthRegion"};
 
   public static OperationCode[] READER_OPS =
       {OperationCode.GET, OperationCode.REGISTER_INTEREST, OperationCode.UNREGISTER_INTEREST,

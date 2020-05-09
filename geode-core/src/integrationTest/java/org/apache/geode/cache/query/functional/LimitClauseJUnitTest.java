@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -122,7 +123,7 @@ public class LimitClauseJUnitTest {
 
   @Test
   public void testLimitWithParameter() throws Exception {
-    String queryString = "SELECT * from /portfolios1 LIMIT $1 ";
+    String queryString = "SELECT * from " + SEPARATOR + "portfolios1 LIMIT $1 ";
     SelectResults result;
     Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
     for (int i = 0; i < 100; i++) {
@@ -154,7 +155,7 @@ public class LimitClauseJUnitTest {
 
   @Test
   public void testLimitWithParameterNotSet() throws Exception {
-    String queryString = "SELECT * from /portfolios1 LIMIT $1 ";
+    String queryString = "SELECT * from " + SEPARATOR + "portfolios1 LIMIT $1 ";
     SelectResults result;
     Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
     for (int i = 0; i < 100; i++) {
@@ -168,7 +169,7 @@ public class LimitClauseJUnitTest {
 
   @Test
   public void testLimitWithNullParameterObject() throws Exception {
-    String queryString = "SELECT * from /portfolios1 LIMIT $1 ";
+    String queryString = "SELECT * from " + SEPARATOR + "portfolios1 LIMIT $1 ";
     SelectResults result;
     Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
     for (int i = 0; i < 100; i++) {
@@ -186,7 +187,7 @@ public class LimitClauseJUnitTest {
   // queries.
   @Test
   public void testLimitWithParameterForNonAndIndexedQuery() throws Exception {
-    String queryString = "SELECT * from /portfolios1 WHERE shortID = $1 LIMIT $2 ";
+    String queryString = "SELECT * from " + SEPARATOR + "portfolios1 WHERE shortID = $1 LIMIT $2 ";
     SelectResults result;
     Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
     for (int i = 0; i < 100; i++) {
@@ -201,7 +202,8 @@ public class LimitClauseJUnitTest {
     for (int i = 0; i < limits.length; i++) {
       params[1] = limits[i];
 
-      SelectResults results = helpTestIndexForQuery(queryString, "shortID", "/portfolios1", params);
+      SelectResults results =
+          helpTestIndexForQuery(queryString, "shortID", SEPARATOR + "portfolios1", params);
       assertEquals(limits[i], results.size());
       // clear out indexes for next query.
       qs.removeIndexes();
@@ -220,7 +222,8 @@ public class LimitClauseJUnitTest {
     try {
       Query query;
       SelectResults result;
-      String queryString = "SELECT DISTINCT * FROM /portfolios pf WHERE pf.ID > 0 limit 5";
+      String queryString =
+          "SELECT DISTINCT * FROM " + SEPARATOR + "portfolios pf WHERE pf.ID > 0 limit 5";
       query = qs.newQuery(queryString);
       final int[] num = new int[1];
       num[0] = 0;
@@ -258,7 +261,8 @@ public class LimitClauseJUnitTest {
     try {
       Query query;
       SelectResults result;
-      String queryString = "SELECT DISTINCT pf.ID FROM /portfolios pf WHERE pf.ID > 0 limit 5";
+      String queryString =
+          "SELECT DISTINCT pf.ID FROM " + SEPARATOR + "portfolios pf WHERE pf.ID > 0 limit 5";
       query = qs.newQuery(queryString);
       final int[] num = new int[1];
       num[0] = 0;
@@ -327,7 +331,8 @@ public class LimitClauseJUnitTest {
         }
 
       });
-      String queryString = "SELECT DISTINCT * FROM /portfolios1  pf WHERE pf.ID > 10 limit 5";
+      String queryString =
+          "SELECT DISTINCT * FROM " + SEPARATOR + "portfolios1  pf WHERE pf.ID > 10 limit 5";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertEquals((5 + numRepeat[0]), num[0]);
@@ -386,7 +391,8 @@ public class LimitClauseJUnitTest {
           }
         }
       });
-      String queryString = "SELECT DISTINCT pf.ID FROM /portfolios1  pf WHERE pf.ID > 10 limit 5";
+      String queryString =
+          "SELECT DISTINCT pf.ID FROM " + SEPARATOR + "portfolios1  pf WHERE pf.ID > 10 limit 5";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertEquals((5 + numRepeat[0]), num[0]);
@@ -418,7 +424,8 @@ public class LimitClauseJUnitTest {
       Query query;
       SelectResults result;
       query = qs.newQuery(
-          "SELECT DISTINCT pf.ID, pf.createTime FROM /portfolios pf WHERE pf.ID > 0 limit 5");
+          "SELECT DISTINCT pf.ID, pf.createTime FROM " + SEPARATOR
+              + "portfolios pf WHERE pf.ID > 0 limit 5");
       final int[] num = new int[1];
       num[0] = 0;
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
@@ -454,7 +461,8 @@ public class LimitClauseJUnitTest {
       Query query;
       SelectResults result;
       String queryString =
-          "SELECT DISTINCT * FROM /portfolios pf, pf.positions.values WHERE pf.ID > 0 limit 5";
+          "SELECT DISTINCT * FROM " + SEPARATOR
+              + "portfolios pf, pf.positions.values WHERE pf.ID > 0 limit 5";
       query = qs.newQuery(queryString);
       final int[] num = new int[1];
       num[0] = 0;
@@ -491,15 +499,17 @@ public class LimitClauseJUnitTest {
       Query query;
       SelectResults result;
       String queryString =
-          "SELECT * FROM /portfolios pf, pf.positions.values pos WHERE pf.ID > 1  AND pos.secId = 'GOOG' limit 1";
+          "SELECT * FROM " + SEPARATOR
+              + "portfolios pf, pf.positions.values pos WHERE pf.ID > 1  AND pos.secId = 'GOOG' limit 1";
       query = qs.newQuery(queryString);
 
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
-      Index index = qs.createIndex("idIndex", "pf.ID", "/portfolios pf");
+      Index index = qs.createIndex("idIndex", "pf.ID", SEPARATOR + "portfolios pf");
       Index posindex =
-          qs.createIndex("posIndex", "pos.secId", "/portfolios pf, pf.positions.values pos");
+          qs.createIndex("posIndex", "pos.secId",
+              SEPARATOR + "portfolios pf, pf.positions.values pos");
       assertNotNull(index);
       assertNotNull(posindex);
       result = (SelectResults) query.execute();
@@ -557,7 +567,8 @@ public class LimitClauseJUnitTest {
         }
       });
       String queryString =
-          "SELECT DISTINCT pf.ID , pf.createTime FROM /portfolios1  pf WHERE pf.ID > 10 limit 5";
+          "SELECT DISTINCT pf.ID , pf.createTime FROM " + SEPARATOR
+              + "portfolios1  pf WHERE pf.ID > 10 limit 5";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertEquals((5 + numRepeat[0]), num[0]);
@@ -616,7 +627,8 @@ public class LimitClauseJUnitTest {
         }
       });
       String queryString =
-          "SELECT DISTINCT * FROM /portfolios1  pf, pf.collectionHolderMap.keySet  WHERE pf.ID > 10 limit 20";
+          "SELECT DISTINCT * FROM " + SEPARATOR
+              + "portfolios1  pf, pf.collectionHolderMap.keySet  WHERE pf.ID > 10 limit 20";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertEquals((20 + 4 * numRepeat[0]), num[0]);
@@ -648,11 +660,12 @@ public class LimitClauseJUnitTest {
     try {
       Query query;
       SelectResults result;
-      String queryString = "SELECT DISTINCT * FROM /portfolios pf WHERE pf.ID > 0 limit 5";
+      String queryString =
+          "SELECT DISTINCT * FROM " + SEPARATOR + "portfolios pf WHERE pf.ID > 0 limit 5";
       query = qs.newQuery(queryString);
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
-      Index index = qs.createIndex("idIndex", "pf.ID", "/portfolios pf");
+      Index index = qs.createIndex("idIndex", "pf.ID", SEPARATOR + "portfolios pf");
       assertNotNull(index);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -682,12 +695,13 @@ public class LimitClauseJUnitTest {
     try {
       Query query;
       SelectResults result;
-      String queryString = "SELECT DISTINCT pf.ID FROM /portfolios pf WHERE pf.ID > 0 limit 5";
+      String queryString =
+          "SELECT DISTINCT pf.ID FROM " + SEPARATOR + "portfolios pf WHERE pf.ID > 0 limit 5";
       query = qs.newQuery(queryString);
 
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
-      Index index = qs.createIndex("idIndex", "pf.ID", "/portfolios pf");
+      Index index = qs.createIndex("idIndex", "pf.ID", SEPARATOR + "portfolios pf");
       assertNotNull(index);
 
       result = (SelectResults) query.execute();
@@ -728,10 +742,11 @@ public class LimitClauseJUnitTest {
 
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
-      Index index = qs.createIndex("idIndex", "pf.ID", "/portfolios1 pf");
+      Index index = qs.createIndex("idIndex", "pf.ID", SEPARATOR + "portfolios1 pf");
       assertNotNull(index);
 
-      String queryString = "SELECT DISTINCT * FROM /portfolios1  pf WHERE pf.ID > 10 limit 5";
+      String queryString =
+          "SELECT DISTINCT * FROM " + SEPARATOR + "portfolios1  pf WHERE pf.ID > 10 limit 5";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -773,9 +788,10 @@ public class LimitClauseJUnitTest {
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
-      Index index = qs.createIndex("idIndex", "pf.ID", "/portfolios1 pf");
+      Index index = qs.createIndex("idIndex", "pf.ID", SEPARATOR + "portfolios1 pf");
       assertNotNull(index);
-      String queryString = "SELECT DISTINCT pf.ID FROM /portfolios1  pf WHERE pf.ID > 10 limit 5";
+      String queryString =
+          "SELECT DISTINCT pf.ID FROM " + SEPARATOR + "portfolios1  pf WHERE pf.ID > 10 limit 5";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -806,12 +822,13 @@ public class LimitClauseJUnitTest {
       Query query;
       SelectResults result;
       query = qs.newQuery(
-          "SELECT DISTINCT pf.ID, pf.createTime FROM /portfolios pf WHERE pf.ID > 0 limit 5");
+          "SELECT DISTINCT pf.ID, pf.createTime FROM " + SEPARATOR
+              + "portfolios pf WHERE pf.ID > 0 limit 5");
 
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
-      Index index = qs.createIndex("idIndex", "pf.ID", "/portfolios pf");
+      Index index = qs.createIndex("idIndex", "pf.ID", SEPARATOR + "portfolios pf");
       assertNotNull(index);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -840,13 +857,15 @@ public class LimitClauseJUnitTest {
       Query query;
       SelectResults result;
       String queryString =
-          "SELECT DISTINCT * FROM /portfolios pf, pf.positions.values WHERE pf.ID > 0 limit 5";
+          "SELECT DISTINCT * FROM " + SEPARATOR
+              + "portfolios pf, pf.positions.values WHERE pf.ID > 0 limit 5";
       query = qs.newQuery(queryString);
 
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
-      Index index = qs.createIndex("idIndex", "pf.ID", "/portfolios pf, pf.positions.values");
+      Index index =
+          qs.createIndex("idIndex", "pf.ID", SEPARATOR + "portfolios pf, pf.positions.values");
       assertNotNull(index);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -888,10 +907,11 @@ public class LimitClauseJUnitTest {
 
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
-      Index index = qs.createIndex("idIndex", "pf.ID", "/portfolios1  pf");
+      Index index = qs.createIndex("idIndex", "pf.ID", SEPARATOR + "portfolios1  pf");
       assertNotNull(index);
       String queryString =
-          "SELECT DISTINCT pf.ID , pf.createTime FROM /portfolios1  pf WHERE pf.ID > 10 limit 5";
+          "SELECT DISTINCT pf.ID , pf.createTime FROM " + SEPARATOR
+              + "portfolios1  pf WHERE pf.ID > 10 limit 5";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -933,11 +953,13 @@ public class LimitClauseJUnitTest {
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
       Index index =
-          qs.createIndex("idIndex", "pf.ID", "/portfolios1  pf, pf.collectionHolderMap.keySet");
+          qs.createIndex("idIndex", "pf.ID",
+              SEPARATOR + "portfolios1  pf, pf.collectionHolderMap.keySet");
       assertNotNull(index);
 
       String queryString =
-          "SELECT DISTINCT * FROM /portfolios1  pf, pf.collectionHolderMap.keySet  WHERE pf.ID > 10 limit 20";
+          "SELECT DISTINCT * FROM " + SEPARATOR
+              + "portfolios1  pf, pf.collectionHolderMap.keySet  WHERE pf.ID > 10 limit 20";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -976,10 +998,11 @@ public class LimitClauseJUnitTest {
       }
 
       // Create Index on ID
-      Index index = qs.createIndex("idIndex", "ID", "/portfolios1");
+      Index index = qs.createIndex("idIndex", "ID", SEPARATOR + "portfolios1");
       assertNotNull(index);
       String queryString =
-          "select DISTINCT * from /portfolios1 where status ='inactive' AND (ID > 0 AND ID < 100) limit 10";
+          "select DISTINCT * from " + SEPARATOR
+              + "portfolios1 where status ='inactive' AND (ID > 0 AND ID < 100) limit 10";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -1008,15 +1031,16 @@ public class LimitClauseJUnitTest {
       }
 
       // Create Index on ID
-      Index index = qs.createIndex("idIndex", "ID", "/portfolios1");
+      Index index = qs.createIndex("idIndex", "ID", SEPARATOR + "portfolios1");
       assertNotNull(index);
-      index = qs.createIndex("statusIndex", "status", "/portfolios1");
+      index = qs.createIndex("statusIndex", "status", SEPARATOR + "portfolios1");
       assertNotNull(index);
       MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
       String queryString =
-          "select DISTINCT * from /portfolios1 where status ='inactive' AND (ID > 0 AND ID < 100) limit 10";
+          "select DISTINCT * from " + SEPARATOR
+              + "portfolios1 where status ='inactive' AND (ID > 0 AND ID < 100) limit 10";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertTrue(result instanceof SelectResults);
@@ -1050,12 +1074,15 @@ public class LimitClauseJUnitTest {
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
       // Create Index on ID
-      Index index = qs.createIndex("idIndex", "ID", "/portfolios1");
+      Index index = qs.createIndex("idIndex", "ID", SEPARATOR + "portfolios1");
       assertNotNull(index);
       String[] queryString = new String[] {
-          "select * from /portfolios1 where status ='inactive' AND (ID > 0 AND ID < 100) limit 10",
-          "select * from /portfolios1 where (status > 'inactiva' AND status < 'xyz') AND (ID > 0 AND ID < 100) limit 10",
-          "select * from /portfolios1 where (status > 'inactiva' AND status < 'xyz') AND (ID > 0 AND ID < 100) AND (\"type\"='type1' OR \"type\"='type2') limit 10",};
+          "select * from " + SEPARATOR
+              + "portfolios1 where status ='inactive' AND (ID > 0 AND ID < 100) limit 10",
+          "select * from " + SEPARATOR
+              + "portfolios1 where (status > 'inactiva' AND status < 'xyz') AND (ID > 0 AND ID < 100) limit 10",
+          "select * from " + SEPARATOR
+              + "portfolios1 where (status > 'inactiva' AND status < 'xyz') AND (ID > 0 AND ID < 100) AND (\"type\"='type1' OR \"type\"='type2') limit 10",};
       for (String qstr : queryString) {
         query = qs.newQuery(qstr);
         result = (SelectResults) query.execute();
@@ -1087,12 +1114,13 @@ public class LimitClauseJUnitTest {
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
       // Create Index on ID
-      Index index = qs.createIndex("idIndex", "ID", "/portfolios1");
+      Index index = qs.createIndex("idIndex", "ID", SEPARATOR + "portfolios1");
       assertNotNull(index);
-      index = qs.createIndex("statusIndex", "status", "/portfolios1");
+      index = qs.createIndex("statusIndex", "status", SEPARATOR + "portfolios1");
       assertNotNull(index);
       String[] queryString = new String[] {
-          "select * from /portfolios1 where status ='inactive' AND (ID > 0 AND ID < 100) limit 10",};
+          "select * from " + SEPARATOR
+              + "portfolios1 where status ='inactive' AND (ID > 0 AND ID < 100) limit 10",};
       for (String qstr : queryString) {
         query = qs.newQuery(qstr);
         result = (SelectResults) query.execute();
@@ -1124,13 +1152,15 @@ public class LimitClauseJUnitTest {
       QueryObserver old = QueryObserverHolder.setInstance(observer);
 
       // Create Index on ID
-      Index index = qs.createIndex("idIndex", "ID", "/portfolios1");
+      Index index = qs.createIndex("idIndex", "ID", SEPARATOR + "portfolios1");
       assertNotNull(index);
-      index = qs.createIndex("statusIndex", "status", "/portfolios1");
+      index = qs.createIndex("statusIndex", "status", SEPARATOR + "portfolios1");
       assertNotNull(index);
       String[] queryString = new String[] {
-          "select * from /portfolios1 where (status > 'inactiva' AND status < 'xyz') AND (ID > 70 AND ID < 100) limit 10",
-          "select * from /portfolios1 where (status > 'inactiva' AND status < 'xyz') AND (ID > 60 AND ID < 100) AND (\"type\"='type1' OR \"type\"='type2') limit 10",};
+          "select * from " + SEPARATOR
+              + "portfolios1 where (status > 'inactiva' AND status < 'xyz') AND (ID > 70 AND ID < 100) limit 10",
+          "select * from " + SEPARATOR
+              + "portfolios1 where (status > 'inactiva' AND status < 'xyz') AND (ID > 60 AND ID < 100) AND (\"type\"='type1' OR \"type\"='type2') limit 10",};
       for (String qstr : queryString) {
         query = qs.newQuery(qstr);
         result = (SelectResults) query.execute();
@@ -1159,10 +1189,11 @@ public class LimitClauseJUnitTest {
       }
 
       // Create Index on ID
-      Index index = qs.createIndex("idIndex", "ID", "/portfolios1");
+      Index index = qs.createIndex("idIndex", "ID", SEPARATOR + "portfolios1");
       assertNotNull(index);
       String queryString =
-          "select DISTINCT * from /portfolios1 where status ='inactive' AND ID > 0 limit 2";
+          "select DISTINCT * from " + SEPARATOR
+              + "portfolios1 where status ='inactive' AND ID > 0 limit 2";
       query = qs.newQuery(queryString);
       result = (SelectResults) query.execute();
       assertEquals(2, result.size());
@@ -1189,14 +1220,17 @@ public class LimitClauseJUnitTest {
     }
 
     String queryString =
-        "<trace>SELECT * FROM /portfolios1 P, P.positions.values POS WHERE P.ID > 5 AND POS.secId = 'IBM' LIMIT 5";
+        "<trace>SELECT * FROM " + SEPARATOR
+            + "portfolios1 P, P.positions.values POS WHERE P.ID > 5 AND POS.secId = 'IBM' LIMIT 5";
     query = qs.newQuery(queryString);
     SelectResults resultsNoIndex = (SelectResults) query.execute();
 
     // Create Index on ID and secId
     Index secIndex =
-        qs.createIndex("secIdIndex", "pos.secId", "/portfolios1 p, p.positions.values pos");
-    Index idIndex = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID", "/portfolios1 P");
+        qs.createIndex("secIdIndex", "pos.secId",
+            SEPARATOR + "portfolios1 p, p.positions.values pos");
+    Index idIndex =
+        qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID", SEPARATOR + "portfolios1 P");
 
     assertNotNull(secIndex);
     assertNotNull(idIndex);
@@ -1221,15 +1255,17 @@ public class LimitClauseJUnitTest {
     }
 
     String queryString =
-        "<trace>SELECT * FROM /portfolios1 P, P.positions.values POS WHERE P.ID > 4 and P.ID < 11 AND P.ID != 8 LIMIT 5";
+        "<trace>SELECT * FROM " + SEPARATOR
+            + "portfolios1 P, P.positions.values POS WHERE P.ID > 4 and P.ID < 11 AND P.ID != 8 LIMIT 5";
     query = qs.newQuery(queryString);
     SelectResults resultsNoIndex = (SelectResults) query.execute();
 
     // Create Index on ID and secId
     Index secIndex =
-        qs.createIndex("secIdIndex", "pos.secId", "/portfolios1 p, p.positions.values pos");
+        qs.createIndex("secIdIndex", "pos.secId",
+            SEPARATOR + "portfolios1 p, p.positions.values pos");
     Index idIndex = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID",
-        "/portfolios1 P, P.positions.values pos");
+        SEPARATOR + "portfolios1 P, P.positions.values pos");
 
     // assertNotNull(secIndex);
     assertNotNull(idIndex);
@@ -1254,15 +1290,17 @@ public class LimitClauseJUnitTest {
     }
 
     String queryString =
-        "<trace>SELECT * FROM /portfolios1 P, P.positions.values POS WHERE P.ID < 4 OR P.ID > 11 AND P.ID != 13 LIMIT 5";
+        "<trace>SELECT * FROM " + SEPARATOR
+            + "portfolios1 P, P.positions.values POS WHERE P.ID < 4 OR P.ID > 11 AND P.ID != 13 LIMIT 5";
     query = qs.newQuery(queryString);
     SelectResults resultsNoIndex = (SelectResults) query.execute();
 
     // Create Index on ID and secId
     Index secIndex =
-        qs.createIndex("secIdIndex", "pos.secId", "/portfolios1 p, p.positions.values pos");
+        qs.createIndex("secIdIndex", "pos.secId",
+            SEPARATOR + "portfolios1 p, p.positions.values pos");
     Index idIndex = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID",
-        "/portfolios1 P, P.positions.values pos");
+        SEPARATOR + "portfolios1 P, P.positions.values pos");
 
     // assertNotNull(secIndex);
     assertNotNull(idIndex);
@@ -1295,10 +1333,12 @@ public class LimitClauseJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     // Create Index on ID
-    Index idIndex = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID", "/portfolios1 P");
+    Index idIndex =
+        qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID", SEPARATOR + "portfolios1 P");
 
     String queryString =
-        "SELECT * FROM /portfolios1 P, P.positions.values POS WHERE P.ID > 9 AND P.ID < 21 AND POS.secId = 'VMW' LIMIT 5";
+        "SELECT * FROM " + SEPARATOR
+            + "portfolios1 P, P.positions.values POS WHERE P.ID > 9 AND P.ID < 21 AND POS.secId = 'VMW' LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1332,10 +1372,11 @@ public class LimitClauseJUnitTest {
 
     // Create Index on ID
     Index idIndex = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID",
-        "/portfolios1 P, P.positions.values POS");
+        SEPARATOR + "portfolios1 P, P.positions.values POS");
 
     String queryString =
-        "SELECT * FROM /portfolios1 P, P.positions.values POS WHERE P.ID > 9 AND P.ID < 21 AND POS.secId = 'VMW' LIMIT 5";
+        "SELECT * FROM " + SEPARATOR
+            + "portfolios1 P, P.positions.values POS WHERE P.ID > 9 AND P.ID < 21 AND POS.secId = 'VMW' LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1380,12 +1421,14 @@ public class LimitClauseJUnitTest {
 
     // Create Index on ID
     Index idIndex = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID",
-        "/portfolios1 P, P.positions.values POS");
+        SEPARATOR + "portfolios1 P, P.positions.values POS");
     Index shortIdIndex =
-        qs.createIndex("shortIdIndex", IndexType.FUNCTIONAL, "P.shortID", "/portfolios1 P");
+        qs.createIndex("shortIdIndex", IndexType.FUNCTIONAL, "P.shortID",
+            SEPARATOR + "portfolios1 P");
 
     String queryString =
-        "<trace>SELECT * FROM /portfolios1 P WHERE P.ID > 9 AND P.ID < 21 AND P.shortID = 2 LIMIT 5";
+        "<trace>SELECT * FROM " + SEPARATOR
+            + "portfolios1 P WHERE P.ID > 9 AND P.ID < 21 AND P.shortID = 2 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1429,12 +1472,13 @@ public class LimitClauseJUnitTest {
 
     // Create Index on ID
     Index idIndex = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "P.ID",
-        "/portfolios1 P, P.positions.values POS");
+        SEPARATOR + "portfolios1 P, P.positions.values POS");
     Index shortIdIndex = qs.createIndex("shortIdIndex", IndexType.FUNCTIONAL, "P.shortID",
-        "/portfolios1 P, P.positions.values POS");
+        SEPARATOR + "portfolios1 P, P.positions.values POS");
 
     String queryString =
-        "SELECT * FROM /portfolios1 P WHERE P.ID > 9 AND P.ID < 21 AND P.shortID = 2 LIMIT 5";
+        "SELECT * FROM " + SEPARATOR
+            + "portfolios1 P WHERE P.ID > 9 AND P.ID < 21 AND P.shortID = 2 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1469,9 +1513,10 @@ public class LimitClauseJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     // Create Index on ID
-    Index idIndex = qs.createIndex("idIndex", "P.ID", "/portfolios1 P");
+    Index idIndex = qs.createIndex("idIndex", "P.ID", SEPARATOR + "portfolios1 P");
 
-    String queryString = "SELECT * FROM /portfolios1 P WHERE P.ID = 10 AND P.shortID = 2 LIMIT 5";
+    String queryString =
+        "SELECT * FROM " + SEPARATOR + "portfolios1 P WHERE P.ID = 10 AND P.shortID = 2 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1530,11 +1575,12 @@ public class LimitClauseJUnitTest {
     // QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     // Create Index on ID
-    Index idIndex = qs.createIndex("idIndex", "P.ID", "/portfolios1 P");
-    Index shortIdIndex = qs.createIndex("shortIdIndex", "P.shortID", "/portfolios1 P");
+    Index idIndex = qs.createIndex("idIndex", "P.ID", SEPARATOR + "portfolios1 P");
+    Index shortIdIndex = qs.createIndex("shortIdIndex", "P.shortID", SEPARATOR + "portfolios1 P");
 
     String queryString =
-        "<trace>SELECT * FROM /portfolios1 P WHERE P.ID = 10 AND P.shortID = 2 LIMIT 5";
+        "<trace>SELECT * FROM " + SEPARATOR
+            + "portfolios1 P WHERE P.ID = 10 AND P.shortID = 2 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1570,10 +1616,12 @@ public class LimitClauseJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     // Create Index on ID
-    Index idIndex = qs.createIndex("idIndex", "P.ID", "/portfolios1 P, P.positions.values POS");
-    Index shortIdIndex = qs.createIndex("shortIdIndex", "P.shortID", "/portfolios1 P");
+    Index idIndex =
+        qs.createIndex("idIndex", "P.ID", SEPARATOR + "portfolios1 P, P.positions.values POS");
+    Index shortIdIndex = qs.createIndex("shortIdIndex", "P.shortID", SEPARATOR + "portfolios1 P");
 
-    String queryString = "SELECT * FROM /portfolios1 P WHERE P.ID = 10 AND P.shortID = 2 LIMIT 5";
+    String queryString =
+        "SELECT * FROM " + SEPARATOR + "portfolios1 P WHERE P.ID = 10 AND P.shortID = 2 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1610,11 +1658,12 @@ public class LimitClauseJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     // Create Index on ID
-    Index idIndex = qs.createIndex("idIndex", "P.ID", "/portfolios1 P");
-    Index shortIdIndex = qs.createIndex("shortIdIndex", "P.shortID", "/portfolios1 P");
+    Index idIndex = qs.createIndex("idIndex", "P.ID", SEPARATOR + "portfolios1 P");
+    Index shortIdIndex = qs.createIndex("shortIdIndex", "P.shortID", SEPARATOR + "portfolios1 P");
 
     String queryString =
-        "SELECT * FROM /portfolios1 P WHERE P.ID > 9 AND P.ID < 20 AND P.shortID > 1 AND P.shortID < 3 LIMIT 5";
+        "SELECT * FROM " + SEPARATOR
+            + "portfolios1 P WHERE P.ID > 9 AND P.ID < 20 AND P.shortID > 1 AND P.shortID < 3 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1649,10 +1698,11 @@ public class LimitClauseJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     // Create Index on ID
-    Index idIndex = qs.createIndex("idIndex", "P.ID", "/portfolios1 P");
+    Index idIndex = qs.createIndex("idIndex", "P.ID", SEPARATOR + "portfolios1 P");
 
     String queryString =
-        "SELECT * FROM /portfolios1 P WHERE P.ID > 9 AND P.ID < 20 AND P.shortID > 1 AND P.shortID < 3 LIMIT 5";
+        "SELECT * FROM " + SEPARATOR
+            + "portfolios1 P WHERE P.ID > 9 AND P.ID < 20 AND P.shortID > 1 AND P.shortID < 3 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1687,10 +1737,11 @@ public class LimitClauseJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     // Create Index on ID
-    Index idIndex = qs.createIndex("idIndex", "P.ID", "/portfolios1 P");
+    Index idIndex = qs.createIndex("idIndex", "P.ID", SEPARATOR + "portfolios1 P");
 
     String queryString =
-        "SELECT * FROM /portfolios1 P WHERE P.ID = 10 AND P.shortID > 1 AND P.shortID < 3 LIMIT 5";
+        "SELECT * FROM " + SEPARATOR
+            + "portfolios1 P WHERE P.ID = 10 AND P.shortID > 1 AND P.shortID < 3 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);
@@ -1726,11 +1777,12 @@ public class LimitClauseJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     // Create Index on ID
-    Index idIndex = qs.createIndex("idIndex", "P.ID", "/portfolios1 P");
-    Index shortIdIndex = qs.createIndex("shortIdIndex", "P.shortID", "/portfolios1 P");
+    Index idIndex = qs.createIndex("idIndex", "P.ID", SEPARATOR + "portfolios1 P");
+    Index shortIdIndex = qs.createIndex("shortIdIndex", "P.shortID", SEPARATOR + "portfolios1 P");
 
     String queryString =
-        "SELECT * FROM /portfolios1 P WHERE P.ID > 9 AND P.ID < 20 AND P.shortID = 2 LIMIT 5";
+        "SELECT * FROM " + SEPARATOR
+            + "portfolios1 P WHERE P.ID > 9 AND P.ID < 20 AND P.shortID = 2 LIMIT 5";
     query = qs.newQuery(queryString);
 
     assertNotNull(idIndex);

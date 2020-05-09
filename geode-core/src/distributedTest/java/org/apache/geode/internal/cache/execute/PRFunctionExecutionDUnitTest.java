@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
@@ -28,6 +27,7 @@ import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTI
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;

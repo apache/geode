@@ -21,6 +21,7 @@ import static org.apache.geode.security.SecurableCommunicationChannels.ALL;
 import static org.apache.geode.security.SecurableCommunicationChannels.GATEWAY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -110,7 +111,7 @@ public class WANHostNameVerificationDistributedTest {
 
     // create a region
     server_ln.invoke(WANHostNameVerificationDistributedTest::createServerRegion);
-    locator_ln.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
+    locator_ln.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region", 1);
 
     // create gateway sender
     server_ln.invoke(() -> {
@@ -144,7 +145,7 @@ public class WANHostNameVerificationDistributedTest {
 
     // create a region
     server_ny.invoke(WANHostNameVerificationDistributedTest::createServerRegion);
-    locator_ny.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
+    locator_ny.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region", 1);
 
     // create gateway sender
     server_ny.invoke(() -> {
@@ -303,7 +304,7 @@ public class WANHostNameVerificationDistributedTest {
 
     // create a region in ln
     server_ln.invoke(WANHostNameVerificationDistributedTest::createServerRegion);
-    locator_ln.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
+    locator_ln.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region", 1);
 
     // create a gateway sender ln
     server_ln.invoke(WANHostNameVerificationDistributedTest::createGatewaySender);
@@ -317,7 +318,7 @@ public class WANHostNameVerificationDistributedTest {
 
     // create a region in ny
     server_ny.invoke(WANHostNameVerificationDistributedTest::createServerRegion);
-    locator_ny.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
+    locator_ny.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region", 1);
 
     // create a gateway sender in ny
     server_ny.invoke(WANHostNameVerificationDistributedTest::createGatewayReceiver);

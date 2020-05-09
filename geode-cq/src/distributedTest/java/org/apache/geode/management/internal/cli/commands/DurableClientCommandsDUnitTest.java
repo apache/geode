@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -304,10 +305,12 @@ public class DurableClientCommandsDUnitTest {
       CqAttributesFactory cqAf = new CqAttributesFactory();
 
       try {
-        qs.newCq(CQ1, "select * from /" + STOCKS_REGION, cqAf.create(), true).execute();
-        qs.newCq(CQ2, "select * from /" + STOCKS_REGION + " where id = 1", cqAf.create(), true)
+        qs.newCq(CQ1, "select * from " + SEPARATOR + STOCKS_REGION, cqAf.create(), true).execute();
+        qs.newCq(CQ2, "select * from " + SEPARATOR + STOCKS_REGION + " where id = 1", cqAf.create(),
+            true)
             .execute();
-        qs.newCq(CQ3, "select * from /" + STOCKS_REGION + " where id > 2", cqAf.create(), true)
+        qs.newCq(CQ3, "select * from " + SEPARATOR + STOCKS_REGION + " where id > 2", cqAf.create(),
+            true)
             .execute();
       } catch (CqException | CqExistsException | RegionNotFoundException e) {
         throw new RuntimeException(e);

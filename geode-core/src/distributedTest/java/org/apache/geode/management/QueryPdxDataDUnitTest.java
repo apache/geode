@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -109,7 +110,8 @@ public class QueryPdxDataDUnitTest {
 
   @Test
   public void queryForPdxBackedEntriesShouldSucceed() {
-    gfsh.executeAndAssertThat("query --query=\"select * from /BOZ.values\"").statusIsSuccess();
+    gfsh.executeAndAssertThat("query --query=\"select * from " + SEPARATOR + "BOZ.values\"")
+        .statusIsSuccess();
   }
 
 }

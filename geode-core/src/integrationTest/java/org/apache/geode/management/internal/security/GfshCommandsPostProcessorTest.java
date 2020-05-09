@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -60,7 +61,7 @@ public class GfshCommandsPostProcessorTest {
         .containsOutput("dataWrite,dataRead/region1/key1/value1");
 
     // for query command, assert the return values are processed
-    gfshConnection.executeAndAssertThat("query --query=\"select * from /region1\"")
+    gfshConnection.executeAndAssertThat("query --query=\"select * from " + SEPARATOR + "region1\"")
         .containsOutput("dataWrite,dataRead/null/null/value1")
         .containsOutput("dataWrite,dataRead/null/null/value2")
         .containsOutput("dataWrite,dataRead/null/null/value3");

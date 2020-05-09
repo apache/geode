@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -52,13 +53,18 @@ public class QueryUndefinedJUnitTest implements Serializable {
     CacheUtils.closeCache();
   }
 
-  private static String[] queries = new String[] {"select * from /test WHERE age != 25",
-      "select * from /test WHERE age !=25 AND flag = true",
-      "select * from /test WHERE age != 25 AND age > 0 and age < 100",
-      "select * from /test WHERE age != 25 OR age > 0", "select * from /test WHERE age > 0",
-      "select * from /test WHERE age IN (select t.age from /test t)", "select t.age from /test t",
-      "select * from /test WHERE age != 25 and flag = false",
-      "select * from /test WHERE age IN (select t.age from /test t) and age != 25"};
+  private static String[] queries =
+      new String[] {"select * from " + SEPARATOR + "test WHERE age != 25",
+          "select * from " + SEPARATOR + "test WHERE age !=25 AND flag = true",
+          "select * from " + SEPARATOR + "test WHERE age != 25 AND age > 0 and age < 100",
+          "select * from " + SEPARATOR + "test WHERE age != 25 OR age > 0",
+          "select * from " + SEPARATOR + "test WHERE age > 0",
+          "select * from " + SEPARATOR + "test WHERE age IN (select t.age from " + SEPARATOR
+              + "test t)",
+          "select t.age from " + SEPARATOR + "test t",
+          "select * from " + SEPARATOR + "test WHERE age != 25 and flag = false",
+          "select * from " + SEPARATOR + "test WHERE age IN (select t.age from " + SEPARATOR
+              + "test t) and age != 25"};
 
   // the test will be validating against the May date, so expected values revolve around month of
   // May
@@ -102,7 +108,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     Region region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
     createJSONData(region);
-    CacheUtils.getQueryService().createIndex("ageIndex", "age", "/test");
+    CacheUtils.getQueryService().createIndex("ageIndex", "age", SEPARATOR + "test");
     executeQueryTest(CacheUtils.getCache(), queries, expectedResults);
   }
 
@@ -111,7 +117,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     Region region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
     createJSONData(region);
-    CacheUtils.getQueryService().createHashIndex("ageIndex", "age", "/test");
+    CacheUtils.getQueryService().createHashIndex("ageIndex", "age", SEPARATOR + "test");
     executeQueryTest(CacheUtils.getCache(), queries, expectedResults);
   }
 
@@ -128,7 +134,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     Region region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     createJSONData(region);
-    CacheUtils.getQueryService().createIndex("ageIndex", "age", "/test");
+    CacheUtils.getQueryService().createIndex("ageIndex", "age", SEPARATOR + "test");
     executeQueryTest(CacheUtils.getCache(), queries, expectedResults);
   }
 
@@ -137,7 +143,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     Region region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     createJSONData(region);
-    CacheUtils.getQueryService().createHashIndex("ageIndex", "age", "/test");
+    CacheUtils.getQueryService().createHashIndex("ageIndex", "age", SEPARATOR + "test");
     executeQueryTest(CacheUtils.getCache(), queries, expectedResults);
   }
 
@@ -154,7 +160,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     Region region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
     createObjectData(region);
-    CacheUtils.getQueryService().createIndex("ageIndex", "age", "/test");
+    CacheUtils.getQueryService().createIndex("ageIndex", "age", SEPARATOR + "test");
     executeQueryTest(CacheUtils.getCache(), queries, expectedResults);
   }
 
@@ -163,7 +169,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     Region region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
     createObjectData(region);
-    CacheUtils.getQueryService().createHashIndex("ageIndex", "age", "/test");
+    CacheUtils.getQueryService().createHashIndex("ageIndex", "age", SEPARATOR + "test");
     executeQueryTest(CacheUtils.getCache(), queries, expectedResults);
   }
 
@@ -180,7 +186,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     Region region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
     createObjectData(region);
-    CacheUtils.getQueryService().createIndex("ageIndex", "age", "/test");
+    CacheUtils.getQueryService().createIndex("ageIndex", "age", SEPARATOR + "test");
     executeQueryTest(CacheUtils.getCache(), queries, expectedResults);
   }
 
@@ -189,7 +195,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     Region region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
     createObjectData(region);
-    CacheUtils.getQueryService().createHashIndex("ageIndex", "age", "/test");
+    CacheUtils.getQueryService().createHashIndex("ageIndex", "age", SEPARATOR + "test");
     executeQueryTest(CacheUtils.getCache(), queries, expectedResults);
   }
 

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -63,87 +63,98 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
     }
 
     // Simple Queries
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName,
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName,
         (int) supplierOne.get().count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID > 0",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0",
         (int) supplierOne.get().count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID > 0 LIMIT 50",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0 LIMIT 50",
         (int) supplierOne.get().limit(50).count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID > 0 OR status='active'",
+    queries.put(
+        "SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0 OR status='active'",
         (int) supplierOne.get().filter(p -> p.getID() > 0 || p.isActive()).count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID > 0 OR status LIKE 'ina%'",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
+        + " WHERE ID > 0 OR status LIKE 'ina%'",
         (int) supplierOne.get().filter(p -> p.getID() > 0 || p.status.startsWith("ina")).count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID IN SET(1, 2, 3, 4, 5)",
+    queries.put(
+        "SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE ID IN SET(1, 2, 3, 4, 5)",
         (int) supplierOne.get().filter(p -> Arrays.asList(1, 2, 3, 4, 5).contains(p.getID()))
             .count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE NOT (ID > 5)",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE NOT (ID > 5)",
         (int) supplierOne.get().filter(p -> p.getID() <= 5).count());
 
     // Distinct Queries
-    queries.put("SELECT COUNT(DISTINCT p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put(
+        "SELECT COUNT(DISTINCT p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(Portfolio::getID))
             .count());
-    queries.put("SELECT COUNT(DISTINCT p.status) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put(
+        "SELECT COUNT(DISTINCT p.status) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(p -> p.status))
             .count());
-    queries.put("SELECT COUNT(DISTINCT p.getType()) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put("SELECT COUNT(DISTINCT p.getType()) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(Portfolio::getType))
             .count());
-    queries.put("SELECT COUNT(DISTINCT p.position1) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put("SELECT COUNT(DISTINCT p.position1) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(p -> p.position1))
             .count());
-    queries.put("SELECT COUNT(DISTINCT p.shortID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put("SELECT COUNT(DISTINCT p.shortID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(p -> p.shortID))
             .count());
 
     // StructSet queries.
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         (int) supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM' LIMIT 5",
         (int) supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .limit(5).count());
-    queries.put("SELECT DISTINCT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT DISTINCT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM' ORDER BY p.ID",
         (int) supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .distinct().count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
         (int) supplierOne.get()
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
             .count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 OR p.status IN SET ('active', 'inactive') OR pos.secId = 'IBM' LIMIT 50",
         (int) supplierOne.get().filter(p -> p.getID() > 0 || p.isActive() || !p.isActive()
             || p.getPositions().containsKey("IBM")).limit(50).count());
 
     // Aggregate used as as WHERE condition within inner query.
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
-        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         (int) supplierOne.get()
             .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).min().orElse(-1))
             .mapToInt(Portfolio::getID).count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
-        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         (int) supplierOne.get()
             .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).max().orElse(-1))
             .mapToInt(Portfolio::getID).count());
 
     // Equi Join Queries
-    equiJoinQueries.put("SELECT COUNT(*) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT COUNT(*) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0",
         (int) supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
             .filter(p -> p.getID() > 0).count());
-    equiJoinQueries.put("SELECT COUNT(*) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT COUNT(*) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
         (int) supplierOne.get()
             .filter(p -> supplierTwo.get().filter(e -> e.getID() > 40)
                 .collect(Collectors.toMap(Portfolio::getID, Function.identity()))
                 .containsKey(p.getID()))
             .filter(p -> p.getID() > 20).count());
-    equiJoinQueries.put("SELECT COUNT(*) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT COUNT(*) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
         (int) supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
             .filter(p -> p.getID() > 0 && p.isActive()).count());
@@ -168,89 +179,100 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
     }
 
     // Simple Queries
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName,
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName,
         (int) supplierOne.get().count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID > 0",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0",
         (int) supplierOne.get().count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID > 0 LIMIT 50",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0 LIMIT 50",
         (int) supplierOne.get().limit(50).count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID > 0 OR status='active'",
+    queries.put(
+        "SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0 OR status='active'",
         (int) supplierOne.get().filter(p -> p.getID() > 0 || p.isActive()).count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID > 0 OR status LIKE 'ina%'",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
+        + " WHERE ID > 0 OR status LIKE 'ina%'",
         (int) supplierOne.get().filter(p -> p.getID() > 0 || p.status.startsWith("ina")).count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE ID IN SET(1, 2, 3, 4, 5)",
+    queries.put(
+        "SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE ID IN SET(1, 2, 3, 4, 5)",
         (int) supplierOne.get().filter(p -> Arrays.asList(1, 2, 3, 4, 5).contains(p.getID()))
             .count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName + " WHERE NOT (ID > 5)",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName + " WHERE NOT (ID > 5)",
         (int) supplierOne.get().filter(p -> p.getID() <= 5).count());
 
     // Distinct Queries
-    queries.put("SELECT COUNT(DISTINCT p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put(
+        "SELECT COUNT(DISTINCT p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0)
             .filter(distinctByKey(PortfolioPdx::getID)).count());
-    queries.put("SELECT COUNT(DISTINCT p.status) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put(
+        "SELECT COUNT(DISTINCT p.status) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(p -> p.status))
             .count());
-    queries.put("SELECT COUNT(DISTINCT p.getType()) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put("SELECT COUNT(DISTINCT p.getType()) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0)
             .filter(distinctByKey(PortfolioPdx::getType)).count());
-    queries.put("SELECT COUNT(DISTINCT p.position1) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put("SELECT COUNT(DISTINCT p.position1) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(p -> p.position1))
             .count());
-    queries.put("SELECT COUNT(DISTINCT p.shortID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put("SELECT COUNT(DISTINCT p.shortID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID > 0",
         (int) supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(p -> p.shortID))
             .count());
 
     // StructSet queries.
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         (int) supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM' LIMIT 5",
         (int) supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .limit(5).count());
-    queries.put("SELECT DISTINCT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT DISTINCT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM' ORDER BY p.ID",
         (int) supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .distinct().count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
         (int) supplierOne.get()
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
             .count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 OR p.status IN SET ('active', 'inactive') OR pos.secId = 'IBM' LIMIT 50",
         (int) supplierOne.get().filter(p -> p.getID() > 0 || p.isActive() || !p.isActive()
             || p.getPositions().containsKey("IBM")).limit(50).count());
 
     // Aggregate used as as WHERE condition within inner query.
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
-        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         (int) supplierOne.get()
             .filter(
                 p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).min().orElse(-1))
             .mapToInt(PortfolioPdx::getID).count());
-    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
-        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT COUNT(*) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         (int) supplierOne.get()
             .filter(
                 p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).max().orElse(-1))
             .mapToInt(PortfolioPdx::getID).count());
 
     // Equi Join Queries
-    equiJoinQueries.put("SELECT COUNT(*) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT COUNT(*) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0",
         (int) supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
             .filter(p -> p.getID() > 0).count());
-    equiJoinQueries.put("SELECT COUNT(*) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT COUNT(*) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
         (int) supplierOne.get()
             .filter(p -> supplierTwo.get().filter(e -> e.getID() > 40)
                 .collect(Collectors.toMap(PortfolioPdx::getID, Function.identity()))
                 .containsKey(p.getID()))
             .filter(p -> p.getID() > 20).count());
-    equiJoinQueries.put("SELECT COUNT(*) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT COUNT(*) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
         (int) supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
             .filter(p -> p.getID() > 0 && p.isActive()).count());

@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene.internal;
 
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.PR_ROOT_REGION_NAME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -97,7 +98,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     userRegion = Mockito.mock(PartitionedRegion.class);
     userDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(userRegion.getDataStore()).thenReturn(userDataStore);
-    when(cache.getRegion("/testRegion")).thenReturn(userRegion);
+    when(cache.getRegion(SEPARATOR + "testRegion")).thenReturn(userRegion);
     serializer = new HeterogeneousLuceneSerializer();
     DLockService lockService = mock(DLockService.class);
     when(lockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
@@ -131,7 +132,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(indexForPR.getIndexStats()).thenReturn(indexStats);
     when(indexForPR.getAnalyzer()).thenReturn(new StandardAnalyzer());
     when(indexForPR.getCache()).thenReturn(cache);
-    when(indexForPR.getRegionPath()).thenReturn("/testRegion");
+    when(indexForPR.getRegionPath()).thenReturn(SEPARATOR + "testRegion");
 
     prRoot = Mockito.mock(DistributedRegion.class);
     CacheDistributionAdvisor cda = mock(CacheDistributionAdvisor.class);

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;

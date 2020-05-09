@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -371,7 +372,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
   }
 
   public static void doTxPutsPR(String regionName, int numPuts, int size) throws Exception {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
     CacheTransactionManager mgr = cache.getCacheTransactionManager();
     for (int x = 0; x < numPuts; x++) {
       int temp = (int) (Math.floor(Math.random() * size));
@@ -389,7 +390,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 
   public static void doInvalidates(String regionName, int numInvalidates, int size)
       throws Exception {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
     for (int x = 0; x < numInvalidates; x++) {
       int temp = (int) (Math.floor(Math.random() * size));
       try {

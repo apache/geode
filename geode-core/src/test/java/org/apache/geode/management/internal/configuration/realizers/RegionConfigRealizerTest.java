@@ -16,6 +16,7 @@
  */
 package org.apache.geode.management.internal.configuration.realizers;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -119,14 +120,14 @@ public class RegionConfigRealizerTest {
   @Test
   public void regionDoesNotExistIfNotInCache() {
     config.setName("test");
-    when(cache.getRegion("/test")).thenReturn(null);
+    when(cache.getRegion(SEPARATOR + "test")).thenReturn(null);
     assertThat(realizer.exists(config, cache)).isFalse();
   }
 
 
   @Test
   public void regionDoesNotExistIfDestroyed() {
-    when(cache.getRegion("/test")).thenReturn(region);
+    when(cache.getRegion(SEPARATOR + "test")).thenReturn(region);
     when(region.isDestroyed()).thenReturn(true);
     assertThat(realizer.exists(config, cache)).isFalse();
   }
@@ -134,7 +135,7 @@ public class RegionConfigRealizerTest {
   @Test
   public void regionExistsDoesNotGetRuntimeInfo() {
     config.setName("test");
-    when(cache.getRegion("/test")).thenReturn(region);
+    when(cache.getRegion(SEPARATOR + "test")).thenReturn(region);
     when(region.isDestroyed()).thenReturn(false);
     boolean exists = realizer.exists(config, cache);
     assertThat(exists).isTrue();

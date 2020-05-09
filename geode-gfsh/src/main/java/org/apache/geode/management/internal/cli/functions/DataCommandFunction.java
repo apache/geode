@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -418,7 +420,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
       // Recursively find the keys starting from the specified region path.
       List<String> regionPaths = getAllRegionPaths(cache, true);
       for (String path : regionPaths) {
-        if (path.startsWith(regionPath) || path.startsWith(Region.SEPARATOR + regionPath)) {
+        if (path.startsWith(regionPath) || path.startsWith(SEPARATOR + regionPath)) {
           Region targetRegion = cache.getRegion(path);
           listOfRegionsStartingWithRegionPath.add(targetRegion);
         }

@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal.index;
 
 import static java.lang.System.getProperties;
 import static org.apache.geode.cache.query.IndexType.FUNCTIONAL;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.junit.Assert.assertFalse;
 
@@ -86,7 +87,8 @@ public class AsynchIndexMaintenanceJUnitTest {
         .put(GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "50");
     getProperties().put(GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",
         "0");
-    final Index ri = qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", "/portfolio p");
+    final Index ri =
+        qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", SEPARATOR + "portfolio p");
     for (int i = 0; i < 49; ++i) {
       region.put("" + (i + 1), new Portfolio(i + 1));
       idSet.add((i + 1) + "");
@@ -114,7 +116,7 @@ public class AsynchIndexMaintenanceJUnitTest {
     getProperties().put(GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",
         "10000");
     final Index ri =
-        (Index) qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", "/portfolio p");
+        (Index) qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", SEPARATOR + "portfolio p");
 
     final int size = 5;
     for (int i = 0; i < size; ++i) {
@@ -170,7 +172,7 @@ public class AsynchIndexMaintenanceJUnitTest {
     getProperties().put(GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",
         "60000");
     final Index ri =
-        (Index) qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", "/portfolio p");
+        (Index) qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", SEPARATOR + "portfolio p");
     for (int i = 0; i < 3; ++i) {
       region.put("" + (i + 1), new Portfolio(i + 1));
       idSet.add((i + 1) + "");
@@ -197,7 +199,8 @@ public class AsynchIndexMaintenanceJUnitTest {
     System.getProperties().put(GeodeGlossary.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",
         "0");
     Index ri =
-        (Index) qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.getID", "/portfolio p");
+        (Index) qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.getID",
+            SEPARATOR + "portfolio p");
 
     int size = this.getIndexSize(ri);
 
@@ -214,7 +217,7 @@ public class AsynchIndexMaintenanceJUnitTest {
         .put(GeodeGlossary.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "700");
     System.getProperties().put(GeodeGlossary.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",
         "500");
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.getID", "/portfolio p");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.getID", SEPARATOR + "portfolio p");
     final int TOTAL_THREADS = 25;
     final int NUM_UPDATES = 25;
     final CyclicBarrier barrier = new CyclicBarrier(TOTAL_THREADS);

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
@@ -71,22 +72,26 @@ public class HyphenFormatterTest {
   @Test
   public void valueWithHyphenWithoutQuotesFails() {
     String cmd =
-        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+        "rebalance --exclude-region=" + SEPARATOR
+            + "GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
     String formattedCmd = this.formatter.formatCommand(cmd);
 
     String expected =
-        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
+        "rebalance --exclude-region=" + SEPARATOR
+            + "GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
     assertThat(formattedCmd).isEqualTo(expected);
   }
 
   @Test
   public void valueWithHyphenWithoutQuotes() {
     String cmd =
-        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+        "rebalance --exclude-region=" + SEPARATOR
+            + "GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
     String formattedCmd = this.formatter.formatCommand(cmd);
 
     String expected =
-        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
+        "rebalance --exclude-region=" + SEPARATOR
+            + "GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
     assertThat(formattedCmd).isEqualTo(expected);
   }
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -117,7 +118,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
       public void run2() throws CacheException {
         assertNotNull(cache);
 
-        Region region = cache.getRegion("/repRegion");
+        Region region = cache.getRegion(SEPARATOR + "repRegion");
         region.put("testKey", "testValue");
 
         assertEquals(1, region.size());
@@ -188,7 +189,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
             // sent.
             DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 2000;
 
-            Region region = cache.getRegion("/repRegion");
+            Region region = cache.getRegion(SEPARATOR + "repRegion");
             Map testMap = new HashMap();
             testMap.put("testKey", "testValue1");
             region.putAll(testMap);
@@ -207,7 +208,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
           @Override
           public void run2() throws CacheException {
             assertNotNull(cache);
-            Region region = cache.getRegion("/repRegion");
+            Region region = cache.getRegion(SEPARATOR + "repRegion");
 
             while (!region.containsKey("testKey")) {
               Wait.pause(10);
@@ -298,7 +299,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
             // sent.
             DistributedCacheOperation.SLOW_DISTRIBUTION_MS = 2000;
 
-            Region region = cache.getRegion("/repRegion");
+            Region region = cache.getRegion(SEPARATOR + "repRegion");
             Map testMap = new HashMap();
             testMap.put("testKey", "testValue1");
             region.putAll(testMap);
@@ -317,7 +318,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
           @Override
           public void run2() throws CacheException {
             assertNotNull(cache);
-            Region region = cache.getRegion("/repRegion");
+            Region region = cache.getRegion(SEPARATOR + "repRegion");
 
             while (!region.containsKey("testKey")) {
               Wait.pause(10);
@@ -409,7 +410,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
       public void run2() throws CacheException {
         assertNotNull(cache);
 
-        Region region = cache.getRegion("/repRegion");
+        Region region = cache.getRegion(SEPARATOR + "repRegion");
         region.put("testKey", "testValue1");
 
         assertEquals(1, region.size());
@@ -425,7 +426,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
           @Override
           public void run2() throws CacheException {
             assertNotNull(cache);
-            Region region = cache.getRegion("/repRegion");
+            Region region = cache.getRegion(SEPARATOR + "repRegion");
 
             region.put("testKey", "testValue2");
 

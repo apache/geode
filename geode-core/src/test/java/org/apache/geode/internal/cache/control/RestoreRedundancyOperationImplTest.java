@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.control;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,7 +71,7 @@ public class RestoreRedundancyOperationImplTest {
   @Test
   public void doRestoreRedundancyReturnsEmptyResultsWhenRegionDestroyedExceptionIsThrown() {
     PartitionedRegion region = mock(PartitionedRegion.class);
-    doThrow(new RegionDestroyedException("message", "/regionPath")).when(operation)
+    doThrow(new RegionDestroyedException("message", SEPARATOR + "regionPath")).when(operation)
         .getPartitionedRegionRebalanceOp(region);
 
     assertThat(operation.doRestoreRedundancy(region), is(emptyResults));
@@ -101,10 +102,10 @@ public class RestoreRedundancyOperationImplTest {
     doReturn(op).when(operation).getPartitionedRegionRebalanceOp(region);
 
     PartitionRebalanceInfo details1 = mock(PartitionRebalanceInfo.class);
-    String regionPath1 = "/region1";
+    String regionPath1 = SEPARATOR + "region1";
     when(details1.getRegionPath()).thenReturn(regionPath1);
     PartitionRebalanceInfo details2 = mock(PartitionRebalanceInfo.class);
-    String regionPath2 = "/region2";
+    String regionPath2 = SEPARATOR + "region2";
     when(details2.getRegionPath()).thenReturn(regionPath2);
 
     Set<PartitionRebalanceInfo> detailSet = new HashSet<>();

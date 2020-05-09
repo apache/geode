@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -74,9 +75,9 @@ public class CliUtilDUnitTest {
     gfsh.executeAndAssertThat("create region --name=group2Region --group=group2 --type=REPLICATE")
         .statusIsSuccess();
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/commonRegion", 4);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/group1Region", 2);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/group2Region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "commonRegion", 4);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "group1Region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "group2Region", 2);
   }
 
   @Test

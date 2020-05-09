@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.internal.distributed;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
@@ -67,7 +68,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 @Category({LuceneTest.class})
 public class LuceneQueryFunctionJUnitTest {
 
-  private String regionPath = "/region";
+  private String regionPath = SEPARATOR + "region";
 
   private final EntryScore<String> r1_1 = new EntryScore<>("key-1-1", .5f);
   private final EntryScore<String> r1_2 = new EntryScore<>("key-1-2", .4f);

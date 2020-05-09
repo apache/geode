@@ -15,9 +15,9 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.Region.Entry;
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 

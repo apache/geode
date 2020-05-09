@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.internal.aggregate.AbstractAggregator.downCast;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -64,80 +64,89 @@ public class SumIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
     }
 
     // Simple Queries
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName + " p",
         downCast(supplierOne.get().mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         downCast(supplierOne.get().filter(p -> p.getID() > 0).mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0 OR p.ID <= 100",
+    queries.put(
+        "SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0 OR p.ID <= 100",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 || p.getID() <= 100)
             .mapToInt(Portfolio::getID).sum()));
     queries.put(
-        "SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0 OR p.status='active'",
+        "SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+            + " p WHERE p.ID > 0 OR p.status='active'",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 || p.isActive())
             .mapToInt(Portfolio::getID).sum()));
     queries.put(
-        "SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0 OR p.status LIKE 'ina%'",
+        "SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+            + " p WHERE p.ID > 0 OR p.status LIKE 'ina%'",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 || p.status.startsWith("ina"))
             .mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID IN SET(1, 2, 3, 4, 5)",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID IN SET(1, 2, 3, 4, 5)",
         downCast(supplierOne.get().filter(p -> Arrays.asList(1, 2, 3, 4, 5).contains(p.getID()))
             .mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE NOT (p.ID > 5)",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE NOT (p.ID > 5)",
         downCast(supplierOne.get().filter(p -> p.getID() <= 5).mapToInt(Portfolio::getID).sum()));
 
     // Distinct Queries
-    queries.put("SELECT SUM(DISTINCT p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put(
+        "SELECT SUM(DISTINCT p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         downCast(supplierOne.get().filter(p -> p.getID() > 0)
             .filter(distinctByKey(Portfolio::getID)).mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT SUM(DISTINCT p.shortID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put(
+        "SELECT SUM(DISTINCT p.shortID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         downCast(supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(p -> p.shortID))
             .mapToInt(p -> p.shortID).sum()));
 
     // StructSet queries.
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID < 100 AND pos.secId = 'IBM'",
         downCast(
             supplierOne.get().filter(p -> p.getID() < 100 && p.getPositions().containsKey("IBM"))
                 .mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT DISTINCT SUM(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT DISTINCT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .distinct().mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
         downCast(supplierOne.get()
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
             .mapToInt(Portfolio::getID).sum()));
 
     // Aggregate used as as WHERE condition within inner query.
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
-        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         downCast(supplierOne.get()
             .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).min().orElse(-1))
             .mapToInt(Portfolio::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
-        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         downCast(supplierOne.get()
             .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).max().orElse(-1))
             .mapToInt(Portfolio::getID).sum()));
 
     // Equi Join Queries
-    equiJoinQueries.put("SELECT SUM(p.ID) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT SUM(p.ID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0",
         downCast(supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
             .filter(p -> p.getID() > 0).mapToInt(Portfolio::getID).sum()));
-    equiJoinQueries.put("SELECT SUM(p.ID) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT SUM(p.ID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
         downCast(supplierOne.get()
             .filter(p -> supplierTwo.get().filter(e -> e.getID() > 40)
                 .collect(Collectors.toMap(Portfolio::getID, Function.identity()))
                 .containsKey(p.getID()))
             .filter(p -> p.getID() > 20).mapToInt(Portfolio::getID).sum()));
-    equiJoinQueries.put("SELECT SUM(p.ID) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT SUM(p.ID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
         downCast(supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
             .filter(p -> p.getID() > 0 && p.isActive()).mapToInt(Portfolio::getID).sum()));
@@ -162,83 +171,92 @@ public class SumIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
     }
 
     // Simple Queries
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName + " p",
         downCast(supplierOne.get().mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         downCast(supplierOne.get().filter(p -> p.getID() > 0).mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0 OR p.ID <= 100",
+    queries.put(
+        "SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0 OR p.ID <= 100",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 || p.getID() <= 100)
             .mapToInt(PortfolioPdx::getID).sum()));
     queries.put(
-        "SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0 OR p.status='active'",
+        "SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+            + " p WHERE p.ID > 0 OR p.status='active'",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 || p.isActive())
             .mapToInt(PortfolioPdx::getID).sum()));
     queries.put(
-        "SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0 OR p.status LIKE 'ina%'",
+        "SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+            + " p WHERE p.ID > 0 OR p.status LIKE 'ina%'",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 || p.status.startsWith("ina"))
             .mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE p.ID IN SET(1, 2, 3, 4, 5)",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID IN SET(1, 2, 3, 4, 5)",
         downCast(supplierOne.get().filter(p -> Arrays.asList(1, 2, 3, 4, 5).contains(p.getID()))
             .mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName + " p WHERE NOT (p.ID > 5)",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE NOT (p.ID > 5)",
         downCast(
             supplierOne.get().filter(p -> p.getID() <= 5).mapToInt(PortfolioPdx::getID).sum()));
 
     // Distinct Queries
-    queries.put("SELECT SUM(DISTINCT p.ID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put(
+        "SELECT SUM(DISTINCT p.ID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         downCast(supplierOne.get().filter(p -> p.getID() > 0)
             .filter(distinctByKey(PortfolioPdx::getID)).mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT SUM(DISTINCT p.shortID) FROM /" + firstRegionName + " p WHERE p.ID > 0",
+    queries.put(
+        "SELECT SUM(DISTINCT p.shortID) FROM " + SEPARATOR + firstRegionName + " p WHERE p.ID > 0",
         downCast(supplierOne.get().filter(p -> p.getID() > 0).filter(distinctByKey(p -> p.shortID))
             .mapToInt(p -> p.shortID).sum()));
 
     // StructSet queries.
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID < 100 AND pos.secId = 'IBM'",
         downCast(
             supplierOne.get().filter(p -> p.getID() < 100 && p.getPositions().containsKey("IBM"))
                 .mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT DISTINCT SUM(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT DISTINCT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         downCast(supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .distinct().mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
         downCast(supplierOne.get()
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
             .mapToInt(PortfolioPdx::getID).sum()));
 
     // Aggregate used as as WHERE condition within inner query.
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
-        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         downCast(supplierOne.get()
             .filter(
                 p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).min().orElse(-1))
             .mapToInt(PortfolioPdx::getID).sum()));
-    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
-        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT SUM(p.ID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         downCast(supplierOne.get()
             .filter(
                 p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).max().orElse(-1))
             .mapToInt(PortfolioPdx::getID).sum()));
 
     // Equi Join Queries
-    equiJoinQueries.put("SELECT SUM(p.ID) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT SUM(p.ID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0",
         downCast(supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
             .filter(p -> p.getID() > 0).mapToInt(PortfolioPdx::getID).sum()));
-    equiJoinQueries.put("SELECT SUM(p.ID) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT SUM(p.ID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
         downCast(supplierOne.get()
             .filter(p -> supplierTwo.get().filter(e -> e.getID() > 40)
                 .collect(Collectors.toMap(PortfolioPdx::getID, Function.identity()))
                 .containsKey(p.getID()))
             .filter(p -> p.getID() > 20).mapToInt(PortfolioPdx::getID).sum()));
-    equiJoinQueries.put("SELECT SUM(p.ID) from /" + firstRegionName + " p, /" + secondRegionName
+    equiJoinQueries.put("SELECT SUM(p.ID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+        + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
         downCast(supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
             .filter(p -> p.getID() > 0 && p.isActive()).mapToInt(PortfolioPdx::getID).sum()));

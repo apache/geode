@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -442,23 +443,32 @@ public class QCompilerTest {
   public void parsingShouldSucceedWhenAggregatesAreUsedAsPartOfTheWhereClauseWithinAnInnerSelectQuery(
       String function) {
     String[] queries = new String[] {
-        "SELECT * FROM /region WHERE id IN (SELECT " + function + "(id) FROM /region)",
-        "SELECT COUNT(id), status FROM /region WHERE id IN (SELECT " + function
-            + "(id) FROM /region) GROUP BY status",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id IN (SELECT " + function + "(id) FROM "
+            + SEPARATOR + "region)",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE id IN (SELECT " + function
+            + "(id) FROM " + SEPARATOR + "region) GROUP BY status",
 
-        "SELECT * FROM /region WHERE id = ELEMENT(SELECT " + function + "(id) FROM /region)",
-        "SELECT * FROM /region WHERE id < ELEMENT(SELECT " + function + "(id) FROM /region)",
-        "SELECT * FROM /region WHERE id > ELEMENT(SELECT " + function + "(id) FROM /region)",
-        "SELECT * FROM /region WHERE id <> ELEMENT(SELECT " + function + "(id) FROM /region)",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id = ELEMENT(SELECT " + function + "(id) FROM "
+            + SEPARATOR + "region)",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id < ELEMENT(SELECT " + function + "(id) FROM "
+            + SEPARATOR + "region)",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id > ELEMENT(SELECT " + function + "(id) FROM "
+            + SEPARATOR + "region)",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id <> ELEMENT(SELECT " + function
+            + "(id) FROM " + SEPARATOR + "region)",
 
-        "SELECT COUNT(id), status FROM /region WHERE id = ELEMENT(SELECT " + function
-            + "(id) FROM /region) GROUP BY status",
-        "SELECT COUNT(id), status FROM /region WHERE id < ELEMENT(SELECT " + function
-            + "(id) FROM /region) GROUP BY status",
-        "SELECT COUNT(id), status FROM /region WHERE id > ELEMENT(SELECT " + function
-            + "(id) FROM /region) GROUP BY status",
-        "SELECT COUNT(id), status FROM /region WHERE id <> ELEMENT(SELECT " + function
-            + "(id) FROM /region) GROUP BY status",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE id = ELEMENT(SELECT "
+            + function
+            + "(id) FROM " + SEPARATOR + "region) GROUP BY status",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE id < ELEMENT(SELECT "
+            + function
+            + "(id) FROM " + SEPARATOR + "region) GROUP BY status",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE id > ELEMENT(SELECT "
+            + function
+            + "(id) FROM " + SEPARATOR + "region) GROUP BY status",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE id <> ELEMENT(SELECT "
+            + function
+            + "(id) FROM " + SEPARATOR + "region) GROUP BY status",
     };
 
     for (String queryString : queries) {
@@ -474,21 +484,26 @@ public class QCompilerTest {
   public void parsingShouldThrowExceptionWhenAggregatesAreUsedAsPartOfTheWhereClauseWithoutAnInnerSelectQuery(
       String function) {
     String[] queries = new String[] {
-        "SELECT * FROM /region WHERE " + function + "(id) > 0",
-        "SELECT COUNT(id), status FROM /region WHERE " + function + "(id) > 0 GROUP BY status",
-        "SELECT * FROM /region WHERE " + function + "(id) > 0 OR id < 0",
-        "SELECT COUNT(id), status FROM /region WHERE " + function
-            + "(id) > 0 OR id < 0 GROUP BY status",
-        "SELECT * FROM /region WHERE id > 0 AND " + function + "(id) > 0",
-        "SELECT COUNT(id), status FROM /region WHERE id > 0 AND " + function
+        "SELECT * FROM " + SEPARATOR + "region WHERE " + function + "(id) > 0",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE " + function
             + "(id) > 0 GROUP BY status",
-        "SELECT * FROM /region WHERE " + function + "(id) < ELEMENT(SELECT " + function
-            + "(id) FROM /region)",
-        "SELECT COUNT(id), status FROM /region WHERE " + function + "(id) < ELEMENT(SELECT "
-            + function + "(id) FROM /region) GROUP BY status",
-        "SELECT * FROM /region WHERE id > ELEMENT(SELECT id FROM /region WHERE " + function
+        "SELECT * FROM " + SEPARATOR + "region WHERE " + function + "(id) > 0 OR id < 0",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE " + function
+            + "(id) > 0 OR id < 0 GROUP BY status",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id > 0 AND " + function + "(id) > 0",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE id > 0 AND " + function
+            + "(id) > 0 GROUP BY status",
+        "SELECT * FROM " + SEPARATOR + "region WHERE " + function + "(id) < ELEMENT(SELECT "
+            + function
+            + "(id) FROM " + SEPARATOR + "region)",
+        "SELECT COUNT(id), status FROM " + SEPARATOR + "region WHERE " + function
+            + "(id) < ELEMENT(SELECT "
+            + function + "(id) FROM " + SEPARATOR + "region) GROUP BY status",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id > ELEMENT(SELECT id FROM " + SEPARATOR
+            + "region WHERE " + function
             + "(id) > 0)",
-        "SELECT id, status FROM /region WHERE id > ELEMENT(SELECT id FROM /region WHERE " + function
+        "SELECT id, status FROM " + SEPARATOR + "region WHERE id > ELEMENT(SELECT id FROM "
+            + SEPARATOR + "region WHERE " + function
             + "(id) > 0)"
     };
 

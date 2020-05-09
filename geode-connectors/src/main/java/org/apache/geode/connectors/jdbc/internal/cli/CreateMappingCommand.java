@@ -15,7 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.File;
 import java.io.FileInputStream;

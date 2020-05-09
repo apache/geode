@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -105,8 +107,8 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
           public void run2() {
             try {
               QueryService qs = getCache().getQueryService();
-              qs.createIndex("valueIndex1", IndexType.FUNCTIONAL, "e1.value", "/pr1 e1");
-              qs.createIndex("valueIndex2", IndexType.FUNCTIONAL, "e2.value", "/pr2 e2");
+              qs.createIndex("valueIndex1", IndexType.FUNCTIONAL, "e1.value", SEPARATOR + "pr1 e1");
+              qs.createIndex("valueIndex2", IndexType.FUNCTIONAL, "e2.value", SEPARATOR + "pr2 e2");
             } catch (Exception e) {
               org.apache.geode.test.dunit.Assert
                   .fail("Test failed due to Exception in index creation ", e);
@@ -144,13 +146,15 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                       PartitionRegionHelper.getColocatedRegions(pr1);
                   Map<String, Region<?, ?>> localColocatedRegions =
                       PartitionRegionHelper.getLocalColocatedRegions(rContext);
-                  Region pr2 = colocatedRegions.get("/pr2");
-                  LocalDataSet localOrd = (LocalDataSet) localColocatedRegions.get("/pr2");
+                  Region pr2 = colocatedRegions.get(SEPARATOR + "pr2");
+                  LocalDataSet localOrd =
+                      (LocalDataSet) localColocatedRegions.get(SEPARATOR + "pr2");
                   QueryObserverImpl observer = new QueryObserverImpl();
                   QueryObserverHolder.setInstance(observer);
                   QueryService qs = pr1.getCache().getQueryService();
                   DefaultQuery query = (DefaultQuery) qs.newQuery(
-                      "select distinct e1.value from /pr1 e1, /pr2  e2 where e1.value=e2.value");
+                      "select distinct e1.value from " + SEPARATOR + "pr1 e1, " + SEPARATOR
+                          + "pr2  e2 where e1.value=e2.value");
                   final ExecutionContext executionContext =
                       new QueryExecutionContext(null, cache, query);
 

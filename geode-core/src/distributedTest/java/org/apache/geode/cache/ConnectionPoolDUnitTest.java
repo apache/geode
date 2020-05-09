@@ -21,6 +21,7 @@ import static org.apache.geode.cache30.ClientServerTestCase.configureConnectionP
 import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.fail;
@@ -3041,7 +3042,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           await().untilAsserted(() -> {
             Region<Object, Object> region = rootRegion.getSubregion(dynFromClientName);
             assertThat(region).isNotNull();
-            assertThat(getCache().getRegion(name + Region.SEPARATOR + dynFromClientName))
+            assertThat(getCache().getRegion(name + SEPARATOR + dynFromClientName))
                 .isNotNull();
           });
 
@@ -3054,7 +3055,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       assertThat(DynamicRegionFactory.get().isActive()).isTrue();
       Region<Object, Object> r = getRootRegion(name);
       assertThat(r).isNotNull();
-      String drName = r.getFullPath() + Region.SEPARATOR + dynFromClientName;
+      String drName = r.getFullPath() + SEPARATOR + dynFromClientName;
 
       assertThat(getCache().getRegion(drName)).isNotNull();
       DynamicRegionFactory.get().destroyDynamicRegion(drName);
@@ -3067,7 +3068,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         .forEach(vm -> vm.invoke("Validate dynamic region destruction on server", () -> {
           Region<Object, Object> r = getRootRegion(name);
           assertThat(r).isNotNull();
-          String drName = r.getFullPath() + Region.SEPARATOR + dynFromClientName;
+          String drName = r.getFullPath() + SEPARATOR + dynFromClientName;
           assertThat(getCache().getRegion(drName)).isNull();
           try {
             DynamicRegionFactory.get().destroyDynamicRegion(drName);
@@ -3094,7 +3095,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       assertThat(r).isNotNull();
       Region<Object, Object> dr = waitForSubRegion(r, dynFromServerName);
       assertThat(dr).isNotNull();
-      assertThat(getCache().getRegion(name + Region.SEPARATOR + dynFromServerName))
+      assertThat(getCache().getRegion(name + SEPARATOR + dynFromServerName))
           .isNotNull();
       waitForEntry(dr, key1);
       assertThat(dr.getEntry(key1)).isNotNull();
@@ -3108,7 +3109,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> dr;
 
       await().pollInterval(1, SECONDS).until(() -> r.getSubregion(dynFromServerName) != null
-          && getCache().getRegion(name + Region.SEPARATOR + dynFromServerName) != null);
+          && getCache().getRegion(name + SEPARATOR + dynFromServerName) != null);
 
       dr = r.getSubregion(dynFromServerName);
       waitForEntry(dr, key1);
@@ -3121,7 +3122,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       assertThat(DynamicRegionFactory.get().isActive()).isTrue();
       Region<Object, Object> r = getRootRegion(name);
       assertThat(r).isNotNull();
-      String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
+      String drName = r.getFullPath() + SEPARATOR + dynFromServerName;
 
       assertThat(getCache().getRegion(drName)).isNotNull();
       DynamicRegionFactory.get().destroyDynamicRegion(drName);
@@ -3131,7 +3132,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     srv1.invoke("Validate dynamic region destruction on other server", () -> {
       Region<Object, Object> r = getRootRegion(name);
       assertThat(r).isNotNull();
-      String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
+      String drName = r.getFullPath() + SEPARATOR + dynFromServerName;
 
       await().ignoreException(RegionDestroyedException.class)
           .until(() -> getCache().getRegion(drName) == null);
@@ -3142,7 +3143,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     client1.invoke("Validate dynamic region destruction on client", () -> {
       Region<Object, Object> r = getRootRegion(name);
       assertThat(r).isNotNull();
-      String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
+      String drName = r.getFullPath() + SEPARATOR + dynFromServerName;
       await().ignoreException(RegionDestroyedException.class)
           .until(() -> getCache().getRegion(drName) == null);
 

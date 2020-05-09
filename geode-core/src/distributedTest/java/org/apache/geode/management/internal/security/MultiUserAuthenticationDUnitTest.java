@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
@@ -86,8 +87,8 @@ public class MultiUserAuthenticationDUnitTest {
 
       cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
 
-      Region region = regionService1.getRegion("/region");
-      Region region2 = regionService2.getRegion("/region");
+      Region region = regionService1.getRegion(SEPARATOR + "region");
+      Region region2 = regionService2.getRegion(SEPARATOR + "region");
       for (int j = 0; j < KEY_COUNT; j++) {
         String value = i + "" + j;
         region.put(value, value);

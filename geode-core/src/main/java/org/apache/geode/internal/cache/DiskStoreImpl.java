@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.entries.DiskEntry.Helper.readRawValue;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.io.File;
 import java.io.FileOutputStream;

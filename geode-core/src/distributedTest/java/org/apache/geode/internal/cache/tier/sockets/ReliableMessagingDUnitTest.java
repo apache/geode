@@ -18,6 +18,7 @@ import static java.util.Map.Entry;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -212,7 +213,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries() throws Exception {
     creationTime = 0;
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     String keyPrefix = "server-";
     for (int i = 0; i < 5; i++) {
       r1.create(keyPrefix + i, "val");
@@ -220,7 +221,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void putOnServer() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     String keyPrefix = "server-";
     for (int i = 0; i < 5; i++) {
       r1.put(keyPrefix + i, "val-" + i);
@@ -265,7 +266,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
    * Wait for new value on cache server to become visible in this cache
    */
   public static void waitForServerUpdate() {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     final long maxWaitTime = 60000;
     final long start = System.currentTimeMillis();

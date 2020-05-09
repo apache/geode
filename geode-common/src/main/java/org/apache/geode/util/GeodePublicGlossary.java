@@ -12,25 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.util;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+public class GeodePublicGlossary {
+  /**
+   * The region name separator character.
+   */
+  public static final char SEPARATOR_CHAR = '~';
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
-
-public class RunOutOfMemoryFunction implements Function<Void> {
-
-  @Override
-  public void execute(FunctionContext<Void> context) {
-    byte[] bytes = new byte[Integer.MAX_VALUE / 2];
-    byte[] bytes1 = new byte[Integer.MAX_VALUE / 2];
-    byte[] bytes2 = new byte[Integer.MAX_VALUE / 2];
-
-    Region<String, byte[]> testRegion = context.getCache().getRegion(SEPARATOR + "testRegion");
-    testRegion.put("byteArray", bytes);
-    testRegion.put("byteArray1", bytes1);
-    testRegion.put("byteArray2", bytes2);
-  }
+  /**
+   * The region name separator character, represented as a string for convenience.
+   */
+  public static final String SEPARATOR = String.valueOf(SEPARATOR_CHAR);
 }

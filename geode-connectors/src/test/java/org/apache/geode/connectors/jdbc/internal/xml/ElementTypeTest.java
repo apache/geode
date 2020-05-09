@@ -27,6 +27,7 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_TYPE;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.SCHEMA;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.TABLE;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -86,7 +87,7 @@ public class ElementTypeTest {
     when(attributes.getValue(IDS)).thenReturn("ids");
     when(attributes.getValue(CATALOG)).thenReturn("catalog");
     when(attributes.getValue(SCHEMA)).thenReturn("schema");
-    when(regionCreation.getFullPath()).thenReturn("/region");
+    when(regionCreation.getFullPath()).thenReturn(SEPARATOR + "region");
     stack.push(regionCreation);
 
     ElementType.JDBC_MAPPING.startElement(stack, attributes);

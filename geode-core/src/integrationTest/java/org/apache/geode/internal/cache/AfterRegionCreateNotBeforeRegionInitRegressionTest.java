@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 
@@ -81,7 +82,8 @@ public class AfterRegionCreateNotBeforeRegionInitRegressionTest {
     public void afterRegionCreate(RegionEvent event) {
       InternalRegion region = (InternalRegion) event.getRegion();
       String regionPath = event.getRegion().getFullPath();
-      if (regionPath.contains("/testRegion/testSubRegion") || regionPath.contains("/testRegion")) {
+      if (regionPath.contains(SEPARATOR + "testRegion" + SEPARATOR + "testSubRegion")
+          || regionPath.contains(SEPARATOR + "testRegion")) {
         afterRegionCreateCount.incrementAndGet();
         errorCollector.checkThat(region.isInitialized(), is(true));
       }

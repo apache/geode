@@ -15,6 +15,7 @@
 package org.apache.geode.management.bean.stats;
 
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.enabledClock;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -49,7 +50,8 @@ public class RegionStatsJUnitTest extends MBeanStatsTestCase {
   protected void init() {
     statisticsClock = enabledClock();
     cachePerfStats = new CachePerfStats(system, statisticsClock);
-    partitionedRegionStats = new PartitionedRegionStats(system, "/tests", statisticsClock);
+    partitionedRegionStats =
+        new PartitionedRegionStats(system, SEPARATOR + "tests", statisticsClock);
     diskRegionStats = new DiskRegionStats(system, "test-disk");
 
     bridge = new RegionMBeanBridge(cachePerfStats);

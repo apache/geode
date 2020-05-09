@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
@@ -118,8 +118,6 @@ public class IndexCommandsIntegrationTestBase {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
         "\"" + SEPARATOR + regionName + " s, s.history h\"");
 
-    System.out.println("DONAL: " + createStringBuilder.toString());
-
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
 
@@ -160,17 +158,18 @@ public class IndexCommandsIntegrationTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/InvalidRegionName");
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, SEPARATOR + "InvalidRegionName");
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
-        .containsOutput("Region not found : \"/InvalidRegionName\"");
+        .containsOutput("Region not found : \"" + SEPARATOR + "InvalidRegionName\"");
   }
 
   @Test
   public void cannotCreateWithTheSameName() throws Exception {
     createSimpleIndexA();
-    gfsh.executeAndAssertThat("create index --name=indexA --expression=key --region=/regionA")
+    gfsh.executeAndAssertThat(
+        "create index --name=indexA --expression=key --region=" + SEPARATOR + "regionA")
         .statusIsError()
         .containsOutput("Index \"indexA\" already exists.  Create failed due to duplicate name");
   }

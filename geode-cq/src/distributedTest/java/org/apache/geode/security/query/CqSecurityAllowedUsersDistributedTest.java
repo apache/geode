@@ -17,6 +17,7 @@ package org.apache.geode.security.query;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -137,7 +138,7 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
   @Test
   public void cqQueryWithPublicFieldOnNonEmptyRegionShouldNotThrowException() {
     putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.id = 0";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.id = 0";
 
     specificUserClient.invoke(() -> {
       CqQuery cq = createCq(query);
@@ -152,14 +153,14 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
 
   @Test
   public void cqQueryWithImplicitMethodInvocationOnEmptyRegionShouldNotThrowExceptionDuringExecuteWithInitialResultsAndInvokeOnErrorForNextMatchingEvent() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.name = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.name = 'Beth'";
 
     executeCqWithInitialResultsAndAssertThatOnErrorIsInvokedOnNextMatchingEvent(query);
   }
 
   @Test
   public void cqQueryWithExplicitMethodInvocationOnEmptyRegionShouldNotThrowExceptionDuringExecuteWithInitialResultsAndInvokeOnErrorForNextMatchingEvent() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.getName = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getName = 'Beth'";
 
     executeCqWithInitialResultsAndAssertThatOnErrorIsInvokedOnNextMatchingEvent(query);
   }
@@ -168,7 +169,7 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
   public void cqQueryWithImplicitMethodInvocationOnNonEmptyReplicateRegionShouldThrowExceptionDuringExecute() {
     Assume.assumeTrue(regionShortcut.equals(REPLICATE));
     putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.name = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.name = 'Beth'";
 
     executeCqAndAssertExceptionThrown(query);
   }
@@ -177,7 +178,7 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
   public void cqQueryWithExplicitMethodInvocationOnNonEmptyReplicateRegionShouldThrowExceptionDuringExecute() {
     Assume.assumeTrue(regionShortcut.equals(REPLICATE));
     putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.getName = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getName = 'Beth'";
 
     executeCqAndAssertExceptionThrown(query);
   }
@@ -186,7 +187,7 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
   public void cqQueryWithImplicitMethodInvocationOnNonEmptyPartitionRegionShouldNotThrowExceptionDuringExecuteAndInvokeOnErrorForNextMatchingEvent() {
     Assume.assumeTrue(regionShortcut.equals(PARTITION));
     putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.name = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.name = 'Beth'";
 
     executeCqAndAssertThatOnErrorIsInvokedOnNextMatchingEvent(query);
   }
@@ -195,7 +196,7 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
   public void cqQueryWithExplicitMethodInvocationOnNonEmptyPartitionRegionShouldNotThrowExceptionDuringExecuteAndInvokeOnErrorForNextMatchingEvent() {
     Assume.assumeTrue(regionShortcut.equals(PARTITION));
     putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.getName = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getName = 'Beth'";
 
     executeCqAndAssertThatOnErrorIsInvokedOnNextMatchingEvent(query);
   }
@@ -203,7 +204,7 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
   @Test
   public void cqQueryWithImplicitMethodInvocationOnNonEmptyRegionShouldThrowExceptionDuringExecuteWithInitialResults() {
     putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.name = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.name = 'Beth'";
 
     executeCqWithInitialResultsAndAssertExceptionThrown(query);
   }
@@ -211,14 +212,14 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
   @Test
   public void cqQueryWithExplicitMethodInvocationOnNonEmptyRegionShouldThrowExceptionDuringExecuteWithInitialResults() {
     putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.getName = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getName = 'Beth'";
 
     executeCqWithInitialResultsAndAssertExceptionThrown(query);
   }
 
   @Test
   public void cqCanBeClosedByTheCreator() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.id = 0";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.id = 0";
 
     specificUserClient.invoke(() -> {
       CqQuery cq = createCq(query);

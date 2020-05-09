@@ -16,11 +16,12 @@
  */
 package org.apache.geode.management.internal.util;
 
+import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 
 /**
  * Class to handle Region path.
@@ -35,7 +36,7 @@ public class RegionPath {
 
   public RegionPath(String pathName) {
     regionPath = pathName;
-    String[] regions = pathName.split(Region.SEPARATOR);
+    String[] regions = pathName.split(SEPARATOR);
 
     LinkedList<String> regionsNames = new LinkedList<>();
     for (String region : regions) {
@@ -47,7 +48,7 @@ public class RegionPath {
     regionName = regionsNames.removeLast();
     StringBuilder parentPathBuilder = new StringBuilder();
     while (!regionsNames.isEmpty()) {
-      parentPathBuilder.append(Region.SEPARATOR).append(regionsNames.removeFirst());
+      parentPathBuilder.append(SEPARATOR).append(regionsNames.removeFirst());
     }
 
     regionParentPath = parentPathBuilder.length() != 0 ? parentPathBuilder.toString() : null;
@@ -69,7 +70,7 @@ public class RegionPath {
   }
 
   public boolean isRoot() {
-    return regionParentPath == Region.SEPARATOR || regionParentPath == null;
+    return regionParentPath == SEPARATOR || regionParentPath == null;
   }
 
   public String[] getRegionsOnParentPath() {
@@ -77,7 +78,7 @@ public class RegionPath {
       return new String[] {};
     }
 
-    String[] regionsOnPath = getParent().split(Region.SEPARATOR);
+    String[] regionsOnPath = getParent().split(SEPARATOR);
 
     // Ignore preceding separator if there is one
     int start = regionsOnPath[0] == null || regionsOnPath[0].isEmpty() ? 1 : 0;
@@ -118,7 +119,8 @@ public class RegionPath {
   }
 
   public static void main(String[] args) {
-    RegionPath rp = new RegionPath("/region1/region11/region111/region1112");
+    RegionPath rp = new RegionPath(SEPARATOR + "region1" + SEPARATOR + "region11" + SEPARATOR
+        + "region111" + SEPARATOR + "region1112");
 
     System.out.println("name :: " + rp.getName());
     System.out.println("regionpath :: " + rp.getRegionPath());
@@ -127,7 +129,7 @@ public class RegionPath {
 
     System.out.println("---------------------------------------------------");
 
-    rp = new RegionPath("/region1");
+    rp = new RegionPath(SEPARATOR + "region1");
 
     System.out.println("name :: " + rp.getName());
     System.out.println("regionpath :: " + rp.getRegionPath());
