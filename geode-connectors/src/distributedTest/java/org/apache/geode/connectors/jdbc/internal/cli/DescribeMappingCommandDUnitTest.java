@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
@@ -68,7 +69,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   private MemberVM server2;
 
   private static String convertRegionPathToName(String regionPath) {
-    if (regionPath.startsWith("/")) {
+    if (regionPath.startsWith(SEPARATOR)) {
       return regionPath.substring(1);
     }
     return regionPath;
@@ -185,7 +186,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @SuppressWarnings("deprecation")
   @Test
   public void describesExistingSynchronousMapping() throws Exception {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
@@ -266,7 +267,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @SuppressWarnings("deprecation")
   @Test
   public void describesExistingAsyncMapping() throws Exception {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
@@ -353,7 +354,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @Test
   public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroups()
       throws Exception {
-    String regionName = "/" + TEST_REGION;
+    String regionName = SEPARATOR + TEST_REGION;
     String groupName1 = "group1";
     String groupName2 = "group2";
     locator = startupRule.startLocatorVM(0);

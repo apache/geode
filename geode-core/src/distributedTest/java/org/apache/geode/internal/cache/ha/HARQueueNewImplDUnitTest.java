@@ -257,7 +257,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static void registerInterestListAll() {
     try {
-      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
       assertThat(region).isNotNull();
       region.registerInterest("ALL_KEYS");
     } catch (GemFireException ex) {
@@ -267,7 +267,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static void registerInterestList() {
     try {
-      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
       assertThat(region).isNotNull();
       region.registerInterest("k1");
       region.registerInterest("k3");
@@ -280,7 +280,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private static void putEntries() {
     try {
 
-      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
       assertThat(region).isNotNull();
 
       region.put("k1", "pv1");
@@ -295,7 +295,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries() {
     try {
-      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
       assertThat(region).isNotNull();
 
       region.create("k1", "v1");
@@ -310,7 +310,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries(Long num) {
     try {
-      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
       assertThat(region).isNotNull();
       for (long i = 0; i < num; i++) {
         region.create("k" + i, "v" + i);
@@ -323,7 +323,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private static void putHeavyEntries(Integer num) {
     try {
       byte[] val;
-      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
       assertThat(region).isNotNull();
       for (long i = 0; i < num; i++) {
         val = new byte[1024 * 1024 * 5]; // 5 MB
@@ -412,7 +412,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private void ValidateRegionSizes(int port) {
     await().untilAsserted(() -> {
-      Region region = cache.getRegion("/" + regionName);
+      Region region = cache.getRegion(SEPARATOR + regionName);
       Region<Object, Object> msgsRegion =
           cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
       int clientMsgRegionSize = msgsRegion.size();
@@ -847,7 +847,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static void verifyNullCUMReference(Integer port) {
     Region<Object, Object> region =
-        cache.getRegion("/" + CacheServerImpl.generateNameForClientMsgsRegion(port));
+        cache.getRegion(SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port));
     assertThat(region).isNotNull();
 
     Object[] arr = region.keySet().toArray();
@@ -858,7 +858,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void verifyHaContainerDestroyed(Boolean isRegion, Integer port) {
-    Map region = cache.getRegion("/" + CacheServerImpl.generateNameForClientMsgsRegion(port));
+    Map region = cache.getRegion(SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port));
 
     if (isRegion) {
       if (region != null) {
@@ -997,7 +997,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     // Get the clientMessagesRegion and check the size.
     Region<Object, Object> msgsRegion =
         cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
-    Region region = cache.getRegion("/" + regionName);
+    Region region = cache.getRegion(SEPARATOR + regionName);
     logger.debug(
         "size<serverRegion, clientMsgsRegion>: " + region.size() + ", " + msgsRegion.size());
     assertThat(region.size()).isEqualTo(((Integer) 5).intValue());
@@ -1019,7 +1019,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private static void verifyRegionSize(final Integer regionSize, final Integer msgsRegionSize) {
     GeodeAwaitility.await().until(() -> {
       // Get the clientMessagesRegion and check the size.
-      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
       int sz = region.size();
       if (regionSize != sz) {
         return false;
@@ -1042,7 +1042,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().until(() -> {
       try {
         // Get the clientMessagesRegion and check the size.
-        Region<Object, Object> region = cache.getRegion("/" + regionName);
+        Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
         int sz = region.size();
         if (sz != 1) {
           return false;

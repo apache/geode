@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.CREATE_REGION_MESSAGE_LUCENE;
 
 import java.util.ArrayList;
@@ -174,10 +176,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public static String getUniqueIndexName(String indexName, String regionPath) {
-    if (!regionPath.startsWith("/")) {
-      regionPath = "/" + regionPath;
+    if (!regionPath.startsWith(SEPARATOR)) {
+      regionPath = SEPARATOR + regionPath;
     }
-    return indexName + "#" + regionPath.replace('/', '_');
+    return indexName + "#" + regionPath.replace(SEPARATOR_CHAR, '_');
   }
 
   public static String getUniqueIndexRegionName(String indexName, String regionPath,
@@ -202,8 +204,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
       final Map<String, Analyzer> fieldAnalyzers, final LuceneSerializer serializer,
       boolean allowOnExistingRegion, final String... fields) {
 
-    if (!regionPath.startsWith("/")) {
-      regionPath = "/" + regionPath;
+    if (!regionPath.startsWith(SEPARATOR)) {
+      regionPath = SEPARATOR + regionPath;
     }
 
     // We must always register the index (this is where IndexAlreadyExistsException is detected)
@@ -449,8 +451,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   protected void destroyIndex(String indexName, String regionPath, boolean initiator) {
-    if (!regionPath.startsWith("/")) {
-      regionPath = "/" + regionPath;
+    if (!regionPath.startsWith(SEPARATOR)) {
+      regionPath = SEPARATOR + regionPath;
     }
     LuceneIndexImpl indexImpl = (LuceneIndexImpl) getIndex(indexName, regionPath);
     if (indexImpl == null) {
@@ -464,8 +466,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public void destroyDefinedIndex(String indexName, String regionPath) {
-    if (!regionPath.startsWith("/")) {
-      regionPath = "/" + regionPath;
+    if (!regionPath.startsWith(SEPARATOR)) {
+      regionPath = SEPARATOR + regionPath;
     }
     String uniqueIndexName = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     if (definedIndexMap.containsKey(uniqueIndexName)) {
@@ -484,8 +486,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   protected RegionListener getRegionListener(String indexName, String regionPath) {
-    if (!regionPath.startsWith("/")) {
-      regionPath = "/" + regionPath;
+    if (!regionPath.startsWith(SEPARATOR)) {
+      regionPath = SEPARATOR + regionPath;
     }
     RegionListener rl = null;
     for (RegionListener listener : cache.getRegionListeners()) {
@@ -506,8 +508,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   protected void destroyIndexes(String regionPath, boolean initiator) {
-    if (!regionPath.startsWith("/")) {
-      regionPath = "/" + regionPath;
+    if (!regionPath.startsWith(SEPARATOR)) {
+      regionPath = SEPARATOR + regionPath;
     }
     List<LuceneIndexImpl> indexesToDestroy = new ArrayList<>();
     for (LuceneIndex index : getAllIndexes()) {
@@ -533,8 +535,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public void destroyDefinedIndexes(String regionPath) {
-    if (!regionPath.startsWith("/")) {
-      regionPath = "/" + regionPath;
+    if (!regionPath.startsWith(SEPARATOR)) {
+      regionPath = SEPARATOR + regionPath;
     }
 
     // Iterate the defined indexes to get the ones for the regionPath

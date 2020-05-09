@@ -15,6 +15,7 @@
 
 package org.apache.geode.modules.session.catalina;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
@@ -272,7 +273,7 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
 
     Set<String> sessionIds = new HashSet<>();
 
-    when(sessionRegion.getFullPath()).thenReturn("/" + sessionRegionName);
+    when(sessionRegion.getFullPath()).thenReturn(SEPARATOR + sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.REPLICATE.toString());
 
     sessionCache.touchSessions(sessionIds);
@@ -289,7 +290,7 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
     FunctionException exception = new FunctionException();
     ResultCollector exceptionCollector = mock(ResultCollector.class);
 
-    when(sessionRegion.getFullPath()).thenReturn("/" + sessionRegionName);
+    when(sessionRegion.getFullPath()).thenReturn(SEPARATOR + sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.REPLICATE.toString());
     when(emptyExecution.execute(TouchReplicatedRegionEntriesFunction.ID))
         .thenReturn(exceptionCollector);

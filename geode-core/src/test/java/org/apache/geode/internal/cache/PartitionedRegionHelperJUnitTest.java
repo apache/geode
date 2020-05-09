@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -25,13 +26,13 @@ public class PartitionedRegionHelperJUnitTest {
   public void testEscapeUnescape() {
     {
       String bucketName = PartitionedRegionHelper.getBucketName("/root/region", 5);
-      assertEquals("Name = " + bucketName, -1, bucketName.indexOf('/'));
+      assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
       assertEquals("/root/region", PartitionedRegionHelper.getPRPath(bucketName));
     }
 
     {
       String bucketName = PartitionedRegionHelper.getBucketName("/root/region_one", 5);
-      assertEquals("Name = " + bucketName, -1, bucketName.indexOf('/'));
+      assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
       assertEquals("/root/region_one", PartitionedRegionHelper.getPRPath(bucketName));
     }
   }

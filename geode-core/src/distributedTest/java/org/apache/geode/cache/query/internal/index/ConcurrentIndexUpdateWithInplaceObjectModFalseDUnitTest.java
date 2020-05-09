@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -75,12 +76,12 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
   // CompactRangeIndex
   private String indexName = "idIndex";
   private String indexedExpression = "ID";
-  private String fromClause = "/" + regionName;
+  private String fromClause = SEPARATOR + regionName;
   private String alias = "p";
 
   private String rindexName = "secidIndex";
   private String rindexedExpression = "pos.secId";
-  private String rfromClause = "/" + regionName + " p, p.positions.values pos";
+  private String rfromClause = SEPARATOR + regionName + " p, p.positions.values pos";
   private String ralias = "pos";
 
   int stepSize = 10;

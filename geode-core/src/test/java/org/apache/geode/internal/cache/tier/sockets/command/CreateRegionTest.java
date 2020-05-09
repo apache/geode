@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -142,7 +143,8 @@ public class CreateRegionTest {
 
     this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.authzRequest).createRegionAuthorize(eq(PARENT_REGION_NAME + '/' + REGION_NAME));
+    verify(this.authzRequest)
+        .createRegionAuthorize(eq(PARENT_REGION_NAME + SEPARATOR + REGION_NAME));
     verify(this.responseMessage).send(this.serverConnection);
   }
 
@@ -151,11 +153,12 @@ public class CreateRegionTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
-        .createRegionAuthorize(eq(PARENT_REGION_NAME + '/' + REGION_NAME));
+        .createRegionAuthorize(eq(PARENT_REGION_NAME + SEPARATOR + REGION_NAME));
 
     this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.authzRequest).createRegionAuthorize(eq(PARENT_REGION_NAME + '/' + REGION_NAME));
+    verify(this.authzRequest)
+        .createRegionAuthorize(eq(PARENT_REGION_NAME + SEPARATOR + REGION_NAME));
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
   }
 

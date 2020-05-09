@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -100,7 +101,7 @@ public class IndexCommandsIntegrationTestBase {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, "indexA");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
-        "\"/" + regionName + " s, s.history h\"");
+        "\"" + SEPARATOR + regionName + " s, s.history h\"");
 
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
@@ -115,7 +116,9 @@ public class IndexCommandsIntegrationTestBase {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
-        "\"/" + regionName + " s, s.history h\"");
+        "\"" + SEPARATOR + regionName + " s, s.history h\"");
+
+    System.out.println("DONAL: " + createStringBuilder.toString());
 
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
@@ -132,7 +135,7 @@ public class IndexCommandsIntegrationTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, SEPARATOR + regionName);
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError();
@@ -178,7 +181,7 @@ public class IndexCommandsIntegrationTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "InvalidExpressionOption");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, SEPARATOR + regionName);
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError();
@@ -286,7 +289,7 @@ public class IndexCommandsIntegrationTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, SEPARATOR + regionName);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Index successfully created");
   }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -647,7 +648,7 @@ public class LuceneIndexCommandsIntegrationTest {
   public void testDestroyNonExistentSingleIndex() throws Exception {
     createRegion();
     String expectedStatus = String.format("Lucene index %s was not found in region %s",
-        new Object[] {INDEX_NAME, '/' + REGION_NAME});
+        new Object[] {INDEX_NAME, SEPARATOR + REGION_NAME});
 
     gfsh.executeAndAssertThat("destroy lucene index --name=index --region=region").statusIsSuccess()
         .containsOutput(expectedStatus);

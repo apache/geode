@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -2607,7 +2608,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     createCQ(client, "testQuery_3", "select * from /" + regions[0]);
     String expectedError =
         String.format("CQ is not supported for replicated region: %s with eviction action: %s",
-            "/" + regions[0], EvictionAction.LOCAL_DESTROY);
+            SEPARATOR + regions[0], EvictionAction.LOCAL_DESTROY);
     try {
       executeCQ(client, "testQuery_3", false, expectedError);
     } catch (Exception e) {

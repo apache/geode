@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static java.lang.System.out;
 import static java.util.Map.Entry;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -343,7 +344,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       updateIntoSinglePR(false);
 
       ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-      ClientPartitionAdvisor advisor = cms.getClientPartitionAdvisor("/" + PR_NAME);
+      ClientPartitionAdvisor advisor = cms.getClientPartitionAdvisor(SEPARATOR + PR_NAME);
       int[] expected = new int[] {port1, port1, port1, port4, port4, port4, port2, port2, port2,
           port4, port4, port4};
       for (int i = 0; i < expected.length; i++) {

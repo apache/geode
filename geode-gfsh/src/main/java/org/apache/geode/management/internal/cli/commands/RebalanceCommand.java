@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -103,8 +105,8 @@ public class RebalanceCommand extends GfshCommand {
     rsltList.add(8, String.valueOf(results.getTimeInMilliseconds()));
     rsltList.add(9, String.valueOf(results.getNumOfMembers()));
     String regionName = results.getRegionName();
-    if (!regionName.startsWith("/")) {
-      regionName = "/" + regionName;
+    if (!regionName.startsWith(SEPARATOR)) {
+      regionName = SEPARATOR + regionName;
     }
     rsltList.add(10, regionName);
 

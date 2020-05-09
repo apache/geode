@@ -16,6 +16,7 @@ package org.apache.geode.tools.pulse.controllers;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.tools.pulse.internal.data.Cluster.CLUSTER_STAT_GARBAGE_COLLECTION;
 import static org.apache.geode.tools.pulse.internal.data.Cluster.CLUSTER_STAT_MEMORY_USAGE;
 import static org.apache.geode.tools.pulse.internal.data.Cluster.CLUSTER_STAT_THROUGHPUT_READS;
@@ -86,7 +87,7 @@ public class PulseControllerJUnitTest {
   private static final String PHYSICAL_HOST_NAME = "physical-host-1";
   private static final String PRINCIPAL_USER = "test-user";
   private static final String REGION_NAME = "mock-region";
-  private static final String REGION_PATH = "/" + REGION_NAME;
+  private static final String REGION_PATH = SEPARATOR + REGION_NAME;
   private static final String REGION_TYPE = "PARTITION";
   private static final Principal PRINCIPAL = () -> PRINCIPAL_USER;
 

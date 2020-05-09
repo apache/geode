@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.IOException;
 
 import org.apache.geode.annotations.Immutable;
@@ -106,7 +108,7 @@ public class CreateRegion extends BaseCommand {
     AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
     if (authzRequest != null) {
       try {
-        authzRequest.createRegionAuthorize(parentRegionName + '/' + regionName);
+        authzRequest.createRegionAuthorize(parentRegionName + SEPARATOR + regionName);
       } catch (NotAuthorizedException ex) {
         writeException(clientMessage, ex, false, serverConnection);
         serverConnection.setAsTrue(RESPONDED);

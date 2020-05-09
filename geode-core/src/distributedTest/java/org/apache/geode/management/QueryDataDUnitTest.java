@@ -18,6 +18,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.apache.geode.management.internal.ManagementConstants.DEFAULT_QUERY_LIMIT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -300,7 +301,7 @@ public class QueryDataDUnitTest implements Serializable {
           distributedSystemMXBean.queryData(regionsNotFoundQuery, null, 2);
       assertThat(regionsNotFoundResult, isJson(withJsonPath("$.message",
           equalTo(String.format("Cannot find regions %s in any of the members",
-              "/" + nonexistentRegionName)))));
+              SEPARATOR + nonexistentRegionName)))));
 
       String regionName = testName.getMethodName() + "_REGION";
       String regionsNotFoundOnMembersQuery = "SELECT * FROM /" + regionName;
@@ -313,7 +314,8 @@ public class QueryDataDUnitTest implements Serializable {
           distributedSystemMXBean.queryData(regionsNotFoundOnMembersQuery, member1.getId(), 2);
       assertThat(regionsNotFoundOnMembersResult, isJson(withJsonPath("$.message",
           equalTo(
-              String.format("Cannot find regions %s in specified members", "/" + regionName)))));
+              String.format("Cannot find regions %s in specified members",
+                  SEPARATOR + regionName)))));
 
       String joinMissingMembersQuery = QUERIES[1];
       String joinMissingMembersResult =
@@ -343,7 +345,7 @@ public class QueryDataDUnitTest implements Serializable {
       regionFactory.create(normalRegionName1);
       regionFactory.create(normalRegionName2);
 
-      Region region = cache.getRegion("/" + normalRegionName1);
+      Region region = cache.getRegion(SEPARATOR + normalRegionName1);
       assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
 
       RegionFactory regionFactory1 = cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -439,7 +441,7 @@ public class QueryDataDUnitTest implements Serializable {
       DistributedSystemMXBean distributedSystemMXBean =
           managementTestRule.getSystemManagementService().getDistributedSystemMXBean();
       DistributedRegionMXBean distributedRegionMXBean =
-          awaitDistributedRegionMXBean("/" + partitionedRegionName, 3);
+          awaitDistributedRegionMXBean(SEPARATOR + partitionedRegionName, 3);
 
       String alias = "Waiting for all entries to get reflected at managing node";
       int expectedEntryCount = values1.length + values2.length;
@@ -635,15 +637,15 @@ public class QueryDataDUnitTest implements Serializable {
     memberVMs[2].invoke(this::createColocatedPR);
 
     managerVM.invoke("Wait for all Region Proxies to get replicated", () -> {
-      awaitDistributedRegionMXBean("/" + PARTITIONED_REGION_NAME1, 3);
-      awaitDistributedRegionMXBean("/" + PARTITIONED_REGION_NAME2, 3);
-      awaitDistributedRegionMXBean("/" + PARTITIONED_REGION_NAME3, 3);
-      awaitDistributedRegionMXBean("/" + PARTITIONED_REGION_NAME4, 3);
-      awaitDistributedRegionMXBean("/" + PARTITIONED_REGION_NAME5, 3);
-      awaitDistributedRegionMXBean("/" + REPLICATE_REGION_NAME1, 3);
-      awaitDistributedRegionMXBean("/" + REPLICATE_REGION_NAME2, 1);
-      awaitDistributedRegionMXBean("/" + REPLICATE_REGION_NAME3, 1);
-      awaitDistributedRegionMXBean("/" + REPLICATE_REGION_NAME4, 1);
+      awaitDistributedRegionMXBean(SEPARATOR + PARTITIONED_REGION_NAME1, 3);
+      awaitDistributedRegionMXBean(SEPARATOR + PARTITIONED_REGION_NAME2, 3);
+      awaitDistributedRegionMXBean(SEPARATOR + PARTITIONED_REGION_NAME3, 3);
+      awaitDistributedRegionMXBean(SEPARATOR + PARTITIONED_REGION_NAME4, 3);
+      awaitDistributedRegionMXBean(SEPARATOR + PARTITIONED_REGION_NAME5, 3);
+      awaitDistributedRegionMXBean(SEPARATOR + REPLICATE_REGION_NAME1, 3);
+      awaitDistributedRegionMXBean(SEPARATOR + REPLICATE_REGION_NAME2, 1);
+      awaitDistributedRegionMXBean(SEPARATOR + REPLICATE_REGION_NAME3, 1);
+      awaitDistributedRegionMXBean(SEPARATOR + REPLICATE_REGION_NAME4, 1);
     });
   }
 

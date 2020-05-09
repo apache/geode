@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -452,7 +453,7 @@ public class EquiJoinIntegrationTest {
 
     private Index createCompactRangeIndex(String regionName, String fieldName)
         throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
-      String fromClause = "/" + regionName + " r";
+      String fromClause = SEPARATOR + regionName + " r";
       String indexedExpression = "r." + fieldName;
       return qs.createIndex("Compact " + fromClause + ":" + indexedExpression, indexedExpression,
           fromClause);
@@ -460,7 +461,7 @@ public class EquiJoinIntegrationTest {
 
     private Index createHashIndex(String regionName, String fieldName)
         throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
-      String fromClause = "/" + regionName + " r";
+      String fromClause = SEPARATOR + regionName + " r";
       String indexedExpression = "r." + fieldName;
       return qs.createHashIndex("Hash " + fromClause + ":" + indexedExpression, indexedExpression,
           fromClause);
@@ -468,7 +469,7 @@ public class EquiJoinIntegrationTest {
 
     private Index createPrimaryKeyIndex(String regionName, String fieldName)
         throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
-      String fromClause = "/" + regionName + " r";
+      String fromClause = SEPARATOR + regionName + " r";
       String indexedExpression = "r." + fieldName;
       return qs.createKeyIndex("PrimaryKey " + fromClause + ":" + indexedExpression,
           indexedExpression, fromClause);
@@ -476,7 +477,7 @@ public class EquiJoinIntegrationTest {
 
     private Index createRangeIndexOnFirstIterator(String regionName, String fieldName)
         throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
-      String fromClause = "/" + regionName + " r, r.nested.values v";
+      String fromClause = SEPARATOR + regionName + " r, r.nested.values v";
       String indexedExpression = "r." + fieldName;
       return qs.createIndex("Range " + fromClause + ":" + indexedExpression, indexedExpression,
           fromClause);
@@ -484,7 +485,7 @@ public class EquiJoinIntegrationTest {
 
     private Index createRangeIndexOnSecondIterator(String regionName, String fieldName)
         throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
-      String fromClause = "/" + regionName + " r, r.nested.values v";
+      String fromClause = SEPARATOR + regionName + " r, r.nested.values v";
       String indexedExpression = "v." + fieldName;
       return qs.createIndex("Range " + fromClause + ":" + indexedExpression, indexedExpression,
           fromClause);

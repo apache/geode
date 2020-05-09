@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.Arrays.asList;
 import static javax.management.ObjectName.getInstance;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.lang.Identifiable.find;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -471,14 +472,14 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       RegionConfig colocatedConfig = find(regions, colocatedRegionName);
       assertThat(
           colocatedConfig.getRegionAttributes().getPartitionAttributes().getColocatedWith())
-              .isEqualTo("/" + regionName);
+              .isEqualTo(SEPARATOR + regionName);
 
       RegionConfig colocatedConfigFromTemplate = find(regions,
           colocatedRegionFromTemplateName);
       assertThat(
           colocatedConfigFromTemplate.getRegionAttributes().getPartitionAttributes()
               .getColocatedWith())
-                  .isEqualTo("/" + regionName);
+                  .isEqualTo(SEPARATOR + regionName);
     });
   }
 

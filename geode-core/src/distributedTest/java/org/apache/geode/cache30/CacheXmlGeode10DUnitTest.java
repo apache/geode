@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -103,7 +104,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     IgnoredException.addIgnoredException(
         String.format(
             "The region %s was configured to use off heap memory but no off heap memory was configured",
-            "/" + regionName));
+            SEPARATOR + regionName));
 
     try {
       testXml(cache);
@@ -113,7 +114,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       String msg =
           String.format(
               "The region %s was configured to use off heap memory but no off heap memory was configured",
-              "/" + regionName);
+              SEPARATOR + regionName);
       assertEquals(msg, e.getMessage());
     }
   }
@@ -144,7 +145,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     IgnoredException.addIgnoredException(
         String.format(
             "The region %s was configured to use off heap memory but no off heap memory was configured",
-            "/" + rootRegionName + "/" + subRegionName));
+            SEPARATOR + rootRegionName + SEPARATOR + subRegionName));
 
     try {
       testXml(cache);
@@ -154,7 +155,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       final String msg =
           String.format(
               "The region %s was configured to use off heap memory but no off heap memory was configured",
-              "/" + rootRegionName + "/" + subRegionName);
+              SEPARATOR + rootRegionName + SEPARATOR + subRegionName);
       assertEquals(msg, e.getMessage());
     }
   }

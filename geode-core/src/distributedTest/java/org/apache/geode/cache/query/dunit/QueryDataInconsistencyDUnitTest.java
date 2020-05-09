@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.fail;
@@ -99,7 +100,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
 
       QueryService queryService = cache.getQueryService();
       try {
-        Index index = queryService.createIndex("idIndex", "ID", "/" + repRegionName);
+        Index index = queryService.createIndex("idIndex", "ID", SEPARATOR + repRegionName);
         assertEquals(10, index.getStatistics().getNumberOfKeys());
       } catch (Exception e) {
         logger.error(e);
@@ -183,7 +184,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       QueryService queryService = cache.getQueryService();
       try {
         Index index = queryService.createIndex("posIndex", "pos.secId",
-            "/" + repRegionName + " p, p.positions.values pos");
+            SEPARATOR + repRegionName + " p, p.positions.values pos");
         assertEquals(12, index.getStatistics().getNumberOfKeys());
       } catch (Exception e) {
         logger.error(e);
@@ -265,7 +266,8 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       QueryService queryService = cache.getQueryService();
       try {
         Index index = queryService.createIndex("posIndex", "pos.secId",
-            "/" + repRegionName + " p, p.collectionHolderMap.values coll, p.positions.values pos");
+            SEPARATOR + repRegionName
+                + " p, p.collectionHolderMap.values coll, p.positions.values pos");
         assertEquals(12, index.getStatistics().getNumberOfKeys());
       } catch (Exception e) {
         logger.error(e);
@@ -344,7 +346,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       QueryService queryService = cache.getQueryService();
       try {
         Index index = queryService.createIndex("posIndex", "pos.secId",
-            "/" + repRegionName + " p, p.positions.values pos");
+            SEPARATOR + repRegionName + " p, p.positions.values pos");
         assertEquals(12, index.getStatistics().getNumberOfKeys());
       } catch (Exception e) {
         logger.error(e);

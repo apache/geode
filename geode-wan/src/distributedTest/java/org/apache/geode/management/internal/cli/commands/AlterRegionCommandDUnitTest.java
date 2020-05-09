@@ -81,7 +81,7 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + regionName)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Associate the async-event-queue
     gfsh.executeAndAssertThat(
@@ -120,11 +120,11 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region1Name)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + region1Name, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region1Name, 1);
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region2Name)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + region2Name, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region2Name, 1);
 
     // Associate the async-event-queue to both regions (second one should fail because they are not
     // co-located)
@@ -174,7 +174,7 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION_PERSISTENT --name=" + regionName
         + " --disk-store=diskStore").statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Make sure that the next invocations also fail and that the changes are not persisted to the
     // cluster configuration service. See GEODE-6551.
@@ -223,7 +223,7 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + regionName)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Associate the gateway-sender
     gfsh.executeAndAssertThat(
@@ -263,11 +263,11 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region1Name)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + region1Name, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region1Name, 1);
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region2Name)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + region2Name, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region2Name, 1);
 
     // Associate the gateway-sender to both regions (second one should fail because they are not
     // co-located)
@@ -318,7 +318,7 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION_PERSISTENT --name=" + regionName
         + " --disk-store=diskStore").statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Make sure that the next invocations also fail and that the changes are not persisted to the
     // cluster configuration service. See GEODE-6551.

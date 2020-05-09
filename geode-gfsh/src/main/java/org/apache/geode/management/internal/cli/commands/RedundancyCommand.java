@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFERS_COMPLETED;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFER_TIME;
@@ -28,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.distributed.DistributedMember;
@@ -320,8 +320,8 @@ public class RedundancyCommand extends GfshCommand {
   DistributedMember getOneMemberForRegion(String regionName) {
     String regionNameWithSeparator = regionName;
     // The getAssociatedMembers method requires region names start with '/'
-    if (!regionName.startsWith(CacheConfig.SEPARATOR)) {
-      regionNameWithSeparator = CacheConfig.SEPARATOR + regionName;
+    if (!regionName.startsWith(SEPARATOR)) {
+      regionNameWithSeparator = SEPARATOR + regionName;
     }
     return RebalanceOperationPerformer.getAssociatedMembers(regionNameWithSeparator,
         (InternalCache) getCache());

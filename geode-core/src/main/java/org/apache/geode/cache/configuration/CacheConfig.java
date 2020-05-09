@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.w3c.dom.Element;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.config.VersionAdapter;
 import org.apache.geode.lang.Identifiable;
 
@@ -328,7 +329,11 @@ public class CacheConfig {
   @XmlJavaTypeAdapter(VersionAdapter.class)
   protected String version;
 
-  public static final String SEPARATOR = "/";
+  /**
+   * @deprecated Please use {@link Region#SEPARATOR}
+   */
+  @Deprecated
+  public static final String SEPARATOR = Region.SEPARATOR;
 
   public CacheConfig() {}
 
@@ -1027,12 +1032,12 @@ public class CacheConfig {
 
   // this supports looking for sub regions
   public RegionConfig findRegionConfiguration(String regionPath) {
-    if (regionPath.startsWith(SEPARATOR)) {
+    if (regionPath.startsWith(Region.SEPARATOR)) {
       regionPath = regionPath.substring(1);
     }
     List<RegionConfig> regions = getRegions();
     RegionConfig found = null;
-    for (String regionToken : regionPath.split(SEPARATOR)) {
+    for (String regionToken : regionPath.split(Region.SEPARATOR)) {
       found = Identifiable.find(regions, regionToken);
       // couldn't find one of the sub regions, break out of the loop
       if (found == null) {

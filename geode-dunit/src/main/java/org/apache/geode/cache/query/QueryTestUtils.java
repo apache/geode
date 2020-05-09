@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
@@ -1813,7 +1814,7 @@ public class QueryTestUtils implements Serializable {
   }
 
   public void populateRegion(String regionName, Map<?, ?> entries) {
-    Region r = cache.getRegion("/" + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
     entries.entrySet().forEach(e -> {
       r.put(e.getKey(), e.getValue());
     });

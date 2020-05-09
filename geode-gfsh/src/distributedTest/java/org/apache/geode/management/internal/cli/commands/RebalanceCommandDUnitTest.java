@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static java.lang.Math.abs;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -114,8 +115,8 @@ public class RebalanceCommandDUnitTest {
 
   @Test
   public void testRegionNameInResultStartsWithSlash() {
-    final String REGION_NAME_WITH_SLASH = "/" + SHARED_REGION_NAME;
-    String command = "rebalance --include-region=" + "/" + SHARED_REGION_NAME;
+    final String REGION_NAME_WITH_SLASH = SEPARATOR + SHARED_REGION_NAME;
+    String command = "rebalance --include-region=" + SEPARATOR + SHARED_REGION_NAME;
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     ResultModel result = gfsh.getCommandResult().getResultData();
@@ -134,14 +135,14 @@ public class RebalanceCommandDUnitTest {
 
   @Test
   public void testWithTimeOutAndRegion() {
-    String command = "rebalance --time-out=1 --include-region=" + "/" + SHARED_REGION_NAME;
+    String command = "rebalance --time-out=1 --include-region=" + SEPARATOR + SHARED_REGION_NAME;
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
   }
 
   @Test
   public void testWithSimulateAndRegion() {
-    String command = "rebalance --simulate=true --include-region=" + "/" + SHARED_REGION_NAME;
+    String command = "rebalance --simulate=true --include-region=" + SEPARATOR + SHARED_REGION_NAME;
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertAllRegionsUnchanged();
@@ -158,7 +159,8 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithTwoRegions() {
     String command =
-        "rebalance --include-region=" + "/" + SHARED_REGION_NAME + ",/" + REGION2_NAME;
+        "rebalance --include-region=" + SEPARATOR + SHARED_REGION_NAME + "," + SEPARATOR
+            + REGION2_NAME;
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertRegionBalanced(SHARED_REGION_NAME);
@@ -179,7 +181,8 @@ public class RebalanceCommandDUnitTest {
     });
 
     String command =
-        "rebalance --include-region=" + "/" + SHARED_REGION_NAME + ",/" + REGION2_NAME;
+        "rebalance --include-region=" + SEPARATOR + SHARED_REGION_NAME + "," + SEPARATOR
+            + REGION2_NAME;
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertRegionBalanced(SHARED_REGION_NAME);
@@ -191,7 +194,8 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithBadRegionNames() {
     String command =
-        "rebalance --include-region=" + "/" + "randomGarbageString" + ",/" + "otherRandomGarbage";
+        "rebalance --include-region=" + SEPARATOR + "randomGarbageString" + "," + SEPARATOR
+            + "otherRandomGarbage";
     gfsh.executeAndAssertThat(command).statusIsError();
     assertAllRegionsUnchanged();
   }
@@ -199,7 +203,8 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithOneGoodAndOneBadRegionName() {
     String command =
-        "rebalance --include-region=" + "/" + SHARED_REGION_NAME + ",/" + "otherRandomGarbage";
+        "rebalance --include-region=" + SEPARATOR + SHARED_REGION_NAME + "," + SEPARATOR
+            + "otherRandomGarbage";
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
     assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
@@ -210,7 +215,8 @@ public class RebalanceCommandDUnitTest {
 
   @Test
   public void testWithNonSharedRegions() {
-    String command = "rebalance --include-region=" + "/" + REGION1_NAME + ",/" + REGION2_NAME;
+    String command =
+        "rebalance --include-region=" + SEPARATOR + REGION1_NAME + "," + SEPARATOR + REGION2_NAME;
     gfsh.executeAndAssertThat(command).statusIsError();
 
     assertAllRegionsUnchanged();
@@ -236,7 +242,7 @@ public class RebalanceCommandDUnitTest {
 
   @Test
   public void testWithExcludedRegion() {
-    String command = "rebalance --exclude-region=" + "/" + REGION2_NAME;
+    String command = "rebalance --exclude-region=" + SEPARATOR + REGION2_NAME;
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
     assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
@@ -247,7 +253,7 @@ public class RebalanceCommandDUnitTest {
 
   @Test
   public void testWithExcludedSharedRegion() {
-    String command = "rebalance --exclude-region=" + "/" + SHARED_REGION_NAME;
+    String command = "rebalance --exclude-region=" + SEPARATOR + SHARED_REGION_NAME;
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertAllRegionsUnchanged();
   }
@@ -284,7 +290,7 @@ public class RebalanceCommandDUnitTest {
 
   private static Integer getLocalDataSizeForRegion(String regionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    Region<?, ?> region = cache.getInternalRegionByPath("/" + regionName);
+    Region<?, ?> region = cache.getInternalRegionByPath(SEPARATOR + regionName);
     return PartitionRegionHelper.getLocalData(region).size();
   }
 
@@ -293,7 +299,7 @@ public class RebalanceCommandDUnitTest {
       final ManagementService service =
           ManagementService.getManagementService(ClusterStartupRule.getCache());
       final DistributedRegionMXBean bean =
-          service.getDistributedRegionMXBean("/" + SHARED_REGION_NAME);
+          service.getDistributedRegionMXBean(SEPARATOR + SHARED_REGION_NAME);
 
 
       return bean != null && bean.getMembers() != null && bean.getMembers().length > 1

@@ -15,6 +15,7 @@
 package org.apache.geode.management;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
@@ -80,7 +81,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
   /**
    * Path of off-heap test region.
    */
-  private static final String OFF_HEAP_REGION_PATH = "/" + OFF_HEAP_REGION_NAME;
+  private static final String OFF_HEAP_REGION_PATH = SEPARATOR + OFF_HEAP_REGION_NAME;
 
   /**
    * Expected total off-heap reserved memory (1 megabyte).

@@ -4052,7 +4052,7 @@ public class WANTestBase extends DistributedTestCase {
             .untilAsserted(() -> assertEquals(connected, bean.isConnected()));
 
         ObjectName regionBeanName = service.getRegionMBeanName(
-            cache.getDistributedSystem().getDistributedMember(), "/" + regionPath);
+            cache.getDistributedSystem().getDistributedMember(), SEPARATOR + regionPath);
         RegionMXBean rBean = service.getMBeanInstance(regionBeanName, RegionMXBean.class);
         assertTrue(rBean.isGatewayEnabled());
 

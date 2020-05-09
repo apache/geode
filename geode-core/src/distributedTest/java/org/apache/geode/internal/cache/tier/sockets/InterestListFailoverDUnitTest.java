@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getCache;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -141,7 +142,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries() {
     try {
-      Region r = CacheServerTestUtil.getCache().getRegion("/" + REGION_NAME);
+      Region r = CacheServerTestUtil.getCache().getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
 
       if (!r.containsKey("key-1")) {
@@ -160,7 +161,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyEntries() {
     try {
-      Region r = CacheServerTestUtil.getCache().getRegion("/" + REGION_NAME);
+      Region r = CacheServerTestUtil.getCache().getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       if (r.getEntry("key-1") != null) {
         assertEquals(r.getEntry("key-1").getValue(), "key-1");
@@ -175,7 +176,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static Integer registerInterestList() {
     try {
-      Region r = CacheServerTestUtil.getCache().getRegion("/" + REGION_NAME);
+      Region r = CacheServerTestUtil.getCache().getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       r.registerInterest("key-1");
       r.registerInterest("key-2");
@@ -216,7 +217,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void _put(String v) {
     try {
-      Region r = CacheServerTestUtil.getCache().getRegion("/" + REGION_NAME);
+      Region r = CacheServerTestUtil.getCache().getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       r.put("key-1", "vm2-key-1" + v);
       r.put("key-6", "vm2-key-6" + v);
@@ -246,7 +247,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void _validateEntries(final String v) {
     try {
-      final Region r = getCache().getRegion("/" + REGION_NAME);
+      final Region r = getCache().getRegion(SEPARATOR + REGION_NAME);
       final String key1 = "key-1";
       assertNotNull(r);
       // Verify that 'key-1' was updated

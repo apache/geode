@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.management.internal.cli.remote.CommandExecutor.RUN_ON_MEMBER_CHANGE_NOT_PERSISTED;
 import static org.apache.geode.management.internal.cli.remote.CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED;
 
@@ -168,7 +169,7 @@ public class CreateIndexCommand extends GfshCommand {
   // returned here should not have "."
   String getValidRegionName(String regionPath) {
     String regionName = regionPath.trim().split(" ")[0];
-    regionName = StringUtils.removeStart(regionName, "/");
+    regionName = StringUtils.removeStart(regionName, SEPARATOR);
     if (regionName.contains(".")) {
       regionName = regionName.substring(0, regionName.indexOf('.'));
     }

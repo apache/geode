@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -501,14 +502,14 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
   }
 
   private void populateRegion(String regionName, Map<String, Portfolio> entries) {
-    Region r = ClusterStartupRule.getCache().getRegion("/" + regionName);
+    Region r = ClusterStartupRule.getCache().getRegion(SEPARATOR + regionName);
     entries.entrySet().forEach(e -> {
       r.put(e.getKey(), e.getValue());
     });
   }
 
   private void destroyFromRegion(String regionName, Collection keys) {
-    Region r = ClusterStartupRule.getCache().getRegion("/" + regionName);
+    Region r = ClusterStartupRule.getCache().getRegion(SEPARATOR + regionName);
     keys.forEach(i -> r.remove(i));
   }
 }

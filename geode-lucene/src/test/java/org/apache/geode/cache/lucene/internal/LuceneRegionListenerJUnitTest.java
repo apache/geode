@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -63,10 +64,10 @@ public class LuceneRegionListenerJUnitTest {
     InternalRegionArguments internalRegionArgs = mock(InternalRegionArguments.class);
     when(internalRegionArgs.addCacheServiceProfile(any())).thenReturn(internalRegionArgs);
 
-    LuceneRegionListener listener = new LuceneRegionListener(service, name, "/" + regionPath,
+    LuceneRegionListener listener = new LuceneRegionListener(service, name, SEPARATOR + regionPath,
         fields, analyzer, null, serializer);
     listener.beforeCreate(null, regionPath, attributes, internalRegionArgs);
-    verify(service).beforeDataRegionCreated(eq(name), eq("/" + regionPath), eq(attributes),
+    verify(service).beforeDataRegionCreated(eq(name), eq(SEPARATOR + regionPath), eq(attributes),
         eq(analyzer), any(), eq(aeqId), eq(serializer), any());
   }
 }

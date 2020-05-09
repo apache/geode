@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
@@ -163,7 +164,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
         assertNotNull(idIndex);
         assertEquals("PrIndexOnID", idIndex.getName());
         assertEquals("ID", idIndex.getIndexedExpression());
-        assertEquals("/" + name, idIndex.getFromClause());
+        assertEquals(SEPARATOR + name, idIndex.getFromClause());
         assertNotNull(idIndex.getStatistics());
 
         // Check for status index
@@ -172,7 +173,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
         assertNotNull(statusIndex);
         assertEquals("PrIndexOnStatus", statusIndex.getName());
         assertEquals("status", statusIndex.getIndexedExpression());
-        assertEquals("/" + name, statusIndex.getFromClause());
+        assertEquals(SEPARATOR + name, statusIndex.getFromClause());
         assertNotNull(statusIndex.getStatistics());
 
         // Check for all Indexes on the region.
@@ -786,11 +787,11 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
     exps.add("position1.secId");
 
     ArrayList<String> fromClause = new ArrayList<>();
-    fromClause.add("/" + name);
-    fromClause.add("/" + name);
-    fromClause.add("/" + name + ".keys key");
-    fromClause.add("/" + name + ".keys key");
-    fromClause.add("/" + name);
+    fromClause.add(SEPARATOR + name);
+    fromClause.add(SEPARATOR + name);
+    fromClause.add(SEPARATOR + name + ".keys key");
+    fromClause.add(SEPARATOR + name + ".keys key");
+    fromClause.add(SEPARATOR + name);
 
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForDefineIndex(name, names, exps, fromClause));
 
@@ -809,11 +810,11 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
     exps2.add("position1.secId");
 
     ArrayList<String> fromClause2 = new ArrayList<>();
-    fromClause2.add("/" + localName);
-    fromClause2.add("/" + localName);
-    fromClause2.add("/" + localName + ".keys key");
-    fromClause2.add("/" + localName + ".keys key");
-    fromClause2.add("/" + localName);
+    fromClause2.add(SEPARATOR + localName);
+    fromClause2.add(SEPARATOR + localName);
+    fromClause2.add(SEPARATOR + localName + ".keys key");
+    fromClause2.add(SEPARATOR + localName + ".keys key");
+    fromClause2.add(SEPARATOR + localName);
 
     vm0.invoke(
         PRQHelp.getCacheSerializableRunnableForDefineIndex(localName, names2, exps2, fromClause2));
