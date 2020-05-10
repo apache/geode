@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 
 /**
@@ -41,18 +40,15 @@ public class SynchronizedStripedExecutor implements StripedExecutor {
   }
 
   @Override
-  public <T> void execute(Object stripeId,
-      Callable<T> callable,
-      Consumer<T> resultConsumer) {
-    T resultOfCallable;
+  public <T> T execute(Object stripeId,
+      Callable<T> callable) {
     synchronized (getSync(stripeId)) {
       try {
-        resultOfCallable = callable.call();
+        return callable.call();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
-    resultConsumer.accept(resultOfCallable);
   }
 
   private Object getSync(Object stripeId) {

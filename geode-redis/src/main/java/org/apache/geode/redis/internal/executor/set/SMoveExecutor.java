@@ -55,8 +55,8 @@ public class SMoveExecutor extends SetExecutor {
       }
 
       boolean removed =
-          RedisSet.srem(region, source, new ArrayList<>(Collections.singletonList(member)),
-              null) == 1;
+          RedisSet.srem(region, source, new ArrayList<>(Collections.singletonList(member)))
+              .getLeft() == 1;
       // TODO: native redis SMOVE that empties the src set causes it to no longer exist
 
       if (!removed) {

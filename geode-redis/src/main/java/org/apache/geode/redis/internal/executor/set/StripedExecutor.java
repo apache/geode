@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 /**
  * Allows users to "stripe" their execution in such a way that all tasks belonging to one stripe are
@@ -35,9 +34,7 @@ public interface StripedExecutor {
    *
    * @param stripeId defines the "stripe"
    * @param callable the unit of work to do sequentially. May be called after run returns.
-   * @param resultConsumer is given the result of the callable.
    */
-  public <T> void execute(Object stripeId,
-      Callable<T> callable,
-      Consumer<T> resultConsumer);
+  public <T> T execute(Object stripeId,
+      Callable<T> callable);
 }

@@ -16,23 +16,15 @@
 
 package org.apache.geode.redis.internal.executor;
 
-import static org.apache.geode.redis.internal.RedisCommandType.HSET;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisDataType;
@@ -41,7 +33,7 @@ import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.executor.set.StripedExecutor;
 import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
 
-public class CommandFunction implements Function<Object[]> {
+public class CommandFunction extends SingleResultRedisFunction {
 
   public static final String ID = "REDIS_COMMAND_FUNCTION";
 
@@ -54,13 +46,13 @@ public class CommandFunction implements Function<Object[]> {
 
   @SuppressWarnings("unchecked")
   public static ResultCollector execute(Region<?, ?> region,
-      RedisCommandType command,
-      ByteArrayWrapper key,
-      Object commandArguments) {
+                                        RedisCommandType command,
+                                        ByteArrayWrapper key,
+                                        Object commandArguments) {
     return FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
-        .setArguments(new Object[] {command, commandArguments})
+        .setArguments(new Object[]{command, commandArguments})
         .execute(ID);
   }
 
@@ -69,132 +61,91 @@ public class CommandFunction implements Function<Object[]> {
     this.stripedExecutor = stripedExecutor;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public void execute(FunctionContext<Object[]> context) {
-    RegionFunctionContextImpl regionFunctionContext =
-        (RegionFunctionContextImpl) context;
-    ByteArrayWrapper key =
-        (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
-    Region localRegion =
-        regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
-    ResultSender resultSender = regionFunctionContext.getResultSender();
-    Object[] args = context.getArguments();
-    RedisCommandType command = (RedisCommandType) args[0];
+  public String getId() {
+    return ID;
+  }
+
+  @Override
+  protected Object compute(Region localRegion, ByteArrayWrapper key,
+                           RedisCommandType command, Object[] args) {
+    Callable<Object> callable;
     switch (command) {
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
-        stripedExecutor.execute(key,
-            () -> RedisSet.sadd(localRegion, key, membersToAdd),
-            (addedCount) -> resultSender.lastResult(addedCount));
+        callable = () -> RedisSet.sadd(localRegion, key, membersToAdd);
         break;
       }
       case SREM: {
         ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
-        AtomicBoolean setWasDeleted = new AtomicBoolean();
-        stripedExecutor.execute(key,
-            () -> RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted),
-            (removedCount) -> resultSender.lastResult(Pair.of(removedCount, setWasDeleted.get())));
+        callable = () -> RedisSet.srem(localRegion, key, membersToRemove);
         break;
       }
-      case DEL: {
+      case DEL:
         RedisDataType delType = (RedisDataType) args[1];
-        executeDel(key, localRegion, resultSender, delType);
+        callable = executeDel(key, localRegion, delType);
         break;
-      }
       case SMEMBERS:
-        stripedExecutor.execute(key,
-            () -> RedisSet.smembers(localRegion, key),
-            (members) -> resultSender.lastResult(members));
+        callable = () -> RedisSet.smembers(localRegion, key);
         break;
       case SCARD:
-        stripedExecutor.execute(key,
-            () -> RedisSet.scard(localRegion, key),
-            (size) -> resultSender.lastResult(size));
+        callable = () -> RedisSet.scard(localRegion, key);
         break;
       case SISMEMBER: {
         ByteArrayWrapper member = (ByteArrayWrapper) args[1];
-        stripedExecutor.execute(key,
-            () -> RedisSet.sismember(localRegion, key, member),
-            (exists) -> resultSender.lastResult(exists));
+        callable = () -> RedisSet.sismember(localRegion, key, member);
         break;
       }
       case SRANDMEMBER: {
         int count = (int) args[1];
-        stripedExecutor.execute(key,
-            () -> RedisSet.srandmember(localRegion, key, count),
-            (members) -> resultSender.lastResult(members));
+        callable = () -> RedisSet.srandmember(localRegion, key, count);
         break;
       }
       case SPOP: {
         int popCount = (int) args[1];
-        stripedExecutor.execute(key,
-            () -> RedisSet.spop(localRegion, key, popCount),
-            (members) -> resultSender.lastResult(members));
+        callable = () -> RedisSet.spop(localRegion, key, popCount);
         break;
       }
       case SSCAN: {
         Pattern matchPattern = (Pattern) args[0];
         int count = (int) args[1];
         int cursor = (int) args[2];
-        stripedExecutor.execute(key,
-            () -> RedisSet.sscan(localRegion, key, matchPattern, count, cursor),
-            (members) -> resultSender.lastResult(members));
+        callable = () -> RedisSet.sscan(localRegion, key, matchPattern, count, cursor);
         break;
       }
       case HSET: {
         Object[] hsetArgs = (Object[]) args[1];
         List<ByteArrayWrapper> fieldsToSet = (List<ByteArrayWrapper>) hsetArgs[0];
         boolean NX = (boolean) hsetArgs[1];
-        stripedExecutor.execute(key,
-            () -> RedisHash.hset(localRegion, key, fieldsToSet, NX),
-            (members) -> resultSender.lastResult(members));
+        callable = () -> RedisHash.hset(localRegion, key, fieldsToSet, NX);
         break;
       }
       case HDEL: {
         List<ByteArrayWrapper> fieldsToRemove = (List<ByteArrayWrapper>) args[1];
-        stripedExecutor.execute(key,
-            () -> RedisHash.hdel(localRegion, key, fieldsToRemove),
-            (deletedCount) -> resultSender.lastResult(deletedCount));
+        callable = () -> RedisHash.hdel(localRegion, key, fieldsToRemove);
         break;
       }
       case HGETALL: {
-        stripedExecutor.execute(key,
-            () -> RedisHash.hgetall(localRegion, key),
-            (entries) -> resultSender.lastResult(entries));
+        callable = () -> RedisHash.hgetall(localRegion, key);
         break;
       }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
+    return stripedExecutor.execute(key, callable);
   }
 
+
   @SuppressWarnings("unchecked")
-  private void executeDel(ByteArrayWrapper key, Region localRegion, ResultSender resultSender,
+  private Callable<Object> executeDel(ByteArrayWrapper key, Region localRegion,
       RedisDataType delType) {
     switch (delType) {
       case REDIS_SET:
-        stripedExecutor.execute(key,
-            () -> RedisSet.del(localRegion, key),
-            (deleted) -> resultSender.lastResult(deleted));
-        break;
+            return () -> RedisSet.del(localRegion, key);
       case REDIS_HASH:
-        stripedExecutor.execute(key,
-            () -> RedisHash.del(localRegion, key),
-            (deleted) -> resultSender.lastResult(deleted));
-        break;
+            return () -> RedisHash.del(localRegion, key);
       default:
         throw new UnsupportedOperationException("DEL does not support " + delType);
     }
-  }
-
-  @Override
-  public boolean optimizeForWrite() {
-    return true;
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 }
