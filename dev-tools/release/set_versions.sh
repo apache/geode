@@ -20,7 +20,7 @@ set -e
 usage() {
     echo "Usage: set_versions.sh -v version_number [-s]"
     echo "  -v   The #.#.# version number for the next release"
-    echo "  -s   append -SNAPSHOT to version number"
+    echo "  -s   append -build.0 to version number"
     exit 1
 }
 
@@ -32,7 +32,8 @@ while getopts ":v:snw:" opt; do
       VERSION=$OPTARG
       ;;
     s )
-      SNAPSHOT="-SNAPSHOT"
+      BUILDSUFFIX="-build.0"
+      ANYSNAPSHOT="-build+"
       ;;
     n )
       NOPUSH=true
@@ -110,20 +111,15 @@ set -x
 cd ${GEODE}
 set +x
 
-#version = 1.13.0-SNAPSHOT
-sed -e "s/^version =.*/version = ${VERSION}${SNAPSHOT}/" -i.bak gradle.properties
+#version = 1.13.0-build.0
+sed -e "s/^version =.*/version = ${VERSION}${BUILDSUFFIX}/" -i.bak gradle.properties
 
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-git diff --no-pager --staged
-
-./gradlew updateExpectedPom
-git add .
-echo "$(git diff --no-pager --staged | wc -l)-line diff of expected-pom changes will also be committed (not shown)"
-
 if [ $(git diff --no-pager --staged | wc -l) -gt 0 ] ; then
-  git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
+  git diff --no-pager --staged
+  git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -138,10 +134,10 @@ cd ${GEODE_EXAMPLES}
 git pull
 set +x
 
-#version = 1.12.0-SNAPSHOT
-#geodeVersion = 1.12.0-SNAPSHOT
-sed -e "s/^version = .*/version = ${VERSION}${SNAPSHOT}/" \
-    -e "s/^geodeVersion = .*/geodeVersion = ${VERSION}${SNAPSHOT}/" \
+#version = 1.12.0-build.0
+#geodeVersion = 1.12.0-build+
+sed -e "s/^version = .*/version = ${VERSION}${BUILDSUFFIX}/" \
+    -e "s/^geodeVersion = .*/geodeVersion = ${VERSION}${ANYSNAPSHOT}/" \
     -i.bak gradle.properties
 
 rm gradle.properties.bak
@@ -149,7 +145,7 @@ set -x
 git add .
 git diff --no-pager --staged
 if [ $(git diff --no-pager --staged | wc -l) -gt 0 ] ; then
-  git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
+  git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x

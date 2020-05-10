@@ -159,10 +159,10 @@ git remote add myfork git@github.com:${GITHUB_USER}/geode.git || true
 git checkout -b roll-develop-to-${NEWVERSION}
 set +x
 
-#version = 1.13.0-SNAPSHOT
-sed -e "s/^version =.*/version = ${NEWVERSION}-SNAPSHOT/" -i.bak gradle.properties
+#version = 1.13.0-build.0
+sed -e "s/^version =.*/version = ${NEWVERSION}-build.0/" -i.bak gradle.properties
 
-#  initial_version: 1.13.0-SNAPSHOT or 1.13.0-((stuff))
+#  initial_version: 1.13.0-((stuff)).0
 sed -e "s/^  initial_version:[^-]*\(-[^.0-9]*\)[.0-9]*/  initial_version: ${NEWVERSION}\1.0/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
 
 VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
@@ -222,17 +222,17 @@ cd ${GEODE_EXAMPLES_DEVELOP}
 git pull -r
 set +x
 
-#version = 1.13.0-SNAPSHOT
-#geodeVersion = 1.13.0-SNAPSHOT
+#version = 1.13.0-build.0
+#geodeVersion = 1.13.0-build+
 sed \
-  -e "s/^version =.*/version = ${NEWVERSION}-SNAPSHOT/" \
-  -e "s/^geodeVersion =.*/geodeVersion = ${NEWVERSION}-SNAPSHOT/" \
+  -e "s/^version =.*/version = ${NEWVERSION}-build.0/" \
+  -e "s/^geodeVersion =.*/geodeVersion = ${NEWVERSION}-build+/" \
   -i.bak gradle.properties
 rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --no-pager --staged
-git commit -m "point develop examples to ${NEWVERSION}-SNAPSHOT now that support/${VERSION_MM} has been created"
+git commit -m "pair develop examples with ${NEWVERSION} now that support/${VERSION_MM} has been created"
 git push -u origin
 set +x
 

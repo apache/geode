@@ -154,7 +154,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Removing -SNAPSHOT"
+echo "Removing -build suffix from version"
 echo "============================================================"
 set -x
 ${0%/*}/set_versions.sh -v ${VERSION} -n -w ${WORKSPACE}
