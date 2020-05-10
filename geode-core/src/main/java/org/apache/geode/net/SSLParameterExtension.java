@@ -15,9 +15,11 @@
 
 package org.apache.geode.net;
 
+import java.util.Properties;
+
 import javax.net.ssl.SSLParameters;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.Experimental;
 
 /**
  * User implementation of a SSLParameter extension logic.
@@ -25,13 +27,15 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * @since Geode 1.12
  */
 
+@Experimental
 public interface SSLParameterExtension {
   /**
    * Initialize the SSLParameterExtension.
    *
-   * @param config the DistributionConfig
+   * @param properties the Properties
    */
-  default void init(DistributionConfig config) {}
+
+  default void init(Properties properties) {}
 
   default SSLParameters modifySSLClientSocketParameters(SSLParameters parameters) {
     return parameters;
