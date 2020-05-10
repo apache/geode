@@ -1144,10 +1144,7 @@ public interface ConfigurationProperties {
    * <U>Allowed values</U>: true or false
    * </p>
    * <U>Since</U>: GemFire 8.0
-   *
-   * @deprecated Since Geode 1.6 use "import cluster-configuration" command instead
    */
-  @Deprecated
   String LOAD_CLUSTER_CONFIGURATION_FROM_DIR = "load-cluster-configuration-from-dir";
   /**
    * The static String definition of the <i>"ssl-locator-alias"</i> property <a
