@@ -142,10 +142,40 @@ task updateExpectedPom(dependsOn: generatePomFileForMavenPublication, type: Copy
 
   def expectedPomDir = expectedPomFile.parent
   def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+  inputs.files {
+    [actualPomFile,
+     expectedPomFile]
+  }
+  outputs.files {
+    expectedPomFile
+  }
   if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
     from actualPomFile
     into expectedPomDir
     rename '.*.xml', "expected-pom.xml"
+  }
+
+  doLast {
+    def checkGroupIdAndSetVersion = { elem ->
+      if (elem.groupId.text().contains("org.apache.geode")) {
+        elem.get("version")*.setValue('${version}')
+      }
+    }
+
+    def doc = groovy.xml.DOMBuilder.parse(new FileReader(expectedPomFile.toString()), false, true, true)
+    org.w3c.dom.Element pomRoot = doc.documentElement
+    use(groovy.xml.dom.DOMCategory) {
+      checkGroupIdAndSetVersion(pomRoot)
+      pomRoot.dependencyManagement.dependencies.dependency.each { org.w3c.dom.Element dep ->
+        checkGroupIdAndSetVersion(dep)
+      }
+    }
+    expectedPomFile.toFile().withWriter { writer ->
+      groovy.xml.XmlUtil.serialize(pomRoot).eachLine { line ->
+        line = line.replaceFirst(/></, ">\n<")
+        writer.writeLine(line)
+      }
+    }
   }
 }
 checkPom.mustRunAfter(updateExpectedPom)
