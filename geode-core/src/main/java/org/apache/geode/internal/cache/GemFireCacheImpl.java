@@ -3058,8 +3058,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     invokeRegionAfter(region);
 
     // Putting the callback here to avoid creating RegionMBean in case of Exception
-    if (!region.isInternalRegion()) {
+    if (!region.isRegionCreateNotified() && !region.isInternalRegion()) {
       system.handleResourceEvent(ResourceEvent.REGION_CREATE, region);
+      region.setRegionCreateNotified(true);
     }
 
     return cast(region);

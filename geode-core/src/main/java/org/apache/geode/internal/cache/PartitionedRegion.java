@@ -154,6 +154,7 @@ import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -744,6 +745,8 @@ public class PartitionedRegion extends LocalRegion
 
   private final PartitionedRegionRedundancyTracker redundancyTracker;
 
+  private boolean regionCreationNotified;
+
   /**
    * Constructor for a PartitionedRegion. This has an accessor (Region API) functionality and
    * contains a datastore for actual storage. An accessor can act as a local cache by having a local
@@ -856,7 +859,7 @@ public class PartitionedRegion extends LocalRegion
       this.isShadowPR = true;
       this.parallelGatewaySender = internalRegionArgs.getParallelGatewaySender();
     }
-
+    this.regionCreationNotified = false;
 
     /*
      * Start persistent profile logging if we are a persistent region.
@@ -10187,5 +10190,22 @@ public class PartitionedRegion extends LocalRegion
   @VisibleForTesting
   public SenderIdMonitor getSenderIdMonitor() {
     return senderIdMonitor;
+  }
+
+  @Override
+  public boolean isRegionCreateNotified() {
+    return this.regionCreationNotified;
+  }
+
+  @Override
+  public void setRegionCreateNotified(boolean notified) {
+    this.regionCreationNotified = notified;
+  };
+
+  void notifyRegionCreated() {
+    if (regionCreationNotified)
+      return;
+    this.getSystem().handleResourceEvent(ResourceEvent.REGION_CREATE, this);
+    this.regionCreationNotified = true;
   }
 }

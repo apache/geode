@@ -11047,6 +11047,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     KEYS, VALUES, ENTRIES
   }
 
+  @Override
+  public boolean isRegionCreateNotified() {
+    return false;
+  }
+
+  @Override
+  public void setRegionCreateNotified(boolean notified) {
+    // do nothing
+  }
+
   /**
    * Used by {@link #foreachRegionEntry}.
    *
