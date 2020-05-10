@@ -23,6 +23,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
 
+@SuppressWarnings("unchecked")
 public abstract class SingleResultRedisFunction implements Function<Object[]> {
 
   protected abstract Object compute(Region<ByteArrayWrapper, RedisSet> localRegion,

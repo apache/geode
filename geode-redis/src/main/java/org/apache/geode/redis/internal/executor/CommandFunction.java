@@ -33,6 +33,7 @@ import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.executor.set.StripedExecutor;
 import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
 
+@SuppressWarnings("unchecked")
 public class CommandFunction extends SingleResultRedisFunction {
 
   public static final String ID = "REDIS_COMMAND_FUNCTION";
