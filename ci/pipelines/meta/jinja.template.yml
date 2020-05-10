@@ -218,6 +218,7 @@ jobs:
         SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
+        MAVEN_SNAPSHOT_BUCKET: ((maven-snapshot-bucket))
         SEMVER_PRERELEASE_TOKEN: ((semver-prerelease-token))
       run:
         path: geode-examples-pipeline/ci/pipelines/examples/deploy_pipeline.sh
