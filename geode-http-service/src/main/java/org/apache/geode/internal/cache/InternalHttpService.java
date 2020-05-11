@@ -43,9 +43,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SSLUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 public class InternalHttpService implements HttpService {

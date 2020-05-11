@@ -28,9 +28,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.net.SSLUtil;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.net.SSLParameterExtension;
 
 /**
