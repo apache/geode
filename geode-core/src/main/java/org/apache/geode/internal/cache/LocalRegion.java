@@ -324,9 +324,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private int txRefCount;
 
-  @VisibleForTesting
-  final ConcurrentHashMap<RegionEntry, EntryExpiryTask> entryExpiryTasks =
-      new ConcurrentHashMap<>();
 
   private volatile boolean regionInvalid;
 
