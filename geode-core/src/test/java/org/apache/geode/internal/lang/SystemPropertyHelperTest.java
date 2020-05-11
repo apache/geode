@@ -150,5 +150,9 @@ public class SystemPropertyHelperTest {
     assertThat(SystemPropertyHelper
         .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).get())
             .isTrue();
+
+    System.clearProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
+    System.clearProperty(GEODE_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
+    System.clearProperty(GEMFIRE_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
   }
 }
