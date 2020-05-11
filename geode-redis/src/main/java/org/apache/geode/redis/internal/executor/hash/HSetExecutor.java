@@ -20,8 +20,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Extendable;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 /**
  * <pre>
@@ -38,16 +36,11 @@ import org.apache.geode.redis.internal.RedisConstants.ArityDef;
  *
  * </pre>
  */
-public class HSetExecutor extends HashExecutor implements Extendable {
+public class HSetExecutor extends HashExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
-
-    if (commandElems.size() < 4 || commandElems.size() % 2 == 1) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
-      return;
-    }
 
     ByteArrayWrapper key = command.getKey();
 
@@ -60,10 +53,5 @@ public class HSetExecutor extends HashExecutor implements Extendable {
 
   protected boolean onlySetOnAbsent() {
     return false;
-  }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.HSET;
   }
 }

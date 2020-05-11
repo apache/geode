@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal;
 
+import org.apache.geode.redis.internal.ParameterRequirements.EvenParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ExactParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MinimumParameterRequirements;
@@ -148,8 +149,7 @@ import org.apache.geode.redis.internal.executor.transactions.UnwatchExecutor;
 import org.apache.geode.redis.internal.executor.transactions.WatchExecutor;
 
 /**
- * The redis command type used by the server. Each command is directly from the redis protocol and
- * calling {@link #getExecutor()} on a type returns the executor class for that command.
+ * The redis command type used by the server. Each command is directly from the redis protocol.
  */
 public enum RedisCommandType {
 
@@ -206,20 +206,22 @@ public enum RedisCommandType {
    **************** Hashes ***************
    ***************************************/
 
-  HDEL(new HDelExecutor()),
-  HEXISTS(new HExistsExecutor()),
-  HGET(new HGetExecutor()),
-  HGETALL(new HGetAllExecutor()),
-  HINCRBY(new HIncrByExecutor()),
-  HINCRBYFLOAT(new HIncrByFloatExecutor()),
-  HKEYS(new HKeysExecutor()),
-  HLEN(new HLenExecutor()),
-  HMGET(new HMGetExecutor()),
-  HMSET(new HMSetExecutor()),
-  HSCAN(new HScanExecutor()),
-  HSET(new HSetExecutor()),
-  HSETNX(new HSetNXExecutor()),
-  HVALS(new HValsExecutor()),
+  HDEL(new HDelExecutor(), new MinimumParameterRequirements(3)),
+  HEXISTS(new HExistsExecutor(), new ExactParameterRequirements(3)),
+  HGET(new HGetExecutor(), new ExactParameterRequirements(3)),
+  HGETALL(new HGetAllExecutor(), new ExactParameterRequirements(2)),
+  HINCRBY(new HIncrByExecutor(), new ExactParameterRequirements(4)),
+  HINCRBYFLOAT(new HIncrByFloatExecutor(), new ExactParameterRequirements(4)),
+  HKEYS(new HKeysExecutor(), new ExactParameterRequirements(2)),
+  HLEN(new HLenExecutor(), new ExactParameterRequirements(2)),
+  HMGET(new HMGetExecutor(), new MinimumParameterRequirements(3)),
+  HMSET(new HMSetExecutor(),
+      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
+  HSCAN(new HScanExecutor(), new MinimumParameterRequirements(3)),
+  HSET(new HSetExecutor(),
+      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
+  HSETNX(new HSetNXExecutor(), new ExactParameterRequirements(4)),
+  HVALS(new HValsExecutor(), new ExactParameterRequirements(2)),
 
   /***************************************
    *********** HyperLogLogs **************

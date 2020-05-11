@@ -11,40 +11,22 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.executor.hash;
 
-import io.netty.buffer.UnpooledByteBufAllocator;
-import org.junit.Test;
-import org.mockito.Mockito;
+package org.apache.geode.redis.internal.ParameterRequirements;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 
-/**
- * Test for the HDelExecutor class
- *
- *
- */
-public class HDelExecutorJUnitTest {
-  /**
-   * Test the execute command method
-   */
-  @Test
-  public void testExecuteCommand() {
-    Command command = Mockito.mock(Command.class);
-    ExecutionHandlerContext context = Mockito.mock(ExecutionHandlerContext.class);
-
-    UnpooledByteBufAllocator byteBuf = new UnpooledByteBufAllocator(false);
-    Mockito.when(context.getByteBufAllocator()).thenReturn(byteBuf);
-
-    HDelExecutor exec = new HDelExecutor();
-
-    exec.executeCommand(command, context);
-
-    // verify the response was set
-    Mockito.verify(command).setResponse(Mockito.any());
+public class EvenParameterRequirements implements ParameterRequirements {
+  @Override
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    if (!isEven(command.getProcessedCommand().size())) {
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsError());
+    }
   }
 
+  private boolean isEven(int n) {
+    return n % 2 == 0;
+  }
 }

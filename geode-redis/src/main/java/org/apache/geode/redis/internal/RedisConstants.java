@@ -113,37 +113,6 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the TYPE command is \"TYPE key\"";
     public static final String UNKNOWN = null;
 
-    /*
-     * Hash
-     */
-    public static final String HDEL =
-        "The wrong number of arguments or syntax was provided, the format for the HDEL command is \"HDEL key field [field ...]\"";
-    public static final String HEXISTS =
-        "The wrong number of arguments or syntax was provided, the format for the HEXISTS command is \"HEXISTS key field\"";
-    public static final String HGETALL =
-        "The wrong number of arguments or syntax was provided, the format for the HGETALL command is \"HGETALL key\"";
-    public static final String HGET =
-        "The wrong number of arguments or syntax was provided, the format for the HGET command is \"HGET key field\"";
-    public static final String HINCRBY =
-        "The wrong number of arguments or syntax was provided, the format for the HINCRBY command is \"HINCRBY key field increment\"";
-    public static final String HINCRBYFLOAT =
-        "The wrong number of arguments or syntax was provided, the format for the HINCRBYFLOAT command is \"HINCRBYFLOAT key field increment\"";
-    public static final String HKEYS =
-        "The wrong number of arguments or syntax was provided, the format for the HKEYS command is \"HKEYS key\"";
-    public static final String HLEN =
-        "The wrong number of arguments or syntax was provided, the format for the HLEN command is \"HLEN key\"";
-    public static final String HMGET =
-        "The wrong number of arguments or syntax was provided, the format for the HMGET command is \"HMGET key field [field ...]\"";
-    public static final String HMSET =
-        "The wrong number of arguments or syntax was provided, the format for the HMSET command is \"HMSET key field value [field value ...]\", or not every field is associated with a value";
-    public static final String HSCAN =
-        "The wrong number of arguments or syntax was provided, the format for the SSCAN command is \"SSCAN key cursor [MATCH pattern] [COUNT count]\"";
-    public static final String HSET =
-        "The wrong number of arguments or syntax was provided, the format for the HSET command is \"HSET key field value\"";
-    public static final String HSETNX =
-        "The wrong number of arguments or syntax was provided, the format for the HSETNX command is \"HSETNX key field value\"";
-    public static final String HVALS =
-        "The wrong number of arguments or syntax was provided, the format for the HVALS command is \"HVALS key\"";
 
     /*
      * Hll

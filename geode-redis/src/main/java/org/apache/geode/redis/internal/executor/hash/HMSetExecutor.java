@@ -20,7 +20,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 /**
  * <pre>
@@ -49,11 +48,6 @@ public class HMSetExecutor extends HashExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
-
-    if (commandElems.size() < 4 || commandElems.size() % 2 == 1) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.HMSET));
-      return;
-    }
 
     ByteArrayWrapper key = command.getKey();
     RedisHash hash = new GeodeRedisHashSynchronized(key, context);
