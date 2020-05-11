@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -98,6 +97,7 @@ import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.Subscriptions;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -390,18 +390,8 @@ public class GeodeRedisServer {
     metaListener = new MetaCacheListener();
     expirationFutures = new ConcurrentHashMap<>();
     expirationExecutor =
-        Executors.newScheduledThreadPool(numExpirationThreads, new ThreadFactory() {
-          private final AtomicInteger counter = new AtomicInteger();
-
-          @Override
-          public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setName("GemFireRedis-ScheduledExecutor-" + counter.incrementAndGet());
-            t.setDaemon(true);
-            return t;
-          }
-
-        });
+        Executors.newScheduledThreadPool(numExpirationThreads,
+            new NamedThreadFactory("GemFireRedis-ScheduledExecutor-", true));
     DEFAULT_REGION_TYPE = setRegionType();
     shutdown = false;
     started = false;
@@ -571,68 +561,56 @@ public class GeodeRedisServer {
    * specified by {@link GeodeRedisServer#serverPort}
    */
   private void startRedisServer() throws IOException, InterruptedException {
-    ThreadFactory selectorThreadFactory = new ThreadFactory() {
-      private final AtomicInteger counter = new AtomicInteger();
+    Class<? extends ServerChannel> socketClass = initializeEventLoopGroups();
 
-      @Override
-      public Thread newThread(Runnable r) {
-        Thread t = new Thread(r);
-        t.setName("GeodeRedisServer-SelectorThread-" + counter.incrementAndGet());
-        t.setDaemon(true);
-        return t;
-      }
-    };
-
-    ThreadFactory workerThreadFactory = new ThreadFactory() {
-      private final AtomicInteger counter = new AtomicInteger();
-
-      @Override
-      public Thread newThread(Runnable r) {
-        Thread t = new Thread(r);
-        t.setName("GeodeRedisServer-WorkerThread-" + counter.incrementAndGet());
-        return t;
-      }
-    };
-
-    bossGroup = null;
-    workerGroup = null;
-    Class<? extends ServerChannel> socketClass;
-    if (singleThreadPerConnection) {
-      socketClass =
-          startRedisServiceSingleThreadPerConnection(selectorThreadFactory, workerThreadFactory);
-    } else {
-      bossGroup = new NioEventLoopGroup(numSelectorThreads, selectorThreadFactory);
-      workerGroup = new NioEventLoopGroup(numWorkerThreads, workerThreadFactory);
-      socketClass = NioServerSocketChannel.class;
-    }
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
-    String pwd = system.getConfig().getRedisPassword();
-    final byte[] pwdB = Coder.stringToBytes(pwd);
-    ServerBootstrap b = new ServerBootstrap();
+    String redisPassword = system.getConfig().getRedisPassword();
+    final byte[] redisPasswordBytes = Coder.stringToBytes(redisPassword);
+    ServerBootstrap serverBootstrap = new ServerBootstrap();
 
-    b.group(bossGroup, workerGroup).channel(socketClass)
-        .childHandler(new ChannelInitializer<SocketChannel>() {
-          @Override
-          public void initChannel(SocketChannel ch) {
-            if (logger.fineEnabled()) {
-              logger.fine("GeodeRedisServer-Connection established with " + ch.remoteAddress());
-            }
-            ChannelPipeline p = ch.pipeline();
-            addSSLIfEnabled(ch, p);
-            p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
-            p.addLast(new WriteTimeoutHandler(10));
-            p.addLast(ExecutionHandlerContext.class.getSimpleName(),
-                new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
-                    keyRegistrar, pubSub, hashLockService));
-          }
-        }).option(ChannelOption.SO_REUSEADDR, true)
+    serverBootstrap.group(bossGroup, workerGroup).channel(socketClass)
+        .childHandler(createChannelInitializer(redisPasswordBytes))
+        .option(ChannelOption.SO_REUSEADDR, true)
         .option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
         .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, GeodeRedisServer.connectTimeoutMillis)
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
-    // Bind and start to accept incoming connections.
-    ChannelFuture f = b.bind(new InetSocketAddress(getBindAddress(), serverPort)).sync();
+    serverChannel = createBoundChannel(serverBootstrap);
+  }
+
+  @SuppressWarnings("deprecation")
+  private Class<? extends ServerChannel> initializeEventLoopGroups() {
+    ThreadFactory selectorThreadFactory =
+        new NamedThreadFactory("GeodeRedisServer-SelectorThread-", true);
+
+    ThreadFactory workerThreadFactory =
+        new NamedThreadFactory("GeodeRedisServer-WorkerThread-", false);
+
+    Class<? extends ServerChannel> socketClass;
+    if (singleThreadPerConnection) {
+      bossGroup =
+          new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, selectorThreadFactory);
+      workerGroup =
+          new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, workerThreadFactory);
+      socketClass = io.netty.channel.socket.oio.OioServerSocketChannel.class;
+    } else {
+      bossGroup = new NioEventLoopGroup(numSelectorThreads, selectorThreadFactory);
+      workerGroup = new NioEventLoopGroup(numWorkerThreads, workerThreadFactory);
+      socketClass = NioServerSocketChannel.class;
+    }
+    return socketClass;
+  }
+
+  private Channel createBoundChannel(ServerBootstrap serverBootstrap)
+      throws InterruptedException, UnknownHostException {
+    ChannelFuture channelFuture =
+        serverBootstrap.bind(new InetSocketAddress(getBindAddress(), serverPort)).sync();
+    logStartupMessage();
+    return channelFuture.channel();
+  }
+
+  private void logStartupMessage() throws UnknownHostException {
     if (logger.infoEnabled()) {
       String logMessage = "GeodeRedisServer started {" + getBindAddress() + ":" + serverPort
           + "}, Selector threads: " + numSelectorThreads;
@@ -643,17 +621,26 @@ public class GeodeRedisServer {
       }
       logger.info(logMessage);
     }
-    serverChannel = f.channel();
   }
 
-  @SuppressWarnings("deprecation")
-  private Class<? extends ServerChannel> startRedisServiceSingleThreadPerConnection(
-      ThreadFactory selectorThreadFactory, ThreadFactory workerThreadFactory) {
-    bossGroup =
-        new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, selectorThreadFactory);
-    workerGroup =
-        new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, workerThreadFactory);
-    return io.netty.channel.socket.oio.OioServerSocketChannel.class;
+  private ChannelInitializer<SocketChannel> createChannelInitializer(byte[] redisPasswordBytes) {
+    return new ChannelInitializer<SocketChannel>() {
+      @Override
+      public void initChannel(SocketChannel socketChannel) {
+        if (logger.fineEnabled()) {
+          logger.fine(
+              "GeodeRedisServer-Connection established with " + socketChannel.remoteAddress());
+        }
+        ChannelPipeline pipeline = socketChannel.pipeline();
+        addSSLIfEnabled(socketChannel, pipeline);
+        pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
+        pipeline.addLast(new WriteTimeoutHandler(10));
+        pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
+            new ExecutionHandlerContext(socketChannel, cache, regionCache, GeodeRedisServer.this,
+                redisPasswordBytes,
+                keyRegistrar, pubSub, hashLockService));
+      }
+    };
   }
 
   private void addSSLIfEnabled(SocketChannel ch, ChannelPipeline p) {
