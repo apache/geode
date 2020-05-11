@@ -298,7 +298,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   public void clearShouldRemoveRegisteredExpirationTasks(TestVM coordinatorVM,
       RegionShortcut regionShortcut) {
     final int entries = 500;
-    int expirationTime = (int) GeodeAwaitility.getTimeout().getValueInMS() / 1000;
+    int expirationTime = (int) GeodeAwaitility.getTimeout().getSeconds();
     parametrizedSetup(regionShortcut, new ExpirationAttributes(expirationTime, DESTROY));
     populateRegion(accessor, entries, asList(accessor, server1, server2));
 
