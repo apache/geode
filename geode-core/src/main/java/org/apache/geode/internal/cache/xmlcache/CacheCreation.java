@@ -39,6 +39,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
@@ -160,6 +161,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
@@ -188,6 +190,9 @@ public class CacheCreation implements InternalCache {
 
   @Immutable
   private static final RegionAttributes defaults = new AttributesFactory().create();
+
+  private static final Optional<Boolean> parallelDiskStoreRecovery = SystemPropertyHelper
+      .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
 
   /**
    * Store the current CacheCreation that is doing a create. Used from PoolManager to defer to
@@ -521,7 +526,13 @@ public class CacheCreation implements InternalCache {
 
     cache.initializePdxRegistry();
 
-    diskStores.values().parallelStream().forEach(diskStore -> {
+    Stream<DiskStore> diskStoreStream;
+    if (parallelDiskStoreRecovery.orElse(true)) {
+      diskStoreStream = diskStores.values().parallelStream();
+    } else {
+      diskStoreStream = diskStores.values().stream();
+    }
+    diskStoreStream.forEach(diskStore -> {
       DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
       if (creation != pdxRegDSC) {
         createDiskStore(creation, cache);
