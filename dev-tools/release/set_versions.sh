@@ -33,7 +33,6 @@ while getopts ":v:snw:" opt; do
       ;;
     s )
       BUILDSUFFIX="-build.0"
-      ANYSNAPSHOT="-build+"
       ;;
     n )
       NOPUSH=true
@@ -58,6 +57,12 @@ if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 VERSION_MM=${VERSION%.*}
+
+if [ -n "${BUILDSUFFIX}" ] ; then
+  GEODEFOREXAMPLES="${VERSION_MM}.+"
+else
+  GEODEFOREXAMPLES="${VERSION}"
+fi
 
 set -x
 [ -n "${WORKSPACE}" ] || WORKSPACE=$PWD/release-${VERSION}-workspace
@@ -135,9 +140,9 @@ git pull
 set +x
 
 #version = 1.12.0-build.0
-#geodeVersion = 1.12.0-build+
+#geodeVersion = 1.12.+
 sed -e "s/^version = .*/version = ${VERSION}${BUILDSUFFIX}/" \
-    -e "s/^geodeVersion = .*/geodeVersion = ${VERSION}${ANYSNAPSHOT}/" \
+    -e "s/^geodeVersion = .*/geodeVersion = ${GEODEFOREXAMPLES}/" \
     -i.bak gradle.properties
 
 rm gradle.properties.bak

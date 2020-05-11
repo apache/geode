@@ -226,7 +226,7 @@ set +x
 #geodeVersion = 1.13.0-build+
 sed \
   -e "s/^version =.*/version = ${NEWVERSION}-build.0/" \
-  -e "s/^geodeVersion =.*/geodeVersion = ${NEWVERSION}-build+/" \
+  -e "s/^geodeVersion =.*/geodeVersion = ${NEWVERSION_MM}.+/" \
   -i.bak gradle.properties
 rm gradle.properties.bak
 set -x
