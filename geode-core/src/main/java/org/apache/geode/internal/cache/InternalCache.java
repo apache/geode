@@ -583,7 +583,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
     return (InternalRegionFactory) createRegionFactory(shortcut);
   }
 
-  default void lockDiskStore(String diskStoreName) {}
+  void lockDiskStore(String diskStoreName);
 
-  default void unlockDiskStore(String diskStoreName) {}
+  void unlockDiskStore(String diskStoreName);
 }

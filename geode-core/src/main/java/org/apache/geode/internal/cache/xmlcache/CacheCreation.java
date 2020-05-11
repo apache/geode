@@ -1099,6 +1099,16 @@ public class CacheCreation implements InternalCache {
     return queryService;
   }
 
+  @Override
+  public void lockDiskStore(String diskStoreName) {
+
+  }
+
+  @Override
+  public void unlockDiskStore(String diskStoreName) {
+
+  }
+
   public QueryConfigurationServiceCreation getQueryConfigurationServiceCreation() {
     return queryConfigurationServiceCreation;
   }
