@@ -187,7 +187,7 @@ else
   rm apache-geode.rb.bak
   set -x
   git add apache-geode.rb
-  git diff --no-pager --staged
+  git diff --staged --color | cat
   git commit -m "apache-geode ${VERSION}"
   git push -u myfork
   set +x
@@ -209,7 +209,7 @@ sed -e "s/^ENV GEODE_GPG.*/ENV GEODE_GPG ${SIGNING_KEY}/" \
 rm Dockerfile.bak
 set -x
 git add Dockerfile
-git diff --no-pager --staged
+git diff --staged --color | cat
 git commit -m "apache-geode ${VERSION}"
 git push
 set +x
@@ -230,7 +230,7 @@ sed -e "/wget.*closer.*apache-geode-/s#http.*filename=geode#https://downloads.ap
 rm Dockerfile.bak
 set -x
 git add Dockerfile
-git diff --no-pager --staged
+git diff --staged --color | cat
 git commit -m "apache-geode ${VERSION}"
 git push
 set +x
@@ -296,7 +296,7 @@ sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl =#' \
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-git diff --no-pager --staged
+git diff --staged --color | cat
 git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
 git push
 set +x
@@ -369,7 +369,7 @@ if [ $PATCH -eq 0 ] ; then
 fi
 set -x
 git add settings.gradle
-git diff --no-pager --staged
+git diff --staged --color | cat
 git commit -m "add ${VERSION} to old versions${BENCHMSG} on develop"
 git push -u myfork
 set +x
@@ -390,7 +390,7 @@ sed -e "s/].each/,\\
 rm settings.gradle.bak
 set -x
 git add settings.gradle
-git diff --no-pager --staged
+git diff --staged --color | cat
 git commit -m "add ${VERSION} to old versions on support/$VERSION_MM"
 git push
 set +x

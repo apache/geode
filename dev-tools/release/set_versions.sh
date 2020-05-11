@@ -122,8 +122,8 @@ sed -e "s/^version =.*/version = ${VERSION}${BUILDSUFFIX}/" -i.bak gradle.proper
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-if [ $(git diff --no-pager --staged | wc -l) -gt 0 ] ; then
-  git diff --no-pager --staged
+if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+  git diff --staged --color | cat
   git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
@@ -148,8 +148,8 @@ sed -e "s/^version = .*/version = ${VERSION}${BUILDSUFFIX}/" \
 rm gradle.properties.bak
 set -x
 git add .
-git diff --no-pager --staged
-if [ $(git diff --no-pager --staged | wc -l) -gt 0 ] ; then
+if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+  git diff --staged --color | cat
   git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
