@@ -22,7 +22,6 @@ import static org.apache.geode.redis.internal.RedisCommandType.HSET;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -61,8 +60,8 @@ public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
   }
 
   @Override
-  public Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>>>> results =
+  public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
+    ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
         executeFunction(HGETALL, key, null);
     return results.getResult().get(0);
   }

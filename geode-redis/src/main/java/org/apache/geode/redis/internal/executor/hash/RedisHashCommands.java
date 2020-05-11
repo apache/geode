@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
@@ -29,5 +28,5 @@ public interface RedisHashCommands {
   // TODO: refactor this onto something like RedisKeyCommands
   boolean del(ByteArrayWrapper key);
 
-  Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall(ByteArrayWrapper key);
+  Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key);
 }

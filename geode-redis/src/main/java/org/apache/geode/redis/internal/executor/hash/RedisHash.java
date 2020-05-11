@@ -71,7 +71,7 @@ public class RedisHash implements Delta, DataSerializable {
     }
   }
 
-  public static Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> hgetall(
+  public static Collection<ByteArrayWrapper> hgetall(
       Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key) {
     RedisHash hash = region.get(key);
     if (hash != null) {
@@ -178,8 +178,13 @@ public class RedisHash implements Delta, DataSerializable {
     return fieldsRemoved;
   }
 
-  private synchronized Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> doHgetall() {
-    return new ArrayList<>(hash.entrySet());
+  private synchronized Collection<ByteArrayWrapper> doHgetall() {
+    ArrayList<ByteArrayWrapper> result = new ArrayList<>();
+    for (Map.Entry<ByteArrayWrapper, ByteArrayWrapper> entry : hash.entrySet()) {
+      result.add(entry.getKey());
+      result.add(entry.getValue());
+    }
+    return result;
   }
 
   private void storeChanges(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
@@ -205,7 +210,7 @@ public class RedisHash implements Delta, DataSerializable {
   }
 
   public synchronized Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> entries() {
-    return doHgetall();
+    return new ArrayList<>(hash.entrySet());
   }
 
   public synchronized ByteArrayWrapper get(ByteArrayWrapper field) {

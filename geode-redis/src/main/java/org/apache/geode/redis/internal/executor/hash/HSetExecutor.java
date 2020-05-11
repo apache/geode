@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -49,8 +50,9 @@ public class HSetExecutor extends HashExecutor {
     RedisHashCommands redisHashCommands =
         new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
 
-    int fieldsAdded = redisHashCommands.hset(key, commandElems.subList(2, commandElems.size()),
-        onlySetOnAbsent());
+    ArrayList<ByteArrayWrapper> fieldsToSet =
+        new ArrayList<>(commandElems.subList(2, commandElems.size()));
+    int fieldsAdded = redisHashCommands.hset(key, fieldsToSet, onlySetOnAbsent());
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), fieldsAdded));
   }
