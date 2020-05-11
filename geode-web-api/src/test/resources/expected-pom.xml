@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-web-api</artifactId>
-  <version>1.13.0-SNAPSHOT</version>
+  <version>${version}</version>
   <packaging>war</packaging>
   <name>Apache Geode</name>
   <description>Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing</description>

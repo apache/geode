@@ -40,26 +40,45 @@ resource_types:
   source:
     repository: smgoller/gci-resource
 - name: maven-resource
-  type: docker-image
+  type: registry-image
   source:
     repository: nulldriver/maven-resource
     tag: latest
 - name: concourse-metadata-resource
-  type: docker-image
+  type: registry-image
   source:
     password: ((!docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
+- name: gcs-resource
+  type: registry-image
+  source:
+    repository: frodenas/gcs-resource
+- name: json-gcs-resource
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))gcs-resource-with-json-content
+    tag: latest
 
 resources:
+- name: geode-passing-tokens
+  type: json-gcs-resource
+  source:
+    bucket: ((artifact-bucket))
+    json_key: ((concourse-gcp-key))
+    versioned_file: semvers/((pipeline-prefix))((geode-build-branch))/passing-build-tokens.json
 - name: geode-examples
+  icon: github-circle
   type: git
   source:
     uri: https://github.com/{{repository.fork}}/geode-examples.git
     branch: {{ repository.branch }}
     depth: 10
 - name: geode-ci
+  icon: github-circle
   type: git
   source:
     depth: 1
@@ -74,7 +93,8 @@ resources:
   type: time
   source: {interval: 24h}
 - name: alpine-tools-image
-  type: docker-image
+  icon: docker
+  type: registry-image
   source:
     username: ((docker-username))
     password: ((docker-password))
@@ -93,78 +113,94 @@ jobs:
   public: true
   serial: true
   plan:
-  - aggregate:
-    - get: geode-ci
+  - in_parallel:
     - get: alpine-tools-image
+    - get: geode-ci
     - get: linux-builder-image-family
-  - aggregate:
+    - get: geode-passing-tokens
+      trigger: true
     - get: geode-examples
       trigger: true
     - get: 24h
       trigger: true
-    - do:
-      - put: concourse-metadata-resource
-      {{ init_retry()|indent(6) }}
-      - task: create_instance
-        image: alpine-tools-image
-        config:
-          platform: linux
-          params:
-            {{ common_instance_params(examples_test) | indent(12) }}
-            GEODE_BRANCH: {{repository.branch}}
-            GEODE_FORK: {{repository.fork}}
-            IMAGE_FAMILY_NAME: ((pipeline-prefix))linux-geode-builder
-          run:
-            path: geode-ci/ci/scripts/create_instance.sh
-          inputs:
-          - name: concourse-metadata-resource
-          - name: geode-ci
-          - name: attempts-log
-            path: old
-          outputs:
-          - name: instance-data
-          - name: attempts-log
-            path: new
-        timeout: 15m
-        attempts: 2
-      - task: rsync_code_up
-        image: alpine-tools-image
-        config:
-          platform: linux
-          run:
-            path: geode-ci/ci/scripts/rsync_code_up.sh
-          inputs:
-          - name: geode-ci
-          - name: geode-examples
-            path: geode
-          - name: instance-data
-        timeout: 5m
-      - task: build
-        image: alpine-tools-image
-        config:
-          platform: linux
-          params:
-            JAVA_BUILD_VERSION: {{ java_build_version.version }}
-            GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
-            {{ common_test_params(examples_test) | indent(12) }}
-          run:
-            path: geode-ci/ci/scripts/execute_build_examples.sh
-          inputs:
-          - name: geode-ci
-          - name: geode-examples
-            path: geode
-          - name: instance-data
-          outputs:
-          - name: results
-    ensure:
-      do:
-      - task: delete_instance
-        image: alpine-tools-image
-        config:
-          platform: linux
-          run:
-            path: geode-ci/ci/scripts/delete_instance.sh
-          inputs:
-          - name: geode-ci
-          - name: instance-data
-        timeout: 1h
+    - put: concourse-metadata-resource
+  {{ init_retry()|indent(2) }}
+  - task: create_instance
+    image: alpine-tools-image
+    config:
+      platform: linux
+      params:
+        {{ common_instance_params(examples_test) | indent(8) }}
+        GEODE_BRANCH: {{repository.branch}}
+        GEODE_FORK: {{repository.fork}}
+        IMAGE_FAMILY_NAME: ((pipeline-prefix))linux-geode-builder
+      run:
+        path: geode-ci/ci/scripts/create_instance.sh
+      inputs:
+      - name: concourse-metadata-resource
+      - name: geode-ci
+      - name: attempts-log
+        path: old
+      outputs:
+      - name: instance-data
+      - name: attempts-log
+        path: new
+    timeout: 15m
+    attempts: 2
+  - task: rsync_examples_code_up
+    image: alpine-tools-image
+    config:
+      platform: linux
+      run:
+        path: geode-ci/ci/scripts/rsync_code_up.sh
+      inputs:
+      - name: geode-ci
+      - name: geode-examples
+        path: geode
+      - name: instance-data
+    timeout: 5m
+  - task: move_examples_aside
+    image: alpine-tools-image
+    config:
+      platform: linux
+      inputs:
+      - name: instance-data
+      run:
+        path: sh
+        args:
+        - -ecx
+        - |
+          SSHKEY_FILE="instance-data/sshkey"
+          SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
+          INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
+          ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "set -x ; mv geode geode-examples"
+  - task: build
+    image: alpine-tools-image
+    config:
+      platform: linux
+      params:
+        MAVEN_SNAPSHOT_BUCKET: ((maven-snapshot-bucket))
+        JAVA_BUILD_VERSION: {{ java_build_version.version }}
+        GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
+        {{ common_test_params(examples_test) | indent(8) }}
+      run:
+        path: geode-ci/ci/scripts/execute_build_examples.sh
+      inputs:
+      - name: geode-ci
+      - name: geode-examples
+      - name: geode-passing-tokens
+      - name: instance-data
+      outputs:
+      - name: results
+  ensure:
+    do:
+    - task: delete_instance
+      image: alpine-tools-image
+      config:
+        platform: linux
+        run:
+          path: geode-ci/ci/scripts/delete_instance.sh
+        inputs:
+        - name: geode-ci
+        - name: instance-data
+      timeout: 1h
