@@ -65,7 +65,7 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLQueryTest;

@@ -50,7 +50,7 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
-import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.LoggingTest;

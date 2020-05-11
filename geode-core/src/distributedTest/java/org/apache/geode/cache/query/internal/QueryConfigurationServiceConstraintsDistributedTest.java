@@ -57,7 +57,7 @@ import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;

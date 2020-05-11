@@ -32,7 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.assertj.internal;
+package org.apache.geode.test.management.internal;
 
 import static java.lang.System.lineSeparator;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
