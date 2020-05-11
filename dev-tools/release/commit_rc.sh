@@ -111,6 +111,7 @@ echo ""
 echo "============================================================"
 echo "Restoring -build suffix to version"
 echo "============================================================"
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_versions.sh -v ${VERSION} -s -n -w "${WORKSPACE}"
 set +x

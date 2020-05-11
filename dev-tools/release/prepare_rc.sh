@@ -146,9 +146,9 @@ svn update --set-depth infinity --parents dist/dev/geode
 set +x
 
 
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_copyright.sh ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
-
 set +x
 
 
@@ -156,6 +156,7 @@ echo ""
 echo "============================================================"
 echo "Removing -build suffix from version"
 echo "============================================================"
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_versions.sh -v ${VERSION} -n -w ${WORKSPACE}
 set +x
