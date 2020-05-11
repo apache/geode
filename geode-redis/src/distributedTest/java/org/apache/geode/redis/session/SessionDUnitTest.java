@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -36,6 +40,7 @@ import org.springframework.web.client.RestTemplate;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
@@ -99,6 +104,12 @@ public class SessionDUnitTest {
   protected static void startRedisServer(int server1) {
     cluster.startServerVM(server1, redisProperties(server1),
         cluster.getMember(LOCATOR).getPort());
+
+    cluster.getVM(server1).invoke("Set logging level to DEBUG", () -> {
+      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
+      Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
+      FastLogger.setDelegating(true);
+    });
   }
 
   private static Properties redisProperties(int server2) {

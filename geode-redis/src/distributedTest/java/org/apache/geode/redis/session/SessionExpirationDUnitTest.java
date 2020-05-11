@@ -61,6 +61,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() {
     String sessionCookie = createNewSessionWithNote(APP2, "note1");
     String sessionId = getSessionId(sessionCookie);

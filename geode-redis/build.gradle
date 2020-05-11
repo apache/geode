@@ -58,6 +58,7 @@ dependencies {
   acceptanceTestImplementation('org.testcontainers:testcontainers')
   acceptanceTestRuntime(project(':geode-log4j'))
 
+  distributedTestCompile('org.apache.logging.log4j:log4j-core')
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')

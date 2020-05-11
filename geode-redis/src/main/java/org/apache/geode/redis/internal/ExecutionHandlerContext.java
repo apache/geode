@@ -141,9 +141,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
     try {
-      // if (logger.isDebugEnabled()) {
-      logger.info("Executing Redis command: {}", command);
-      // }
+      if (logger.isDebugEnabled()) {
+        logger.debug("Executing Redis command: {}", command);
+      }
+
       executeCommand(ctx, command);
     } catch (Exception e) {
       logger.warn("Execution of Redis command {} failed: {}", command, e);
@@ -215,6 +216,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         executeWithoutTransaction(command);
       }
 
+      if (logger.isDebugEnabled() && command.getResponse() != null) {
+        ByteBuf response = command.getResponse()
+            .copy(0, Math.min(command.getResponse().readableBytes(), 100));
+        logger.debug("Redis command returned: {}", getPrintableByteBuf(response));
+        response.release();
+      }
+
       if (hasTransaction() && command.isOfType(RedisCommandType.MULTI)) {
         writeToChannel(
             Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
@@ -238,6 +246,20 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       ByteBuf r = Coder.getNoAuthResponse(this.byteBufAllocator, RedisConstants.ERROR_NOT_AUTH);
       writeToChannel(r);
     }
+  }
+
+  private String getPrintableByteBuf(ByteBuf buf) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < buf.readableBytes(); i++) {
+      byte aByte = buf.getByte(i);
+      if (aByte > 31 && aByte < 127) {
+        builder.append((char) aByte);
+      } else {
+        builder.append(String.format("\\x%02x", aByte));
+      }
+    }
+
+    return builder.toString();
   }
 
 
