@@ -29,15 +29,15 @@ import org.apache.geode.internal.DistributionLocator;
  * A {@link SocketFactory} that connects a client to locators and servers
  * through a SNI proxy.
  */
-public class SniSocketFactory implements SocketFactory, Declarable {
+public class SniProxySocketFactory implements SocketFactory, Declarable {
 
 
   private String hostname;
   private int port;
 
-  public SniSocketFactory() {} // required by Declarable
+  public SniProxySocketFactory() {} // required by Declarable
 
-  public SniSocketFactory(String hostname, int port) {
+  public SniProxySocketFactory(String hostname, int port) {
     this.hostname = hostname;
     this.port = port;
   }

@@ -288,7 +288,7 @@ javadoc/org/apache/geode/cache/client/package-frame.html
 javadoc/org/apache/geode/cache/client/package-summary.html
 javadoc/org/apache/geode/cache/client/package-tree.html
 javadoc/org/apache/geode/cache/client/proxy/ProxySocketFactories.html
-javadoc/org/apache/geode/cache/client/proxy/SniSocketFactory.html
+javadoc/org/apache/geode/cache/client/proxy/SniProxySocketFactory.html
 javadoc/org/apache/geode/cache/client/proxy/package-frame.html
 javadoc/org/apache/geode/cache/client/proxy/package-summary.html
 javadoc/org/apache/geode/cache/client/proxy/package-tree.html

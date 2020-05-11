@@ -52,7 +52,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.UserAttributes;
-import org.apache.geode.cache.client.proxy.SniSocketFactory;
+import org.apache.geode.cache.client.proxy.SniProxySocketFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -153,10 +153,10 @@ public class ClientCacheFactoryJUnitTest {
 
     // verify that the SocketCreator settings were correctly picked up from the xml file
     SocketFactory factory = defPool.getSocketFactory();
-    assertThat(factory).isInstanceOf(SniSocketFactory.class);
-    SniSocketFactory sniSocketFactory = (SniSocketFactory) factory;
-    assertThat(sniSocketFactory.getPort()).isEqualTo(40404);
-    assertThat(sniSocketFactory.getHostname()).isEqualTo("localhost");
+    assertThat(factory).isInstanceOf(SniProxySocketFactory.class);
+    SniProxySocketFactory sniProxySocketFactory = (SniProxySocketFactory) factory;
+    assertThat(sniProxySocketFactory.getPort()).isEqualTo(40404);
+    assertThat(sniProxySocketFactory.getHostname()).isEqualTo("localhost");
   }
 
   /**
