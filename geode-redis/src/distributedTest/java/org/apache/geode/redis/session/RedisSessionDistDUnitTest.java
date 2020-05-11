@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -25,6 +26,14 @@ import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class RedisSessionDistDUnitTest extends SessionDUnitTest {
+
+  @BeforeClass
+  public static void setup() {
+    SessionDUnitTest.setup();
+    startSpringApp(APP1, SERVER1, SERVER2, DEFAULT_SESSION_TIMEOUT);
+    startSpringApp(APP2, SERVER2, SERVER1, DEFAULT_SESSION_TIMEOUT);
+  }
+
   @Test
   public void should_beAbleToCreateASession_storedInRedis() {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
@@ -103,7 +112,7 @@ public class RedisSessionDistDUnitTest extends SessionDUnitTest {
 
       assertThat(sessionNotes).containsExactly("noteFromClient2");
     } finally {
-      startSpringApp(APP2, SERVER1, SERVER2);
+      startSpringApp(APP2, SERVER1, SERVER2, DEFAULT_SESSION_TIMEOUT);
     }
   }
 }

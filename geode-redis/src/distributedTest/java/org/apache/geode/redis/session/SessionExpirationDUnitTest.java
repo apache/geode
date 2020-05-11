@@ -19,12 +19,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class SessionExpirationDUnitTest extends SessionDUnitTest {
+
+  private static final int SHORT_SESSION_TIMEOUT = 5;
+
+  @BeforeClass
+  public static void setup() {
+    SessionDUnitTest.setup();
+    startSpringApp(APP1, SERVER1, SERVER2, SHORT_SESSION_TIMEOUT);
+    startSpringApp(APP2, SERVER2, SERVER1, SHORT_SESSION_TIMEOUT);
+  }
 
   @Test
   public void sessionShouldTimeout_whenRequestedFromSameServer() {
@@ -80,14 +90,14 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   private void waitForTheSessionToExpire(String sessionId) {
-    GeodeAwaitility.await().atMost((SESSION_TIMEOUT + 5), TimeUnit.SECONDS)
+    GeodeAwaitility.await().atMost((SHORT_SESSION_TIMEOUT + 5), TimeUnit.SECONDS)
         .until(
             () -> jedisConnetedToServer1.ttl("spring:session:sessions:expires:" + sessionId) < 0);
   }
 
   private void refreshSession(String sessionCookie, int sessionApp) {
     GeodeAwaitility.await()
-        .during(SESSION_TIMEOUT + 2, TimeUnit.SECONDS)
+        .during(SHORT_SESSION_TIMEOUT + 2, TimeUnit.SECONDS)
         .until(() -> getSessionNotes(sessionApp, sessionCookie) != null);
   }
 }

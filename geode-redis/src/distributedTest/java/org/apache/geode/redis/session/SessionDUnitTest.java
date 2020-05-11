@@ -47,7 +47,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 
-public class SessionDUnitTest {
+public abstract class SessionDUnitTest {
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
@@ -57,7 +57,7 @@ public class SessionDUnitTest {
       new DistributedRestoreSystemProperties();
 
 
-  protected static final int SESSION_TIMEOUT = 5;
+  protected static final int DEFAULT_SESSION_TIMEOUT = 5;
 
   protected static final int LOCATOR = 0;
   protected static final int SERVER1 = 1;
@@ -83,8 +83,6 @@ public class SessionDUnitTest {
     cluster.startLocatorVM(LOCATOR);
     startRedisServer(SERVER1);
     startRedisServer(SERVER2);
-    startSpringApp(APP1, SERVER1, SERVER2);
-    startSpringApp(APP2, SERVER2, SERVER1);
 
     jedisConnetedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
   }
@@ -120,7 +118,8 @@ public class SessionDUnitTest {
     return redisPropsForServer;
   }
 
-  static void startSpringApp(int sessionApp, int primaryServer, int secondaryServer) {
+  static void startSpringApp(int sessionApp, int primaryServer, int secondaryServer,
+      long sessionTimeout) {
     int primaryRedisPort = ports.get(primaryServer);
     int failoverRedisPort = ports.get(secondaryServer);
     int httpPort = ports.get(sessionApp);
@@ -128,7 +127,7 @@ public class SessionDUnitTest {
     host.invoke("start a spring app", () -> {
       System.setProperty("server.port", "" + httpPort);
       System.setProperty("spring.redis.port", "" + primaryRedisPort);
-      System.setProperty("server.servlet.session.timeout", "" + SESSION_TIMEOUT + "s");
+      System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
       springApplicationContext = SpringApplication.run(
           RedisSpringTestApplication.class,
           "" + primaryRedisPort, "" + failoverRedisPort);
