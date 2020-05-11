@@ -16,8 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static java.util.Collections.emptyList;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -45,41 +43,6 @@ public class RedisHash implements Delta, DataSerializable {
   // true if deltas contains adds; false if removes
   private transient boolean deltasAreAdds;
 
-
-  public static boolean del(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key) {
-    return region.remove(key) != null;
-  }
-
-  public static int hset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
-      List<ByteArrayWrapper> fieldsToSet, boolean nx) {
-    RedisHash hash = region.get(key);
-    if (hash != null) {
-      return hash.doHset(region, key, fieldsToSet, nx);
-    } else {
-      region.put(key, new RedisHash(fieldsToSet));
-      return fieldsToSet.size() / 2;
-    }
-  }
-
-  public static int hdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
-      List<ByteArrayWrapper> fieldsToRemove) {
-    RedisHash hash = region.get(key);
-    if (hash != null) {
-      return hash.doHdel(region, key, fieldsToRemove);
-    } else {
-      return 0;
-    }
-  }
-
-  public static Collection<ByteArrayWrapper> hgetall(
-      Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key) {
-    RedisHash hash = region.get(key);
-    if (hash != null) {
-      return hash.doHgetall();
-    } else {
-      return emptyList();
-    }
-  }
 
   public RedisHash(List<ByteArrayWrapper> fieldsToSet) {
     hash = new HashMap<>();
@@ -136,7 +99,7 @@ public class RedisHash implements Delta, DataSerializable {
     }
   }
 
-  private synchronized int doHset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int doHset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
     Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
@@ -162,7 +125,7 @@ public class RedisHash implements Delta, DataSerializable {
     return fieldsAdded;
   }
 
-  private synchronized int doHdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int doHdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
     for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
@@ -178,7 +141,7 @@ public class RedisHash implements Delta, DataSerializable {
     return fieldsRemoved;
   }
 
-  private synchronized Collection<ByteArrayWrapper> doHgetall() {
+  public synchronized Collection<ByteArrayWrapper> doHgetall() {
     ArrayList<ByteArrayWrapper> result = new ArrayList<>();
     for (Map.Entry<ByteArrayWrapper, ByteArrayWrapper> entry : hash.entrySet()) {
       result.add(entry.getKey());
