@@ -14,9 +14,11 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -24,11 +26,63 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 
 public class GatewaySenderEventRemoteDispatcherJUnitTest {
+
+  @Mock
+  private AbstractGatewaySender senderMock;
+
+  @Mock
+  private AbstractGatewaySenderEventProcessor eventProcessorMock;
+
+  @InjectMocks
+  private GatewaySenderEventRemoteDispatcher eventDispatcher;
+
+  @Mock
+  private PoolImpl poolMock;
+
+  @Mock
+  private Connection connectionMock;
+
+  @Mock
+  private ServerQueueStatus serverQueueStatusMock;
+
+  @Mock
+  private Endpoint endpointMock;
+
+  @Mock
+  private DistributedMember memberIdMock;
+
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+    when(eventProcessorMock.getSender()).thenReturn(senderMock);
+
+    when(senderMock.isParallel()).thenReturn(false);
+    when(senderMock.getLockForConcurrentDispatcher()).thenReturn(new Object());
+    when(senderMock.getProxy()).thenReturn(poolMock);
+
+    when(poolMock.isDestroyed()).thenReturn(false);
+    when(poolMock.acquireConnection()).thenReturn(connectionMock);
+
+    when(connectionMock.getQueueStatus()).thenReturn(serverQueueStatusMock);
+  }
+
   @Test
   public void getConnectionShouldShutdownTheAckThreadReaderWhenEventProcessorIsShutDown() {
     AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
@@ -46,7 +100,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void shuttingDownAckThreadReaderConnectionShouldshutdownTheAckThreadReader() {
+  public void shuttingDownAckThreadReaderConnectionShouldShutdownTheAckThreadReader() {
     AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
     AbstractGatewaySenderEventProcessor eventProcessor =
         mock(AbstractGatewaySenderEventProcessor.class);
@@ -76,5 +130,157 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     Connection newConnection = dispatcher.getConnection(true);
     verify(dispatcher, times(1)).initializeConnection();
     verify(dispatcher, times(2)).getConnectionLifeCycleLock();
+  }
+
+  @Test
+  public void initializeConnectionOfParallelSender() {
+    when(senderMock.isParallel()).thenReturn(true);
+
+    eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
+    GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
+    dispatcherSpy.initializeConnection();
+
+    verify(senderMock, times(0)).getLockForConcurrentDispatcher();
+    verify(senderMock, times(1)).setServerLocation(any());
+    verify(poolMock, times(1)).acquireConnection();
+    verify(dispatcherSpy, times(0)).retryInitializeConnection(connectionMock);
+  }
+
+  @Test
+  public void initializeConnectionOfSerialSenderWithReceiversNotSharingIpAndPort() {
+    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(false);
+
+    when(connectionMock.getEndpoint()).thenReturn(endpointMock);
+    when(endpointMock.getMemberId()).thenReturn(memberIdMock);
+    when(memberIdMock.getUniqueId()).thenReturn("receiverId");
+
+    eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
+    GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
+    dispatcherSpy.initializeConnection();
+
+    verify(senderMock, times(1)).getLockForConcurrentDispatcher();
+    verify(senderMock, times(1)).getReceiversSharingIpAndPort();
+    verify(poolMock, times(1)).acquireConnection();
+    verify(dispatcherSpy, times(0)).retryInitializeConnection(connectionMock);
+  }
+
+  @Test
+  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_firstThread() {
+
+    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+
+    when(connectionMock.getEndpoint()).thenReturn(endpointMock);
+    when(endpointMock.getMemberId()).thenReturn(memberIdMock);
+    when(memberIdMock.getUniqueId()).thenReturn("receiverId");
+    when(eventProcessorMock.getExpectedReceiverUniqueId()).thenReturn("");
+
+    eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
+    GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
+    dispatcherSpy.initializeConnection();
+
+    verify(senderMock, times(1)).getLockForConcurrentDispatcher();
+    verify(senderMock, times(1)).getReceiversSharingIpAndPort();
+    verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
+    verify(poolMock, times(1)).acquireConnection();
+    verify(eventProcessorMock, times(1)).setExpectedReceiverUniqueId("receiverId");
+  }
+
+  @Test
+  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_afterFirstThreadNoRetry() {
+
+    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+
+    when(connectionMock.getEndpoint()).thenReturn(endpointMock);
+    when(endpointMock.getMemberId()).thenReturn(memberIdMock);
+    when(memberIdMock.getUniqueId()).thenReturn("expectedId");
+    when(eventProcessorMock.getExpectedReceiverUniqueId()).thenReturn("expectedId");
+
+    eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
+    GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
+    dispatcherSpy.initializeConnection();
+
+    verify(senderMock, times(1)).getLockForConcurrentDispatcher();
+    verify(senderMock, times(1)).getReceiversSharingIpAndPort();
+    verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
+    verify(poolMock, times(1)).acquireConnection();
+    verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
+  }
+
+  @Test
+  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_afterFirstThreadWithRetry() {
+
+    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+
+    when(connectionMock.getEndpoint()).thenReturn(endpointMock);
+    when(endpointMock.getMemberId()).thenReturn(memberIdMock);
+    when(memberIdMock.getUniqueId()).thenReturn("notExpectedId").thenReturn("expectedId");
+    when(eventProcessorMock.getExpectedReceiverUniqueId()).thenReturn("expectedId");
+
+    eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
+    GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
+    dispatcherSpy.initializeConnection();
+
+    verify(senderMock, times(1)).getLockForConcurrentDispatcher();
+    verify(senderMock, times(1)).getReceiversSharingIpAndPort();
+    verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
+    verify(poolMock, times(2)).acquireConnection();
+    verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
+
+  }
+
+  @Test
+  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_maxRetriesReached_noActiveServers() {
+
+    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+
+    when(connectionMock.getEndpoint()).thenReturn(endpointMock);
+    when(endpointMock.getMemberId()).thenReturn(memberIdMock);
+    when(memberIdMock.getUniqueId()).thenReturn("notExpectedId");
+    when(eventProcessorMock.getExpectedReceiverUniqueId()).thenReturn("expectedId");
+
+    eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
+    GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
+
+    String expectedExceptionMessage =
+        "There are no active servers. Cannot get connection to [expectedId] after 5 attempts.";
+    assertThatThrownBy(() -> {
+      dispatcherSpy.initializeConnection();
+    }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
+
+    verify(senderMock, times(1)).getLockForConcurrentDispatcher();
+    verify(senderMock, times(2)).getReceiversSharingIpAndPort();
+    verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
+    verify(poolMock, times(5)).acquireConnection();
+    verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
+  }
+
+  @Test
+  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_maxRetriesReached_serversAvailable() {
+
+    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+
+    when(connectionMock.getEndpoint()).thenReturn(endpointMock);
+    when(endpointMock.getMemberId()).thenReturn(memberIdMock);
+    when(memberIdMock.getUniqueId()).thenReturn("notExpectedId");
+    when(eventProcessorMock.getExpectedReceiverUniqueId()).thenReturn("expectedId");
+    List<ServerLocation> currentServers = new ArrayList<>();
+    currentServers.add(new ServerLocation("host1", 1));
+    currentServers.add(new ServerLocation("host2", 2));
+    when(poolMock.getCurrentServers()).thenReturn(currentServers);
+
+    eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
+    GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
+
+    String expectedExceptionMessage =
+        "No available connection was found, but the following active servers exist: host1:1, host2:2 Cannot get connection to [expectedId] after 5 attempts.";
+    assertThatThrownBy(() -> {
+      dispatcherSpy.initializeConnection();
+    }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
+
+    verify(senderMock, times(1)).getLockForConcurrentDispatcher();
+    verify(senderMock, times(2)).getReceiversSharingIpAndPort();
+    verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
+    verify(poolMock, times(5)).acquireConnection();
+    verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
   }
 }

@@ -707,6 +707,15 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory
           .setGroupTransactionEvents(Boolean.parseBoolean(groupTransactionEvents));
     }
+
+    String receiversSharingIpAndPort = atts.getValue(RECEIVERS_SHARING_IP_AND_PORT);
+    if (receiversSharingIpAndPort == null) {
+      gatewaySenderFactory
+          .setReceiversSharingIpAndPort(GatewaySender.DEFAULT_RECEIVERS_SHARING_IP_AND_PORT);
+    } else {
+      gatewaySenderFactory
+          .setReceiversSharingIpAndPort(Boolean.parseBoolean(receiversSharingIpAndPort));
+    }
   }
 
   private void startGatewayReceiver(Attributes atts) {

@@ -2656,6 +2656,8 @@ public class CacheConfig {
     protected String orderPolicy;
     @XmlAttribute(name = "group-transaction-events")
     protected Boolean groupTransactionEvents;
+    @XmlAttribute(name = "receivers-sharing-ip-and-port")
+    protected Boolean receiversSharingIpAndPort;
 
     /**
      * Gets the value of the gatewayEventFilters property.
@@ -3100,6 +3102,27 @@ public class CacheConfig {
       this.orderPolicy = value;
     }
 
+    /**
+     * Sets the value of the receiversSharingIpAndPort property.
+     *
+     * allowed object is
+     * {@link Boolean }
+     *
+     */
+    public void setReceiversSharingIpAndPort(Boolean value) {
+      this.receiversSharingIpAndPort = value;
+    }
+
+    /**
+     * Gets the value of the receiversSharingIpAndPort property.
+     *
+     * possible object is
+     * {@link Boolean }
+     *
+     */
+    public Boolean getReceiversSharingIpAndPort() {
+      return this.receiversSharingIpAndPort;
+    }
   }
 
 }

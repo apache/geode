@@ -1394,6 +1394,16 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
+    // receivers-sharing-ip-and-port
+    if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+      if (generateDefaults()
+          || sender
+              .getReceiversSharingIpAndPort() != GatewaySender.DEFAULT_RECEIVERS_SHARING_IP_AND_PORT) {
+        atts.addAttribute("", "", RECEIVERS_SHARING_IP_AND_PORT, "",
+            String.valueOf(sender.getReceiversSharingIpAndPort()));
+      }
+    }
+
     handler.startElement("", GATEWAY_SENDER, GATEWAY_SENDER, atts);
 
     for (GatewayEventFilter gef : sender.getGatewayEventFilters()) {

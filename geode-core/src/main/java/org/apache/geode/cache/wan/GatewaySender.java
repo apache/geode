@@ -147,6 +147,8 @@ public interface GatewaySender {
 
   boolean DEFAULT_IS_FOR_INTERNAL_USE = false;
 
+  boolean DEFAULT_RECEIVERS_SHARING_IP_AND_PORT = false;
+
   /**
    * Retry a connection from sender to receiver after specified time interval (in milliseconds) in
    * case receiver is not up and running. Default is set to 1000 milliseconds i.e. 1 second.
@@ -449,4 +451,12 @@ public interface GatewaySender {
    *
    */
   void destroy();
+
+  /**
+   * Returns receiversSharingIpAndPort boolean property for this GatewaySender.
+   *
+   * @return receiversSharingIpAndPort boolean property for this GatewaySender
+   *
+   */
+  boolean getReceiversSharingIpAndPort();
 }

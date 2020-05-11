@@ -433,8 +433,10 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   protected static final String ORDER_POLICY = "order-policy";
   /** The name of the <code>remote-distributed-system</code> attribute */
   protected static final String REMOTE_DISTRIBUTED_SYSTEM_ID = "remote-distributed-system-id";
+  /** The name of the <code>group-transaction-events</code> attribute */
   protected static final String GROUP_TRANSACTION_EVENTS = "group-transaction-events";
-
+  /** The name of the <code>receivers-sharing-ip-and-port</code> attribute */
+  protected static final String RECEIVERS_SHARING_IP_AND_PORT = "receivers-sharing-ip-and-port";
 
   /** The name of the <code>bind-address</code> attribute */
   protected static final String BIND_ADDRESS = "bind-address";
