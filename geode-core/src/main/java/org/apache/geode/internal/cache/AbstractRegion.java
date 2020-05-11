@@ -113,6 +113,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   private static final Logger logger = LogService.getLogger();
   private final ReentrantReadWriteLock readWriteLockForCacheLoader = new ReentrantReadWriteLock();
   private final ReentrantReadWriteLock readWriteLockForCacheWriter = new ReentrantReadWriteLock();
+  @VisibleForTesting
   protected final ConcurrentHashMap<RegionEntry, EntryExpiryTask> entryExpiryTasks =
       new ConcurrentHashMap<>();
   /**
