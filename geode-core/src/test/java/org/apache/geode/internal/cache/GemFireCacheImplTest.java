@@ -28,8 +28,6 @@ import java.io.NotSerializableException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -656,7 +654,8 @@ public class GemFireCacheImplTest {
       });
     });
     executorServiceRule.getExecutorService().shutdown();
-    executorServiceRule.getExecutorService().awaitTermination(GeodeAwaitility.getTimeout().toNanos(), TimeUnit.NANOSECONDS);
+    executorServiceRule.getExecutorService()
+        .awaitTermination(GeodeAwaitility.getTimeout().toNanos(), TimeUnit.NANOSECONDS);
     // 1 thread returns true for locking, all 10 threads return true for unlocking
     assertThat(nTrue.get()).isEqualTo(11);
     // 9 threads return false for locking
