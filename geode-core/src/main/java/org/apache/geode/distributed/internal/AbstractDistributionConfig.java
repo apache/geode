@@ -111,7 +111,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_POR
 import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PROTOCOL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
-import static org.apache.geode.distributed.ConfigurationProperties.PARALLEL_DISK_STORE_RECOVERY;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
@@ -1486,8 +1485,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Defines whether thread monitoring is to be enabled.");
     m.put(THREAD_MONITOR_TIME_LIMIT,
         "Defines the time period (in milliseconds) after which the monitored thread is considered to be stuck.");
-    m.put(PARALLEL_DISK_STORE_RECOVERY,
-        "If true, the disk stores are recovered in parallel by multiple threads when the cluster restarts. Otherwise, the disk stores are recovered sequentially.");
     dcAttDescriptions = Collections.unmodifiableMap(m);
   }
 
