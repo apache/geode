@@ -191,6 +191,7 @@ public class CacheCreation implements InternalCache {
   @Immutable
   private static final RegionAttributes defaults = new AttributesFactory().create();
 
+  @Immutable
   private static final Optional<Boolean> parallelDiskStoreRecovery = SystemPropertyHelper
       .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
 
@@ -526,18 +527,7 @@ public class CacheCreation implements InternalCache {
 
     cache.initializePdxRegistry();
 
-    Stream<DiskStore> diskStoreStream;
-    if (parallelDiskStoreRecovery.orElse(true)) {
-      diskStoreStream = diskStores.values().parallelStream();
-    } else {
-      diskStoreStream = diskStores.values().stream();
-    }
-    diskStoreStream.forEach(diskStore -> {
-      DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
-      if (creation != pdxRegDSC) {
-        createDiskStore(creation, cache);
-      }
-    });
+    createDiskStores(cache, pdxRegDSC);
 
     if (hasDynamicRegionFactory()) {
       DynamicRegionFactory.get().open(getDynamicRegionFactoryConfig());
@@ -644,6 +634,21 @@ public class CacheCreation implements InternalCache {
 
     // Create all extensions
     extensionPoint.fireCreate(cache);
+  }
+
+  private void createDiskStores(InternalCache cache, DiskStoreAttributesCreation pdxRegDSC) {
+    Stream<DiskStore> diskStoreStream;
+    if (parallelDiskStoreRecovery.orElse(true)) {
+      diskStoreStream = diskStores.values().parallelStream();
+    } else {
+      diskStoreStream = diskStores.values().stream();
+    }
+    diskStoreStream.forEach(diskStore -> {
+      DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
+      if (creation != pdxRegDSC) {
+        createDiskStore(creation, cache);
+      }
+    });
   }
 
   public void initializeDeclarablesMap(InternalCache cache) {
