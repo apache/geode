@@ -111,7 +111,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -523,12 +522,8 @@ public class CacheCreation implements InternalCache {
 
     cache.initializePdxRegistry();
     Stream<DiskStore> diskStoreStream;
-    boolean parallelDiskStoreRecovery = DistributionConfig.DEFAULT_PARALLEL_DISK_STORE_RECOVERY;
-    if (cache instanceof GemFireCacheImpl && cache.getInternalDistributedSystem() != null
-        && cache.getInternalDistributedSystem().getConfig() != null) {
-      parallelDiskStoreRecovery =
-          cache.getInternalDistributedSystem().getConfig().getParallelDiskStoreRecovery();
-    }
+    boolean parallelDiskStoreRecovery =
+        cache.getInternalDistributedSystem().getConfig().getParallelDiskStoreRecovery();
     if (parallelDiskStoreRecovery) {
       diskStoreStream = diskStores.values().parallelStream();
     } else {
