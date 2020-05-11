@@ -173,6 +173,12 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
             gatewayTransportFilterKlass, CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER));
       }
     }
+
+    Boolean receiversSharingIpAndPort = gatewaySenderCreateArgs.getReceiversSharingIpAndPort();
+    if (receiversSharingIpAndPort != null) {
+      gateway.setReceiversSharingIpAndPort(receiversSharingIpAndPort);
+    }
+
     return gateway.create(gatewaySenderCreateArgs.getId(),
         gatewaySenderCreateArgs.getRemoteDistributedSystemId());
   }

@@ -146,12 +146,32 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    */
   private int batchSize;
 
+  private String expectedReceiverUniqueId = "";
+
+  private boolean receiversSharingIpAndPort = false;
+
   public AbstractGatewaySenderEventProcessor(String string,
       GatewaySender sender, ThreadsMonitoring tMonitoring) {
     super(string);
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
     this.threadMonitoring = tMonitoring;
+  }
+
+  public void setExpectedReceiverUniqueId(String uniqueId) {
+    this.expectedReceiverUniqueId = uniqueId;
+  }
+
+  public String getExpectedReceiverUniqueId() {
+    return this.expectedReceiverUniqueId;
+  }
+
+  public void setReceiversSharingIpAndPort(boolean value) {
+    this.receiversSharingIpAndPort = value;
+  }
+
+  public boolean getReceiversSharingIpAndPort() {
+    return this.receiversSharingIpAndPort;
   }
 
   public Object getRunningStateLock() {

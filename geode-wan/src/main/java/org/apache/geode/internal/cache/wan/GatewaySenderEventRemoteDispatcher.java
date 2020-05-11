@@ -20,11 +20,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -84,7 +86,6 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   public GatewaySenderEventRemoteDispatcher(AbstractGatewaySenderEventProcessor eventProcessor) {
     this.processor = eventProcessor;
     this.sender = eventProcessor.getSender();
-    // this.ackReaderThread = new AckReaderThread(sender);
     try {
       initializeConnection();
     } catch (GatewaySenderException e) {
@@ -348,11 +349,56 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     }
   }
 
+  Connection retryInitializeConnection(Connection con) {
+    final boolean isDebugEnabled = logger.isDebugEnabled();
+    ServerLocation server = this.sender.getServerLocation();
+    String connectedServerId = con.getEndpoint().getMemberId().getUniqueId();
+    String expectedServerId = this.processor.getExpectedReceiverUniqueId();
+    boolean connectedToExpectedReceiver = connectedServerId.equals(expectedServerId);
+    if (expectedServerId.equals("")) {
+      if (isDebugEnabled) {
+        logger.debug("First dispatcher connected to endpoint " + connectedServerId);
+      }
+      this.processor.setExpectedReceiverUniqueId(connectedServerId);
+      connectedToExpectedReceiver = true;
+    }
+    int attempt = 0;
+    final int maxAttempts = 5;
+    while (!connectedToExpectedReceiver) {
+      if (connectedServerId.equals(expectedServerId)) {
+        if (isDebugEnabled) {
+          logger.debug("Dispatcher connected to expected endpoint " + connectedServerId);
+        }
+        connectedToExpectedReceiver = true;
+      } else {
+        if (isDebugEnabled) {
+          logger.debug("Expected connection to [" + expectedServerId
+              + "] but got connection to [" + connectedServerId + "]");
+        }
+        attempt++;
+        this.sender.getProxy().returnConnection(con);
+        if (attempt >= maxAttempts) {
+          throw new ServerConnectivityException("Cannot get connection to ["
+              + expectedServerId + "] after " + maxAttempts + " attempts.");
+        }
+        if (server != null) {
+          con = this.sender.getProxy().acquireConnection(server);
+        } else {
+          con = this.sender.getProxy().acquireConnection();
+        }
+        connectedServerId = con.getEndpoint().getMemberId().getUniqueId();
+      }
+    }
+    return con;
+  }
+
   /**
    * Initializes the <code>Connection</code>.
    *
    */
+  @VisibleForTesting
   void initializeConnection() throws GatewaySenderException, GemFireSecurityException {
+    final boolean isDebugEnabled = logger.isDebugEnabled();
     if (ackReaderThread != null) {
       ackReaderThread.shutDownAckReaderConnection(connection);
     }
@@ -383,26 +429,24 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           synchronized (this.sender.getLockForConcurrentDispatcher()) {
             ServerLocation server = this.sender.getServerLocation();
             if (server != null) {
-              if (logger.isDebugEnabled()) {
+              if (isDebugEnabled) {
                 logger.debug("ServerLocation is: {}. Connecting to this serverLocation...", server);
               }
               con = this.sender.getProxy().acquireConnection(server);
             } else {
-              if (logger.isDebugEnabled()) {
+              if (isDebugEnabled) {
                 logger.debug("ServerLocation is null. Creating new connection. ");
               }
               con = this.sender.getProxy().acquireConnection();
-              // Acquired connection from pool!! Update the server location
-              // information in the sender and
-              // distribute the information to other senders ONLY IF THIS SENDER
-              // IS
-              // PRIMARY
-              if (this.sender.isPrimary()) {
-                if (sender.getServerLocation() == null) {
-                  sender.setServerLocation(con.getServer());
-                }
-                new UpdateAttributesProcessor(this.sender).distribute(false);
+            }
+            if (this.sender.getReceiversSharingIpAndPort()) {
+              con = retryInitializeConnection(con);
+            }
+            if (this.sender.isPrimary()) {
+              if (sender.getServerLocation() == null) {
+                sender.setServerLocation(con.getServer());
               }
+              new UpdateAttributesProcessor(this.sender).distribute(false);
             }
           }
         }
@@ -471,6 +515,12 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
             String.format(
                 "No available connection was found, but the following active servers exist: %s",
                 buffer.toString());
+      }
+      if (this.sender.getReceiversSharingIpAndPort()) {
+        if (Pattern.compile("Cannot get connection to .* after .* attempts.")
+            .matcher(e.getMessage()).find()) {
+          ioMsg += " " + e.getMessage();
+        }
       }
       IOException ex = new IOException(ioMsg);
       gse = new GatewaySenderException(
