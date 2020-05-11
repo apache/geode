@@ -170,6 +170,22 @@ resources:
     password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))gce-instances-resource
 
+- name: gcs-resource-with-json-content
+  icon: github-circle
+  type: git
+  check_every: 168h
+  source:
+    branch: master
+    uri: https://github.com/steve-sienk/gcs-resource.git
+
+- name: gcs-resource-with-json-content-image
+  icon: docker
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))gcs-resource-with-json-content
+
 jobs:
 - name: build-concourse-docker-image
   public: ((public-pipelines))
@@ -324,4 +340,15 @@ jobs:
   - put: gce-instances-resource-docker-image
     params:
       build: gce-instances-resource-dockerfile/ci/resource-types/gce-instances-resource
+      tag_as_latest: true
+
+- name: build-json-gcs-resource-image
+  serial: true
+  public: false
+  plan:
+  - get: gcs-resource-with-json-content
+    trigger: true
+  - put: gcs-resource-with-json-content-image
+    params:
+      build: gcs-resource-with-json-content
       tag_as_latest: true

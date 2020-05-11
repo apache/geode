@@ -80,7 +80,7 @@ public class AssemblyContentsIntegrationTest {
             "Please set the GEODE_HOME environment variable to the product installation directory.")
         .isDirectory();
 
-    String versionRegex = "\\d+\\.\\d+\\.\\d+(-SNAPSHOT)?";
+    String versionRegex = "\\d+\\.\\d+\\.\\d+(-build\\.\\d+)?";
     return FileUtils.listFiles(geodeHomeDirectory, null, true).stream()
         .map(file -> geodeHomePath.relativize(Paths.get(file.getPath())).toString().replace('\\',
             '/'))
