@@ -949,6 +949,7 @@ public class Oplog implements CompactableOplog, Flushable {
         // compaction (unless there are pending events in the queue upon restart - crf exists - or
         // a manual compaction is executed).
         deleteDRF();
+        setHasDeletes(false);
 
         this.closed = true;
         this.deleted.set(true);
