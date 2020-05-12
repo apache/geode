@@ -916,7 +916,8 @@ public class PersistentOplogSet implements OplogSet {
 
   Oplog removeOplog(long id, boolean deleting, Oplog olgToAddToDrfOnly) {
     logger.info("[JUAN]: Removing from opLogSet for disk {} -> removeOplog({}, {}, {})",
-        getParent().getName(), id, deleting, safeGetAbsolutePath(olgToAddToDrfOnly.getDrfFile()));
+        getParent().getName(), id, deleting,
+        safeGetAbsolutePath(olgToAddToDrfOnly != null ? olgToAddToDrfOnly.getDrfFile() : null));
 
     Oplog oplog;
     boolean drfOnly = false;
