@@ -25,26 +25,20 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXId;
@@ -52,17 +46,23 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.statistics.DummyStatisticsRegistry;
-import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.metrics.internal.NoopMeterRegistry;
 
 public class SerialGatewaySenderQueueJUnitTest {
 
-  private static final String TEST_REGION = "testRegion";
+  private static final String TEST_REGION = "testRegion1";
+
   private SerialGatewaySenderQueue.MetaRegionFactory metaRegionFactory;
   private GemFireCacheImpl cache;
   private AbstractGatewaySender sender;
   Region region;
   InternalRegionFactory regionFactory;
+
+  GatewaySenderEventImpl event1;
+  GatewaySenderEventImpl event2;
+  GatewaySenderEventImpl event3;
+  GatewaySenderEventImpl event4;
+  GatewaySenderEventImpl event5;
 
   @Before
   public void setup() {
@@ -74,7 +74,7 @@ public class SerialGatewaySenderQueueJUnitTest {
     when(cache.getInternalDistributedSystem()).thenReturn(mockInternalDistributedSystem);
     when(cache.getMeterRegistry()).thenReturn(new NoopMeterRegistry());
 
-    region = createDistributedRegion(TEST_REGION, cache);
+    region = createLocalRegionMock(new HashMap(), cache);
 
     regionFactory = mock(InternalRegionFactory.class, RETURNS_DEEP_STUBS);
     when(regionFactory.setInternalMetaRegion(any())
@@ -110,13 +110,6 @@ public class SerialGatewaySenderQueueJUnitTest {
 
   @Test
   public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInMaxSizeBatch() {
-    GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
-    GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(2, false, region);
-    GatewaySenderEventImpl event3 = createMockGatewaySenderEventImpl(1, true, region);
-    GatewaySenderEventImpl event4 = createMockGatewaySenderEventImpl(2, true, region);
-    GatewaySenderEventImpl event5 = createMockGatewaySenderEventImpl(3, false, region);
-    GatewaySenderEventImpl event6 = createMockGatewaySenderEventImpl(3, true, region);
-
     TestableSerialGatewaySenderQueue queue = new TestableSerialGatewaySenderQueue(sender,
         TEST_REGION, metaRegionFactory);
     queue.setGroupTransactionEvents(true);
@@ -126,12 +119,11 @@ public class SerialGatewaySenderQueueJUnitTest {
     queue.put(event3);
     queue.put(event4);
     queue.put(event5);
-    queue.put(event6);
 
     List peeked = queue.peek(3, 100);
     assertEquals(4, peeked.size());
     List peekedAfter = queue.peek(3, 100);
-    assertEquals(2, peekedAfter.size());
+    assertEquals(1, peekedAfter.size());
   }
 
   @Test
@@ -169,12 +161,6 @@ public class SerialGatewaySenderQueueJUnitTest {
 
   @Test
   public void peekDoesNotGetExtraEventsWhenNotMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchMaxSize() {
-    GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
-    GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(1, false, region);
-    GatewaySenderEventImpl event3 = createMockGatewaySenderEventImpl(2, false, region);
-    GatewaySenderEventImpl event4 = createMockGatewaySenderEventImpl(1, true, region);
-    GatewaySenderEventImpl event5 = createMockGatewaySenderEventImpl(2, true, region);
-
     TestableSerialGatewaySenderQueue queue = new TestableSerialGatewaySenderQueue(sender,
         TEST_REGION, metaRegionFactory);
 
@@ -233,71 +219,34 @@ public class SerialGatewaySenderQueueJUnitTest {
     return event;
   }
 
-  private Region createDistributedRegion(String regionName, Cache cache) {
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(DataPolicy.NORMAL);
-    RegionAttributes attrs = factory.create();
-    InternalRegionArguments internalRegionArgs = new InternalRegionArguments();
-    return new TestLocalRegion(regionName, attrs, null, (InternalCache) cache, internalRegionArgs,
-        new TestStatisticsClock());
-  }
+  private LocalRegion createLocalRegionMock(Map entries, Cache cache) {
+    event1 = createMockGatewaySenderEventImpl(1, false, region);
+    event2 = createMockGatewaySenderEventImpl(2, false, region);
+    event3 = createMockGatewaySenderEventImpl(1, true, region);
+    event4 = createMockGatewaySenderEventImpl(2, true, region);
+    event5 = createMockGatewaySenderEventImpl(3, false, region);
 
-  public class TestLocalRegion extends LocalRegion {
-    Map map = new ConcurrentHashMap();
+    LocalRegion region = mock(LocalRegion.class);
 
-    public TestLocalRegion(String regionName, RegionAttributes attrs,
-        LocalRegion parentRegion, InternalCache cache,
-        InternalRegionArguments internalRegionArgs,
-        StatisticsClock statisticsClock) {
-      super(regionName, attrs, parentRegion, cache, internalRegionArgs, statisticsClock);
-    }
+    doAnswer(invocation -> event1)
+        .doAnswer(invocation -> event2)
+        .doAnswer(invocation -> event3)
+        .doAnswer(invocation -> event4)
+        .doAnswer(invocation -> event5)
+        .doAnswer(invocation -> null)
+        .when(region).getValueInVMOrDiskWithoutFaultIn(any());
 
-    @Override
-    public Object get(Object key) {
-      return map.get(key);
-    }
+    Map map = new HashMap();
+    map.put(0L, event1);
+    map.put(1L, event2);
+    map.put(2L, event3);
+    map.put(3L, event4);
+    map.put(4L, event5);
 
-    @Override
-    public Object put(Object key, Object value) {
-      map.put(key, value);
-      return key;
-    }
-
-    @Override
-    public Set entrySet() {
-      return map.entrySet();
-    }
-
-    @Override
-    public long cacheTimeMillis() {
-      return 0;
-    }
-
-    @Override
-    public boolean getConcurrencyChecksEnabled() {
-      return false;
-    }
-
-    @Override
-    public void checkReadiness() {}
-
-    @Override
-    public Object getValueInVMOrDiskWithoutFaultIn(Object key) {
-      return get(key);
-    }
-
-    @Override
-    public int size() {
-      return map.size();
-    }
-  }
-
-  public class TestStatisticsClock implements StatisticsClock {
-    @Override
-    public long getTime() {
-      return 0;
-    }
+    doAnswer(invocation -> Collections.emptySet())
+        .doAnswer(invocation -> map.keySet())
+        .when(region).keySet();
+    return region;
   }
 
   private class TestableSerialGatewaySenderQueue extends SerialGatewaySenderQueue {
