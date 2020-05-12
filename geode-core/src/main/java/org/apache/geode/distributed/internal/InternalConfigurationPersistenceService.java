@@ -850,7 +850,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       // ignored. No user logged in for the deployment
       // this would happen for offline commands like "start locator" and loading the cluster config
       // from a directory
-      logger.debug("getDeployedBy: no user information is found.", e.getMessage());
+      logger.debug("getDeployedBy: no user information is found.", e);
     }
     return subject == null ? null : subject.getPrincipal().toString();
   }
