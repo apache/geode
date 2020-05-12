@@ -14,9 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.redis.internal.AutoCloseableLock;
@@ -48,16 +46,16 @@ public class HKeysExecutor extends HashExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    Set<ByteArrayWrapper> keys;
+    List<ByteArrayWrapper> keys;
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = getMap(context, key);
+      RedisHash keyMap = getMap(context, key);
 
       if (keyMap == null || keyMap.isEmpty()) {
         command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
         return;
       }
 
-      keys = new HashSet<>(keyMap.keySet());
+      keys = keyMap.keys();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       command.setResponse(

@@ -14,8 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.HashMap;
-import java.util.Map;
+import static java.util.Collections.emptyList;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
@@ -42,14 +41,14 @@ public abstract class HashExecutor extends AbstractExecutor {
    * @param key the region hash key region:<key>
    * @return the map data
    */
-  protected Map<ByteArrayWrapper, ByteArrayWrapper> getMap(ExecutionHandlerContext context,
+  protected RedisHash getMap(ExecutionHandlerContext context,
       ByteArrayWrapper key) {
-    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> region =
+    Region<ByteArrayWrapper, RedisHash> region =
         context.getRegionProvider().getHashRegion();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = region.get(key);
+    RedisHash map = region.get(key);
     if (map == null) {
-      map = new HashMap<>();
+      map = new RedisHash(emptyList());
     }
 
     return map;
@@ -70,7 +69,7 @@ public abstract class HashExecutor extends AbstractExecutor {
    * @param context the execution handler context
    * @param key the raw HASH key
    */
-  protected void saveMap(Map<ByteArrayWrapper, ByteArrayWrapper> map,
+  protected void saveMap(RedisHash map,
       ExecutionHandlerContext context, ByteArrayWrapper key) {
 
     if (map == null) {

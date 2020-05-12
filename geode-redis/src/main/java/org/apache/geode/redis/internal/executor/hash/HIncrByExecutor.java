@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.redis.internal.AutoCloseableLock;
@@ -78,7 +77,7 @@ public class HIncrByExecutor extends HashExecutor {
     long value;
 
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+      RedisHash map = getMap(context, key);
 
       byte[] byteField = commandElems.get(FIELD_INDEX);
       ByteArrayWrapper field = new ByteArrayWrapper(byteField);
