@@ -875,15 +875,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           GatewaySenderEventCallbackArgument geCallbackArg = new GatewaySenderEventCallbackArgument(
               event.getRawCallbackArgument(), this.sender.getMyDSId(), allRemoteDSIds);
           event.setCallbackArgument(geCallbackArg);
+          // OFFHEAP: event for pdx type meta data so it should never be off-heap
           GatewaySenderEventImpl pdxSenderEvent =
-              new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, event, null, false); // OFFHEAP:
-          // event for
-          // pdx type
-          // meta data
-          // so it
-          // should
-          // never be
-          // off-heap
+              new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, event, null, false);
+
           pdxEventsMap.put(typeEntry.getKey(), pdxSenderEvent);
           pdxSenderEventsList.add(pdxSenderEvent);
         }

@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -139,7 +138,8 @@ public class BucketRegionQueueJUnitTest {
   }
 
   @Test
-  public void testGetElementsMatching() {
+  public void testGetElementsMatchingWithHasTransactionIdPredicateAndIsLastEventInTransactionPredicate()
+      throws ForceReattemptException {
     ParallelGatewaySenderEventProcessor processor =
         ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
 
@@ -158,18 +158,13 @@ public class BucketRegionQueueJUnitTest {
     this.bucketRegionQueue
         .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
 
-    try {
-      this.bucketRegionQueue.addToQueue(Long.valueOf(1), event1);
-      this.bucketRegionQueue.addToQueue(Long.valueOf(2), event2);
-      this.bucketRegionQueue.addToQueue(Long.valueOf(3), event3);
-      this.bucketRegionQueue.addToQueue(Long.valueOf(4), event4);
-      this.bucketRegionQueue.addToQueue(Long.valueOf(5), event5);
-      this.bucketRegionQueue.addToQueue(Long.valueOf(6), event6);
-      this.bucketRegionQueue.addToQueue(Long.valueOf(7), event7);
-
-    } catch (ForceReattemptException e) {
-      fail("Exception thrown: " + e);
-    }
+    this.bucketRegionQueue.addToQueue(Long.valueOf(1), event1);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(2), event2);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(3), event3);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(4), event4);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(5), event5);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(6), event6);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(7), event7);
 
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
         x -> x.getTransactionId().equals(tx1);

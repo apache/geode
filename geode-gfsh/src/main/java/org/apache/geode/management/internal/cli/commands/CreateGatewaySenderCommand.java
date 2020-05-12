@@ -277,7 +277,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           (OrderPolicy) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY);
       Integer dispatcherThreads =
           (Integer) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS);
-      Boolean isGroupTransactionEvents =
+      Boolean groupTransactionEvents =
           (Boolean) parseResult
               .getParamValue(CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS);
 
@@ -292,7 +292,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       }
 
       if (!parallel && dispatcherThreads != null && dispatcherThreads > 1
-          && isGroupTransactionEvents) {
+          && groupTransactionEvents) {
         return ResultModel.createError(
             "Serial Gateway Sender cannot be created with --group-transaction-events when --dispatcher-threads is greater than 1.");
       }

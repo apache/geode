@@ -69,8 +69,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
-  public GatewaySenderFactory setGroupTransactionEvents(boolean isGroupTransactionEvents) {
-    this.attrs.isGroupTransactionEvents = isGroupTransactionEvents;
+  public GatewaySenderFactory setGroupTransactionEvents(boolean groupTransactionEvents) {
+    this.attrs.groupTransactionEvents = groupTransactionEvents;
     return this;
   }
 
@@ -381,6 +381,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       this.attrs.transFilters.add(filter);
     }
     this.attrs.eventSubstitutionFilter = senderCreation.getGatewayEventSubstitutionFilter();
-    this.attrs.isGroupTransactionEvents = senderCreation.isGroupTransactionEvents();
+    this.attrs.groupTransactionEvents = senderCreation.mustGroupTransactionEvents();
   }
 }

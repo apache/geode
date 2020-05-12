@@ -155,8 +155,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY + "=1000" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=2" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=false";
+        + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .doesNotContainOutput("Did not complete waiting")
@@ -241,7 +240,6 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=false" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER
         + "=org.apache.geode.cache30.MyGatewayEventFilter1,org.apache.geode.cache30.MyGatewayEventFilter2";
 
@@ -295,7 +293,6 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=false" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
 

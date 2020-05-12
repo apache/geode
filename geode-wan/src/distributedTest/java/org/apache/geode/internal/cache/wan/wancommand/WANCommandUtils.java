@@ -170,7 +170,7 @@ public class WANCommandUtils implements Serializable {
     assertEquals("dispatcherThreads", dispatcherThreads, sender.getDispatcherThreads());
     assertEquals("orderPolicy", orderPolicy, sender.getOrderPolicy());
     assertEquals("groupTransactionEvents", groupTransactionEvents,
-        sender.isGroupTransactionEvents());
+        sender.mustGroupTransactionEvents());
 
 
     // verify GatewayEventFilters

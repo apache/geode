@@ -51,7 +51,7 @@ public class TXLastEventInTransactionUtils {
       String info = eventsAndSendersPerEventToString(callbacks, senderIdsPerEvent);
       throw new ServiceConfigurationError(
           "Not all events go to the same senders that group transactions. " + info);
-    } ;
+    }
 
     return callbacks.get(callbacks.size() - 1);
   }
@@ -81,7 +81,7 @@ public class TXLastEventInTransactionUtils {
         logger.error("No sender found for {}", senderId);
         throw new ServiceConfigurationError("No information for senderId: " + senderId);
       }
-      if (sender.isGroupTransactionEvents()) {
+      if (sender.mustGroupTransactionEvents()) {
         return false;
       }
     }
@@ -115,6 +115,6 @@ public class TXLastEventInTransactionUtils {
     if (sender == null) {
       throw new ServiceConfigurationError("No information for senderId: " + senderId);
     }
-    return sender.isGroupTransactionEvents();
+    return sender.mustGroupTransactionEvents();
   }
 }

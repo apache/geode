@@ -242,8 +242,8 @@ public class GatewaySenderMBeanBridge {
     return sender.isParallel();
   }
 
-  public boolean isGroupTransactionEvents() {
-    return sender.isGroupTransactionEvents();
+  public boolean mustGroupTransactionEvents() {
+    return sender.mustGroupTransactionEvents();
   }
 
   /** Statistics Related Attributes **/

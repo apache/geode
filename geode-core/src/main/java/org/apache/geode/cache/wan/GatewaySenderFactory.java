@@ -42,11 +42,11 @@ public interface GatewaySenderFactory {
    * Can only be enabled on serial gateway senders with just one dispatcher
    * thread or on parallel gateway senders.
    *
-   * @param isGroupTransactionEvents boolean to indicate whether events from
+   * @param groupTransactionEvents boolean to indicate whether events from
    *        the same transaction must be delivered inside
    *        the same batch.
    */
-  GatewaySenderFactory setGroupTransactionEvents(boolean isGroupTransactionEvents);
+  GatewaySenderFactory setGroupTransactionEvents(boolean groupTransactionEvents);
 
   /**
    * Adds a <code>GatewayEventFilter</code>

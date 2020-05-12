@@ -1282,8 +1282,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           peekedEvents.add(object);
 
         } else {
-          long currentTime = System.currentTimeMillis();
-          if (stopPeekingDueToTime(currentTime, timeToWait, end)) {
+          if (stopPeekingDueToTime(timeToWait, end)) {
             break;
           }
           if (isDebugEnabled) {
@@ -1291,14 +1290,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           }
         }
       } else {
-        long currentTime = System.currentTimeMillis();
-        if (stopPeekingDueToTime(currentTime, timeToWait, end)) {
+        if (stopPeekingDueToTime(timeToWait, end)) {
           break;
         }
         if (isDebugEnabled) {
           logger.debug("{}: Peek continuing", this);
         }
         // Sleep a bit before trying again.
+        long currentTime = System.currentTimeMillis();
         try {
           Thread.sleep(getTimeToSleep(end - currentTime));
         } catch (InterruptedException e) {
@@ -1323,9 +1322,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return batch;
   }
 
-  private boolean stopPeekingDueToTime(long currentTime, int timeToWait, long end) {
+  private boolean stopPeekingDueToTime(int timeToWait, long end) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     // If time to wait is -1 (don't wait) or time interval has elapsed
+    long currentTime = System.currentTimeMillis();
     if (isDebugEnabled) {
       logger.debug("{}: Peek current time: {}", this, currentTime);
     }
@@ -1338,13 +1338,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return false;
   }
 
-  protected boolean isGroupTransactionEvents() {
-    return sender.isGroupTransactionEvents();
+  protected boolean mustGroupTransactionEvents() {
+    return sender.mustGroupTransactionEvents();
   }
 
   private void peekEventsFromIncompleteTransactions(List<GatewaySenderEventImpl> batch,
       Map<TransactionId, Integer> incompleteTransactionIdsInBatch, PartitionedRegion prQ) {
-    if (!isGroupTransactionEvents()) {
+    if (!mustGroupTransactionEvents()) {
       return;
     }
 
@@ -1356,16 +1356,16 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         .entrySet()) {
       TransactionId transactionId = pendingTransaction.getKey();
       int bucketId = pendingTransaction.getValue();
-      boolean presentLastEventInTransaction = false;
+      boolean areAllEventsForTransactionInBatch = false;
       int retries = 0;
-      while (!presentLastEventInTransaction
+      while (!areAllEventsForTransactionInBatch
           && retries++ <= GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
         List<Object> events = peekEventsWithTransactionId(prQ, bucketId, transactionId);
         for (Object object : events) {
           GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
           batch.add(event);
           peekedEvents.add(event);
-          presentLastEventInTransaction = event.isLastEventInTransaction();
+          areAllEventsForTransactionInBatch = event.isLastEventInTransaction();
 
           if (logger.isDebugEnabled()) {
             logger.debug(
@@ -1374,7 +1374,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           }
         }
       }
-      if (!presentLastEventInTransaction) {
+      if (!areAllEventsForTransactionInBatch) {
         logger.warn("Not able to retrieve all events for transaction {} after {} retries",
             transactionId, retries);
       }

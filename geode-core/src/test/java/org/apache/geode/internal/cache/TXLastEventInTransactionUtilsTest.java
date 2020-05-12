@@ -20,7 +20,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceConfigurationError;
@@ -58,13 +57,13 @@ public class TXLastEventInTransactionUtilsTest {
   @Before
   public void setUp() {
     sender1 = mock(GatewaySender.class);
-    when(sender1.isGroupTransactionEvents()).thenReturn(false);
+    when(sender1.mustGroupTransactionEvents()).thenReturn(false);
     sender2 = mock(GatewaySender.class);
-    when(sender2.isGroupTransactionEvents()).thenReturn(false);
+    when(sender2.mustGroupTransactionEvents()).thenReturn(false);
     sender3 = mock(GatewaySender.class);
-    when(sender3.isGroupTransactionEvents()).thenReturn(true);
+    when(sender3.mustGroupTransactionEvents()).thenReturn(true);
     sender4 = mock(GatewaySender.class);
-    when(sender4.isGroupTransactionEvents()).thenReturn(true);
+    when(sender4.mustGroupTransactionEvents()).thenReturn(true);
 
     cache = mock(Cache.class);
     when(cache.getGatewaySender(SENDER_1)).thenReturn(sender1);
@@ -73,18 +72,23 @@ public class TXLastEventInTransactionUtilsTest {
     when(cache.getGatewaySender(SENDER_4)).thenReturn(sender4);
     when(cache.getGatewaySender(SENDER_5)).thenReturn(null);
 
-    final String listSenderIdsForRegion1_2[] = {SENDER_1, SENDER_2};
-    final String listSenderIdsForRegion3_4[] = {SENDER_3, SENDER_4};
-    final String listSenderIdsForRegion5_6[] = {SENDER_1, SENDER_3};
-    final String listSenderIdsForRegion7[] = {SENDER_3};
-    final String listSenderIdsForRegion8[] = {SENDER_5};
+    Set senderIdsForRegion1_2 = new HashSet();
+    senderIdsForRegion1_2.add(SENDER_1);
+    senderIdsForRegion1_2.add(SENDER_2);
 
+    Set senderIdsForRegion3_4 = new HashSet();
+    senderIdsForRegion3_4.add(SENDER_3);
+    senderIdsForRegion3_4.add(SENDER_4);
 
-    Set senderIdsForRegion1_2 = new HashSet(Arrays.asList(listSenderIdsForRegion1_2));
-    Set senderIdsForRegion3_4 = new HashSet(Arrays.asList(listSenderIdsForRegion3_4));
-    Set senderIdsForRegion5_6 = new HashSet(Arrays.asList(listSenderIdsForRegion5_6));
-    Set senderIdsForRegion7 = new HashSet(Arrays.asList(listSenderIdsForRegion7));
-    Set senderIdsForRegion8 = new HashSet(Arrays.asList(listSenderIdsForRegion8));
+    Set senderIdsForRegion5_6 = new HashSet();
+    senderIdsForRegion5_6.add(SENDER_1);
+    senderIdsForRegion5_6.add(SENDER_3);
+
+    Set senderIdsForRegion7 = new HashSet();
+    senderIdsForRegion7.add(SENDER_3);
+
+    Set senderIdsForRegion8 = new HashSet();
+    senderIdsForRegion8.add(SENDER_5);
 
     region1 = mock(InternalRegion.class);
     when(region1.getAllGatewaySenderIds()).thenReturn(senderIdsForRegion1_2);
@@ -112,7 +116,7 @@ public class TXLastEventInTransactionUtilsTest {
   }
 
   @Test
-  public void noSenderGroupingTransactions() throws Exception {
+  public void getLastTransactionEventReturnsNullWhenGroupTransactionEventsIsFalseForAllSenders() {
     List<EntryEventImpl> events = new ArrayList();
     EntryEventImpl event1 = createMockEntryEventImpl(region1);
     EntryEventImpl event2 = createMockEntryEventImpl(region2);
@@ -127,7 +131,7 @@ public class TXLastEventInTransactionUtilsTest {
   }
 
   @Test
-  public void lastEventFoundAllSendersGroupTransactions() throws Exception {
+  public void getLastTransactionEventReturnsEventWhenAllSendersGroupTransactionEvents() {
     List<EntryEventImpl> events = new ArrayList();
     EntryEventImpl event1 = createMockEntryEventImpl(region3);
     EntryEventImpl event2 = createMockEntryEventImpl(region4);
@@ -142,7 +146,7 @@ public class TXLastEventInTransactionUtilsTest {
   }
 
   @Test
-  public void lastEventFoundNotAllSendersGroupTransactions() throws Exception {
+  public void getLastTransactionEventReturnsWhenNotAllSendersGroupTransactionEvents() {
     List<EntryEventImpl> events = new ArrayList();
     EntryEventImpl event1 = createMockEntryEventImpl(region5);
     EntryEventImpl event2 = createMockEntryEventImpl(region6);
@@ -157,7 +161,7 @@ public class TXLastEventInTransactionUtilsTest {
   }
 
   @Test
-  public void notAllEventsToSameGroupingSenders() throws Exception {
+  public void getLastTransactionEventThrowsExceptionWhenNotAllEventsToSameGroupingSenders() {
     List<EntryEventImpl> events = new ArrayList();
     EntryEventImpl event1 = createMockEntryEventImpl(region3);
     EntryEventImpl event2 = createMockEntryEventImpl(region7);
@@ -171,7 +175,7 @@ public class TXLastEventInTransactionUtilsTest {
   }
 
   @Test
-  public void senderNotFound() throws Exception {
+  public void getLastTransactionEventThrowsExceptionWhenSenderNotFound() {
     List<EntryEventImpl> events = new ArrayList();
     EntryEventImpl event1 = createMockEntryEventImpl(region8);
     EntryEventImpl event2 = createMockEntryEventImpl(region8);

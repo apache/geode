@@ -446,7 +446,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private void peekEventsFromIncompleteTransactions(List<AsyncEvent> batch,
       Set<TransactionId> incompleteTransactionIdsInBatch, long lastKey) {
-    if (!isGroupTransactionEvents()) {
+    if (!mustGroupTransactionEvents()) {
       return;
     }
 
@@ -455,10 +455,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
-      boolean presentLastEventInTransaction = false;
+      boolean areAllEventsForTransactionInBatch = false;
       int retries = 0;
       long lastKeyForTransaction = lastKey;
-      while (!presentLastEventInTransaction
+      while (!areAllEventsForTransactionInBatch
           && retries++ <= GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
         EventsAndLastKey eventsAndKey =
             peekEventsWithTransactionId(transactionId, lastKeyForTransaction);
@@ -466,7 +466,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         for (Object object : eventsAndKey.events) {
           GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
           batch.add(event);
-          presentLastEventInTransaction = event.isLastEventInTransaction();
+          areAllEventsForTransactionInBatch = event.isLastEventInTransaction();
 
           if (logger.isDebugEnabled()) {
             logger.debug(
@@ -476,15 +476,15 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
         lastKeyForTransaction = eventsAndKey.lastKey;
       }
-      if (!presentLastEventInTransaction) {
+      if (!areAllEventsForTransactionInBatch) {
         logger.warn("Not able to retrieve all events for transaction {} after {} retries",
             transactionId, retries);
       }
     }
   }
 
-  protected boolean isGroupTransactionEvents() {
-    return sender.isGroupTransactionEvents();
+  protected boolean mustGroupTransactionEvents() {
+    return sender.mustGroupTransactionEvents();
   }
 
   private boolean areAllTransactionsCompleteInBatch(Set incompleteTransactions) {

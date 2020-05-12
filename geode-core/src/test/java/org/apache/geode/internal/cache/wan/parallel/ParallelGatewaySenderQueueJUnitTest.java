@@ -90,7 +90,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
         Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
-    List peeked = queue.peek(1, 1000);
+    List peeked = queue.peek(1, 100);
     assertEquals(1, peeked.size());
     queue.remove();
   }
@@ -114,7 +114,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
         Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
-    List peeked = queue.peek(1, 1000);
+    List peeked = queue.peek(1, 100);
     assertEquals(1, peeked.size());
     verify(stats, times(1)).incEventsNotQueuedConflated();
   }
@@ -142,7 +142,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
         Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
-    List peeked = queue.peek(1, 1000);
+    List peeked = queue.peek(1, 100);
     assertEquals(1, peeked.size());
     verify(stats, times(1)).incEventsNotQueuedConflated();
   }
@@ -191,7 +191,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
   }
 
   @Test
-  public void peekedExtraEventsWhenIsGroupTransactionEvents()
+  public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInMaxSizeBatch()
       throws Exception {
 
     GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
@@ -216,14 +216,14 @@ public class ParallelGatewaySenderQueueJUnitTest {
     queue.setGroupTransactionEvents(true);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
-    List peeked = queue.peek(3, 1000);
+    List peeked = queue.peek(3, 100);
     assertEquals(4, peeked.size());
-    List peekedAfter = queue.peek(3, 1000);
+    List peekedAfter = queue.peek(3, 100);
     assertEquals(2, peekedAfter.size());
   }
 
   @Test
-  public void peekedExtraEventsWhenIsGroupTransactionEventsAndTimeout()
+  public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchByTime()
       throws Exception {
 
     GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
@@ -251,12 +251,12 @@ public class ParallelGatewaySenderQueueJUnitTest {
 
     List peeked = queue.peek(-1, 1);
     assertEquals(4, peeked.size());
-    List peekedAfter = queue.peek(-1, 1000);
+    List peekedAfter = queue.peek(-1, 100);
     assertEquals(2, peekedAfter.size());
   }
 
   @Test
-  public void peekedMaxEventsWhenNotIsGroupTransactionEvents()
+  public void peekDoesNotGetExtraEventsWhenNotMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchMaxSize()
       throws Exception {
 
     GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
@@ -278,13 +278,46 @@ public class ParallelGatewaySenderQueueJUnitTest {
         Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
-    List peeked = queue.peek(3, 1000);
+    List peeked = queue.peek(3, 100);
     assertEquals(3, peeked.size());
-    List peekedAfter = queue.peek(3, 1000);
+    List peekedAfter = queue.peek(3, 100);
     assertEquals(2, peekedAfter.size());
   }
 
-  private static GatewaySenderEventImpl createGatewaySenderEventImpl(int transactionId,
+  @Test
+  public void peekDoesNotGetExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchByTime()
+      throws Exception {
+
+    GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
+    GatewaySenderEventImpl event2 = createGatewaySenderEventImpl(2, false);
+    GatewaySenderEventImpl event3 = createGatewaySenderEventImpl(1, true);
+    GatewaySenderEventImpl event4 = createGatewaySenderEventImpl(2, true);
+    GatewaySenderEventImpl event5 = createGatewaySenderEventImpl(3, false);
+    GatewaySenderEventImpl event6 = createGatewaySenderEventImpl(3, true);
+
+    Queue backingList = new LinkedList();
+    backingList.add(event1);
+    backingList.add(event2);
+    backingList.add(event3);
+    backingList.add(null);
+    backingList.add(event4);
+    backingList.add(event5);
+    backingList.add(event6);
+
+    BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
+
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue.setGroupTransactionEvents(false);
+    queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
+
+    List peeked = queue.peek(-1, 1);
+    assertEquals(3, peeked.size());
+    List peekedAfter = queue.peek(-1, 100);
+    assertEquals(3, peekedAfter.size());
+  }
+
+  private GatewaySenderEventImpl createGatewaySenderEventImpl(int transactionId,
       boolean isLastEventInTransaction) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
     when(event.getTransactionId()).thenReturn(new TXId(null, transactionId));
@@ -341,7 +374,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
   private class TestableParallelGatewaySenderQueue extends ParallelGatewaySenderQueue {
 
     private BucketRegionQueue mockedAbstractBucketRegionQueue;
-    private boolean isGroupTransactionEvents = false;
+    private boolean groupTransactionEvents = false;
 
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
         final Set<Region> userRegions, final int idx, final int nDispatcher) {
@@ -359,13 +392,13 @@ public class ParallelGatewaySenderQueueJUnitTest {
       this.mockedAbstractBucketRegionQueue = mocked;
     }
 
-    public void setGroupTransactionEvents(boolean isGroupTransactionEvents) {
-      this.isGroupTransactionEvents = isGroupTransactionEvents;
+    public void setGroupTransactionEvents(boolean groupTransactionEvents) {
+      this.groupTransactionEvents = groupTransactionEvents;
     }
 
     @Override
-    public boolean isGroupTransactionEvents() {
-      return isGroupTransactionEvents;
+    public boolean mustGroupTransactionEvents() {
+      return groupTransactionEvents;
     }
 
     public AbstractBucketRegionQueue getBucketRegion(final PartitionedRegion prQ,

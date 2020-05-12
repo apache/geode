@@ -1388,9 +1388,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
       if (generateDefaults()
           || sender
-              .isGroupTransactionEvents() != GatewaySender.DEFAULT_IS_GROUP_TRANSACTION_EVENTS) {
+              .mustGroupTransactionEvents() != GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS) {
         atts.addAttribute("", "", GROUP_TRANSACTION_EVENTS, "",
-            String.valueOf(sender.isGroupTransactionEvents()));
+            String.valueOf(sender.mustGroupTransactionEvents()));
       }
     }
 

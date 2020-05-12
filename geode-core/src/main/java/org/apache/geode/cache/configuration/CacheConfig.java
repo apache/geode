@@ -2783,7 +2783,7 @@ public class CacheConfig {
       this.remoteDistributedSystemId = value;
     }
 
-    public Boolean isGroupTransactionEvents() {
+    public Boolean mustGroupTransactionEvents() {
       return groupTransactionEvents;
     }
 

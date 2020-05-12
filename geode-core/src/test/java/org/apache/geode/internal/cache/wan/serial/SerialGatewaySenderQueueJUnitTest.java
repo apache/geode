@@ -109,8 +109,7 @@ public class SerialGatewaySenderQueueJUnitTest {
   }
 
   @Test
-  public void peekedExtraEventsWhenIsGroupTransactionEvents()
-      throws Exception {
+  public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInMaxSizeBatch() {
     GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
     GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(2, false, region);
     GatewaySenderEventImpl event3 = createMockGatewaySenderEventImpl(1, true, region);
@@ -129,15 +128,14 @@ public class SerialGatewaySenderQueueJUnitTest {
     queue.put(event5);
     queue.put(event6);
 
-    List peeked = queue.peek(3, 1000);
+    List peeked = queue.peek(3, 100);
     assertEquals(4, peeked.size());
-    List peekedAfter = queue.peek(3, 1000);
+    List peekedAfter = queue.peek(3, 100);
     assertEquals(2, peekedAfter.size());
   }
 
   @Test
-  public void peekedExtraEventsWhenIsGroupTransactionEventsTimeout()
-      throws Exception {
+  public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchByTime() {
     GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
     GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(2, false, region);
     GatewaySenderEventImpl event3 = createMockGatewaySenderEventImpl(1, true, region);
@@ -170,8 +168,7 @@ public class SerialGatewaySenderQueueJUnitTest {
   }
 
   @Test
-  public void peekedMaxEventsWhenNotIsGroupTransactionEvents()
-      throws Exception {
+  public void peekDoesNotGetExtraEventsWhenNotMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchMaxSize() {
     GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
     GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(1, false, region);
     GatewaySenderEventImpl event3 = createMockGatewaySenderEventImpl(2, false, region);
@@ -187,13 +184,46 @@ public class SerialGatewaySenderQueueJUnitTest {
     queue.put(event4);
     queue.put(event5);
 
-    List peeked = queue.peek(3, 1000);
+    List peeked = queue.peek(3, 100);
     assertEquals(3, peeked.size());
-    List peekedAfter = queue.peek(3, 1000);
+    List peekedAfter = queue.peek(3, 100);
     assertEquals(2, peekedAfter.size());
   }
 
-  private static GatewaySenderEventImpl createMockGatewaySenderEventImpl(int transactionId,
+  @Test
+  public void peekDoesNotGetExtraEventsWhenNotMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchByTime() {
+    GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
+    GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(2, false, region);
+    GatewaySenderEventImpl event3 = createMockGatewaySenderEventImpl(1, true, region);
+    GatewaySenderEventImpl event4 = createMockGatewaySenderEventImpl(2, true, region);
+    SerialGatewaySenderQueue.KeyAndEventPair eventPair1 =
+        new SerialGatewaySenderQueue.KeyAndEventPair(0L, event1);
+    SerialGatewaySenderQueue.KeyAndEventPair eventPair2 =
+        new SerialGatewaySenderQueue.KeyAndEventPair(1L, event2);
+    SerialGatewaySenderQueue.KeyAndEventPair eventPair3 =
+        new SerialGatewaySenderQueue.KeyAndEventPair(2L, event3);
+
+    TestableSerialGatewaySenderQueue realQueue = new TestableSerialGatewaySenderQueue(sender,
+        TEST_REGION, metaRegionFactory);
+
+    TestableSerialGatewaySenderQueue queue = spy(realQueue);
+    queue.setGroupTransactionEvents(false);
+
+    doAnswer(invocation -> eventPair1)
+        .doAnswer(invocation -> eventPair2)
+        .doAnswer(invocation -> eventPair3)
+        .doAnswer(invocation -> null)
+        .when(queue).peekAhead();
+
+    doAnswer(invocation -> new SerialGatewaySenderQueue.EventsAndLastKey(
+        Arrays.asList(new Object[] {event4}), 2L))
+            .when(queue).getElementsMatching(any(), any(), anyLong());
+
+    List peeked = queue.peek(-1, 1);
+    assertEquals(3, peeked.size());
+  }
+
+  private GatewaySenderEventImpl createMockGatewaySenderEventImpl(int transactionId,
       boolean isLastEventInTransaction, Region region) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
     when(event.getTransactionId()).thenReturn(new TXId(null, transactionId));
@@ -272,20 +302,20 @@ public class SerialGatewaySenderQueueJUnitTest {
 
   private class TestableSerialGatewaySenderQueue extends SerialGatewaySenderQueue {
 
-    private boolean isGroupTransactionEvents = false;
+    private boolean groupTransactionEvents = false;
 
     public TestableSerialGatewaySenderQueue(final AbstractGatewaySender sender,
         String regionName, final MetaRegionFactory metaRegionFactory) {
       super(sender, regionName, null, false, metaRegionFactory);
     }
 
-    public void setGroupTransactionEvents(boolean isGroupTransactionEvents) {
-      this.isGroupTransactionEvents = isGroupTransactionEvents;
+    public void setGroupTransactionEvents(boolean groupTransactionEvents) {
+      this.groupTransactionEvents = groupTransactionEvents;
     }
 
     @Override
-    public boolean isGroupTransactionEvents() {
-      return isGroupTransactionEvents;
+    public boolean mustGroupTransactionEvents() {
+      return groupTransactionEvents;
     }
 
     @Override

@@ -255,7 +255,7 @@ public interface GatewaySenderMXBean {
    */
   boolean isParallel();
 
-  boolean isGroupTransactionEvents();
+  boolean mustGroupTransactionEvents();
 
   /**
    * Returns the host and port information of GatewayReceiver to which this gateway sender is

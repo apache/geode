@@ -51,7 +51,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
     this.id = sender.getId();
     this.remoteDSId = string2int(sender.getRemoteDistributedSystemId());
     this.parallel = sender.isParallel();
-    this.groupTransactionEvents = sender.isGroupTransactionEvents();
+    this.groupTransactionEvents = sender.mustGroupTransactionEvents();
     this.manualStart = sender.isManualStart();
     this.socketBufferSize = string2int(sender.getSocketBufferSize());
     this.socketReadTimeout = string2int(sender.getSocketReadTimeout());
@@ -95,7 +95,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
     return this.parallel;
   }
 
-  public Boolean isGroupTransactionEvents() {
+  public Boolean mustGroupTransactionEvents() {
     return this.groupTransactionEvents;
   }
 

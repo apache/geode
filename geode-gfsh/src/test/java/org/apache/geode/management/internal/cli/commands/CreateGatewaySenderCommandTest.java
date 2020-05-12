@@ -261,7 +261,7 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isNull();
     assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).isNotNull().isEmpty();
     assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilter()).isNotNull().isEmpty();
-    assertThat(argsArgumentCaptor.getValue().isGroupTransactionEvents()).isNotNull();
+    assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isNotNull();
 
   }
 
@@ -289,7 +289,7 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isTrue();
-    assertThat(argsArgumentCaptor.getValue().isGroupTransactionEvents()).isTrue();
+    assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isTrue();
 
   }
 
@@ -317,7 +317,7 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isFalse();
     assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isFalse();
     assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isFalse();
-    assertThat(argsArgumentCaptor.getValue().isGroupTransactionEvents()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isFalse();
 
   }
 }
