@@ -223,7 +223,7 @@ public class QueryCommandIntegrationTestBase {
   @Test
   public void queryGivesDescriptiveErrorMessageIfNoQueryIsSpecified() {
     gfsh.executeAndAssertThat("query").containsOutput(
-        "You should specify option (--query, --file, --interactive) for this command");
+        "You should specify option (--query, --file, --interactive, --member) for this command");
   }
 
   @Test

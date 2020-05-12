@@ -65,6 +65,10 @@ public class QueryCommandDUnitTestBase {
       SEPARATOR + DATA_REGION_WITH_EVICTION_NAME;
   private static final String DATA_PAR_REGION_NAME = "GemfireDataCommandsTestParRegion";
   private static final String DATA_PAR_REGION_NAME_PATH = SEPARATOR + DATA_PAR_REGION_NAME;
+  private static final String DATA_REGION_WITH_PROXY_NAME =
+      "GemfireDataCommandsTestRegionWithProxy";
+  private static final String DATA_REGION_WITH_PROXY_NAME_PATH =
+      SEPARATOR + DATA_REGION_WITH_PROXY_NAME;
 
   private static final String SERIALIZATION_FILTER =
       "org.apache.geode.management.internal.cli.dto.**";
@@ -256,6 +260,15 @@ public class QueryCommandDUnitTestBase {
     assertThat(dataRegion.getFullPath()).contains(regionName);
   }
 
+  private static void setupReplicatedProxyRegion(String regionName) {
+    InternalCache cache = ClusterStartupRule.getCache();
+    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE_PROXY);
+
+    Region proxyRegion = regionFactory.create(regionName);
+    assertThat(proxyRegion).isNotNull();
+    assertThat(proxyRegion.getFullPath()).contains(regionName);
+  }
+
   private void validateSelectResult(CommandResult cmdResult, Boolean expectSuccess,
       Integer expectedRows, String[] cols) {
     ResultModel rd = cmdResult.getResultData();
@@ -309,5 +322,41 @@ public class QueryCommandDUnitTestBase {
     public void setValue1(Value1 value1) {
       this.value1 = value1;
     }
+  }
+
+  @Test
+  public void testSimpleQueryWithProxyRegion() {
+    server1.invoke(() -> setupReplicatedProxyRegion(DATA_REGION_WITH_PROXY_NAME));
+    server2.invoke(() -> setupReplicatedRegion(DATA_REGION_WITH_PROXY_NAME));
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_WITH_PROXY_NAME_PATH, 2);
+
+    server1.invoke(() -> prepareDataForRegion(DATA_REGION_WITH_PROXY_NAME_PATH));
+
+    String member = getHostingMember();
+    Random random = new Random(System.nanoTime());
+    int randomInteger = random.nextInt(COUNT);
+    String query = "query --member=" + member
+        + " --query=\"select ID , status , createTime , pk, floatMinValue from "
+        + DATA_REGION_WITH_PROXY_NAME_PATH + " where ID <= " + randomInteger
+        + "\" --interactive=false";
+
+    CommandResult commandResult = gfsh.executeCommand(query);
+    validateSelectResult(commandResult, true, (randomInteger + 1),
+        new String[] {"ID", "status", "createTime", "pk", "floatMinValue"});
+  }
+
+  private String getHostingMember() {
+    String hostingMember = null;
+    String findMemberCommand = "describe region --name=" + DATA_REGION_WITH_PROXY_NAME;
+    CommandResult findMemberResult = gfsh.executeCommand(findMemberCommand);
+    while (findMemberResult.hasNextLine()) {
+      String s = findMemberResult.nextLine();
+      if (s.contains("Hosting Members :")) {
+        hostingMember = s.substring(s.lastIndexOf(":") + 1);
+        break;
+      }
+    }
+    assertThat(hostingMember).isNotNull();
+    return hostingMember.replaceAll("\\s", "");
   }
 }

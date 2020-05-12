@@ -1823,6 +1823,8 @@ public class CliStrings {
       "Cannot find regions <{0}> in any of the members";
   public static final String QUERY__MSG__NOT_SUPPORTED_ON_MEMBERS = CliStrings.QUERY
       + " command should be used only from shell. Use QueryService API for running query inside Geode VMs";
+  public static final String QUERY__MEMBER__HELP =
+      "Name/Id of a member which hosts the regions to be queried.";
 
   /* 'rebalance' command */
   public static final String REBALANCE = "rebalance";
