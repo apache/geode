@@ -906,6 +906,8 @@ public class Oplog implements CompactableOplog, Flushable {
       // This is a recovered oplog and we only read from its crf.
       // No need to open the drf.
       this.doneAppending = true;
+      logger.info("JUAN -> hasNoLiveValues {}", hasNoLiveValues());
+
       if (this.crf.f != null && !hasNoLiveValues()) {
         this.closed = false;
         // truncate crf/drf if their actual size is less than their pre-blow
@@ -958,8 +960,11 @@ public class Oplog implements CompactableOplog, Flushable {
           String.format("Failed creating operation log because: %s", ex),
           getParent());
     }
+
+    logger.info("JUAN: (hasNoLiveValues() = {} && !offline = {})", hasNoLiveValues(), !offline);
     if (hasNoLiveValues() && !offline) {
       getOplogSet().removeOplog(getOplogId(), true, getHasDeletes() ? this : null);
+      logger.info("JUAN: !getHasDeletes() = {}", !getHasDeletes());
       if (!getHasDeletes()) {
         getOplogSet().drfDelete(this.oplogId);
         deleteFile(this.drf);
