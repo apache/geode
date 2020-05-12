@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.redis.internal.AutoCloseableLock;
@@ -55,7 +54,7 @@ public class HExistsExecutor extends HashExecutor {
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
     ByteArrayWrapper key = command.getKey();
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+      RedisHash map = getMap(context, key);
 
       if (map == null || map.isEmpty()) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));

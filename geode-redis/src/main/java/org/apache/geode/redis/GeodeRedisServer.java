@@ -25,7 +25,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,8 +94,9 @@ import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.Subscriptions;
+import org.apache.geode.redis.internal.executor.CommandFunction;
+import org.apache.geode.redis.internal.executor.hash.RedisHash;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
-import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
 
 /**
@@ -457,7 +457,7 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
 
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
-      Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> redisHash;
+      Region<ByteArrayWrapper, RedisHash> redisHash;
       Region<String, RedisDataType> redisMetaData;
       Region<ByteArrayWrapper, RedisSet> redisSet;
       InternalCache gemFireCache = (InternalCache) cache;
@@ -474,7 +474,7 @@ public class GeodeRedisServer {
       }
 
       if ((redisHash = cache.getRegion(HASH_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> regionFactory =
+        RegionFactory<ByteArrayWrapper, RedisHash> regionFactory =
             gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
         redisHash = regionFactory.create(HASH_REGION);
       }
@@ -505,7 +505,7 @@ public class GeodeRedisServer {
       redisMetaData.put(SET_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HASH_REGION, RedisDataType.REDIS_PROTECTED);
 
-      RedisSetCommandsFunctionExecutor.registerFunctions();
+      CommandFunction.register();
     }
 
     checkForRegions();

@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,10 +40,10 @@ public class HScanExecutor extends AbstractScanExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map =
+    RedisHash hash =
         context.getRegionProvider().getHashRegion().get(key);
 
-    if (map == null || map.isEmpty()) {
+    if (hash == null || hash.isEmpty()) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
       return;
     }
@@ -114,20 +113,21 @@ public class HScanExecutor extends AbstractScanExecutor {
     }
 
     List<Object> returnList =
-        getIteration(new HashSet<Object>(map.entrySet()), matchPattern, count, cursor);
+        getIteration(hash.entries(), matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
 
   @SuppressWarnings("unchecked")
-  protected List<Object> getIteration(Collection<?> list, Pattern matchPattern, int count,
-      int cursor) {
+  protected List<Object> getIteration(
+      Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> list, Pattern matchPattern,
+      int count, int cursor) {
     List<Object> returnList = new ArrayList<Object>();
     int size = list.size();
     int beforeCursor = 0;
     int numElements = 0;
     int i = -1;
-    for (Entry<ByteArrayWrapper, ByteArrayWrapper> entry : (Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>>) list) {
+    for (Entry<ByteArrayWrapper, ByteArrayWrapper> entry : list) {
       ByteArrayWrapper key = entry.getKey();
       ByteArrayWrapper value = entry.getValue();
       i++;

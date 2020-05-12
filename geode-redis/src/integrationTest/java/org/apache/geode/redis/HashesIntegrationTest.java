@@ -52,10 +52,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanResult;
@@ -77,9 +75,6 @@ public class HashesIntegrationTest {
   private static int port = 6379;
   private static int ITERATION_COUNT = 4000;
 
-  @ClassRule
-  public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-
   @BeforeClass
   public static void setUp() throws IOException {
     rand = new Random();
@@ -90,8 +85,6 @@ public class HashesIntegrationTest {
     cf.set(LOCATORS, "");
     cache = cf.create();
     port = AvailablePortHelper.getRandomAvailableTCPPort();
-
-    System.setProperty(GeodeRedisServer.DEFAULT_REGION_SYS_PROP_NAME, "REPLICATE");
 
     server = new GeodeRedisServer("localhost", port);
 

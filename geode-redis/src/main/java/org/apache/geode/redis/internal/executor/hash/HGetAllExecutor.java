@@ -15,12 +15,13 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.Collection;
-import java.util.Map.Entry;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisConstants;
 
 /**
  * <pre>
@@ -45,12 +46,16 @@ public class HGetAllExecutor extends HashExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries;
     ByteArrayWrapper key = command.getKey();
-
-    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
-    entries = hash.hgetall();
-    command.setResponse(Coder.getKeyValArrayResponse(context.getByteBufAllocator(), entries));
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getHashRegion());
+    Collection<ByteArrayWrapper> fieldsAndValues = redisHashCommands.hgetall(key);
+    try {
+      command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), fieldsAndValues));
+    } catch (CoderException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          RedisConstants.SERVER_ERROR_MESSAGE));
+    }
   }
 
 }
