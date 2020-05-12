@@ -88,7 +88,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.geode.security.AuthenticationRequiredException;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
   private static final Logger logger = LogService.getLogger();
@@ -850,16 +849,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return configuration;
   }
 
-  String getDeployedBy() {
-    Subject subject = null;
-    try {
-      subject = cache.getSecurityService().getSubject();
-    } catch (AuthenticationRequiredException e) {
-      // ignored. No user logged in for the deployment
-      // this would happen for offline commands like "start locator" and loading the cluster config
-      // from a directory
-      logger.debug("getDeployedBy: no user information is found.", e.getMessage());
-    }
+  private String getDeployedBy() {
+    Subject subject = cache.getSecurityService().getSubject();
     return subject == null ? null : subject.getPrincipal().toString();
   }
 
