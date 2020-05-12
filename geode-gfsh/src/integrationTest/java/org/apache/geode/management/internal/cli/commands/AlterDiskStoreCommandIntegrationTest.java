@@ -57,4 +57,31 @@ public class AlterDiskStoreCommandIntegrationTest {
     gfsh.executeAndAssertThat(command, commandString).statusIsError()
         .containsOutput("Cannot use the --remove=true parameter with any other parameters");
   }
+
+  @Test
+  public void testDirValidation() throws IOException {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, "diskStoreName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, "regionName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKDIRS, "wrongDiskDir");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL, "5");
+    String commandString = csb.toString();
+
+    tempDir.newFile("BACKUPdiskStoreName.if");
+    gfsh.executeAndAssertThat(command, commandString).statusIsError()
+        .containsOutput("Could not find: \"wrongDiskDir/BACKUPdiskStoreName.if");
+  }
+
+  @Test
+  public void testNameValidation() throws IOException {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, "diskStoreName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, "regionName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKDIRS, tempDir.getRoot().toString());
+    csb.addOption(CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL, "5");
+    String commandString = csb.toString();
+
+    gfsh.executeAndAssertThat(command, commandString).statusIsError()
+        .containsOutput("Could not find: ");
+  }
 }
