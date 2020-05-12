@@ -17,6 +17,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.mockito.Mockito.spy;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +36,6 @@ public class AlterDiskStoreCommandIntegrationTest {
 
   @Rule
   public GfshParserRule gfsh = new GfshParserRule();
-
   private GfshCommand command;
 
   @Before
@@ -43,7 +44,7 @@ public class AlterDiskStoreCommandIntegrationTest {
   }
 
   @Test
-  public void removeOptionMustBeUsedAlone() {
+  public void removeOptionMustBeUsedAlone() throws IOException {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
     csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, "diskStoreName");
     csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, "regionName");
@@ -52,6 +53,7 @@ public class AlterDiskStoreCommandIntegrationTest {
     csb.addOption(CliStrings.ALTER_DISK_STORE__REMOVE, "true");
     String commandString = csb.toString();
 
+    tempDir.newFile("BACKUPdiskStoreName.if");
     gfsh.executeAndAssertThat(command, commandString).statusIsError()
         .containsOutput("Cannot use the --remove=true parameter with any other parameters");
   }
