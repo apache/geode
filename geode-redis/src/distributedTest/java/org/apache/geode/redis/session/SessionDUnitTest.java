@@ -57,7 +57,8 @@ public abstract class SessionDUnitTest {
       new DistributedRestoreSystemProperties();
 
 
-  protected static final int DEFAULT_SESSION_TIMEOUT = 5;
+  // 30 minutes
+  protected static final int DEFAULT_SESSION_TIMEOUT = 60 * 30;
 
   protected static final int LOCATOR = 0;
   protected static final int SERVER1 = 1;
@@ -124,7 +125,7 @@ public abstract class SessionDUnitTest {
     int failoverRedisPort = ports.get(secondaryServer);
     int httpPort = ports.get(sessionApp);
     VM host = cluster.getVM(sessionApp);
-    host.invoke("start a spring app", () -> {
+    host.invoke("Start a Spring app", () -> {
       System.setProperty("server.port", "" + httpPort);
       System.setProperty("spring.redis.port", "" + primaryRedisPort);
       System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
