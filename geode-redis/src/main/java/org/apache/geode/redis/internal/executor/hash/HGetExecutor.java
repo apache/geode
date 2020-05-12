@@ -48,12 +48,6 @@ public class HGetExecutor extends HashExecutor {
     ByteArrayWrapper key = command.getKey();
 
     RedisHash entry = getMap(context, key);
-
-    if (entry == null) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
-    }
-
     ByteArrayWrapper valueWrapper = entry.get(field);
     try {
       if (valueWrapper != null) {

@@ -46,12 +46,6 @@ public class HLenExecutor extends HashExecutor {
 
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
       RedisHash map = getMap(context, key);
-
-      if (map == null) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-        return;
-      }
-
       size = map.size();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

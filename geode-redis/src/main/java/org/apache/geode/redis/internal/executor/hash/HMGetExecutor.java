@@ -53,12 +53,6 @@ public class HMGetExecutor extends HashExecutor {
 
     checkDataType(key, RedisDataType.REDIS_HASH, context);
 
-    if (map == null) {
-      command.setResponse(
-          Coder.getArrayOfNils(context.getByteBufAllocator(), commandElems.size() - 2));
-      return;
-    }
-
     ArrayList<ByteArrayWrapper> fields = new ArrayList<ByteArrayWrapper>();
     for (int i = 2; i < commandElems.size(); i++) {
       byte[] fieldArray = commandElems.get(i);
