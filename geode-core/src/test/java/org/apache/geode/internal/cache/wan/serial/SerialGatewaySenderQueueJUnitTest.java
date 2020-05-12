@@ -25,7 +25,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,19 +49,12 @@ import org.apache.geode.metrics.internal.NoopMeterRegistry;
 
 public class SerialGatewaySenderQueueJUnitTest {
 
-  private static final String TEST_REGION = "testRegion1";
+  private static final String QUEUE_REGION = "queueRegion";
 
   private SerialGatewaySenderQueue.MetaRegionFactory metaRegionFactory;
-  private GemFireCacheImpl cache;
   private AbstractGatewaySender sender;
   Region region;
   InternalRegionFactory regionFactory;
-
-  GatewaySenderEventImpl event1;
-  GatewaySenderEventImpl event2;
-  GatewaySenderEventImpl event3;
-  GatewaySenderEventImpl event4;
-  GatewaySenderEventImpl event5;
 
   @Before
   public void setup() {
@@ -70,11 +62,11 @@ public class SerialGatewaySenderQueueJUnitTest {
     when(mockInternalDistributedSystem.getStatisticsManager())
         .thenReturn(new DummyStatisticsRegistry("", 0));
 
-    cache = mock(GemFireCacheImpl.class);
+    GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
     when(cache.getInternalDistributedSystem()).thenReturn(mockInternalDistributedSystem);
     when(cache.getMeterRegistry()).thenReturn(new NoopMeterRegistry());
 
-    region = createLocalRegionMock(new HashMap(), cache);
+    region = createLocalRegionMock();
 
     regionFactory = mock(InternalRegionFactory.class, RETURNS_DEEP_STUBS);
     when(regionFactory.setInternalMetaRegion(any())
@@ -84,7 +76,7 @@ public class SerialGatewaySenderQueueJUnitTest {
         .setIsUsedForSerialGatewaySenderQueue(anyBoolean())
         .setInternalRegion(anyBoolean())
         .setSerialGatewaySender(any())).thenReturn(regionFactory);
-    when(regionFactory.create(TEST_REGION)).thenReturn(region);
+    when(regionFactory.create(QUEUE_REGION)).thenReturn(region);
 
     when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
 
@@ -111,14 +103,8 @@ public class SerialGatewaySenderQueueJUnitTest {
   @Test
   public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInMaxSizeBatch() {
     TestableSerialGatewaySenderQueue queue = new TestableSerialGatewaySenderQueue(sender,
-        TEST_REGION, metaRegionFactory);
+        QUEUE_REGION, metaRegionFactory);
     queue.setGroupTransactionEvents(true);
-
-    queue.put(event1);
-    queue.put(event2);
-    queue.put(event3);
-    queue.put(event4);
-    queue.put(event5);
 
     List peeked = queue.peek(3, 100);
     assertEquals(4, peeked.size());
@@ -140,7 +126,7 @@ public class SerialGatewaySenderQueueJUnitTest {
         new SerialGatewaySenderQueue.KeyAndEventPair(2L, event3);
 
     TestableSerialGatewaySenderQueue realQueue = new TestableSerialGatewaySenderQueue(sender,
-        TEST_REGION, metaRegionFactory);
+        QUEUE_REGION, metaRegionFactory);
 
     TestableSerialGatewaySenderQueue queue = spy(realQueue);
     queue.setGroupTransactionEvents(true);
@@ -162,13 +148,7 @@ public class SerialGatewaySenderQueueJUnitTest {
   @Test
   public void peekDoesNotGetExtraEventsWhenNotMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchMaxSize() {
     TestableSerialGatewaySenderQueue queue = new TestableSerialGatewaySenderQueue(sender,
-        TEST_REGION, metaRegionFactory);
-
-    queue.put(event1);
-    queue.put(event2);
-    queue.put(event3);
-    queue.put(event4);
-    queue.put(event5);
+        QUEUE_REGION, metaRegionFactory);
 
     List peeked = queue.peek(3, 100);
     assertEquals(3, peeked.size());
@@ -190,7 +170,7 @@ public class SerialGatewaySenderQueueJUnitTest {
         new SerialGatewaySenderQueue.KeyAndEventPair(2L, event3);
 
     TestableSerialGatewaySenderQueue realQueue = new TestableSerialGatewaySenderQueue(sender,
-        TEST_REGION, metaRegionFactory);
+        QUEUE_REGION, metaRegionFactory);
 
     TestableSerialGatewaySenderQueue queue = spy(realQueue);
     queue.setGroupTransactionEvents(false);
@@ -219,12 +199,12 @@ public class SerialGatewaySenderQueueJUnitTest {
     return event;
   }
 
-  private LocalRegion createLocalRegionMock(Map entries, Cache cache) {
-    event1 = createMockGatewaySenderEventImpl(1, false, region);
-    event2 = createMockGatewaySenderEventImpl(2, false, region);
-    event3 = createMockGatewaySenderEventImpl(1, true, region);
-    event4 = createMockGatewaySenderEventImpl(2, true, region);
-    event5 = createMockGatewaySenderEventImpl(3, false, region);
+  private LocalRegion createLocalRegionMock() {
+    GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
+    GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(2, false, region);
+    GatewaySenderEventImpl event3 = createMockGatewaySenderEventImpl(1, true, region);
+    GatewaySenderEventImpl event4 = createMockGatewaySenderEventImpl(2, true, region);
+    GatewaySenderEventImpl event5 = createMockGatewaySenderEventImpl(3, false, region);
 
     LocalRegion region = mock(LocalRegion.class);
 
@@ -243,9 +223,7 @@ public class SerialGatewaySenderQueueJUnitTest {
     map.put(3L, event4);
     map.put(4L, event5);
 
-    doAnswer(invocation -> Collections.emptySet())
-        .doAnswer(invocation -> map.keySet())
-        .when(region).keySet();
+    when(region.keySet()).thenReturn(map.keySet());
     return region;
   }
 
