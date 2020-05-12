@@ -87,7 +87,7 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> {
           AtomicBoolean setWasDeleted = new AtomicBoolean();
           Long srem = RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted);
-          return new Object[] {srem, setWasDeleted};
+          return new Object[] {srem, setWasDeleted.get()};
         };
         break;
       }
