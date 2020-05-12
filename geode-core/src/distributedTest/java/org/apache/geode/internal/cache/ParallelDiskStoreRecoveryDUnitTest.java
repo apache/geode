@@ -15,9 +15,31 @@
 package org.apache.geode.internal.cache;
 
 
-import java.util.concurrent.Future;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMId;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -25,39 +47,108 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-public class ParallelDiskStoreRecoveryDUnitTest {
 
-  @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
-
-  @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
 
   @Rule
-  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
-  private MemberVM locator, server1, server2;
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
+
+  private VM locator;
+
+  private String locatorName;
+
+  private File locatorDir;
+
+  private int locatorPort;
+
+  private int locatorJmxPort;
+
+  private static final LocatorLauncher DUMMY_LOCATOR = mock(LocatorLauncher.class);
+
+  private static final AtomicReference<LocatorLauncher> LOCATOR =
+      new AtomicReference<>(DUMMY_LOCATOR);
+
+  private VM server;
+
+  private String serverName;
+
+  private File serverDir;
+
+  private int serverPort;
+
+  private String locators;
+
+  private static final ServerLauncher DUMMY_SERVER = mock(ServerLauncher.class);
+
+  private static final AtomicReference<ServerLauncher> SERVER =
+      new AtomicReference<>(DUMMY_SERVER);
 
   private final int NUM_ENTRIES = 1000;
 
+  private String diskStoreName1 = "disk1";
+
+  private String diskStoreName2 = "disk2";
+
+  private String regionName1 = "region1";
+
+  private String regionName2 = "region2";
+
+  @Before
+  public void setUp() throws Exception {
+    locator = getVM(0);
+    server = getVM(1);
+
+    locatorName = "locator";
+    serverName = "server";
+
+    locatorDir = temporaryFolder.newFolder(locatorName);
+
+    serverDir = temporaryFolder.newFolder(serverName);
+
+    int[] port = getRandomAvailableTCPPorts(3);
+    locatorPort = port[0];
+    locatorJmxPort = port[1];
+    serverPort = port[2];
+
+    locators = "localhost[" + locatorPort + "]";
+
+    locator.invoke(() -> {
+      startLocator(locatorName, locatorDir, locatorPort, locatorJmxPort);
+    });
+
+    gfsh.connectAndVerify(locatorJmxPort, GfshCommandRule.PortType.jmxManager);
+
+    server.invoke(() -> startServer(serverName, serverDir, serverPort, locators, true));
+  }
+
+  @After
+  public void tearDown() {
+    invokeInEveryVM(() -> {
+      SERVER.getAndSet(DUMMY_SERVER).stop();
+      LOCATOR.getAndSet(DUMMY_LOCATOR).stop();
+    });
+    disconnectAllFromDS();
+  }
+
+
   @Test
   public void testParallelDiskStoreRecovery() throws Exception {
-
-    String diskStoreName1 = "disk1";
-    String diskStoreName2 = "disk2";
-    String regionName1 = "region1";
-    String regionName2 = "region2";
-
-    locator = cluster.startLocatorVM(0, 0);
-    gfsh.connectAndVerify(locator);
-    server1 = cluster.startServerVM(1, locator.getPort());
-    server2 = cluster.startServerVM(2, locator.getPort());
 
     createDiskStore(diskStoreName1);
 
@@ -71,30 +162,84 @@ public class ParallelDiskStoreRecoveryDUnitTest {
 
     AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
 
-    server1.stop(false);
-    server2.stop(false);
+    server.invoke(() -> stopServer());
 
-    // wait for the cluster to shutdown, then restart the servers
-    Thread.sleep(10000);
-
-    Future result1 = executorServiceRule.submit(() -> {
-      server1 = cluster.startServerVM(1, locator.getPort());
-    });
-
-    Future result2 = executorServiceRule.submit(() -> {
-      server2 = cluster.startServerVM(2, locator.getPort());
-    });
-
-    // wait for the servers to restart
-    result1.get();
-
-    result2.get();
+    server.invoke(() -> startServer(serverName, serverDir, serverPort, locators, true));
 
     AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
 
-    gfsh.connectAndVerify(locator);
-    gfsh.execute("shutdown --include-locators");
+  }
 
+  @Test
+  public void testSequentialDiskStoreRecovery() throws Exception {
+
+    createDiskStore(diskStoreName1);
+
+    createDiskStore(diskStoreName2);
+
+    createRegion(regionName1, diskStoreName1);
+
+    createRegion(regionName2, diskStoreName2);
+
+    populateRegion(NUM_ENTRIES, regionName1, regionName2);
+
+    AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
+
+    server.invoke(() -> stopServer());
+
+    server.invoke(() -> startServer(serverName, serverDir, serverPort, locators, false));
+
+    AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
+
+  }
+
+  private static void startLocator(String name, File workingDirectory, int locatorPort,
+      int jmxPort) {
+    LOCATOR.set(new LocatorLauncher.Builder()
+        .setMemberName(name)
+        .setPort(locatorPort)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(LOG_FILE, new File(workingDirectory, name + ".log").getAbsolutePath())
+        .set(MAX_WAIT_TIME_RECONNECT, "1000")
+        .set(MEMBER_TIMEOUT, "2000")
+        .build());
+
+    LOCATOR.get().start();
+
+    await().untilAsserted(() -> {
+      InternalLocator locator = (InternalLocator) LOCATOR.get().getLocator();
+      assertThat(locator.isSharedConfigurationRunning())
+          .as("Locator shared configuration is running on locator" + getVMId())
+          .isTrue();
+    });
+  }
+
+  private static void startServer(String name, File workingDirectory, int serverPort,
+      String locators, boolean parallelDiskStoreRecovery) {
+
+    System.setProperty(GEODE_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY,
+        String.valueOf(parallelDiskStoreRecovery));
+
+    SERVER.set(new ServerLauncher.Builder()
+        .setDeletePidFileOnStop(Boolean.TRUE)
+        .setMemberName(name)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(LOCATORS, locators)
+        .set(LOG_FILE, new File(workingDirectory, name + ".log").getAbsolutePath())
+        .set(MAX_WAIT_TIME_RECONNECT, "1000")
+        .set(MEMBER_TIMEOUT, "2000")
+        .build());
+
+    SERVER.get().start();
+  }
+
+  private static void stopServer() {
+    SERVER.get().stop();
   }
 
   private void AssertRegionSizeAndDiskStore(String diskStoreName1, String diskStoreName2,
@@ -103,10 +248,8 @@ public class ParallelDiskStoreRecoveryDUnitTest {
 
     assertRegionSize(regionName2);
 
-    assertDiskStore(server1.getName(), diskStoreName1, regionName1, regionName2);
-    assertDiskStore(server1.getName(), diskStoreName2, regionName2, regionName1);
-    assertDiskStore(server2.getName(), diskStoreName1, regionName1, regionName2);
-    assertDiskStore(server2.getName(), diskStoreName2, regionName2, regionName1);
+    assertDiskStore(serverName, diskStoreName1, regionName1, regionName2);
+    assertDiskStore(serverName, diskStoreName2, regionName2, regionName1);
   }
 
   private void assertDiskStore(String serverName, String diskStoreName, String expected,
@@ -133,7 +276,7 @@ public class ParallelDiskStoreRecoveryDUnitTest {
   private void populateRegion(int numEntries, String regionName1, String regionName2) {
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
     ClientCache clientCache =
-        clientCacheFactory.addPoolLocator("localhost", locator.getPort()).create();
+        clientCacheFactory.addPoolLocator("localhost", locatorPort).create();
 
     Region<Object, Object> clientRegion1 = clientCache
         .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName1);
