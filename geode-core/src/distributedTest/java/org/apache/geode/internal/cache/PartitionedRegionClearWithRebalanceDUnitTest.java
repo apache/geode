@@ -28,6 +28,7 @@ import static org.junit.Assert.assertThat;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,29 +37,23 @@ import java.util.stream.IntStream;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
@@ -70,9 +65,10 @@ public class PartitionedRegionClearWithRebalanceDUnitTest implements Serializabl
 
   private static final Integer BUCKETS = GLOBAL_MAX_BUCKETS_DEFAULT;
   private static final String REGION_NAME = "PartitionedRegion";
-  public static final String DISK_STORE_NAME = "diskStore";
+  public static final String DISK_STORE_SUFFIX = "DiskStore";
   public static final String BEGIN_CLEAR = "begin-clear";
   private static final int ENTRIES = 10000;
+  public static final String COLOCATED_REGION = "childColocatedRegion";
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule(3);
@@ -100,17 +96,13 @@ public class PartitionedRegionClearWithRebalanceDUnitTest implements Serializabl
   }
 
   @SuppressWarnings("unused")
-  static RegionShortcut[] regionTypes() {
-    return new RegionShortcut[] {
-        PARTITION_REDUNDANT,
-        PARTITION_REDUNDANT_PERSISTENT,
-    };
-  }
-
-  @SuppressWarnings("unused")
   static Object[] vmsAndRegionTypes() {
     ArrayList<Object[]> parameters = new ArrayList<>();
-    RegionShortcut[] regionShortcuts = regionTypes();
+
+    RegionShortcut[] regionShortcuts = new RegionShortcut[] {
+        PARTITION_REDUNDANT,
+        PARTITION_REDUNDANT_PERSISTENT
+    };
 
     Arrays.stream(regionShortcuts).forEach(regionShortcut -> {
       // {ClearCoordinatorVM, RebalanceVM, regionShortcut}
@@ -151,111 +143,155 @@ public class PartitionedRegionClearWithRebalanceDUnitTest implements Serializabl
     return dataStoreRegionShortcut;
   }
 
-  private void initAccessor(RegionShortcut regionShortcut) {
+  private void initAccessor(RegionShortcut regionShortcut, Collection<String> regionNames) {
     RegionShortcut accessorShortcut = getRegionAccessorShortcut(regionShortcut);
     // StartupRecoveryDelay is set to infinite to prevent automatic rebalancing when creating the
     // region on other members
-    PartitionAttributes<String, String> attributes =
-        new PartitionAttributesFactory<String, String>()
-            .setTotalNumBuckets(BUCKETS)
-            .setStartupRecoveryDelay(-1)
-            .setLocalMaxMemory(0)
-            .create();
+    regionNames.forEach(regionName -> {
+      PartitionAttributesFactory<String, String> attributesFactory =
+          new PartitionAttributesFactory<String, String>()
+              .setTotalNumBuckets(BUCKETS)
+              .setStartupRecoveryDelay(-1)
+              .setLocalMaxMemory(0);
 
-    cacheRule.getCache()
-        .<String, String>createRegionFactory(accessorShortcut)
-        .setPartitionAttributes(attributes)
-        .create(REGION_NAME);
+      if (regionName.equals(COLOCATED_REGION)) {
+        attributesFactory.setColocatedWith(REGION_NAME);
+      }
+
+      PartitionAttributes<String, String> attributes = attributesFactory.create();
+
+      cacheRule.getCache()
+          .<String, String>createRegionFactory(accessorShortcut)
+          .setPartitionAttributes(attributes)
+          .create(regionName);
+    });
   }
 
-  private void initDataStore(RegionShortcut regionShortcut) {
+  private void initDataStore(RegionShortcut regionShortcut, Collection<String> regionNames) {
     // StartupRecoveryDelay is set to infinite to prevent automatic rebalancing when creating the
     // region on other members
-    PartitionAttributes<String, String> attributes =
-        new PartitionAttributesFactory<String, String>()
-            .setTotalNumBuckets(BUCKETS)
-            .setStartupRecoveryDelay(-1)
-            .create();
+    regionNames.forEach(regionName -> {
+      PartitionAttributesFactory<String, String> attributesFactory =
+          new PartitionAttributesFactory<String, String>()
+              .setTotalNumBuckets(BUCKETS)
+              .setStartupRecoveryDelay(-1);
 
-    RegionFactory<String, String> factory = cacheRule.getCache()
-        .<String, String>createRegionFactory(regionShortcut)
-        .setPartitionAttributes(attributes);
+      if (regionName.equals(COLOCATED_REGION)) {
+        attributesFactory.setColocatedWith(REGION_NAME);
+      }
 
-    if (regionShortcut.isPersistent()) {
-      factory.setDiskStoreName(
-          cacheRule.getCache().createDiskStoreFactory().create(DISK_STORE_NAME).getName());
-    }
+      PartitionAttributes<String, String> attributes = attributesFactory.create();
 
-    factory.create(REGION_NAME);
+      RegionFactory<String, String> factory = cacheRule.getCache()
+          .<String, String>createRegionFactory(regionShortcut)
+          .setPartitionAttributes(attributes);
+
+      if (regionShortcut.isPersistent()) {
+        factory.setDiskStoreName(
+            cacheRule.getCache().createDiskStoreFactory().create(regionName + DISK_STORE_SUFFIX)
+                .getName());
+      }
+
+      factory.create(regionName);
+    });
   }
 
-  private void parametrizedSetup(RegionShortcut regionShortcut) {
+  private void parametrizedSetup(RegionShortcut regionShortcut, Collection<String> regionNames) {
     // Create and populate the region on server1 first, to create an unbalanced distribution of data
     server1.invoke(() -> {
-      initDataStore(regionShortcut);
-      Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
-      IntStream.range(0, ENTRIES).forEach(i -> region.put("key" + i, "value" + i));
+      initDataStore(regionShortcut, regionNames);
+      regionNames.forEach(regionName -> {
+        Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+        IntStream.range(0, ENTRIES).forEach(i -> region.put("key" + i, "value" + i));
+      });
     });
-    server2.invoke(() -> initDataStore(regionShortcut));
-    accessor.invoke(() -> initAccessor(regionShortcut));
+    server2.invoke(() -> initDataStore(regionShortcut, regionNames));
+    accessor.invoke(() -> initAccessor(regionShortcut, regionNames));
   }
 
-  private AsyncInvocation<Object> setupAndPrepareClear(TestVM clearCoordinatorVM,
-      RegionShortcut regionType) {
-    parametrizedSetup(regionType);
-
+  private AsyncInvocation<Object> prepareClearAsyncInvocation(
+      TestVM clearCoordinatorVM, String regionName) {
     return getVM(clearCoordinatorVM.vmNumber).invokeAsync(() -> {
-      Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
+      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
       // Wait for the signal from the blackboard before triggering the clear to start
       getBlackboard().waitForGate(BEGIN_CLEAR, GeodeAwaitility.getTimeout().toMillis(),
           TimeUnit.MILLISECONDS);
+
       region.clear();
     });
   }
 
-  private RebalanceResults startRebalanceAndGetResults() throws InterruptedException {
+  private AsyncInvocation<Object> setupAndPrepareClear(TestVM clearCoordinatorVM,
+      RegionShortcut regionType) {
+    parametrizedSetup(regionType, Collections.singleton(REGION_NAME));
+
+    return prepareClearAsyncInvocation(clearCoordinatorVM, REGION_NAME);
+  }
+
+  private void doRebalanceAndSignalBlackboard(boolean waitForPrimaryReassignment)
+      throws InterruptedException {
     // Start a rebalance and wait until bucket creation for redundancy recovery (the first stage of
     // a rebalance operation) has started before signalling the blackboard
     RebalanceOperation rebalanceOp =
         cacheRule.getCache().getResourceManager().createRebalanceFactory().start();
-    await().untilAsserted(() -> assertThat(cacheRule.getCache().getInternalResourceManager()
-        .getStats().getRebalanceBucketCreatesCompleted(), greaterThan(0)));
+    if (waitForPrimaryReassignment) {
+      await().untilAsserted(() -> assertThat(cacheRule.getCache().getInternalResourceManager()
+          .getStats().getRebalancePrimaryTransfersCompleted(), greaterThan(0)));
+    } else {
+      await().untilAsserted(() -> assertThat(cacheRule.getCache().getInternalResourceManager()
+          .getStats().getRebalanceBucketCreatesCompleted(), greaterThan(0)));
+    }
     getBlackboard().signalGate(BEGIN_CLEAR);
 
-    return rebalanceOp.getResults();
+    rebalanceOp.getResults();
   }
 
-  private void waitForSilence() {
+  private void waitForSilenceOnRegion(String regionName) {
     DMStats dmStats = cacheRule.getSystem().getDistributionManager().getStats();
-    PartitionedRegion region = (PartitionedRegion) cacheRule.getCache().getRegion(REGION_NAME);
+    PartitionedRegion region = (PartitionedRegion) cacheRule.getCache().getRegion(regionName);
     PartitionedRegionStats partitionedRegionStats = region.getPrStats();
-
     await().untilAsserted(() -> {
-      Assertions.assertThat(dmStats.getReplyWaitsInProgress()).isEqualTo(0);
-      Assertions.assertThat(partitionedRegionStats.getVolunteeringInProgress()).isEqualTo(0);
-      Assertions.assertThat(partitionedRegionStats.getBucketCreatesInProgress()).isEqualTo(0);
-      Assertions.assertThat(partitionedRegionStats.getPrimaryTransfersInProgress()).isEqualTo(0);
-      Assertions.assertThat(partitionedRegionStats.getRebalanceBucketCreatesInProgress())
-          .isEqualTo(0);
-      Assertions.assertThat(partitionedRegionStats.getRebalancePrimaryTransfersInProgress())
-          .isEqualTo(0);
+      assertThat(dmStats.getReplyWaitsInProgress(), is(0));
+      assertThat(partitionedRegionStats.getVolunteeringInProgress(), is(0L));
+      assertThat(partitionedRegionStats.getBucketCreatesInProgress(), is(0L));
+      assertThat(partitionedRegionStats.getPrimaryTransfersInProgress(), is(0L));
+      assertThat(partitionedRegionStats.getRebalanceBucketCreatesInProgress(), is(0L));
+      assertThat(partitionedRegionStats.getRebalancePrimaryTransfersInProgress(), is(0L));
     });
   }
 
-  private void assertRegionIsEmpty(List<VM> vms) {
+  private void assertRegionIsEmpty(List<VM> vms, String regionName) {
     vms.forEach(vm -> vm.invoke(() -> {
-      waitForSilence();
-      PartitionedRegion region = (PartitionedRegion) cacheRule.getCache().getRegion(REGION_NAME);
+      waitForSilenceOnRegion(regionName);
+      PartitionedRegion region = (PartitionedRegion) cacheRule.getCache().getRegion(regionName);
 
-      Assertions.assertThat(region.getLocalSize()).isEqualTo(0);
+      assertThat("Region local size should be 0 for region " + regionName, region.getLocalSize(),
+          is(0));
     }));
   }
 
-  private void registerVMKillerAsCacheWriter(List<VM> vmsToBounce) {
-    vmsToBounce.forEach(vm -> vm.invoke(() -> {
-      Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
-      region.getAttributesMutator().setCacheWriter(new MemberKiller());
+  private void assertRegionIsNotEmpty(List<VM> vms, String regionName) {
+    vms.forEach(vm -> vm.invoke(() -> {
+      waitForSilenceOnRegion(regionName);
+      PartitionedRegion region = (PartitionedRegion) cacheRule.getCache().getRegion(regionName);
+
+      assertThat("Region size should be " + ENTRIES + " for region " + regionName, region.size(),
+          is(ENTRIES));
     }));
+  }
+
+  private void assertRebalanceDoesNoWork() {
+    server1.invoke(() -> {
+      RebalanceResults results =
+          cacheRule.getCache().getResourceManager().createRebalanceFactory().start().getResults();
+
+      assertThat("Expected bucket transfers to be zero", results.getTotalBucketTransfersCompleted(),
+          is(0));
+      assertThat("Expected bucket creates to be zero", results.getTotalBucketCreatesCompleted(),
+          is(0));
+      assertThat("Expected primary transfers to be zero",
+          results.getTotalPrimaryTransfersCompleted(), is(0));
+    });
   }
 
   @Test
@@ -265,23 +301,16 @@ public class PartitionedRegionClearWithRebalanceDUnitTest implements Serializabl
       TestVM rebalanceVM, RegionShortcut regionType) throws InterruptedException {
     AsyncInvocation<?> clearInvocation = setupAndPrepareClear(clearCoordinatorVM, regionType);
 
-    getVM(rebalanceVM.vmNumber).invoke(() -> {
-      RebalanceResults results = startRebalanceAndGetResults();
-
-      // Verify that rebalance did some work
-      int combinedResults = results.getTotalBucketTransfersCompleted()
-          + results.getTotalBucketCreatesCompleted() + results.getTotalPrimaryTransfersCompleted();
-      assertThat(combinedResults, greaterThan(0));
-
-      // Verify that no bucket creates failed during the rebalance
-      assertThat(cacheRule.getCache().getInternalResourceManager().getStats()
-          .getRebalanceBucketCreatesFailed(), is(0));
-    });
+    getVM(rebalanceVM.vmNumber)
+        .invoke((SerializableRunnableIF) () -> doRebalanceAndSignalBlackboard(false));
 
     clearInvocation.await();
 
     // Assert that the region is empty
-    assertRegionIsEmpty(asList(accessor, server1, server2));
+    assertRegionIsEmpty(asList(accessor, server1, server2), REGION_NAME);
+
+    // Assert that the region was successfully rebalanced (a second rebalance should do no work)
+    assertRebalanceDoesNoWork();
   }
 
   @Test
@@ -291,86 +320,67 @@ public class PartitionedRegionClearWithRebalanceDUnitTest implements Serializabl
       TestVM rebalanceVM, RegionShortcut regionType) throws InterruptedException {
     AsyncInvocation<?> clearInvocation = setupAndPrepareClear(clearCoordinatorVM, regionType);
 
-    getVM(rebalanceVM.vmNumber).invoke(() -> {
-      // Start a rebalance and wait until primary reassignment has started before signalling the
-      // blackboard
-      RebalanceOperation rebalanceOp =
-          cacheRule.getCache().getResourceManager().createRebalanceFactory().start();
-      await().untilAsserted(() -> assertThat(cacheRule.getCache().getInternalResourceManager()
-          .getStats().getRebalancePrimaryTransfersCompleted(), greaterThan(0)));
-      getBlackboard().signalGate(BEGIN_CLEAR);
-
-      // Verify that rebalance did some work
-      RebalanceResults results = rebalanceOp.getResults();
-      int combinedResults = results.getTotalBucketTransfersCompleted()
-          + results.getTotalBucketCreatesCompleted() + results.getTotalPrimaryTransfersCompleted();
-      assertThat(combinedResults, greaterThan(0));
-
-      // Verify that no primary transfers failed during the rebalance
-      assertThat(cacheRule.getCache().getInternalResourceManager().getStats()
-          .getRebalancePrimaryTransfersFailed(), is(0));
-    });
+    getVM(rebalanceVM.vmNumber)
+        .invoke((SerializableRunnableIF) () -> doRebalanceAndSignalBlackboard(true));
 
     clearInvocation.await();
 
     // Assert that the region is empty
-    assertRegionIsEmpty(asList(accessor, server1, server2));
+    assertRegionIsEmpty(asList(accessor, server1, server2), REGION_NAME);
+
+    // Assert that the region was successfully rebalanced (a second rebalance should do no work)
+    assertRebalanceDoesNoWork();
   }
 
   @Test
   @Parameters(method = "vmsAndRegionTypes")
   @TestCaseName("[{index}] {method}(ClearCoordinator:{0}, RebalanceCoordinator:{1}, RegionType:{2})")
-  public void clearRegionDuringRebalanceClearsRegionWhenNonCoordinatorIsBounced(
+  public void clearParentColocatedRegionDuringRebalanceOfColocatedRegionsClearsRegionAndDoesNotInterfereWithRebalance(
       TestVM clearCoordinatorVM, TestVM rebalanceVM, RegionShortcut regionType)
       throws InterruptedException {
-    AsyncInvocation<?> clearInvocation = setupAndPrepareClear(clearCoordinatorVM, regionType);
+    parametrizedSetup(regionType, asList(REGION_NAME, COLOCATED_REGION));
 
-    // Server 2 is never the clear coordinator
-    registerVMKillerAsCacheWriter(Collections.singletonList(server2));
+    AsyncInvocation<?> clearInvocation = prepareClearAsyncInvocation(clearCoordinatorVM,
+        REGION_NAME);
 
-    getVM(rebalanceVM.vmNumber).invoke(() -> {
-      // Start a rebalance and wait until bucket creation for redundancy recovery has started before
-      // signalling the blackboard
-      RebalanceResults results = startRebalanceAndGetResults();
-
-      // Verify that rebalance did some work
-      int combinedResults = results.getTotalBucketTransfersCompleted()
-          + results.getTotalBucketCreatesCompleted() + results.getTotalPrimaryTransfersCompleted();
-      assertThat(combinedResults, greaterThan(0));
-    });
+    getVM(rebalanceVM.vmNumber)
+        .invoke((SerializableRunnableIF) () -> doRebalanceAndSignalBlackboard(true));
 
     clearInvocation.await();
 
-    // Bring server 2 back online and assign buckets
-    server2.invoke(() -> {
-      cacheRule.createCache();
-      initDataStore(regionType);
-      await().untilAsserted(
-          () -> Assertions.assertThat(InternalDistributedSystem.getConnectedInstance())
-              .isNotNull());
-      PartitionRegionHelper.assignBucketsToPartitions(cacheRule.getCache().getRegion(REGION_NAME));
-    });
+    // Assert that the parent region is empty
+    assertRegionIsEmpty(asList(accessor, server1, server2), REGION_NAME);
 
-    // Assert that the region is empty
-    assertRegionIsEmpty(asList(accessor, server1, server2));
+    // Assert that the colocated region is the correct size
+    assertRegionIsNotEmpty(asList(accessor, server1, server2), COLOCATED_REGION);
+
+    // Assert that the regions were successfully rebalanced (a second rebalance should do no work)
+    assertRebalanceDoesNoWork();
   }
 
-  /**
-   * Shutdowns a member while the clear operation is in progress.
-   * The writer is only installed on the member the test wants to shutdown, doesn't matter whether
-   * it's the clear coordinator or another member holding primary buckets.
-   */
-  public static class MemberKiller extends CacheWriterAdapter<String, String> {
+  @Test
+  @Parameters(method = "vmsAndRegionTypes")
+  @TestCaseName("[{index}] {method}(ClearCoordinator:{0}, RebalanceCoordinator:{1}, RegionType:{2})")
+  public void clearChildColocatedRegionDuringRebalanceOfColocatedRegionsClearsRegionAndDoesNotInterfereWithRebalance(
+      TestVM clearCoordinatorVM, TestVM rebalanceVM, RegionShortcut regionType)
+      throws InterruptedException {
+    parametrizedSetup(regionType, asList(REGION_NAME, COLOCATED_REGION));
 
-    @Override
-    public synchronized void beforeRegionClear(RegionEvent<String, String> event)
-        throws CacheWriterException {
-      InternalDistributedSystem.getConnectedInstance().stopReconnectingNoDisconnect();
-      MembershipManagerHelper.crashDistributedSystem(
-          InternalDistributedSystem.getConnectedInstance());
-      await().untilAsserted(
-          () -> Assertions.assertThat(InternalDistributedSystem.getConnectedInstance()).isNull());
-    }
+    AsyncInvocation<?> clearInvocation =
+        prepareClearAsyncInvocation(clearCoordinatorVM, COLOCATED_REGION);
+
+    getVM(rebalanceVM.vmNumber)
+        .invoke((SerializableRunnableIF) () -> doRebalanceAndSignalBlackboard(true));
+
+    clearInvocation.await();
+
+    // Assert that the colocated region is empty
+    assertRegionIsEmpty(asList(accessor, server1, server2), COLOCATED_REGION);
+
+    // Assert that the parent region is the correct size
+    assertRegionIsNotEmpty(asList(accessor, server1, server2), REGION_NAME);
+
+    // Assert that the regions were successfully rebalanced (a second rebalance should do no work)
+    assertRebalanceDoesNoWork();
   }
-
 }
