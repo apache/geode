@@ -31,6 +31,7 @@ import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.hash.RedisHash;
 import org.apache.geode.redis.internal.executor.set.RedisSet;
+import org.apache.geode.redis.internal.executor.set.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.set.StripedExecutor;
 import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
 
@@ -46,16 +47,19 @@ public class CommandFunction extends SingleResultRedisFunction {
     FunctionService.registerFunction(new CommandFunction(stripedExecutor));
   }
 
+
   @SuppressWarnings("unchecked")
-  public static ResultCollector execute(Region<?, ?> region,
-                                        RedisCommandType command,
-                                        ByteArrayWrapper key,
-                                        Object commandArguments) {
-    return FunctionService
+  public static <T> T execute(RedisCommandType command,
+                              ByteArrayWrapper key,
+                              Object commandArguments, Region region) {
+    SingleResultCollector<T> rc = new SingleResultCollector<>();
+    ResultCollector<T, T> execute = FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
-        .setArguments(new Object[]{command, commandArguments})
-        .execute(ID);
+        .setArguments(new Object[] {command, commandArguments})
+        .withCollector(rc)
+        .execute(CommandFunction.ID);
+    return execute.getResult();
   }
 
 

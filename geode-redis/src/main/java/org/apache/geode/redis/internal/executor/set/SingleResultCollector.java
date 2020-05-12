@@ -21,7 +21,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 
-class SingleResultCollector<T> implements ResultCollector<T, T> {
+public class SingleResultCollector<T> implements ResultCollector<T, T> {
   T result;
 
   @Override
