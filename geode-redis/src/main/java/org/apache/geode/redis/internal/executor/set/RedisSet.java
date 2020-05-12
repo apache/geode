@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
@@ -81,10 +79,10 @@ public class RedisSet implements Delta, DataSerializable {
     }
   }
 
-  public static Pair<Long, Boolean> srem(Region<ByteArrayWrapper, RedisSet> region,
+  public static Long srem(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToRemove) {
-    AtomicBoolean setWasDeleted = new AtomicBoolean();
+      ArrayList<ByteArrayWrapper> membersToRemove,
+      AtomicBoolean setWasDeleted) {
     RedisSet redisSet = region.get(key);
     long numRemoved;
     if (redisSet == null) {
@@ -92,7 +90,7 @@ public class RedisSet implements Delta, DataSerializable {
     } else {
       numRemoved = redisSet.doSrem(membersToRemove, region, key, setWasDeleted);
     }
-    return Pair.of(numRemoved, setWasDeleted.get());
+    return numRemoved;
   }
 
   public static boolean del(Region<ByteArrayWrapper, RedisSet> region,

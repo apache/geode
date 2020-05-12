@@ -22,7 +22,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 
 class SingleResultCollector<T> implements ResultCollector<T, T> {
-
   T result;
 
   @Override
@@ -33,7 +32,7 @@ class SingleResultCollector<T> implements ResultCollector<T, T> {
   @Override
   public T getResult(long timeout, TimeUnit unit)
       throws FunctionException {
-    return null;
+    return result;
   }
 
   @Override
@@ -46,6 +45,6 @@ class SingleResultCollector<T> implements ResultCollector<T, T> {
 
   @Override
   public void clearResults() {
-    throw new UnsupportedOperationException();
+    result = null;
   }
 }

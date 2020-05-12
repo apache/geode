@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
@@ -74,12 +75,16 @@ public class CommandFunction extends SingleResultRedisFunction {
     switch (command) {
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
-        callable = () -> RedisSet.sadd(localRegion, key, membersToAdd);
+        callable = () -> new Long(RedisSet.sadd(localRegion, key, membersToAdd));
         break;
       }
       case SREM: {
         ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
-        callable = () -> RedisSet.srem(localRegion, key, membersToRemove);
+        callable = () -> {
+          AtomicBoolean setWasDeleted = new AtomicBoolean();
+          Long srem = RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted);
+          return new Object[] {srem, setWasDeleted};
+        };
         break;
       }
       case DEL:

@@ -53,14 +53,15 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
     return executeFunction(SADD, key, membersToAdd);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove,
       AtomicBoolean setWasDeleted) {
-    Pair<Long, Boolean> resultList =
+    Object[] resultList =
         executeFunction(SREM, key, membersToRemove);
 
-    long membersRemoved = resultList.getLeft();
-    Boolean wasDeleted = resultList.getRight();
+    long membersRemoved = (long) resultList[0];
+    Boolean wasDeleted = (Boolean) resultList[1];
     setWasDeleted.set(wasDeleted);
     return membersRemoved;
   }
@@ -106,13 +107,13 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
       ByteArrayWrapper key,
       Object commandArguments) {
     SingleResultCollector<T> rc = new SingleResultCollector<>();
-    FunctionService
+    ResultCollector<T, T> execute = FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
         .setArguments(new Object[] {command, commandArguments})
         .withCollector(rc)
         .execute(CommandFunction.ID);
-    return rc.getResult();
+    return execute.getResult();
   }
 
 
