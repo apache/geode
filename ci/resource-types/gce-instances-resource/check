@@ -29,7 +29,8 @@ filter=$(echo "${REQUEST}" | jq -r '.source.filter // empty')
 
 instances=$(gcloud compute instances list \
               --filter="$(eval echo \"${filter}\")" \
-              --format='json(id)')
+              --sort-by="creationTimestamp" \
+              --format=json | jq '[.[] | {id}]')
 
 VERSIONS="${instances}"
 
