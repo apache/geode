@@ -34,6 +34,8 @@ import org.apache.geode.management.internal.util.ManagementUtils;
 class DiskStoreCommandsUtils {
   private static final Logger logger = LogService.getLogger();
 
+  public static final String IF_FILE_EXT = ".if";
+
   private static final String LOG4J_CONFIGURATION_FILE_PROPERTY = "log4j.configurationFile";
 
   static void configureLogging(final List<String> commandList) {
@@ -45,23 +47,23 @@ class DiskStoreCommandsUtils {
     commandList.add("-D" + LOG4J_CONFIGURATION_FILE_PROPERTY + "=" + configFilePropertyValue);
   }
 
-  static String validatedDirectories(String[] diskDirs) {
+  static String validatedDirectoriesAndFile(String[] diskDirs, String name) {
     String invalidDirectories = null;
     StringBuilder builder = null;
-    File diskDir;
+    File diskDirAndFile;
     for (String diskDirPath : diskDirs) {
-      diskDir = new File(diskDirPath);
-      if (!diskDir.exists()) {
+      diskDirAndFile = new File(diskDirPath, "BACKUP" + name + IF_FILE_EXT);
+      if (!diskDirAndFile.exists()) {
         if (builder == null) {
           builder = new StringBuilder();
         } else if (builder.length() != 0) {
           builder.append(", ");
         }
-        builder.append(diskDirPath);
+        builder.append(diskDirAndFile);
       }
-    }
-    if (builder != null) {
-      invalidDirectories = builder.toString();
+      if (builder != null) {
+        invalidDirectories = builder.toString();
+      }
     }
     return invalidDirectories;
   }

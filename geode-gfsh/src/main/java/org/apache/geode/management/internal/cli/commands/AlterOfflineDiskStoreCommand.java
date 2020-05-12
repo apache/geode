@@ -60,11 +60,12 @@ public class AlterOfflineDiskStoreCommand extends SingleGfshCommand {
           help = CliStrings.ALTER_DISK_STORE__REMOVE__HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean remove) {
 
-    String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
-    if (validatedDirectories != null) {
+    String validatedDirectoriesAndFile =
+        DiskStoreCommandsUtils.validatedDirectoriesAndFile(diskDirs, diskStoreName);
+    if (validatedDirectoriesAndFile != null) {
       throw new IllegalArgumentException(
-          "Could not find " + CliStrings.ALTER_DISK_STORE__DISKDIRS + ": \""
-              + validatedDirectories + "\"");
+          "Could not find: \""
+              + validatedDirectoriesAndFile + "\"");
     }
 
     try {

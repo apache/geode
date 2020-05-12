@@ -20,10 +20,14 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
@@ -34,6 +38,8 @@ public class DescribeDiskStoreCommandIntegrationTest {
   private static final String REGION_NAME = "test-region";
   private static final String MEMBER_NAME = "testServer";
   private static final String DISK_STORE_NAME = "testDiskStore";
+  private static final String WRONG_DISK_STORE_NAME = "wrongTestDiskStore";
+  private static final String IF_FILE_EXT = ".if";
 
   private static final List<String> expectedData = Arrays.asList("Disk Store ID", "Disk Store Name",
       "Member ID", "Member Name", "Allow Force Compaction", "Auto Compaction",
@@ -55,6 +61,9 @@ public class DescribeDiskStoreCommandIntegrationTest {
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule().withTimeout(1);
+
+  @Rule
+  public TemporaryFolder tempDir = new TemporaryFolder();
 
   @Test
   public void commandFailsWithoutOptions() throws Exception {
@@ -97,5 +106,28 @@ public class DescribeDiskStoreCommandIntegrationTest {
     String cmd = "describe disk-store --name=" + DISK_STORE_NAME + " --member=" + MEMBER_NAME;
     gfsh.executeAndAssertThat(cmd).statusIsSuccess()
         .containsOutput(expectedData.toArray(new String[0]));
+  }
+
+  @Test
+  public void testDirValidation() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESCRIBE_OFFLINE_DISK_STORE);
+    csb.addOption(CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME, DISK_STORE_NAME);
+    csb.addOption(CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS, "wrongDiskDir");
+    String commandString = csb.toString();
+
+    gfsh.executeAndAssertThat(commandString).statusIsError()
+        .containsOutput("Could not find: \"wrongDiskDir/BACKUP" + DISK_STORE_NAME + IF_FILE_EXT);
+  }
+
+  @Test
+  public void testNameValidation() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESCRIBE_OFFLINE_DISK_STORE);
+    csb.addOption(CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME, WRONG_DISK_STORE_NAME);
+    csb.addOption(CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS, tempDir.getRoot().toString());
+    String commandString = csb.toString();
+
+    gfsh.executeAndAssertThat(commandString).statusIsError()
+        .containsOutput("Could not find: \"" + tempDir.getRoot().toString() + "/BACKUP"
+            + WRONG_DISK_STORE_NAME + IF_FILE_EXT);
   }
 }
