@@ -1464,8 +1464,9 @@ public class Oplog implements CompactableOplog, Flushable {
       if (!this.haveRecoveredDrf) {
         this.haveRecoveredDrf = true;
       }
-      logger.info("Recovering {} {} for disk store {}.",
-          new Object[] {toString(), drfFile.getAbsolutePath(), getParent().getName()});
+
+      logger.info("Recovering {} {} for disk store {}.", toString(), drfFile.getAbsolutePath(),
+          getParent().getName());
       this.recoverDelEntryId = DiskStoreImpl.INVALID_ID;
       boolean readLastRecord = true;
       CountingDataInputStream dis = null;

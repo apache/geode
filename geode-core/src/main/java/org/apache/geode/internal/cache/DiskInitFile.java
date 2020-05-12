@@ -2179,8 +2179,15 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   void drfDelete(long oplogId) {
     lock(true);
     try {
+      logger.info("JUAN: Recording drf delete for opLogId {}...", oplogId);
+
       if (cmnDrfDelete(oplogId)) {
         writeIFRecord(IFREC_DRF_DELETE, oplogId);
+        logger.info("JUAN: Recording drf delete for opLogId {}... Done.", oplogId);
+      } else {
+        logger.info(
+            "JUAN: Recording drf delete for opLogId {}... Failure, didn't record drf deletion.",
+            oplogId);
       }
     } finally {
       unlock(true);

@@ -438,9 +438,27 @@ public class PersistentOplogSet implements OplogSet {
     }
   }
 
+  private String safeGetAbsolutePath(File file) {
+    if (file != null) {
+      return file.getAbsolutePath();
+    }
+
+    return "null";
+  }
+
   private long recoverOplogs(long byteCount) {
     OplogEntryIdSet deletedIds = new OplogEntryIdSet();
     TreeSet<Oplog> oplogSet = getSortedOplogs();
+
+    StringBuilder opLogSetBuilder = new StringBuilder();
+    oplogSet.forEach(oplog -> opLogSetBuilder
+        .append("Files4OpLog ").append(oplog.getOplogId()).append(":")
+        .append(" DRF: ").append(safeGetAbsolutePath(oplog.getDrfFile()))
+        .append(" CRF: ").append(safeGetAbsolutePath(oplog.getCrfFile()))
+        .append("\n"));
+
+    logger.info("JUAN: Recovering opLogSet with size {} -> {}", oplogSet.size(),
+        opLogSetBuilder.toString());
 
     if (!getAlreadyRecoveredOnce().get()) {
       if (getChild() != null && !getChild().hasBeenUsed()) {
