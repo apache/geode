@@ -50,8 +50,8 @@ public class CommandFunction extends SingleResultRedisFunction {
 
   @SuppressWarnings("unchecked")
   public static <T> T execute(RedisCommandType command,
-                              ByteArrayWrapper key,
-                              Object commandArguments, Region region) {
+      ByteArrayWrapper key,
+      Object commandArguments, Region region) {
     SingleResultCollector<T> rc = new SingleResultCollector<>();
     ResultCollector<T, T> execute = FunctionService
         .onRegion(region)
@@ -74,7 +74,7 @@ public class CommandFunction extends SingleResultRedisFunction {
 
   @Override
   protected Object compute(Region localRegion, ByteArrayWrapper key,
-                           RedisCommandType command, Object[] args) {
+      RedisCommandType command, Object[] args) {
     Callable<Object> callable;
     switch (command) {
       case SADD: {
@@ -151,9 +151,9 @@ public class CommandFunction extends SingleResultRedisFunction {
       RedisDataType delType) {
     switch (delType) {
       case REDIS_SET:
-            return () -> RedisSet.del(localRegion, key);
+        return () -> RedisSet.del(localRegion, key);
       case REDIS_HASH:
-            return () -> RedisHash.del(localRegion, key);
+        return () -> RedisHash.del(localRegion, key);
       default:
         throw new UnsupportedOperationException("DEL does not support " + delType);
     }

@@ -70,8 +70,7 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    return
-        CommandFunction.execute(DEL, key, RedisDataType.REDIS_SET, region);
+    return CommandFunction.execute(DEL, key, RedisDataType.REDIS_SET, region);
   }
 
   @Override
@@ -98,7 +97,6 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     return CommandFunction.execute(SSCAN, key, new Object[] {matchPattern, count, cursor}, region);
   }
-
 
 
 
