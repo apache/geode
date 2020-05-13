@@ -16,9 +16,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +26,7 @@ import org.hamcrest.Matcher;
 import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.rules.accessible.AccessibleErrorCollector;
 
 /**
  * JUnit Rule that provides a shared ErrorCollector in all DistributedTest VMs. In particular, this
@@ -58,7 +57,7 @@ import org.apache.geode.test.dunit.VM;
  */
 public class SharedErrorCollector extends AbstractDistributedRule {
 
-  private static volatile VisibleErrorCollector errorCollector;
+  private static volatile AccessibleErrorCollector errorCollector;
 
   private final Map<Integer, List<Throwable>> beforeBounceErrors = new HashMap<>();
 
@@ -73,7 +72,7 @@ public class SharedErrorCollector extends AbstractDistributedRule {
 
   @Override
   protected void after() throws Throwable {
-    VisibleErrorCollector allErrors = errorCollector;
+    AccessibleErrorCollector allErrors = errorCollector;
     try {
       for (VM vm : getAllVMs()) {
         List<Throwable> remoteFailures = new ArrayList<>(vm.invoke(() -> errorCollector.errors()));
@@ -135,42 +134,7 @@ public class SharedErrorCollector extends AbstractDistributedRule {
   }
 
   private void invokeBefore() {
-    errorCollector = new VisibleErrorCollector();
+    errorCollector = new AccessibleErrorCollector();
   }
 
-  /**
-   * Increases visibility of {@link #verify()} to public and uses reflection to acquire access to
-   * the {@code List} of {@code Throwable}s in {@link ErrorCollector}.
-   */
-  private static class VisibleErrorCollector extends ErrorCollector {
-
-    private final List<Throwable> visibleErrors;
-
-    private VisibleErrorCollector() {
-      visibleErrors = getErrorsReference();
-    }
-
-    @Override
-    public void verify() throws Throwable {
-      super.verify();
-    }
-
-    List<Throwable> errors() {
-      return visibleErrors;
-    }
-
-    void addErrors(Collection<Throwable> errors) {
-      visibleErrors.addAll(errors);
-    }
-
-    private List<Throwable> getErrorsReference() {
-      try {
-        Field superErrors = ErrorCollector.class.getDeclaredField("errors");
-        superErrors.setAccessible(true);
-        return (List<Throwable>) superErrors.get(this);
-      } catch (IllegalAccessException | NoSuchFieldException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
 }
