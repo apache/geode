@@ -22,11 +22,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class SMoveExecutor extends SetExecutor {
 
@@ -35,7 +35,8 @@ public class SMoveExecutor extends SetExecutor {
   private static final int NOT_MOVED = 0;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     ByteArrayWrapper source = command.getKey();
@@ -47,12 +48,12 @@ public class SMoveExecutor extends SetExecutor {
 
     Region<ByteArrayWrapper, RedisData> region = getRegion(context);
 
+    RedisResponse response;
     try (AutoCloseableLock regionLock = withRegionLock(context, source)) {
       RedisData sourceSet = region.get(source);
 
       if (sourceSet == null) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
-        return;
+        return RedisResponse.integer(NOT_MOVED);
       }
 
       boolean removed =
@@ -60,46 +61,32 @@ public class SMoveExecutor extends SetExecutor {
               new ArrayList<>(Collections.singletonList(member))) == 1;
 
       if (!removed) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
-      } else {
-        try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
+        return RedisResponse.integer(NOT_MOVED);
+      }
+
+      try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
           // TODO: this should invoke a function in case the primary for destination is remote
           new RedisSetInRegion(region).sadd(destination,
               new ArrayList<>(Collections.singletonList(member)));
 
-          command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          System.out.println("Interrupt exception!!");
-          command.setResponse(
-              Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-          return;
-        } catch (TimeoutException e) {
-          System.out.println("Timeout exception!!");
-          command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-              "Timeout acquiring lock. Please try again."));
-          return;
-        } catch (Exception e) {
-          System.out.println("Unexpected exception: " + e);
-          command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-              "Unexpected exception."));
-        }
+        response = RedisResponse.integer(MOVED);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        response = RedisResponse.error("Thread interrupted");
+      } catch (TimeoutException e) {
+        response = RedisResponse.error("Timeout acquiring lock. Please try again.");
+      } catch (Exception e) {
+        response = RedisResponse.error("Unexpected exception.");
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      System.out.println("Interrupt exception!!");
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
+      response = RedisResponse.error("Thread interrupted.");
     } catch (TimeoutException e) {
-      System.out.println("Timeout exception!!");
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
+      response = RedisResponse.error("Timeout acquiring lock. Please try again.");
     } catch (Exception e) {
-      System.out.println("Unexpected exception: " + e);
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Unexpected exception."));
+      response = RedisResponse.error("Unexpected exception.");
     }
+
+    return response;
   }
 }

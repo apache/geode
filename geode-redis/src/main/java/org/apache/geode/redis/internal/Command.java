@@ -171,9 +171,9 @@ public class Command {
     return builder.toString();
   }
 
-  public void execute(ExecutionHandlerContext executionHandlerContext) {
+  public RedisResponse execute(ExecutionHandlerContext executionHandlerContext) {
     RedisCommandType type = getCommandType();
-    type.executeCommand(this, executionHandlerContext);
+    return type.executeCommand(this, executionHandlerContext);
   }
 
   boolean isOfType(RedisCommandType type) {

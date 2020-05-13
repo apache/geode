@@ -38,6 +38,7 @@ import org.apache.geode.redis.internal.executor.PersistExecutor;
 import org.apache.geode.redis.internal.executor.PingExecutor;
 import org.apache.geode.redis.internal.executor.QuitExecutor;
 import org.apache.geode.redis.internal.executor.RenameExecutor;
+import org.apache.geode.redis.internal.executor.ResponseExecutor;
 import org.apache.geode.redis.internal.executor.ScanExecutor;
 import org.apache.geode.redis.internal.executor.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.TTLExecutor;
@@ -349,9 +350,17 @@ public enum RedisCommandType {
     this.parameterRequirements = parameterRequirements;
   }
 
-  public void executeCommand(Command command, ExecutionHandlerContext executionHandlerContext) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext executionHandlerContext) {
     parameterRequirements.checkParameters(command, executionHandlerContext);
+
+    if (executor instanceof ResponseExecutor) {
+      return ((ResponseExecutor) executor).executeCommandWithResponse(command,
+          executionHandlerContext);
+    }
+
     executor.executeCommand(command, executionHandlerContext);
+    return null;
   }
 
   public boolean isTransactional() {

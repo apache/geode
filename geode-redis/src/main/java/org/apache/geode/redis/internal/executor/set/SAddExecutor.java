@@ -18,14 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisResponse;
+import org.apache.geode.redis.internal.executor.ResponseExecutor;
 
-public class SAddExecutor extends SetExecutor {
+public class SAddExecutor extends SetExecutor implements ResponseExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
 
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
@@ -37,6 +40,6 @@ public class SAddExecutor extends SetExecutor {
 
     long entriesAdded = redisSetCommands.sadd(command.getKey(), membersToAdd);
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), entriesAdded));
+    return RedisResponse.integer(entriesAdded);
   }
 }

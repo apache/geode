@@ -56,7 +56,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private static final Logger logger = LogService.getLogger();
   private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
   private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS; // 60
-  // seconds
+                                                                                          // seconds
   private final RedisLockService lockService;
 
   private final Cache cache;
@@ -136,6 +136,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return channel.writeAndFlush(message, channel.newPromise());
   }
 
+  public ChannelFuture writeToChannel(RedisResponse response) {
+    return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise());
+  }
+
   /**
    * This will handle the execution of received commands
    */
@@ -164,12 +168,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       channelInactive(ctx);
       return;
     }
-    ByteBuf response = getExceptionResponse(ctx, cause);
-    writeToChannel(response);
+    writeToChannel(getExceptionResponse(ctx, cause));
   }
 
-  private ByteBuf getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
-    ByteBuf response;
+  private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
+    RedisResponse response;
+
     if (cause instanceof FunctionException) {
       Throwable th = cause.getCause();
       if (th == null) {
@@ -184,28 +188,26 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
 
     if (cause instanceof RedisDataTypeMismatchException) {
-      response = Coder.getWrongTypeResponse(this.byteBufAllocator, cause.getMessage());
+      response = RedisResponse.wrongType(cause.getMessage());
     } else if (cause instanceof DecoderException
         && cause.getCause() instanceof RedisCommandParserException) {
-      response =
-          Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.PARSING_EXCEPTION_MESSAGE);
+      response = RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE);
 
     } else if (cause instanceof RegionCreationException) {
-      this.logger.error(cause);
-      response =
-          Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.ERROR_REGION_CREATION);
+      logger.error(cause);
+      response = RedisResponse.error(RedisConstants.ERROR_REGION_CREATION);
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
-      response =
-          Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_SHUTDOWN);
+      response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
     } else if (cause instanceof IllegalStateException
         || cause instanceof RedisParametersMismatchException) {
-      response = Coder.getErrorResponse(this.byteBufAllocator, cause.getMessage());
+      response = RedisResponse.error(cause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
       }
-      response = Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_MESSAGE);
+      response = RedisResponse.error(RedisConstants.SERVER_ERROR_MESSAGE);
     }
+
     return response;
   }
 
@@ -219,6 +221,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
+    RedisResponse response;
     if (isAuthenticated) {
       if (command.isOfType(RedisCommandType.SHUTDOWN)) {
         this.server.shutdown();
@@ -226,35 +229,33 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       }
 
       if (hasTransaction() && !command.isTransactional()) {
-        executeWithTransaction(ctx, command);
+        response = executeWithTransaction(ctx, command);
       } else {
-        executeWithoutTransaction(command);
+        response = executeWithoutTransaction(command);
       }
 
       logResponse(command);
 
       if (hasTransaction() && command.isOfType(RedisCommandType.MULTI)) {
-        writeToChannel(
-            Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
-      } else {
-        // PUBLISH responses are always deferred
-        if (command.getCommandType() != RedisCommandType.PUBLISH) {
-          ByteBuf response = command.getResponse();
-          writeToChannel(response);
-        }
+        response = RedisResponse.string(RedisConstants.COMMAND_QUEUED);
       }
-    } else if (command.isOfType(RedisCommandType.QUIT)) {
-      command.execute(this);
-      ByteBuf response = command.getResponse();
-      writeToChannel(response);
-      channelInactive(ctx);
     } else if (command.isOfType(RedisCommandType.AUTH)) {
-      command.execute(this);
-      ByteBuf response = command.getResponse();
+      response = command.execute(this);
+    } else {
+      response = RedisResponse.error(RedisConstants.ERROR_NOT_AUTH);
+    }
+
+    if (response != null) {
       writeToChannel(response);
     } else {
-      ByteBuf r = Coder.getNoAuthResponse(this.byteBufAllocator, RedisConstants.ERROR_NOT_AUTH);
-      writeToChannel(r);
+      // PUBLISH responses are always deferred
+      if (command.getCommandType() != RedisCommandType.PUBLISH) {
+        writeToChannel(command.getResponse());
+      }
+    }
+
+    if (command.isOfType(RedisCommandType.QUIT)) {
+      channelInactive(ctx);
     }
   }
 
@@ -295,12 +296,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param command Command to execute
    * @throws Exception Throws exception if exception is from within execution and not to be handled
    */
-  private void executeWithoutTransaction(Command command) throws Exception {
+  private RedisResponse executeWithoutTransaction(Command command) throws Exception {
     Exception cause = null;
     for (int i = 0; i < MAXIMUM_NUM_RETRIES; i++) {
       try {
-        command.execute(this);
-        return;
+        return command.execute(this);
       } catch (Exception e) {
         logger.error(e);
 
@@ -314,26 +314,28 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     throw cause;
   }
 
-  private void executeWithTransaction(ChannelHandlerContext ctx,
+  private RedisResponse executeWithTransaction(ChannelHandlerContext ctx,
       Command command) throws Exception {
     CacheTransactionManager txm = cache.getCacheTransactionManager();
     TransactionId transactionId = getTransactionID();
     txm.resume(transactionId);
+
+    RedisResponse response;
     try {
-      command.execute(this);
+      response = command.execute(this);
     } catch (UnsupportedOperationInTransactionException e) {
-      command.setResponse(Coder.getErrorResponse(this.byteBufAllocator,
-          RedisConstants.ERROR_UNSUPPORTED_OPERATION_IN_TRANSACTION));
+      response = RedisResponse.error(RedisConstants.ERROR_UNSUPPORTED_OPERATION_IN_TRANSACTION);
     } catch (TransactionException e) {
-      command.setResponse(Coder.getErrorResponse(this.byteBufAllocator,
-          RedisConstants.ERROR_TRANSACTION_EXCEPTION));
+      response = RedisResponse.error(RedisConstants.ERROR_TRANSACTION_EXCEPTION);
     } catch (Exception e) {
-      ByteBuf response = getExceptionResponse(ctx, e);
-      command.setResponse(response);
+      response = getExceptionResponse(ctx, e);
     }
+
     getTransactionQueue().add(command);
     transactionId = txm.suspend();
     setTransactionID(transactionId);
+
+    return response;
   }
 
   /**
