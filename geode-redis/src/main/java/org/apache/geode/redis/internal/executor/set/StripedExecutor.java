@@ -28,9 +28,7 @@ import java.util.concurrent.Callable;
 public interface StripedExecutor {
   /**
    * Executes, at some time in the future,
-   * the given callable by invoking "call" on it and then passing
-   * the result of "call" to "accept" on the given consumer.
-   * Concurrent calls of this method for the same stripe will invoke their callables sequentially.
+   * the given callable by invoking "call" on it and then returning the result.
    *
    * @param stripeId defines the "stripe"
    * @param callable the unit of work to do sequentially. May be called after run returns.

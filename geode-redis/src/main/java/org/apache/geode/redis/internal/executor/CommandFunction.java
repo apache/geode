@@ -79,14 +79,14 @@ public class CommandFunction extends SingleResultRedisFunction {
     switch (command) {
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
-        callable = () -> new Long(RedisSet.sadd(localRegion, key, membersToAdd));
+        callable = () -> RedisSet.sadd(localRegion, key, membersToAdd);
         break;
       }
       case SREM: {
         ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
         callable = () -> {
           AtomicBoolean setWasDeleted = new AtomicBoolean();
-          Long srem = RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted);
+          long srem = RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted);
           return new Object[] {srem, setWasDeleted.get()};
         };
         break;

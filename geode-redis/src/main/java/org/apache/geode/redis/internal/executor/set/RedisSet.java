@@ -79,7 +79,7 @@ public class RedisSet implements Delta, DataSerializable {
     }
   }
 
-  public static Long srem(Region<ByteArrayWrapper, RedisSet> region,
+  public static long srem(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove,
       AtomicBoolean setWasDeleted) {

@@ -22,7 +22,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 
 public class SingleResultCollector<T> implements ResultCollector<T, T> {
-  T result;
+  private T result;
 
   @Override
   public T getResult() throws FunctionException {
@@ -37,6 +37,12 @@ public class SingleResultCollector<T> implements ResultCollector<T, T> {
 
   @Override
   public void addResult(DistributedMember memberID, T resultOfSingleExecution) {
+    if (result != null) {
+      String s = String.format(
+          "This function should only return a single result. Received a second result[%s] from member[%s].",
+          resultOfSingleExecution, memberID);
+      throw new IllegalStateException(s);
+    }
     result = resultOfSingleExecution;
   }
 

@@ -97,7 +97,4 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     return CommandFunction.execute(SSCAN, key, new Object[] {matchPattern, count, cursor}, region);
   }
-
-
-
 }
