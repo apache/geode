@@ -1918,11 +1918,11 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Description</U>: Specifies the port used by {@code GeodeRedisServer} which enables redis
    * clients to connect and store data in GemFire distributed system. see {@code GeodeRedisServer}
-   * for other configuration options.
+   * for other configuration options. A value of "-1" will select a random port.
    * </p>
-   * <U>Default</U>: "0" disables GemFireMemcachedServer
+   * <U>Default</U>: "0" disables {@code GeodeRedisServer}
    * </p>
-   * <U>Allowed values</U>: 0..65535
+   * <U>Allowed values</U>: -1..65535
    */
   String REDIS_PORT = "redis-port";
   /**
