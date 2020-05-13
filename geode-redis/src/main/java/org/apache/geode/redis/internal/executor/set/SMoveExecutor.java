@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
@@ -56,8 +55,9 @@ public class SMoveExecutor extends SetExecutor {
       }
 
       boolean removed =
-          RedisSet.srem(region, source, new ArrayList<>(Collections.singletonList(member)),
-              new AtomicBoolean()) == 1;
+          new RedisSetInRegion(region).srem(source,
+              new ArrayList<>(Collections.singletonList(member)),
+              null) == 1;
       // TODO: native redis SMOVE that empties the src set causes it to no longer exist
 
       if (!removed) {
@@ -65,7 +65,8 @@ public class SMoveExecutor extends SetExecutor {
       } else {
         try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
           // TODO: this should invoke a function in case the primary for destination is remote
-          RedisSet.sadd(region, destination, new ArrayList<>(Collections.singletonList(member)));
+          new RedisSetInRegion(region).sadd(destination,
+              new ArrayList<>(Collections.singletonList(member)));
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
           context.getKeyRegistrar().register(source, RedisDataType.REDIS_SET);
 
