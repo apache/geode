@@ -366,7 +366,29 @@ public class DeltaSession extends StandardSession
 
   @Override
   public void localUpdateAttribute(String name, Object value) {
-    super.setAttribute(name, value, false); // don't do notification since this is a replication
+    if (this.manager == null) {
+      // Name cannot be null
+      if (name == null) {
+        throw new IllegalArgumentException(sm.getString("standardSession.setAttribute.namenull"));
+      }
+
+      // Null value is the same as removeAttribute()
+      if (value == null) {
+        removeAttribute(name);
+        return;
+      }
+
+      // Validate our current state
+      if (!isValidInternal()) {
+        throw new IllegalStateException(
+            sm.getString("standardSession.setAttribute.ise", getIdInternal()));
+      }
+
+      // Replace or add this attribute
+      getAttributes().put(name, value);
+    } else {
+      super.setAttribute(name, value, false); // don't do notification since this is a replication
+    }
   }
 
   @Override
