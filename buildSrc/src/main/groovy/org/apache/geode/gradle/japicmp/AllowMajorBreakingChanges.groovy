@@ -13,42 +13,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-plugins {
-  id 'java'
-}
+package org.apache.geode.gradle.japicmp
 
-repositories {
-  mavenCentral()
-  maven {
-    url "https://plugins.gradle.org/m2/"
-  }
-}
+import japicmp.model.JApiCompatibility
+import me.champeau.gradle.japicmp.report.Violation
+import me.champeau.gradle.japicmp.report.stdrules.AbstractRecordingSeenMembers
+import me.champeau.gradle.japicmp.report.Severity
 
-dependencies {
-  testRuntime('org.apache.geode:geode-junit:1.3.0') {
-    exclude group: 'org.apache.logging.log4j'
-  }
-  implementation(gradleApi())
-  implementation('org.apache.commons:commons-lang3:3.3.2')
-  implementation('org.apache.maven:maven-artifact:3.3.3')
-  implementation('com.github.docker-java:docker-java:3.0.14')
-  implementation('me.champeau.gradle:japicmp-gradle-plugin:0.2.8')
-
-  implementation('junit:junit:4.12')
-
-  testAnnotationProcessor(this.project)
-}
-
-sourceSets {
-  main {
-    java {
-      srcDirs = []
-    }
-    groovy {
-      srcDirs += ['src/main/java']
+class AllowMajorBreakingChanges extends AbstractRecordingSeenMembers {
+  @Override
+  Violation maybeAddViolation(final JApiCompatibility member) {
+    if (!member.isBinaryCompatible()) {
+      return Violation.notBinaryCompatible(member, Severity.warning)
+    } else {
+      return null
     }
   }
 }
+

@@ -44,6 +44,9 @@ sourceSets {
   }
 }
 
+configurations {
+  war {}
+}
 dependencies {
   compile(platform(project(':boms:geode-all-bom'))) {
     exclude module: "jackson-annotations"
@@ -163,4 +166,8 @@ war {
   // this shouldn't be necessary but if it's not specified we're missing some of the jars
   // from the runtime classpath
   classpath configurations.runtimeClasspath
+}
+
+artifacts {
+  war tasks.war
 }
