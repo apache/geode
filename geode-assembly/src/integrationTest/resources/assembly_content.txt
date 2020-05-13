@@ -939,10 +939,6 @@ javadoc/org/apache/geode/ra/GFConnectionFactory.html
 javadoc/org/apache/geode/ra/package-frame.html
 javadoc/org/apache/geode/ra/package-summary.html
 javadoc/org/apache/geode/ra/package-tree.html
-javadoc/org/apache/geode/redis/GeodeRedisServer.html
-javadoc/org/apache/geode/redis/package-frame.html
-javadoc/org/apache/geode/redis/package-summary.html
-javadoc/org/apache/geode/redis/package-tree.html
 javadoc/org/apache/geode/security/AccessControl.html
 javadoc/org/apache/geode/security/AuthInitialize.html
 javadoc/org/apache/geode/security/AuthTokenEnabledComponents.html
