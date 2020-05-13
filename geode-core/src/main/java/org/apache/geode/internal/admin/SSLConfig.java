@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 
 import java.security.KeyStore;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -329,16 +330,22 @@ public class SSLConfig {
         this.sslParameterExtension = null;
         return this;
       }
-      SSLParameterExtension sslParameterExtension =
-          CallbackInstantiator.getObjectOfTypeFromClassName(sslParameterExtensionConfig,
-              SSLParameterExtension.class);
       InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
 
       if (ids == null) {
         this.sslParameterExtension = null;
         return this;
       }
-      sslParameterExtension.init(ids.getConfig().toProperties());
+
+      SSLParameterExtension sslParameterExtension =
+          CallbackInstantiator.getObjectOfTypeFromClassName(sslParameterExtensionConfig,
+              SSLParameterExtension.class);
+      ids.getConfig().getDistributedSystemId();
+
+      sslParameterExtension.init(
+          Collections.singletonMap(
+              SSLParameterExtension.SSLParameterExtensionTypes.DistributedSystemID,
+              ids.getConfig().getDistributedSystemId()));
       this.sslParameterExtension = sslParameterExtension;
       return this;
     }

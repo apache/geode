@@ -900,6 +900,7 @@ javadoc/org/apache/geode/modules/util/TouchReplicatedRegionEntriesFunction.html
 javadoc/org/apache/geode/modules/util/package-frame.html
 javadoc/org/apache/geode/modules/util/package-summary.html
 javadoc/org/apache/geode/modules/util/package-tree.html
+javadoc/org/apache/geode/net/SSLParameterExtension.SSLParameterExtensionTypes.html
 javadoc/org/apache/geode/net/SSLParameterExtension.html
 javadoc/org/apache/geode/net/package-frame.html
 javadoc/org/apache/geode/net/package-summary.html
