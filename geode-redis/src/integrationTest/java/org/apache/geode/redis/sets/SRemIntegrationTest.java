@@ -46,8 +46,8 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})

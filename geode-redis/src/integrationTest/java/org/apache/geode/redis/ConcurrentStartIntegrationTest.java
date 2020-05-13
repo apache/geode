@@ -30,6 +30,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})

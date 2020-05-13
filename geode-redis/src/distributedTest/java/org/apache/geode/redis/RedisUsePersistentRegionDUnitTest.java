@@ -24,6 +24,7 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RedisUsePersistentRegionDUnitTest {

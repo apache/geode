@@ -44,7 +44,6 @@ import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.commands.CreateRegionCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;

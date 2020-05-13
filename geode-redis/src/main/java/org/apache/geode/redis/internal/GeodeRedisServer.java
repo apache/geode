@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis;
+package org.apache.geode.redis.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.redis.internal.RedisLockServiceMBean.OBJECTNAME__REDISLOCKSERVICE_MBEAN;
@@ -83,17 +83,6 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.ByteToCommandDecoder;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.KeyRegistrar;
-import org.apache.geode.redis.internal.PubSub;
-import org.apache.geode.redis.internal.PubSubImpl;
-import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.RedisLockService;
-import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.Subscriptions;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.hash.RedisHash;
 import org.apache.geode.redis.internal.executor.set.RedisSet;

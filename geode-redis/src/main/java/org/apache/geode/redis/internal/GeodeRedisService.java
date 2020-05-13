@@ -25,7 +25,6 @@ import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
-import org.apache.geode.redis.GeodeRedisServer;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();

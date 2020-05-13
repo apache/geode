@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.redis.GeodeRedisServer;
 
 /**
  * Test cases for ExecutionHandlerContext

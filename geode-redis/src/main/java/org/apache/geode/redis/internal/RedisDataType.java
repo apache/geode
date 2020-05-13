@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.GeodeRedisServer;
 
 /**
  * The RedisDataType enum contains the choices to which every {@link Region} on the server must be.

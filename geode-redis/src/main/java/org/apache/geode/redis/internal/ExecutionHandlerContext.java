@@ -38,7 +38,6 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 
 /**
