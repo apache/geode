@@ -90,65 +90,6 @@ import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
  * server, each command is picked up by a thread, interpreted and then executed and a response is
  * sent back to the client. The default connection port is 6379 but that can be altered when run
  * through GFSH or started through the provided static main class.
- * <p>
- * Each Redis data type instance is stored in a separate {@link Region} except for the Strings and
- * HyperLogLogs which are collectively stored in one Region respectively. That Region along with a
- * meta data region used internally are protected so the client may not store keys with the name
- * {@link GeodeRedisServer#REDIS_DATA_REGION} or {@link GeodeRedisServer#STRING_REGION}. The
- * default Region type is {@link RegionShortcut#PARTITION_REDUNDANT}. If the
- * {@link GeodeRedisServer#NUM_THREADS_SYS_PROP_NAME} system property is set
- * to 0, one thread per client will be created. Otherwise a worker thread pool of specified size is
- * used or a default size of {@link Runtime#availableProcessors()} if the property is not set.
- * <p>
- * Setting the AUTH password requires setting the property "redis-password" just as "redis-port"
- * would be in xml or through GFSH.
- * <p>
- * The supported commands are as follows:
- * <p>
- * Supported String commands - APPEND, BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GET, GETBIT, GETRANGE,
- * GETSET, INCR, INCRBY, INCRBYFLOAT, MGET, MSET, MSETNX, PSETEX, SET, SETBIT, SETEX, SETNX, STRLEN
- * <p>
- * Supported List commands - LINDEX, LLEN, LPOP, LPUSH, LPUSHX, LRANGE, LREM, LSET, LTRIM, RPOP,
- * RPUSH, RPUSHX
- * <p>
- * Supported Hash commands - HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HMGET,
- * HMSET, HSETNX, HLEN, HSCAN, HSET, HVALS
- * <p>
- * Supported Set commands - SADD, SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER,
- * SMEMBERS, SMOVE, SREM, SPOP, SRANDMEMBER, SSCAN, SUNION, SUNIONSTORE
- * <p>
- * Supported SortedSet commands - ZADD, ZCARD, ZCOUNT, ZINCRBY, ZLEXCOUNT, ZRANGE, ZRANGEBYLEX,
- * ZRANGEBYSCORE, ZRANK, ZREM, ZREMRANGEBYLEX, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZREVRANGE,
- * ZREVRANGEBYSCORE, ZREVRANK, ZSCAN, ZSCORE
- * <p>
- * Supported HyperLogLog commands - PFADD, PFCOUNT, PFMERGE
- * <p>
- * Supported Keys commands - DEL, DBSIZE, EXISTS, EXPIRE, EXPIREAT, FLUSHDB, FLUSHALL, KEYS,
- * PERSIST, PEXPIRE, PEXPIREAT, PTTL, SCAN, TTL
- * <p>
- * Supported Transaction commands - DISCARD, EXEC, MULTI
- * <p>
- * Supported Server commands - AUTH, ECHO, PING, TIME, QUIT
- * <p>
- * <p>
- * The command executors are not explicitly documented but the functionality can be found at
- * <a href="http://redis.io/commands">Redis Commands</a>
- * <p>
- * Exceptions to the Redis Commands Documents:
- * <p>
- * <ul>
- * <li>Any command that removes keys and returns a count of removed entries will not return a total
- * remove count but rather a count of how many entries have been removed that existed on the local
- * vm, though all entries will be removed</li>
- * <li>Any command that returns a count of newly set members has an unspecified return value. The
- * command will work just as the Redis protocol states but the count will not necessary reflect the
- * number set compared to overridden.</li>
- * <li>Transactions work just as they would on a Redis instance, they are local transaction.
- * Transactions cannot be executed on data that is not local to the executing server, that is on a
- * partitioned region in a different server instance or on a persistent region that does not have
- * transactions enabled. Also, you cannot watch or unwatch keys as all keys within a GemFire
- * transaction are watched by default.</li>
- * </ul>
  */
 
 @Experimental

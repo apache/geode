@@ -1,0 +1,107 @@
+<% set_title("Redis API for", product_name) %>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+-   **[What Is the Redis API for <%=vars.product_name%>?](#what-is-the-redis-api-for-<%=vars.product_name_lowercase%>)**
+
+-   **[Using the Redis API for <%=vars.product_name%>](#using-the-redis-api-for-<%=vars.product_name_lowercase%>)**
+
+-   **[Included Redis Commands](#included-redis-commands)**
+
+-   **[Advantages of <%=vars.product_name%> over Redis](#advantages-of-<%=vars.product_name_lowercase%>-over-redis)**
+
+## <a id="what-is-the-redis-api-for-<%=vars.product_name_lowercase%>" class="no-quick-link"></a>What Is the Redis API for <%=vars.product_name%>?
+
+The Redis API for Geode allows Geode to function as a drop-in replacement for a Redis data store,
+letting Redis applications take advantage of Geode’s scaling capabilities without changing their
+client code. Redis clients connect to a Geode server in the same way they connect to a Redis server,
+using a hostname and a port number, with optional password authentication.
+
+<img src="../images/redis_api_for_geode.png" class="image" />
+
+## <a id="using-the-redis-api-for-<%=vars.product_name_lowercase%>" class="no-quick-link"></a>Using the Redis API for <%=vars.product_name%>
+
+To start a Geode instance using the Redis API for Geode:
+
+1. [Install Geode](https://geode.apache.org/releases/)
+2. Start the Geode command-line interface (GFSH) by running the gfsh command in a terminal:
+
+    ``` pre
+gfsh
+    ```
+3. Once GFSH is running, start a locator:
+
+    ``` pre
+start locator
+    ```
+4. After the locator has started, start the Redis server by running the following command:
+
+    ``` pre
+start server --name=<serverName> --locators=<locatorPort> --redis-port=<redisPort> --redis-bind-address=<redisBindAddress>
+    ```
+    Replace `<serverName>` with the name of your server.
+
+    Replace `<locatorPort>` with your locator port from step 3.
+
+    Replace `<redisPort>` to specify the port the Geode server will listen on for Redis commands (the typical default Redis port is 6379).
+
+    Replace `<redisBindAddress>` to specify the IP address of the server host. This parameter is
+  optional. If not specified, the default is determined from the /etc/hosts file.
+5. To confirm the Redis server is running correctly, **_in a separate terminal run_**:
+
+    ``` pre
+$ redis-cli
+    ```
+    This command assumes your server is running on localhost at port 6379. If you need to run on a
+  different host and port, use the following command:
+
+    ``` pre
+$ redis-cli -h <redisBindAddress> -p <redisPort>
+    ```
+
+## <a id="included-redis-commands" class="no-quick-link"></a>Included Redis Commands
+
+The Redis API for <%=vars.product_name%> currently supports the following [Redis Commands](https://redis.io/commands/):
+
+-   **Strings**: APPEND, GET, GETRANGE, SET
+-   **Hashes**: HGETALL, HMSET, HSET
+-   **Sets**: SADD, SMEMBERS, SREM
+-   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
+-   **Keys**: DEL, EXISTS, EXPIRE, PERSIST, PEXPIRE, PEXPIREAT, RENAME
+
+The following Redis commands are **experimental**:
+
+-   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETSET, INCR, INCRBY, INCRBYFLOAT, MGET,
+  MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, STRLEN
+-   **Lists**: LINDEX, LLEN, LPOP, LPUSH, LPUSHX, LRANGE, LREM, LSET, LTRIM, RPOP, RPUSH, RPUSHX
+-   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HMGET, HSETNX, HLEN, HSCAN, HVALS
+-   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
+  SSCAN, SUNION, SUNIONSTORE
+-   **SortedSets**: ZADD, ZCARD, ZCOUNT, ZINCRBY, ZLEXCOUNT, ZRANGE, ZRANGEBYLEX, ZRANGEBYSCORE,
+  ZRANK, ZREM, ZREMRANGEBYLEX, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZREVRANGE, ZREVRANGEBYSCORE,
+  ZREVRANK, ZSCAN, ZSCORE
+-   **HyperLogLog**: PFADD, PFCOUNT, PFMERGE
+-   **Keys**: DBSIZE, EXPIREAT, FLUSHDB, FLUSHALL, KEYS, PTTL, SCAN, TTL
+-   **Transactions**: DISCARD, EXEC, MULTI
+-   **Server**: AUTH, ECHO, PING, QUIT
+
+## <a id="advantages-of-<%=vars.product_name_lowercase%>-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
+
+<%=vars.product_name%>’s primary advantage is its **scalability**. While the Redis server is single threaded, <%=vars.product_name%> supports high concurrency. Many Redis clients can execute commands on the <%=vars.product_name%> cluster simultaneously.
+
+<%=vars.product_name%>'s architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Redis client.

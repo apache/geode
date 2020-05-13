@@ -3489,7 +3489,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Returns the value of the
    * {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
    *
-   * @return the bind address for GemFireRedisServer
+   * @return the bind address for GeodeRedisServer
    *
    * @since GemFire 8.0
    */
@@ -3509,7 +3509,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Returns the value of the
    * {@link ConfigurationProperties#REDIS_PASSWORD} property
    *
-   * @return the authentication password for GemFireRedisServer
+   * @return the authentication password for GeodeRedisServer
    *
    * @since GemFire 8.0
    */
