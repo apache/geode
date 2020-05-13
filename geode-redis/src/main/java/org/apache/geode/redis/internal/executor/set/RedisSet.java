@@ -46,6 +46,7 @@ import org.apache.geode.redis.internal.Coder;
  */
 public class RedisSet implements Delta, DataSerializable {
 
+  public static transient RedisSet EMPTY = new EmptyRedisSet();
   private HashSet<ByteArrayWrapper> members;
   private transient ArrayList<ByteArrayWrapper> deltas;
   // true if deltas contains adds; false if removes

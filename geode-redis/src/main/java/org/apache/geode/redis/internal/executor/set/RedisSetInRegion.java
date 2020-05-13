@@ -15,9 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +31,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
  * removed once readers are changed to also use the {@link SynchronizedStripedExecutor}.
  */
 public class RedisSetInRegion implements RedisSetCommands {
-  private Region<ByteArrayWrapper, RedisSet> region;
+  private final Region<ByteArrayWrapper, RedisSet> region;
 
   @SuppressWarnings("unchecked")
   public RedisSetInRegion(Region<ByteArrayWrapper, RedisSet> region) {
@@ -60,10 +57,7 @@ public class RedisSetInRegion implements RedisSetCommands {
   public long srem(
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet == null) {
-      return 0L;
-    }
+    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
     return redisSet.doSrem(membersToRemove, region, key, setWasDeleted);
   }
 
@@ -74,70 +68,42 @@ public class RedisSetInRegion implements RedisSetCommands {
   @Override
   public Set<ByteArrayWrapper> smembers(
       ByteArrayWrapper key) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.members();
-    } else {
-      return emptySet();
-    }
+    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
+    return redisSet.members();
   }
 
   @Override
   public int scard(ByteArrayWrapper key) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.size();
-    } else {
-      return 0;
-    }
+    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
+    return redisSet.size();
   }
 
   @Override
   public boolean sismember(
       ByteArrayWrapper key, ByteArrayWrapper member) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.contains(member);
-    } else {
-      return false;
-    }
+    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
+    return redisSet.contains(member);
   }
 
   @Override
   public Collection<ByteArrayWrapper> srandmember(
       ByteArrayWrapper key, int count) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.srandmember(count);
-    } else {
-      return emptyList();
-    }
+    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
+    return redisSet.srandmember(count);
   }
 
   @Override
   public Collection<ByteArrayWrapper> spop(
       ByteArrayWrapper key, int popCount) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.doSpop(region, key, popCount);
-    } else {
-      return emptyList();
-    }
+    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
+    return redisSet.doSpop(region, key, popCount);
   }
 
   @Override
   public List<Object> sscan(
       ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.doSscan(matchPattern, count, cursor);
-    } else {
-      return emptyList();
-    }
+    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
+    return redisSet.doSscan(matchPattern, count, cursor);
   }
 
-  // private RedisSet get(ByteArrayWrapper key) {
-  // RedisSet redisSet = region.get(key);
-  // return redisSet == null? new RedisSet(new ArrayList<>()) : redisSet;
-  // }
 }

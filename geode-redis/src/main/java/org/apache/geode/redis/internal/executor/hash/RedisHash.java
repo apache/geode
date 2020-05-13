@@ -32,8 +32,10 @@ import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.EmptyRedisHash;
 
 public class RedisHash implements Delta, DataSerializable {
+  public static final RedisHash EMPTY = new EmptyRedisHash();
   private HashMap<ByteArrayWrapper, ByteArrayWrapper> hash;
   /**
    * When deltas are adds it will always contain an even number of field/value pairs.

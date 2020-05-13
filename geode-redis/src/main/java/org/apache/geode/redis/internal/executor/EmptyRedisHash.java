@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static java.util.Collections.emptyList;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,40 +23,22 @@ import java.util.List;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.hash.RedisHash;
-import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 
-public class RedisHashInRegion implements RedisHashCommands {
-  private final Region<ByteArrayWrapper, RedisHash> localRegion;
-
-  public RedisHashInRegion(Region localRegion) {
-    this.localRegion = localRegion;
+public class EmptyRedisHash extends RedisHash {
+  @Override
+  public synchronized int doHset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+      List<ByteArrayWrapper> fieldsToSet, boolean nx) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    RedisHash hash = localRegion.get(key);
-    if (hash != null) {
-      return hash.doHset(localRegion, key, fieldsToSet, NX);
-    } else {
-      localRegion.put(key, new RedisHash(fieldsToSet));
-      return fieldsToSet.size() / 2;
-    }
+  public synchronized int doHdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+      List<ByteArrayWrapper> fieldsToRemove) {
+    return 0;
   }
 
   @Override
-  public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
-    RedisHash hash = localRegion.getOrDefault(key, RedisHash.EMPTY);
-    return hash.doHdel(localRegion, key, fieldsToRemove);
-  }
-
-  @Override
-  public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
-    RedisHash hash = localRegion.getOrDefault(key, RedisHash.EMPTY);
-    return hash.doHgetall();
-  }
-
-  @Override
-  public boolean del(ByteArrayWrapper key) {
-    return localRegion.remove(key) != null;
+  public synchronized Collection<ByteArrayWrapper> doHgetall() {
+    return emptyList();
   }
 }
