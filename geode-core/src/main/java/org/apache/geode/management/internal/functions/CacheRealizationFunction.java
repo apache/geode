@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
@@ -78,24 +79,44 @@ public class CacheRealizationFunction implements InternalFunction<List> {
   public void execute(FunctionContext<List> context) {
     AbstractConfiguration cacheElement = (AbstractConfiguration) context.getArguments().get(0);
     CacheElementOperation operation = (CacheElementOperation) context.getArguments().get(1);
-    RemoteInputStream jarStream = (RemoteInputStream) context.getArguments().get(2);
 
-    InternalCache cache = (InternalCache) context.getCache();
-    try {
-      if (operation == CacheElementOperation.GET) {
+    // for get operation, caller is expecting RuntimeInfo
+    if (operation == CacheElementOperation.GET) {
+      try {
+        InternalCache cache = (InternalCache) context.getCache();
         context.getResultSender().lastResult(executeGet(context, cache, cacheElement));
-      } else {
+      } catch (CacheClosedException e) {
+        // cache not ready or closed already, no need to log and do not return any runtime info
+        context.getResultSender().lastResult(null);
+      } catch (Exception e) {
+        logError("Unable to gather runtime information on this member. ", e);
+        context.getResultSender().lastResult(null);
+      }
+    }
+    // for other operations, caller is expecting RealizationResult
+    else {
+      try {
+        RemoteInputStream jarStream = (RemoteInputStream) context.getArguments().get(2);
+        InternalCache cache = (InternalCache) context.getCache();
         context.getResultSender()
             .lastResult(executeUpdate(context, cache, cacheElement, operation, jarStream));
+      } catch (CacheClosedException e) {
+        // cache not ready or closed already, no need to log it
+        context.getResultSender().lastResult(new RealizationResult()
+            .setSuccess(false)
+            .setMessage(e.getMessage()));
+      } catch (Exception e) {
+        logError("unable to update cache with the configuration.", e);
+        context.getResultSender().lastResult(new RealizationResult()
+            .setSuccess(false)
+            .setMemberName(context.getMemberName())
+            .setMessage(e.getMessage()));
       }
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-      context.getResultSender().lastResult(new RealizationResult()
-          .setSuccess(false)
-          .setMemberName(context.getMemberName())
-          .setMessage(e.getMessage()));
     }
+  }
 
+  void logError(String s, Exception e) {
+    logger.error(s, e);
   }
 
   public RuntimeInfo executeGet(FunctionContext<List> context,
@@ -107,7 +128,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     }
     RuntimeInfo runtimeInfo = realizer.get(cacheElement, cache);
 
-    // set the membername if this is not a global runtime
+    // set the member name if this is not a global runtime
     if (!cacheElement.isGlobalRuntime()) {
       runtimeInfo.setMemberName(context.getMemberName());
     }
