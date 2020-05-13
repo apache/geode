@@ -25,12 +25,10 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.executor.hash.RedisHash;
-import org.apache.geode.redis.internal.executor.set.RedisSet;
+import org.apache.geode.redis.internal.executor.set.RedisSetInRegion;
 import org.apache.geode.redis.internal.executor.set.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.set.StripedExecutor;
 import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
@@ -47,19 +45,19 @@ public class CommandFunction extends SingleResultRedisFunction {
     FunctionService.registerFunction(new CommandFunction(stripedExecutor));
   }
 
-
   @SuppressWarnings("unchecked")
   public static <T> T execute(RedisCommandType command,
       ByteArrayWrapper key,
       Object commandArguments, Region region) {
     SingleResultCollector<T> rc = new SingleResultCollector<>();
-    ResultCollector<T, T> execute = FunctionService
+    FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
         .setArguments(new Object[] {command, commandArguments})
         .withCollector(rc)
-        .execute(CommandFunction.ID);
-    return execute.getResult();
+        .execute(CommandFunction.ID)
+        .getResult();
+    return rc.getResult();
   }
 
 
@@ -79,14 +77,14 @@ public class CommandFunction extends SingleResultRedisFunction {
     switch (command) {
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
-        callable = () -> RedisSet.sadd(localRegion, key, membersToAdd);
+        callable = () -> new RedisSetInRegion(localRegion).sadd(key, membersToAdd);
         break;
       }
       case SREM: {
         ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
         callable = () -> {
           AtomicBoolean setWasDeleted = new AtomicBoolean();
-          long srem = RedisSet.srem(localRegion, key, membersToRemove, setWasDeleted);
+          long srem = new RedisSetInRegion(localRegion).srem(key, membersToRemove, setWasDeleted);
           return new Object[] {srem, setWasDeleted.get()};
         };
         break;
@@ -96,47 +94,48 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = executeDel(key, localRegion, delType);
         break;
       case SMEMBERS:
-        callable = () -> RedisSet.smembers(localRegion, key);
+        callable = () -> new RedisSetInRegion(localRegion).smembers(key);
         break;
       case SCARD:
-        callable = () -> RedisSet.scard(localRegion, key);
+        callable = () -> new RedisSetInRegion(localRegion).scard(key);
         break;
       case SISMEMBER: {
         ByteArrayWrapper member = (ByteArrayWrapper) args[1];
-        callable = () -> RedisSet.sismember(localRegion, key, member);
+        callable = () -> new RedisSetInRegion(localRegion).sismember(key, member);
         break;
       }
       case SRANDMEMBER: {
         int count = (int) args[1];
-        callable = () -> RedisSet.srandmember(localRegion, key, count);
+        callable = () -> new RedisSetInRegion(localRegion).srandmember(key, count);
         break;
       }
       case SPOP: {
         int popCount = (int) args[1];
-        callable = () -> RedisSet.spop(localRegion, key, popCount);
+        callable = () -> new RedisSetInRegion(localRegion).spop(key, popCount);
         break;
       }
       case SSCAN: {
         Pattern matchPattern = (Pattern) args[0];
         int count = (int) args[1];
         int cursor = (int) args[2];
-        callable = () -> RedisSet.sscan(localRegion, key, matchPattern, count, cursor);
+        callable =
+            () -> new RedisSetInRegion(localRegion).sscan(key, matchPattern, count, cursor);
         break;
       }
       case HSET: {
         Object[] hsetArgs = (Object[]) args[1];
         List<ByteArrayWrapper> fieldsToSet = (List<ByteArrayWrapper>) hsetArgs[0];
         boolean NX = (boolean) hsetArgs[1];
-        callable = () -> RedisHash.hset(localRegion, key, fieldsToSet, NX);
+        callable = () -> new RedisHashInRegion(localRegion).hset(key, fieldsToSet, NX);
         break;
       }
       case HDEL: {
         List<ByteArrayWrapper> fieldsToRemove = (List<ByteArrayWrapper>) args[1];
-        callable = () -> RedisHash.hdel(localRegion, key, fieldsToRemove);
+        callable = () -> new RedisHashInRegion(localRegion).hdel(key, fieldsToRemove);
         break;
       }
       case HGETALL: {
-        callable = () -> RedisHash.hgetall(localRegion, key);
+        callable = () -> new RedisHashInRegion(localRegion).hgetall(key);
         break;
       }
       default:
@@ -151,11 +150,12 @@ public class CommandFunction extends SingleResultRedisFunction {
       RedisDataType delType) {
     switch (delType) {
       case REDIS_SET:
-        return () -> RedisSet.del(localRegion, key);
+        return () -> new RedisSetInRegion(localRegion).del(key);
       case REDIS_HASH:
-        return () -> RedisHash.del(localRegion, key);
+        return () -> new RedisHashInRegion(localRegion).del(key);
       default:
         throw new UnsupportedOperationException("DEL does not support " + delType);
     }
   }
+
 }
