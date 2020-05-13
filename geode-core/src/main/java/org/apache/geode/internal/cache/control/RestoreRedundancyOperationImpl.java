@@ -21,6 +21,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.RestoreRedundancyOperation;
@@ -40,7 +42,7 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
   private Set<String> excludedRegions;
   private boolean shouldReassign = true;
   private ScheduledExecutorService executor;
-
+  private static final Logger logger = LogService.getLogger();
   public RestoreRedundancyOperationImpl(InternalCache cache) {
     this.cache = cache;
     this.manager = cache.getInternalResourceManager();
@@ -67,9 +69,9 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
 
   @Override
   public CompletableFuture<RestoreRedundancyResults> start() {
-    RegionFilter filter = getRegionFilter();
+RegionFilter filter = getRegionFilter();
     long start = manager.getStats().startRestoreRedundancy();
-
+logger.info("MLH region count = " + cache.getPartitionedRegions().size());
     // Create a list of completable futures for each restore redundancy operation
     List<CompletableFuture<RestoreRedundancyResults>> regionFutures =
         cache.getPartitionedRegions().stream()
@@ -77,24 +79,25 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
             .map(this::getRedundancyOpFuture)
             .collect(Collectors.toList());
 
-    // Create a single completable future which completes when all of the restore redundancy
+// Create a single completable future which completes when all of the restore redundancy
     // futures return
     CompletableFuture<Void> combinedFuture =
         CompletableFuture.allOf(regionFutures.toArray(new CompletableFuture[0]));
 
-    // Once all restore redundancy futures have returned, combine the results from each into one
+// Once all restore redundancy futures have returned, combine the results from each into one
     // results object
     CompletableFuture<RestoreRedundancyResults> resultsFuture =
         getResultsFuture(regionFutures, combinedFuture);
 
-    // Once results have been collected and combined, mark the operation as finished
+// Once results have been collected and combined, mark the operation as finished
     resultsFuture.thenRun(() -> {
       manager.removeInProgressRestoreRedundancy(resultsFuture);
       manager.getStats().endRestoreRedundancy(start);
     });
 
-    manager.addInProgressRestoreRedundancy(resultsFuture);
-    return resultsFuture;
+manager.addInProgressRestoreRedundancy(resultsFuture);
+
+return resultsFuture;
   }
 
   @Override
@@ -107,38 +110,36 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
   }
 
   RestoreRedundancyResults doRestoreRedundancy(PartitionedRegion region) {
-    try {
+try {
       PartitionedRegionRebalanceOp op = getPartitionedRegionRebalanceOp(region);
-
-      cache.getCancelCriterion().checkCancelInProgress(null);
-
-      Set<PartitionRebalanceInfo> detailSet;
+cache.getCancelCriterion().checkCancelInProgress(null);
+Set<PartitionRebalanceInfo> detailSet;
       try {
         detailSet = op.execute();
-
-        RestoreRedundancyResultsImpl results = getEmptyRestoreRedundancyResults();
-        // No work was done, either because redundancy was not impaired or because colocation
+RestoreRedundancyResultsImpl results = getEmptyRestoreRedundancyResults();
+// No work was done, either because redundancy was not impaired or because colocation
         // was not complete
         if (detailSet.isEmpty()) {
-          results.addRegionResult(getRegionResult(region));
+results.addRegionResult(getRegionResult(region));
         } else {
-          for (PartitionRebalanceInfo details : detailSet) {
+for (PartitionRebalanceInfo details : detailSet) {
             PartitionedRegion detailRegion =
                 (PartitionedRegion) cache.getRegion(details.getRegionPath());
             results.addRegionResult(getRegionResult(detailRegion));
             results.addPrimaryReassignmentDetails(details);
           }
-        }
-        return results;
+}
+return results;
       } catch (RuntimeException ex) {
-        LogService.getLogger().debug("Unexpected exception in restoring redundancy: {}",
+LogService.getLogger().debug("Unexpected exception in restoring redundancy: {}",
             ex.getMessage(), ex);
         throw ex;
       }
     } catch (RegionDestroyedException ex) {
       // We can ignore this and go on to the next region, so return an empty results object
-      return getEmptyRestoreRedundancyResults();
+return getEmptyRestoreRedundancyResults();
     }
+
   }
 
   RestoreRedundancyResults getRestoreRedundancyResults(
@@ -184,5 +185,17 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
       CompletableFuture<Void> combinedFuture) {
     return combinedFuture.thenApplyAsync(voidd -> getRestoreRedundancyResults(regionFutures),
         executor);
+  }
+
+  @Override
+  public String toString() {
+    return "RestoreRedundancyOperationImpl{" +
+        "cache=" + cache +
+        ", manager=" + manager +
+        ", includedRegions=" + includedRegions +
+        ", excludedRegions=" + excludedRegions +
+        ", shouldReassign=" + shouldReassign +
+        ", executor=" + executor +
+        '}';
   }
 }

@@ -1910,6 +1910,8 @@ public class CliStrings {
   public static final String REDUNDANCY_REASSIGN_PRIMARIES = "reassign-primaries";
   public static final String REDUNDANCY_REASSIGN_PRIMARIES_HELP =
       "If false, this operation will not attempt to reassign which members host primary buckets.";
+  public static final String REDUNDANCY__MSG__NO_RESTORE_REDUNDANCY_REGIONS_ON_DS =
+      "Distributed system has no regions for redundancy to be restored.";
 
   /* remove command */
   public static final String REMOVE = "remove";

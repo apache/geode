@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,6 +59,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -83,6 +85,7 @@ public class RestoreRedundancyCommandDUnitTest {
   private static final String CHILD_REGION_NAME = "colocatedChild";
   private static final int SINGLE_REDUNDANT_COPY = 1;
   private static final String NO_CONFIGURED_REDUNDANCY_REGION_NAME = "noConfiguredRedundancy";
+  private Logger logger = LogService.getLogger();
 
   @Before
   public void setUp() throws Exception {
@@ -104,9 +107,9 @@ public class RestoreRedundancyCommandDUnitTest {
         .waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region, numberOfServers));
 
     String command = new CommandStringBuilder(RESTORE_REDUNDANCY).getCommandString();
-
+    logger.info("command " + command);
     CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess();
-
+    logger.info("commandResult " + gfsh.getGfshOutput());
     verifyGfshOutput(commandResult, new ArrayList<>(), new ArrayList<>(), regionNames);
 
     // Confirm all regions have their configured redundancy and that primaries were balanced

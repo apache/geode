@@ -106,7 +106,7 @@ public class RebalanceOperationPerformer
       throws InterruptedException {
     // To be removed after region Name specification with "/" is fixed
     regionName = regionName.startsWith(SEPARATOR) ? regionName : (SEPARATOR + regionName);
-    Region region = cache.getRegion(regionName);
+    Region<?,?> region = cache.getRegion(regionName);
 
     if (region == null) {
       DistributedMember member = getAssociatedMembers(regionName, (InternalCache) cache);
@@ -116,7 +116,7 @@ public class RebalanceOperationPerformer
             CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
       }
 
-      Function rebalanceFunction = new RebalanceFunction();
+      Function<Object> rebalanceFunction = new RebalanceFunction();
       Object[] functionArgs = new Object[3];
       functionArgs[0] = simulate ? "true" : "false";
       Set<String> setRegionName = new HashSet<>();
@@ -125,20 +125,20 @@ public class RebalanceOperationPerformer
 
       functionArgs[2] = null;
 
-      List resultList = null;
+      List<String> resultList = null;
       try {
-        resultList = (ArrayList) ManagementUtils
+        resultList = (List<String>) ManagementUtils
             .executeFunction(rebalanceFunction, functionArgs, Collections.singleton(member))
             .getResult();
-      } catch (Exception ex) {
+      } catch (Exception ignore) {
 
       }
 
       RebalanceRegionResult result = new RebalanceRegionResultImpl();
       if (resultList != null && resultList.size() > 0) {
-        List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
+        List<String> rstList = Arrays.asList((resultList.get(0)).split(","));
 
-        result = (RebalanceRegionResultImpl) toRebalanceRegionResut(rstList);
+        result = toRebalanceRegionResut(rstList);
       }
 
       return result;
@@ -189,13 +189,13 @@ public class RebalanceOperationPerformer
 
     String[] membersName = bean.getMembers();
     Set<DistributedMember> dsMembers = ManagementUtils.getAllMembers(cache);
-    Iterator it = dsMembers.iterator();
+    Iterator<DistributedMember> it = dsMembers.iterator();
 
     boolean matchFound = false;
 
     if (membersName.length > 1) {
       while (it.hasNext() && !matchFound) {
-        DistributedMember dsmember = (DistributedMember) it.next();
+        DistributedMember dsmember = it.next();
         for (String memberName : membersName) {
           if (MBeanJMXAdapter.getMemberNameOrUniqueId(dsmember).equals(memberName)) {
             member = dsmember;
@@ -330,7 +330,7 @@ public class RebalanceOperationPerformer
    */
   @VisibleForTesting
   static class FunctionExecutor {
-    public List<Object> execute(Function rebalanceFunction, Object[] functionArgs,
+    public List<Object> execute(Function<Object> rebalanceFunction, Object[] functionArgs,
         DistributedMember dsMember) {
       return (List<Object>) ManagementUtils.executeFunction(rebalanceFunction,
           functionArgs, Collections.singleton(dsMember)).getResult();
@@ -378,7 +378,7 @@ public class RebalanceOperationPerformer
         if (memberPR.dsMemberList.size() > 1) {
           for (int i = 0; i < memberPR.dsMemberList.size(); i++) {
             DistributedMember dsMember = memberPR.dsMemberList.get(i);
-            Function rebalanceFunction = new RebalanceFunction();
+            Function<Object> rebalanceFunction = new RebalanceFunction();
             Object[] functionArgs = new Object[3];
             functionArgs[0] = simulate;
             Set<String> regionSet = new HashSet<>();

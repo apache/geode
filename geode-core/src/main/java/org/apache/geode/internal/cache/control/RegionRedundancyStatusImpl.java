@@ -150,4 +150,6 @@ public class RegionRedundancyStatusImpl implements DataSerializableFixedID, Regi
   public Version[] getSerializationVersions() {
     return null;
   }
+
+
 }

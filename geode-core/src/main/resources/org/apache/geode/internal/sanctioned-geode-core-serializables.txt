@@ -457,6 +457,12 @@ org/apache/geode/management/internal/functions/CacheRealizationFunction,false
 org/apache/geode/management/internal/functions/CliFunctionResult$StatusState,false
 org/apache/geode/management/internal/functions/GetMemberInformationFunction,true,1404642539058875565
 org/apache/geode/management/internal/functions/RebalanceFunction,true,1
+org/apache/geode/management/internal/functions/RestoreRedundancyFunction,true,1
+org/apache/geode/management/runtime/RestoreRedundancyResponse,true,1
+org/apache/geode/management/operation/RestoreRedundancyRequest,true,1
+org/apache/geode/management/internal/operation/RestoreRedundancyResponseImpl,true,1
+org/apache/geode/management/internal/operation/RegionRedundancyStatusSerializableImpl,true,1
+org/apache/geode/management/runtime/RegionRedundancyStatusSerializable$RedundancyStatus,true,1
 org/apache/geode/management/internal/operation/OperationState,false,opId:java/lang/String,operation:org/apache/geode/management/api/ClusterManagementOperation,operationEnd:java/util/Date,operationStart:java/util/Date,result:org/apache/geode/management/runtime/OperationResult,throwable:java/lang/Throwable
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238

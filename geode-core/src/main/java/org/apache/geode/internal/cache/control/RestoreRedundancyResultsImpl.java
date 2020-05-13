@@ -203,4 +203,15 @@ public class RestoreRedundancyResultsImpl
   public Version[] getSerializationVersions() {
     return null;
   }
+
+  @Override
+  public String toString() {
+    return "RestoreRedundancyResultsImpl{" +
+        "zeroRedundancyRegions=" + zeroRedundancyRegions +
+        ", underRedundancyRegions=" + underRedundancyRegions +
+        ", satisfiedRedundancyRegions=" + satisfiedRedundancyRegions +
+        ", totalPrimaryTransfersCompleted=" + totalPrimaryTransfersCompleted +
+        ", totalPrimaryTransferTime=" + totalPrimaryTransferTime +
+        '}';
+  }
 }
