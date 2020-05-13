@@ -37,8 +37,6 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
  */
 public class HLenExecutor extends HashExecutor {
 
-  private final int NOT_EXISTS = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
@@ -46,12 +44,6 @@ public class HLenExecutor extends HashExecutor {
 
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
       RedisHash map = getMap(context, key);
-
-      if (map == null) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-        return;
-      }
-
       size = map.size();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

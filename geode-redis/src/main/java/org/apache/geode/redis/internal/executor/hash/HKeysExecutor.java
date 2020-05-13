@@ -49,12 +49,6 @@ public class HKeysExecutor extends HashExecutor {
     List<ByteArrayWrapper> keys;
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
       RedisHash keyMap = getMap(context, key);
-
-      if (keyMap == null || keyMap.isEmpty()) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-        return;
-      }
-
       keys = keyMap.keys();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

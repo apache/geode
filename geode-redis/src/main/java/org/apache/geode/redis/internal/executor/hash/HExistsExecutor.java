@@ -55,11 +55,6 @@ public class HExistsExecutor extends HashExecutor {
     ByteArrayWrapper key = command.getKey();
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
       RedisHash map = getMap(context, key);
-
-      if (map == null || map.isEmpty()) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-        return;
-      }
       hasField = map.containsKey(field);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
