@@ -101,7 +101,7 @@ public class RedisHash implements Delta, DataSerializable {
     }
   }
 
-  public synchronized int doHset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int hset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
     Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
@@ -127,7 +127,7 @@ public class RedisHash implements Delta, DataSerializable {
     return fieldsAdded;
   }
 
-  public synchronized int doHdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int hdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
     for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
@@ -143,7 +143,7 @@ public class RedisHash implements Delta, DataSerializable {
     return fieldsRemoved;
   }
 
-  public synchronized Collection<ByteArrayWrapper> doHgetall() {
+  public synchronized Collection<ByteArrayWrapper> hgetall() {
     ArrayList<ByteArrayWrapper> result = new ArrayList<>();
     for (Map.Entry<ByteArrayWrapper, ByteArrayWrapper> entry : hash.entrySet()) {
       result.add(entry.getKey());

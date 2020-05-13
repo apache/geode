@@ -31,12 +31,12 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 class EmptyRedisSet extends RedisSet {
 
   @Override
-  synchronized List<Object> doSscan(Pattern matchPattern, int count, int cursor) {
+  synchronized List<Object> sscan(Pattern matchPattern, int count, int cursor) {
     return emptyList();
   }
 
   @Override
-  synchronized Collection<ByteArrayWrapper> doSpop(Region<ByteArrayWrapper, RedisSet> region,
+  synchronized Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key, int popCount) {
     return emptyList();
   }
@@ -47,30 +47,30 @@ class EmptyRedisSet extends RedisSet {
   }
 
   @Override
-  public synchronized boolean contains(ByteArrayWrapper member) {
+  public synchronized boolean sismember(ByteArrayWrapper member) {
     return false;
   }
 
   @Override
-  public synchronized int size() {
+  public synchronized int scard() {
     return 0;
   }
 
   @Override
-  synchronized long doSadd(ArrayList<ByteArrayWrapper> membersToAdd,
+  synchronized long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  synchronized long doSrem(ArrayList<ByteArrayWrapper> membersToRemove,
+  synchronized long srem(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key,
       AtomicBoolean setWasDeleted) {
     return 0;
   }
 
   @Override
-  synchronized Set<ByteArrayWrapper> members() {
+  synchronized Set<ByteArrayWrapper> smembers() {
     return emptySet();
   }
 }

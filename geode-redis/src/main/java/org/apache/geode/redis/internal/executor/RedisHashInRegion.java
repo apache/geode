@@ -35,7 +35,7 @@ public class RedisHashInRegion implements RedisHashCommands {
   public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
     RedisHash hash = localRegion.get(key);
     if (hash != null) {
-      return hash.doHset(localRegion, key, fieldsToSet, NX);
+      return hash.hset(localRegion, key, fieldsToSet, NX);
     } else {
       localRegion.put(key, new RedisHash(fieldsToSet));
       return fieldsToSet.size() / 2;
@@ -45,13 +45,13 @@ public class RedisHashInRegion implements RedisHashCommands {
   @Override
   public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
     RedisHash hash = localRegion.getOrDefault(key, RedisHash.EMPTY);
-    return hash.doHdel(localRegion, key, fieldsToRemove);
+    return hash.hdel(localRegion, key, fieldsToRemove);
   }
 
   @Override
   public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
     RedisHash hash = localRegion.getOrDefault(key, RedisHash.EMPTY);
-    return hash.doHgetall();
+    return hash.hgetall();
   }
 
   @Override

@@ -46,7 +46,7 @@ public class RedisSetInRegion implements RedisSetCommands {
     RedisSet redisSet = region.get(key);
 
     if (redisSet != null) {
-      return redisSet.doSadd(membersToAdd, region, key);
+      return redisSet.sadd(membersToAdd, region, key);
     } else {
       region.create(key, new RedisSet(membersToAdd));
       return membersToAdd.size();
@@ -58,7 +58,7 @@ public class RedisSetInRegion implements RedisSetCommands {
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
     RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.doSrem(membersToRemove, region, key, setWasDeleted);
+    return redisSet.srem(membersToRemove, region, key, setWasDeleted);
   }
 
   public boolean del(ByteArrayWrapper key) {
@@ -69,20 +69,20 @@ public class RedisSetInRegion implements RedisSetCommands {
   public Set<ByteArrayWrapper> smembers(
       ByteArrayWrapper key) {
     RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.members();
+    return redisSet.smembers();
   }
 
   @Override
   public int scard(ByteArrayWrapper key) {
     RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.size();
+    return redisSet.scard();
   }
 
   @Override
   public boolean sismember(
       ByteArrayWrapper key, ByteArrayWrapper member) {
     RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.contains(member);
+    return redisSet.sismember(member);
   }
 
   @Override
@@ -96,14 +96,14 @@ public class RedisSetInRegion implements RedisSetCommands {
   public Collection<ByteArrayWrapper> spop(
       ByteArrayWrapper key, int popCount) {
     RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.doSpop(region, key, popCount);
+    return redisSet.spop(region, key, popCount);
   }
 
   @Override
   public List<Object> sscan(
       ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.doSscan(matchPattern, count, cursor);
+    return redisSet.sscan(matchPattern, count, cursor);
   }
 
 }

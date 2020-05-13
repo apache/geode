@@ -26,19 +26,19 @@ import org.apache.geode.redis.internal.executor.hash.RedisHash;
 
 public class EmptyRedisHash extends RedisHash {
   @Override
-  public synchronized int doHset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int hset(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public synchronized int doHdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
+  public synchronized int hdel(Region<ByteArrayWrapper, RedisHash> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToRemove) {
     return 0;
   }
 
   @Override
-  public synchronized Collection<ByteArrayWrapper> doHgetall() {
+  public synchronized Collection<ByteArrayWrapper> hgetall() {
     return emptyList();
   }
 }

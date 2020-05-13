@@ -64,7 +64,7 @@ public class RedisSet implements Delta, DataSerializable {
   // for serialization
   public RedisSet() {}
 
-  synchronized List<Object> doSscan(Pattern matchPattern, int count, int cursor) {
+  synchronized List<Object> sscan(Pattern matchPattern, int count, int cursor) {
     List<Object> returnList = new ArrayList<>();
     int size = members.size();
     int beforeCursor = 0;
@@ -99,9 +99,9 @@ public class RedisSet implements Delta, DataSerializable {
     return returnList;
   }
 
-  synchronized Collection<ByteArrayWrapper> doSpop(
+  synchronized Collection<ByteArrayWrapper> spop(
       Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key, int popCount) {
-    int originalSize = size();
+    int originalSize = scard();
     if (originalSize == 0) {
       return emptyList();
     }
@@ -164,11 +164,11 @@ public class RedisSet implements Delta, DataSerializable {
     return result;
   }
 
-  public synchronized boolean contains(ByteArrayWrapper member) {
+  public synchronized boolean sismember(ByteArrayWrapper member) {
     return members.contains(member);
   }
 
-  public synchronized int size() {
+  public synchronized int scard() {
     return members.size();
   }
 
@@ -220,7 +220,7 @@ public class RedisSet implements Delta, DataSerializable {
    * @param key the name of the set to add to
    * @return the number of members actually added; -1 if concurrent modification
    */
-  synchronized long doSadd(ArrayList<ByteArrayWrapper> membersToAdd,
+  synchronized long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key) {
 
@@ -246,7 +246,7 @@ public class RedisSet implements Delta, DataSerializable {
    * @param setWasDeleted set to true if this method deletes the set
    * @return the number of members actually removed; -1 if concurrent modification
    */
-  synchronized long doSrem(ArrayList<ByteArrayWrapper> membersToRemove,
+  synchronized long srem(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
 
@@ -277,7 +277,7 @@ public class RedisSet implements Delta, DataSerializable {
    *
    * @return a set containing all the members in this set
    */
-  synchronized Set<ByteArrayWrapper> members() {
+  synchronized Set<ByteArrayWrapper> smembers() {
     return new HashSet<>(members);
   }
 }
