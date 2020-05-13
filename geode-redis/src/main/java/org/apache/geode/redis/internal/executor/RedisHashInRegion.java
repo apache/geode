@@ -44,18 +44,20 @@ public class RedisHashInRegion implements RedisHashCommands {
 
   @Override
   public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
-    RedisHash hash = localRegion.getOrDefault(key, RedisHash.EMPTY);
-    return hash.hdel(localRegion, key, fieldsToRemove);
+    return getRedisHash(key).hdel(localRegion, key, fieldsToRemove);
   }
 
   @Override
   public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
-    RedisHash hash = localRegion.getOrDefault(key, RedisHash.EMPTY);
-    return hash.hgetall();
+    return getRedisHash(key).hgetall();
   }
 
   @Override
   public boolean del(ByteArrayWrapper key) {
     return localRegion.remove(key) != null;
+  }
+
+  private RedisHash getRedisHash(ByteArrayWrapper key) {
+    return localRegion.getOrDefault(key, RedisHash.EMPTY);
   }
 }

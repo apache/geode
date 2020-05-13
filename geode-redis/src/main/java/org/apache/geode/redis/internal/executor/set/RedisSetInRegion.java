@@ -57,53 +57,50 @@ public class RedisSetInRegion implements RedisSetCommands {
   public long srem(
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.srem(membersToRemove, region, key, setWasDeleted);
-  }
-
-  public boolean del(ByteArrayWrapper key) {
-    return region.remove(key) != null;
+    return getRedisSet(key).srem(membersToRemove, region, key, setWasDeleted);
   }
 
   @Override
   public Set<ByteArrayWrapper> smembers(
       ByteArrayWrapper key) {
-    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.smembers();
+    return getRedisSet(key).smembers();
   }
 
   @Override
   public int scard(ByteArrayWrapper key) {
-    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.scard();
+    return getRedisSet(key).scard();
   }
 
   @Override
   public boolean sismember(
       ByteArrayWrapper key, ByteArrayWrapper member) {
-    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.sismember(member);
+    return getRedisSet(key).sismember(member);
   }
 
   @Override
   public Collection<ByteArrayWrapper> srandmember(
       ByteArrayWrapper key, int count) {
-    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.srandmember(count);
+    return getRedisSet(key).srandmember(count);
   }
 
   @Override
   public Collection<ByteArrayWrapper> spop(
       ByteArrayWrapper key, int popCount) {
-    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.spop(region, key, popCount);
+    return getRedisSet(key).spop(region, key, popCount);
   }
 
   @Override
   public List<Object> sscan(
       ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
-    RedisSet redisSet = region.getOrDefault(key, RedisSet.EMPTY);
-    return redisSet.sscan(matchPattern, count, cursor);
+    return getRedisSet(key).sscan(matchPattern, count, cursor);
   }
 
+  @Override
+  public boolean del(ByteArrayWrapper key) {
+    return region.remove(key) != null;
+  }
+
+  private RedisSet getRedisSet(ByteArrayWrapper key) {
+    return region.getOrDefault(key, RedisSet.EMPTY);
+  }
 }
