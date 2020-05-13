@@ -497,14 +497,14 @@ The gateway sender configuration for a specific sender `id` must be identical on
 
 ``` pre
 create gateway-sender --id=value --remote-distributed-system-id=value 
-   [--groups=value(,value)*] [--members=value(,value)*] [--parallel=value] 
+   [--groups=value(,value)*] [--members=value(,value)*] [--parallel(=value)?]
    [--manual-start=value] [--socket-buffer-size=value] [--socket-read-timeout=value] 
    [--enable-batch-conflation=value] [--batch-size=value] [--batch-time-interval=value]
    [--enable-persistence=value] [--disk-store-name=value] [--disk-synchronous=value] 
    [--maximum-queue-memory=value] [--alert-threshold=value] [--dispatcher-threads=value] 
-   [--order-policy=value][--gateway-event-filter=value(,value)*] 
+   [--order-policy=value][--gateway-event-filter=value(,value)*]
    [--gateway-transport-filter=value(,value)*]
-   [--group-transaction-events=value]
+   [--group-transaction-events(=value)?]
 ```
 
 **Parameters, create gateway-sender:**
@@ -844,7 +844,7 @@ for syntax details.
     [--colocated-with=value] [--local-max-memory=value]
     [--recovery-delay=value] [--redundant-copies=value]
     [--startup-recovery-delay=value] [--total-max-memory=value]
-    [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)]
+    [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)?]
     [--partition-resolver=value] [--eviction-entry-count=value]
     [--eviction-max-memory=value] [--eviction-action=value] [--eviction-object-sizer=value]
 ```

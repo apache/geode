@@ -63,9 +63,10 @@ public class WANConfigurationJUnitTest {
    *
    */
   @Test
-  public void test_GatewaySender_without_Locator() throws IOException {
+  public void test_GatewaySender_without_Locator() {
     try {
       cache = new CacheFactory().set(MCAST_PORT, "0").create();
+
       GatewaySenderFactory fact = cache.createGatewaySenderFactory();
       fact.setParallel(true);
       GatewaySender sender1 = fact.create("NYSender", 2);
@@ -78,6 +79,19 @@ public class WANConfigurationJUnitTest {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
+  }
+
+  @Test
+  public void test_create_SerialGatewaySender_ThrowsException_when_GroupTransactionEvents_isTrue_and_DispatcherThreads_is_greaterThanOne() {
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
+    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
+    fact.setParallel(false);
+    fact.setDispatcherThreads(2);
+    fact.setGroupTransactionEvents(true);
+    assertThatThrownBy(() -> fact.create("NYSender", 2))
+        .isInstanceOf(GatewaySenderException.class)
+        .hasMessageContaining(
+            "SerialGatewaySender NYSender cannot be created with group transaction events set to true when dispatcher threads is greater than 1");
   }
 
   /**

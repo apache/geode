@@ -273,6 +273,12 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
                 "SerialGatewaySender %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
                 id));
       }
+      if (this.attrs.mustGroupTransactionEvents() && this.attrs.getDispatcherThreads() > 1) {
+        throw new GatewaySenderException(
+            String.format(
+                "SerialGatewaySender %s cannot be created with group transaction events set to true when dispatcher threads is greater than 1",
+                id));
+      }
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
