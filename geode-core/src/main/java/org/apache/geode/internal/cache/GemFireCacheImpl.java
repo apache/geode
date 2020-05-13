@@ -1376,7 +1376,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeDeclarativeCache();
       completedCacheXml = true;
     } catch (RuntimeException e) {
-      logger.error("Cache initialization for {} failed because: {}", this, e);
+      logger.error("Cache initialization for " + this.toString() + " failed because:", e);
       throw e;
     } finally {
       if (!completedCacheXml) {
