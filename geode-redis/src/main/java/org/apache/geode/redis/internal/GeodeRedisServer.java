@@ -338,6 +338,14 @@ public class GeodeRedisServer {
   }
 
   /**
+   * Constructor for {@code GeodeRedisServer} that will start the server on a random port and bind
+   * to the first non-loopback address
+   */
+  public GeodeRedisServer() {
+    this(null, -1, null);
+  }
+
+  /**
    * Constructor for {@code GeodeRedisServer} that will start the server on the given port and bind
    * to the first non-loopback address
    *
@@ -601,7 +609,7 @@ public class GeodeRedisServer {
             serverPort == RANDOM_PORT_INDICATOR ? 0 : serverPort))
             .sync();
 
-    serverPort = ((InetSocketAddress)channelFuture.channel().localAddress()).getPort();
+    serverPort = ((InetSocketAddress) channelFuture.channel().localAddress()).getPort();
 
     logStartupMessage();
 

@@ -28,7 +28,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -73,12 +72,11 @@ public class ConcurrentStartIntegrationTest {
   }
 
   private void runNServers(int n) throws InterruptedException {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(numServers);
     final Thread[] threads = new Thread[n];
     for (int i = 0; i < n; i++) {
       final int j = i;
       Runnable r = () -> {
-        GeodeRedisServer s = new GeodeRedisServer(ports[j]);
+        GeodeRedisServer s = new GeodeRedisServer(-1);
         s.start();
         s.shutdown();
       };
