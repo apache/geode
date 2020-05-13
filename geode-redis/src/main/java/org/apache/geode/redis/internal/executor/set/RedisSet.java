@@ -81,12 +81,16 @@ public class RedisSet implements Delta, DataSerializable {
 
   public static long srem(Region<ByteArrayWrapper, RedisSet> region,
       ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
+      ArrayList<ByteArrayWrapper> membersToRemove,
+      AtomicBoolean setWasDeleted) {
     RedisSet redisSet = region.get(key);
+    long numRemoved;
     if (redisSet == null) {
-      return 0L;
+      numRemoved = 0;
+    } else {
+      numRemoved = redisSet.doSrem(membersToRemove, region, key, setWasDeleted);
     }
-    return redisSet.doSrem(membersToRemove, region, key, setWasDeleted);
+    return numRemoved;
   }
 
   public static boolean del(Region<ByteArrayWrapper, RedisSet> region,

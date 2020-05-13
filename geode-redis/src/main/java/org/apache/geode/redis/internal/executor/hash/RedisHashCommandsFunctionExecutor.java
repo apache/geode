@@ -24,9 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
@@ -41,34 +39,21 @@ public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
 
   @Override
   public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    ResultCollector<Object[], List<Integer>> results =
-        executeFunction(HSET, key, new Object[] {fieldsToSet, NX});
-    return results.getResult().get(0);
+    return CommandFunction.execute(HSET, key, new Object[] {fieldsToSet, NX}, region);
   }
 
   @Override
   public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
-    ResultCollector<Object[], List<Integer>> results = executeFunction(HDEL, key, fieldsToRemove);
-    return results.getResult().get(0);
+    return CommandFunction.execute(HDEL, key, fieldsToRemove, region);
   }
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Boolean>> results = executeFunction(DEL, key,
-        RedisDataType.REDIS_HASH);
-    return results.getResult().get(0);
+    return CommandFunction.execute(DEL, key, RedisDataType.REDIS_HASH, region);
   }
 
   @Override
   public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
-    ResultCollector<Object[], List<Collection<ByteArrayWrapper>>> results =
-        executeFunction(HGETALL, key, null);
-    return results.getResult().get(0);
-  }
-
-  private ResultCollector executeFunction(RedisCommandType command,
-      ByteArrayWrapper key,
-      Object commandArguments) {
-    return CommandFunction.execute(region, command, key, commandArguments);
+    return CommandFunction.execute(HGETALL, key, null, region);
   }
 }

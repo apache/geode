@@ -26,6 +26,7 @@ org/apache/geode/redis/internal/executor/ListQuery$4,false
 org/apache/geode/redis/internal/executor/ListQuery$5,false
 org/apache/geode/redis/internal/executor/ListQuery$6,false
 org/apache/geode/redis/internal/executor/ListQuery$7,false
+org/apache/geode/redis/internal/executor/SingleResultRedisFunction,false
 org/apache/geode/redis/internal/executor/SortedSetQuery,false
 org/apache/geode/redis/internal/executor/SortedSetQuery$1,false
 org/apache/geode/redis/internal/executor/SortedSetQuery$10,false

@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
@@ -56,7 +57,7 @@ public class SMoveExecutor extends SetExecutor {
 
       boolean removed =
           RedisSet.srem(region, source, new ArrayList<>(Collections.singletonList(member)),
-              null) == 1;
+              new AtomicBoolean()) == 1;
       // TODO: native redis SMOVE that empties the src set causes it to no longer exist
 
       if (!removed) {
