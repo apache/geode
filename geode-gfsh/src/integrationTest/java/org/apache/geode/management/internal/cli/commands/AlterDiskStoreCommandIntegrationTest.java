@@ -72,7 +72,7 @@ public class AlterDiskStoreCommandIntegrationTest {
 
     File tempFile = tempDir.newFile("BACKUPdiskStoreName" + IF_FILE_EXT);
     gfsh.executeAndAssertThat(command, commandString).statusIsError()
-        .containsOutput("Could not find: \"wrongDiskDir/" + tempFile.getName());
+        .containsOutput("Could not find: \"wrongDiskDir" + File.separator + tempFile.getName());
   }
 
   @Test
@@ -86,8 +86,9 @@ public class AlterDiskStoreCommandIntegrationTest {
     String commandString = csb.toString();
 
     gfsh.executeAndAssertThat(command, commandString).statusIsError()
-        .containsOutput("Could not find: \"" + tempDir.getRoot().toString() + "/BACKUP"
-            + diskStoreName + IF_FILE_EXT);
+        .containsOutput(
+            "Could not find: \"" + tempDir.getRoot().toString() + File.separator + "BACKUP"
+                + diskStoreName + IF_FILE_EXT);
   }
 
 }

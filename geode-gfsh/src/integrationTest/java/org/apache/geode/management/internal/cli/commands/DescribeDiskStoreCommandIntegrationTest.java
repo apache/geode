@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -116,18 +117,21 @@ public class DescribeDiskStoreCommandIntegrationTest {
     String commandString = csb.toString();
 
     gfsh.executeAndAssertThat(commandString).statusIsError()
-        .containsOutput("Could not find: \"wrongDiskDir/BACKUP" + DISK_STORE_NAME + IF_FILE_EXT);
+        .containsOutput("Could not find: \"wrongDiskDir" + File.separator + "BACKUP"
+            + DISK_STORE_NAME + IF_FILE_EXT);
   }
 
   @Test
   public void testNameValidation() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESCRIBE_OFFLINE_DISK_STORE);
     csb.addOption(CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME, WRONG_DISK_STORE_NAME);
-    csb.addOption(CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS, tempDir.getRoot().toString());
+    csb.addOption(CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS,
+        tempDir.getRoot().getAbsolutePath());
     String commandString = csb.toString();
 
     gfsh.executeAndAssertThat(commandString).statusIsError()
-        .containsOutput("Could not find: \"" + tempDir.getRoot().toString() + "/BACKUP"
-            + WRONG_DISK_STORE_NAME + IF_FILE_EXT);
+        .containsOutput(
+            "Could not find: \"" + tempDir.getRoot().toString() + File.separator + "BACKUP"
+                + WRONG_DISK_STORE_NAME + IF_FILE_EXT);
   }
 }
