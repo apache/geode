@@ -149,7 +149,6 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
           return PARTITION_REDUNDANT_OVERFLOW;
       }
     }
-
     return dataStoreRegionShortcut;
   }
 
