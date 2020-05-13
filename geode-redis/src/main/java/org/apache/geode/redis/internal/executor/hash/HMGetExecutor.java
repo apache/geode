@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
@@ -52,12 +51,6 @@ public class HMGetExecutor extends HashExecutor {
     RedisHash map = getMap(context, key);
 
     checkDataType(key, RedisDataType.REDIS_HASH, context);
-
-    if (map == null) {
-      command.setResponse(
-          Coder.getArrayOfNils(context.getByteBufAllocator(), commandElems.size() - 2));
-      return;
-    }
 
     ArrayList<ByteArrayWrapper> fields = new ArrayList<ByteArrayWrapper>();
     for (int i = 2; i < commandElems.size(); i++) {
