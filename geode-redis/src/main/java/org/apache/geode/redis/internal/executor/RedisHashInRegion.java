@@ -27,7 +27,7 @@ import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 public class RedisHashInRegion implements RedisHashCommands {
   private final Region<ByteArrayWrapper, RedisHash> localRegion;
 
-  public RedisHashInRegion(Region localRegion) {
+  public RedisHashInRegion(Region<ByteArrayWrapper, RedisHash> localRegion) {
     this.localRegion = localRegion;
   }
 
