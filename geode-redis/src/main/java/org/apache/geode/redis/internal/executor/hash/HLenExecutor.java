@@ -37,8 +37,6 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
  */
 public class HLenExecutor extends HashExecutor {
 
-  private final int NOT_EXISTS = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
