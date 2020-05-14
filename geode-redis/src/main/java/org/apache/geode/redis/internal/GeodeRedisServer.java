@@ -98,11 +98,10 @@ import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
  * HyperLogLogs which are collectively stored in one Region respectively. That Region along with a
  * meta data region used internally are protected so the client may not store keys with the name
  * {@link GeodeRedisServer#REDIS_META_DATA_REGION} or {@link GeodeRedisServer#STRING_REGION}. The
- * default Region type is {@link RegionShortcut#PARTITION} although this can be changed by
- * specifying the SystemProperty {@value #DEFAULT_REGION_SYS_PROP_NAME} to a type defined by {@link
- * RegionShortcut}. If the {@link GeodeRedisServer#NUM_THREADS_SYS_PROP_NAME} system property is set
+ * default Region type is {@link RegionShortcut#PARTITION_REDUNDANT}. If the
+ * {@link GeodeRedisServer#NUM_THREADS_SYS_PROP_NAME} system property is set
  * to 0, one thread per client will be created. Otherwise a worker thread pool of specified size is
- * used or a default size of 4 * {@link Runtime#availableProcessors()} if the property is not set.
+ * used or a default size of {@link Runtime#availableProcessors()} if the property is not set.
  * <p>
  * Setting the AUTH password requires setting the property "redis-password" just as "redis-port"
  * would be in xml or through GFSH.
@@ -268,23 +267,15 @@ public class GeodeRedisServer {
   public static final String REDIS_META_DATA_REGION = "ReDiS_MeTa_DaTa";
 
   /**
-   * The system property name used to set the default {@link Region} creation type. The property
-   * name is {@code DEFAULT_REGION_SYS_PROP_NAME} and the acceptable values are types defined by
-   * {@link RegionShortcut}, i.e. "PARTITION" would be used for {@link RegionShortcut#PARTITION}.
-   */
-  public static final String DEFAULT_REGION_SYS_PROP_NAME = "gemfireredis.regiontype";
-
-  /**
    * System property name that can be used to set the number of threads to be used by the
    * GeodeRedisServer
    */
   public static final String NUM_THREADS_SYS_PROP_NAME = "gemfireredis.numthreads";
 
   /**
-   * The actual {@link RegionShortcut} type specified by the system property {@value
-   * #DEFAULT_REGION_SYS_PROP_NAME}.
+   * The default region type
    */
-  public final RegionShortcut DEFAULT_REGION_TYPE;
+  public final RegionShortcut DEFAULT_REGION_TYPE = RegionShortcut.PARTITION_REDUNDANT;
 
   private boolean shutdown;
   private boolean started;
@@ -299,28 +290,10 @@ public class GeodeRedisServer {
   }
 
   /**
-   * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
-   * to a RegionShortcut type then {@link RegionShortcut#PARTITION_REDUNDANT} will be used by
-   * default.
-   *
-   * @return {@link RegionShortcut}
-   */
-  private static RegionShortcut setRegionType() {
-    String regionType = System.getProperty(DEFAULT_REGION_SYS_PROP_NAME, "PARTITION_REDUNDANT");
-    RegionShortcut type;
-    try {
-      type = RegionShortcut.valueOf(regionType);
-    } catch (Exception e) {
-      type = RegionShortcut.PARTITION_REDUNDANT;
-    }
-    return type;
-  }
-
-  /**
    * Helper method to set the number of worker threads
    *
    * @return If the System property {@value #NUM_THREADS_SYS_PROP_NAME} is set then that number is
-   *         used, otherwise 4 * # of cores
+   *         used, otherwise {@link Runtime#availableProcessors()}.
    */
   private int setNumWorkerThreads() {
     String prop = System.getProperty(NUM_THREADS_SYS_PROP_NAME);
@@ -392,7 +365,6 @@ public class GeodeRedisServer {
     expirationExecutor =
         Executors.newScheduledThreadPool(numExpirationThreads,
             new NamedThreadFactory("GemFireRedis-ScheduledExecutor-", true));
-    DEFAULT_REGION_TYPE = setRegionType();
     shutdown = false;
     started = false;
   }
