@@ -55,8 +55,13 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
   protected int locatorPort;
   protected MemberVM locator;
-  protected MemberVM dataStore1, dataStore2, dataStore3, accessor;
-  protected ClientVM client1, client2;
+  protected MemberVM dataStore1;
+  protected MemberVM dataStore2;
+  protected MemberVM dataStore3;
+  protected MemberVM accessor;
+
+  protected ClientVM client1;
+  protected ClientVM client2;
 
   private static volatile DUnitBlackboard blackboard;
 

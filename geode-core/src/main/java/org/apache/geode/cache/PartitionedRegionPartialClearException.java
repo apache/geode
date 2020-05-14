@@ -15,16 +15,13 @@
 package org.apache.geode.cache;
 
 /**
- * Indicates a failure to perform a distributed operation on a Partitioned Region after multiple
- * attempts.
- *
- * @since GemFire 5.1
+ * Indicates a failure to perform a distributed clear operation on a Partitioned Region
+ * after multiple attempts. The clear may not have been successfully applied on some of
+ * the members hosting the region.
  */
 public class PartitionedRegionPartialClearException extends CacheRuntimeException {
 
-  public PartitionedRegionPartialClearException() {
-    super();
-  }
+  public PartitionedRegionPartialClearException() {}
 
   public PartitionedRegionPartialClearException(String msg) {
     super(msg);

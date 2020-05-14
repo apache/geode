@@ -203,7 +203,7 @@ public class PRCacheListenerDistributedTest extends ReplicateCacheListenerDistri
   }
 
   @Test
-  public void afterRegionDestroyIsInvokedNonOnNonAccessor() {
+  public void afterRegionDestroyIsInvokedOnNonAccessor() {
     CacheListener<String, Integer> listener = new RegionDestroyCountingCacheListener();
     Region<String, Integer> region = createAccessorRegion(regionName, null);
     getVM(0).invoke(() -> {
@@ -282,7 +282,7 @@ public class PRCacheListenerDistributedTest extends ReplicateCacheListenerDistri
 
     region.clear();
 
-    assertThat(sharedCountersRule.getTotal(CLEAR)).isEqualTo(expectedRegionDestroys());
+    assertThat(sharedCountersRule.getTotal(CLEAR)).isEqualTo(expectedClears());
   }
 
   @Test
@@ -302,7 +302,7 @@ public class PRCacheListenerDistributedTest extends ReplicateCacheListenerDistri
   }
 
   @Test
-  public void afterRegionClearIsInvokedNonOnNonAccessor() {
+  public void afterRegionClearIsInvokedOnNonAccessor() {
     CacheListener<String, Integer> listener = new ClearCountingCacheListener();
     Region<String, Integer> region = createAccessorRegion(regionName, null);
 
