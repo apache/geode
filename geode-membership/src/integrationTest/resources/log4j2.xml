@@ -15,7 +15,7 @@
   -->
 <Configuration status="WARN" shutdownHook="disable" packages="org.apache.geode.distributed.internal.membership">
   <Properties>
-    <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
+    <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%tid] %message%n%throwable%n</Property>
     <Property name="geode-default">true</Property>
   </Properties>
   <Appenders>
