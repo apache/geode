@@ -27,9 +27,8 @@ import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.executor.AbstractScanExecutor;
-import org.apache.geode.redis.internal.executor.ResponseExecutor;
 
-public class SScanExecutor extends AbstractScanExecutor implements ResponseExecutor {
+public class SScanExecutor extends AbstractScanExecutor {
 
   @Override
   public RedisResponse executeCommandWithResponse(Command command,

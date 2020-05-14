@@ -19,11 +19,12 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.Executor;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisResponse;
 
-public class AuthExecutor implements ResponseExecutor {
+public class AuthExecutor implements Executor {
 
   @Override
   public RedisResponse executeCommandWithResponse(Command command,

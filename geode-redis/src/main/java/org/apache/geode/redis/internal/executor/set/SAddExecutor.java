@@ -22,9 +22,8 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisResponse;
-import org.apache.geode.redis.internal.executor.ResponseExecutor;
 
-public class SAddExecutor extends SetExecutor implements ResponseExecutor {
+public class SAddExecutor extends SetExecutor {
 
   @Override
   public RedisResponse executeCommandWithResponse(Command command,

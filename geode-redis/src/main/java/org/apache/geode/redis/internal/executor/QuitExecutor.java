@@ -19,7 +19,7 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisResponse;
 
-public class QuitExecutor extends AbstractExecutor implements ResponseExecutor {
+public class QuitExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommandWithResponse(Command command,

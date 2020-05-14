@@ -23,9 +23,8 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.ResponseExecutor;
 
-public abstract class SetExecutor extends AbstractExecutor implements ResponseExecutor {
+public abstract class SetExecutor extends AbstractExecutor {
 
   /**
    * Obtain the region that holds set data
