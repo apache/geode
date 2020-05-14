@@ -216,18 +216,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         executeWithoutTransaction(command);
       }
 
-      if (logger.isDebugEnabled() && command.getResponse() != null) {
-        ByteBuf response = null;
-        try {
-          response = command.getResponse()
-              .copy(0, Math.min(command.getResponse().readableBytes(), 100));
-          logger.debug("Redis command returned: {}", getPrintableByteBuf(response));
-        } finally {
-          if (response != null) {
-            response.release();
-          }
-        }
-      }
+      logResponse(command);
 
       if (hasTransaction() && command.isOfType(RedisCommandType.MULTI)) {
         writeToChannel(
@@ -251,6 +240,21 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     } else {
       ByteBuf r = Coder.getNoAuthResponse(this.byteBufAllocator, RedisConstants.ERROR_NOT_AUTH);
       writeToChannel(r);
+    }
+  }
+
+  private void logResponse(Command command) {
+    if (logger.isDebugEnabled() && command.getResponse() != null) {
+      ByteBuf response = null;
+      try {
+        response = command.getResponse()
+            .copy(0, Math.min(command.getResponse().readableBytes(), 100));
+        logger.debug("Redis command returned: {}", getPrintableByteBuf(response));
+      } finally {
+        if (response != null) {
+          response.release();
+        }
+      }
     }
   }
 
