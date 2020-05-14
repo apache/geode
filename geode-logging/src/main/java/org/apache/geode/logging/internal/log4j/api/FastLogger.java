@@ -24,10 +24,12 @@ import org.apache.logging.log4j.status.StatusLogger;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 
 /**
- * Overrides is-enabled checks for log levels below INFO to avoid performance penalties when the log
- * level is INFO or above. If delegating is true then it will always delegate to
- * ExtendedLoggerWrapper for is-enabled checks.
+ * Overrides is-enabled checks to avoid performance penalties in the following cases:
+ * - log level is lower than INFO
+ * - log configuration has filters
  *
+ * If delegating is true then it will always delegate to ExtendedLoggerWrapper for is-enabled
+ * checks.
  */
 public class FastLogger extends ExtendedLoggerWrapper {
   private static final long serialVersionUID = 7084130827962463327L;

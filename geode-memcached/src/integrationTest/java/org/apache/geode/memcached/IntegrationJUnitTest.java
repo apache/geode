@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Properties;
@@ -33,6 +32,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.inet.LocalHostUtil;
 
 public class IntegrationJUnitTest {
 
@@ -46,7 +46,7 @@ public class IntegrationJUnitTest {
     Cache cache = cf.create();
 
     MemcachedClient client = new MemcachedClient(new ConnectionWithOneMinuteTimeoutFactory(),
-        Collections.singletonList(new InetSocketAddress(InetAddress.getLocalHost(), port)));
+        Collections.singletonList(new InetSocketAddress(LocalHostUtil.getLocalHost(), port)));
     Future<Boolean> f = client.add("key", 10, "myStringValue");
     assertTrue(f.get());
     Future<Boolean> f1 = client.add("key1", 10, "myStringValue1");

@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.tcpserver;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -22,6 +23,9 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -29,9 +33,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * accessed through the method {@link TcpSocketCreator#forAdvancedUse()}.
  */
 public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
-
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
-
+  private static Logger logger = LogService.getLogger();
   static {
     // customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections. It can be turned off by setting this
@@ -64,8 +67,17 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
 
   @Override
   public Socket connect(HostAndPort addr, int timeout,
+      ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory, int socketBufferSize,
+      boolean useSSL) throws IOException {
+    return connect(addr, timeout, optionalWatcher, allowClientSocketFactory, socketBufferSize,
+        useSSL, Socket::new);
+  }
+
+  @Override
+  public Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory,
-      int socketBufferSize, boolean useSSL) throws IOException {
+      int socketBufferSize, boolean useSSL, TcpSocketFactory socketFactory)
+      throws IOException {
     if (useSSL) {
       throw new IllegalArgumentException();
     }
@@ -74,7 +86,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       socket = createCustomClientSocket(addr);
     }
     if (socket == null) {
-      socket = new Socket();
+      socket = socketFactory.createSocket();
 
       // Optionally enable SO_KEEPALIVE in the OS network protocol.
       socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
@@ -87,13 +99,10 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       }
       InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
       try {
-        InetAddress serverAddress = inetSocketAddress.getAddress();
-        if (serverAddress == null) {
-          serverAddress = InetAddress.getByName(inetSocketAddress.getHostString());
-        }
-        socket.connect(
-            new InetSocketAddress(serverAddress, inetSocketAddress.getPort()),
-            Math.max(timeout, 0));
+        socket.connect(inetSocketAddress, Math.max(timeout, 0));
+      } catch (ConnectException connectException) {
+        logger.info("Failed to connect to " + inetSocketAddress);
+        throw connectException;
       } finally {
         if (optionalWatcher != null) {
           optionalWatcher.afterConnect(socket);

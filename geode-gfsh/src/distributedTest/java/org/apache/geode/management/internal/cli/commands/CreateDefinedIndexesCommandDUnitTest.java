@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.management.internal.cli.result.model.ResultModel.MEMBER_STATUS_SECTION;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -116,14 +117,16 @@ public class CreateDefinedIndexesCommandDUnitTest {
     String index2Name = "index_" + region2Name;
 
     gfsh.executeAndAssertThat("create region --name=" + region1Name + " --type=REPLICATE")
-        .statusIsSuccess().containsOutput("Region \"/" + region1Name + "\" created on \"server-1\"")
-        .containsOutput("Region \"/" + region1Name + "\" created on \"server-2\"")
-        .containsOutput("Region \"/" + region1Name + "\" created on \"server-3\"");
+        .statusIsSuccess()
+        .containsOutput("Region \"" + SEPARATOR + region1Name + "\" created on \"server-1\"")
+        .containsOutput("Region \"" + SEPARATOR + region1Name + "\" created on \"server-2\"")
+        .containsOutput("Region \"" + SEPARATOR + region1Name + "\" created on \"server-3\"");
 
     gfsh.executeAndAssertThat("create region --name=" + region2Name + " --type=REPLICATE")
-        .statusIsSuccess().containsOutput("Region \"/" + region2Name + "\" created on \"server-1\"")
-        .containsOutput("Region \"/" + region2Name + "\" created on \"server-2\"")
-        .containsOutput("Region \"/" + region2Name + "\" created on \"server-3\"");
+        .statusIsSuccess()
+        .containsOutput("Region \"" + SEPARATOR + region2Name + "\" created on \"server-1\"")
+        .containsOutput("Region \"" + SEPARATOR + region2Name + "\" created on \"server-2\"")
+        .containsOutput("Region \"" + SEPARATOR + region2Name + "\" created on \"server-3\"");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();

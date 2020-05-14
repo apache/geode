@@ -52,6 +52,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.UserAttributes;
+import org.apache.geode.cache.client.proxy.SniSocketFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -127,7 +128,7 @@ public class ClientCacheFactoryJUnitTest {
   }
 
   @Test
-  public void test001FindDefaultFromXML() throws Exception {
+  public void test001FindDefaultPoolFromXML() throws Exception {
     File cacheXmlFile = temporaryFolder.newFile("ClientCacheFactoryJUnitTest.xml");
     URL url = ClientCacheFactoryJUnitTest.class
         .getResource("ClientCacheFactoryJUnitTest_single_pool.xml");
@@ -149,6 +150,13 @@ public class ClientCacheFactoryJUnitTest {
         .isEqualTo(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT);
     assertThat(defPool.getServers()).isEqualTo(
         Collections.singletonList(new InetSocketAddress("localhost", CacheServer.DEFAULT_PORT)));
+
+    // verify that the SocketCreator settings were correctly picked up from the xml file
+    SocketFactory factory = defPool.getSocketFactory();
+    assertThat(factory).isInstanceOf(SniSocketFactory.class);
+    SniSocketFactory sniSocketFactory = (SniSocketFactory) factory;
+    assertThat(sniSocketFactory.getPort()).isEqualTo(40404);
+    assertThat(sniSocketFactory.getHostname()).isEqualTo("localhost");
   }
 
   /**

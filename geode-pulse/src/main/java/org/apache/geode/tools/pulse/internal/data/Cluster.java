@@ -17,6 +17,7 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,7 +55,8 @@ public class Cluster extends Thread {
   public static final int PAGE_ALERTS_MAX_SIZE = 100;
 
   private static final Logger logger = LogManager.getLogger();
-  private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
+  private Repository repository;
+  private ResourceBundle resourceBundle;
 
   private String jmxUserName;
   private String serverName;
@@ -2241,12 +2243,15 @@ public class Cluster extends Thread {
    * @param port port
    * @param userName pulse user name
    */
-  public Cluster(String host, String port, String userName) {
+  public Cluster(String host, String port, String userName, ResourceBundle resourceBundle,
+      Repository repository) {
     serverName = host;
     this.port = port;
     jmxUserName = userName;
+    this.resourceBundle = resourceBundle;
+    this.repository = repository;
 
-    updater = new JMXDataUpdater(serverName, port, this);
+    updater = new JMXDataUpdater(serverName, port, this, resourceBundle, repository);
     clusterHasBeenInitialized = new CountDownLatch(1);
     if (Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED)) {
       setDaemon(true);
@@ -2733,13 +2738,9 @@ public class Cluster extends Thread {
   public DataBrowser getDataBrowser() {
     // Initialize dataBrowser if null
     if (dataBrowser == null) {
-      dataBrowser = new DataBrowser();
+      dataBrowser = new DataBrowser(resourceBundle, repository);
     }
     return dataBrowser;
-  }
-
-  public void setDataBrowser(DataBrowser dataBrowser) {
-    this.dataBrowser = dataBrowser;
   }
 
   public ObjectNode executeQuery(String queryText, String members, int limit) {
@@ -2759,10 +2760,20 @@ public class Cluster extends Thread {
     return getDataBrowser().deleteQueryById(userId, queryId);
   }
 
-  public void connectToGemFire(String password) {
-    jmxConnector = updater.connect(getJmxUserName(), password);
+  public void reconnectToGemFire(Object credentials) {
+    if (jmxConnector != null) {
+      try {
+        jmxConnector.close();
+      } catch (IOException e) {
+        logger.info("Could not close old connection on reconnect attempt", e);
+      }
+      jmxConnector = updater.connect(credentials);
+    }
+  }
 
-    // if connected
+  public void connectToGemFire(Object credentials) {
+    jmxConnector = updater.connect(credentials);
+
     if (jmxConnector != null) {
       // Start Thread
       start();

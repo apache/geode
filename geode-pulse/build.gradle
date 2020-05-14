@@ -50,7 +50,6 @@ dependencies {
   // Needed to fully use log4j instead of commons-logging.
   implementation('org.apache.logging.log4j:log4j-jcl')
   implementation('org.apache.logging.log4j:log4j-api')
-//  implementation('org.apache.logging.log4j:log4j-core')
 
   implementation('commons-beanutils:commons-beanutils')
   implementation('commons-collections:commons-collections')
@@ -58,6 +57,9 @@ dependencies {
   implementation('org.apache.commons:commons-lang3')
   implementation('org.apache.commons:commons-text')
   implementation('org.springframework.ldap:spring-ldap-core')
+  implementation('org.springframework.security:spring-security-oauth2-core')
+  implementation('org.springframework.security:spring-security-oauth2-client')
+  implementation('org.springframework.security:spring-security-oauth2-jose')
 
   implementation('org.springframework.security:spring-security-config') {
     exclude module: 'aopalliance'
@@ -90,8 +92,7 @@ dependencies {
 
   runtimeOnly('org.springframework:spring-expression')
 
-  // added only to ensure common version with other geode modules
-  runtimeOnly('org.slf4j:slf4j-api')
+  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl')
 
   providedCompile('commons-logging:commons-logging')
 
@@ -126,9 +127,6 @@ dependencies {
   integrationTestImplementation('org.springframework:spring-webmvc')
   integrationTestImplementation('org.springframework.security:spring-security-test')
 
-  integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
-    exclude module: 'slf4j-api'
-  }
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.hamcrest:hamcrest-core')
   integrationTestImplementation('org.hamcrest:hamcrest-library')

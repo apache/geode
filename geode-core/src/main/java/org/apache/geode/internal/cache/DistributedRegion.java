@@ -15,6 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId;
+import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -353,7 +356,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         if (requiresOneHopForMissingEntry(event)) {
           // bug #45704: see if a one-hop must be done for this operation
           RegionEntry re = getRegionEntry(event.getKey());
-          if (re == null /* || re.isTombstone() */ || !generateVersionTag) {
+          if (re == null /* || re.isTombstone() */ || !generateVersionTag
+              || this.getDataPolicy() == DataPolicy.NORMAL
+              || this.getDataPolicy() == DataPolicy.PRELOADED) {
+            // Let NORMAL and PRELOAD to behave the same as EMPTY
             if (!event.isBulkOpInProgress() || getDataPolicy().withStorage()) {
               // putAll will send a single one-hop for empty regions. for other missing entries
               // we need to get a valid version number before modifying the local cache
@@ -1004,32 +1010,36 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     return new DistributedLock(key);
   }
 
-  @Override
-  public void preInitialize() {
-    Set<String> allGatewaySenderIds = getAllGatewaySenderIds();
-
-    if (!allGatewaySenderIds.isEmpty()) {
-      for (GatewaySender sender : cache.getAllGatewaySenders()) {
-        if (sender.isParallel() && allGatewaySenderIds.contains(sender.getId())) {
-          // Once decided to support REPLICATED regions with parallel
-          // gateway-sender/asynchronous-event-queue, ShadowPartitionedRegionForUserRR should be
-          // called and this validation should be removed.
-          if (sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
-            throw new AsyncEventQueueConfigurationException(
-                String.format(
-                    "Parallel Async Event Queue %s can not be used with replicated region %s",
-
-                    AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(sender.getId()),
-                    getFullPath()));
-          } else {
-            throw new GatewaySenderConfigurationException(
-                String.format(
-                    "Parallel gateway sender %s can not be used with replicated region %s",
-                    sender.getId(), getFullPath()));
-          }
+  /**
+   * Validates that the GatewaySender/AsyncEventQueue referenced by the {@param asyncDispatcherId}
+   * can be attached to this region; that is, verifies that the dispatcher is not configured as
+   * parallel.
+   *
+   * @param asyncDispatcherId Id of the AsynchronousEventDispatcher to validate.
+   */
+  void validateAsynchronousEventDispatcher(String asyncDispatcherId) {
+    for (GatewaySender sender : getCache().getAllGatewaySenders()) {
+      if (sender.isParallel() && sender.getId().equals(asyncDispatcherId)) {
+        // Once decided to support REPLICATED regions with parallel
+        // gateway-sender/asynchronous-event-queue, ShadowPartitionedRegionForUserRR should be
+        // called and this validation should be removed.
+        if (sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
+          throw new AsyncEventQueueConfigurationException(String.format(
+              "Parallel Async Event Queue %s can not be used with replicated region %s",
+              getAsyncEventQueueIdFromSenderId(sender.getId()), getFullPath()));
+        } else {
+          throw new GatewaySenderConfigurationException(
+              String.format("Parallel Gateway Sender %s can not be used with replicated region %s",
+                  sender.getId(), getFullPath()));
         }
       }
     }
+  }
+
+  @Override
+  public void preInitialize() {
+    Set<String> allGatewaySenderIds = getAllGatewaySenderIds();
+    allGatewaySenderIds.forEach(this::validateAsynchronousEventDispatcher);
   }
 
   /**
@@ -1675,7 +1685,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       if (requiresOneHopForMissingEntry(event)) {
         // bug #45704: see if a one-hop must be done for this operation
         RegionEntry re = getRegionEntry(event.getKey());
-        if (re == null /* || re.isTombstone() */ || !generateVersionTag) {
+        if (re == null /* || re.isTombstone() */ || !generateVersionTag
+            || this.getDataPolicy() == DataPolicy.NORMAL
+            || this.getDataPolicy() == DataPolicy.PRELOADED) {
           if (getServerProxy() == null) {
             // only assert for non-client regions.
             Assert.assertTrue(!getDataPolicy().withReplication() || !generateVersionTag);
@@ -2750,6 +2762,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   public void addGatewaySenderId(String gatewaySenderId) {
+    validateAsynchronousEventDispatcher(gatewaySenderId);
     super.addGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
     updateSenderIdMonitor();
@@ -2764,6 +2777,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   public void addAsyncEventQueueId(String asyncEventQueueId) {
+    validateAsynchronousEventDispatcher(getSenderIdFromAsyncEventQueueId(asyncEventQueueId));
     super.addAsyncEventQueueId(asyncEventQueueId);
     new UpdateAttributesProcessor(this).distribute();
     updateSenderIdMonitor();

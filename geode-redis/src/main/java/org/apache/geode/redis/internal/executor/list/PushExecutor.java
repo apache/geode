@@ -21,21 +21,15 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisDataType;
 
-public abstract class PushExecutor extends PushXExecutor implements Extendable {
+public abstract class PushExecutor extends PushXExecutor {
 
   private static final int START_VALUES_INDEX = 2;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
-      return;
-    }
 
     ByteArrayWrapper key = command.getKey();
 

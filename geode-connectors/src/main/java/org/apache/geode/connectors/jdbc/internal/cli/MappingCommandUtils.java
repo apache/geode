@@ -15,6 +15,9 @@
 
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
+
 import java.util.ArrayList;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -98,10 +101,10 @@ public class MappingCommandUtils {
   }
 
   public static String createAsyncEventQueueName(String regionPath) {
-    if (regionPath.startsWith("/")) {
+    if (regionPath.startsWith(SEPARATOR)) {
       regionPath = regionPath.substring(1);
     }
-    return "JDBC#" + regionPath.replace('/', '_');
+    return "JDBC#" + regionPath.replace(SEPARATOR_CHAR, '_');
   }
 
 }

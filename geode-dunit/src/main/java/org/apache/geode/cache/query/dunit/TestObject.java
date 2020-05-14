@@ -77,6 +77,9 @@ public class TestObject implements DataSerializable {
 
   @Override
   public boolean equals(Object o) {
+    if (!(o instanceof TestObject)) {
+      return false;
+    }
     TestObject other = (TestObject) o;
     if ((id == other.id) && (_ticker.equals(other._ticker))) {
       return true;

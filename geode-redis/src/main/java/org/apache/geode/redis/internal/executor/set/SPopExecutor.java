@@ -14,22 +14,15 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class SPopExecutor extends SetExecutor {
 
@@ -37,68 +30,22 @@ public class SPopExecutor extends SetExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int popCount = 1;
-
-    if (commandElems.size() < 2 || commandElems.size() > 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SPOP));
-      return;
-    }
-
     if (commandElems.size() == 3) {
-      try {
-        popCount = Integer.parseInt(new String(commandElems.get(2)));
-      } catch (NumberFormatException nex) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SPOP));
-        return;
-      }
+      popCount = Integer.parseInt(new String(commandElems.get(2)));
     }
 
     ByteArrayWrapper key = command.getKey();
-
-    List<ByteArrayWrapper> popped = new ArrayList<>();
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
-
-      Set<ByteArrayWrapper> set = region.get(key);
-
-      if (set == null || set.isEmpty()) {
-        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-        return;
-      }
-
-      Random rand = new Random();
-
-      Set<Integer> randomIndexes = new HashSet<>();
-      while (randomIndexes.size() < popCount) {
-        randomIndexes.add(rand.nextInt(set.size()));
-      }
-
-      int counter = 0;
-      for (ByteArrayWrapper entry : set) {
-        if (randomIndexes.contains(counter)) {
-          popped.add(entry);
-        }
-        counter++;
-      }
-
-      set.removeAll(popped);
-
-      // save the updated set
-      region.put(key, set);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
+    if (popped.isEmpty()) {
+      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;
     }
-
     try {
       if (popCount == 1) {
-        command
-            .setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), popped.get(0)));
+        command.setResponse(
+            Coder.getBulkStringResponse(context.getByteBufAllocator(), popped.iterator().next()));
       } else {
         command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), popped));
       }
@@ -107,5 +54,4 @@ public class SPopExecutor extends SetExecutor {
           RedisConstants.SERVER_ERROR_MESSAGE));
     }
   }
-
 }

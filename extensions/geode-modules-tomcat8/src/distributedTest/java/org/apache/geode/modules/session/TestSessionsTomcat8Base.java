@@ -27,13 +27,14 @@ import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 import org.apache.catalina.core.StandardWrapper;
+import org.apache.logging.log4j.Logger;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.modules.session.catalina.DeltaSessionManager;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
@@ -44,26 +45,26 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
+  protected Logger logger = LogService.getLogger();
 
-  VM vm0;
   int port;
   EmbeddedTomcat8 server;
   StandardWrapper servlet;
   Region<String, HttpSession> region;
   DeltaSessionManager sessionManager;
 
-  /**
-   * Check that the basics are working
-   */
-  @Test
-  public void testSanity() throws Exception {
+  public void basicConnectivityCheck() throws Exception {
     WebConversation wc = new WebConversation();
+    assertThat(wc).describedAs("WebConversation was").isNotNull();
+    logger.debug("Sending request to http://localhost:{}/test", port);
     WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
+    assertThat(req).describedAs("WebRequest was").isNotNull();
     req.setParameter("cmd", QueryCommand.GET.name());
     req.setParameter("param", "null");
-
     WebResponse response = wc.getResponse(req);
-    assertThat(response.getNewCookieNames()[0]).isEqualTo("JSESSIONID");
+    assertThat(response).describedAs("WebResponse was").isNotNull();
+    assertThat(response.getNewCookieNames()[0]).describedAs("SessionID was")
+        .isEqualTo("JSESSIONID");
   }
 
   /**
@@ -356,7 +357,7 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
     assertThat(region.get(sessionId).getAttribute(key)).isEqualTo("999");
   }
 
-  /*
+  /**
    * Test for issue #38 CommitSessionValve throws exception on invalidated sessions
    */
   @Test
@@ -399,7 +400,7 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
 
     WebResponse response = wc.getResponse(req);
     assertThat(response.getText()).isEqualTo("done");
-    assertThat(region.size()).as("The region should be empty").isEqualTo(0);
+    assertThat(region.size()).as("The region should contain one entry").isEqualTo(1);
   }
 
   /**

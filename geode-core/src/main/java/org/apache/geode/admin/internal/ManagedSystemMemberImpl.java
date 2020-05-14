@@ -94,23 +94,16 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
 
   @Override
   public int setState(int state) {
-    if (this.stateChange == null) {
-      // The initial state is set in the constructor before
-      // stateChange is initialized.
+
+    synchronized (this.stateChange) {
       int oldState = this.state;
       this.state = state;
+
+      this.stateChange.notifyAll();
+
       return oldState;
-
-    } else {
-      synchronized (this.stateChange) {
-        int oldState = this.state;
-        this.state = state;
-
-        this.stateChange.notifyAll();
-
-        return oldState;
-      }
     }
+
   }
 
   /**

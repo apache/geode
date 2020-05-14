@@ -27,6 +27,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.InternalClientCache;
+import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
@@ -35,6 +36,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.net.SSLParameterExtension;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -321,6 +323,25 @@ public class ClientCacheFactory {
   }
 
   /**
+   * Sets the server connection timeout for this pool. If the pool has a max connections setting,
+   * operations will block if there is no free connections toward designated server. The server
+   * connection timeout
+   * specifies how long those operations will block waiting for a connection toward server before
+   * receiving an {@link AllConnectionsInUseException}. If max connections is not set this setting
+   * has no effect.
+   *
+   * @param connectionTimeout the connection timeout in milliseconds
+   * @return a reference to <code>this</code>
+   * @throws IllegalArgumentException if <code>connectionTimeout</code> is less than
+   *         <code>0</code>.
+   * @see #setPoolMaxConnections(int)
+   */
+  public ClientCacheFactory setPoolServerConnectionTimeout(int connectionTimeout) {
+    getPoolFactory().setServerConnectionTimeout(connectionTimeout);
+    return this;
+  }
+
+  /**
    * Sets the load conditioning interval for this pool. This interval controls how frequently the
    * pool will check to see if a connection to a given server should be moved to a different server
    * to improve the load balance.
@@ -413,6 +434,7 @@ public class ClientCacheFactory {
    * @throws IllegalArgumentException if <code>maxConnections</code> is less than
    *         <code>minConnections</code>.
    * @see #setPoolFreeConnectionTimeout(int)
+   * @see #setPoolServerConnectionTimeout(int)
    */
   public ClientCacheFactory setPoolMaxConnections(int maxConnections) {
     getPoolFactory().setMaxConnections(maxConnections);
@@ -591,6 +613,30 @@ public class ClientCacheFactory {
    */
   public ClientCacheFactory setPoolSubscriptionMessageTrackingTimeout(int messageTrackingTimeout) {
     getPoolFactory().setSubscriptionMessageTrackingTimeout(messageTrackingTimeout);
+    return this;
+  }
+
+  /**
+   * Set the socket factory used by this pool to create connections to both locators (if
+   * configured using {@link #addPoolLocator(String, int)} (String, int)}) and servers.
+   *
+   * Sockets returned by this factory will have the rest of the configuration options
+   * specified on this pool and on the {@link ClientCache} applied to them. In particular,
+   * sockets returned by this factory will be wrapped with SSLSockets if ssl is enabled
+   * for this client cache.
+   *
+   * This factory can be used for configuring a proxy, or overriding various socket settings.
+   * For modifying SSL settings, see {@link SSLParameterExtension}
+   *
+   * See {@link ProxySocketFactories}
+   *
+   * @param socketFactory The {@link SocketFactory} to use
+   * @return a reference to <code> this </code>
+   * @see PoolFactory#setSocketFactory(SocketFactory)
+   * @since Geode 1.13
+   */
+  public ClientCacheFactory setPoolSocketFactory(SocketFactory socketFactory) {
+    getPoolFactory().setSocketFactory(socketFactory);
     return this;
   }
 

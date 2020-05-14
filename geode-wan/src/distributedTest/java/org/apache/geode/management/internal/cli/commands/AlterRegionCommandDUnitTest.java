@@ -14,7 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.lang.Identifiable.find;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -24,10 +26,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
+import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
+import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -75,7 +81,7 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + regionName)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Associate the async-event-queue
     gfsh.executeAndAssertThat(
@@ -99,7 +105,7 @@ public class AlterRegionCommandDUnitTest {
 
   @Test
   public void alterNonColocatedPartitionRegionWithTheSameParallelAsynchronousEventQueueShouldThrowExceptionAndPreventTheClusterConfigurationServiceFromBeingUpdated() {
-    IgnoredException.addIgnoredException(
+    addIgnoredException(
         "Non colocated regions (.*) cannot have the same parallel async event queue id (.*) configured.");
 
     String asyncEventQueue = "asyncEventQueue";
@@ -114,11 +120,11 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region1Name)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + region1Name, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region1Name, 1);
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region2Name)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + region2Name, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region2Name, 1);
 
     // Associate the async-event-queue to both regions (second one should fail because they are not
     // co-located)
@@ -155,7 +161,7 @@ public class AlterRegionCommandDUnitTest {
 
   @Test
   public void alterPartitionPersistentRegionWithParallelNonPersistentAsynchronousEventQueueShouldThrowExceptionAndPreventTheClusterConfigurationServiceFromBeingUpdated() {
-    IgnoredException.addIgnoredException(
+    addIgnoredException(
         "Non persistent asynchronous event queue (.*) can not be attached to persistent region (.*)");
     String regionName = testName.getMethodName();
     String asyncEventQueueName = "asyncEventQueue";
@@ -168,7 +174,7 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION_PERSISTENT --name=" + regionName
         + " --disk-store=diskStore").statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Make sure that the next invocations also fail and that the changes are not persisted to the
     // cluster configuration service. See GEODE-6551.
@@ -205,7 +211,7 @@ public class AlterRegionCommandDUnitTest {
 
   @Test
   public void alterPartitionRegionWithParallelGatewaySenderShouldPersistTheChangesIntoTheClusterConfigurationService() {
-    IgnoredException.addIgnoredException("could not get remote locator information");
+    addIgnoredException("could not get remote locator information");
     String regionName = testName.getMethodName();
     String gatewaySenderName = "gatewaySender";
 
@@ -217,7 +223,7 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + regionName)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Associate the gateway-sender
     gfsh.executeAndAssertThat(
@@ -241,8 +247,8 @@ public class AlterRegionCommandDUnitTest {
 
   @Test
   public void alterNonColocatedPartitionRegionWithTheSameParallelGatewaySenderShouldThrowExceptionAndPreventTheClusterConfigurationServiceFromBeingUpdated() {
-    IgnoredException.addIgnoredException("could not get remote locator information");
-    IgnoredException.addIgnoredException(
+    addIgnoredException("could not get remote locator information");
+    addIgnoredException(
         "Non colocated regions (.*) cannot have the same parallel gateway sender id (.*) configured.");
 
     String gatewaySenderName = "gatewaySender";
@@ -257,11 +263,11 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region1Name)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + region1Name, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region1Name, 1);
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region2Name)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + region2Name, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region2Name, 1);
 
     // Associate the gateway-sender to both regions (second one should fail because they are not
     // co-located)
@@ -298,8 +304,8 @@ public class AlterRegionCommandDUnitTest {
 
   @Test
   public void alterPartitionPersistentRegionWithParallelNonPersistentGatewaySenderShouldThrowExceptionAndPreventTheClusterConfigurationServiceFromBeingUpdated() {
-    IgnoredException.addIgnoredException("could not get remote locator information");
-    IgnoredException.addIgnoredException(
+    addIgnoredException("could not get remote locator information");
+    addIgnoredException(
         "Non persistent gateway sender (.*) can not be attached to persistent region (.*)");
     String regionName = testName.getMethodName();
     String gatewaySenderName = "gatewaySender";
@@ -312,7 +318,7 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create region --type=PARTITION_PERSISTENT --name=" + regionName
         + " --disk-store=diskStore").statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
 
     // Make sure that the next invocations also fail and that the changes are not persisted to the
     // cluster configuration service. See GEODE-6551.
@@ -341,6 +347,94 @@ public class AlterRegionCommandDUnitTest {
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
       assertThat(regionConfig.getRegionAttributes().getGatewaySenderIds()).isBlank();
+    });
+  }
+
+  @Test
+  public void alterReplicateRegionWithParallelGatewaySenderShouldFailAndDoNotPersistChangesIntoTheClusterConfigurationService() {
+    addIgnoredException(GatewaySenderConfigurationException.class);
+    addIgnoredException("could not get remote locator information");
+    String regionName = testName.getMethodName();
+    String gatewaySenderId = testName.getMethodName() + "_parallelGatewaySender";
+
+    CommandStringBuilder createSenderBuilder = new CommandStringBuilder("create gateway-sender")
+        .addOption("id", gatewaySenderId)
+        .addOption("parallel", "true")
+        .addOption("enable-persistence", "false")
+        .addOption("remote-distributed-system-id", "2");
+    gfsh.executeAndAssertThat(createSenderBuilder.getCommandString())
+        .statusIsSuccess().doesNotContainOutput("Did not complete waiting");
+
+    CommandStringBuilder createRegionBuilder = new CommandStringBuilder("create region")
+        .addOption("name", regionName)
+        .addOption("type", RegionShortcut.REPLICATE.toString());
+    gfsh.executeAndAssertThat(createRegionBuilder.getCommandString()).statusIsSuccess();
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
+
+    // Associate the gateway-sender
+    CommandStringBuilder alterRegionBuilder = new CommandStringBuilder("alter region")
+        .addOption("name", regionName)
+        .addOption("gateway-sender-id", gatewaySenderId);
+    gfsh.executeAndAssertThat(alterRegionBuilder.getCommandString())
+        .statusIsError()
+        .containsOutput("server-1", "Parallel Gateway Sender " + gatewaySenderId
+            + " can not be used with replicated region " + SEPARATOR + regionName);
+
+    // Check the cluster configuration service.
+    locator.invoke(() -> {
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
+      assertThat(internalLocator).isNotNull();
+      CacheConfig config =
+          internalLocator.getConfigurationPersistenceService().getCacheConfig("cluster");
+
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
+      assertThat(regionConfig).isNotNull();
+      assertThat(regionConfig.getRegionAttributes()).isNotNull();
+      assertThat(regionConfig.getRegionAttributes().getGatewaySenderIds()).isNull();
+    });
+  }
+
+  @Test
+  public void alterReplicateRegionWithParallelAsynchronousEventQueueShouldFailAndDoNotPersistChangesIntoTheClusterConfigurationService() {
+    addIgnoredException(AsyncEventQueueConfigurationException.class);
+    String regionName = testName.getMethodName();
+    String asyncEventQueueName = testName.getMethodName() + "_asyncEventQueue";
+
+    CommandStringBuilder createAsyncQueueBuilder =
+        new CommandStringBuilder("create async-event-queue")
+            .addOption("id", asyncEventQueueName)
+            .addOption("parallel", "true")
+            .addOption("persistent", "false")
+            .addOption("listener", MyAsyncEventListener.class.getCanonicalName());
+    gfsh.executeAndAssertThat(createAsyncQueueBuilder.getCommandString()).statusIsSuccess();
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(asyncEventQueueName, 1);
+
+    CommandStringBuilder createRegionBuilder = new CommandStringBuilder("create region")
+        .addOption("name", regionName)
+        .addOption("type", RegionShortcut.REPLICATE.toString());
+    gfsh.executeAndAssertThat(createRegionBuilder.getCommandString()).statusIsSuccess();
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
+
+    // Associate the async-event-queue
+    CommandStringBuilder alterRegionBuilder = new CommandStringBuilder("alter region")
+        .addOption("name", regionName)
+        .addOption("async-event-queue-id", asyncEventQueueName);
+    gfsh.executeAndAssertThat(alterRegionBuilder.getCommandString())
+        .statusIsError()
+        .containsOutput("server-1", "Parallel Async Event Queue " + asyncEventQueueName
+            + " can not be used with replicated region " + SEPARATOR + regionName);
+
+    // Check the cluster configuration service.
+    locator.invoke(() -> {
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
+      assertThat(internalLocator).isNotNull();
+      CacheConfig config =
+          internalLocator.getConfigurationPersistenceService().getCacheConfig("cluster");
+
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
+      assertThat(regionConfig).isNotNull();
+      assertThat(regionConfig.getRegionAttributes()).isNotNull();
+      assertThat(regionConfig.getRegionAttributes().getAsyncEventQueueIds()).isNull();
     });
   }
 }

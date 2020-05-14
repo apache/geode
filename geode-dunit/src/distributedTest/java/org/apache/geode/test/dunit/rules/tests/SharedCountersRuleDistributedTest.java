@@ -46,7 +46,7 @@ import org.apache.geode.test.dunit.rules.SharedCountersRule;
 @SuppressWarnings("serial")
 public class SharedCountersRuleDistributedTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
   private static final String ID = "ID";
 
   private static ExecutorService executor;

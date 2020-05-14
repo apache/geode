@@ -73,3 +73,20 @@ This produces a browsable description of the cluster management service API:
 
 The cluster management service is available to Java clients via a Java API. To enable the cluster management service Java API, include `geode-management.jar` in your client classpath.
 See the [Cluster Management Service Java Client topic on the Geode Wiki](https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service#ClusterManagementService-JavaClient) for more details.
+
+## <a id='cms-security'>Authentication and Authorization</a>
+
+The cluster management service REST API is secured by the <code class="ph codeph">security-manager</code> of your cluster. If a security-manager is specified, you must provide authorization in order to invoke the REST api.
+
+By default, the security manager accepts authorization for REST API access in the form of a username/password pair:
+
+```
+curl --user username:password http://example.com/management/regions
+```
+
+When <code class="ph codeph">security-auth-token-enabled-components</code> is set to "all" or "management", 
+you must provide REST API authorization in the form of a valid bearer token (instead of username/password):
+
+```
+curl -H "Authorization: Bearer YWhhbWlsdG9uQGFwaWdlZS5jb206bXlwYXNzdzByZAo" http://example.com/management/regions
+```

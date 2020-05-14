@@ -28,9 +28,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,11 +58,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
-import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -335,27 +328,4 @@ public class GMSMembershipJUnitTest {
     assertThat(spy.getStartupEvents()).isEmpty();
   }
 
-  public static class TestMessage extends AbstractGMSMessage {
-
-    @Override
-    public int getDSFID() {
-      return HIGH_PRIORITY_ACKED_MESSAGE;
-    }
-
-    @Override
-    public void toData(DataOutput out, SerializationContext context) throws IOException {
-
-    }
-
-    @Override
-    public void fromData(DataInput in, DeserializationContext context)
-        throws IOException, ClassNotFoundException {
-
-    }
-
-    @Override
-    public Version[] getSerializationVersions() {
-      return null;
-    }
-  }
 }

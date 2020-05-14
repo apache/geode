@@ -418,18 +418,28 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     public int hashCode() {
       final String thisHost = this.gp.getHost();
       final int thisPort = this.gp.getPort();
-      return thisHost != null ? (thisHost.hashCode() ^ thisPort) : thisPort;
+      final String thisMemberId = this.getMemberId().getUniqueId();
+      final int thisMemberIdHashCode = (thisMemberId != null) ? thisMemberId.hashCode() : 0;
+      return thisHost != null ? (thisHost.hashCode() ^ thisPort) + thisMemberIdHashCode
+          : thisPort + thisMemberIdHashCode;
     }
 
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof GridProfileId) {
         final GridProfileId other = (GridProfileId) obj;
+
         if (this.gp.getPort() == other.gp.getPort()) {
           final String thisHost = this.gp.getHost();
           final String otherHost = other.gp.getHost();
           if (thisHost != null) {
-            return thisHost.equals(otherHost);
+            if (thisHost.equals(otherHost)) {
+              if (this.getMemberId() != null) {
+                return this.getMemberId().getUniqueId().equals(other.getMemberId().getUniqueId());
+              } else {
+                return other.getMemberId() == null;
+              }
+            }
           } else {
             return (otherHost == null);
           }

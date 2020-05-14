@@ -203,6 +203,7 @@ import org.apache.geode.internal.cache.DistTXPrecommitMessage.DistTxPrecommitRes
 import org.apache.geode.internal.cache.DistTXRollbackMessage;
 import org.apache.geode.internal.cache.DistributedClearOperation.ClearRegionMessage;
 import org.apache.geode.internal.cache.DistributedClearOperation.ClearRegionWithContextMessage;
+import org.apache.geode.internal.cache.DistributedPingMessage;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllMessage;
 import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage;
@@ -268,8 +269,10 @@ import org.apache.geode.internal.cache.backup.FlushToDiskRequest;
 import org.apache.geode.internal.cache.backup.FlushToDiskResponse;
 import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
 import org.apache.geode.internal.cache.compression.SnappyCompressedCachedDeserializable;
+import org.apache.geode.internal.cache.control.RegionRedundancyStatusImpl;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceProfileMessage;
+import org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
 import org.apache.geode.internal.cache.ha.QueueRemovalMessage;
 import org.apache.geode.internal.cache.locks.TXLockBatch;
@@ -455,6 +458,8 @@ public class DSFIDFactory implements DataSerializableFixedID {
   }
 
   private void registerDSFIDTypes(DSFIDSerializer serializer) {
+    serializer.registerDSFID(REGION_REDUNDANCY_STATUS, RegionRedundancyStatusImpl.class);
+    serializer.registerDSFID(RESTORE_REDUNDANCY_RESULTS, RestoreRedundancyResultsImpl.class);
     serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
     serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
     serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
@@ -982,6 +987,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(PR_CLEAR_MESSAGE, ClearPRMessage.class);
     serializer.registerDSFID(PR_CLEAR_REPLY_MESSAGE, ClearPRMessage.ClearReplyMessage.class);
     serializer.registerDSFID(HOST_AND_PORT, HostAndPort.class);
+    serializer.registerDSFID(DISTRIBUTED_PING_MESSAGE, DistributedPingMessage.class);
   }
 
   /**

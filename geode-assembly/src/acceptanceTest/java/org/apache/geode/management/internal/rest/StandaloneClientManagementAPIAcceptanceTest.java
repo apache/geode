@@ -87,7 +87,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
   @After
   public void tearDown() throws Exception {
-    clientProcessLogger.awaitTermination(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS);
+    clientProcessLogger.awaitTermination(GeodeAwaitility.getTimeout().toMillis(), MILLISECONDS);
     clientProcessLogger.close();
   }
 

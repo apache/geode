@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.execute.FunctionContext;
@@ -88,7 +90,7 @@ public class LuceneDestroyIndexFunction implements InternalFunction {
   }
 
   protected XmlEntity getXmlEntity(String indexName, String regionPath) {
-    String regionName = StringUtils.stripStart(regionPath, "/");
+    String regionName = StringUtils.stripStart(regionPath, SEPARATOR);
     return new XmlEntity(CacheXml.REGION, "name", regionName, LuceneXmlConstants.PREFIX,
         LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, "name", indexName);
   }

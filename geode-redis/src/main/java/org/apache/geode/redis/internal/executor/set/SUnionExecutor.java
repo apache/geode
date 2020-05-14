@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class SUnionExecutor extends SetOpExecutor {
 
@@ -37,10 +36,4 @@ public class SUnionExecutor extends SetOpExecutor {
     }
     return addSet;
   }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.SUNION;
-  }
-
 }

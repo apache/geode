@@ -14,14 +14,20 @@
  */
 package org.apache.geode.redis;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -44,7 +50,7 @@ public class RedisDistDUnitTest implements Serializable {
 
   private static String LOCALHOST = "localhost";
 
-  public static final String TEST_KEY = "key";
+  public static final String KEY = "key";
   private static VM client1;
   private static VM client2;
 
@@ -52,7 +58,7 @@ public class RedisDistDUnitTest implements Serializable {
   private static int server2Port;
 
   private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().getValueInMS());
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private abstract static class ClientTestBase extends SerializableRunnable {
     int port;
@@ -73,6 +79,7 @@ public class RedisDistDUnitTest implements Serializable {
     Properties redisProps = new Properties();
     redisProps.setProperty("redis-bind-address", LOCALHOST);
     redisProps.setProperty("redis-port", Integer.toString(ports[0]));
+    redisProps.setProperty("log-level", "warn");
     cluster.startServerVM(1, redisProps, locator.getPort());
 
     redisProps.setProperty("redis-port", Integer.toString(ports[1]));
@@ -82,7 +89,62 @@ public class RedisDistDUnitTest implements Serializable {
     client2 = cluster.getVM(4);
   }
 
+  class ConcurrentSADDOperation extends ClientTestBase {
+
+    private final Collection<String> strings;
+    private final String key;
+
+    protected ConcurrentSADDOperation(int port, String key, Collection<String> strings) {
+      super(port);
+      this.strings = strings;
+      this.key = key;
+    }
+
+    @Override
+    public void run() {
+      Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
+      for (String member : strings) {
+        jedis.sadd(key, member);
+      }
+    }
+  }
+
   @Test
+  public void testConcurrentSaddOperations_runWithoutException_orDataLoss()
+      throws InterruptedException {
+    List<String> set1 = new ArrayList<>();
+    List<String> set2 = new ArrayList<>();
+    int setSize = populateSetValueArrays(set1, set2);
+
+    final String setName = "keyset";
+
+    AsyncInvocation<Void> remoteSaddInvocation =
+        client1.invokeAsync(new ConcurrentSADDOperation(server1Port, setName, set1));
+
+    client2.invoke(new ConcurrentSADDOperation(server2Port, setName, set2));
+
+    remoteSaddInvocation.await();
+
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+
+    Set<String> smembers = jedis.smembers(setName);
+
+    assertThat(smembers).hasSize(setSize * 2);
+    assertThat(smembers).contains(set1.toArray(new String[] {}));
+    assertThat(smembers).contains(set2.toArray(new String[] {}));
+  }
+
+  private int populateSetValueArrays(List<String> set1, List<String> set2) {
+    int setSize = 5000;
+    for (int i = 0; i < setSize; i++) {
+      set1.add("SETA-" + i);
+      set2.add("SETB-" + i);
+    }
+    return setSize;
+  }
+
+  @Test
+  @Ignore("GEODE-7905")
   public void testConcListOps() throws Exception {
     final Jedis jedis1 = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
     final Jedis jedis2 = new Jedis(LOCALHOST, server2Port, JEDIS_TIMEOUT);
@@ -99,9 +161,9 @@ public class RedisDistDUnitTest implements Serializable {
         Random r = new Random();
         for (int i = 0; i < pushes; i++) {
           if (r.nextBoolean()) {
-            jedis.lpush(TEST_KEY, randString());
+            jedis.lpush(KEY, randString());
           } else {
-            jedis.rpush(TEST_KEY, randString());
+            jedis.rpush(KEY, randString());
           }
         }
       }
@@ -111,21 +173,23 @@ public class RedisDistDUnitTest implements Serializable {
     client2.invoke(new ConcListOps(server2Port));
     i.await();
     long expected = 2 * pushes;
-    long result1 = jedis1.llen(TEST_KEY);
-    long result2 = jedis2.llen(TEST_KEY);
+    long result1 = jedis1.llen(KEY);
+    long result2 = jedis2.llen(KEY);
     assertEquals(expected, result1);
     assertEquals(result1, result2);
   }
 
   @Test
+  @Ignore("GEODE-7905")
   public void testConcCreateDestroy() throws Exception {
+
     IgnoredException.addIgnoredException("RegionDestroyedException");
     IgnoredException.addIgnoredException("IndexInvalidException");
     final int ops = 40;
-    final String hKey = TEST_KEY + "hash";
-    final String lKey = TEST_KEY + "list";
-    final String zKey = TEST_KEY + "zset";
-    final String sKey = TEST_KEY + "set";
+    final String hKey = KEY + "hash";
+    final String lKey = KEY + "list";
+    final String zKey = KEY + "zset";
+    final String sKey = KEY + "set";
 
     class ConcCreateDestroy extends ClientTestBase {
       protected ConcCreateDestroy(int port) {
@@ -133,7 +197,7 @@ public class RedisDistDUnitTest implements Serializable {
       }
 
       @Override
-      public void run() {
+      public void run() throws InterruptedException {
         Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
@@ -177,13 +241,14 @@ public class RedisDistDUnitTest implements Serializable {
    * Just make sure there are no unexpected server crashes
    */
   @Test
+  @Ignore("GEODE-7905")
   public void testConcOps() throws Exception {
 
     final int ops = 100;
-    final String hKey = TEST_KEY + "hash";
-    final String lKey = TEST_KEY + "list";
-    final String zKey = TEST_KEY + "zset";
-    final String sKey = TEST_KEY + "set";
+    final String hKey = KEY + "hash";
+    final String lKey = KEY + "list";
+    final String zKey = KEY + "zset";
+    final String sKey = KEY + "set";
 
     class ConcOps extends ClientTestBase {
 

@@ -18,8 +18,10 @@ import static org.apache.geode.security.SecurableCommunicationChannels.LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.GeneralSecurityException;
@@ -77,6 +79,25 @@ public class TCPClientSSLIntegrationTest {
     SocketCreatorFactory.close();
   }
 
+  private void startServerWithCertificate()
+      throws GeneralSecurityException, IOException {
+
+    CertificateMaterial serverCertificate = new CertificateBuilder()
+        .commonName("tcp-server")
+        .issuedBy(ca)
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .generate();
+
+    CertStores serverStore = CertStores.locatorStore();
+    serverStore.withCertificate("server", serverCertificate);
+    serverStore.trust("ca", ca);
+
+    Properties serverProperties = serverStore
+        .propertiesWith(LOCATOR, true, true);
+
+    startTcpServer(serverProperties);
+  }
+
   private void startServerAndClient(CertificateMaterial serverCertificate,
       CertificateMaterial clientCertificate, boolean enableHostNameValidation)
       throws GeneralSecurityException, IOException {
@@ -101,7 +122,8 @@ public class TCPClientSSLIntegrationTest {
         SSLConfigurationFactory.getSSLConfigForComponent(clientProperties,
             SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        TcpSocketFactory.DEFAULT);
   }
 
   private void startTcpServer(Properties sslProperties) throws IOException {
@@ -215,4 +237,32 @@ public class TCPClientSSLIntegrationTest {
             + localhost.getHostName() + " found.");
   }
 
+  @Test
+  public void clientFailsToConnectIfRemotePeerShutdowns() throws Exception, SSLHandshakeException {
+
+    startServerWithCertificate();
+
+    SocketCreator socketCreator = Mockito.mock(SocketCreator.class);
+    ClusterSocketCreator ssc = Mockito.mock(ClusterSocketCreator.class);
+
+    Exception eofexc = new EOFException("SSL peer shut down incorrectly");
+    Exception sslexc = new SSLHandshakeException("Remote host terminated the handshake");
+    sslexc.initCause(eofexc);
+
+    when(socketCreator.forCluster())
+        .thenReturn(ssc);
+    when(ssc.connect(any(), anyInt(), any(), any()))
+        .thenThrow(sslexc);
+
+    client = new TcpClient(socketCreator,
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        TcpSocketFactory.DEFAULT);
+
+    assertThatExceptionOfType(IOException.class)
+        .isThrownBy(() -> client.requestToServer(new HostAndPort(localhost.getHostName(), port),
+            Boolean.valueOf(false), 5 * 1000))
+        .withCauseInstanceOf(SSLHandshakeException.class)
+        .withStackTraceContaining("Remote host terminated the handshake");
+  }
 }

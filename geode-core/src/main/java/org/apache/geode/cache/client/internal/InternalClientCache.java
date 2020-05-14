@@ -48,4 +48,6 @@ public interface InternalClientCache extends ClientCache {
   CachePerfStats getCachePerfStats();
 
   MeterRegistry getMeterRegistry();
+
+  ClientMetadataService getClientMetadataService();
 }

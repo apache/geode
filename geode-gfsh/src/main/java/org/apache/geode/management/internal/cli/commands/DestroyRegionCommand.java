@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.lang.Identifiable.find;
 
 import java.util.HashSet;
@@ -101,7 +102,7 @@ public class DestroyRegionCommand extends GfshCommand {
 
   void checkForJDBCMapping(String regionPath) {
     String regionName = regionPath;
-    if (regionPath.startsWith("/")) {
+    if (regionPath.startsWith(SEPARATOR)) {
       regionName = regionPath.substring(1);
     }
     InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();

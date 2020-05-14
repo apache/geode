@@ -1343,6 +1343,9 @@ function ajaxPost(pulseUrl, pulseData, pulseCallBackName) {
       console.log("The following error occurred: " + textStatus, errorThrown);
       $('#connectionStatusDiv').show();
       $('#connectionErrorMsgDiv').html("Pulse server is not connected");
+      if(errorThrown === "Unauthorized") {
+        window.location.replace("/pulse/clusterLogout");
+      }
     },
     // callback handler that will be called on completion
     // which means, either on success or error

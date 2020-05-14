@@ -32,7 +32,7 @@ public interface IClusterUpdater {
 
   ObjectNode executeQuery(String queryText, String members, int limit);
 
-  default JMXConnector connect(String username, String password) {
+  default JMXConnector connect(Object credentials) {
     return null;
   }
 }

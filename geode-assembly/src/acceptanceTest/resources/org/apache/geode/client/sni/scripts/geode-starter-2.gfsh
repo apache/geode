@@ -1,0 +1,23 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+start locator --name=locator-maeve --hostname-for-clients=locator-maeve --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-maeve-keystore.jks
+start server --name=server-dolores --group=group-dolores --hostname-for-clients=server-dolores --locators=localhost[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-dolores-keystore.jks
+start server --name=server-clementine --group=group-clementine --hostname-for-clients=server-clementine --server-port=40405 --locators=localhost[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-clementine-keystore.jks
+connect --locator=localhost[10334] --use-ssl=true --security-properties-file=/geode/config/gfsecurity.properties
+create region --name=region-dolores --group=group-dolores --type=REPLICATE
+create region --name=region-clementine --group=group-clementine --type=REPLICATE

@@ -15,8 +15,10 @@
 
 package org.apache.geode.cache.client;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
@@ -72,6 +74,14 @@ public interface PoolFactory {
    * Current value: <code>10000</code>.
    */
   int DEFAULT_FREE_CONNECTION_TIMEOUT = 10000;
+
+  /**
+   * The default amount of time, in milliseconds, which we will wait for a server connection if max
+   * connections is set and there is no free connections towards designated server.
+   * <p>
+   * Current value: <code>0</code>.
+   */
+  int DEFAULT_SERVER_CONNECTION_TIMEOUT = 0;
 
   /**
    * The default interval in which the pool will check to see if a connection to a given server
@@ -212,6 +222,14 @@ public interface PoolFactory {
   boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
 
   /**
+   * The default value for the socket factory
+   *
+   * Current value {@link SocketFactory#DEFAULT}
+   */
+  @Immutable
+  SocketFactory DEFAULT_SOCKET_FACTORY = SocketFactory.DEFAULT;
+
+  /**
    * Sets the socket connect timeout for this pool. The number of milli seconds specified as socket
    * timeout when the client connects to the servers/locators. A timeout of zero is interpreted as
    * an infinite timeout. The connection will then block until established or an error occurs.
@@ -237,6 +255,25 @@ public interface PoolFactory {
    *         <code>0</code>.
    */
   PoolFactory setFreeConnectionTimeout(int connectionTimeout);
+
+
+  /**
+   * Sets the server connection timeout for this pool. If the pool has a max connections setting,
+   * operations will block if there is no free connection towards specific server. The server
+   * connection timeout specifies how long those operations will block waiting for a free connection
+   * towards specific server before receiving an {@link AllConnectionsInUseException}.
+   * If max connections is not set this setting has no effect.
+   * It differs from "setFreeConnectionTimeout" which sets wait time for any server connection in
+   * the pool,
+   * where this sets wait time for a free connection to a specific server.
+   *
+   * @see #setMaxConnections(int)
+   * @param serverConnectionTimeout the connection timeout in milliseconds
+   * @return a reference to <code>this</code>
+   * @throws IllegalArgumentException if <code>serverConnectionTimeout</code> is less than
+   *         <code>0</code>.
+   */
+  PoolFactory setServerConnectionTimeout(int serverConnectionTimeout);
 
   /**
    * Sets the load conditioning interval for this pool. This interval controls how frequently the
@@ -528,5 +565,18 @@ public interface PoolFactory {
    * @since GemFire 6.5
    */
   PoolFactory setMultiuserAuthentication(boolean enabled);
+
+  /**
+   * Set the socket factory used by this pool to create connections to both locators (if
+   * configured using {@link #addLocator(String, int)}) and servers.
+   *
+   * see {@link SocketFactory}
+   * See {@link ProxySocketFactories}
+   *
+   * @param socketFactory The {@link SocketFactory} to use
+   * @return a reference to <code> this </code>
+   * @since Geode 1.13
+   */
+  PoolFactory setSocketFactory(SocketFactory socketFactory);
 
 }

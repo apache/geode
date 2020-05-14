@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -158,19 +159,21 @@ public class QueryREUpdateInProgressJUnitTest {
     }
 
     try {
-      qs.createIndex("idIndex", "p.ID", "/" + regionName + " p");
-      qs.createIndex("statusIndex", "p.status", "/" + regionName + " p");
-      qs.createIndex("secIdIndex", "pos.secId", "/" + regionName + " p, p.positions.values pos");
-      qs.createIndex("pentryKeyIndex", "p_ent.key", "/" + regionName + ".entries p_ent");
+      qs.createIndex("idIndex", "p.ID", SEPARATOR + regionName + " p");
+      qs.createIndex("statusIndex", "p.status", SEPARATOR + regionName + " p");
+      qs.createIndex("secIdIndex", "pos.secId",
+          SEPARATOR + regionName + " p, p.positions.values pos");
+      qs.createIndex("pentryKeyIndex", "p_ent.key", SEPARATOR + regionName + ".entries p_ent");
       qs.createIndex("pentryValueIndex", "ppos.secId",
-          "/" + regionName + ".entries p_ent, p_ent.value.positions.values ppos");
+          SEPARATOR + regionName + ".entries p_ent, p_ent.value.positions.values ppos");
 
-      qs.createIndex("eidIndex", "e.ID", "/" + exampleRegionName + " e");
-      qs.createIndex("estatusIndex", "e.status", "/" + exampleRegionName + " e");
-      qs.createIndex("eentryKeyIndex", "e_ent.key", "/" + exampleRegionName + ".entries e_ent");
+      qs.createIndex("eidIndex", "e.ID", SEPARATOR + exampleRegionName + " e");
+      qs.createIndex("estatusIndex", "e.status", SEPARATOR + exampleRegionName + " e");
+      qs.createIndex("eentryKeyIndex", "e_ent.key",
+          SEPARATOR + exampleRegionName + ".entries e_ent");
       qs.createIndex("eentryValueIndex", "epos.secId",
-          "/" + exampleRegionName + ".entries e_ent, e_ent.value.positions.values epos");
-      qs.createIndex("keyIndex", "toString", "/" + regionForAsyncIndex + ".keys");
+          SEPARATOR + exampleRegionName + ".entries e_ent, e_ent.value.positions.values epos");
+      qs.createIndex("keyIndex", "toString", SEPARATOR + regionForAsyncIndex + ".keys");
     } catch (Exception e) {
       throw new RuntimeException("Index creation failed!", e);
     }
@@ -217,7 +220,7 @@ public class QueryREUpdateInProgressJUnitTest {
       }
     }
 
-    qs.createIndex("idIndex", "p.ID", "/" + regionName + " p");
+    qs.createIndex("idIndex", "p.ID", SEPARATOR + regionName + " p");
 
 
     // Run all queries with Indexes.
@@ -263,7 +266,7 @@ public class QueryREUpdateInProgressJUnitTest {
       }
     }
 
-    qs.createIndex("secIdindex", "z.position1.secId", "/" + regionName + " z ");
+    qs.createIndex("secIdindex", "z.position1.secId", SEPARATOR + regionName + " z ");
 
 
     // Run all queries with Indexes.
@@ -309,7 +312,7 @@ public class QueryREUpdateInProgressJUnitTest {
     }
 
 
-    qs.createIndex("mapIndex", "pf.positions['IBM','YHOO','SUN']", "/" + regionName + " pf");
+    qs.createIndex("mapIndex", "pf.positions['IBM','YHOO','SUN']", SEPARATOR + regionName + " pf");
 
 
     // Run all queries with Indexes.
@@ -354,18 +357,19 @@ public class QueryREUpdateInProgressJUnitTest {
       }
     }
 
-    qs.createIndex("idIndex", "p.ID", "/" + regionName + " p");
-    qs.createIndex("statusIndex", "p.status", "/" + regionName + " p");
-    qs.createIndex("secIdIndex", "pos.secId", "/" + regionName + " p, p.positions.values pos");
-    qs.createIndex("pentryKeyIndex", "p_ent.key", "/" + regionName + ".entries p_ent");
+    qs.createIndex("idIndex", "p.ID", SEPARATOR + regionName + " p");
+    qs.createIndex("statusIndex", "p.status", SEPARATOR + regionName + " p");
+    qs.createIndex("secIdIndex", "pos.secId",
+        SEPARATOR + regionName + " p, p.positions.values pos");
+    qs.createIndex("pentryKeyIndex", "p_ent.key", SEPARATOR + regionName + ".entries p_ent");
     qs.createIndex("pentryValueIndex", "ppos.secId",
-        "/" + regionName + ".entries p_ent, p_ent.value.positions.values ppos");
+        SEPARATOR + regionName + ".entries p_ent, p_ent.value.positions.values ppos");
 
-    qs.createIndex("eidIndex", "e.ID", "/" + exampleRegionName + " e");
-    qs.createIndex("estatusIndex", "e.status", "/" + exampleRegionName + " e");
-    qs.createIndex("eentryKeyIndex", "e_ent.key", "/" + exampleRegionName + ".entries e_ent");
+    qs.createIndex("eidIndex", "e.ID", SEPARATOR + exampleRegionName + " e");
+    qs.createIndex("estatusIndex", "e.status", SEPARATOR + exampleRegionName + " e");
+    qs.createIndex("eentryKeyIndex", "e_ent.key", SEPARATOR + exampleRegionName + ".entries e_ent");
     qs.createIndex("eentryValueIndex", "epos.secId",
-        "/" + exampleRegionName + ".entries e_ent, e_ent.value.positions.values epos");
+        SEPARATOR + exampleRegionName + ".entries e_ent, e_ent.value.positions.values epos");
 
 
     // Run all queries with Indexes.

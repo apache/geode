@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.directory;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.File;
 import java.util.Collection;
 
@@ -75,7 +77,7 @@ public class DumpDirectoryFiles implements InternalFunction {
         FileSystem fs = directory.getFileSystem();
 
         String bucketName = index.getName() + "_" + repo.getRegion().getFullPath();
-        bucketName = bucketName.replace("/", "_");
+        bucketName = bucketName.replace(SEPARATOR, "_");
         File bucketDirectory = new File(exportLocation, bucketName);
         bucketDirectory.mkdirs();
         fs.export(bucketDirectory);

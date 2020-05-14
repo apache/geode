@@ -21,7 +21,7 @@ org/apache/geode/management/configuration/Region$Expiration,false,action:org/apa
 org/apache/geode/management/configuration/Region$ExpirationAction,false
 org/apache/geode/management/configuration/Region$ExpirationType,false
 org/apache/geode/management/configuration/RegionType,false
-org/apache/geode/management/internal/operation/RebalanceRegionResultImpl,false,bucketCreateBytes:long,bucketCreateTimeInMilliseconds:long,bucketCreatesCompleted:int,bucketTransferBytes:long,bucketTransferTimeInMilliseconds:long,bucketTransfersCompleted:int,primaryTransferTimeInMilliseconds:long,primaryTransfersCompleted:int,regionName:java/lang/String,timeInMilliseconds:long
+org/apache/geode/management/internal/operation/RebalanceRegionResultImpl,false,bucketCreateBytes:long,bucketCreateTimeInMilliseconds:long,bucketCreatesCompleted:int,bucketTransferBytes:long,bucketTransferTimeInMilliseconds:long,bucketTransfersCompleted:int,numOfMembers:int,primaryTransferTimeInMilliseconds:long,primaryTransfersCompleted:int,regionName:java/lang/String,timeInMilliseconds:long
 org/apache/geode/management/internal/operation/RebalanceResultImpl,false,rebalanceSummary:java/util/List,statusMessage:java/lang/String,success:boolean
 org/apache/geode/management/operation/RebalanceOperation,false,excludeRegions:java/util/List,includeRegions:java/util/List,operator:java/lang/String,simulate:boolean
 org/apache/geode/management/runtime/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,maxConnections:int,maxThreads:int,port:int

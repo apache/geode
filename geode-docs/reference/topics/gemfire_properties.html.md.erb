@@ -25,7 +25,7 @@ You can also define provider-specific properties ("ssl" properties) in `gfsecuri
 
 You can specify non-ASCII text in your properties files by using Unicode escape sequences. See [Using Non-ASCII Strings in <%=vars.product_name_long%> Property Files](non-ascii_strings_in_config_files.html) for more details.
 
-**Note:**
+<strong>Note:</strong>
 Unless otherwise indicated, these settings only affect activities within this cluster - not activities between clients and servers or between a gateway sender and gateway receiver in a multi-site installation.
 
 <table>
@@ -75,7 +75,7 @@ Valid values are in the range 0...2147483647</td>
 <td>The number of milliseconds a process that is publishing to this process should attempt to distribute a cache operation before switching over to asynchronous messaging for this process. The switch to asynchronous messaging lasts until this process catches up, departs, or some specified limit is reached, such as async-queue-timeout or async-max-queue-size.
 <p>To enable asynchronous messaging, the value must be set above zero. Valid values are in the range 0...60000.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
 <td>S</td>
@@ -86,7 +86,7 @@ Valid values are in the range 0...2147483647</td>
 <td>Affects non-conflated asynchronous queues for members that publish to this member. This is the maximum size the queue can reach (in megabytes) before the publisher asks this member to leave the cluster.
 <p>Valid values are in the range 0..1024.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
 <td>S</td>
@@ -96,7 +96,7 @@ Valid values are in the range 0...2147483647</td>
 <td>async-queue-timeout</td>
 <td>Affects asynchronous queues for members that publish to this member. This is the maximum milliseconds the publisher should wait with no distribution to this member before it asks this member to leave the cluster. Used for handling slow receivers.
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
 <td>S, L</td>
@@ -190,15 +190,21 @@ This setting must be the same for every member of a given cluster and unique to 
 <td>300</td>
 </tr>
 <tr>
-<td>enable-network-partition-detection</td>
-<td>Boolean instructing the system to detect and handle splits in the cluster, typically caused by a partitioning of the network (split brain) where the cluster is running. You must set this property to the same value across all your cluster members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
-<td>S, L</td>
+<td>enable-cluster-configuration</td>
+<td>A value of &quot;true&quot; causes the creation of cluster configuration on dedicated locators. The cluster configuration service on dedicated locator(s) with this property set to &quot;true&quot; serves the configuration to new members joining the cluster and also saves the configuration changes caused by the <code class="ph codeph">gfsh</code> commands. This property is applicable only to dedicated locators.</td>
+<td>L</td>
 <td>true</td>
 </tr>
 <tr>
-<td>enable-cluster-configuration</td>
-<td>A value of &quot;true&quot; causes the creation of cluster configuration on dedicated locators. The cluster configuration service on dedicated locator(s) with this property set to &quot;true&quot; would serve the configuration to new members joining the cluster and also save the configuration changes caused by the <code class="ph codeph">gfsh</code> commands. This property is only applicable to dedicated locators..</td>
+<td>enable-management-rest-service</td>
+<td>A value of &quot;true&quot; enables the cluster management REST service. This service requires that the cluster configuration service also be enabled. If <code class="ph codeph">enable-cluster-configuration</code> is false and this is true, the management REST service would do nothing but report an error if you attempt to use it. Also, even if this property is set to true, The management REST service will be started only if <code class="ph codeph">http-service-port</code> is not &quot;0&quot;.</td>
 <td>L</td>
+<td>true</td>
+</tr>
+<tr>
+<td>enable-network-partition-detection</td>
+<td>Boolean instructing the system to detect and handle splits in the cluster, typically caused by a partitioning of the network (split brain) where the cluster is running. You must set this property to the same value across all your cluster members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
+<td>S, L</td>
 <td>true</td>
 </tr>
 <tr>
@@ -296,16 +302,16 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>locators</td>
 <td><p>The list of locators used by system members. The list must be configured consistently for every member of the cluster. If the list is empty, locators are not used.</p>
 <p>For each locator, provide a host name and/or address (separated by ‘@’, if you use both), followed by a port number in brackets. Examples:</p>
-<pre class="pre codeblock"><code>locators=address1[port1],address2[port2] </code></pre>
-<pre class="pre codeblock"><code>locators=hostName1@address1[port1],hostName2@address2[port2] </code></pre>
-<pre class="pre codeblock"><code>locators=hostName1[port1],hostName2[port2]</code></pre>
+<pre class="pre codeblock"><code>locators=addr1[port1],addr2[port2] </code></pre>
+<pre class="pre codeblock"><code>locators=host1@addr1[port1]</code></pre>
+<pre class="pre codeblock"><code>locators=host1[port1],host2[port2]</code></pre>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>On multi-homed hosts, this last notation will use the default address. If you use bind addresses for your locators, explicitly specify the addresses in the locators list—do not use just the hostname.</p>
 </div>
 <p>If you have values specified for the <code class="ph codeph">locators</code> property, the <code class="ph codeph">mcast-port</code> property defaults to 0.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>If you specify invalid DNS hostnames in this property, any locators or servers started with <code class="ph codeph">gfsh</code> will not produce log files. Make sure you provide valid DNS hostnames before starting the locator or server with <code class="ph codeph">gfsh</code>.</p>
 </div></td>
 <td>S, L</td>
@@ -358,9 +364,9 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>mcast-address</td>
 <td>Address used to discover other members of the cluster. Only used if mcast-port is non-zero. This attribute must be consistent across the cluster. Select different multicast addresses and different ports for different clusters. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.
 <p>This default multicast address was assigned by IANA
-(<a href="http://www.iana.org/assignments/multicast-addresses">http://www.iana.org/assignments/multicast-addresses</a>). Consult the IANA chart when selecting another multicast address to use with <%=vars.product_name%>.</p>
+(<a href="http://www.iana.org/assignments/multicast-addresses">multicast-addresses</a>). Consult the IANA chart when selecting another multicast address to use with <%=vars.product_name%>.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication. If multicast is enabled, distributed regions use it for most communication. Partitioned regions only use multicast for a few purposes, and mainly use either TCP or UDP unicast.</p>
 </div></td>
 <td>S, L</td>
@@ -370,9 +376,9 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <tr>
 <td>mcast-flow-control</td>
 <td>Tuning property for flow-of-control protocol for unicast and multicast no-ack UDP messaging. Compound property made up of three settings separated by commas: byteAllowance, rechargeThreshold, and rechargeBlockMs.
-<p>Valid values range from these minimums: 10000,0.1,500 to these maximums: no_maximum ,0.5,60000.</p>
+<p>Valid values range from these minimums:<br />10000,0.1,500<br />to these maximums:<br />no_maximum ,0.5,60000.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication, generally between distributed regions.</p>
 </div></td>
 <td>S, L</td>
@@ -382,12 +388,12 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>mcast-port</td>
 <td>Port used, along with the mcast-address, for multicast communication with other members of the cluster. If zero, multicast is disabled.
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>Select different multicast addresses and ports for different clusters. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.</p>
 </div>
 <p>Valid values are in the range 0..65535.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div>
 <p>If you have values specified for the <code class="ph codeph">locators</code> property, the <code class="ph codeph">mcast-port</code> property defaults to 0.</p></td>
@@ -399,11 +405,11 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>Size of the socket buffer used for incoming multicast transmissions. You should set this high if there will be high volumes of messages.
 <p>Valid values are in the range 2048.. OS_maximum.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>The default setting is higher than the default OS maximum buffer size on Unix, which should be increased to at least 1 megabyte to provide high-volume messaging on Unix systems.</p>
 </div>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
 <td>S, L</td>
@@ -414,7 +420,7 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>The size of the socket buffer used for outgoing multicast transmissions.
 <p>Valid values are in the range 2048.. OS_maximum.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
 <td>S, L</td>
@@ -424,7 +430,7 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>mcast-ttl</td>
 <td>How far multicast messaging goes in your network. Lower settings may improve system performance. A setting of 0 constrains multicast messaging to the machine.
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
 <td>S, L</td>
@@ -491,9 +497,9 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 <td>remote-locators</td>
 <td>Used to configure the locators that a cluster will use in order to connect to a remote site in a multi-site (WAN) configuration. To use locators in a WAN configuration, you must specify a unique distributed system ID (<code class="ph codeph">distributed-system-id</code>) for the local cluster and remote locator(s) for the remote clusters to which you will connect.
 <p>For each remote locator, provide a host name and/or address (separated by ‘@’, if you use both), followed by a port number in brackets. Examples:</p>
-<pre class="pre codeblock"><code>remote-locators=address1[port1],address2[port2] </code></pre>
-<pre class="pre codeblock"><code>remote-locators=hostName1@address1[port1],hostName2@address2[port2] </code></pre>
-<pre class="pre codeblock"><code>remote-locators=hostName1[port1],hostName2[port2]</code></pre></td>
+<pre class="pre codeblock"><code>remote-locators=addr1[port1],addr2[port2] </code></pre>
+<pre class="pre codeblock"><code>remote-locators=host1@addr1[port1]</code></pre>
+<pre class="pre codeblock"><code>remote-locators=host1[port1],host2[port2]</code></pre></td>
 <td>L</td>
 <td><em>not set</em></td>
 </tr>
@@ -516,6 +522,17 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <td><b>Deprecated.</b> Used for authorization. Static creation method returning an <code class="ph codeph">AccessControl</code> object, which determines authorization of client-server cache operations. This specifies the callback that should be invoked in the pre-operation phase, which is when the request for the operation is received from the client.</td>
 <td>S, L</td>
 <td><em>not set</em></td>
+</tr>
+<tr>
+<td>security-auth-token-enabled-components</td>
+<td>A comma-delimited list of component names which works in conjunction with the <code class="ph codeph">security-manager</code> property. If <code class="ph codeph">security-manager</code> is enabled, this property determines which components will use token-based authentication instead of basic (username/password) authentication.
+<p>Valid values are: "all", "management", "pulse"</p>
+<p>"all": shorthand for all the security components that support token authentication.</p>
+<p>"management": the management REST service.</p>
+<p>"pulse": the Pulse web app</p>
+</td>
+<td>L</td>
+<td><em>""</em></td>
 </tr>
 <tr>
 <td>security-client-accessor-pp</td>
@@ -594,7 +611,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <tr>
 <td>serializable-object-filter</td>
 <td>A semicolon-separated list of items that become full class names of objects that the system will serialize when the property validate-serializable-objects is set to true. The list is expanded using the patterns specified in the <code>createFilter</code> method at
-<a href="https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html">https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html</a>.</td>
+<a href="https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html">ObjectInputFilter.Config</a>.</td>
 <td>S, C</td>
 <td>"!*"</td>
 </tr>
@@ -748,7 +765,7 @@ If you only specify the port, the address assigned to the member is used for the
 <td>Whether to collect and archive statistics on the member.
 <p>Statistics sampling provides valuable information for ongoing system tuning and troubleshooting purposes. Sampling statistics at the default sample rate does not impact system performance. We recommend enabling statistics sampling in production environments.</p>
 <div class="note note">
-**Note:**
+<strong>Note:</strong>
 <p>This setting does not apply to partitioned regions, where statistics are always enabled.</p>
 </div></td>
 <td>S, L</td>

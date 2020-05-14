@@ -460,6 +460,10 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
    */
   boolean shouldSyncForCrashedMember(InternalDistributedMember id);
 
+  boolean isRegionCreateNotified();
+
+  void setRegionCreateNotified(boolean notified);
+
   void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite,
       RegionVersionVector vector);
 }

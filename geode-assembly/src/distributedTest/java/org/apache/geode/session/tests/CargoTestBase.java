@@ -14,6 +14,8 @@
  */
 package org.apache.geode.session.tests;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -23,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.IntSupplier;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,23 +33,24 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.modules.session.functions.GetMaxInactiveInterval;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SessionTest;
 
 /**
  * Base class for test of session replication.
- *
+ * <p>
  * This class contains all of the tests of session replication functionality. Subclasses of this
  * class configure different containers in order to run these tests against specific containers.
  */
 @Category({SessionTest.class})
 public abstract class CargoTestBase {
   private final UniquePortSupplier portSupplier = new UniquePortSupplier();
+  private static Logger logger = LogService.getLogger();
 
   @Rule
   public TestName testName = new TestName();
@@ -55,9 +59,9 @@ public abstract class CargoTestBase {
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(2);
 
   protected Client client;
-  protected ContainerManager manager;
-  protected ContainerInstall install;
-  protected MemberVM locatorVM;
+  ContainerManager manager;
+  ContainerInstall install;
+  MemberVM locatorVM;
 
   /**
    * Should only be called once per test.
@@ -68,17 +72,17 @@ public abstract class CargoTestBase {
 
   /**
    * Sets up the {@link #client} and {@link #manager} variables by creating new instances of each.
-   *
-   * Adds two new containers to the {@link #manager} based on the subclass's
-   * {@link #getInstall(IntSupplier)} method. Also sets the test name in the {@link #manager} to the
-   * name of the current test.
+   * <p>
+   * Adds two new containers to the {@link #manager} based on the subclass's {@link
+   * #getInstall(IntSupplier)} method. Also sets the test name in the {@link #manager} to the name
+   * of the current test.
    */
   @Before
   public void setup() throws Exception {
     dumpDockerInfo();
     announceTest("START");
-
-    locatorVM = clusterStartupRule.startLocatorVM(0, 0);
+    int locatorPortSuggestion = AvailablePortHelper.getRandomAvailableTCPPort();
+    locatorVM = clusterStartupRule.startLocatorVM(0, locatorPortSuggestion);
 
     client = new Client();
     manager = new ContainerManager();
@@ -99,7 +103,7 @@ public abstract class CargoTestBase {
    * Stops all containers that were previously started and cleans up their configurations
    */
   @After
-  public void stop() throws IOException, InterruptedException {
+  public void stop() throws IOException {
     try {
       manager.stopAllActiveContainers();
     } finally {
@@ -119,7 +123,7 @@ public abstract class CargoTestBase {
    * Gets the specified key from all the containers within the container manager and check that each
    * container has the associated expected value
    */
-  public void getKeyValueDataOnAllClients(String key, String expectedValue, String expectedCookie)
+  private void getKeyValueDataOnAllClients(String key, String expectedValue, String expectedCookie)
       throws IOException, URISyntaxException {
     for (int i = 0; i < manager.numContainers(); i++) {
       // Set the port for this server
@@ -128,9 +132,10 @@ public abstract class CargoTestBase {
       Client.Response resp = client.get(key);
 
       // Null would mean we don't expect the same cookie as before
-      if (expectedCookie != null)
+      if (expectedCookie != null) {
         assertEquals("Sessions are not replicating properly", expectedCookie,
             resp.getSessionCookie());
+      }
 
       // Check that the response from this server is correct
       if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
@@ -138,11 +143,13 @@ public abstract class CargoTestBase {
         // HARegionQueue
         String value = resp.getResponse();
         if (!expectedValue.equals(value)) {
-          LogService.getLogger().info("verifying container {} for expected value of {}"
-              + " for key {}, but gets response value of {}. Waiting for update from server.", i,
+          logger.info(
+              "getKeyValueDataOnAllClients: verifying container \"{}\" for expected value of \"{}\""
+                  + " for key \"{}\", but gets response value of \"{}\". Waiting for update from server.",
+              i,
               expectedValue, key, value);
         }
-        GeodeAwaitility.await().until(() -> expectedValue.equals(getResponseValue(client, key)));
+        assertThat(getResponseValue(client, key)).isEqualTo(expectedValue);
       } else {
         // either p2p cache or client cache which has proxy/empty region - retrieving session from
         // servers
@@ -153,9 +160,7 @@ public abstract class CargoTestBase {
 
   private String getResponseValue(Client client, String key)
       throws IOException, URISyntaxException {
-    String value = client.get(key).getResponse();
-    LogService.getLogger().info("client gets response value of {}", value);
-    return value;
+    return client.get(key).getResponse();
   }
 
   /**
@@ -168,8 +173,7 @@ public abstract class CargoTestBase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.get(null);
-
-    getKeyValueDataOnAllClients(null, "", resp.getSessionCookie());
+    await().untilAsserted(() -> getKeyValueDataOnAllClients(null, "", resp.getSessionCookie()));
   }
 
   /**
@@ -185,8 +189,7 @@ public abstract class CargoTestBase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
   }
 
   /**
@@ -206,8 +209,7 @@ public abstract class CargoTestBase {
 
     manager.stopContainer(0);
     manager.removeContainer(0);
-
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
   }
 
   /**
@@ -246,13 +248,14 @@ public abstract class CargoTestBase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
+    await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+    client.setMaxInactive(1); // max inactive time is 1 second. Lets wait a second.
+    Thread.sleep(2000);
 
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
-
-    client.setMaxInactive(1);
-    Thread.sleep(5000);
-
-    verifySessionIsRemoved(key);
+    await().untilAsserted(() -> {
+      verifySessionIsRemoved(key);
+      Thread.sleep(1000);
+    });
   }
 
   /**
@@ -261,14 +264,14 @@ public abstract class CargoTestBase {
    */
   @Test
   public void sessionPicksUpSessionTimeoutConfiguredInWebXml()
-      throws IOException, URISyntaxException, InterruptedException {
+      throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
 
     String key = "value_testSessionExpiration";
     String value = "Foo";
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
-    Client.Response resp = client.set(key, value);
+    client.set(key, value);
 
     // 59 minutes is the value configured in web.xml
     verifyMaxInactiveInterval(59 * 60);
@@ -282,7 +285,7 @@ public abstract class CargoTestBase {
     for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
-        GeodeAwaitility.await().until(() -> Integer.toString(expected)
+        await().until(() -> Integer.toString(expected)
             .equals(client.executionFunction(GetMaxInactiveInterval.class).getResponse()));
       } else {
         assertEquals(Integer.toString(expected),
@@ -298,7 +301,7 @@ public abstract class CargoTestBase {
    */
   @Test
   public void containersShouldShareSessionExpirationReset()
-      throws URISyntaxException, IOException, InterruptedException {
+      throws URISyntaxException, IOException {
     manager.startAllInactiveContainers();
 
     int timeToExp = 30;
@@ -306,43 +309,43 @@ public abstract class CargoTestBase {
     String value = "Foo";
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
-    Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
 
-    resp = client.setMaxInactive(timeToExp);
-    assertEquals(cookie, resp.getSessionCookie());
+    Client.Response workingResponse = client.set(key, value);
 
-    long startTime = System.currentTimeMillis();
-    long curTime = System.currentTimeMillis();
-    // Run for 2 times the set expiration time
-    while (curTime - startTime < timeToExp * 2000) {
-      resp = client.get(key);
+    String cookie = workingResponse.getSessionCookie();
+
+    workingResponse = client.setMaxInactive(timeToExp);
+
+    assertEquals(cookie, workingResponse.getSessionCookie());
+
+    await().untilAsserted(() -> {
+      Client.Response resp = client.get(key);
       Thread.sleep(500);
-      curTime = System.currentTimeMillis();
+      assertEquals("Sessions are not replicating properly", cookie,
+          resp.getSessionCookie());
 
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
       assertEquals("Containers are not replicating session expiration reset", value,
           resp.getResponse());
-    }
 
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    });
+
+    getKeyValueDataOnAllClients(key, value, workingResponse.getSessionCookie());
   }
 
   /**
-   * Test that if a session attribute is removed in one container, it is removed from all containers
+   * Test that if a session attribute is removed in one container, it is removed from all
+   * containers
    */
   @Test
   public void containersShouldShareDataRemovals() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
-
     String key = "value_testSessionRemove";
     String value = "Foo";
-
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
-
+    await().untilAsserted(() -> {
+      getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    });
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     client.remove(key);
 
@@ -363,8 +366,7 @@ public abstract class CargoTestBase {
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
 
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
-
+    await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
     int numContainers = manager.numContainers();
     // Add and start new container
     manager.addContainer(install);
@@ -373,8 +375,7 @@ public abstract class CargoTestBase {
     manager.startAllInactiveContainers();
     // Check that a container was added
     assertEquals(numContainers + 1, manager.numContainers());
-
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
   }
 
   private void announceTest(String status) {

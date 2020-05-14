@@ -99,4 +99,11 @@ public interface RebalanceResults {
    * @return the total time, in milliseconds, spent transferring primaries
    */
   long getTotalPrimaryTransferTime();
+
+  /**
+   * Returns the total number of members on which command is executed.
+   *
+   * @return the total number of members on which command is executed
+   */
+  int getTotalMembersExecutedOn();
 }

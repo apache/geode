@@ -14,41 +14,22 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.List;
-import java.util.Set;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class SCardExecutor extends SetExecutor {
 
-  private static final int NOT_EXISTS = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() != 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SCARD));
-      return;
-    }
-
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> keyRegion = getRegion(context);
-
-    Set<ByteArrayWrapper> set = keyRegion.get(key);
-    if (set == null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
-    }
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), set.size()));
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    int size = redisSetCommands.scard(key);
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
   }
-
 }

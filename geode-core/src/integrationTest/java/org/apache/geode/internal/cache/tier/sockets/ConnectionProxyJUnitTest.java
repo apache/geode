@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
 
@@ -56,7 +57,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
@@ -77,6 +77,9 @@ public class ConnectionProxyJUnitTest {
   PoolImpl proxy = null;
 
   SequenceIdAndExpirationObject seo = null;
+
+  final Duration timeoutToVerifyExpiry = Duration.ofSeconds(30);
+  final Duration timeoutToVerifyAckSend = Duration.ofSeconds(30);
 
   @Before
   public void setUp() throws Exception {
@@ -239,18 +242,9 @@ public class ConnectionProxyJUnitTest {
         e.printStackTrace();
         fail("Failed to create server");
       }
-      WaitCriterion ev = new WaitCriterion() {
-        @Override
-        public boolean done() {
-          return proxy.getConnectedServerCount() == 1;
-        }
-
-        @Override
-        public String description() {
-          return null;
-        }
-      };
-      GeodeAwaitility.await().untilAsserted(ev);
+      GeodeAwaitility.await().untilAsserted(() -> {
+        assertEquals(1, proxy.getConnectedServerCount());
+      });
     } finally {
       if (server != null) {
         server.stop();
@@ -297,18 +291,9 @@ public class ConnectionProxyJUnitTest {
         e.printStackTrace();
         fail("Failed to create server");
       }
-      WaitCriterion ev = new WaitCriterion() {
-        @Override
-        public boolean done() {
-          return proxy.getConnectedServerCount() == 1;
-        }
-
-        @Override
-        public String description() {
-          return null;
-        }
-      };
-      GeodeAwaitility.await().untilAsserted(ev);
+      GeodeAwaitility.await().untilAsserted(() -> {
+        assertEquals(1, proxy.getConnectedServerCount());
+      });
     } finally {
       if (server != null) {
         server.stop();
@@ -383,7 +368,7 @@ public class ConnectionProxyJUnitTest {
           fail(" eid should not be duplicate as it is a new entry");
         }
 
-        verifyExpiry(60 * 1000);
+        verifyExpiry();
 
         if (proxy.verifyIfDuplicate(eid)) {
           fail(" eid should not be duplicate as the previous entry should have expired ");
@@ -429,18 +414,7 @@ public class ConnectionProxyJUnitTest {
           fail(" eid should not be duplicate as it is a new entry");
         }
 
-        WaitCriterion ev = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            return proxy.verifyIfDuplicate(eid);
-          }
-
-          @Override
-          public String description() {
-            return null;
-          }
-        };
-        GeodeAwaitility.await().untilAsserted(ev);
+        GeodeAwaitility.await().untilAsserted(() -> assertTrue(proxy.verifyIfDuplicate(eid)));
       } catch (Exception ex) {
         ex.printStackTrace();
         fail("Failed to initialize client");
@@ -483,7 +457,7 @@ public class ConnectionProxyJUnitTest {
             fail(" eid can never be duplicate, it is being created for the first time! ");
           }
         }
-        verifyExpiry(30 * 1000);
+        verifyExpiry();
 
         for (int i = 0; i < EVENT_ID_COUNT; i++) {
           if (proxy.verifyIfDuplicate(eid[i])) {
@@ -697,7 +671,7 @@ public class ConnectionProxyJUnitTest {
         // should send the ack to server
         seo = (SequenceIdAndExpirationObject) proxy.getThreadIdToSequenceIdMap()
             .get(new ThreadIdentifier(new byte[0], 1));
-        verifyAckSend(60 * 1000, true);
+        verifyAckSend(true);
 
         // New update on same threadId
         eid = new EventID(new byte[0], 1, 2);
@@ -711,10 +685,10 @@ public class ConnectionProxyJUnitTest {
         // should send another ack to server
         seo = (SequenceIdAndExpirationObject) proxy.getThreadIdToSequenceIdMap()
             .get(new ThreadIdentifier(new byte[0], 1));
-        verifyAckSend(6000, true);
+        verifyAckSend(true);
 
         // should expire with the this mentioned.
-        verifyExpiry(15 * 1000);
+        verifyExpiry();
       } catch (Exception ex) {
         ex.printStackTrace();
         fail("Test testPeriodicAckSendByClient Failed");
@@ -764,10 +738,10 @@ public class ConnectionProxyJUnitTest {
         // should not send an ack as redundancy level = 0;
         seo = (SequenceIdAndExpirationObject) proxy.getThreadIdToSequenceIdMap()
             .get(new ThreadIdentifier(new byte[0], 1));
-        verifyAckSend(30 * 1000, false);
+        verifyAckSend(false);
 
         // should expire without sending an ack as redundancy level = 0.
-        verifyExpiry(90 * 1000);
+        verifyExpiry();
       }
 
       catch (Exception ex) {
@@ -781,34 +755,16 @@ public class ConnectionProxyJUnitTest {
     }
   }
 
-  private void verifyAckSend(long timeToWait, final boolean expectedAckSend) {
-    WaitCriterion wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return expectedAckSend == seo.getAckSend();
-      }
-
-      @Override
-      public String description() {
-        return "ack flag never became " + expectedAckSend;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+  private void verifyAckSend(final boolean expectedAckSend) {
+    GeodeAwaitility.await().timeout(timeoutToVerifyAckSend).untilAsserted(() -> {
+      assertEquals(expectedAckSend, seo.getAckSend());
+    });
   }
 
-  private void verifyExpiry(long timeToWait) {
-    WaitCriterion wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return 0 == proxy.getThreadIdToSequenceIdMap().size();
-      }
-
-      @Override
-      public String description() {
-        return "Entry never expired";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+  private void verifyExpiry() {
+    GeodeAwaitility.await().timeout(timeoutToVerifyExpiry).untilAsserted(() -> {
+      assertEquals(0, proxy.getThreadIdToSequenceIdMap().size());
+    });
   }
 
 }

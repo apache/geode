@@ -81,7 +81,8 @@ public class PulseAcceptanceAuthTest extends PulseAcceptanceTestBase {
   @Before
   public void before() {
     pulseRule.useJmxManager("localhost", locator.getJmxPort());
-    cluster = pulseRule.getRepository().getCluster("clusterRead", "clusterRead");
+    cluster =
+        pulseRule.getRepository().getClusterWithUserNameAndPassword("clusterRead", "clusterRead");
   }
 
   @Override

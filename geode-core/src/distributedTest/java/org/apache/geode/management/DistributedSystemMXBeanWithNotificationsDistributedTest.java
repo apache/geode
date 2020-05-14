@@ -82,7 +82,7 @@ import org.apache.geode.test.junit.categories.ManagementTest;
 @SuppressWarnings("serial")
 public class DistributedSystemMXBeanWithNotificationsDistributedTest implements Serializable {
 
-  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final long TIMEOUT = getTimeout().toMillis();
   private static final String MANAGER_NAME = "managerVM";
   private static final String MEMBER_NAME = "memberVM-";
 

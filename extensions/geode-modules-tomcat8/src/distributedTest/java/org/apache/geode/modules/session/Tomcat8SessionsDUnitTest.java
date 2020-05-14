@@ -22,8 +22,8 @@ import javax.security.auth.message.config.AuthConfigFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
-import org.springframework.util.SocketUtils;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
 import org.apache.geode.test.junit.categories.SessionTest;
@@ -33,7 +33,7 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
 
   @Before
   public void setUp() throws Exception {
-    port = SocketUtils.findAvailableTcpPort();
+    port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new EmbeddedTomcat8(port, "JVM-1");
 
     PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();
@@ -53,6 +53,7 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
 
     sessionManager.getTheContext().setSessionTimeout(30);
     region.clear();
+    basicConnectivityCheck();
   }
 
   @After

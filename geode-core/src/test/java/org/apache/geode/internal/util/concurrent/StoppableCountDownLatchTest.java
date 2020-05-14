@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class StoppableCountDownLatchTest {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
 
   private CancelCriterion stopper;
 
@@ -234,7 +234,7 @@ public class StoppableCountDownLatchTest {
 
     Future<Void> latchFuture = executorServiceRule.submit(() -> {
       theThread.set(Thread.currentThread());
-      Throwable thrown = catchThrowable(() -> latch.await(getTimeout().getValueInMS()));
+      Throwable thrown = catchThrowable(() -> latch.await(getTimeout().toMillis()));
       errorCollector
           .checkSucceeds(() -> assertThat(thrown).isInstanceOf(InterruptedException.class));
     });

@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal;
 
 import java.nio.channels.SocketChannel;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.netty.buffer.ByteBuf;
 
@@ -65,6 +66,15 @@ public class Command {
    */
   public List<byte[]> getProcessedCommand() {
     return this.commandElems;
+  }
+
+  /**
+   * Used to get the command element list
+   *
+   * @return List of command elements in form of {@link List}
+   */
+  public List<ByteArrayWrapper> getProcessedCommandWrappers() {
+    return this.commandElems.stream().map(ByteArrayWrapper::new).collect(Collectors.toList());
   }
 
   /**
@@ -146,5 +156,23 @@ public class Command {
       b.append(' ');
     }
     return b.toString();
+  }
+
+  public void execute(ExecutionHandlerContext executionHandlerContext) {
+    RedisCommandType type = getCommandType();
+    type.executeCommand(this, executionHandlerContext);
+  }
+
+  boolean isOfType(RedisCommandType type) {
+    return type == getCommandType();
+  }
+
+  public String wrongNumberOfArgumentsError() {
+    return String.format("wrong number of arguments for '%s' command",
+        getCommandType().toString().toLowerCase());
+  }
+
+  boolean isTransactional() {
+    return getCommandType().isTransactional();
   }
 }

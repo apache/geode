@@ -125,7 +125,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   private VM vm2;
   private VM vm3;
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -209,7 +209,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
         .isInstanceOf(IllegalStateException.class).hasMessageContaining(
             String.format(
                 "For partition region %s,total-num-buckets %s should not be changed. Previous configured number is %s.",
-                "/" + partitionedRegionName, 2, 5));
+                SEPARATOR + partitionedRegionName, 2, 5));
 
     getCache().close();
 
@@ -217,7 +217,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
         .isInstanceOf(IllegalStateException.class).hasMessageContaining(
             String.format(
                 "For partition region %s,total-num-buckets %s should not be changed. Previous configured number is %s.",
-                "/" + partitionedRegionName, 10, 5));
+                SEPARATOR + partitionedRegionName, 10, 5));
   }
 
   @Test

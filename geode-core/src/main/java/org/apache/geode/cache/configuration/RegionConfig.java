@@ -16,6 +16,8 @@
 
 package org.apache.geode.cache.configuration;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -277,7 +279,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
       return;
     }
 
-    this.name = value.startsWith("/") ? value.substring(1) : value;
+    this.name = value.startsWith(SEPARATOR) ? value.substring(1) : value;
   }
 
   /**

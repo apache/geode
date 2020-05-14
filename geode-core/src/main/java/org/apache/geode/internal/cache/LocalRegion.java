@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.AFTER_INITIAL_IMAGE;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
@@ -324,9 +325,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private int txRefCount;
 
-  @VisibleForTesting
-  final ConcurrentHashMap<RegionEntry, EntryExpiryTask> entryExpiryTasks =
-      new ConcurrentHashMap<>();
 
   private volatile boolean regionInvalid;
 
@@ -7513,7 +7511,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
       DiskStoreFactoryImpl diskStoreFactoryImpl = (DiskStoreFactoryImpl) diskStoreFactory;
-      return diskStoreFactoryImpl.createOwnedByRegion(getFullPath().replace('/', '_'),
+      return diskStoreFactoryImpl.createOwnedByRegion(getFullPath().replace(SEPARATOR_CHAR, '_'),
           this instanceof PartitionedRegion, internalRegionArgs);
     }
 
@@ -7960,9 +7958,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   void cancelAllEntryExpiryTasks() {
     // This method gets called during LocalRegion construction
     // in which case the final entryExpiryTasks field can still be null
-    if (entryExpiryTasks == null) {
-      return;
-    }
     if (entryExpiryTasks.isEmpty()) {
       return;
     }
@@ -8962,7 +8957,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         txState.getRealDeal(null, this);
       }
       try {
-        proxyResult = getServerProxy().putAll(map, eventId, !event.isGenerateCallbacks(),
+        proxyResult = getServerProxy().putAll(cast(map), eventId, !event.isGenerateCallbacks(),
             event.getCallbackArgument());
         if (isDebugEnabled) {
           logger.debug("PutAll received response from server: {}", proxyResult);
@@ -9381,7 +9376,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * putAll completes. This won't work for non-replicate regions though since they uses one-hop
    * during basicPutPart2 to get a valid version tag.
    */
-  private void lockRVVForBulkOp() {
+  public void lockRVVForBulkOp() {
     ARMLockTestHook testHook = getRegionMap().getARMLockTestHook();
     if (testHook != null) {
       testHook.beforeBulkLock(this);
@@ -9396,7 +9391,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  private void unlockRVVForBulkOp() {
+  public void unlockRVVForBulkOp() {
     ARMLockTestHook testHook = getRegionMap().getARMLockTestHook();
     if (testHook != null) {
       testHook.beforeBulkRelease(this);
@@ -11067,6 +11062,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   public enum IteratorType {
     KEYS, VALUES, ENTRIES
+  }
+
+  @Override
+  public boolean isRegionCreateNotified() {
+    return false;
+  }
+
+  @Override
+  public void setRegionCreateNotified(boolean notified) {
+    // do nothing
   }
 
   /**

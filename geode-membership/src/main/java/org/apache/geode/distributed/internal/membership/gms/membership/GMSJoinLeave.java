@@ -1186,7 +1186,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
-          logger.debug("Exception thrown when contacting a locator", problem);
+          logger.info("Exception thrown when contacting a locator", problem);
           if (state.locatorsContacted == 0 && System.currentTimeMillis() < giveUpTime) {
             try {
               Thread.sleep(1000);
@@ -1968,8 +1968,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
      * call with synchronized(this)
      */
     private void checkIfDone() {
-      if (notRepliedYet.isEmpty()
-          || (pendingRemovals != null && pendingRemovals.containsAll(notRepliedYet))) {
+      if (notRepliedYet.isEmpty() || pendingRemovals.containsAll(notRepliedYet)) {
         logger.debug("All anticipated view responses received - notifying waiting thread");
         waiting = false;
         notifyAll();

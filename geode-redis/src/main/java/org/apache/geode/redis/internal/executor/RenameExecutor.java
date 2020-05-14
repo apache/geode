@@ -41,7 +41,8 @@ public class RenameExecutor extends StringExecutor {
     ByteArrayWrapper newKey = new ByteArrayWrapper(commandElems.get(2));
 
     if (!context.getKeyRegistrar().isRegistered(key)) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_NO_SUCH_KEY));
       return;
     }
 

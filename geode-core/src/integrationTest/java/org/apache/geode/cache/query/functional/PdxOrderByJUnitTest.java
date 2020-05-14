@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.Iterator;
@@ -52,7 +53,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 public class PdxOrderByJUnitTest {
   private final String rootRegionName = "root";
   private final String regionName = "PdxTest";
-  private final String regName = "/" + rootRegionName + "/" + regionName;
+  private final String regName = SEPARATOR + rootRegionName + SEPARATOR + regionName;
 
   private final String[] queryString = new String[] {
       "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId LIKE '%L'", // 0

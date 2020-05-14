@@ -98,7 +98,7 @@ groups:
   - {{ build_test.name }}
   {{- all_gating_jobs() | indent(2) }}
   - UpdatePassingTokens
-  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
   - PublishArtifacts
   {%- endif %}
   {%- for flavor in (benchmarks.flavors) %}
@@ -113,7 +113,7 @@ groups:
     {%- endfor -%}
   {%- endfor %}
   - UpdatePassingTokens
-  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+  {%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
   - PublishArtifacts
   {%- endif %}
   {%- for flavor in (benchmarks.flavors) %}
@@ -186,7 +186,7 @@ resources:
     driver: gcs
     initial_version: {{ metadata.initial_version }}
     json_key: ((!concourse-gcp-key))
-    key: semvers/((pipeline-prefix))((geode-build-branch))/version
+    key: semvers/((pipeline-prefix))((geode-build-branch))/number
 - name: geode-passing-tokens
   type: gcs-resource
   source:
@@ -238,7 +238,9 @@ jobs:
   serial: true
   plan:
   - get: geode-build-version
-    params: { bump: {{ semverPiece }} }
+    params: { bump: {{ semverPiece }},
+              pre: ((semver-prerelease-token)),
+              pre_without_version: true }
   - put: geode-build-version
     params:
       file: geode-build-version/number
@@ -396,7 +398,7 @@ jobs:
     - get: alpine-tools-image
     - get: geode
       passed: &update-token-passed-anchor
-{%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+{%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
       - PublishArtifacts
 {% else %}
       {% for flavor in (benchmarks.flavors) %}
@@ -431,13 +433,16 @@ jobs:
           set -e
           # Check that the incoming GEODE_SHA is a descendent of the currently stored value.
           # Keeps us from winding back the repository in the case of an out-of-order pipeline pass
-          if [ -z "${CURRENT_PASSING_SHA}" ] || (cd geode; git merge-base --is-ancestor ${CURRENT_PASSING_SHA} ${GEODE_SHA}); then
-            cat > geode-passing-tokens/passing-build-tokens.json <<JSON
+          if [ -n "${CURRENT_PASSING_SHA}" ]; then
+            cd geode
+            if git merge-base --is-ancestor ${CURRENT_PASSING_SHA} ${GEODE_SHA}; then
+              cat > ../geode-passing-tokens/passing-build-tokens.json <<JSON
           {
             "ref": "${GEODE_SHA}",
             "semver": "${GEODE_SEMVER}"
           }
           JSON
+            fi
           fi
   - aggregate:
     - put: geode-passing-tokens
@@ -517,7 +522,7 @@ jobs:
             - name: concourse-metadata-resource
             - name: results
 {% endfor %}
-{% if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+{% if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
 - name: PublishArtifacts
   public: true
   plan:

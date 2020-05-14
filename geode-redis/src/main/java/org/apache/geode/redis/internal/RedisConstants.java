@@ -63,6 +63,13 @@ public class RedisConstants {
       "Attemping to authenticate with an invalid password";
   public static final String ERROR_NOT_AUTH = "Must authenticate before sending any requests";
   public static final String ERROR_ZSET_MEMBER_NOT_FOUND = "could not decode requested zset member";
+  public static final String ERROR_WRONG_TYPE =
+      "Operation against a key holding the wrong kind of value";
+  public static final String ERROR_NOT_INTEGER = "value is not an integer or out of range";
+  public static final String ERROR_OVERFLOW = "increment or decrement would overflow";
+  public static final String ERROR_NO_SUCH_KEY = "no such key";
+  public static final String ERROR_SYNTAX = "syntax error";
+  public static final String ERROR_INVALID_EXPIRE_TIME = "invalid expire time in set";
 
   public static class ArityDef {
 
@@ -106,37 +113,6 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the TYPE command is \"TYPE key\"";
     public static final String UNKNOWN = null;
 
-    /*
-     * Hash
-     */
-    public static final String HDEL =
-        "The wrong number of arguments or syntax was provided, the format for the HDEL command is \"HDEL key field [field ...]\"";
-    public static final String HEXISTS =
-        "The wrong number of arguments or syntax was provided, the format for the HEXISTS command is \"HEXISTS key field\"";
-    public static final String HGETALL =
-        "The wrong number of arguments or syntax was provided, the format for the HGETALL command is \"HGETALL key\"";
-    public static final String HGET =
-        "The wrong number of arguments or syntax was provided, the format for the HGET command is \"HGET key field\"";
-    public static final String HINCRBY =
-        "The wrong number of arguments or syntax was provided, the format for the HINCRBY command is \"HINCRBY key field increment\"";
-    public static final String HINCRBYFLOAT =
-        "The wrong number of arguments or syntax was provided, the format for the HINCRBYFLOAT command is \"HINCRBYFLOAT key field increment\"";
-    public static final String HKEYS =
-        "The wrong number of arguments or syntax was provided, the format for the HKEYS command is \"HKEYS key\"";
-    public static final String HLEN =
-        "The wrong number of arguments or syntax was provided, the format for the HLEN command is \"HLEN key\"";
-    public static final String HMGET =
-        "The wrong number of arguments or syntax was provided, the format for the HMGET command is \"HMGET key field [field ...]\"";
-    public static final String HMSET =
-        "The wrong number of arguments or syntax was provided, the format for the HMSET command is \"HMSET key field value [field value ...]\", or not every field is associated with a value";
-    public static final String HSCAN =
-        "The wrong number of arguments or syntax was provided, the format for the SSCAN command is \"SSCAN key cursor [MATCH pattern] [COUNT count]\"";
-    public static final String HSET =
-        "The wrong number of arguments or syntax was provided, the format for the HSET command is \"HSET key field value\"";
-    public static final String HSETNX =
-        "The wrong number of arguments or syntax was provided, the format for the HSETNX command is \"HSETNX key field value\"";
-    public static final String HVALS =
-        "The wrong number of arguments or syntax was provided, the format for the HVALS command is \"HVALS key\"";
 
     /*
      * Hll
@@ -147,69 +123,6 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the PFCOUNT command is \"PFCOUNT key [key ...]\"";
     public static final String PFMERGE =
         "The wrong number of arguments or syntax was provided, the format for the PFMERGE command is \"PFMERGE destkey sourcekey [sourcekey ...]\"";
-
-    /*
-     * List
-     */
-    public static final String LINDEX =
-        "The wrong number of arguments or syntax was provided, the format for the LINDEX command is \"LINDEX key index";
-    public static final String LINSERT = null;
-    public static final String LLEN =
-        "The wrong number of arguments or syntax was provided, the format for the LLEN command is \"LLEN key";
-    public static final String LPOP =
-        "The wrong number of arguments or syntax was provided, the format for the LPOP command is \"LPOP key";
-    public static final String LPUSH =
-        "The wrong number of arguments or syntax was provided, the format for the LPUSH command is \"LPUSH key value [value ...]";
-    public static final String LPUSHX =
-        "The wrong number of arguments or syntax was provided, the format for the LPUSHX command is \"LPUSHX key value";
-    public static final String LRANGE =
-        "The wrong number of arguments or syntax was provided, the format for the LRANGE command is \"LRANGE key start stop\"";
-    public static final String LREM =
-        "The wrong number of arguments or syntax was provided, the format for the LREM command is \"LREM key count value\"";
-    public static final String LSET =
-        "The wrong number of arguments or syntax was provided, the format for the LSET command is \"LSET key index value\"";
-    public static final String LTRIM =
-        "The wrong number of arguments or syntax was provided, the format for the LTRIM command is \"LTRIM key start stop\"";
-    public static final String RPOP =
-        "The wrong number of arguments or syntax was provided, the format for the RPOP command is \"RPOP key";
-    public static final String RPUSH =
-        "The wrong number of arguments or syntax was provided, the format for the RPUSH command is \"RPUSH key value [value ...]";
-    public static final String RPUSHX =
-        "The wrong number of arguments or syntax was provided, the format for the RPUSHX command is \"RPUSHX key value";
-
-    /*
-     * Set
-     */
-    public static final String SADD =
-        "The wrong number of arguments or syntax was provided, the format for the SADD command is \"SADD key member [member ...]\"";
-    public static final String SCARD =
-        "The wrong number of arguments or syntax was provided, the format for the SCARD command is \"SCARD key\"";
-    public static final String SDIFF =
-        "The wrong number of arguments or syntax was provided, the format for the SDIFF command is \"SDIFF key [key ...]\"";
-    public static final String SDIFFSTORE =
-        "The wrong number of arguments or syntax was provided, the format for the SDIFF command is \"SDIFFSTORE destination key [key ...]\"";
-    public static final String SINTER =
-        "The wrong number of arguments or syntax was provided, the format for the SINTER command is \"SINTER key [key ...]\"";
-    public static final String SINTERSTORE =
-        "The wrong number of arguments or syntax was provided, the format for the SINTERSTORE command is \"SINTERSTORE destination key [key ...]\"";
-    public static final String SISMEMBER =
-        "The wrong number of arguments or syntax was provided, the format for the SISMEMBER command is \"SISMEMBER key member\"";
-    public static final String SMEMBERS =
-        "The wrong number of arguments or syntax was provided, the format for the SMEMBERS command is \"SMEMBERS key\"";
-    public static final String SMOVE =
-        "The wrong number of arguments or syntax was provided, the format for the SMOVE command is \"SMOVE source destination member\"";
-    public static final String SPOP =
-        "The wrong number of arguments or syntax was provided, the format for the SPOP command is \"SPOP key [count]\"";
-    public static final String SRANDMEMBER =
-        "The wrong number of arguments or syntax was provided, the format for the SRANDMEMBER command is \"SRANDMEMBER key [count]\"";
-    public static final String SREM =
-        "The wrong number of arguments or syntax was provided, the format for the SREM command is \"SREM key member [member ...]\"";
-    public static final String SSCAN =
-        "The wrong number of arguments or syntax was provided, the format for the SSCAN command is \"SSCAN key cursor [MATCH pattern] [COUNT count]\"";
-    public static final String SUNION =
-        "The wrong number of arguments or syntax was provided, the format for the SUNION command is \"SUNION key [key ...]\"";
-    public static final String SUNIONSTORE =
-        "The wrong number of arguments or syntax was provided, the format for the SUNIONSTORE command is \"SUNIONSTORE destination key [key ...]\"";
 
     /*
      * Sorted set

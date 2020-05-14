@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -198,14 +199,14 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
     String subRegionName = "subregion";
-    String subRegionPath = regionName + "/" + subRegionName;
+    String subRegionPath = regionName + SEPARATOR + subRegionName;
 
     gfsh.executeAndAssertThat("create region --name=" + subRegionPath +
         " --type=REPLICATE")
         .statusIsSuccess();
 
     String subSubRegionName = "subregion2";
-    String subSubRegionPath = regionName + "/" + subRegionName + "/" + subSubRegionName;
+    String subSubRegionPath = regionName + SEPARATOR + subRegionName + SEPARATOR + subSubRegionName;
     gfsh.executeAndAssertThat("create region --name=" + subSubRegionPath +
         " --type=REPLICATE")
         .statusIsSuccess();
@@ -525,7 +526,7 @@ public class CreateRegionCommandDUnitTest {
         "create region --type=REPLICATE_PROXY --group=group2 --name=" + regionName)
         .statusIsSuccess().tableHasRowWithValues("Member", "server-2");
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 2);
 
     gfsh.executeAndAssertThat(
         "create region --type=PARTITION_PROXY --group=group2 --name=" + regionName).statusIsError()
@@ -542,7 +543,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group2 --name=" + regionName)
         .statusIsSuccess().tableHasRowWithValues("Member", "server-2");
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 2);
     // the following two should fail with name check on locator, not on server
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
         .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
@@ -663,7 +664,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
         .statusIsSuccess().tableHasRowWithValues("Member", "server-2");
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 2);
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
         .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
     gfsh.executeAndAssertThat(

@@ -30,7 +30,7 @@ dependencies {
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
 
-  compileOnly('org.apache.logging.log4j:log4j-api:2.12.1')
+  compileOnly('org.apache.logging.log4j:log4j-api:2.13.1')
   
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')

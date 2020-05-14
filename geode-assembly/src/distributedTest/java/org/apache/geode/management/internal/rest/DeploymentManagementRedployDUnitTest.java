@@ -20,13 +20,16 @@ import static org.apache.geode.test.junit.assertions.ClusterManagementRealizatio
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -124,10 +127,10 @@ public class DeploymentManagementRedployDUnitTest {
   }
 
   @Test
-  public void redeployJarsWithNewVersionsOfFunctionsAndMultipleLocators() {
+  public void redeployJarsWithNewVersionsOfFunctionsAndMultipleLocators() throws IOException {
     Properties props = new Properties();
     props.setProperty("locators", "localhost[" + locator.getPort() + "]");
-    lsRule.startLocatorVM(2, props);
+    MemberVM locator2 = lsRule.startLocatorVM(2, props);
 
     deployment.setFile(jarAVersion1);
     assertManagementResult(client.create(deployment)).isSuccessful();
@@ -141,6 +144,14 @@ public class DeploymentManagementRedployDUnitTest {
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
     server.stop(false);
+    Path locator1Jar =
+        locator.getWorkingDir().toPath().resolve("cluster_config/cluster/" + JAR_NAME_A);
+    Path locator2Jar =
+        locator2.getWorkingDir().toPath().resolve("cluster_config/cluster/" + JAR_NAME_A);
+
+    await().pollDelay(1, TimeUnit.SECONDS)
+        .until(() -> FileUtils.contentEquals(locator1Jar.toFile(), jarAVersion2) &&
+            FileUtils.contentEquals(locator2Jar.toFile(), jarAVersion2));
 
     lsRule.startServerVM(1, locator.getPort());
 

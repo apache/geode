@@ -14,10 +14,16 @@
  */
 package org.apache.geode.internal.cache.util;
 
+import org.apache.geode.cache.execute.Execution;
+
 @SuppressWarnings({"unchecked", "unused"})
 public class UncheckedUtils {
 
   public static <T> T cast(Object object) {
     return (T) object;
+  }
+
+  public static <IN, OUT, AGG> Execution<IN, OUT, AGG> cast(Execution execution) {
+    return execution;
   }
 }

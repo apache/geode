@@ -229,7 +229,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
   public String toString() {
     StringBuilder buffer = new StringBuilder();
     buffer.append("ClientDataSerializerMessage[value=")
-        .append(Arrays.toString(this.serializedDataSerializer))
+        .append(Arrays.deepToString(this.serializedDataSerializer))
         .append(";memberId=")
         .append(getMembershipId()).append(";eventId=").append(getEventId()).append("]");
     return buffer.toString();

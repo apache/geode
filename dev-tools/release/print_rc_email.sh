@@ -52,6 +52,8 @@ else
     exit 1
 fi
 
+VERSION_MM=${VERSION%.*}
+
 #support mac or linux date arithmetic syntax
 DEADLINE=$(date --date '+5 days' '+%a, %B %d %Y' 2>/dev/null || date -v +5d "+%a, %B %d %Y" 2>/dev/null || echo "<5 days from now>")
 
@@ -85,8 +87,8 @@ https://github.com/apache/geode-native/tree/rel/v${FULL_VERSION}
 https://github.com/apache/geode-benchmarks/tree/rel/v${FULL_VERSION}
 
 Pipelines:
-https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-main
-https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-rc
+https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main
+https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-rc
 
 Geode's KEYS file containing PGP keys we use to sign the release:
 https://github.com/apache/geode/blob/develop/KEYS

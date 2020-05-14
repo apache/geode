@@ -125,7 +125,7 @@ public class RebalanceOperationPerformerTest {
     RebalanceOperationPerformer.FunctionExecutor functionExecutor =
         mock(RebalanceOperationPerformer.FunctionExecutor.class);
     List<Object> resultList = new ArrayList<>();
-    resultList.add("0,1,2,3,4,5,6,7,8,/region1");
+    resultList.add("0,1,2,3,4,5,6,7,8,9,/region1");
     when(functionExecutor.execute(any(), any(), any())).thenReturn(resultList);
 
     RebalanceResult result =

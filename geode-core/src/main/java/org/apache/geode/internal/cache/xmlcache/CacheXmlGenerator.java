@@ -1153,6 +1153,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         atts.addAttribute("", "", FREE_CONNECTION_TIMEOUT, "",
             String.valueOf(cp.getFreeConnectionTimeout()));
       if (generateDefaults()
+          || cp.getServerConnectionTimeout() != PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT)
+        atts.addAttribute("", "", SERVER_CONNECTION_TIMEOUT, "",
+            String.valueOf(cp.getServerConnectionTimeout()));
+      if (generateDefaults()
           || cp.getLoadConditioningInterval() != PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL)
         atts.addAttribute("", "", LOAD_CONDITIONING_INTERVAL, "",
             String.valueOf(cp.getLoadConditioningInterval()));
@@ -1228,6 +1232,11 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           sAtts.addAttribute("", "", PORT, "", String.valueOf(addr.getPort()));
           handler.startElement("", SERVER, SERVER, sAtts);
           handler.endElement("", SERVER, SERVER);
+        }
+        if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+          if (cp.getSocketFactory() != PoolFactory.DEFAULT_SOCKET_FACTORY) {
+            generate(SOCKET_FACTORY, cp.getSocketFactory());
+          }
         }
       }
       handler.endElement("", "", CONNECTION_POOL);

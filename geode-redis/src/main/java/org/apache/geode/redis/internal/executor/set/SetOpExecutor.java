@@ -26,21 +26,15 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 
-public abstract class SetOpExecutor extends SetExecutor implements Extendable {
+public abstract class SetOpExecutor extends SetExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int setsStartIndex = isStorage() ? 2 : 1;
-
-    if (commandElems.size() < setsStartIndex + 1) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
-      return;
-    }
 
     RegionProvider regionProvider = context.getRegionProvider();
     ByteArrayWrapper destination = null;
@@ -71,14 +65,14 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
       List<byte[]> commandElems, int setsStartIndex,
       RegionProvider regionProvider, ByteArrayWrapper destination,
       ByteArrayWrapper firstSetKey) {
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = this.getRegion(context);
-    Set<ByteArrayWrapper> firstSet = region.get(firstSetKey);
+    Region<ByteArrayWrapper, RedisSet> region = this.getRegion(context);
+    Set<ByteArrayWrapper> firstSet = RedisSet.smembers(region, firstSetKey);
 
     List<Set<ByteArrayWrapper>> setList = new ArrayList<>();
     for (int i = setsStartIndex; i < commandElems.size(); i++) {
       ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
 
-      Set<ByteArrayWrapper> entry = region.get(key);
+      Set<ByteArrayWrapper> entry = RedisSet.smembers(region, key);
       if (entry != null) {
         setList.add(entry);
       } else if (this instanceof SInterExecutor) {
@@ -93,16 +87,10 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
 
     Set<ByteArrayWrapper> resultSet = setOp(firstSet, setList);
     if (isStorage()) {
-      Set<ByteArrayWrapper> newSet = null;
       regionProvider.removeKey(destination);
       if (resultSet != null) {
-        Set<ByteArrayWrapper> set = new HashSet<>();
-        for (ByteArrayWrapper entry : resultSet) {
-          set.add(entry);
-        }
-        if (!set.isEmpty()) {
-          newSet = new HashSet<>(set);
-          region.put(destination, newSet);
+        if (!resultSet.isEmpty()) {
+          region.put(destination, new RedisSet(resultSet));
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
         }
         command

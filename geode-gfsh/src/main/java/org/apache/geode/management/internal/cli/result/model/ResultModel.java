@@ -140,8 +140,8 @@ public class ResultModel {
   }
 
   /**
-   * @param fileName: only the name part of the file, no directory infomation
-   * @param content: the content to be saved to the file
+   * @param fileName only the name part of the file, no directory infomation
+   * @param content the content to be saved to the file
    */
   public void addFile(String fileName, String content) {
     FileResultModel fileModel = new FileResultModel(fileName, content);

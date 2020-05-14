@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -61,6 +62,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
@@ -74,6 +76,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
+import org.apache.geode.distributed.internal.membership.gms.TestMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
@@ -821,6 +824,24 @@ public class JGroupsMessengerJUnitTest {
         interceptor.collectedMessages.size(), 1);
     org.jgroups.Message m = interceptor.collectedMessages.get(0);
     assertTrue(pinger.isPongMessage(m.getBuffer()));
+  }
+
+  /**
+   * messages for the Manager that were queued by a quorum checker shouldn't be delivered to
+   * a Manager
+   */
+  @Test
+  public void testIgnoreManagerMessagesFromQuorumChecker() throws Exception {
+    initMocks(false);
+    MemberIdentifier memberIdentifier = createAddress(8888);
+    JGAddress jgAddress = new JGAddress(memberIdentifier);
+
+    ArgumentCaptor<Message> valueCapture = ArgumentCaptor.forClass(Message.class);
+    doNothing().when(manager).processMessage(valueCapture.capture());
+    org.jgroups.Message jgroupsMessage = messenger.createJGMessage(new TestMessage(), jgAddress,
+        memberIdentifier, Version.CURRENT_ORDINAL);
+    messenger.jgroupsReceiver.receive(jgroupsMessage, true);
+    assertThat(valueCapture.getAllValues()).isEmpty();
   }
 
   @Test

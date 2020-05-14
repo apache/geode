@@ -123,8 +123,8 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
       // Execute a query on the client and verify the results
       client.invoke(() -> verifyLuceneQueryResults(regionName, numObjects));
     } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), locator);
       invokeRunnableInVMs(true, invokeCloseCache(), client, server2);
+      invokeRunnableInVMs(true, invokeStopLocator(), locator);
     }
   }
 }

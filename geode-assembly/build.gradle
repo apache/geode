@@ -18,7 +18,6 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
-
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
 import java.nio.file.Paths
@@ -140,6 +139,10 @@ repositories {
   maven {
     url 'https://repo.gradle.org/gradle/libs-releases'
   }
+  // docker-compose-rule is published on bintray
+  maven {
+    url 'https://dl.bintray.com/palantir/releases'
+  }
 }
 
 def webServersDir = "$buildDir/generated-resources/webservers"
@@ -162,27 +165,13 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
-  geodeArchives project(':geode-common')
-  geodeArchives project(':geode-connectors')
-  geodeArchives project(':geode-core')
-  geodeArchives project(':geode-cq')
-  geodeArchives project(':geode-gfsh')
-  geodeArchives project(':geode-log4j')
-  geodeArchives project(':geode-logging')
-  geodeArchives project(':geode-lucene')
+  dependentProjectNames.each {
+    geodeArchives(project(it))
+  }
   geodeArchives project(':geode-management')
-  geodeArchives project(':geode-memcached')
-  geodeArchives project(':geode-old-client-support')
-  geodeArchives project(':geode-protobuf')
-  geodeArchives project(':geode-protobuf-messages')
-  geodeArchives project(':geode-rebalancer')
-  geodeArchives project(':geode-redis')
-  geodeArchives project(':geode-serialization')
-  geodeArchives project(':geode-tcp-server')
-  geodeArchives project(':geode-wan')
-  geodeArchives project(':geode-web')
-  geodeArchives project(':geode-web-api')
-  geodeArchives project(':geode-web-management')
+  geodeArchives project(path: ':geode-web', configuration: 'war')
+  geodeArchives project(path: ':geode-web-api', configuration: 'war')
+  geodeArchives project(path: ':geode-web-management', configuration: 'war')
 
   javadocOnly project(':extensions:geode-modules')
   javadocOnly project(':extensions:geode-modules-session')
@@ -224,6 +213,9 @@ dependencies {
   integrationTestImplementation('org.springframework:spring-beans')
   integrationTestImplementation('org.springframework:spring-context')
   integrationTestImplementation('org.springframework:spring-web')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-core')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-client')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-jose')
   integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 
@@ -279,6 +271,8 @@ dependencies {
   // don't have it be the same version as the outer gradle version.
   acceptanceTestImplementation('org.gradle:gradle-tooling-api:5.1.1')
 
+  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
+  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
 
   uiTestImplementation(project(':geode-core'))
   uiTestImplementation(project(':geode-dunit')) {
@@ -488,11 +482,13 @@ tasks.register('docs', Javadoc) {
   include 'org/apache/geode/**/'
 
   doLast {
-    parent.subprojects.each { project ->
+    rootProject.subprojects.each { project ->
       copy {
-        from project.sourceSets.main.resources.srcDirs
-        into docsDir
+        if (project.hasProperty('sourceSets')) {
+          from project.sourceSets.main.resources.srcDirs
+        }
         include 'javadoc-images/*'
+        into docsDir
       }
     }
   }
@@ -555,11 +551,13 @@ distributions {
 
       with copySpec {
         into('config')
-        from defaultCacheConfig
-        from defaultDistributionConfig
-        from(project(':geode-log4j').sourceSets.main.resources.files.find {
-          it.name == 'log4j2.xml'
-        })
+        from {defaultCacheConfig}
+        from {defaultDistributionConfig}
+        from {
+          (project(':geode-log4j').sourceSets.main.resources.files.find {
+            it.name == 'log4j2.xml'
+          })
+        }
       }
 
       with copySpec {
@@ -576,8 +574,8 @@ distributions {
 
         //These tasks are included as closures (wrapped in {}) because gradle may evaluate
         //this CopySpec before it evaluates the geode-core build file.
-        from project(':geode-core').tasks.named('raJar')
-        from project(':geode-core').tasks.named('jcaJar')
+        from {project(':geode-core').tasks.named('raJar')}
+        from {project(':geode-core').tasks.named('jcaJar')}
 
         // dependency jars
         from tasks.named('depsJar')
@@ -587,16 +585,16 @@ distributions {
       with copySpec {
         into('tools/Extensions')
 
-        from project(':geode-web').configurations.archives.allArtifacts.files
-        from project(':geode-web-api').configurations.archives.allArtifacts.files
-        from project(':geode-web-management').configurations.archives.allArtifacts.files
+        from {project(':geode-web').configurations.archives.allArtifacts.files}
+        from {project(':geode-web-api').configurations.archives.allArtifacts.files}
+        from {project(':geode-web-management').configurations.archives.allArtifacts.files}
 
         exclude '*.jar'
       }
 
       with copySpec {
         into('tools/ClientProtocol')
-        from project(':geode-protobuf-messages').zip.outputs.files
+        from {project(':geode-protobuf-messages').zip.outputs.files}
       }
 
       with copySpec {
@@ -606,7 +604,7 @@ distributions {
 
       with copySpec {
         into('tools/Pulse')
-        from project(':geode-pulse').configurations.archives.allArtifacts.files
+        from {project(':geode-pulse').configurations.archives.allArtifacts.files}
       }
 
       with copySpec {
@@ -639,6 +637,7 @@ tasks.named('srcDistTar').configure {
 
 [tasks.named('distZip'),
  tasks.named('srcDistZip'),
+ tasks.named('dockerfileZip'),
  ]*.configure {
   enabled = false
 }
@@ -692,3 +691,9 @@ docker {
   name geodeDockerImageName
   copySpec.from(tasks.installDist.outputs).into('geode')
 }
+
+acceptanceTest {
+  dependsOn(tasks.docker)
+}
+
+apply from: Paths.get("${rootDir}", 'gradle', 'japicmp.gradle')

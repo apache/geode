@@ -22,7 +22,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Executor;
@@ -212,7 +212,7 @@ public class ExecuteFunction66Test {
 
     verify(securityService).authorize(ResourcePermissions.DATA_WRITE);
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
-    verifyZeroInteractions(serverToClientFunctionResultSender65Factory);
+    verifyNoMoreInteractions(serverToClientFunctionResultSender65Factory);
   }
 
   @Test
@@ -240,6 +240,6 @@ public class ExecuteFunction66Test {
         securityService, 0)).isExactlyInstanceOf(NullPointerException.class);
 
     verify(securityService).authorize(ResourcePermissions.DATA_WRITE);
-    verifyZeroInteractions(serverToClientFunctionResultSender65Factory);
+    verifyNoMoreInteractions(serverToClientFunctionResultSender65Factory);
   }
 }

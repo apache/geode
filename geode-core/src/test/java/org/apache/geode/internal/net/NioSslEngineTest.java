@@ -34,6 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
@@ -61,8 +62,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class NioSslEngineTest {
-  private static final int netBufferSize = 10000;
-  private static final int appBufferSize = 20000;
+  private static final int netBufferSize = 4096;
+  private static final int appBufferSize = 32768;
 
   private SSLEngine mockEngine;
   private DMStats mockStats;
@@ -82,6 +83,11 @@ public class NioSslEngineTest {
 
     nioSslEngine = new NioSslEngine(mockEngine, new BufferPool(mockStats));
     spyNioSslEngine = spy(nioSslEngine);
+  }
+
+  @Test
+  public void engineUsesDirectBuffers() {
+    assertThat(nioSslEngine.myNetData.isDirect()).isTrue();
   }
 
   @Test
@@ -196,11 +202,11 @@ public class NioSslEngineTest {
 
 
   @Test
-  public void checkClosed() {
+  public void checkClosed() throws Exception {
     nioSslEngine.checkClosed();
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test(expected = IOException.class)
   public void checkClosedThrows() throws Exception {
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 100));
@@ -340,7 +346,8 @@ public class NioSslEngineTest {
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 0));
     nioSslEngine.close(mockChannel);
-    assertThatThrownBy(() -> nioSslEngine.checkClosed()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> nioSslEngine.checkClosed()).isInstanceOf(IOException.class)
+        .hasMessageContaining("NioSslEngine has been closed");
     nioSslEngine.close(mockChannel);
   }
 

@@ -80,10 +80,16 @@ public class Coder {
   public static final byte[] bNIL = stringToBytes("$-1\r\n"); // {'$', '-', '1', '\r', '\n'};
 
   /**
-   * byte array of an empty string
+   * byte array of an empty array
    */
   @MakeImmutable
   public static final byte[] bEMPTY_ARRAY = stringToBytes("*0\r\n"); // {'*', '0', '\r', '\n'};
+
+  /**
+   * byte array of an empty string
+   */
+  @MakeImmutable
+  public static final byte[] bEMPTY_STRING = stringToBytes("$0\r\n\r\n");
 
   @MakeImmutable
   public static final byte[] err = stringToBytes("ERR ");
@@ -277,6 +283,11 @@ public class Coder {
     return buf;
   }
 
+  public static ByteBuf getEmptyStringResponse(ByteBufAllocator alloc) {
+    ByteBuf buf = alloc.buffer().writeBytes(bEMPTY_STRING);
+    return buf;
+  }
+
   public static ByteBuf getSimpleStringResponse(ByteBufAllocator alloc, String string) {
     byte[] simpAr = stringToBytes(string);
 
@@ -464,7 +475,11 @@ public class Coder {
       return "-Infinity";
     }
 
-    return String.valueOf(d);
+    String stringValue = String.valueOf(d);
+    if (stringValue.endsWith(".0")) {
+      return (stringValue.substring(0, stringValue.length() - 2));
+    }
+    return stringValue;
   }
 
   public static byte[] stringToBytes(String string) {

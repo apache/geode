@@ -37,7 +37,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -79,18 +78,15 @@ public class TcpServerJUnitTest {
     assertThat(server.isAlive()).isTrue();
   }
 
-  @Before
-  public void setup() {
-    TcpClient.clearStaticData();
-  }
-
   @Test
   public void testConnectToUnknownHost() {
     final TcpClient tcpClient = createTcpClient();
     @SuppressWarnings("deprecation")
     InfoRequest testInfoRequest = new InfoRequest();
     assertThatThrownBy(() -> tcpClient.requestToServer(new HostAndPort("unknown host name", port),
-        testInfoRequest, TIMEOUT)).isInstanceOf(UnknownHostException.class);
+        testInfoRequest, TIMEOUT))
+            .as("Hostname resolved unexpectedly. Check for DNS hijacking in addition to code errors.")
+            .isInstanceOf(UnknownHostException.class);
   }
 
   @SuppressWarnings("deprecation")
@@ -120,7 +116,7 @@ public class TcpServerJUnitTest {
     TcpSocketCreator socketCreator = new TcpSocketCreatorImpl();
     return new TcpClient(socketCreator,
         serializer.getObjectSerializer(),
-        serializer.getObjectDeserializer());
+        serializer.getObjectDeserializer(), TcpSocketFactory.DEFAULT);
   }
 
   @Test

@@ -31,7 +31,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -110,7 +110,7 @@ public class AlterQueryServiceFunctionTest {
     when(mockContext.getArguments()).thenReturn(new Object[] {false, null, Collections.emptySet()});
 
     CliFunctionResult result = function.executeFunction(mockContext);
-    verifyZeroInteractions(mockQueryConfigService);
+    verifyNoMoreInteractions(mockQueryConfigService);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage()).isEqualTo(EMPTY_AUTHORIZER_ERROR);
   }
@@ -120,7 +120,7 @@ public class AlterQueryServiceFunctionTest {
     doReturn(false).when(function).isSecurityEnabled();
 
     CliFunctionResult result = function.executeFunction(mockContext);
-    verifyZeroInteractions(mockQueryConfigService);
+    verifyNoMoreInteractions(mockQueryConfigService);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage()).isEqualTo(SECURITY_NOT_ENABLED_MESSAGE);
   }
@@ -130,7 +130,7 @@ public class AlterQueryServiceFunctionTest {
     setAllowUntrustedMethodInvocationSystemProperty();
 
     CliFunctionResult result = function.executeFunction(mockContext);
-    verifyZeroInteractions(mockQueryConfigService);
+    verifyNoMoreInteractions(mockQueryConfigService);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage()).isEqualTo(DEPRECATED_PROPERTY_ERROR);
   }

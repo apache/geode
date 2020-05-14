@@ -290,7 +290,7 @@ public class LocatorDUnitTest implements Serializable {
     try {
       for (int i = 0; i < 4; i++) {
         forceDisconnect();
-        system.waitUntilReconnected(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS);
+        system.waitUntilReconnected(GeodeAwaitility.getTimeout().toMillis(), MILLISECONDS);
         assertThat(system.getReconnectedSystem()).isNotNull();
         system = (InternalDistributedSystem) system.getReconnectedSystem();
       }

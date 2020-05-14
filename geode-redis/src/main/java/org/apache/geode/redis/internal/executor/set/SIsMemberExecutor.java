@@ -15,14 +15,11 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.List;
-import java.util.Set;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class SIsMemberExecutor extends SetExecutor {
@@ -35,12 +32,6 @@ public class SIsMemberExecutor extends SetExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() != 3) {
-      command
-          .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SISMEMBER));
-      return;
-    }
-
     ByteArrayWrapper key = command.getKey();
     if (!context.getKeyRegistrar().isRegistered(key)) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
@@ -48,17 +39,10 @@ public class SIsMemberExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
-
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = this.getRegion(context);
-
-    Set<ByteArrayWrapper> set = region.get(key);
-
-    if (set == null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
-    }
-
-    if (set.contains(member)) {
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    boolean isMember = redisSetCommands.sismember(key, member);
+    if (isMember) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
       // save key for next quick lookup
       context.getKeyRegistrar().register(key, RedisDataType.REDIS_SET);

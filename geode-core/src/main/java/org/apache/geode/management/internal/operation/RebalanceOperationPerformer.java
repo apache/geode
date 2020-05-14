@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,7 +104,7 @@ public class RebalanceOperationPerformer {
       boolean simulate)
       throws InterruptedException {
     // To be removed after region Name specification with "/" is fixed
-    regionName = regionName.startsWith("/") ? regionName : ("/" + regionName);
+    regionName = regionName.startsWith(SEPARATOR) ? regionName : (SEPARATOR + regionName);
     Region region = cache.getRegion(regionName);
 
     if (region == null) {
@@ -158,7 +160,7 @@ public class RebalanceOperationPerformer {
 
       // translate to the return type we want
       RebalanceRegionResultImpl result = new RebalanceRegionResultImpl();
-      result.setRegionName(regionName.replace("/", ""));
+      result.setRegionName(regionName.replace(SEPARATOR, ""));
       result.setBucketCreateBytes(results.getTotalBucketCreateBytes());
       result.setBucketCreateTimeInMilliseconds(results.getTotalBucketCreateTime());
       result.setBucketCreatesCompleted(results.getTotalBucketCreatesCompleted());
@@ -167,13 +169,14 @@ public class RebalanceOperationPerformer {
       result.setBucketTransfersCompleted(results.getTotalBucketTransfersCompleted());
       result.setPrimaryTransferTimeInMilliseconds(results.getTotalPrimaryTransferTime());
       result.setPrimaryTransfersCompleted(results.getTotalPrimaryTransfersCompleted());
+      result.setNumOfMembers(results.getTotalMembersExecutedOn());
       result.setTimeInMilliseconds(results.getTotalTime());
 
       return result;
     }
   }
 
-  private static DistributedMember getAssociatedMembers(String region, final InternalCache cache) {
+  public static DistributedMember getAssociatedMembers(String region, final InternalCache cache) {
     DistributedRegionMXBean bean =
         ManagementService.getManagementService(cache).getDistributedRegionMXBean(region);
 
@@ -204,7 +207,7 @@ public class RebalanceOperationPerformer {
     return member;
   }
 
-  private static List<MemberPRInfo> getMemberRegionList(ManagementService managementService,
+  public static List<MemberPRInfo> getMemberRegionList(ManagementService managementService,
       InternalCache cache,
       List<String> listExcludedRegion) {
     List<MemberPRInfo> listMemberPRInfo = new ArrayList<>();
@@ -219,14 +222,14 @@ public class RebalanceOperationPerformer {
         // this is needed since region name may start with / or without it
         // also
         String excludedRegion = aListExcludedRegion.trim();
-        if (regionName.startsWith("/")) {
-          if (!excludedRegion.startsWith("/")) {
-            excludedRegion = "/" + excludedRegion;
+        if (regionName.startsWith(SEPARATOR)) {
+          if (!excludedRegion.startsWith(SEPARATOR)) {
+            excludedRegion = SEPARATOR + excludedRegion;
           }
         }
-        if (excludedRegion.startsWith("/")) {
-          if (!regionName.startsWith("/")) {
-            regionName = "/" + regionName;
+        if (excludedRegion.startsWith(SEPARATOR)) {
+          if (!regionName.startsWith(SEPARATOR)) {
+            regionName = SEPARATOR + regionName;
           }
         }
 
@@ -241,8 +244,8 @@ public class RebalanceOperationPerformer {
         continue;
       }
 
-      if (!regionName.startsWith("/")) {
-        regionName = Region.SEPARATOR + regionName;
+      if (!regionName.startsWith(SEPARATOR)) {
+        regionName = SEPARATOR + regionName;
       }
       // remove this prefix /
       DistributedRegionMXBean bean = managementService.getDistributedRegionMXBean(regionName);
@@ -284,7 +287,7 @@ public class RebalanceOperationPerformer {
     return dsMemberList.contains(dsMember);
   }
 
-  private static String listOfAllMembers(ArrayList<DistributedMember> dsMemberList) {
+  private static String listOfAllMembers(List<DistributedMember> dsMemberList) {
     StringBuilder listMembersId = new StringBuilder();
     for (int j = 0; j < dsMemberList.size() - 1; j++) {
       listMembersId.append(dsMemberList.get(j).getId());
@@ -455,16 +458,17 @@ public class RebalanceOperationPerformer {
     result.setPrimaryTransferTimeInMilliseconds(Long.parseLong(rstList.get(6)));
     result.setPrimaryTransfersCompleted(Integer.parseInt(rstList.get(7)));
     result.setTimeInMilliseconds(Long.parseLong(rstList.get(8)));
-    result.setRegionName(rstList.get(9).replace("/", ""));
+    result.setNumOfMembers(Integer.parseInt(rstList.get(9)));
+    result.setRegionName(rstList.get(10).replace(SEPARATOR, ""));
 
     return result;
   }
 
-  private static class MemberPRInfo {
-    ArrayList<DistributedMember> dsMemberList;
+  public static class MemberPRInfo {
+    public List<DistributedMember> dsMemberList;
     public String region;
 
-    MemberPRInfo() {
+    public MemberPRInfo() {
       region = "";
       dsMemberList = new ArrayList<>();
     }

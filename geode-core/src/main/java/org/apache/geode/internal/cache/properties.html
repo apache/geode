@@ -2787,16 +2787,19 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>p2p.nodirectBuffers</strong></dt>
+<dt><strong>gemfire.BufferPool.useHeapBuffers</strong></dt>
 <dd>
 <em>Public:</em> false
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>org.apache.geode.internal.tcp.TCPConduit#useDirectBuffers</code>.
+See <code>org.apache.geode.internal.net.BufferPool#useDirectBuffers</code>.
 <p>
 <pre>
-  use direct ByteBuffers instead of heap ByteBuffers for NIO operations
+  use java "heap" ByteBuffers instead of direct ByteBuffers for NIO operations.  Recommended if TLSv1
+    is being used or if you find you are running out of direct-memory and do not want to
+    increase the amount of direct-memory available to the JVM.  Use of heap buffers can
+    reduce performance in some cases.
 </pre>
 <p>
 TBA

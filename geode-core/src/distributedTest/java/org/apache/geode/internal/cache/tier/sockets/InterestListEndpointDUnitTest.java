@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.Region.Entry;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.client.PoolManager.find;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -179,7 +180,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     client1.invoke(new CacheSerializableRunnable("Ensure that the failover from ILEP occurs") {
       @Override
       public void run2() throws CacheException {
-        Region r = cache.getRegion("/" + REGION_NAME);
+        Region r = cache.getRegion(SEPARATOR + REGION_NAME);
 
         String poolName = r.getAttributes().getPoolName();
         assertNotNull(poolName);
@@ -225,7 +226,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static int getPrimaryPort() throws Exception {
-    Region r1 = cache.getRegion("/" + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     String poolName = r1.getAttributes().getPoolName();
     assertNotNull(poolName);
     pool = (PoolImpl) PoolManager.find(poolName);
@@ -244,7 +245,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
   public static void acquirePoolConnection() {
     try {
-      Region r1 = cache.getRegion("/" + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r1);
       String poolName = r1.getAttributes().getPoolName();
       assertNotNull(poolName);
@@ -284,7 +285,6 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
       Iterator iter_prox = bs.getAcceptor().getCacheClientNotifier().getClientProxies().iterator();
       if (iter_prox.hasNext()) {
         CacheClientProxy proxy = (CacheClientProxy) iter_prox.next();
-        // if (proxy._interestList._keysOfInterest.get("/"+REGION_NAME) != null) {
         if (proxy.isPrimary()) {
           Iterator iter = cache.getCacheServers().iterator();
           if (iter.hasNext()) {
@@ -301,7 +301,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntriesK1andK2() {
     try {
-      Region r1 = cache.getRegion("/" + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r1);
       if (!r1.containsKey(k1)) {
         r1.create(k1, client_k1);
@@ -377,7 +377,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
   public static void put() {
     try {
-      Region r = cache.getRegion("/" + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       r.put(k1, server_k1);
       r.put(k2, server_k2);
@@ -398,9 +398,8 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
       // only one server thats why if and not while
       if (iter.hasNext()) {
         CacheClientProxy proxy = (CacheClientProxy) iter.next();
-        // if (proxy._interestList._keysOfInterest.get("/"+ REGION_NAME) == null) {
         if (!proxy.isPrimary()) {
-          Region r = cache.getRegion("/" + REGION_NAME);
+          Region r = cache.getRegion(SEPARATOR + REGION_NAME);
           r.put(k1, server_k1);
           r.put(k2, server_k2);
         }
@@ -413,7 +412,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
   public static void registerKey1() {
     try {
-      Region r = cache.getRegion("/" + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       r.registerInterest(k1, InterestResultPolicy.KEYS);
     } catch (Exception ex) {
@@ -423,7 +422,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyPut() {
     try {
-      final Region r = cache.getRegion("/" + REGION_NAME);
+      final Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       WaitCriterion ev = new WaitCriterion() {
         @Override

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -74,7 +75,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.ClearPRMessage;
+import org.apache.geode.internal.cache.partitioned.FetchKeysMessage;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings({"deprecation", "unchecked", "unused"})
@@ -598,6 +602,74 @@ public class PartitionedRegionTest {
 
     assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
         .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE).hasCause(exception);
+  }
+
+  @Test
+  public void failuresSavedIfFetchKeysThrows() throws Exception {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+
+    VersionedObjectList values = mock(VersionedObjectList.class);
+    ServerConnection serverConnection = mock(ServerConnection.class);
+    Set<Integer> failures = new HashSet<>();
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    Set<Integer> buckets = new HashSet<>();
+    buckets.add(1);
+    doThrow(new ForceReattemptException("")).when(spyPartitionedRegion).getFetchKeysResponse(member,
+        1);
+
+    spyPartitionedRegion.fetchKeysAndValues(values, serverConnection, failures, member, null,
+        buckets);
+
+    verify(spyPartitionedRegion, never()).getValuesForKeys(values, serverConnection, null);
+    assertThat(failures.contains(1)).isTrue();
+  }
+
+  @Test
+  public void fetchKeysAndValuesInvokesGetValuesForKeys() throws Exception {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+
+    VersionedObjectList values = mock(VersionedObjectList.class);
+    ServerConnection serverConnection = mock(ServerConnection.class);
+    Set<Integer> failures = new HashSet<>();
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    Set<Integer> buckets = new HashSet<>();
+    buckets.add(1);
+    FetchKeysMessage.FetchKeysResponse fetchKeysResponse =
+        mock(FetchKeysMessage.FetchKeysResponse.class);
+    doReturn(fetchKeysResponse).when(spyPartitionedRegion).getFetchKeysResponse(member, 1);
+    Set keys = new HashSet();
+    when(fetchKeysResponse.waitForKeys()).thenReturn(keys);
+    doNothing().when(spyPartitionedRegion).getValuesForKeys(values, serverConnection, keys);
+
+    spyPartitionedRegion.fetchKeysAndValues(values, serverConnection, failures, member, null,
+        buckets);
+
+    verify(spyPartitionedRegion).getValuesForKeys(values, serverConnection, keys);
+    assertThat(failures.contains(1)).isFalse();
+  }
+
+  @Test
+  public void testGetRegionCreateNotification() {
+    partitionedRegion = new PartitionedRegion("region", attributesFactory.create(), null, cache,
+        mock(InternalRegionArguments.class), disabledClock(), ColocationLoggerFactory.create());
+
+    assertThat(partitionedRegion.isRegionCreateNotified()).isFalse();
+
+    partitionedRegion.setRegionCreateNotified(true);
+
+    assertThat(partitionedRegion.isRegionCreateNotified()).isTrue();
+  }
+
+  @Test
+  public void testNotifyRegionCreated() {
+    partitionedRegion = new PartitionedRegion("region", attributesFactory.create(), null, cache,
+        mock(InternalRegionArguments.class), disabledClock(), ColocationLoggerFactory.create());
+
+    assertThat(partitionedRegion.isRegionCreateNotified()).isFalse();
+
+    partitionedRegion.notifyRegionCreated();
+
+    assertThat(partitionedRegion.isRegionCreateNotified()).isTrue();
   }
 
   private static <K> Set<K> asSet(K... values) {

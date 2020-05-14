@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertFalse;
@@ -124,7 +125,7 @@ public abstract class HelperTestCase extends JUnit4CacheTestCase {
     vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws CqException, RegionNotFoundException, CqExistsException {
-        getCache().getRegion("/" + regionName).registerInterestRegex(".*");
+        getCache().getRegion(SEPARATOR + regionName).registerInterestRegex(".*");
         return true;
       }
     });
@@ -147,7 +148,7 @@ public abstract class HelperTestCase extends JUnit4CacheTestCase {
       @Override
       public Object call() throws RegionNotFoundException, CqExistsException, IndexExistsException,
           IndexNameConflictException {
-        Region region = getCache().getRegion("/" + regionName);
+        Region region = getCache().getRegion(SEPARATOR + regionName);
         CompactRangeIndex index =
             (CompactRangeIndex) getCache().getQueryService().getIndex(region, indexName);
         System.out.println(index.dump());
@@ -161,7 +162,7 @@ public abstract class HelperTestCase extends JUnit4CacheTestCase {
       @Override
       public Object call() throws RegionNotFoundException, CqExistsException, IndexExistsException,
           IndexNameConflictException {
-        getCache().getRegion("/" + regionName).put(key, value);
+        getCache().getRegion(SEPARATOR + regionName).put(key, value);
         return true;
       }
     });

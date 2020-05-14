@@ -72,16 +72,13 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-use-http</span></td>
-<td>Connects to a JMX manager HTTP service using the HTTP protocol.</td>
-<td><ul>
-<li>If the parameter is not specified: <code class="ph codeph">false</code></li>
-<li>If the parameter is specified without a value: <code class="ph codeph">true</code></li>
-</ul></td>
+<td><b>Deprecated: inferred by the presence of --url.</b> Connects to a JMX manager HTTP service using the HTTP protocol.</td>
+<td></td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-url</span></td>
-<td>URL used to connect to a JMX manager's HTTP service</td>
-<td><code class="ph codeph">http://localhost:8080/gemfire/v1</code></td>
+<td>URL used to connect to a JMX manager's HTTP service.</td>
+<td></td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-user</span></td>
@@ -178,16 +175,16 @@ gfsh>connect
 ``` pre
 gfsh>connect
 Connecting to Locator at [host=localhost, port=10334] ..
-Connecting to Manager at [host=GemFireStymon, port=1099] ..
-Successfully connected to: [host=GemFireStymon, port=1099]
+Connecting to Manager at [host=GeodeStymon, port=1099] ..
+Successfully connected to: [host=GeodeStymon, port=1099]
 ```
 
 **Example of connecting to a remote locator over HTTP:**
 
 ``` pre
-gfsh>connect --use-http=true --url="http://myLocatorHost.example.com:8080/gemfire/v1"
-Successfully connected to: GemFire Manager's HTTP service @ 
-http://myLocatorHost.example.com:8080/gemfire/v1
+gfsh>connect --url="http://myLocatorHost.example.com:8080/geode-mgmt/v1"
+Successfully connected to: Geode Manager's HTTP service @
+http://myLocatorHost.example.com:8080/geode-mgmt/v1
 ```
 
 **Error Messages:**
@@ -196,8 +193,8 @@ http://myLocatorHost.example.com:8080/gemfire/v1
 "Locator could not find a JMX Manager";
 "jmx password must be specified.";
 "Could not connect to : {0}. {1}";
-"Could not find a GemFire jmx-manager service running at {0}.";
+"Could not find a Geode jmx-manager service running at {0}.";
 "--token requires a value, for example --token=foo";
 "--token cannot be combined with --user or --password";
-"Could not connect to GemFire Locator service at {0}."
+"Could not connect to Geode Locator service at {0}."
 ```

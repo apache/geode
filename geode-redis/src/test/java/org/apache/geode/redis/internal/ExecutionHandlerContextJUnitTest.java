@@ -15,6 +15,8 @@
  */
 package org.apache.geode.redis.internal;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -41,29 +43,29 @@ public class ExecutionHandlerContextJUnitTest {
     ChannelPipeline channelPipeline = Mockito.mock(ChannelPipeline.class);
     EventExecutor eventExecutor = Mockito.mock(EventExecutor.class);
     ChannelHandlerContext channelHandlerContext = Mockito.mock(ChannelHandlerContext.class);
+    ByteBufAllocator alloc = Mockito.mock(ByteBufAllocator.class);
+    ByteBuf byteBuf = Mockito.mock(ByteBuf.class);
     @SuppressWarnings("deprecation")
     org.apache.geode.LogWriter logWriter = Mockito.mock(org.apache.geode.LogWriter.class);
     Command msg = Mockito.mock(Command.class);
     RegionProvider regionProvider = Mockito.mock(RegionProvider.class);
     GeodeRedisServer server = Mockito.mock(GeodeRedisServer.class);
-    RedisCommandType redisCommandType = Mockito.mock(RedisCommandType.class);
     KeyRegistrar keyRegistrar = Mockito.mock(KeyRegistrar.class);
     PubSub pubSub = Mockito.mock(PubSub.class);
     RedisLockService lockService = Mockito.mock(RedisLockService.class);
 
     Mockito.when(cache.getLogger()).thenReturn(logWriter);
+    Mockito.when(ch.alloc()).thenReturn(alloc);
+    Mockito.when(alloc.buffer(Mockito.anyInt())).thenReturn(byteBuf);
     Mockito.when(ch.pipeline()).thenReturn(channelPipeline);
     Mockito.when(channelPipeline.lastContext()).thenReturn(channelHandlerContext);
     Mockito.when(channelHandlerContext.executor()).thenReturn(eventExecutor);
+    Mockito.when(msg.getCommandType()).thenReturn(RedisCommandType.UNKNOWN);
 
     byte[] pwd = null;
     ExecutionHandlerContext handler =
         new ExecutionHandlerContext(ch, cache, regionProvider, server, pwd, keyRegistrar, pubSub,
             lockService);
-
-    Mockito.when(msg.getCommandType()).thenReturn(redisCommandType);
-    Executor exec = Mockito.mock(Executor.class);
-    Mockito.when(redisCommandType.getExecutor()).thenReturn(exec);
 
     ChannelHandlerContext ctx = null;
     handler.channelRead(ctx, msg);

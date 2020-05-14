@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 
 public class SInterStoreExecutor extends SInterExecutor {
@@ -23,10 +22,4 @@ public class SInterStoreExecutor extends SInterExecutor {
   protected boolean isStorage() {
     return true;
   }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.SINTERSTORE;
-  }
-
 }

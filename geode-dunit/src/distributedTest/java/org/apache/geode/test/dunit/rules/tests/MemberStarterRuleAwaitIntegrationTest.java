@@ -22,12 +22,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.awaitility.core.ConditionTimeoutException;
-import org.awaitility.core.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

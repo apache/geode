@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.query.internal.aggregate;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.internal.aggregate.AbstractAggregator.downCast;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,7 +89,7 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
   private void createRegion(String regionType) {
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=" + regionType)
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 4);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 4);
   }
 
   private void createIndexes() {
@@ -102,7 +103,8 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
         "define index --name=idIndex --expression=ID --type=key --region=" + regionName)
         .statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "define index --name=secIdIndex --expression=\"pos.secId\" --region=\"/" + regionName
+        "define index --name=secIdIndex --expression=\"pos.secId\" --region=\"" + SEPARATOR
+            + regionName
             + " p, p.positions.values pos\"")
         .statusIsSuccess();
     gfsh.executeAndAssertThat("create defined indexes").statusIsSuccess();

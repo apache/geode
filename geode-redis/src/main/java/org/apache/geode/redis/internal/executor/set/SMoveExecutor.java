@@ -14,9 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
@@ -25,7 +25,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class SMoveExecutor extends SetExecutor {
@@ -38,11 +37,6 @@ public class SMoveExecutor extends SetExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() != 4) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SMOVE));
-      return;
-    }
-
     ByteArrayWrapper source = command.getKey();
     ByteArrayWrapper destination = new ByteArrayWrapper(commandElems.get(2));
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(3));
@@ -50,37 +44,28 @@ public class SMoveExecutor extends SetExecutor {
     checkDataType(source, RedisDataType.REDIS_SET, context);
     checkDataType(destination, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
+    Region<ByteArrayWrapper, RedisSet> region = getRegion(context);
 
     try (AutoCloseableLock regionLock = withRegionLock(context, source)) {
-      Set<ByteArrayWrapper> sourceSet = region.get(source);
+      RedisSet sourceSet = region.get(source);
 
       if (sourceSet == null) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
         return;
       }
 
-      sourceSet = new HashSet<>(sourceSet); // copy to support transactions;
-      boolean removed = sourceSet.remove(member);
+      boolean removed =
+          RedisSet.srem(region, source, new ArrayList<>(Collections.singletonList(member)),
+              null) == 1;
+      // TODO: native redis SMOVE that empties the src set causes it to no longer exist
 
       if (!removed) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
       } else {
         try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
-          Set<ByteArrayWrapper> destinationSet = region.get(destination);
-
-          if (destinationSet == null) {
-            destinationSet = new HashSet<>();
-          } else {
-            destinationSet = new HashSet<>(destinationSet); // copy to support transactions
-          }
-
-          destinationSet.add(member);
-
-          region.put(destination, destinationSet);
+          // TODO: this should invoke a function in case the primary for destination is remote
+          RedisSet.sadd(region, destination, new ArrayList<>(Collections.singletonList(member)));
           context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
-
-          region.put(source, sourceSet);
           context.getKeyRegistrar().register(source, RedisDataType.REDIS_SET);
 
           command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));

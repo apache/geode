@@ -1556,7 +1556,7 @@ public class InternalDistributedSystem extends DistributedSystem
             isDisconnectThread.set(Boolean.TRUE); // bug #42663 - this must be set while
             // closing the cache
             try {
-              currentCache.close(reason, dm.getRootCause(), keepAlive, true); // fix for 42150
+              currentCache.close(reason, dm.getRootCause(), keepAlive, true, false);
             } catch (VirtualMachineError e) {
               SystemFailure.initiateFailure(e);
               throw e;
@@ -1622,7 +1622,7 @@ public class InternalDistributedSystem extends DistributedSystem
           // bug 38501: this has to happen *after*
           // the DM is closed :-(
           if (!preparingForReconnect) {
-            SystemTimer.cancelSwarm(this);
+            SystemTimer.cancelTimers(this);
           }
         } // finally timer cancelled
       } // finally dm closed

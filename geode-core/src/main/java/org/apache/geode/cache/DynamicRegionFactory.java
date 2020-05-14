@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -222,7 +224,7 @@ public abstract class DynamicRegionFactory {
   }
 
   public static boolean regionIsDynamicRegionList(String regionPath) {
-    return regionPath != null && regionPath.equals('/' + DYNAMIC_REGION_LIST_NAME);
+    return regionPath != null && regionPath.equals(SEPARATOR + DYNAMIC_REGION_LIST_NAME);
   }
 
   /**
@@ -328,7 +330,7 @@ public abstract class DynamicRegionFactory {
     while (iterator.hasNext()) {
       Region.Entry e = (Region.Entry) iterator.next();
       DynamicRegionAttributes dda = (DynamicRegionAttributes) e.getValue();
-      sorted.put(dda.rootRegionName + '/' + dda.name, dda);
+      sorted.put(dda.rootRegionName + SEPARATOR + dda.name, dda);
     }
     iterator = sorted.values().iterator();
 

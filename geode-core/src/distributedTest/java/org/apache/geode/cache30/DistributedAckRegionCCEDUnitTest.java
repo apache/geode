@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache30;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
@@ -171,7 +172,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
               InitialImageOperation.VMOTION_DURING_GII = false;
               final InitializationLevel oldLevel =
                   LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
-              LocalRegion ccregion = (LocalRegion) cache.getInternalRegionByPath("/" + name);
+              LocalRegion ccregion = (LocalRegion) cache.getInternalRegionByPath(SEPARATOR + name);
               try {
                 // wait for the update op (sent below from vm1) to arrive, then allow the GII to
                 // happen
@@ -263,7 +264,6 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     versionTestClearWithConcurrentEventsAsync();
   }
 
-  @Ignore("Enable after fix for bug GEODE-7600")
   @Test
   public void testClearOnNonReplicateWithConcurrentEvents() {
     versionTestClearOnNonReplicateWithConcurrentEvents();

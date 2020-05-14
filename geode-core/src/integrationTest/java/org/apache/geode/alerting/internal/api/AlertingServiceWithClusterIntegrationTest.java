@@ -59,7 +59,7 @@ import org.apache.geode.test.junit.categories.AlertingTest;
 @Category(AlertingTest.class)
 public class AlertingServiceWithClusterIntegrationTest {
 
-  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final long TIMEOUT = getTimeout().toMillis();
 
   private InternalDistributedSystem system;
   private DistributedMember member;

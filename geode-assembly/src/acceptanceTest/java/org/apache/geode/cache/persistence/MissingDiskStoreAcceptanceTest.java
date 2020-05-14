@@ -148,6 +148,6 @@ public class MissingDiskStoreAcceptanceTest {
 
     gfshRule.execute(connectToLocatorCommand, startServer2Command);
 
-    startServer1.get(getTimeout().getValueInMS(), MILLISECONDS);
+    startServer1.get(getTimeout().toMillis(), MILLISECONDS);
   }
 }

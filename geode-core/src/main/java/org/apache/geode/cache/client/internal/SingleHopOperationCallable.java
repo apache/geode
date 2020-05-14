@@ -24,14 +24,11 @@ import org.apache.geode.distributed.internal.ServerLocation;
 public class SingleHopOperationCallable implements Callable {
 
   private final ServerLocation server;
-
-  private final PoolImpl pool;
-
+  private final InternalPool pool;
   private final AbstractOp op;
-
   private final UserAttributes securityAttributes;
 
-  public SingleHopOperationCallable(ServerLocation server, PoolImpl pool, AbstractOp op,
+  public SingleHopOperationCallable(ServerLocation server, InternalPool pool, AbstractOp op,
       UserAttributes securityAttributes) {
     this.server = server;
     this.pool = pool;

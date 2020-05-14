@@ -182,7 +182,8 @@ public class SSLSocketIntegrationTest {
 
     int serverPort = this.serverSocket.getLocalPort();
     this.clientSocket = this.socketCreator.forCluster()
-        .connect(new HostAndPort(this.localHost.getHostAddress(), serverPort), 0, null);
+        .connect(new HostAndPort(this.localHost.getHostAddress(), serverPort), 0, null,
+            Socket::new);
 
     // transmit expected string from Client to Server
     ObjectOutputStream output = new ObjectOutputStream(this.clientSocket.getOutputStream());
@@ -283,7 +284,7 @@ public class SSLSocketIntegrationTest {
           assertThatThrownBy(() -> {
             nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
           })
-              .isInstanceOf(IllegalStateException.class);
+              .isInstanceOf(IOException.class);
         }
       }
     }, this.testName.getMethodName() + "-server");

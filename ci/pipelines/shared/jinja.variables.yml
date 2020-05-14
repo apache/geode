@@ -17,7 +17,7 @@
 
 benchmarks:
   baseline_branch: ''
-  baseline_version: '1.10.0'
+  baseline_version: '1.12.0'
   benchmark_branch: develop
   flavors:
   - title: '_base'
@@ -66,7 +66,7 @@ java_test_versions:
   version: 11
 
 metadata:
-  initial_version: 1.13.0
+  initial_version: 1.14.0-((semver-prerelease-token))
 
 publish_artifacts:
   CPUS: '8'
@@ -202,3 +202,15 @@ tests:
   PLATFORM: windows
   RAM: '64'
   name: WindowsUnit
+- ARTIFACT_SLUG: apicheck
+  CALL_STACK_TIMEOUT: '20700'
+  CPUS: '4'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 1h
+  GRADLE_TASK: geode-assembly:japicmp
+  MAX_IN_FLIGHT: 1
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'false'
+  PLATFORM: linux
+  RAM: '16'
+  name: ApiCheck

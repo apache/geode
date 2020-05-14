@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.dunit;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState.EVICTION_DISABLED;
@@ -565,9 +566,9 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
           qs = getCache().getQueryService();
           Index index = null;
           if (indexType.equals("compact")) {
-            index = qs.createIndex("newIndex", "ID", "/" + "portfolios");
+            index = qs.createIndex("newIndex", "ID", SEPARATOR + "portfolios");
           } else if (indexType.equals("hash")) {
-            index = qs.createIndex("newIndex", "ID", "/" + "portfolios");
+            index = qs.createIndex("newIndex", "ID", SEPARATOR + "portfolios");
           }
           assertThat(index).isNotNull();
           assertThat(((CancelDuringGatherHook) DefaultQuery.testHook).triggeredOOME).isTrue();
@@ -1057,7 +1058,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       switch (spot) {
         case BEFORE_QUERY_EXECUTION:
           try {
-            if (!latch.await(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS)) {
+            if (!latch.await(GeodeAwaitility.getTimeout().toMillis(), MILLISECONDS)) {
               fail("doTestHook: query was not unlatched in time");
             }
           } catch (InterruptedException e) {

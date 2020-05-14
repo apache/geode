@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
@@ -32,15 +31,22 @@ public abstract class SetExecutor extends AbstractExecutor {
    * @param context the execution handler
    * @return the set Region
    */
-  Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getRegion(ExecutionHandlerContext context) {
-    return context.getRegionProvider().getSetRegion();
+  Region<ByteArrayWrapper, RedisSet> getRegion(
+      ExecutionHandlerContext context) {
+
+    return context
+        .getRegionProvider()
+        .getSetRegion();
   }
 
-  protected AutoCloseableLock withRegionLock(ExecutionHandlerContext context, ByteArrayWrapper key)
-      throws InterruptedException, TimeoutException {
+  protected AutoCloseableLock withRegionLock(
+      ExecutionHandlerContext context,
+      ByteArrayWrapper key)
+      throws InterruptedException,
+      TimeoutException {
+
     RedisLockService lockService = context.getLockService();
 
     return lockService.lock(key);
   }
-
 }

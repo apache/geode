@@ -1218,6 +1218,7 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
         A "pool" element specifies a client to server connection pool.
       </xsd:documentation>
     </xsd:annotation>
+    <xsd:sequence>
     <xsd:choice>
       <xsd:element maxOccurs="unbounded" minOccurs="1" name="locator">
         <xsd:annotation>
@@ -1242,9 +1243,12 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
         </xsd:complexType>
       </xsd:element>
     </xsd:choice>
+    <xsd:element maxOccurs="1" minOccurs="0" name="socket-factory" type="gf:declarable-type" />
+    </xsd:sequence>
     <xsd:attribute name="subscription-timeout-multiplier" type="xsd:string" use="optional" />
     <xsd:attribute name="socket-connect-timeout" type="xsd:string" use="optional" />
     <xsd:attribute name="free-connection-timeout" type="xsd:string" use="optional" />
+    <xsd:attribute name="server-connection-timeout" type="xsd:string" use="optional" />
     <xsd:attribute name="load-conditioning-interval" type="xsd:string" use="optional" />
     <xsd:attribute name="min-connections" type="xsd:string" use="optional" />
     <xsd:attribute name="max-connections" type="xsd:string" use="optional" />

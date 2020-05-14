@@ -584,7 +584,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-disk-store-name</span></td>
-<td>Named disk store to use for storing the queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence.</td>
+<td>Named disk store to use for storing the queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence. For parallel gateway senders, set this to the same disk store the region uses.</td>
 <td> </td>
 </tr>
 <tr>

@@ -312,7 +312,7 @@ public class DistTXCommitMessage extends TXMessage {
     }
 
     @Override
-    protected void processException(DistributionMessage msg, ReplyException ex) {
+    protected synchronized void processException(DistributionMessage msg, ReplyException ex) {
       if (msg instanceof ReplyMessage) {
         synchronized (this) {
           if (this.exception == null) {

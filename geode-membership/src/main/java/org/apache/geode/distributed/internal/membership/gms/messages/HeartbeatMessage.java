@@ -72,4 +72,9 @@ public class HeartbeatMessage<ID extends MemberIdentifier> extends AbstractGMSMe
       DeserializationContext context) throws IOException, ClassNotFoundException {
     requestId = in.readInt();
   }
+
+  @Override
+  public boolean isHighPriority() {
+    return true;
+  }
 }

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -26,31 +28,29 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 public class ExpireExecutor extends AbstractExecutor implements Extendable {
 
-  private final String ERROR_SECONDS_NOT_USABLE = "The number of seconds specified must be numeric";
-
-  private final int SECONDS_INDEX = 2;
-
-  private final int SET = 1;
-
-  private final int NOT_SET = 0;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    int NOT_SET = 0;
+    int SET = 1;
+    int SECONDS_INDEX = 2;
 
-    if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
+    if (commandElems.size() != 3) {
+      command.setResponse(
+          Coder.getErrorResponse(
+              context.getByteBufAllocator(), getArgsError()));
       return;
     }
-    ByteArrayWrapper wKey = command.getKey();
-    RegionProvider rC = context.getRegionProvider();
+
+    ByteArrayWrapper key = command.getKey();
+    RegionProvider regionProvider = context.getRegionProvider();
     byte[] delayByteArray = commandElems.get(SECONDS_INDEX);
     long delay;
     try {
       delay = Coder.bytesToLong(delayByteArray);
     } catch (NumberFormatException e) {
       command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_SECONDS_NOT_USABLE));
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INTEGER));
       return;
     }
 
@@ -64,15 +64,15 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
       delay = delay * millisInSecond;
     }
 
-    boolean expirationSet = false;
+    boolean expirationSucessfullySet;
 
-    if (rC.hasExpiration(wKey)) {
-      expirationSet = rC.modifyExpiration(wKey, delay);
+    if (regionProvider.hasExpiration(key)) {
+      expirationSucessfullySet = regionProvider.modifyExpiration(key, delay);
     } else {
-      expirationSet = rC.setExpiration(wKey, delay);
+      expirationSucessfullySet = regionProvider.setExpiration(key, delay);
     }
 
-    if (expirationSet) {
+    if (expirationSucessfullySet) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
     } else {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));

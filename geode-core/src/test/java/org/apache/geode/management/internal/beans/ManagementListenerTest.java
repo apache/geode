@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.locks.Lock;
@@ -130,9 +130,9 @@ public class ManagementListenerTest {
   public void handleEventDoesNotUseLocksForSystemAlertEvent() {
     managementListener.handleEvent(SYSTEM_ALERT, null);
 
-    verifyZeroInteractions(readWriteLock);
-    verifyZeroInteractions(readLock);
-    verifyZeroInteractions(writeLock);
+    verifyNoMoreInteractions(readWriteLock);
+    verifyNoMoreInteractions(readLock);
+    verifyNoMoreInteractions(writeLock);
   }
 
   @Test

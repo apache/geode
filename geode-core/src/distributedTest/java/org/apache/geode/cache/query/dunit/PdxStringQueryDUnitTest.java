@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
@@ -78,7 +79,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   final String rootRegionName = "root";
   final String regionName = "PdxTest";
-  final String regName = "/" + rootRegionName + "/" + regionName;
+  final String regName = SEPARATOR + rootRegionName + SEPARATOR + regionName;
   private static int bridgeServerPort;
 
   private static final int orderByQueryIndex = 11;
@@ -2000,7 +2001,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
-    final String name = "/" + regionName;
+    final String name = SEPARATOR + regionName;
     final String[] qs =
         {"select distinct pkid from " + name, "select distinct pkid, status from " + name};
 

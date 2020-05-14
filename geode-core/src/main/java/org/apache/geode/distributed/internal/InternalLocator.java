@@ -31,7 +31,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -100,6 +99,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigListener;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.JmxManagerLocator;
@@ -170,7 +170,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private final LocatorMembershipListener locatorListener;
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
   private final LoggingSession loggingSession;
-  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
   private final LocatorStats locatorStats;
   private final Path workingDirectory;
   private final MembershipLocator<InternalDistributedMember> membershipLocator;
@@ -780,8 +779,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   @VisibleForTesting
   void startClusterManagementService() throws IOException {
     startConfigurationPersistenceService();
+    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
+    startClusterManagementService(internalCache, agentUtil);
+  }
 
-    InternalCache myCache = this.internalCache;
+  @VisibleForTesting
+  void startClusterManagementService(InternalCache myCache, AgentUtil agentUtil) {
 
     if (myCache == null) {
       return;
@@ -789,9 +792,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     clusterManagementService = new LocatorClusterManagementService(myCache,
         configurationPersistenceService);
-
-    // start management rest service
-    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
 
     // Find the V2 Management rest WAR file
     URI gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
@@ -816,6 +816,15 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (distributionConfig.getEnableManagementRestService()) {
       myCache.getOptionalService(HttpService.class).ifPresent(x -> {
         try {
+          ManagementService managementService = ManagementService.getManagementService(myCache);
+          if (!managementService.isManager()) {
+            // The management rest service requires the jmx-manager
+            // since some of the things the rest service does need
+            // the jmx-manager in the same JVM. For example the
+            // rebalance operation needs mxbeans that are hosted
+            // by the jmx-manager.
+            managementService.startManager();
+          }
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
           x.addWebApplication("/management", Paths.get(gemfireManagementWar), serviceAttributes);
@@ -987,7 +996,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (internalCache != null && !stoppedForReconnect && !forcedDisconnect) {
       logger.info("Closing locator's cache");
       try {
-        internalCache.close();
+        internalCache.close("Normal disconnect", null, false, false, true);
       } catch (RuntimeException ex) {
         logger.info("Could not close locator's cache because: {}", ex.getMessage(), ex);
       }
@@ -1292,14 +1301,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   @Override
-  public void addLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.add(logConfigListener);
-  }
+  public void addLogConfigListener(LogConfigListener logConfigListener) {}
 
   @Override
-  public void removeLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.remove(logConfigListener);
-  }
+  public void removeLogConfigListener(LogConfigListener logConfigListener) {}
 
   public SharedConfigurationStatusResponse getSharedConfigurationStatus() {
     ExecutorService waitingPoolExecutor =

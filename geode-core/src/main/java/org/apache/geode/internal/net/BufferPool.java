@@ -19,11 +19,18 @@ import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPool {
   private final DMStats stats;
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Buffers may be acquired from the Buffers pool
@@ -41,15 +48,34 @@ public class BufferPool {
   }
 
   /**
-   * A list of soft references to byte buffers.
+   * A list of soft references to small byte buffers.
    */
-  private final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
+  private final ConcurrentLinkedQueue<BBSoftReference> bufferSmallQueue =
       new ConcurrentLinkedQueue<>();
+
+  /**
+   * A list of soft references to middle byte buffers.
+   */
+  private final ConcurrentLinkedQueue<BBSoftReference> bufferMiddleQueue =
+      new ConcurrentLinkedQueue<>();
+
+  /**
+   * A list of soft references to large byte buffers.
+   */
+  private final ConcurrentLinkedQueue<BBSoftReference> bufferLargeQueue =
+      new ConcurrentLinkedQueue<>();
+
+  private final int SMALL_BUFFER_SIZE = Connection.SMALL_BUFFER_SIZE;
+
+
+  private final int MEDIUM_BUFFER_SIZE = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+
 
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
-  public static final boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers");
+  public static final boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers")
+      || Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers");
 
   /**
    * Should only be called by threads that have currently acquired send permission.
@@ -69,51 +95,18 @@ public class BufferPool {
    */
   private ByteBuffer acquireDirectBuffer(int size, boolean send) {
     ByteBuffer result;
+
     if (useDirectBuffers) {
-      IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
-                                                                            // set
-      BBSoftReference ref = bufferQueue.poll();
-      while (ref != null) {
-        ByteBuffer bb = ref.getBB();
-        if (bb == null) {
-          // it was garbage collected
-          int refSize = ref.consumeSize();
-          if (refSize > 0) {
-            if (ref.getSend()) { // fix bug 46773
-              stats.incSenderBufferSize(-refSize, true);
-            } else {
-              stats.incReceiverBufferSize(-refSize, true);
-            }
-          }
-        } else if (bb.capacity() >= size) {
-          bb.rewind();
-          bb.limit(size);
-          return bb;
-        } else {
-          // wasn't big enough so put it back in the queue
-          Assert.assertTrue(bufferQueue.offer(ref));
-          if (alreadySeen == null) {
-            alreadySeen = new IdentityHashMap<>();
-          }
-          if (alreadySeen.put(ref, ref) != null) {
-            // if it returns non-null then we have already seen this item
-            // so we have worked all the way through the queue once.
-            // So it is time to give up and allocate a new buffer.
-            break;
-          }
-        }
-        ref = bufferQueue.poll();
+      if (size <= MEDIUM_BUFFER_SIZE) {
+        return acquirePredefinedFixedBuffer(send, size);
+      } else {
+        return acquireLargeBuffer(send, size);
       }
-      result = ByteBuffer.allocateDirect(size);
     } else {
       // if we are using heap buffers then don't bother with keeping them around
       result = ByteBuffer.allocate(size);
     }
-    if (send) {
-      stats.incSenderBufferSize(size, useDirectBuffers);
-    } else {
-      stats.incReceiverBufferSize(size, useDirectBuffers);
-    }
+    updateBufferStats(size, send, false);
     return result;
   }
 
@@ -126,6 +119,83 @@ public class BufferPool {
   public ByteBuffer acquireNonDirectReceiveBuffer(int size) {
     ByteBuffer result = ByteBuffer.allocate(size);
     stats.incReceiverBufferSize(size, false);
+    return result;
+  }
+
+  /**
+   * Acquire direct buffer with predefined default capacity (4096 or 32768)
+   */
+  private ByteBuffer acquirePredefinedFixedBuffer(boolean send, int size) {
+    // set
+    int defaultSize;
+    ConcurrentLinkedQueue<BBSoftReference> bufferTempQueue;
+    ByteBuffer result;
+
+    if (size <= SMALL_BUFFER_SIZE) {
+      defaultSize = SMALL_BUFFER_SIZE;
+      bufferTempQueue = bufferSmallQueue;
+    } else {
+      defaultSize = MEDIUM_BUFFER_SIZE;
+      bufferTempQueue = bufferMiddleQueue;
+    }
+
+    BBSoftReference ref = bufferTempQueue.poll();
+    while (ref != null) {
+      ByteBuffer bb = ref.getBB();
+      if (bb == null) {
+        // it was garbage collected
+        updateBufferStats(-defaultSize, ref.getSend(), true);
+      } else {
+        bb.clear();
+        if (defaultSize > size) {
+          bb.limit(size);
+        }
+        return bb;
+      }
+      ref = bufferTempQueue.poll();
+    }
+    result = ByteBuffer.allocateDirect(defaultSize);
+    updateBufferStats(defaultSize, send, true);
+    if (defaultSize > size) {
+      result.limit(size);
+    }
+    return result;
+  }
+
+  private ByteBuffer acquireLargeBuffer(boolean send, int size) {
+    // set
+    ByteBuffer result;
+    IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
+    // set
+    BBSoftReference ref = bufferLargeQueue.poll();
+    while (ref != null) {
+      ByteBuffer bb = ref.getBB();
+      if (bb == null) {
+        // it was garbage collected
+        int refSize = ref.consumeSize();
+        if (refSize > 0) {
+          updateBufferStats(-refSize, ref.getSend(), true);
+        }
+      } else if (bb.capacity() >= size) {
+        bb.clear();
+        if (bb.capacity() > size) {
+          bb.limit(size);
+        }
+        return bb;
+      } else {
+        // wasn't big enough so put it back in the queue
+        Assert.assertTrue(bufferLargeQueue.offer(ref));
+        if (alreadySeen == null) {
+          alreadySeen = new IdentityHashMap<>();
+        }
+        if (alreadySeen.put(ref, ref) != null) {
+          break;
+        }
+      }
+      ref = bufferLargeQueue.poll();
+    }
+    result = ByteBuffer.allocateDirect(size);
+    updateBufferStats(size, send, true);
     return result;
   }
 
@@ -228,13 +298,26 @@ public class BufferPool {
   private void releaseBuffer(ByteBuffer bb, boolean send) {
     if (bb.isDirect()) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
-      bufferQueue.offer(bbRef);
-    } else {
-      if (send) {
-        stats.incSenderBufferSize(-bb.capacity(), false);
+      if (bb.capacity() <= SMALL_BUFFER_SIZE) {
+        bufferSmallQueue.offer(bbRef);
+      } else if (bb.capacity() <= MEDIUM_BUFFER_SIZE) {
+        bufferMiddleQueue.offer(bbRef);
       } else {
-        stats.incReceiverBufferSize(-bb.capacity(), false);
+        bufferLargeQueue.offer(bbRef);
       }
+    } else {
+      updateBufferStats(-bb.capacity(), send, false);
+    }
+  }
+
+  /**
+   * Update buffer stats.
+   */
+  private void updateBufferStats(int size, boolean send, boolean direct) {
+    if (send) {
+      stats.incSenderBufferSize(size, direct);
+    } else {
+      stats.incReceiverBufferSize(size, direct);
     }
   }
 

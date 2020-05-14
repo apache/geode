@@ -177,7 +177,6 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
       this.results = results;
       this.limit = limit;
       this.collectionsMetdata = collectionsMetadata;
-
     }
 
     @Override
@@ -322,7 +321,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
       E data = iter.next();
       if (isStruct) {
         Object[] fields = ((Struct) data).getFieldValues();
-        DataSerializer.writeObjectArray(fields, out);
+        DataSerializer.writeObjectArray(fields, hdos);
       } else {
         context.getSerializer().writeObject(data, hdos);
       }

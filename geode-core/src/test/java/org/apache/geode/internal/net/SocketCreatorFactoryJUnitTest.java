@@ -80,6 +80,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -89,6 +90,12 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class SocketCreatorFactoryJUnitTest {
+
+  @Before
+  public void setUp() {
+    // Ensure that no lingering SocketCreatorFactory instances are open from previous tests
+    SocketCreatorFactory.close();
+  }
 
   @After
   public void tearDown() throws Exception {

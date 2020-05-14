@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.apache.geode.internal.Assert.fail;
@@ -516,7 +517,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
   public void verifyCreateDestroyDefinedIndex(RegionTestableType regionType) {
-    String[] regionNames = {REGION_NAME, "/" + REGION_NAME};
+    String[] regionNames = {REGION_NAME, SEPARATOR + REGION_NAME};
     for (String regionName : regionNames) {
       dataStore1.invoke(createIndex(INDEX_NAME, regionName, "field1"));
       dataStore1.invoke(() -> verifyDefinedIndexCreated(INDEX_NAME, regionName));

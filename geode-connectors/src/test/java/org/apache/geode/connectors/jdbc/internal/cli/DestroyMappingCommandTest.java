@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -151,7 +152,7 @@ public class DestroyMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(list);
     results.add(successFunctionResult);
 
-    ResultModel result = destroyRegionMappingCommand.destroyMapping("/" + regionName, null);
+    ResultModel result = destroyRegionMappingCommand.destroyMapping(SEPARATOR + regionName, null);
 
     verify(destroyRegionMappingCommand, times(1)).executeAndGetFunctionResult(any(), eq(regionName),
         any());

@@ -94,9 +94,9 @@ public class CreateRegionCommandDUnitTest {
         + " --gateway-sender-id=" + gatewaySenderName)
         .statusIsError()
         .containsOutput("server-1",
-            "Parallel gateway sender " + gatewaySenderName
+            "Parallel Gateway Sender " + gatewaySenderName
                 + " can not be used with replicated region /" + regionName)
-        .containsOutput("server-2", "Parallel gateway sender " + gatewaySenderName
+        .containsOutput("server-2", "Parallel Gateway Sender " + gatewaySenderName
             + " can not be used with replicated region /" + regionName);
 
     // The exception must be thrown early in the initialization, so the region itself shouldn't be

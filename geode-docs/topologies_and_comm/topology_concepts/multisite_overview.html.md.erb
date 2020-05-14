@@ -73,6 +73,11 @@ Replicated regions cannot use a parallel gateway sender.
 
 Although parallel gateway senders provide the best throughput for WAN distribution, they provide less control for event ordering. Event ordering for the region as a whole is not preserved, because multiple Geode servers distribute the regions events at the same time. However, the ordering of events for a given partition can be preserved. See [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
 
+Persisted data from a parallel gateway sender must go to the same disk
+store as used by the region,
+because parallel gateway sender queues must be colocated with their regions
+to operate correctly.
+
 ## <a id="topic_9AA37B43642D4DE19072CA3367C849BA__section_75F4588FEA404712963CE83FACB8ED1B" class="no-quick-link"></a>Gateway Sender Queues
 
 The queue that a gateway sender uses to distribute events to a remote site overflows to disk as needed, in order to prevent the Geode member from running out of memory. You can configure the maximum amount of memory that each queue uses, as well as the batch size and frequency for processing batches in the queue. You can also configure these queues to persist to disk, so that a gateway sender can pick up where it left off when its member shuts down and is later restarted.
@@ -80,6 +85,21 @@ The queue that a gateway sender uses to distribute events to a remote site overf
 By default gateway sender queues use 5 threads to dispatch queued events. With a serial gateway sender, the single, logical queue that is hosted on a member is divided into multiple physical queues (5 by default) each with a dedicated dispatcher thread. You can configure whether the threads dispatch queued events by key, by thread, or in the same order in which events were added to the queue. For a parallel gateway sender, each logical queue that is hosted on a member is processed simultaneously by multiple threads.
 
 See [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
+
+## <a id="GW_sender_connect" class="no-quick-link"></a>Timing of Connections
+
+When a gateway sender is created, it tries once to connect to
+the gateway receiver.
+If the gateway sender cannot connect,
+the gateway sender does not retry until there is a batch of events to be sent.
+At that time, the gateway sender tries again to connect to the gateway receiver.
+
+During a normal initial startup,
+one cluster site will start before the other cluster site.
+The cluster site that starts first will not be connected
+to the remote cluster site,
+even after that other cluster site starts.
+Only when data is to be sent will the connection be made.
 
 ## <a id="topic_9AA37B43642D4DE19072CA3367C849BA__section_70A4D850A5404429AD5CB483D2053F1A" class="no-quick-link"></a>High Availability for Gateway Senders
 

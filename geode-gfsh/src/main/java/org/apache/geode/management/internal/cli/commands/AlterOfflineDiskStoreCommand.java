@@ -14,13 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.File;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.CacheExistsException;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -76,7 +77,7 @@ public class AlterOfflineDiskStoreCommand extends SingleGfshCommand {
         }
       }
 
-      if (regionName.equals(Region.SEPARATOR)) {
+      if (regionName.equals(SEPARATOR)) {
         return ResultModel.createError(CliStrings.INVALID_REGION_NAME);
       }
 
@@ -99,10 +100,13 @@ public class AlterOfflineDiskStoreCommand extends SingleGfshCommand {
             compressorClassName = "";
           }
 
-          String resultMessage = DiskStoreImpl.modifyRegion(diskStoreName, dirs, "/" + regionName,
-              lruEvictionAlgo, lruEvictionAction, lruEvictionLimitString, concurrencyLevelString,
-              initialCapacityString, loadFactorString, compressorClassName, statisticsEnabledString,
-              offHeapString, false);
+          String resultMessage =
+              DiskStoreImpl.modifyRegion(diskStoreName, dirs, SEPARATOR + regionName,
+                  lruEvictionAlgo, lruEvictionAction, lruEvictionLimitString,
+                  concurrencyLevelString,
+                  initialCapacityString, loadFactorString, compressorClassName,
+                  statisticsEnabledString,
+                  offHeapString, false);
 
           return ResultModel.createInfo(resultMessage);
         } else {
@@ -111,7 +115,7 @@ public class AlterOfflineDiskStoreCommand extends SingleGfshCommand {
         }
       } else {
         if (remove) {
-          DiskStoreImpl.destroyRegion(diskStoreName, dirs, "/" + regionName);
+          DiskStoreImpl.destroyRegion(diskStoreName, dirs, SEPARATOR + regionName);
           return ResultModel.createInfo("The region " + regionName
               + " was successfully removed from the disk store " + diskStoreName);
         } else {

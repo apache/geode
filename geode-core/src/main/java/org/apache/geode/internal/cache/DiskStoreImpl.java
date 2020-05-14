@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -480,7 +481,7 @@ public class DiskStoreImpl implements DiskStore {
       if (dirSizes[i] == DiskStoreFactory.DEFAULT_DISK_DIR_SIZE) {
         this.totalDiskStoreSpace = ManagementConstants.NOT_AVAILABLE_LONG;
       } else if (this.totalDiskStoreSpace != ManagementConstants.NOT_AVAILABLE_LONG) {
-        this.totalDiskStoreSpace += dirSizes[i] * (1024 * 1024);
+        this.totalDiskStoreSpace += (1024 * 1024) * ((long) dirSizes[i]);
       }
     }
     // stored in bytes
@@ -3903,7 +3904,7 @@ public class DiskStoreImpl implements DiskStore {
         String regionName = (drv.isBucket() ? ph.getPrName() : drv.getName());
         SnapshotWriter writer = regions.get(regionName);
         if (writer == null) {
-          String fname = regionName.substring(1).replace('/', '-');
+          String fname = regionName.substring(1).replace(SEPARATOR_CHAR, '-');
           File f = new File(out, "snapshot-" + name + "-" + fname + ".gfd");
           writer = GFSnapshot.create(f, regionName, cache);
           regions.put(regionName, writer);

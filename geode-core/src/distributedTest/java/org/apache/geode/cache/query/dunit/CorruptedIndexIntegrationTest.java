@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -54,9 +55,9 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
         cache.createRegionFactory().setDataPolicy(DataPolicy.PARTITION).create(regionName);
 
     QueryService queryService = cache.getQueryService();
-    Index idIndex = queryService.createIndex("idIndex", "ID", "/" + regionName);
+    Index idIndex = queryService.createIndex("idIndex", "ID", SEPARATOR + regionName);
     Index exceptionIndex =
-        queryService.createIndex("exceptionIndex", "throwExceptionMethod", "/" + regionName);
+        queryService.createIndex("exceptionIndex", "throwExceptionMethod", SEPARATOR + regionName);
 
     IntStream.rangeClosed(1, 3).forEach(i -> region.put(i, new Portfolio(i)));
 
@@ -84,9 +85,9 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
 
     IntStream.rangeClosed(1, 3).forEach(i -> region.put(i, new Portfolio(i)));
 
-    Index idIndex = queryService.createIndex("idIndex", "ID", "/" + regionName);
+    Index idIndex = queryService.createIndex("idIndex", "ID", SEPARATOR + regionName);
     try {
-      queryService.createIndex("exceptionIndex", "throwExceptionMethod", "/" + regionName);
+      queryService.createIndex("exceptionIndex", "throwExceptionMethod", SEPARATOR + regionName);
       fail();
     } catch (Exception exception) {
       System.out.println("Exception expected!");

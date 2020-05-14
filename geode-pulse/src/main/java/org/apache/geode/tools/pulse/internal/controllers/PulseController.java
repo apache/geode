@@ -34,6 +34,9 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -71,12 +74,23 @@ public class PulseController {
   private static final String EMPTY_JSON = "{}";
 
   // Shared object to hold pulse version details
-  public static PulseVersion pulseVersion = new PulseVersion();
+  private final PulseVersion pulseVersion;
 
   private final ObjectMapper mapper = new ObjectMapper();
+  private final PulseServiceFactory pulseServiceFactory;
+  private final Repository repository;
 
   @Autowired
-  PulseServiceFactory pulseServiceFactory;
+  public PulseController(PulseServiceFactory pulseServiceFactory, Repository repository,
+      PulseVersion pulseVersion) {
+    this.pulseServiceFactory = pulseServiceFactory;
+    this.repository = repository;
+    this.pulseVersion = pulseVersion;
+  }
+
+  public PulseVersion getPulseVersion() {
+    return pulseVersion;
+  }
 
   @RequestMapping(value = "/pulseUpdate", method = RequestMethod.POST)
   public void getPulseUpdate(HttpServletRequest request, HttpServletResponse response)
@@ -95,6 +109,10 @@ public class PulseController {
         try {
           PulseService pulseService = pulseServiceFactory.getPulseServiceInstance(serviceName);
           responseMap.set(serviceName, pulseService.execute(request));
+        } catch (OAuth2AuthenticationException | OAuth2AuthorizationException e) {
+          logger.warn("serviceException [for service {}] = {}", serviceName, e.getMessage());
+          response.setStatus(HttpStatus.UNAUTHORIZED.value());
+          return;
         } catch (Exception serviceException) {
           logger.warn("serviceException [for service {}] = {}", serviceName,
               serviceException.getMessage());
@@ -141,12 +159,12 @@ public class PulseController {
 
     try {
       // Response
-      responseJSON.put("pulseVersion", PulseController.pulseVersion.getPulseVersion());
-      responseJSON.put("buildId", PulseController.pulseVersion.getPulseBuildId());
-      responseJSON.put("buildDate", PulseController.pulseVersion.getPulseBuildDate());
-      responseJSON.put("sourceDate", PulseController.pulseVersion.getPulseSourceDate());
-      responseJSON.put("sourceRevision", PulseController.pulseVersion.getPulseSourceRevision());
-      responseJSON.put("sourceRepository", PulseController.pulseVersion.getPulseSourceRepository());
+      responseJSON.put("pulseVersion", pulseVersion.getPulseVersion());
+      responseJSON.put("buildId", pulseVersion.getPulseBuildId());
+      responseJSON.put("buildDate", pulseVersion.getPulseBuildDate());
+      responseJSON.put("sourceDate", pulseVersion.getPulseSourceDate());
+      responseJSON.put("sourceRevision", pulseVersion.getPulseSourceRevision());
+      responseJSON.put("sourceRepository", pulseVersion.getPulseSourceRepository());
 
     } catch (Exception e) {
       logger.debug("Exception Occurred : ", e);
@@ -174,7 +192,7 @@ public class PulseController {
     try {
       boolean isClearAll = Boolean.parseBoolean(request.getParameter("clearAll"));
       // get cluster object
-      Cluster cluster = Repository.get().getCluster();
+      Cluster cluster = repository.getCluster();
       cluster.clearAlerts(alertType, isClearAll);
       responseJSON.put("status", "deleted");
       responseJSON.set("systemAlerts",
@@ -213,7 +231,7 @@ public class PulseController {
 
     try {
       // get cluster object
-      Cluster cluster = Repository.get().getCluster();
+      Cluster cluster = repository.getCluster();
 
       // set alert is acknowledged
       cluster.acknowledgeAlert(alertId);
@@ -231,7 +249,7 @@ public class PulseController {
       HttpServletResponse response)
       throws IOException {
     // get cluster object
-    Cluster cluster = Repository.get().getCluster();
+    Cluster cluster = repository.getCluster();
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();
@@ -322,7 +340,7 @@ public class PulseController {
 
     try {
       // get cluster object
-      Cluster cluster = Repository.get().getCluster();
+      Cluster cluster = repository.getCluster();
       String userName = request.getUserPrincipal().getName();
 
       // get query string
@@ -388,7 +406,7 @@ public class PulseController {
 
     ObjectNode responseJSON = mapper.createObjectNode();
     // get cluster object
-    Cluster cluster = Repository.get().getCluster();
+    Cluster cluster = repository.getCluster();
     String userName = request.getUserPrincipal().getName();
 
     try {
@@ -431,7 +449,7 @@ public class PulseController {
 
       if (StringUtils.isNotBlank(query)) {
         // get cluster object
-        Cluster cluster = Repository.get().getCluster();
+        Cluster cluster = repository.getCluster();
         String userName = request.getUserPrincipal().getName();
 
         // Add html escaped query to history

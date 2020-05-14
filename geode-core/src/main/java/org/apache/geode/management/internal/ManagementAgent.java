@@ -29,6 +29,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -73,6 +74,7 @@ import org.apache.geode.management.internal.security.AccessControlMBean;
 import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.unsafe.ReadOpFileAccessController;
+import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
  * Agent implementation that controls the JMX server end points for JMX clients to connect, such as
@@ -86,6 +88,7 @@ import org.apache.geode.management.internal.unsafe.ReadOpFileAccessController;
 public class ManagementAgent {
 
   private static final Logger logger = LogService.getLogger();
+  public static final String SPRING_PROFILES_ACTIVE = "spring.profiles.active";
 
   /**
    * True if running. Protected by synchronizing on this Manager instance. I used synchronization
@@ -193,8 +196,17 @@ public class ManagementAgent {
       }
     } else {
       String pwFile = this.config.getJmxManagerPasswordFile();
-      if (securityService.isIntegratedSecurity() || StringUtils.isNotBlank(pwFile)) {
-        System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+      if (securityService.isIntegratedSecurity()) {
+        String[] authTokenEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
+        boolean pulseOauth = Arrays.stream(authTokenEnabledComponents)
+            .anyMatch(AuthTokenEnabledComponents::hasPulse);
+        if (pulseOauth) {
+          System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.oauth");
+        } else {
+          System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.gemfire");
+        }
+      } else if (StringUtils.isNotBlank(pwFile)) {
+        System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.gemfire");
       }
     }
 

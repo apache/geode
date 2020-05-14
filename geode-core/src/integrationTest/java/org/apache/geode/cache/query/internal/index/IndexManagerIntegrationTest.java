@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,7 +107,7 @@ public class IndexManagerIntegrationTest {
         .create(regionName);
 
     QueryService queryService = internalCache.getQueryService();
-    queryService.createIndex(indexName, "id", "/" + regionName);
+    queryService.createIndex(indexName, "id", SEPARATOR + regionName);
     IntStream.range(1, entries + 1).forEach(i -> region.put(i, new TestQueryObject(i)));
     waitForIndexUpdaterTask(synchronousMaintenance, region);
 

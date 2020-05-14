@@ -71,7 +71,7 @@ public class RebalanceFunction implements InternalFunction {
           + results.getTotalBucketTransferBytes() + "," + results.getTotalBucketTransferTime() + ","
           + results.getTotalBucketTransfersCompleted() + "," + results.getTotalPrimaryTransferTime()
           + "," + results.getTotalPrimaryTransfersCompleted() + "," + results.getTotalTime() + ","
-          + String.join(",", includeRegionNames));
+          + results.getTotalMembersExecutedOn() + "," + String.join(",", includeRegionNames));
 
       logger.info("Starting RebalanceFunction str1={}", str1);
       context.getResultSender().lastResult(str1.toString());

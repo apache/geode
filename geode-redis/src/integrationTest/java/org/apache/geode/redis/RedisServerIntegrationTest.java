@@ -14,11 +14,15 @@
  */
 package org.apache.geode.redis;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -35,6 +39,9 @@ public class RedisServerIntegrationTest {
   private GeodeRedisServer redisServer;
   private int redisPort;
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @Before
   public void createCache() {
     Properties props = new Properties();
@@ -42,7 +49,6 @@ public class RedisServerIntegrationTest {
     CacheFactory cacheFactory = new CacheFactory(props);
     cache = cacheFactory.create();
     redisPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    assert (cache.rootRegions().size() == 0);
   }
 
   @After
@@ -57,8 +63,8 @@ public class RedisServerIntegrationTest {
   public void initializeRedisCreatesFourRegions() {
     redisServer = new GeodeRedisServer(redisPort);
     redisServer.start();
-    assert cache.rootRegions().size() == 4 : cache.rootRegions().size();
-    assert cache.getRegion(GeodeRedisServer.REDIS_META_DATA_REGION) != null;
+    assertThat(cache.rootRegions()).hasSize(4);
+    assertThat(cache.getRegion(GeodeRedisServer.REDIS_META_DATA_REGION)).isNotNull();
   }
 
   @Test
@@ -66,8 +72,18 @@ public class RedisServerIntegrationTest {
     redisServer = new GeodeRedisServer(redisPort);
     redisServer.start();
     Region r = cache.getRegion(GeodeRedisServer.STRING_REGION);
-    assert r.getAttributes().getDataPolicy() == DataPolicy.PARTITION : r.getAttributes()
-        .getDataPolicy();
+    assertThat(r.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.PARTITION);
+    assertThat(r.getAttributes().getPartitionAttributes().getRedundantCopies()).isEqualTo(1);
+  }
+
+  @Test
+  public void initializeRedisCreatesPartitionedRegionIfSystemPropertyBogus() {
+    System.setProperty("gemfireredis.regiontype", "bogus");
+    redisServer = new GeodeRedisServer(redisPort);
+    redisServer.start();
+    Region r = cache.getRegion(GeodeRedisServer.STRING_REGION);
+    assertThat(r.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.PARTITION);
+    assertThat(r.getAttributes().getPartitionAttributes().getRedundantCopies()).isEqualTo(1);
   }
 
   @Test
@@ -76,8 +92,6 @@ public class RedisServerIntegrationTest {
     redisServer = new GeodeRedisServer(redisPort);
     redisServer.start();
     Region r = cache.getRegion(GeodeRedisServer.STRING_REGION);
-    assert r.getAttributes().getDataPolicy() == DataPolicy.REPLICATE : r.getAttributes()
-        .getDataPolicy();
-    System.setProperty("gemfireredis.regiontype", "");
+    assertThat(r.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
   }
 }

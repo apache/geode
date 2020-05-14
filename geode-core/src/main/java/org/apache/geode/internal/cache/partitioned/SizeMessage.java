@@ -312,7 +312,7 @@ public class SizeMessage extends PartitionMessage {
      * is that any failure due to an exception will be covered by healthy Nodes.
      */
     @Override
-    protected void processException(ReplyException ex) {
+    protected synchronized void processException(ReplyException ex) {
       logger.debug("SizeResponse ignoring exception: {}", ex.getMessage(), ex);
     }
 

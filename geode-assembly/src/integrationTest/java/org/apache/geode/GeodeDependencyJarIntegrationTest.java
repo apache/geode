@@ -86,7 +86,7 @@ public class GeodeDependencyJarIntegrationTest {
 
     return Arrays.stream(classpath.split(" "))
         .map(entry -> entry.contains("geode")
-            ? entry.replaceFirst("\\d+\\.\\d+\\.\\d+(-SNAPSHOT)?", "0.0.0") : entry)
+            ? entry.replaceFirst("\\d+\\.\\d+\\.\\d+(-build\\.\\d+)?", "0.0.0") : entry)
         .collect(Collectors.toList());
   }
 }

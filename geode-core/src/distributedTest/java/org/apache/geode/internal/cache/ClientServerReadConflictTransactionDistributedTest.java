@@ -63,7 +63,7 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
   private static final String value3 = "value3";
   private static final String newValue1 = "newValue1";
   private static final String newValue3 = "newValue3";
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
   private static final String allowReadTransactionCommitToProceed =
       "allowReadTransactionCommitToProceed";
   private static final String allowSecondTransactionToProceed = "allowSecondTransactionToProceed";

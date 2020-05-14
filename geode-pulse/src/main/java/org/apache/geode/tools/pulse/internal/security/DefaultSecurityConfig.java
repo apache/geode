@@ -32,6 +32,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 
 @Configuration
@@ -39,13 +40,16 @@ import org.springframework.security.web.authentication.ExceptionMappingAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.default")
 public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
-  @Bean
-  public LogoutHandler logoutHandler() {
-    return new LogoutHandler("/login.html");
+
+  private final RepositoryLogoutHandler repositoryLogoutHandler;
+
+  @Autowired
+  DefaultSecurityConfig(RepositoryLogoutHandler repositoryLogoutHandler) {
+    this.repositoryLogoutHandler = repositoryLogoutHandler;
   }
 
   @Bean
-  public ExceptionMappingAuthenticationFailureHandler failureHandler() {
+  public AuthenticationFailureHandler failureHandler() {
     ExceptionMappingAuthenticationFailureHandler exceptionMappingAuthenticationFailureHandler =
         new ExceptionMappingAuthenticationFailureHandler();
     Map<String, String> exceptionMappings = new HashMap<>();
@@ -58,12 +62,6 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
     return exceptionMappingAuthenticationFailureHandler;
   }
 
-  @Autowired
-  private LogoutHandler logoutHandler;
-
-  @Autowired
-  private ExceptionMappingAuthenticationFailureHandler failureHandler;
-
   @Override
   protected void configure(HttpSecurity httpSecurity) throws Exception {
     httpSecurity.authorizeRequests(authorize -> authorize
@@ -74,14 +72,16 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
         .access("hasRole('CLUSTER:READ') and hasRole('DATA:READ')")
         .mvcMatchers("/*")
         .hasRole("CLUSTER:READ")
-        .anyRequest().authenticated()).formLogin(form -> form
+        .anyRequest().authenticated())
+        .formLogin(form -> form
             .loginPage("/login.html")
             .loginProcessingUrl("/login")
-            .failureHandler(failureHandler)
+            .failureHandler(failureHandler())
             .defaultSuccessUrl("/clusterDetail.html", true))
         .logout(logout -> logout
             .logoutUrl("/clusterLogout")
-            .logoutSuccessHandler(logoutHandler))
+            .addLogoutHandler(repositoryLogoutHandler)
+            .logoutSuccessUrl("/login.html"))
         .exceptionHandling(exception -> exception
             .accessDeniedPage("/accessDenied.html"))
         .headers(header -> header

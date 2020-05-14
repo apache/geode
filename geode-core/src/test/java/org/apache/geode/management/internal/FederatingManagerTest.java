@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.net.InetAddress;
@@ -442,7 +442,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verifyZeroInteractions(proxyFactory);
+    verifyNoMoreInteractions(proxyFactory);
   }
 
   private InternalDistributedMember member() {

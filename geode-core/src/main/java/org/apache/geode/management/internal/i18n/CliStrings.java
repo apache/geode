@@ -548,13 +548,8 @@ public class CliStrings {
   public static final String CONNECT__LOCATOR__HELP =
       "Network address of the Locator in the form: host[port].";
   public static final String CONNECT__URL = "url";
-  public static final String CONNECT__DEFAULT_BASE_URL =
-      "http://localhost:" + DistributionConfig.DEFAULT_HTTP_SERVICE_PORT + "/geode-mgmt/v1";
-  public static final String CONNECT__DEFAULT_SSL_BASE_URL =
-      "https://localhost:" + DistributionConfig.DEFAULT_HTTP_SERVICE_PORT + "/geode-mgmt/v1";
   public static final String CONNECT__URL__HELP =
-      "Indicates the base URL to the Manager's HTTP service.  For example: 'http://<host>:<port>/gemfire/v1' Default is '"
-          + CONNECT__DEFAULT_BASE_URL + "'";
+      "Indicates the base URL to the Manager's HTTP service.  For example: 'http://<host>:<port>/geode-mgmt/v1'";
   public static final String CONNECT__USE_HTTP = "use-http";
   public static final String CONNECT__USE_HTTP__HELP =
       "[Deprecated: inferred by the presence of --url]. Connects to Manager by sending HTTP requests to HTTP service hosting the Management REST API. You must first 'disconnect' in order to reconnect to the Manager via locator or jmx-manager using JMX.";
@@ -815,6 +810,14 @@ public class CliStrings {
   public static final String CLEAR_DEFINED__HELP = "Clears all the defined indexes.";
   public static final String CLEAR_DEFINED_INDEX__SUCCESS__MSG =
       "Index definitions successfully cleared";
+
+  /* clear region */
+  public static final String CLEAR_REGION = "clear region";
+  public static final String CLEAR_REGION_HELP =
+      "Clears/Removes all keys from the specified region.";
+  public static final String CLEAR_REGION_REGION_NAME = "name";
+  public static final String CLEAR_REGION_REGION_NAME_HELP = "Region to clear keys from.";
+  public static final String CLEAR_REGION_CLEARED_ALL_KEYS = "Cleared all keys in the region";
 
   /* create region */
   public static final String CREATE_REGION = "create region";
@@ -1873,6 +1876,8 @@ public class CliStrings {
       "Total primaries transferred during this rebalance";
   public static final String REBALANCE__MSG__TOTALTIME =
       "Total time (in milliseconds) for this rebalance";
+  public static final String REBALANCE__MSG__MEMBER_COUNT =
+      "Total number of members in system on which rebalance is executed";
   public static final String REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS =
       "Distributed system has no regions that can be rebalanced";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception =
@@ -1895,6 +1900,23 @@ public class CliStrings {
   public static final String REBALANCE__MSG__EXCEPTION_OCCURRED_WHILE_REBALANCING_0 =
       "Exception occurred while rebalancing. Reason : {0}";
 
+  /* redundancy commands */
+  public static final String STATUS_REDUNDANCY = "status redundancy";
+  public static final String STATUS_REDUNDANCY_HELP =
+      "Report the redundancy status for partitioned regions in connected members. The default is to report status for all regions.";
+  public static final String RESTORE_REDUNDANCY = "restore redundancy";
+  public static final String RESTORE_REDUNDANCY_HELP =
+      "Restore redundancy and optionally reassign primary bucket hosting for partitioned regions in connected members. The default is for all regions to have redundancy restored and for primary buckets to be reassigned for better load balance.";
+  public static final String REDUNDANCY_INCLUDE_REGION = "include-region";
+  public static final String REDUNDANCY_INCLUDE_REGION_HELP =
+      "Partitioned regions to be included in the operation. Includes take precedence over excludes.";
+  public static final String REDUNDANCY_EXCLUDE_REGION = "exclude-region";
+  public static final String REDUNDANCY_EXCLUDE_REGION_HELP =
+      "Partitioned regions to be excluded from the operation.";
+  public static final String REDUNDANCY_REASSIGN_PRIMARIES = "reassign-primaries";
+  public static final String REDUNDANCY_REASSIGN_PRIMARIES_HELP =
+      "If false, this operation will not attempt to reassign which members host primary buckets.";
+
   /* remove command */
   public static final String REMOVE = "remove";
   public static final String REMOVE__HELP =
@@ -1914,9 +1936,9 @@ public class CliStrings {
   public static final String REMOVE__MSG__KEY_EMPTY = "Key is Null";
   public static final String REMOVE__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
   public static final String REMOVE__MSG__KEY_NOT_FOUND_REGION = "Key is not present in the region";
-  public static final String REMOVE__MSG__CLEARED_ALL_CLEARS = "Cleared all keys in the region";
-  public static final String REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION =
-      "Option --" + REMOVE__ALL + " is not supported on partitioned region";
+  public static final String REMOVE__MSG__CLEARALL_DEPRECATION_WARNING =
+      "Warning: The --all option for the 'remove' command is deprecated. Please"
+          + " use the 'clear' command instead.";
 
   /* resume gateway-sender */
   public static final String RESUME_GATEWAYSENDER = "resume gateway-sender";

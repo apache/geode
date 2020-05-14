@@ -910,7 +910,7 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.doTCPCheckMember(otherMember, mySocket.getLocalPort(), true);
     mySocket.close();
     serverThread.interrupt();
-    serverThread.join(getTimeout().getValueInMS());
+    serverThread.join(getTimeout().toMillis());
     assertThat(System.currentTimeMillis()).isGreaterThanOrEqualTo(startTime + memberTimeout);
   }
 

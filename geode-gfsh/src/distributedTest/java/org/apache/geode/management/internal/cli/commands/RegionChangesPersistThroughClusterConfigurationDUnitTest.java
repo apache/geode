@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
@@ -55,7 +56,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
   private MemberVM server2;
 
   private static final String REGION_NAME = "testRegionSharedConfigRegion";
-  private static final String REGION_PATH = "/" + REGION_NAME;
+  private static final String REGION_PATH = SEPARATOR + REGION_NAME;
   private static final String GROUP_NAME = "cluster";
 
   @Before

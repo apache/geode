@@ -62,7 +62,10 @@ public class PsubscribeExecutor extends AbstractExecutor {
       } catch (CoderException e) {
         logger.warn("Error encoding subscribe response", e);
       }
-      aggregatedResponse.writeBytes(response);
+      if (response != null) {
+        aggregatedResponse.writeBytes(response);
+        response.release();
+      }
     });
     command.setResponse(aggregatedResponse);
   }

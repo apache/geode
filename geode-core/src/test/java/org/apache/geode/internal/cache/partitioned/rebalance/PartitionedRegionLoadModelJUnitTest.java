@@ -1497,8 +1497,8 @@ public class PartitionedRegionLoadModelJUnitTest {
   }
 
   private int doMoves(RebalanceDirector director, PartitionedRegionLoadModel model) {
-    float initialVariance = model.getVarianceForTest();
-    float initialPrimaryVariance = model.getPrimaryVarianceForTest();
+    double initialVariance = model.getVarianceForTest();
+    double initialPrimaryVariance = model.getPrimaryVarianceForTest();
     if (DEBUG) {
       System.out.println("Initial Model\n" + model + "\nVariance= " + initialVariance
           + ", Primary variance=" + initialPrimaryVariance + "\n---------------");
@@ -1509,8 +1509,8 @@ public class PartitionedRegionLoadModelJUnitTest {
     while (director.nextStep() && moveCount < MAX_MOVES) {
 
       moveCount++;
-      float variance = model.getVarianceForTest();
-      float primaryVariance = model.getPrimaryVarianceForTest();
+      double variance = model.getVarianceForTest();
+      double primaryVariance = model.getPrimaryVarianceForTest();
       if (DEBUG) {
         System.out.println("---------------\nMove " + moveCount + "\n" + model + "\nVariance= "
             + variance + ", Primary variance=" + primaryVariance + "\n---------------");

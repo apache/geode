@@ -71,27 +71,8 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
   @Override
   protected void process(final ClusterDistributionManager dm) {
     Assert.assertTrue(this.id != null);
-    // The peer goes deaf after sending us this message, so do not
-    // attempt a reply.
-
-    // final ReplyMessage reply = new ReplyMessage();
-    // reply.setProcessorId(processorId);
-    // reply.setRecipient(getSender());
-    // can't send a response in a UDP receiver thread or we might miss
-    // the other side going away due to blocking receipt of views
-    // if (DistributionMessage.isPreciousThread()) {
-    // dm.getWaitingThreadPool().execute(new Runnable() {
-    // public void run() {
-    // dm.putOutgoing(reply);
-    // dm.handleManagerDeparture(ShutdownMessage.this.id, false, "shutdown message received");
-    // }
-    // });
-    // }
-    // else {
-    // dm.putOutgoing(reply);
     dm.shutdownMessageReceived(id,
         "shutdown message received");
-    // }
   }
 
   @Override

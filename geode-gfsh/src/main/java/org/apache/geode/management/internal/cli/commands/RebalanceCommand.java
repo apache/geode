@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,7 +62,7 @@ public class RebalanceCommand extends GfshCommand {
           help = CliStrings.REBALANCE__SIMULATE__HELP) boolean simulate) {
 
     ExecutorService commandExecutors =
-        LoggingExecutors.newSingleThreadExecutor("RebalanceCommand", false);
+        LoggingExecutors.newSingleThreadExecutor("RebalanceCommand", true);
     List<Future<ResultModel>> commandResult = new ArrayList<>();
     ResultModel result;
     try {
@@ -101,11 +103,12 @@ public class RebalanceCommand extends GfshCommand {
     rsltList.add(6, String.valueOf(results.getPrimaryTransferTimeInMilliseconds()));
     rsltList.add(7, String.valueOf(results.getPrimaryTransfersCompleted()));
     rsltList.add(8, String.valueOf(results.getTimeInMilliseconds()));
+    rsltList.add(9, String.valueOf(results.getNumOfMembers()));
     String regionName = results.getRegionName();
-    if (!regionName.startsWith("/")) {
-      regionName = "/" + regionName;
+    if (!regionName.startsWith(SEPARATOR)) {
+      regionName = SEPARATOR + regionName;
     }
-    rsltList.add(9, regionName);
+    rsltList.add(10, regionName);
 
     toCompositeResultData(result, rsltList, index, simulate, cache);
   }
@@ -114,7 +117,7 @@ public class RebalanceCommand extends GfshCommand {
   private void toCompositeResultData(ResultModel result,
       List<String> rstlist, int index, boolean simulate,
       InternalCache cache) {
-    final int resultItemCount = 9;
+    final int resultItemCount = 10;
 
     if (rstlist.size() <= resultItemCount || StringUtils.isEmpty(rstlist.get(resultItemCount))) {
       return;
@@ -170,6 +173,12 @@ public class RebalanceCommand extends GfshCommand {
     resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ").append(rstlist.get(8))
         .append(newLine);
 
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__MEMBER_COUNT);
+    table1.accumulate("Value", rstlist.get(9));
+    resultStr.append(CliStrings.REBALANCE__MSG__MEMBER_COUNT).append(" = ")
+        .append(rstlist.get(9))
+        .append(newLine);
+
     String headerText;
     if (simulate) {
       headerText = "Simulated partition regions";
@@ -186,11 +195,10 @@ public class RebalanceCommand extends GfshCommand {
 
   // TODO EY Move this to its own class
   private class ExecuteRebalanceWithTimeout implements Callable<ResultModel> {
-
-    String[] includeRegions = null;
-    String[] excludeRegions = null;
     boolean simulate;
-    InternalCache cache = null;
+    InternalCache cache;
+    String[] includeRegions;
+    String[] excludeRegions;
 
     @Override
     public ResultModel call() throws Exception {
@@ -231,6 +239,7 @@ public class RebalanceCommand extends GfshCommand {
 
       // do rebalance
       RebalanceResult rebalanceResult = RebalanceOperationPerformer.perform(cache, operation);
+
       // check for error
       if (!rebalanceResult.getSuccess()) {
         result.addInfo("error");

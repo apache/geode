@@ -60,7 +60,7 @@ public class ZScanExecutor extends AbstractScanExecutor {
     int cursor = 0;
     Pattern matchPattern = null;
     String globMatchPattern = null;
-    int count = DEFUALT_COUNT;
+    int count = DEFAULT_COUNT;
     try {
       cursor = Coder.bytesToInt(cAr);
     } catch (NumberFormatException e) {
@@ -122,8 +122,7 @@ public class ZScanExecutor extends AbstractScanExecutor {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
-  protected List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
+  private List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
     List<Object> returnList = new ArrayList<Object>();
     int size = list.size();
     int beforeCursor = 0;

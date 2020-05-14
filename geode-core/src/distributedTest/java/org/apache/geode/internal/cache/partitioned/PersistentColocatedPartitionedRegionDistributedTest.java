@@ -109,7 +109,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @SuppressWarnings("serial")
 public class PersistentColocatedPartitionedRegionDistributedTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
 
   private static final long DEFAULT_RECOVERY_DELAY = -1;
   private static final int DEFAULT_REDUNDANT_COPIES = 0;

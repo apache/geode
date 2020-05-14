@@ -45,6 +45,7 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
 import org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl;
@@ -101,6 +102,7 @@ public class PoolImpl implements InternalPool {
   private final String name;
   private final int socketConnectTimeout;
   private final int freeConnectionTimeout;
+  private final int serverConnectionTimeout;
   private final int loadConditioningInterval;
   private final int socketBufferSize;
   @Deprecated
@@ -156,6 +158,7 @@ public class PoolImpl implements InternalPool {
   private final AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
 
   private final ThreadsMonitoring threadMonitoring;
+  private final SocketFactory socketFactory;
 
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAndPort> locatorAddresses, InternalDistributedSystem distributedSystem,
@@ -203,6 +206,7 @@ public class PoolImpl implements InternalPool {
 
     socketConnectTimeout = attributes.getSocketConnectTimeout();
     freeConnectionTimeout = attributes.getFreeConnectionTimeout();
+    serverConnectionTimeout = attributes.getServerConnectionTimeout();
     loadConditioningInterval = attributes.getLoadConditioningInterval();
     socketBufferSize = attributes.getSocketBufferSize();
     threadLocalConnections = attributes.getThreadLocalConnections();
@@ -219,6 +223,7 @@ public class PoolImpl implements InternalPool {
     subscriptionMessageTrackingTimeout = attributes.getSubscriptionMessageTrackingTimeout();
     subscriptionAckInterval = attributes.getSubscriptionAckInterval();
     subscriptionTimeoutMultiplier = attributes.getSubscriptionTimeoutMultiplier();
+    socketFactory = attributes.getSocketFactory();
     if (subscriptionTimeoutMultiplier < 0) {
       throw new IllegalArgumentException(
           "The subscription timeout multiplier must not be negative");
@@ -257,7 +262,8 @@ public class PoolImpl implements InternalPool {
         : new PoolStats(statFactory, getName() + "->"
             + (isEmpty(serverGroup) ? "[any servers]" : "[" + getServerGroup() + "]"));
 
-    source = getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback);
+    source =
+        getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback, socketFactory);
     endpointManager = new EndpointManagerImpl(name, distributedSystem, cancelCriterion,
         stats);
     connectionFactory = new ConnectionFactoryImpl(source, endpointManager, distributedSystem,
@@ -275,7 +281,7 @@ public class PoolImpl implements InternalPool {
     // Fix for 43468 - make sure we check the cache cancel criterion if we get
     // an exception, by passing in the poolOrCache stopper
     executor = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, retryAttempts,
-        freeConnectionTimeout, new PoolOrCacheStopper(), this);
+        freeConnectionTimeout, serverConnectionTimeout, new PoolOrCacheStopper(), this);
     if (multiuserSecureModeEnabled) {
       proxyCacheList = new ArrayList<>();
     } else {
@@ -293,6 +299,7 @@ public class PoolImpl implements InternalPool {
     if (p == null)
       return false;
     return getFreeConnectionTimeout() == p.getFreeConnectionTimeout()
+        && getServerConnectionTimeout() == p.getServerConnectionTimeout()
         && getSocketConnectTimeout() == p.getSocketConnectTimeout()
         && getLoadConditioningInterval() == p.getLoadConditioningInterval()
         && getSocketBufferSize() == p.getSocketBufferSize()
@@ -393,6 +400,11 @@ public class PoolImpl implements InternalPool {
   @Override
   public int getFreeConnectionTimeout() {
     return freeConnectionTimeout;
+  }
+
+  @Override
+  public int getServerConnectionTimeout() {
+    return serverConnectionTimeout;
   }
 
   @Override
@@ -646,13 +658,14 @@ public class PoolImpl implements InternalPool {
   }
 
 
-  private ConnectionSource getSourceImpl(LocatorDiscoveryCallback locatorDiscoveryCallback) {
+  private ConnectionSource getSourceImpl(LocatorDiscoveryCallback locatorDiscoveryCallback,
+      SocketFactory socketFactory) {
     List<InetSocketAddress> locators = getLocators();
     if (locators.isEmpty()) {
       return new ExplicitConnectionSourceImpl(getServers());
     } else {
       AutoConnectionSourceImpl source = new AutoConnectionSourceImpl(locatorAddresses,
-          getServerGroup(), socketConnectTimeout);
+          getServerGroup(), socketConnectTimeout, socketFactory);
       if (locatorDiscoveryCallback != null) {
         source.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
       }
@@ -680,6 +693,10 @@ public class PoolImpl implements InternalPool {
     if (getFreeConnectionTimeout() != other.getFreeConnectionTimeout()) {
       throw new RuntimeException(
           String.format("Pool %s is different", "connectionTimeout"));
+    }
+    if (getServerConnectionTimeout() != other.getServerConnectionTimeout()) {
+      throw new RuntimeException(
+          String.format("Pool %s is different", "serverConnectionTimeout"));
     }
     if (getLoadConditioningInterval() != other.getLoadConditioningInterval()) {
       throw new RuntimeException(
@@ -922,10 +939,14 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * Test hook that acquires and returns a connection from the pool with a given ServerLocation.
+   * Borrows a connection to a specific server from the pool.. Used by gateway and tests. Any
+   * connection
+   * that is acquired using this method must be returned using returnConnection, even if it is
+   * destroyed.
+   *
    */
   public Connection acquireConnection(ServerLocation loc) {
-    return manager.borrowConnection(loc, false);
+    return manager.borrowConnection(loc, serverConnectionTimeout, false);
   }
 
   /**
@@ -1099,9 +1120,7 @@ public class PoolImpl implements InternalPool {
     return result;
   }
 
-  /**
-   * Test hook to find out current number of connections this pool has.
-   */
+  @Override
   public int getConnectionCount() {
     return manager.getConnectionCount();
   }
@@ -1580,6 +1599,11 @@ public class PoolImpl implements InternalPool {
   @Override
   public int getSubscriptionTimeoutMultiplier() {
     return subscriptionTimeoutMultiplier;
+  }
+
+  @Override
+  public SocketFactory getSocketFactory() {
+    return socketFactory;
   }
 
   public int calculateRetryAttempts(Throwable cause) {

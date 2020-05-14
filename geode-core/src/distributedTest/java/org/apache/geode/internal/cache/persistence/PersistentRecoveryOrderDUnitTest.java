@@ -113,7 +113,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @SuppressWarnings("serial")
 public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
   private static final AtomicBoolean SAW_REQUEST_IMAGE_MESSAGE = new AtomicBoolean();
   private static final AtomicReference<CountDownLatch> LATCH = new AtomicReference<>();
   private static final AtomicReference<CountDownLatch> SLEEP = new AtomicReference<>();

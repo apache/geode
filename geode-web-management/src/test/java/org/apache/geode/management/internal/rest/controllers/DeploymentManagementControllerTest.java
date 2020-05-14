@@ -44,7 +44,7 @@ public class DeploymentManagementControllerTest {
         DeploymentManagementController.class.getMethod("deploy", MultipartFile.class, String.class);
     assertThat(deploy).isNotNull();
     Annotation[][] parameterAnnotations = deploy.getParameterAnnotations();
-    assertThat(parameterAnnotations[0][0]).isInstanceOf(RequestParam.class);
-    assertThat(parameterAnnotations[1][0]).isInstanceOf(RequestParam.class);
+    assertThat(parameterAnnotations[0][1]).isInstanceOf(RequestParam.class);
+    assertThat(parameterAnnotations[1][1]).isInstanceOf(RequestParam.class);
   }
 }

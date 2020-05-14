@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!-- MultiuserSecurityClient.xml
+     Configures a region as a client region in a Security cache. The 
+     region's pool connects to a server listening on port 40404.
+-->
+<client-cache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://geode.apache.org/schema/cache"
+  xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+  xsi:noNamespaceSchemaLocation="cache-test.xsd"
+  version="1.0">
+  <pool name="my_pool_name" multiuser-authentication="true">
+    <server host="localhost" port="40404"/>
+    <socket-factory>
+      <class-name>org.apache.geode.cache.client.proxy.SniSocketFactory</class-name>
+      <parameter name="hostname">
+        <string>localhost</string>
+      </parameter>
+      <parameter name="port">
+        <string>40404</string>
+      </parameter>
+    </socket-factory>
+  </pool>
+</client-cache>

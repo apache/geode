@@ -34,7 +34,7 @@ public class JMXDataUpdaterGetDoubleAttributeTest {
   @Before
   public void setUp() {
     this.cluster = mock(Cluster.class);
-    this.jmxDataUpdater = new JMXDataUpdater("server", "cluster", this.cluster);
+    this.jmxDataUpdater = new JMXDataUpdater("server", "cluster", this.cluster, null, null);
     this.floatStat = 1.2345f;
     this.doubleStat = 1.2345d;
   }

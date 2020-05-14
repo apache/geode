@@ -170,7 +170,12 @@ Example of using a named disk store for PDX serialization metadata (cache.xml):
 
 Gateway sender queues are always overflowed and may be persisted. Assign them to overflow disk stores if you do not persist, and to persistence disk stores if you do.
 
-Example of using a named disk store for gateway sender queue persistence:
+Persisted data from a parallel gateway sender must go to the same disk
+store as used by the region,
+because parallel gateway sender queues must be colocated with their regions
+to operate correctly.
+
+Example of using a named disk store for a serial gateway sender queue persistence:
 
 -   gfsh:
 
@@ -192,7 +197,7 @@ Example of using a named disk store for gateway sender queue persistence:
     </cache>
     ```
 
-Examples of using the default disk store for gateway sender queue persistence and overflow:
+Examples of using the default disk store for a serial gateway sender queue persistence and overflow:
 
 -   gfsh:
 

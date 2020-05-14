@@ -17,74 +17,84 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class IncrExecutor extends StringExecutor {
-
-  private final String ERROR_VALUE_NOT_USABLE =
-      "The value at this key cannot be incremented numerically";
-
-  private final String ERROR_OVERFLOW = "This incrementation cannot be performed due to overflow";
-
   private final int INIT_VALUE_INT = 1;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    long value;
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
 
-    if (commandElems.size() < 2) {
+    if (commandElems.size() != 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.INCR));
       return;
     }
 
+    Region<ByteArrayWrapper, ByteArrayWrapper> region =
+        context.getRegionProvider().getStringsRegion();
+
     ByteArrayWrapper key = command.getKey();
     checkAndSetDataType(key, context);
-    ByteArrayWrapper valueWrapper = r.get(key);
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      ByteArrayWrapper valueWrapper = region.get(key);
 
-    /*
-     * Value does not exist
-     */
+      /*
+       * Value does not exist
+       */
 
-    if (valueWrapper == null) {
-      byte[] newValue = {Coder.NUMBER_1_BYTE};
-      r.put(key, new ByteArrayWrapper(newValue));
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), INIT_VALUE_INT));
-      return;
-    }
+      if (valueWrapper == null) {
+        byte[] newValue = {Coder.NUMBER_1_BYTE};
+        region.put(key, new ByteArrayWrapper(newValue));
+        command
+            .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), INIT_VALUE_INT));
+        return;
+      }
 
-    /*
-     * Value exists
-     */
+      /*
+       * Value exists
+       */
 
-    String stringValue = valueWrapper.toString();
+      String stringValue = valueWrapper.toString();
 
-    long value;
-    try {
-      value = Long.parseLong(stringValue);
-    } catch (NumberFormatException e) {
+      try {
+        value = Long.parseLong(stringValue);
+      } catch (NumberFormatException e) {
+        command.setResponse(
+            Coder.getErrorResponse(context.getByteBufAllocator(),
+                RedisConstants.ERROR_NOT_INTEGER));
+        return;
+      }
+
+      if (value == Long.MAX_VALUE) {
+        command.setResponse(
+            Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_OVERFLOW));
+        return;
+      }
+
+      value++;
+
+      stringValue = "" + value;
+      region.put(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_VALUE_NOT_USABLE));
+          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+      return;
+    } catch (TimeoutException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          "Timeout acquiring lock. Please try again."));
       return;
     }
-
-    if (value == Long.MAX_VALUE) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
-      return;
-    }
-
-    value++;
-
-    stringValue = "" + value;
-    r.put(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)));
-
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
-
   }
-
 }

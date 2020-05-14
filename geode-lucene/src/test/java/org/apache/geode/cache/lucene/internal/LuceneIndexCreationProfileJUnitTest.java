@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2;
@@ -111,7 +112,8 @@ public class LuceneIndexCreationProfileJUnitTest {
   @Parameters(method = "getCheckCompatibilityProfiles")
   public void testCheckCompatibility(LuceneIndexCreationProfile myProfile,
       LuceneIndexCreationProfile otherProfile, String expectedResult) {
-    assertEquals(expectedResult, otherProfile.checkCompatibility("/" + REGION_NAME, myProfile));
+    assertEquals(expectedResult,
+        otherProfile.checkCompatibility(SEPARATOR + REGION_NAME, myProfile));
   }
 
   private Object[] getCheckCompatibilityProfiles() {

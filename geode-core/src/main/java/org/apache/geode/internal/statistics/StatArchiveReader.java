@@ -210,21 +210,121 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     }
   }
 
+  private static class SingleStatRawStatSpec implements StatSpec {
+
+    private final String archive;
+    private final String statType;
+    private final String statName;
+
+    SingleStatRawStatSpec(String archive, String typeAndStat) {
+      this.archive = archive;
+      String[] parts = typeAndStat.split("\\.", 0);
+      this.statType = parts[0];
+      this.statName = parts[1];
+    }
+
+    @Override
+    public boolean archiveMatches(File archive) {
+      return true; // this.archive.equalsIgnoreCase(archive.getName());
+    }
+
+    @Override
+    public boolean typeMatches(String typeName) {
+      return this.statType.equalsIgnoreCase(typeName);
+    }
+
+    @Override
+    public boolean statMatches(String statName) {
+      return this.statName.equalsIgnoreCase(statName);
+    }
+
+    @Override
+    public boolean instanceMatches(String textId, long numericId) {
+      return true;
+    }
+
+    @Override
+    public int getCombineType() {
+      return StatSpec.NONE;
+    }
+  }
+
+  private static void printStatValue(StatArchiveReader.StatValue v, long startTime, long endTime,
+      boolean nofilter, boolean persec, boolean persample, boolean prunezeros, boolean details) {
+    v = v.createTrimmed(startTime, endTime);
+    if (nofilter) {
+      v.setFilter(StatArchiveReader.StatValue.FILTER_NONE);
+    } else if (persec) {
+      v.setFilter(StatArchiveReader.StatValue.FILTER_PERSEC);
+    } else if (persample) {
+      v.setFilter(StatArchiveReader.StatValue.FILTER_PERSAMPLE);
+    }
+    if (prunezeros) {
+      if (v.getSnapshotsMinimum() == 0.0 && v.getSnapshotsMaximum() == 0.0) {
+        return;
+      }
+    }
+    System.out.println("  " + v.toString());
+    if (details) {
+      System.out.print("  values=");
+      double[] snapshots = v.getSnapshots();
+      for (int i = 0; i < snapshots.length; i++) {
+        System.out.print(' ');
+        System.out.print(snapshots[i]);
+      }
+      System.out.println();
+      String desc = v.getDescriptor().getDescription();
+      if (desc != null && desc.length() > 0) {
+        System.out.println("    " + desc);
+      }
+    }
+  }
+
+
   /**
    * Simple utility to read and dump statistic archive.
    */
   public static void main(String args[]) throws IOException {
     String archiveName = null;
+    final StatArchiveReader reader;
     if (args.length > 1) {
-      System.err.println("Usage: [archiveName]");
-      ExitCode.FATAL.doSystemExit();
-    } else if (args.length == 1) {
-      archiveName = args[0];
+      if (!args[0].equals("stat") || args.length > 3) {
+        System.err.println("Usage: stat archiveName statType.statName");
+        ExitCode.FATAL.doSystemExit();
+      }
+      archiveName = args[1];
+      String statSpec = args[2];
+      if (!statSpec.contains(".")) {
+        throw new IllegalArgumentException(
+            "stat spec '" + statSpec + "' is malformed - use StatType.statName");
+      }
+      File archiveFile = new File(archiveName);
+      if (!archiveFile.exists()) {
+        throw new IllegalArgumentException("archive file does not exist: " + archiveName);
+      }
+      if (!archiveFile.canRead()) {
+        throw new IllegalArgumentException("archive file exists but is unreadable: " + archiveName);
+      }
+      File[] archives = new File[] {archiveFile};
+      SingleStatRawStatSpec[] filters =
+          new SingleStatRawStatSpec[] {new SingleStatRawStatSpec(archiveName, args[2])};
+      reader = new StatArchiveReader(archives, filters, false);
+      final StatValue[] statValues = reader.matchSpec(filters[0]);
+      System.out.println(statSpec + " matched " + statValues.length + " stats...");
+      for (StatValue value : statValues) {
+        printStatValue(value, -1, -1, true, false, false, false, true);
+      }
+      System.out.println("");
+      System.out.flush();
     } else {
-      archiveName = "statArchive.gfs";
+      if (args.length == 1) {
+        archiveName = args[0];
+      } else {
+        archiveName = "statArchive.gfs";
+      }
+      reader = new StatArchiveReader(archiveName);
+      System.out.println("DEBUG: memory used = " + reader.getMemoryUsed());
     }
-    StatArchiveReader reader = new StatArchiveReader(archiveName);
-    System.out.println("DEBUG: memory used = " + reader.getMemoryUsed());
     reader.close();
   }
 

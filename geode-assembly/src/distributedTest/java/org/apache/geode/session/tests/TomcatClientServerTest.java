@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -67,7 +68,8 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
     // Create command string for starting server
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
     command.addOption(CliStrings.START_SERVER__NAME, serverName);
-    command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
+    int locatorPortSuggestion = AvailablePortHelper.getRandomAvailableTCPPort();
+    command.addOption(CliStrings.START_SERVER__SERVER_PORT, String.valueOf(locatorPortSuggestion));
     // Add Tomcat jars to server classpath
     command.addOption(CliStrings.START_SERVER__CLASSPATH,
         binDirJars + File.pathSeparator + libDirJars);
@@ -85,7 +87,8 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
    * Stops the server for the client Tomcat container is has been connecting to
    */
   @After
-  public void stopServer() throws Exception {
+  public void stopServer() {
+
     stopAServer(serverName1);
     stopAServer(serverName2);
   }

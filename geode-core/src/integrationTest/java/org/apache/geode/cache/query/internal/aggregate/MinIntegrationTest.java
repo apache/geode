@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -292,10 +293,10 @@ public class MinIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
     parameterizedSetUp(usePdx);
     createRegion(firstRegionName, regionShortcut);
     QueryService queryService = server.getCache().getQueryService();
-    queryService.createIndex("sampleIndex-1", "p.ID", "/" + firstRegionName + " p");
-    queryService.createIndex("sampleIndex-2", "p.status", "/" + firstRegionName + " p");
+    queryService.createIndex("sampleIndex-1", "p.ID", SEPARATOR + firstRegionName + " p");
+    queryService.createIndex("sampleIndex-2", "p.status", SEPARATOR + firstRegionName + " p");
     queryService.createIndex("sampleIndex-3", "pos.secId",
-        "/" + firstRegionName + " p, p.positions.values pos");
+        SEPARATOR + firstRegionName + " p, p.positions.values pos");
     await().untilAsserted(() -> assertThat(queryService.getIndexes().size()).isEqualTo(3));
     populateRegion(firstRegionName, regionOneLocalCopy);
 
@@ -340,10 +341,10 @@ public class MinIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
     createRegion(firstRegionName, regionShortcut);
     createRegion(secondRegionName, regionShortcut);
     QueryService queryService = server.getCache().getQueryService();
-    queryService.createIndex("sampleIndex-1", "p.ID", "/" + firstRegionName + " p");
-    queryService.createIndex("sampleIndex-2", "p.status", "/" + firstRegionName + " p");
-    queryService.createIndex("sampleIndex-3", "e.ID", "/" + secondRegionName + " e");
-    queryService.createIndex("sampleIndex-4", "e.status", "/" + secondRegionName + " e");
+    queryService.createIndex("sampleIndex-1", "p.ID", SEPARATOR + firstRegionName + " p");
+    queryService.createIndex("sampleIndex-2", "p.status", SEPARATOR + firstRegionName + " p");
+    queryService.createIndex("sampleIndex-3", "e.ID", SEPARATOR + secondRegionName + " e");
+    queryService.createIndex("sampleIndex-4", "e.status", SEPARATOR + secondRegionName + " e");
     await().untilAsserted(() -> assertThat(queryService.getIndexes().size()).isEqualTo(4));
     populateRegion(firstRegionName, regionOneLocalCopy);
     populateRegion(secondRegionName, regionTwoLocalCopy);
