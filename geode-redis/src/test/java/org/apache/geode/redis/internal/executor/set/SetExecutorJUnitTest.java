@@ -17,378 +17,358 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
+import org.apache.geode.redis.internal.Executor;
 
 public class SetExecutorJUnitTest {
   ExecutionHandlerContext context;
+  Command command;
   UnpooledByteBufAllocator byteBuf;
 
   @Before
   public void setUp() {
     context = mock(ExecutionHandlerContext.class);
+    command = mock(Command.class);
     byteBuf = new UnpooledByteBufAllocator(false);
+  }
+
+  @Test
+  public void verifyErrorMessageWhenWrongArgsPassedToSAdd() {
+    Executor sAddExecutor = new SAddExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("SADD".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
-  }
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-  @Test
-  public void verifyErrorMessageWhenOneArgPassedToSAdd() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SADD".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sAddExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
-
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
-
-  @Test
-  public void verifyErrorMessageWhenTwoArgsPassedToSAdd() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SADD".getBytes());
     commandsAsBytes.add("key1".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sAddExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenOneArgsPassedToSCard() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSCard() {
+    Executor sCardExecutor = new SCardExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SCARD".getBytes());
-    Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-  @Test
-  public void verifyErrorMessageWhenMoreThanTwoArgsPassedToSCard() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SCARD".getBytes());
+    sCardExecutor.executeCommand(command, context);
+
     commandsAsBytes.add("key1".getBytes());
     commandsAsBytes.add("key2".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sCardExecutor.executeCommand(command, context);
+    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
-
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenOneArgPassedToSMembers() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSMembers() {
+    Executor sMembersExecutor = new SMembersExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SMEMBERS".getBytes());
-    Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-  @Test
-  public void verifyErrorMessageWhenMoreThanTwoArgsPassedToSMembers() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SMEMBERS".getBytes());
+    sMembersExecutor.executeCommand(command, context);
+
     commandsAsBytes.add("key1".getBytes());
     commandsAsBytes.add("key2".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sMembersExecutor.executeCommand(command, context);
+    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
-
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenOneArgPassedToSIsMember() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSIsMember() {
+    Executor sIsMemberExecutor = new SIsMemberExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SISMEMBER".getBytes());
-    Command command = new Command(commandsAsBytes);
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    sIsMemberExecutor.executeCommand(command, context);
 
-  @Test
-  public void verifyErrorMessageWhenTwoArgsPassedToSIsMember() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SISMEMBER".getBytes());
-    Command command = new Command(commandsAsBytes);
     commandsAsBytes.add("key1".getBytes());
+    sIsMemberExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
-
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
-
-  @Test
-  public void verifyErrorMessageWhenMoreThanThreeArgsPassedToSIsMember() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SISMEMBER".getBytes());
-    commandsAsBytes.add("key1".getBytes());
     commandsAsBytes.add("member1".getBytes());
     commandsAsBytes.add("member2".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sIsMemberExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    verify(command, times(3)).setResponse(argsErrorCaptor.capture());
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(2).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenOneArgsPassedToSMove() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSMove() {
+    Executor sMoveExecutor = new SMoveExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SMOVE".getBytes());
-    Command command = new Command(commandsAsBytes);
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    sMoveExecutor.executeCommand(command, context);
 
-  @Test
-  public void verifyErrorMessageWhenTwoArgsPassedToSMove() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SMOVE".getBytes());
     commandsAsBytes.add("source".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sMoveExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
-
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
-
-  @Test
-  public void verifyErrorMessageWhenThreeArgsPassedToSMove() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SMOVE".getBytes());
-    commandsAsBytes.add("source".getBytes());
     commandsAsBytes.add("dest".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sMoveExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
-
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
-
-  @Test
-  public void verifyErrorMessageWhenMoreThanFourArgsPassedToSMove() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SMOVE".getBytes());
-    commandsAsBytes.add("source".getBytes());
-    commandsAsBytes.add("dest".getBytes());
     commandsAsBytes.add("field1".getBytes());
     commandsAsBytes.add("field2".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sMoveExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    verify(command, times(4)).setResponse(argsErrorCaptor.capture());
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(2).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(3).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenArgsPassedToSDiff() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSDiff() {
+    Executor sdiffExecutor = new SDiffExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SDIFF".getBytes());
-    Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+
+    sdiffExecutor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    assertThat(argsErrorCaptor.getValue().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenNoArgsPassedToSDiffStore() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSDiffStore() {
+    Executor sDiffStoreExecutor = new SDiffStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SDIFFSTORE".getBytes());
-    Command command = new Command(commandsAsBytes);
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    sDiffStoreExecutor.executeCommand(command, context);
 
-  @Test
-  public void verifyErrorMessageWhenOneArgPassedToSDiffStore() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SDIFFSTORE".getBytes());
     commandsAsBytes.add("key1".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sDiffStoreExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenNoArgsPassedToSInter() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSInter() {
+    Executor sInterExecutor = new SInterExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SINTER".getBytes());
-    Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+
+    sInterExecutor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    assertThat(argsErrorCaptor.getValue().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenNoArgsPassedToSInterStore() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSInterStore() {
+    Executor sInterStoreExecutor = new SInterStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SINTERSTORE".getBytes());
-    Command command = new Command(commandsAsBytes);
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    sInterStoreExecutor.executeCommand(command, context);
 
-  @Test
-  public void verifyErrorMessageWhenOneArgPassedToSInterStore() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SINTERSTORE".getBytes());
     commandsAsBytes.add("key1".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sInterStoreExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenNoArgsPassedToSUnion() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSUnion() {
+    Executor sUnionExecutor = new SUnionExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SUNION".getBytes());
-    Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+
+    sUnionExecutor.executeCommand(command, context);
+
+    verify(command).setResponse(argsErrorCaptor.capture());
+
+    assertThat(argsErrorCaptor.getValue().toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenNoArgsPassedToSUnionStore() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSUnionStore() {
+    Executor sUnionStoreExecutor = new SUnionStoreExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SUNIONSTORE".getBytes());
-    Command command = new Command(commandsAsBytes);
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    sUnionStoreExecutor.executeCommand(command, context);
 
-  @Test
-  public void verifyErrorMessageWhenOneArgPassedToSUnionStore() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SUNIONSTORE".getBytes());
     commandsAsBytes.add("key1".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sUnionStoreExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessageWhenNoArgsPassedToSPop() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSPop() {
+    Executor sPopExecutor = new SPopExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SPOP".getBytes());
-    Command command = new Command(commandsAsBytes);
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    sPopExecutor.executeCommand(command, context);
 
-  @Test
-  public void verifyErrorMessageWhenWrongNANPassedToSPop() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SPOP".getBytes());
     commandsAsBytes.add("key1".getBytes());
     commandsAsBytes.add("NAN".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sPopExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
-
-    assertThat(thrown).hasMessageContaining("value is not an integer or out of range");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
-
-  @Test
-  public void verifyErrorMessageWhenMoreTwoArgsPassedToSPop() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SPOP".getBytes());
-    commandsAsBytes.add("key1".getBytes());
-    commandsAsBytes.add("4".getBytes());
+    commandsAsBytes.set(2, "4".getBytes()); // switch "NAN" to a real number
     commandsAsBytes.add("invalid".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sPopExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    verify(command, times(3)).setResponse(argsErrorCaptor.capture());
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(2).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
-  public void verifyErrorMessage_WhenNoArgsPassedToSRem() {
+  public void verifyErrorMessageWhenWrongArgsPassedToSRem() {
+    Executor sRemExecutor = new SRemExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("SREM".getBytes());
-    Command command = new Command(commandsAsBytes);
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
-  }
+    sRemExecutor.executeCommand(command, context);
 
-  @Test
-  public void verifyErrorMessage_WhenOneArgPassedToSRem() {
-    List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("SREM".getBytes());
     commandsAsBytes.add("key1".getBytes());
-    Command command = new Command(commandsAsBytes);
+    sRemExecutor.executeCommand(command, context);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
+    verify(command, times(2)).setResponse(argsErrorCaptor.capture());
 
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    assertThat(capturedErrors.get(1).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 }

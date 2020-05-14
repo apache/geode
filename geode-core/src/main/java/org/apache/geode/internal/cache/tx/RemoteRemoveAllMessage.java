@@ -355,7 +355,6 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
       final DistributedRemoveAllOperation op =
           new DistributedRemoveAllOperation(baseEvent, removeAllDataCount, false);
       try {
-        r.lockRVVForBulkOp();
         final VersionedObjectList versions =
             new VersionedObjectList(removeAllDataCount, true, dr.getConcurrencyChecksEnabled());
         dr.syncBulkOp(new Runnable() {
@@ -392,7 +391,6 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
             this.removeAllDataCount);
         return false;
       } finally {
-        r.unlockRVVForBulkOp();
         op.freeOffHeapResources();
       }
     } finally {

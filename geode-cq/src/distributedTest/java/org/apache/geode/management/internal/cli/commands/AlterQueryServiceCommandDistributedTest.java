@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.CONTINUOUS_QUERIES_RUNNING_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.AUTHORIZER_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.COMMAND_NAME;
@@ -78,9 +77,9 @@ public class AlterQueryServiceCommandDistributedTest {
         .statusIsSuccess();
     locator.invoke(() -> {
       ClusterStartupRule.memberStarter
-          .waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + REPLICATE_REGION_NAME, 1);
+          .waitUntilRegionIsReadyOnExactlyThisManyServers("/" + REPLICATE_REGION_NAME, 1);
       ClusterStartupRule.memberStarter
-          .waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + PARTITION_REGION_NAME, 1);
+          .waitUntilRegionIsReadyOnExactlyThisManyServers("/" + PARTITION_REGION_NAME, 1);
     });
 
     client = cluster.startClientVM(2, ccf -> ccf.withCredential("data", "data")

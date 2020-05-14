@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
@@ -411,9 +410,9 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       putDataSerializableAndVerify(currentServer1, regionName, 0, 100, currentServer2, oldServer,
           oldServerAndLocator);
       if (createMultiIndexes) {
-        doCreateIndexes(SEPARATOR + regionName, currentServer1);
+        doCreateIndexes("/" + regionName, currentServer1);
       } else {
-        doCreateIndex(SEPARATOR + regionName, oldServer);
+        doCreateIndex("/" + regionName, oldServer);
       }
     } finally {
       invokeRunnableInVMs(invokeCloseCache(), currentServer1, currentServer2, oldServer,

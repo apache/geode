@@ -489,7 +489,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
     }
 
     @Override
-    public synchronized void reset() throws IOException {
+    public void reset() throws IOException {
       idx = 0;
       super.reset();
     }

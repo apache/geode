@@ -19,7 +19,6 @@
  */
 package org.apache.geode.internal.jta.functional;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -246,8 +245,7 @@ public class CacheJUnitTest {
       jtaObj.getRegionFromCache("region1");
 
       String current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1",
+      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1",
           current_fullpath);
 
       jtaObj.put("key1", "value1");
@@ -257,8 +255,7 @@ public class CacheJUnitTest {
       assertEquals("get failed for corresponding put", "\"value1\"", tok);
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1",
+      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1",
           current_fullpath);
 
       DataSource da = (DataSource) ctx.lookup("java:/XAPooledDataSource");
@@ -279,7 +276,7 @@ public class CacheJUnitTest {
 
       current_fullpath = jtaObj.currRegion.getFullPath();
       assertEquals("failed retrieving current region fullpath after txn commit",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1", current_fullpath);
+          "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       int ifAnyRows = jtaObj.getRows(this.tblName);
       assertEquals("rows retrieved is:" + ifAnyRows, 1, ifAnyRows);
@@ -344,7 +341,7 @@ public class CacheJUnitTest {
       String current_fullpath = jtaObj.currRegion.getFullPath();
       assertEquals(
           "failed retrieving current region fullpath after doing getRegionFromCache(region1)",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1", current_fullpath);
+          "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       jtaObj.put("key1", "test");
       ta.begin();
@@ -355,8 +352,7 @@ public class CacheJUnitTest {
       assertEquals("get value do not match with the put", "\"value1\"", tok);
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1",
+      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1",
           current_fullpath);
 
       DataSource da = (DataSource) ctx.lookup("java:/XAPooledDataSource");
@@ -376,7 +372,7 @@ public class CacheJUnitTest {
 
       current_fullpath = jtaObj.currRegion.getFullPath();
       assertEquals("failed retirieving current region fullpath after txn rollback",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1", current_fullpath);
+          "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       int ifAnyRows = jtaObj.getRows(this.tblName);
       assertEquals("rows retrieved is: " + ifAnyRows, 0, ifAnyRows);
@@ -444,8 +440,7 @@ public class CacheJUnitTest {
       // now current region should point to region1, as done from within
       // getRegionFromCache method...
       String current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retirieving current fullpath",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1",
+      assertEquals("failed retirieving current fullpath", "/" + DEFAULT_RGN + "/region1",
           current_fullpath);
 
       jtaObj.put("key1", "test");
@@ -459,7 +454,7 @@ public class CacheJUnitTest {
 
       current_fullpath = jtaObj.currRegion.getFullPath();
       assertEquals("failed retrieving current fullpath, current fullpath: " + current_fullpath,
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1", current_fullpath);
+          "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       DataSource da = (DataSource) ctx.lookup("java:/XAPooledDataSource");
 
@@ -510,7 +505,7 @@ public class CacheJUnitTest {
         String current_fullpath = jtaObj.currRegion.getFullPath();
         assertEquals(
             "failed retrieving current fullpath after rollback, fullpath is: " + current_fullpath,
-            SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1", current_fullpath);
+            "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
         // after jdbc rollback, cache value in region1 for key1 must vanish...
         String str1 = null;
@@ -571,8 +566,7 @@ public class CacheJUnitTest {
       // now current region should point to region1, as done from within
       // getRegionFromCache method...
       String current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving the current region fullpath",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1",
+      assertEquals("failed retrieving the current region fullpath", "/" + DEFAULT_RGN + "/region1",
           current_fullpath);
 
       jtaObj.put("key1", "value1");
@@ -583,8 +577,7 @@ public class CacheJUnitTest {
       assertEquals("get value mismatch with put", "\"value1\"", tok);
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath",
-          SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1",
+      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1",
           current_fullpath);
 
       DataSource da = (DataSource) ctx.lookup("java:/XAPooledDataSource");
@@ -597,7 +590,7 @@ public class CacheJUnitTest {
 
       current_fullpath = jtaObj.currRegion.getFullPath();
       assertEquals("failed retrieving current region fullpath after txn commit, fullpath is: "
-          + current_region, SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1", current_fullpath);
+          + current_region, "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       str = jtaObj.get("key1");
       tok = jtaObj.parseGetValue(str);

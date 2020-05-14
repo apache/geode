@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -684,10 +682,10 @@ public abstract class DeltaSessionManager extends ManagerBase
     }
 
     String regionName;
-    if (getRegionName().startsWith(SEPARATOR)) {
+    if (getRegionName().startsWith("/")) {
       regionName = getRegionName();
     } else {
-      regionName = SEPARATOR + getRegionName();
+      regionName = "/" + getRegionName();
     }
 
     Query query = querySvc.newQuery("select s.id from " + regionName

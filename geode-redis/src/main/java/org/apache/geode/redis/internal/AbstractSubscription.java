@@ -16,8 +16,10 @@
 
 package org.apache.geode.redis.internal;
 
+import java.util.concurrent.ExecutionException;
+
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelFuture;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -39,10 +41,13 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public void publishMessage(String channel, byte[] message,
-      PublishResultCollector publishResultCollector) {
+  public PublishResult publishMessage(String channel, byte[] message) {
     ByteBuf messageByteBuffer = constructResponse(channel, message);
-    writeToChannel(messageByteBuffer, publishResultCollector);
+    if (messageByteBuffer == null) {
+      return new PublishResult(client, false);
+    }
+
+    return new PublishResult(client, writeToChannelSynchronously(messageByteBuffer));
   }
 
   Client getClient() {
@@ -71,14 +76,16 @@ public abstract class AbstractSubscription implements Subscription {
    * to the client, resulted in an error - for example if the client has disconnected and the write
    * fails. In such cases we need to be able to notify the caller.
    */
-  private void writeToChannel(ByteBuf messageByteBuffer, PublishResultCollector resultCollector) {
-    context.writeToChannel(messageByteBuffer)
-        .addListener((ChannelFutureListener) future -> {
-          if (future.cause() == null) {
-            resultCollector.success();
-          } else {
-            resultCollector.failure(client);
-          }
-        });
+  private boolean writeToChannelSynchronously(ByteBuf messageByteBuffer) {
+    ChannelFuture channelFuture = context.writeToChannel(messageByteBuffer);
+
+    try {
+      channelFuture.get();
+    } catch (InterruptedException | ExecutionException e) {
+      logger.warn("Unable to write to channel", e);
+      return false;
+    }
+
+    return channelFuture.cause() == null;
   }
 }

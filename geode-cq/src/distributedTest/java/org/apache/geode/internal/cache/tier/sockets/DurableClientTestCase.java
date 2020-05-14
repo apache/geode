@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getCache;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -74,6 +73,8 @@ public class DurableClientTestCase extends DurableClientTestBase {
   public void testSpecialDurableProperty() throws InterruptedException {
     final Properties jp = new Properties();
     jp.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
+
+
 
     try {
 
@@ -517,14 +518,16 @@ public class DurableClientTestCase extends DurableClientTestBase {
     // Verify the durable client received the updates before failover
     this.checkListenerEvents(2, 1, -1, this.durableClientVM);
 
-    this.durableClientVM.invoke("Get", () -> {
-      await().untilAsserted(() -> {
-        Region<Object, Object> region = getCache().getRegion(regionName);
+    this.durableClientVM.invoke(new CacheSerializableRunnable("Get") {
+      @Override
+      public void run2() throws CacheException {
+
+        Region<Object, Object> region = CacheServerTestUtil.getCache().getRegion(regionName);
         assertThat(region).isNotNull();
 
         assertThat(region.getEntry("0")).isNull();
         assertThat(region.getEntry("2")).isNotNull();
-      });
+      }
     });
 
     // Stop server 1
@@ -641,13 +644,15 @@ public class DurableClientTestCase extends DurableClientTestBase {
       this.checkListenerEvents(2, 1, -1, this.durableClientVM);
     }
 
-    this.durableClientVM.invoke("Get", () -> {
-      await().untilAsserted(() -> {
-        Region<Object, Object> region = getCache().getRegion(regionName);
+    this.durableClientVM.invoke(new CacheSerializableRunnable("Get") {
+      @Override
+      public void run2() throws CacheException {
+        Region<Object, Object> region = CacheServerTestUtil.getCache().getRegion(regionName);
         assertThat(region).isNotNull();
+
         // Register interest in all keys
         assertThat(region.getEntry("0")).isNull();
-      });
+      }
     });
 
     publishEntries(4, 1);

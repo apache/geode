@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
@@ -286,7 +285,7 @@ public class CacheOperationsJUnitTest {
         response.getMessageTypeCase());
     RegionAPI.GetRegionNamesResponse getRegionsResponse = response.getGetRegionNamesResponse();
     assertEquals(1, getRegionsResponse.getRegionsCount());
-    assertEquals(SEPARATOR + TEST_REGION, getRegionsResponse.getRegions(0));
+    assertEquals("/" + TEST_REGION, getRegionsResponse.getRegions(0));
   }
 
   private void validatePutAllResponse(Socket socket,

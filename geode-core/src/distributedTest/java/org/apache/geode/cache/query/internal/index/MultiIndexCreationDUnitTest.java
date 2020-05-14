@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -63,7 +62,7 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
     final VM server1 = host.getVM(1);
 
     final int numberOfEntries = 10;
-    final String name = SEPARATOR + regionName;
+    final String name = "/" + regionName;
 
     // Start server1
     AsyncInvocation a1 = server1.invokeAsync(new SerializableCallable("Create Server1") {

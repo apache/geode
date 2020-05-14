@@ -59,13 +59,12 @@ public class ConnectionConnectorTest {
 
     ConnectionConnector spyConnector =
         spy(new ConnectionConnector(endpointManager, ds, 0, 0, 0, false,
-            null, socketCreator, handshake, null));
+            null, socketCreator, handshake));
     doReturn(connection).when(spyConnector).getConnection(ds);
     doReturn(handshake).when(spyConnector).getClientSideHandshake(handshake);
 
-    when(connection.connect(any(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(), any(),
-        any()))
-            .thenThrow(new GemFireSecurityException("Expected exception"));
+    when(connection.connect(any(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(), any()))
+        .thenThrow(new GemFireSecurityException("Expected exception"));
     try {
       spyConnector.connectClientToServer(mock(ServerLocation.class), false);
     } finally {
@@ -78,7 +77,7 @@ public class ConnectionConnectorTest {
 
     ConnectionConnector spyConnector =
         spy(new ConnectionConnector(endpointManager, ds, 0, 0, 0, false,
-            null, socketCreator, handshake, null));
+            null, socketCreator, handshake));
     doReturn(connection).when(spyConnector).getConnection(ds);
     doReturn(handshake).when(spyConnector).getClientSideHandshake(handshake);
 

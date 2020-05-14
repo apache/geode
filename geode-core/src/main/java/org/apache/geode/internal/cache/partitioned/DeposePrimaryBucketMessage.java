@@ -253,7 +253,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
      * message was processed.
      */
     @Override
-    protected synchronized void processException(ReplyException ex) {
+    protected void processException(ReplyException ex) {
       logger.debug("DeposePrimaryBucketMessage ignoring exception {}", ex.getMessage(), ex);
     }
   }

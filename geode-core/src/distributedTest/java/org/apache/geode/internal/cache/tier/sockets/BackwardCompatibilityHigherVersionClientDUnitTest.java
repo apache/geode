@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
@@ -226,7 +225,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
 
   public static void destroyRegion() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.destroyRegion();
     } catch (Exception ex) {

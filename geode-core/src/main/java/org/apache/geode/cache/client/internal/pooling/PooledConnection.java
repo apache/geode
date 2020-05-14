@@ -62,7 +62,6 @@ public class PooledConnection implements Connection {
     return getEndpoint().getLocation();
   }
 
-  @Override
   public boolean isActive() {
     synchronized (this) {
       return this.active;
@@ -241,12 +240,10 @@ public class PooledConnection implements Connection {
     return lastAccessed;
   }
 
-  @Override
   public long getBirthDate() {
     return this.birthDate;
   }
 
-  @Override
   public void setBirthDate(long ts) {
     this.birthDate = ts;
   }

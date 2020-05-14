@@ -47,9 +47,6 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RestRegionAPIDUnitTest {
-  @SuppressWarnings("deprecation")
-  private static final String APPLICATION_JSON_UTF8_VALUE = MediaType.APPLICATION_JSON_UTF8_VALUE;
-
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule()
       .withRestService()
@@ -82,7 +79,7 @@ public class RestRegionAPIDUnitTest {
   public void getAllResources() {
     restClient.doGetAndAssert("")
         .hasStatusCode(HttpStatus.SC_OK)
-        .hasContentType(APPLICATION_JSON_UTF8_VALUE)
+        .hasContentType(MediaType.APPLICATION_JSON.toString())
         .hasResponseBody().isEqualToIgnoringWhitespace(
             "{\"regions\":[{\"name\":\"regionA\",\"type\":\"REPLICATE\",\"key-constraint\":null,\"value-constraint\":null}]}");
   }

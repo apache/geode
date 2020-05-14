@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.security;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
 
 import java.io.IOException;
@@ -310,7 +309,7 @@ public class IntegratedSecurityService implements SecurityService {
       principal = getSubject().getPrincipal();
     }
 
-    String regionName = StringUtils.stripStart(regionPath, SEPARATOR);
+    String regionName = StringUtils.stripStart(regionPath, "/");
     Object newValue;
 
     // if the data is a byte array, but the data itself is supposed to be an object, we need to

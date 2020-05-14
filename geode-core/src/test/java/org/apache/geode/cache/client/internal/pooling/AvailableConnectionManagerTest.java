@@ -27,27 +27,32 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
-import org.apache.geode.cache.client.internal.Connection;
-
 public class AvailableConnectionManagerTest {
 
   private final AvailableConnectionManager instance = new AvailableConnectionManager();
+
+  private PooledConnection createConnection() {
+    PooledConnection result = mock(PooledConnection.class);
+    when(result.activate()).thenReturn(true);
+    when(result.isActive()).thenReturn(true);
+    return result;
+  }
 
   @Test
   public void useFirstReturnsNullGivenEmptyManager() {
     instance.getDeque().clear();
 
-    Connection result = instance.useFirst();
+    PooledConnection result = instance.useFirst();
 
     assertThat(result).isNull();
   }
 
   @Test
   public void useFirstReturnsExpectedConnectionGivenManagerWithOneItem() {
-    Connection expected = createConnection();
+    PooledConnection expected = createConnection();
     instance.getDeque().addFirst(expected);
 
-    Connection result = instance.useFirst();
+    PooledConnection result = instance.useFirst();
 
     assertThat(result).isSameAs(expected);
     assertThat(instance.getDeque()).isEmpty();
@@ -56,11 +61,11 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void useFirstReturnsNullGivenManagerWithOneItemThatCantBeActivated() {
-    Connection expected = createConnection();
+    PooledConnection expected = createConnection();
     when(expected.activate()).thenReturn(false);
     instance.getDeque().addFirst(expected);
 
-    Connection result = instance.useFirst();
+    PooledConnection result = instance.useFirst();
 
     assertThat(result).isNull();
     assertThat(instance.getDeque()).isEmpty();
@@ -71,17 +76,17 @@ public class AvailableConnectionManagerTest {
   public void useFirstWithPredicateReturnsNullGivenEmptyManager() {
     instance.getDeque().clear();
 
-    Connection result = instance.useFirst(c -> true);
+    PooledConnection result = instance.useFirst(c -> true);
 
     assertThat(result).isNull();
   }
 
   @Test
   public void useFirstWithPredicateReturnsExpectedGivenManagerWithOneItem() {
-    Connection expected = createConnection();
+    PooledConnection expected = createConnection();
     instance.getDeque().addFirst(expected);
 
-    Connection result = instance.useFirst(c -> c == expected);
+    PooledConnection result = instance.useFirst(c -> c == expected);
 
     assertThat(result).isSameAs(expected);
     assertThat(instance.getDeque()).isEmpty();
@@ -90,10 +95,10 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void useFirstWithPredicateReturnsNullGivenManagerWithOneItemThatDoesNotMatch() {
-    Connection expected = createConnection();
+    PooledConnection expected = createConnection();
     instance.getDeque().addFirst(expected);
 
-    Connection result = instance.useFirst(c -> false);
+    PooledConnection result = instance.useFirst(c -> false);
 
     assertThat(result).isNull();
     assertThat(instance.getDeque()).hasSize(1);
@@ -102,11 +107,11 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void useFirstWithPredicateReturnsNullGivenManagerWithOneItemThatCantBeActivated() {
-    Connection expected = createConnection();
+    PooledConnection expected = createConnection();
     when(expected.activate()).thenReturn(false);
     instance.getDeque().addFirst(expected);
 
-    Connection result = instance.useFirst(c -> c == expected);
+    PooledConnection result = instance.useFirst(c -> c == expected);
 
     assertThat(result).isNull();
     assertThat(instance.getDeque()).isEmpty();
@@ -115,17 +120,18 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void useFirstWithPredicateReturnsNullGivenManagerWithOneItemThatDoesNotMatchAfterBeingActivated() {
-    Connection expected = createConnection();
+    PooledConnection expected = createConnection();
     when(expected.activate()).thenReturn(true);
     instance.getDeque().addFirst(expected);
     final AtomicBoolean firstTime = new AtomicBoolean(true);
 
-    Connection result = instance.useFirst(c -> {
+    PooledConnection result = instance.useFirst(c -> {
       if (firstTime.get()) {
         firstTime.set(false);
         return true;
+      } else {
+        return false;
       }
-      return false;
     });
 
     assertThat(result).isNull();
@@ -145,7 +151,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void removeReturnsTrueGivenConnectionInManager() {
-    Connection connection = createConnection();
+    PooledConnection connection = createConnection();
     instance.getDeque().addFirst(connection);
 
     boolean result = instance.remove(connection);
@@ -155,7 +161,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void removeEmptiesDequeGivenConnectionInManager() {
-    Connection connection = createConnection();
+    PooledConnection connection = createConnection();
     instance.getDeque().addFirst(connection);
 
     instance.remove(connection);
@@ -165,7 +171,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addFirstWithTrueAddsActiveConnectionToManager() {
-    Connection connection = createConnection();
+    PooledConnection connection = createConnection();
 
     instance.addFirst(connection, true);
 
@@ -176,7 +182,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addFirstWithFalseAddsActiveConnectionToManager() {
-    Connection connection = createConnection();
+    PooledConnection connection = createConnection();
 
     instance.addFirst(connection, false);
 
@@ -187,7 +193,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addFirstAddsInactiveConnectionToManager() {
-    Connection connection = createConnection();
+    PooledConnection connection = createConnection();
     when(connection.isActive()).thenReturn(false);
 
     instance.addFirst(connection, true);
@@ -200,7 +206,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addLastWithTrueAddsActiveConnectionToManager() {
-    Connection connection = createConnection();
+    PooledConnection connection = createConnection();
 
     instance.addLast(connection, true);
 
@@ -211,7 +217,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addLastWithFalseAddsActiveConnectionToManager() {
-    Connection connection = createConnection();
+    PooledConnection connection = createConnection();
 
     instance.addLast(connection, false);
 
@@ -222,7 +228,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addLastAddsInactiveConnectionToManager() {
-    Connection connection = createConnection();
+    PooledConnection connection = createConnection();
     when(connection.isActive()).thenReturn(false);
 
     instance.addLast(connection, true);
@@ -234,21 +240,15 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addFirstTakesPrecedenceOverAddLast() {
-    Connection expected = createConnection();
+    PooledConnection expected = createConnection();
 
     instance.addLast(createConnection(), true);
     instance.addFirst(expected, true);
     instance.addLast(createConnection(), true);
-    Connection connection = instance.useFirst();
+    PooledConnection connection = instance.useFirst();
 
     assertThat(instance.getDeque()).hasSize(2);
     assertThat(connection).isSameAs(expected);
   }
 
-  private Connection createConnection() {
-    Connection result = mock(Connection.class);
-    when(result.activate()).thenReturn(true);
-    when(result.isActive()).thenReturn(true);
-    return result;
-  }
 }

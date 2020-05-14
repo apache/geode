@@ -363,7 +363,6 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
       final DistributedPutAllOperation dpao =
           new DistributedPutAllOperation(baseEvent, putAllDataCount, false);
       try {
-        r.lockRVVForBulkOp();
         final VersionedObjectList versions =
             new VersionedObjectList(putAllDataCount, true, dr.getConcurrencyChecksEnabled());
         dr.syncBulkOp(new Runnable() {
@@ -398,7 +397,6 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
             this.putAllDataCount);
         return false;
       } finally {
-        r.unlockRVVForBulkOp();
         dpao.freeOffHeapResources();
       }
     } finally {

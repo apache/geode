@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -207,7 +206,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=" + diskstoreIDs.get(0))
         .statusIsSuccess().containsOutput("Missing disk store successfully revoked");
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + REGION_1, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + REGION_1, 1);
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();

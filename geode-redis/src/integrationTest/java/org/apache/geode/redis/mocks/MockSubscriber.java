@@ -17,21 +17,20 @@
 package org.apache.geode.redis.mocks;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import redis.clients.jedis.JedisPubSub;
 
 public class MockSubscriber extends JedisPubSub {
-  private final List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());
-  private final List<String> receivedPMessages = Collections.synchronizedList(new ArrayList<>());
+  private List<String> receivedMessages = new ArrayList<>();
+  private List<String> receivedPMessages = new ArrayList<>();
 
   public List<String> getReceivedMessages() {
-    return new ArrayList<>(receivedMessages);
+    return receivedMessages;
   }
 
   public List<String> getReceivedPMessages() {
-    return new ArrayList<>(receivedPMessages);
+    return receivedPMessages;
   }
 
   @Override

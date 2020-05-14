@@ -33,7 +33,7 @@ public class AbstractExecutorGroupJUnitTest {
   private final AbstractExecutor abstractExecutorGroup =
       new FunctionExecutionPooledExecutorGroup(null);
 
-  private static final long timeoutInMilliseconds = GeodeAwaitility.getTimeout().toMillis();
+  private static final long timeoutInMilliseconds = GeodeAwaitility.getTimeout().getValueInMS();
 
   @Test
   public void testInitializationValues() {

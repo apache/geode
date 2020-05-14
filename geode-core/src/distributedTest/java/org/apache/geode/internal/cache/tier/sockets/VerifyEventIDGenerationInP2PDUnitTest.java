@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -127,7 +126,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
 
   public static void createEntry() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
 
       if (!r.containsKey("key-1")) {
@@ -142,7 +141,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
 
   public static void get() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.get("key-1");
     } catch (Exception ex) {

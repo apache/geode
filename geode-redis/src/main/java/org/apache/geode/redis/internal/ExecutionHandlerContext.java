@@ -39,7 +39,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.GeodeRedisServer;
-import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
+import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 
 /**
  * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is the last part of the
@@ -96,7 +96,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param cache The Geode cache instance of this vm
    * @param regionProvider The region provider of this context
    * @param server Instance of the server it is attached to, only used so that any execution
-   *        can initiate a shutdown
+   *        can initiate a shutdwon
    * @param password Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
@@ -140,14 +140,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    Command command = (Command) msg;
     try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing Redis command: {}", command);
-      }
+      Command command = (Command) msg;
+      logger.info("Executing Redis command: {}", command);
       executeCommand(ctx, command);
     } catch (Exception e) {
-      logger.warn("Execution of Redis command {} failed: {}", command, e);
+      logger.error(e);
       throw e;
     }
 
@@ -174,7 +172,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         && cause.getCause() instanceof RedisCommandParserException) {
       response =
           Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.PARSING_EXCEPTION_MESSAGE);
-
     } else if (cause instanceof RegionCreationException) {
       this.logger.error(cause);
       response =
@@ -182,8 +179,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
       response =
           Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_SHUTDOWN);
-    } else if (cause instanceof IllegalStateException
-        || cause instanceof RedisParametersMismatchException) {
+    } else if (cause instanceof IllegalStateException) {
       response = Coder.getErrorResponse(this.byteBufAllocator, cause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {
@@ -204,35 +200,33 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
+    RedisCommandType type = command.getCommandType();
+    Executor exec = type.getExecutor();
     if (isAuthenticated) {
-      if (command.isOfType(RedisCommandType.SHUTDOWN)) {
+      if (type == RedisCommandType.SHUTDOWN) {
         this.server.shutdown();
         return;
       }
-
-      if (hasTransaction() && !command.isTransactional()) {
-        executeWithTransaction(ctx, command);
+      if (hasTransaction() && !(exec instanceof TransactionExecutor)) {
+        executeWithTransaction(ctx, exec, command);
       } else {
-        executeWithoutTransaction(command);
+        executeWithoutTransaction(exec, command);
       }
 
-      if (hasTransaction() && command.isOfType(RedisCommandType.MULTI)) {
+      if (hasTransaction() && command.getCommandType() != RedisCommandType.MULTI) {
         writeToChannel(
             Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
       } else {
-        // PUBLISH responses are always deferred
-        if (command.getCommandType() != RedisCommandType.PUBLISH) {
-          ByteBuf response = command.getResponse();
-          writeToChannel(response);
-        }
+        ByteBuf response = command.getResponse();
+        writeToChannel(response);
       }
-    } else if (command.isOfType(RedisCommandType.QUIT)) {
-      command.execute(this);
+    } else if (type == RedisCommandType.QUIT) {
+      exec.executeCommand(command, this);
       ByteBuf response = command.getResponse();
       writeToChannel(response);
       channelInactive(ctx);
-    } else if (command.isOfType(RedisCommandType.AUTH)) {
-      command.execute(this);
+    } else if (type == RedisCommandType.AUTH) {
+      exec.executeCommand(command, this);
       ByteBuf response = command.getResponse();
       writeToChannel(response);
     } else {
@@ -241,19 +235,19 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-
   /**
    * Private helper method to execute a command without a transaction, done for special exception
    * handling neatness
    *
+   * @param exec Executor to use
    * @param command Command to execute
    * @throws Exception Throws exception if exception is from within execution and not to be handled
    */
-  private void executeWithoutTransaction(Command command) throws Exception {
+  private void executeWithoutTransaction(final Executor exec, Command command) throws Exception {
     Exception cause = null;
     for (int i = 0; i < MAXIMUM_NUM_RETRIES; i++) {
       try {
-        command.execute(this);
+        exec.executeCommand(command, this);
         return;
       } catch (Exception e) {
         logger.error(e);
@@ -268,13 +262,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     throw cause;
   }
 
-  private void executeWithTransaction(ChannelHandlerContext ctx,
+  private void executeWithTransaction(ChannelHandlerContext ctx, final Executor exec,
       Command command) throws Exception {
     CacheTransactionManager txm = cache.getCacheTransactionManager();
     TransactionId transactionId = getTransactionID();
     txm.resume(transactionId);
     try {
-      command.execute(this);
+      exec.executeCommand(command, this);
     } catch (UnsupportedOperationInTransactionException e) {
       command.setResponse(Coder.getErrorResponse(this.byteBufAllocator,
           RedisConstants.ERROR_UNSUPPORTED_OPERATION_IN_TRANSACTION));

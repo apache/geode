@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,8 +29,7 @@ public class FilterByPath implements RegionFilter {
     if (included != null) {
       this.included = new HashSet<String>();
       for (String regionName : included) {
-        this.included
-            .add((!regionName.startsWith(SEPARATOR)) ? (SEPARATOR + regionName) : regionName);
+        this.included.add((!regionName.startsWith("/")) ? ("/" + regionName) : regionName);
       }
     } else {
       this.included = null;
@@ -40,8 +37,7 @@ public class FilterByPath implements RegionFilter {
     if (excluded != null) {
       this.excluded = new HashSet<String>();
       for (String regionName : excluded) {
-        this.excluded
-            .add((!regionName.startsWith(SEPARATOR)) ? (SEPARATOR + regionName) : regionName);
+        this.excluded.add((!regionName.startsWith("/")) ? ("/" + regionName) : regionName);
       }
     } else {
       this.excluded = null;

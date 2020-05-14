@@ -137,11 +137,4 @@ public interface PartitionRebalanceInfo {
    * @return the time, in milliseconds, spent transferring primaries for this region
    */
   long getPrimaryTransferTime();
-
-  /**
-   * Returns the total number of members on which command is executed.
-   *
-   * @return the total number of members on which command is executed
-   */
-  int getNumberOfMembersExecutedOn();
 }

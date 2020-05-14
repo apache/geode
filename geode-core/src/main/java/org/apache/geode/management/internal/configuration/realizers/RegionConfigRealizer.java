@@ -17,8 +17,6 @@
 
 package org.apache.geode.management.internal.configuration.realizers;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -300,8 +298,7 @@ public class RegionConfigRealizer
 
   @Override
   public RuntimeRegionInfo get(Region config, InternalCache cache) {
-    org.apache.geode.cache.Region<Object, Object> region =
-        cache.getRegion(SEPARATOR + config.getName());
+    org.apache.geode.cache.Region<Object, Object> region = cache.getRegion("/" + config.getName());
     if (region == null) {
       return null;
     }
@@ -311,23 +308,6 @@ public class RegionConfigRealizer
     return info;
   }
 
-  /**
-   * the default implementation will have the extra work of getting the runtime info which is
-   * unnecessary. It will also have some concurrency issue if the region is being destroyed.
-   */
-  @Override
-  public boolean exists(Region config, InternalCache cache) {
-    org.apache.geode.cache.Region<Object, Object> region =
-        cache.getRegion(SEPARATOR + config.getName());
-    if (region == null) {
-      return false;
-    }
-
-    if (region.isDestroyed()) {
-      return false;
-    }
-    return true;
-  }
 
   @Override
   public RealizationResult update(Region config, InternalCache cache) {
@@ -345,7 +325,7 @@ public class RegionConfigRealizer
     try {
       region.destroyRegion();
     } catch (RegionDestroyedException dex) {
-      // Probably happened as a distributed op but it still reflects our current desired action
+      // Probably happened as a distirbuted op but it still reflects our current desired action
       // which is why it can be ignored here.
       return new RealizationResult().setMessage("Region does not exist.");
     }

@@ -19,7 +19,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -234,7 +234,7 @@ public class CompositeOutputStreamJUnitTest {
     cos.flush();
     cos.close();
 
-    verifyNoMoreInteractions(streamTwo);
+    verifyZeroInteractions(streamTwo);
     InOrder inOrderStreams = inOrder(streamOne);
     inOrderStreams.verify(streamOne, times(1)).write(2);
     inOrderStreams.verify(streamOne, times(1)).write(3);
@@ -261,7 +261,7 @@ public class CompositeOutputStreamJUnitTest {
     cos.flush();
     cos.close();
 
-    verifyNoMoreInteractions(streamOne);
+    verifyZeroInteractions(streamOne);
   }
 
   @Test
@@ -279,6 +279,6 @@ public class CompositeOutputStreamJUnitTest {
     cos.flush();
     cos.close();
 
-    verifyNoMoreInteractions(streamOne);
+    verifyZeroInteractions(streamOne);
   }
 }

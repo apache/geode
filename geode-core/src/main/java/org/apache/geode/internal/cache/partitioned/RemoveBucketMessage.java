@@ -260,7 +260,7 @@ public class RemoveBucketMessage extends PartitionMessage {
      * message was processed.
      */
     @Override
-    protected synchronized void processException(ReplyException ex) {
+    protected void processException(ReplyException ex) {
       logger.debug("RemoveBucketMessage ignoring exception: {}", ex.getMessage(), ex);
     }
 

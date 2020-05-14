@@ -74,7 +74,6 @@ public class BackupService {
     try {
       result = taskFuture.get();
     } catch (InterruptedException | ExecutionException e) {
-      logger.warn("Backup failed with exception: ", e);
       result = new HashSet<>();
     } finally {
       cleanup();

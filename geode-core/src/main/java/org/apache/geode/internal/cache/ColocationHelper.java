@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
 
 import java.io.Serializable;
@@ -147,7 +146,7 @@ public class ColocationHelper {
         }
         if (prConf.getColocatedWith() != null) {
           if (prConf.getColocatedWith().equals(tempToBeColocatedWith.getFullPath())
-              || (SEPARATOR + prConf.getColocatedWith())
+              || (Region.SEPARATOR + prConf.getColocatedWith())
                   .equals(tempToBeColocatedWith.getFullPath())) {
             colocatedRegions.add(prConf);
             tempcolocatedRegions.add(prConf);
@@ -410,8 +409,7 @@ public class ColocationHelper {
         if (prRegion != null) {
           if (prRegion.getColocatedWith() != null) {
             if (prRegion.getColocatedWith().equals(partitionedRegion.getFullPath())
-                || (SEPARATOR + prRegion.getColocatedWith())
-                    .equals(partitionedRegion.getFullPath())) {
+                || ("/" + prRegion.getColocatedWith()).equals(partitionedRegion.getFullPath())) {
               // only regions directly colocatedWith partitionedRegion are
               // added to the list...
               prRegion.waitOnBucketMetadataInitialization();
@@ -472,10 +470,10 @@ public class ColocationHelper {
   }
 
   private static String getRegionIdentifier(String regionName) {
-    if (regionName.startsWith(SEPARATOR)) {
-      return regionName.replace(SEPARATOR, "#");
+    if (regionName.startsWith("/")) {
+      return regionName.replace("/", "#");
     } else {
-      return "#" + regionName.replace(SEPARATOR, "#");
+      return "#" + regionName.replace("/", "#");
     }
   }
 

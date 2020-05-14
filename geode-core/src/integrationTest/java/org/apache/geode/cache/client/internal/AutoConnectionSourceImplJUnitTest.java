@@ -57,7 +57,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
-import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
@@ -73,7 +72,6 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PoolStats;
@@ -126,7 +124,7 @@ public class AutoConnectionSourceImplJUnitTest {
     locators.add(isa);
     List<HostAndPort> la = new ArrayList<>();
     la.add(new HostAndPort(ia.getHostName(), port));
-    source = new AutoConnectionSourceImpl(la, "", 60 * 1000, SocketFactory.DEFAULT);
+    source = new AutoConnectionSourceImpl(la, "", 60 * 1000);
     source.start(pool);
   }
 
@@ -163,8 +161,7 @@ public class AutoConnectionSourceImplJUnitTest {
     new TcpClient(SocketCreatorFactory
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-        TcpSocketFactory.DEFAULT)
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
             .stop(new HostAndPort(InetAddress.getLocalHost().getHostName(), port));
   }
 
@@ -184,8 +181,7 @@ public class AutoConnectionSourceImplJUnitTest {
     List<HostAndPort> la = new ArrayList<>();
     la.add(new HostAndPort(floc1.getHostName(), floc1.getPort()));
     la.add(new HostAndPort(floc2.getHostName(), floc2.getPort()));
-    AutoConnectionSourceImpl src =
-        new AutoConnectionSourceImpl(la, "", 60 * 1000, SocketFactory.DEFAULT);
+    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(la, "", 60 * 1000);
 
 
     InetSocketAddress b1 = new InetSocketAddress("fakeLocalHost1", port);
@@ -443,11 +439,6 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     @Override
-    public int getConnectionCount() {
-      return 0;
-    }
-
-    @Override
     public EndpointManager getEndpointManager() {
       return null;
     }
@@ -492,11 +483,6 @@ public class AutoConnectionSourceImplJUnitTest {
 
     @Override
     public int getFreeConnectionTimeout() {
-      return 0;
-    }
-
-    @Override
-    public int getServerConnectionTimeout() {
       return 0;
     }
 
@@ -687,11 +673,6 @@ public class AutoConnectionSourceImplJUnitTest {
     @Override
     public int getSubscriptionTimeoutMultiplier() {
       return 0;
-    }
-
-    @Override
-    public SocketFactory getSocketFactory() {
-      return null;
     }
 
     @Override

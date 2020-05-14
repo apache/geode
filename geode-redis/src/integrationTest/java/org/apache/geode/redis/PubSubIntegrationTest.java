@@ -27,7 +27,6 @@ import java.util.concurrent.Callable;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -39,24 +38,20 @@ import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category({RedisTest.class})
 public class PubSubIntegrationTest {
-  static Jedis publisher;
-  static Jedis subscriber;
-  static final int REDIS_CLIENT_TIMEOUT = 100000;
+  private static final int REDIS_CLIENT_TIMEOUT = 100000;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
+  private static Jedis publisher;
+  private static Jedis subscriber;
   private static int port = 6379;
-
-  @ClassRule
-  public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @BeforeClass
   public static void setUp() {
     CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "info");
+    cf.set(LOG_LEVEL, "warn");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cache = cf.create();
@@ -75,10 +70,6 @@ public class PubSubIntegrationTest {
     publisher.close();
     cache.close();
     server.shutdown();
-  }
-
-  public int getPort() {
-    return port;
   }
 
   @Test
@@ -160,7 +151,7 @@ public class PubSubIntegrationTest {
 
   @Test
   public void testTwoSubscribersOneChannel() {
-    Jedis subscriber2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    Jedis subscriber2 = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
     MockSubscriber mockSubscriber1 = new MockSubscriber();
     MockSubscriber mockSubscriber2 = new MockSubscriber();
 
@@ -222,7 +213,7 @@ public class PubSubIntegrationTest {
 
   @Test
   public void testDeadSubscriber() {
-    Jedis deadSubscriber = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    Jedis deadSubscriber = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -256,14 +247,11 @@ public class PubSubIntegrationTest {
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    String message = "hello-" + System.currentTimeMillis();
-
-    Long result = publisher.publish("salutations", message);
+    Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(1);
 
     assertThat(mockSubscriber.getReceivedMessages()).isEmpty();
-    GeodeAwaitility.await().until(() -> !mockSubscriber.getReceivedPMessages().isEmpty());
-    assertThat(mockSubscriber.getReceivedPMessages()).containsExactly(message);
+    assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
 
     mockSubscriber.punsubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);

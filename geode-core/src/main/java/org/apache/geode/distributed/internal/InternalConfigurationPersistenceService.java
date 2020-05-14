@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -445,7 +446,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     File jarFile = downloadJar(sourceLocator, groupName, jarName);
 
     File jarToWrite = getPathToJarOnThisLocator(groupName, jarName).toFile();
-    FileUtils.copyFile(jarFile, jarToWrite);
+    Files.copy(jarFile.toPath(), jarToWrite.toPath(), StandardCopyOption.REPLACE_EXISTING);
   }
 
   /**

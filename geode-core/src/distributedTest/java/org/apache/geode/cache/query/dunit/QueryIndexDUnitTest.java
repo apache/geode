@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -334,15 +333,14 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 = qs.createIndex(indexName, "pf.ID", SEPARATOR + regionNames[i] + " pf");
+                Index i1 = qs.createIndex(indexName, "pf.ID", "/" + regionNames[i] + " pf");
               }
               indexName = "keyIdIndex" + regionNames[i];
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i2 =
-                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionNames[i] + ".keys key");
+                Index i2 = qs.createIndex(indexName, "key.ID", "/" + regionNames[i] + ".keys key");
               }
             } catch (IndexNameConflictException ice) {
               // Ignore. The pr may have created the index through
@@ -504,23 +502,21 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 = qs.createIndex(indexName, "pf", SEPARATOR + regionNames[i] + " pf");
+                Index i1 = qs.createIndex(indexName, "pf", "/" + regionNames[i] + " pf");
               }
               indexName = "valueIndex" + regionNames[i];
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 =
-                    qs.createIndex(indexName, "pf", SEPARATOR + regionNames[i] + ".values pf");
+                Index i1 = qs.createIndex(indexName, "pf", "/" + regionNames[i] + ".values pf");
               }
               indexName = "keyIdIndex" + regionNames[i];
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i2 =
-                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionNames[i] + ".keys key");
+                Index i2 = qs.createIndex(indexName, "key.ID", "/" + regionNames[i] + ".keys key");
               }
               indexName = "keyIdIndex2" + regionNames[i];
 
@@ -673,15 +669,14 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 = qs.createIndex(indexName, "pf.ID", SEPARATOR + regionNames[i] + " pf");
+                Index i1 = qs.createIndex(indexName, "pf.ID", "/" + regionNames[i] + " pf");
               }
               indexName = "keyIdIndex" + regionNames[i];
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i2 =
-                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionNames[i] + ".keys key");
+                Index i2 = qs.createIndex(indexName, "key.ID", "/" + regionNames[i] + ".keys key");
               }
             } catch (IndexNameConflictException ice) {
               // Ignore. The pr may have created the index through
@@ -836,23 +831,21 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 = qs.createIndex(indexName, "pf", SEPARATOR + regionNames[i] + " pf");
+                Index i1 = qs.createIndex(indexName, "pf", "/" + regionNames[i] + " pf");
               }
               indexName = "valueIndex" + regionNames[i];
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 =
-                    qs.createIndex(indexName, "pf", SEPARATOR + regionNames[i] + ".values pf");
+                Index i1 = qs.createIndex(indexName, "pf", "/" + regionNames[i] + ".values pf");
               }
               indexName = "keyIdIndex" + regionNames[i];
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i2 =
-                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionNames[i] + ".keys key");
+                Index i2 = qs.createIndex(indexName, "key.ID", "/" + regionNames[i] + ".keys key");
               }
             } catch (IndexNameConflictException ice) {
               // Ignore. The pr may have created the index through
@@ -1113,36 +1106,35 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i1 = qs.createIndex(indexName, IndexType.FUNCTIONAL, "pf.ID",
-              SEPARATOR + regionNames[i] + " pf");
+              "/" + regionNames[i] + " pf");
         }
         indexName = "keyIdIndex" + regionNames[i];
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i2 = qs.createIndex(indexName, IndexType.FUNCTIONAL, "key.ID",
-              SEPARATOR + regionNames[i] + ".keys key");
+              "/" + regionNames[i] + ".keys key");
         }
         indexName = "entryIdIndex" + regionNames[i];
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i2 = qs.createIndex(indexName, IndexType.FUNCTIONAL, "entry.value.ID",
-              SEPARATOR + regionNames[i] + ".entries entry");
+              "/" + regionNames[i] + ".entries entry");
         }
         indexName = "entryMethodIndex" + regionNames[i];
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i2 = qs.createIndex(indexName, IndexType.FUNCTIONAL, "entry.getValue().getID()",
-              SEPARATOR + regionNames[i] + ".entries entry");
+              "/" + regionNames[i] + ".entries entry");
         }
         indexName = "entryMethodWithArgIndex" + regionNames[i];
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i2 = qs.createIndex(indexName, IndexType.FUNCTIONAL,
-              "entry.getValue().boolFunction('active')",
-              SEPARATOR + regionNames[i] + ".entries entry");
+              "entry.getValue().boolFunction('active')", "/" + regionNames[i] + ".entries entry");
         }
       } catch (IndexNameConflictException ice) {
         // Ignore. The pr may have created the index through

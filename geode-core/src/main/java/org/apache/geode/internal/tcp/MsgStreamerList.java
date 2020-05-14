@@ -63,16 +63,25 @@ public class MsgStreamerList implements BaseMsgStreamer {
     for (MsgStreamer streamer : this.streamers) {
       if (ex != null) {
         streamer.release();
-      } else {
-        try {
-          result += streamer.writeMessage();
-          // if there is an exception we need to finish the
-          // loop and release the other streamer's buffers
-        } catch (RuntimeException e) {
-          ex = e;
-        } catch (IOException e) {
-          ioex = e;
-        }
+        // TODO: shouldn't we call continue here?
+        // It seems wrong to call writeMessage on a streamer we have just released.
+        // But why do we call release on a streamer when we had an exception on one
+        // of the previous streamer?
+        // release clears the direct bb and returns it to the pool but leaves
+        // it has the "buffer". THen we call writeMessage and it will use "buffer"
+        // that has also been returned to the pool.
+        // I think we only have a MsgStreamerList when a DS has a mix of versions
+        // which usually is just during a rolling upgrade so that might be why we
+        // haven't noticed this causing a bug.
+      }
+      try {
+        result += streamer.writeMessage();
+        // if there is an exception we need to finish the
+        // loop and release the other streamer's buffers
+      } catch (RuntimeException e) {
+        ex = e;
+      } catch (IOException e) {
+        ioex = e;
       }
     }
     if (ex != null) {

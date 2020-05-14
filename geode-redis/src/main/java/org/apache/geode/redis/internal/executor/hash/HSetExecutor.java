@@ -15,11 +15,16 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
+import java.util.Map;
 
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.Extendable;
+import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 /**
  * <pre>
@@ -36,22 +41,63 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
  *
  * </pre>
  */
-public class HSetExecutor extends HashExecutor {
+public class HSetExecutor extends HashExecutor implements Extendable {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
+    List<byte[]> commandElems = command.getProcessedCommand();
+
+    if (commandElems.size() < 4 || commandElems.size() % 2 == 1) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
+      return;
+    }
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
+    Object oldValue;
+    int fieldsAdded = 0;
 
-    int fieldsAdded = hash.hset(commandElems.subList(2, commandElems.size()), onlySetOnAbsent());
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+
+      for (int i = 2; i < commandElems.size(); i += 2) {
+        byte[] fieldArray = commandElems.get(i);
+        ByteArrayWrapper field = new ByteArrayWrapper(fieldArray);
+        byte[] value = commandElems.get(i + 1);
+        ByteArrayWrapper putValue = new ByteArrayWrapper(value);
+
+        if (onlySetOnAbsent()) {
+          oldValue = map.putIfAbsent(field, putValue);
+        } else {
+          oldValue = map.put(field, putValue);
+        }
+
+        if (oldValue == null) {
+          fieldsAdded++;
+        }
+      }
+
+      this.saveMap(map, context, key);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+      return;
+    } catch (TimeoutException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          "Timeout acquiring lock. Please try again."));
+      return;
+    }
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), fieldsAdded));
   }
 
   protected boolean onlySetOnAbsent() {
     return false;
+  }
+
+  @Override
+  public String getArgsError() {
+    return ArityDef.HSET;
   }
 }

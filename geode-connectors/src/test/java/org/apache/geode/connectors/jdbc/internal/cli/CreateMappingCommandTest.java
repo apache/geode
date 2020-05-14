@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -332,9 +331,8 @@ public class CreateMappingCommandTest {
     setupRequiredPreconditions();
     results.add(successFunctionResult);
 
-    ResultModel result =
-        createRegionMappingCommand.createMapping(SEPARATOR + regionName, dataSourceName,
-            tableName, pdxClass, pdxClassFile, false, null, null, null, false, null);
+    ResultModel result = createRegionMappingCommand.createMapping("/" + regionName, dataSourceName,
+        tableName, pdxClass, pdxClassFile, false, null, null, null, false, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();

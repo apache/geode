@@ -79,7 +79,7 @@ public class PartitionedRegionCreationJUnitTest {
     int numAlive = 0;
     for (Thread thread : regionCreationThreads) {
       thread.interrupt();
-      thread.join(GeodeAwaitility.getTimeout().toMillis() / numThreads);
+      thread.join(GeodeAwaitility.getTimeout().getValueInMS() / numThreads);
       if (thread.isAlive()) {
         numAlive++;
       }
@@ -322,7 +322,7 @@ public class PartitionedRegionCreationJUnitTest {
     if (PRCreateDone)
       return;
     int numthread = 0;
-    long giveupTime = System.currentTimeMillis() + GeodeAwaitility.getTimeout().toMillis();
+    long giveupTime = System.currentTimeMillis() + GeodeAwaitility.getTimeout().getValueInMS();
     while (numthread < TOTAL_THREADS && giveupTime > System.currentTimeMillis()) {
       PartionedRegionCreateThread pregionThread = new PartionedRegionCreateThread();
       pregionThread.start();

@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -30,7 +31,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.redis.internal.executor.set.RedisSet;
 
 
 /**
@@ -47,7 +47,7 @@ public class RegionProviderJUnitTest {
   private ExecutionHandlerContext context;
 
   private Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion;
-  private Region<ByteArrayWrapper, RedisSet> setRegion;
+  private Region<ByteArrayWrapper, Set<ByteArrayWrapper>> setRegion;
 
   /**
    * Setup data, objects mocks for the test case

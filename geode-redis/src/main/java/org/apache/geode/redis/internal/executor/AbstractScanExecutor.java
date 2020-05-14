@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
@@ -27,7 +29,10 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
   protected final String ERROR_INVALID_CURSOR =
       "Cursor is invalid, dataset may have been altered if this is cursor from a previous scan";
 
-  protected final int DEFAULT_COUNT = 10;
+  protected final int DEFUALT_COUNT = 10;
+
+  protected abstract List<?> getIteration(Collection<?> list, Pattern matchPatter, int count,
+      int cursor);
 
   /**
    * @param pattern A glob pattern.

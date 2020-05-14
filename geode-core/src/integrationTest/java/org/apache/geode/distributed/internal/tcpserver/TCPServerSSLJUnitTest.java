@@ -160,8 +160,7 @@ public class TCPServerSSLJUnitTest {
             new DistributionConfigImpl(getSSLConfigurationProperties()),
             SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-        TcpSocketFactory.DEFAULT);
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }
 
 }

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.snapshot;
 
-import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -130,7 +128,7 @@ public class CacheSnapshotServiceImpl implements CacheSnapshotService {
   private void saveRegion(Region<?, ?> region, File dir, SnapshotFormat format,
       SnapshotOptions options) throws IOException {
     RegionSnapshotService<?, ?> regionSnapshotService = region.getSnapshotService();
-    String name = "snapshot" + region.getFullPath().replace(SEPARATOR_CHAR, '-')
+    String name = "snapshot" + region.getFullPath().replace('/', '-')
         + RegionSnapshotService.SNAPSHOT_FILE_EXTENSION;
     File f = new File(dir, name);
     regionSnapshotService.save(f, format, options);

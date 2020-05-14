@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.CacheFactory.getAnyInstance;
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -171,7 +170,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
   public static void closeRegion() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       String poolName = r.getAttributes().getPoolName();
       assertNotNull(poolName);
@@ -203,7 +202,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return c.getRegion(SEPARATOR + clientMembershipId) == null;
+        return c.getRegion("/" + clientMembershipId) == null;
       }
 
       @Override
@@ -225,6 +224,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
+    // assertNull(c.getRegion("/"+clientMembershipId));
     assertEquals(0, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
   }
 

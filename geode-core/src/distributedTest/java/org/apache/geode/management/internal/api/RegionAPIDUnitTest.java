@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.api;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -73,7 +72,7 @@ public class RegionAPIDUnitTest {
 
     server.invoke(() -> verifyRegionCreated(regionName, "PARTITION"));
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
 
     gfsh.executeAndAssertThat("put --key='foo' --value='125' --region=" + regionName)
         .statusIsSuccess();

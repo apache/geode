@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -302,7 +301,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     String regionName = getTestMethodName() + "_PR";
     sender.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "pn", 0, 13, false));
 
-    String regionPath = SEPARATOR + regionName;
+    String regionPath = "/" + regionName;
     managing.invoke(() -> {
       ManagementService service = WANTestBase.getManagementService();
       await()

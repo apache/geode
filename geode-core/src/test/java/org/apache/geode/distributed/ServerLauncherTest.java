@@ -24,7 +24,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -306,7 +306,7 @@ public class ServerLauncherTest {
 
     launcher.start();
 
-    verifyNoMoreInteractions(cacheServer);
+    verifyZeroInteractions(cacheServer);
   }
 
   @Test
@@ -324,7 +324,7 @@ public class ServerLauncherTest {
 
     launcher.start();
 
-    verifyNoMoreInteractions(cacheServer2);
+    verifyZeroInteractions(cacheServer2);
   }
 
   @Test
@@ -348,7 +348,7 @@ public class ServerLauncherTest {
     serverLauncher.start();
 
     verify(startupCompletionAction).run();
-    verifyNoMoreInteractions(startupExceptionAction);
+    verifyZeroInteractions(startupExceptionAction);
   }
 
   @Test
@@ -371,7 +371,7 @@ public class ServerLauncherTest {
     serverLauncher.start();
 
     verify(startupExceptionAction).accept(any());
-    verifyNoMoreInteractions(startupCompletionAction);
+    verifyZeroInteractions(startupCompletionAction);
   }
 
   @Test

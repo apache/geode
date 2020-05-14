@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING;
@@ -204,7 +203,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
   }
 
   private static String convertRegionPathToName(String regionPath) {
-    if (regionPath.startsWith(SEPARATOR)) {
+    if (regionPath.startsWith("/")) {
       return regionPath.substring(1);
     }
     return regionPath;
@@ -254,7 +253,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
   @Test
   @Parameters(method = "parametersToTestPRDR")
   public void createMappingTogetherForMultiServerGroupWithEmptyRegion(boolean isPR) {
-    String regionName = SEPARATOR + TEST_REGION;
+    String regionName = "/" + TEST_REGION;
     if (isPR) {
       setupGroupPartition(regionName, TEST_GROUP1, false);
       setupGroupPartition(regionName, TEST_GROUP2, true);
@@ -323,7 +322,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
   @Test
   @Parameters(method = "parametersToTestPRDR")
   public void createMappingSeparatelyForMultiServerGroupWithEmptyRegion(boolean isPR) {
-    String regionName = SEPARATOR + TEST_REGION;
+    String regionName = "/" + TEST_REGION;
     if (isPR) {
       setupGroupPartition(regionName, TEST_GROUP1, false);
       setupGroupPartition(regionName, TEST_GROUP2, true);
@@ -420,7 +419,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
   @Test
   @Parameters(method = "parametersToTestPRDR")
   public void createEmptyRegionAfterCreateMapping(boolean isPR) {
-    String regionName = SEPARATOR + TEST_REGION;
+    String regionName = "/" + TEST_REGION;
     if (isPR) {
       setupGroupPartition(regionName, TEST_GROUP1, false);
     } else {

@@ -27,18 +27,34 @@ import org.apache.geode.redis.internal.RedisDataType;
 
 public class GetRangeExecutor extends StringExecutor {
 
-  private static final String ERROR_NOT_INT = "value is not an integer or out of range";
-  private static final int startIndex = 2;
-  private static final int stopIndex = 3;
+  private final String ERROR_NOT_INT = "The indexes provided must be numeric values";
+
+  private final int startIndex = 2;
+
+  private final int stopIndex = 3;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() != 4) {
+    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
+
+    if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.GETRANGE));
       return;
     }
+
+    ByteArrayWrapper key = command.getKey();
+    checkDataType(key, RedisDataType.REDIS_STRING, context);
+    ByteArrayWrapper valueWrapper = r.get(key);
+
+    if (valueWrapper == null) {
+      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
+      return;
+    }
+
+    byte[] value = valueWrapper.toBytes();
+    int length = value.length;
 
     long start;
     long end;
@@ -52,28 +68,14 @@ public class GetRangeExecutor extends StringExecutor {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INT));
       return;
     }
-
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
-    ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_STRING, context);
-    ByteArrayWrapper valueWrapper = r.get(key);
-
-    if (valueWrapper == null) {
-      command.setResponse(Coder.getEmptyStringResponse(context.getByteBufAllocator()));
-      return;
-    }
-
-    byte[] value = valueWrapper.toBytes();
-    int length = value.length;
-
     start = getBoundedStartIndex(start, length);
     end = getBoundedEndIndex(end, length);
 
     /*
-     * Can't 'start' at end of value
+     * If the properly formatted indexes are illegal, send nil
      */
     if (start > end || start == length) {
-      command.setResponse(Coder.getEmptyStringResponse(context.getByteBufAllocator()));
+      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;
     }
     /*

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.test.fake;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.mock;
@@ -160,7 +159,7 @@ public class Fakes {
     when(region.getCache()).thenReturn(cache);
     when(region.getRegionService()).thenReturn(cache);
     when(region.getName()).thenReturn(name);
-    when(region.getFullPath()).thenReturn(SEPARATOR + name);
+    when(region.getFullPath()).thenReturn("/" + name);
     return region;
   }
 

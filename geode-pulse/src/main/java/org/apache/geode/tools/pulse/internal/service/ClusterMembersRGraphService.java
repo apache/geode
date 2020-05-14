@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -75,7 +74,6 @@ public class ClusterMembersRGraphService implements PulseService {
   private static final String MEMBER_NODE_TYPE_ERROR = "Error";
   private static final String MEMBER_NODE_TYPE_SEVERE = "Severe";
   private static final String CHILDREN = "children";
-  private final Repository repository;
 
   // traversing the alert array list and members which have severe, error or
   // warnings
@@ -84,13 +82,11 @@ public class ClusterMembersRGraphService implements PulseService {
   private List<String> errorAlertsList;
   private List<String> warningAlertsList;
 
-  @Autowired
-  public ClusterMembersRGraphService(Repository repository) {
-    this.repository = repository;
-  }
-
   @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
+
+    // Reference to repository
+    Repository repository = Repository.get();
 
     // get cluster object
     Cluster cluster = repository.getCluster();
@@ -99,7 +95,8 @@ public class ClusterMembersRGraphService implements PulseService {
     ObjectNode responseJSON = mapper.createObjectNode();
 
     // cluster's Members
-    responseJSON.set(CLUSTER, getPhysicalServerJson(cluster));
+    responseJSON.set(CLUSTER,
+        getPhysicalServerJson(cluster));
     responseJSON.put(MEMBER_COUNT, cluster.getMemberCount());
 
     // Send json response

@@ -31,8 +31,7 @@ public class RedisLockService implements RedisLockServiceMBean {
 
   private static final int DEFAULT_TIMEOUT = 1000;
   private final int timeoutMS;
-  private final Map<KeyHashIdentifier, Lock> weakReferencesTolocks =
-      Collections.synchronizedMap(new WeakHashMap<>());
+  private Map<ByteArrayWrapper, Lock> map = Collections.synchronizedMap(new WeakHashMap<>());
 
   /**
    * Construct with the default 1000ms timeout setting
@@ -52,7 +51,7 @@ public class RedisLockService implements RedisLockServiceMBean {
 
   @Override
   public int getLockCount() {
-    return weakReferencesTolocks.size();
+    return map.size();
   }
 
   /**
@@ -71,40 +70,29 @@ public class RedisLockService implements RedisLockServiceMBean {
       throw new IllegalArgumentException("key cannot be null");
     }
 
-    KeyHashIdentifier lockKey = new KeyHashIdentifier(key.toBytes());
-    KeyHashIdentifier referencedKey = lockKey;
-
     Lock lock = new ReentrantLock();
-    do {
-      Lock oldLock = weakReferencesTolocks.putIfAbsent(lockKey, lock);
-
-      if (oldLock != null) {
-        lock = oldLock;
-
-        // we need to get a reference to the actual key object
-        // so that the backing WeakHashMap does not clean it up
-        // when garbage collection happens.
-        referencedKey = getReferenceToLockKey(lockKey);
-      }
-    } while (referencedKey == null);
-
-    if (!lock.tryLock(timeoutMS, TimeUnit.MILLISECONDS)) {
-      throw new TimeoutException("Couldn't get lock for " + lockKey.toString());
-    }
-
-    return new AutoCloseableLock(referencedKey, lock);
-  }
-
-  private KeyHashIdentifier getReferenceToLockKey(KeyHashIdentifier lockKey) {
-    synchronized (weakReferencesTolocks) {
-      for (KeyHashIdentifier keyInSet : weakReferencesTolocks.keySet()) {
-        if (keyInSet.equals(lockKey)) {
-          return keyInSet;
+    Lock oldLock = map.putIfAbsent(key, lock);
+    if (oldLock != null) {
+      lock = oldLock;
+      // we need to get a reference to the actual key object so that the backing WeakHashMap does
+      // not clean it up.
+      for (ByteArrayWrapper keyInSet : map.keySet()) {
+        if (keyInSet.equals(key)) {
+          key = keyInSet;
+          break;
         }
       }
     }
 
-    return null;
+    if (!lock.tryLock(timeoutMS, TimeUnit.MILLISECONDS)) {
+      throw new TimeoutException("Couldn't get lock for " + key.toString());
+    }
+
+    return new AutoCloseableLock(key, lock);
+  }
+
+  int getMapSize() {
+    return map.size();
   }
 
 }

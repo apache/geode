@@ -46,8 +46,4 @@ public class Client {
   public boolean isDead() {
     return !this.channel.isOpen();
   }
-
-  public String toString() {
-    return channel.toString();
-  }
 }

@@ -42,7 +42,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     int cursor = 0;
     Pattern matchPattern = null;
     String globMatchString = null;
-    int count = DEFAULT_COUNT;
+    int count = DEFUALT_COUNT;
     try {
       cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {
@@ -106,7 +106,8 @@ public class ScanExecutor extends AbstractScanExecutor {
   }
 
   @SuppressWarnings("unchecked")
-  private List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
+  @Override
+  protected List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
     List<String> returnList = new ArrayList<String>();
     int size = list.size();
     int beforeCursor = 0;

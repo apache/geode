@@ -20,7 +20,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -111,7 +111,7 @@ public class BackupOperationTest {
         any());
     inOrder.verify(abortBackupFactory).createAbortBackupStep(any(), any(), any(), any(), any());
 
-    verifyNoMoreInteractions(finishBackupFactory);
+    verifyZeroInteractions(finishBackupFactory);
   }
 
   @Test
@@ -121,7 +121,7 @@ public class BackupOperationTest {
     assertThatThrownBy(() -> backupOperation.backupAllMembers(targetDirPath, baselineDirPath))
         .isInstanceOf(ManagementException.class);
 
-    verifyNoMoreInteractions(flushToDiskFactory, prepareBackupFactory, abortBackupFactory,
+    verifyZeroInteractions(flushToDiskFactory, prepareBackupFactory, abortBackupFactory,
         finishBackupFactory);
   }
 }

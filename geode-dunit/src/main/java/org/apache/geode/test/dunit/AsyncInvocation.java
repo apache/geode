@@ -54,7 +54,7 @@ import org.apache.geode.test.dunit.internal.StackTrace;
  */
 public class AsyncInvocation<V> implements Future<V> {
 
-  private static final long DEFAULT_TIMEOUT_MILLIS = getTimeout().toMillis();
+  private static final long DEFAULT_TIMEOUT_MILLIS = getTimeout().getValueInMS();
 
   private final Thread thread;
 

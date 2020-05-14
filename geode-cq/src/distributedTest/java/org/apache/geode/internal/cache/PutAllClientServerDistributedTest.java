@@ -46,6 +46,7 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,10 +123,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @SuppressWarnings("serial")
 public class PutAllClientServerDistributedTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
+  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
 
   private static final int ONE_HUNDRED = 100;
   private static final int ONE_THOUSAND = 1000;
+
   private static final InternalCache DUMMY_CACHE = mock(InternalCache.class);
   private static final InternalClientCache DUMMY_CLIENT_CACHE = mock(InternalClientCache.class);
   private static final Counter DUMMY_COUNTER = new Counter("dummy");
@@ -205,7 +207,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         LATCH.get().countDown();
         BEFORE.get().countDown();
         AFTER.get().countDown();
-        closeClientCache();
+        closeClientCache(false);
         closeCache();
         PoolManager.close();
         DISK_DIR.set(null);
@@ -224,12 +226,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     for (VM clientVM : asList(client1, client2)) {
       clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
+          .concurrencyChecksEnabled(true)
           .prSingleHopEnabled(true)
           .serverPorts(serverPort)
-          .subscriptionAckInterval()
+          .subscriptionAckInterval(1)
           .subscriptionEnabled(true)
-          .subscriptionRedundancy()
+          .subscriptionRedundancy(-1)
           .create());
     }
 
@@ -322,7 +324,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     client2.invoke(() -> {
       Region<String, TickerData> region = getClientCache().getRegion(regionName);
-      Map<String, TickerData> map = new LinkedHashMap<>();
+      Map<String, TickerData> map = new HashMap<>();
       for (int i = 10; i < 20; i++) {
         map.put("key-" + i, new TickerData(i * 10));
       }
@@ -356,7 +358,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       region.localDestroyRegion();
 
-      Map<String, TickerData> puts = new LinkedHashMap<>();
+      Map<String, TickerData> puts = new HashMap<>();
       for (int i = 1; i < 21; i++) {
         puts.put("key-" + i, null);
       }
@@ -383,20 +385,20 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .serverPorts(serverPort2)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     client2.invoke(() -> {
@@ -460,13 +462,13 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .registerInterest(true)
         .serverPorts(serverPort1)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     client1.invoke(() -> {
@@ -495,9 +497,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
       return versionsToReturn;
     });
 
-    // noinspection rawtypes
     List<VersionTag> versionTags = versions.getVersionTags();
-    // noinspection rawtypes
     List<VersionTag> versionTagsAfterRetry = versionsAfterRetry.getVersionTags();
     assertThat(versionTags.size()).isEqualTo(versionTagsAfterRetry.size());
     assertThat(versionTags).containsAll(versionTagsAfterRetry);
@@ -517,22 +517,22 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .registerInterest(true)
         .serverPorts(serverPort1)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .registerInterest(true)
         .serverPorts(serverPort2)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // client1 putAll
@@ -594,8 +594,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isZero();
 
-      CountingCacheWriter<String, TickerData> countingCacheWriter =
-          (CountingCacheWriter<String, TickerData>) region.getAttributes().getCacheWriter();
+      CountingCacheWriter countingCacheWriter =
+          (CountingCacheWriter) region.getAttributes().getCacheWriter();
       assertThat(countingCacheWriter.getDestroys()).isEqualTo(ONE_HUNDRED);
     });
 
@@ -604,8 +604,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isZero();
 
-      CountingCacheWriter<String, TickerData> countingCacheWriter =
-          (CountingCacheWriter<String, TickerData>) region.getAttributes().getCacheWriter();
+      CountingCacheWriter countingCacheWriter =
+          (CountingCacheWriter) region.getAttributes().getCacheWriter();
       // beforeDestroys are only triggered at server1 since removeAll is submitted from client1
       assertThat(countingCacheWriter.getDestroys()).isZero();
     });
@@ -617,12 +617,14 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     // async putAll1 from client1
-    AsyncInvocation<Void> putAll1InClient1 = client1.invokeAsync(
-        () -> doPutAll(getClientCache().getRegion(regionName), "async1key-", ONE_HUNDRED));
+    AsyncInvocation<Void> putAll1InClient1 = client1.invokeAsync(() -> {
+      doPutAll(getClientCache().getRegion(regionName), "async1key-", ONE_HUNDRED);
+    });
 
     // async putAll2 from client1
-    AsyncInvocation<Void> putAll2InClient1 = client1.invokeAsync(
-        () -> doPutAll(getClientCache().getRegion(regionName), "async2key-", ONE_HUNDRED));
+    AsyncInvocation<Void> putAll2InClient1 = client1.invokeAsync(() -> {
+      doPutAll(getClientCache().getRegion(regionName), "async2key-", ONE_HUNDRED);
+    });
 
     putAll1InClient1.await();
     putAll2InClient1.await();
@@ -851,22 +853,22 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // test case 1: putAll and removeAll to server1
@@ -924,8 +926,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isZero();
 
-      CountingCacheWriter<String, TickerData> countingCacheWriter =
-          (CountingCacheWriter<String, TickerData>) region.getAttributes().getCacheWriter();
+      CountingCacheWriter countingCacheWriter =
+          (CountingCacheWriter) region.getAttributes().getCacheWriter();
       assertThat(countingCacheWriter.getDestroys()).isEqualTo(ONE_HUNDRED);
     });
 
@@ -934,8 +936,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isZero();
 
-      CountingCacheWriter<String, TickerData> countingCacheWriter =
-          (CountingCacheWriter<String, TickerData>) region.getAttributes().getCacheWriter();
+      CountingCacheWriter countingCacheWriter =
+          (CountingCacheWriter) region.getAttributes().getCacheWriter();
       // beforeDestroys are only triggered at server1 since the removeAll is submitted from client1
       assertThat(countingCacheWriter.getDestroys()).isZero();
     });
@@ -1040,20 +1042,20 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // client1 add listener and putAll
@@ -1204,12 +1206,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     for (VM clientVM : asList(client1, client2)) {
       clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
+          .concurrencyChecksEnabled(true)
           .prSingleHopEnabled(singleHop)
           .readTimeout(59000)
           .serverPorts(serverPort1)
           .subscriptionEnabled(true)
-          .subscriptionRedundancy()
+          .subscriptionRedundancy(-1)
           .create());
     }
 
@@ -1278,13 +1280,15 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     // verify entries from client2
-    client2.invoke(() -> await().untilAsserted(() -> {
-      Region<String, TickerData> region = getClientCache().getRegion(regionName);
-      for (int i = 0; i < ONE_HUNDRED; i++) {
-        Entry<String, TickerData> regionEntry = region.getEntry(keyPrefix + i);
-        assertThat(regionEntry).isNull();
-      }
-    }));
+    client2.invoke(() -> {
+      await().untilAsserted(() -> {
+        Region<String, TickerData> region = getClientCache().getRegion(regionName);
+        for (int i = 0; i < ONE_HUNDRED; i++) {
+          Entry<String, TickerData> regionEntry = region.getEntry(keyPrefix + i);
+          assertThat(regionEntry).isNull();
+        }
+      });
+    });
   }
 
   /**
@@ -1303,20 +1307,20 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // client1 putAll
@@ -1378,8 +1382,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isZero();
 
-      CountingCacheWriter<String, TickerData> countingCacheWriter =
-          (CountingCacheWriter<String, TickerData>) region.getAttributes().getCacheWriter();
+      CountingCacheWriter countingCacheWriter =
+          (CountingCacheWriter) region.getAttributes().getCacheWriter();
       // beforeDestroys are only triggered at primary buckets.
       // server1 and server2 each holds half of buckets
       assertThat(countingCacheWriter.getDestroys()).isEqualTo(ONE_HUNDRED / 2);
@@ -1390,8 +1394,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isZero();
 
-      CountingCacheWriter<String, TickerData> countingCacheWriter =
-          (CountingCacheWriter<String, TickerData>) region.getAttributes().getCacheWriter();
+      CountingCacheWriter countingCacheWriter =
+          (CountingCacheWriter) region.getAttributes().getCacheWriter();
       // beforeDestroys are only triggered at primary buckets.
       // server1 and server2 each holds half of buckets
       assertThat(countingCacheWriter.getDestroys()).isEqualTo(ONE_HUNDRED / 2);
@@ -1406,12 +1410,14 @@ public class PutAllClientServerDistributedTest implements Serializable {
     // Execute client putAll from multithread client
 
     // async putAll1 from client1
-    AsyncInvocation<Void> putAll1InClient1 = client1.invokeAsync(
-        () -> doPutAll(getClientCache().getRegion(regionName), "async1key-", ONE_HUNDRED));
+    AsyncInvocation<Void> putAll1InClient1 = client1.invokeAsync(() -> {
+      doPutAll(getClientCache().getRegion(regionName), "async1key-", ONE_HUNDRED);
+    });
 
     // async putAll2 from client1
-    AsyncInvocation<Void> putAll2InClient1 = client1.invokeAsync(
-        () -> doPutAll(getClientCache().getRegion(regionName), "async2key-", ONE_HUNDRED));
+    AsyncInvocation<Void> putAll2InClient1 = client1.invokeAsync(() -> {
+      doPutAll(getClientCache().getRegion(regionName), "async2key-", ONE_HUNDRED);
+    });
 
     putAll1InClient1.await();
     putAll2InClient1.await();
@@ -1614,12 +1620,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // server1 add cacheWriter
@@ -1666,12 +1672,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     for (VM clientVM : asList(client1, client2)) {
       clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
+          .concurrencyChecksEnabled(true)
           .prSingleHopEnabled(true)
           .serverPorts(serverPort1)
-          .subscriptionAckInterval()
+          .subscriptionAckInterval(1)
           .subscriptionEnabled(true)
-          .subscriptionRedundancy()
+          .subscriptionRedundancy(-1)
           .create());
     }
 
@@ -1845,9 +1851,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
       clientVM.invoke(() -> new ClientBuilder()
           .prSingleHopEnabled(true)
           .serverPorts(serverPort1, serverPort2)
-          .subscriptionAckInterval()
+          .subscriptionAckInterval(1)
           .subscriptionEnabled(true)
-          .subscriptionRedundancy()
+          .subscriptionRedundancy(-1)
           .create());
     }
 
@@ -1862,7 +1868,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
           .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
-              creates -> executorServiceRule.submit(() -> closeCacheConditionally(creates, 10)))));
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // client2 add listener
@@ -1994,14 +2002,16 @@ public class PutAllClientServerDistributedTest implements Serializable {
     client1.invoke(() -> new ClientBuilder()
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(false)
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // client2 add listener
@@ -2037,7 +2047,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
           .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
-              creates -> executorServiceRule.submit(() -> closeCacheConditionally(creates, 10)))));
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // client1 add listener and putAll
@@ -2151,16 +2163,16 @@ public class PutAllClientServerDistributedTest implements Serializable {
     client1.invoke(() -> new ClientBuilder()
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // client2 add listener
@@ -2194,7 +2206,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
           .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
-              creates -> executorServiceRule.submit(() -> closeCacheConditionally(creates, 10)))));
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // client1 add listener and putAll
@@ -2247,50 +2261,54 @@ public class PutAllClientServerDistributedTest implements Serializable {
     assertThat(newSizeOnClient2).isEqualTo(newSizeOnServer1);
   }
 
-
   /**
-   * The purpose of this test is to validate that when two servers of three in a cluster configured
-   * with a client doing singlehop, that the client gets afterCreate messages for each entry in the
-   * putall.
-   * Further, we also check that the region size is correct on the remaining server.
-   *
+   * Tests bug 41403: let 2 sub maps both failed with partial key applied. This is a singlehop
+   * putAll test.
    */
   @Test
-  public void testEventIdOutOfOrderInPartitionRegionSingleHop() {
+  public void testEventIdMisorderInPRSingleHop() throws Exception {
     VM server3 = client2;
 
+    // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
         .regionShortcut(PARTITION)
         .create());
-
     int serverPort2 = server2.invoke(() -> new ServerBuilder()
         .regionShortcut(PARTITION)
         .create());
-
     int serverPort3 = server3.invoke(() -> new ServerBuilder()
         .regionShortcut(PARTITION)
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2, serverPort3)
-        .subscriptionAckInterval()
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
-        .readTimeout(100000)
+        .subscriptionAckInterval(1)
+        .subscriptionRedundancy(-1)
         .create());
 
-    new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .serverPorts(serverPort1, serverPort2, serverPort3)
-        .subscriptionAckInterval()
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
-        .create();
+    // Create local client with region
+    Properties config = getDistributedSystemProperties();
+    config.setProperty(LOCATORS, "");
 
-    Region<String, TickerData> myRegion = getClientCache().getRegion(regionName);
+    createClientCache(new ClientCacheFactory(config));
+
+    PoolFactory poolFactory = PoolManager.createFactory();
+    for (int port : asList(serverPort1, serverPort2, serverPort3)) {
+      poolFactory.addServer(hostName, port);
+    }
+
+    poolFactory
+        .setSubscriptionAckInterval(1)
+        .setSubscriptionEnabled(true)
+        .setSubscriptionRedundancy(-1)
+        .create(poolName);
+
+    Region<String, TickerData> myRegion = getClientCache()
+        .<String, TickerData>createClientRegionFactory(ClientRegionShortcut.LOCAL)
+        .setPoolName(poolName)
+        .create(regionName);
 
     // do some putAll to get ClientMetaData for future putAll
     client1.invoke(() -> doPutAll(getClientCache().getRegion(regionName), "key-", ONE_HUNDRED));
@@ -2300,22 +2318,24 @@ public class PutAllClientServerDistributedTest implements Serializable {
     myRegion.getAttributesMutator().addCacheListener(new CountingCacheListener<>(clientCounter));
     myRegion.registerInterest("ALL_KEYS");
 
-    // server1 and server2 will closeCache after created 10 keys
     // server1 add slow listener
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
           .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
-              creates -> closeCacheConditionally(creates, 10))));
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
-
 
     // server2 add slow listener
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
           .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
-              creates -> closeCacheConditionally(creates, 20))));
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // server3 add slow listener
@@ -2327,31 +2347,24 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     // client1 add listener and putAll
-    client1.invoke(() -> {
+    AsyncInvocation<Void> addListenerAndPutAllInClient1 = client1.invokeAsync(() -> {
       Region<String, TickerData> region = getClientCache().getRegion(regionName);
-      doPutAll(region, keyPrefix, ONE_HUNDRED); // fails in GEODE-7812
+      doPutAll(region, keyPrefix, ONE_HUNDRED);
     });
 
-    client1.invoke(() -> await()
-        .untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED)));
+    // server1 and server2 will closeCache after created 10 keys
+
+    addListenerAndPutAllInClient1.await();
+
+    // server3 print counter
+    server3.invoke(() -> {
+      assertThat(COUNTER.get().getCreates()).isEqualTo(ONE_HUNDRED);
+      assertThat(COUNTER.get().getUpdates()).isZero();
+    });
 
     await().untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED));
 
     assertThat(clientCounter.getUpdates()).isZero();
-
-    // server1 and server2 will closeCache after created 10 keys
-    // server3 print counter
-    server3.invoke(() -> {
-      Region<String, TickerData> region = getCache().getRegion(regionName);
-
-      assertThat(region.size())
-          .describedAs("Should have 100 entries plus 3 to 4 buckets worth of entries")
-          .isIn(ONE_HUNDRED + 3 * (ONE_HUNDRED) / 10, ONE_HUNDRED + 4 * (ONE_HUNDRED) / 10);
-      assertThat(COUNTER.get().getUpdates()).isZero();
-      verifyPutAll(region, keyPrefix);
-
-    });
-
   }
 
   /**
@@ -2370,13 +2383,13 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     for (VM clientVM : asList(client1, client2)) {
       clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
+          .concurrencyChecksEnabled(true)
           .prSingleHopEnabled(true)
           .registerInterest(true)
           .serverPorts(serverPort1, serverPort2)
-          .subscriptionAckInterval()
+          .subscriptionAckInterval(1)
           .subscriptionEnabled(true)
-          .subscriptionRedundancy()
+          .subscriptionRedundancy(-1)
           .create());
     }
 
@@ -2452,13 +2465,13 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     for (VM clientVM : asList(client1, client2)) {
       clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
+          .concurrencyChecksEnabled(true)
           .prSingleHopEnabled(true)
           .registerInterest(true)
           .serverPorts(serverPort1, serverPort2)
-          .subscriptionAckInterval()
+          .subscriptionAckInterval(1)
           .subscriptionEnabled(true)
-          .subscriptionRedundancy()
+          .subscriptionRedundancy(-1)
           .create());
     }
 
@@ -2496,22 +2509,22 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .registerInterest(true)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .registerInterest(false)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionAckInterval()
+        .subscriptionAckInterval(1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // only add slow listener to server1, because we wish it to succeed
@@ -2523,6 +2536,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     // only register interest on client2
+
     // client2 registerInterest
     client2.invoke(() -> {
       Region<String, TickerData> region = getClientCache().getRegion(regionName);
@@ -2530,7 +2544,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     // putAll from client1
-    client1.invoke(() -> doPutAll(getClientCache().getRegion(regionName), keyPrefix, ONE_HUNDRED));
+    client1.invoke(() -> {
+      doPutAll(getClientCache().getRegion(regionName), keyPrefix, ONE_HUNDRED);
+    });
 
     // verify Bridge client2 for keys arrived finally
     client2.invoke(() -> {
@@ -2556,22 +2572,22 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .registerInterest(true)
         .serverPorts(serverPort1, serverPort2)
         .subscriptionEnabled(true)
-        .subscriptionAckInterval()
-        .subscriptionRedundancy()
+        .subscriptionAckInterval(1)
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .registerInterest(false)
         .serverPorts(serverPort1, serverPort2)
         .subscriptionEnabled(true)
-        .subscriptionAckInterval()
-        .subscriptionRedundancy()
+        .subscriptionAckInterval(1)
+        .subscriptionRedundancy(-1)
         .create());
 
     // client1 registerInterest
@@ -2587,12 +2603,14 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     // async putAll1 from server2
-    AsyncInvocation<Void> putAllInServer2 = server2
-        .invokeAsync(() -> doPutAll(getCache().getRegion(regionName), "server2-key-", ONE_HUNDRED));
+    AsyncInvocation<Void> putAllInServer2 = server2.invokeAsync(() -> {
+      doPutAll(getCache().getRegion(regionName), "server2-key-", ONE_HUNDRED);
+    });
 
     // async putAll1 from client1
-    AsyncInvocation<Void> putAllInClient1 = client1.invokeAsync(
-        () -> doPutAll(getClientCache().getRegion(regionName), "client1-key-", ONE_HUNDRED));
+    AsyncInvocation<Void> putAllInClient1 = client1.invokeAsync(() -> {
+      doPutAll(getClientCache().getRegion(regionName), "client1-key-", ONE_HUNDRED);
+    });
 
     // stop cache server 1
     server1.invoke(() -> {
@@ -2626,22 +2644,22 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     // set queueRedundancy=1
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort1)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionEnabled(true)
-        .subscriptionRedundancy()
+        .subscriptionRedundancy(-1)
         .create());
 
     // client1 putAll
@@ -2711,7 +2729,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     // set queueRedundancy=1
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
@@ -2719,7 +2737,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .subscriptionEnabled(true)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
@@ -2805,7 +2823,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
@@ -2893,7 +2911,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
@@ -2974,7 +2992,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
+        .concurrencyChecksEnabled(true)
         .prSingleHopEnabled(true)
         .readTimeout(59000)
         .registerInterest(true)
@@ -3054,8 +3072,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
     return CLIENT_CACHE.get();
   }
 
-  private void closeClientCache() {
-    CLIENT_CACHE.getAndSet(DUMMY_CLIENT_CACHE).close(false);
+  private void closeClientCache(boolean keepAlive) {
+    CLIENT_CACHE.getAndSet(DUMMY_CLIENT_CACHE).close(keepAlive);
   }
 
   private File[] getDiskDirs() {
@@ -3082,13 +3100,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
       map.put(keyPrefix + i, new TickerData(i));
     }
     region.putAll(map);
-  }
-
-  private void verifyPutAll(Map<String, TickerData> region, String keyPrefix) {
-    for (int i = 0; i < PutAllClientServerDistributedTest.ONE_HUNDRED; i++) {
-      assertThat(
-          region.containsKey(keyPrefix + i));
-    }
   }
 
   private VersionedObjectList doRemoveAll(Region<String, TickerData> region, String keyPrefix,
@@ -3128,7 +3139,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   }
 
   private void closeCacheConditionally(int ops, int threshold) {
-    if (ops == threshold) {
+    if (ops >= threshold) {
       getCache().close();
     }
   }
@@ -3139,9 +3150,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
     };
   }
 
-  private static void sleep() {
+  private static void sleep(long millis) {
     try {
-      Thread.sleep(50);
+      Thread.sleep(millis);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
@@ -3223,8 +3234,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
     private boolean subscriptionEnabled = DEFAULT_SUBSCRIPTION_ENABLED;
     private int subscriptionRedundancy = DEFAULT_SUBSCRIPTION_REDUNDANCY;
 
-    private ClientBuilder concurrencyChecksEnabled() {
-      this.concurrencyChecksEnabled = true;
+    private ClientBuilder concurrencyChecksEnabled(boolean concurrencyChecksEnabled) {
+      this.concurrencyChecksEnabled = concurrencyChecksEnabled;
       return this;
     }
 
@@ -3248,8 +3259,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
       return this;
     }
 
-    private ClientBuilder subscriptionAckInterval() {
-      this.subscriptionAckInterval = 1;
+    private ClientBuilder subscriptionAckInterval(int subscriptionAckInterval) {
+      this.subscriptionAckInterval = subscriptionAckInterval;
       return this;
     }
 
@@ -3258,17 +3269,13 @@ public class PutAllClientServerDistributedTest implements Serializable {
       return this;
     }
 
-    private ClientBuilder subscriptionRedundancy() {
-      this.subscriptionRedundancy = -1;
+    private ClientBuilder subscriptionRedundancy(int subscriptionRedundancy) {
+      this.subscriptionRedundancy = subscriptionRedundancy;
       return this;
     }
 
     private void create() {
       assertThat(serverPorts).isNotEmpty();
-      if (subscriptionAckInterval != DEFAULT_SUBSCRIPTION_ACK_INTERVAL ||
-          subscriptionRedundancy != DEFAULT_SUBSCRIPTION_REDUNDANCY) {
-        assertThat(subscriptionEnabled).isTrue();
-      }
 
       Properties config = getDistributedSystemProperties();
       config.setProperty(LOCATORS, "");
@@ -3387,7 +3394,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     private CountingCacheListener(Counter counter, Action<Integer> action) {
       this.counter = counter;
-      counter.creates.set(0);
       this.action = action;
     }
 
@@ -3418,18 +3424,22 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
   private static class SlowCacheListener<K, V> extends CacheListenerAdapter<K, V> {
 
+    private final long sleepMillis = 50;
+
     @Override
     public void afterCreate(EntryEvent<K, V> event) {
-      sleep();
+      sleep(sleepMillis);
     }
 
     @Override
     public void afterUpdate(EntryEvent<K, V> event) {
-      sleep();
+      sleep(sleepMillis);
     }
   }
 
   private static class SlowCountingCacheListener<K, V> extends CountingCacheListener<K, V> {
+
+    private final long sleepMillis = 50;
 
     private SlowCountingCacheListener(Action<Integer> action) {
       this(DUMMY_COUNTER, action);
@@ -3446,13 +3456,13 @@ public class PutAllClientServerDistributedTest implements Serializable {
     @Override
     public void afterCreate(EntryEvent<K, V> event) {
       super.afterCreate(event);
-      sleep();
+      sleep(sleepMillis);
     }
 
     @Override
     public void afterUpdate(EntryEvent<K, V> event) {
       super.afterUpdate(event);
-      sleep();
+      sleep(sleepMillis);
     }
   }
 
@@ -3571,6 +3581,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     private final AtomicInteger creates = new AtomicInteger();
     private final AtomicInteger destroys = new AtomicInteger();
+    private final long sleepMillis = 50;
     private final Action<Integer> action;
 
     private ActionCacheWriter(Action<Integer> action) {
@@ -3580,19 +3591,19 @@ public class PutAllClientServerDistributedTest implements Serializable {
     @Override
     public void beforeCreate(EntryEvent<K, V> event) {
       action.run(Operation.CREATE, creates.get());
-      sleep();
+      sleep(sleepMillis);
       creates.incrementAndGet();
     }
 
     @Override
     public void beforeUpdate(EntryEvent<K, V> event) {
-      sleep();
+      sleep(sleepMillis);
     }
 
     @Override
     public void beforeDestroy(EntryEvent<K, V> event) {
       action.run(Operation.DESTROY, destroys.get());
-      sleep();
+      sleep(sleepMillis);
       destroys.incrementAndGet();
     }
   }

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -80,8 +78,7 @@ public class LuceneRegionListener implements RegionListener {
   public RegionAttributes beforeCreate(Region parent, String regionName, RegionAttributes attrs,
       InternalRegionArguments internalRegionArgs) {
     RegionAttributes updatedRA = attrs;
-    String path =
-        parent == null ? SEPARATOR + regionName : parent.getFullPath() + SEPARATOR + regionName;
+    String path = parent == null ? "/" + regionName : parent.getFullPath() + "/" + regionName;
 
     if (path.equals(this.regionPath) && this.beforeCreateInvoked.compareAndSet(false, true)) {
 

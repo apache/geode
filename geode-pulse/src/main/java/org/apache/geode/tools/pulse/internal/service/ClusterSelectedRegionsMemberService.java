@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -53,12 +52,6 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
   private static final Logger logger = LogManager.getLogger();
-  private final Repository repository;
-
-  @Autowired
-  public ClusterSelectedRegionsMemberService(Repository repository) {
-    this.repository = repository;
-  }
 
   // Comparator based upon regions entry count
   private static Comparator<Cluster.RegionOnMember> romEntryCountComparator = (m1, m2) -> {
@@ -78,7 +71,7 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
         selectedRegionFullPath);
 
     // get cluster object
-    Cluster cluster = repository.getCluster();
+    Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();

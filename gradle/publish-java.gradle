@@ -16,15 +16,13 @@
  */
 
 apply from: "${rootDir}/gradle/publish-common.gradle"
-apply from: "${rootDir}/gradle/publish-artifacts.gradle"
 
 publishing {
   publications {
     maven(MavenPublication) {
-      from components.java
-      // use the (possibly empty) Jar tasks above for sources and javadoc
-      artifact sourcesJar
-      artifact javadocJar
+      if (project.name != 'geode-assembly') {
+        from components.java
+      }
     }
   }
 }

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.OTHER_EXCEPTION;
@@ -167,9 +166,9 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
       if ((opFlags & OpFlags.USE_OLDCONN) == 0) {
         Properties opCredentials;
         int newRnd = random.nextInt(100) + 1;
-        String currentRegionName = SEPARATOR + regionName;
+        String currentRegionName = '/' + regionName;
         if ((opFlags & OpFlags.USE_SUBREGION) > 0) {
-          currentRegionName += (SEPARATOR + SUBREGION_NAME);
+          currentRegionName += ('/' + SUBREGION_NAME);
         }
 
         String credentialsTypeStr;

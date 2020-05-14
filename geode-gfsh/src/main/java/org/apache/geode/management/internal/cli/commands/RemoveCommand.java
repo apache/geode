@@ -90,14 +90,7 @@ public class RemoveCommand extends GfshCommand {
     }
 
     dataResult.setKeyClass(keyClass);
-    ResultModel result;
 
-    if (removeAllKeys) {
-      result = dataResult.toResultModel(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);
-    } else {
-      result = dataResult.toResultModel();
-    }
-
-    return result;
+    return dataResult.toResultModel();
   }
 }

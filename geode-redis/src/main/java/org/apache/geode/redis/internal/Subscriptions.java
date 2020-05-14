@@ -16,15 +16,15 @@
 
 package org.apache.geode.redis.internal;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
  * Class that manages both channel and pattern subscriptions.
  */
 public class Subscriptions {
-  private final List<Subscription> subscriptions = new CopyOnWriteArrayList<>();
+  private List<Subscription> subscriptions = new ArrayList<>();
 
   /**
    * Check whether a given client has already subscribed to a channel or pattern
@@ -56,7 +56,7 @@ public class Subscriptions {
    * @return a list of subscriptions
    */
   public List<Subscription> findSubscriptions(String channelOrPattern) {
-    return subscriptions.stream()
+    return this.subscriptions.stream()
         .filter(subscription -> subscription.matches(channelOrPattern))
         .collect(Collectors.toList());
   }
@@ -65,27 +65,20 @@ public class Subscriptions {
    * Add a new subscription
    */
   public void add(Subscription subscription) {
-    subscriptions.add(subscription);
+    this.subscriptions.add(subscription);
   }
 
   /**
    * Remove all subscriptions for a given client
    */
   public void remove(Client client) {
-    subscriptions.removeIf(subscription -> subscription.matchesClient(client));
+    this.subscriptions.removeIf(subscription -> subscription.matchesClient(client));
   }
 
   /**
    * Remove a single subscription
    */
   public void remove(Object channel, Client client) {
-    subscriptions.removeIf(subscription -> subscription.isEqualTo(channel, client));
-  }
-
-  /**
-   * @return the total number of all local subscriptions
-   */
-  public int size() {
-    return subscriptions.size();
+    this.subscriptions.removeIf(subscription -> subscription.isEqualTo(channel, client));
   }
 }

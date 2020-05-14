@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.runners.TestRunner;
  */
 public class ExpectedTimeoutRuleTest {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
+  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
 
   @Test
   public void passesUnused() {

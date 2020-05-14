@@ -14,7 +14,6 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -90,7 +89,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
           .until(() -> {
             Cache cache = CacheFactory.getAnyInstance();
             Object bean = ManagementService.getManagementService(cache)
-                .getDistributedRegionMXBean(SEPARATOR + REGION_NAME);
+                .getDistributedRegionMXBean("/" + REGION_NAME);
             return bean != null;
           });
     });

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1854,7 +1853,7 @@ public class LikePredicateJUnitTest {
     }
 
     QueryService qs = cache.getQueryService();
-    String name = SEPARATOR + regionName;
+    String name = "/" + regionName;
     qs.createIndex("status", "status", name);
     assertEquals(cache.getQueryService().getIndexes().size(), 1);
 

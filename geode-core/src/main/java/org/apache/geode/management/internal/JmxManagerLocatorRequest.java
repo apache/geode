@@ -22,7 +22,6 @@ import java.util.Properties;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -84,8 +83,7 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
     SocketCreator socketCreator = new SocketCreator(sslConfig);
     TcpClient client = new TcpClient(socketCreator,
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-        TcpSocketFactory.DEFAULT);
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     Object responseFromServer = client.requestToServer(new HostAndPort(locatorHost, locatorPort),
         SINGLETON, msTimeout, true);
 

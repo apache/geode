@@ -23,22 +23,26 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class ExistsExecutor extends AbstractExecutor {
+  private final int EXISTS = 1;
+
+  private final int NOT_EXISTS = 0;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
+    List<byte[]> commandElems = command.getProcessedCommand();
     if (commandElems.size() < 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.EXISTS));
       return;
     }
 
-    long existsCount = commandElems
-        .subList(1, commandElems.size())
-        .stream()
-        .filter(key -> context.getKeyRegistrar().isRegistered(key))
-        .count();
+    ByteArrayWrapper key = command.getKey();
+    boolean exists = context.getKeyRegistrar().isRegistered(key);
 
+    if (exists) {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
+    } else {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+    }
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), existsCount));
   }
 }

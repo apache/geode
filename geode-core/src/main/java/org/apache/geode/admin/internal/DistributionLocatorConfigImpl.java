@@ -25,7 +25,6 @@ import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -75,8 +74,7 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
       TcpClient client = new TcpClient(SocketCreatorFactory
           .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-          TcpSocketFactory.DEFAULT);
+          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
       if (bindAddress != null) {
         info = client.getInfo(new HostAndPort(bindAddress.getHostAddress(), port));
       } else {

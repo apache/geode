@@ -24,26 +24,15 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-/**
- * Configures Pulse to use the authentication manager defined by the
- * {@code pulse-authentication-custom.xml} file, which <em>must</em> define an authentication
- * manager. This configuration is applied when the {@code pulse.authentication.custom} profile is
- * active.
- */
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.custom")
 @ImportResource("classpath:pulse-authentication-custom.xml")
 public class CustomSecurityConfig extends DefaultSecurityConfig {
-  private final AuthenticationManager authenticationManager;
-
+  // the pulse-authentication-custom.xml should configure an <authentication-manager>
   @Autowired
-  CustomSecurityConfig(AuthenticationManager authenticationManager,
-      RepositoryLogoutHandler repositoryLogoutHandler) {
-    super(repositoryLogoutHandler);
-    this.authenticationManager = authenticationManager;
-  }
+  private AuthenticationManager authenticationManager;
 
   @Override
   protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {

@@ -63,6 +63,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
@@ -311,7 +312,8 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
   public void clearShouldRemoveRegisteredExpirationTasks(TestVM coordinatorVM,
       RegionShortcut regionShortcut) {
     final int entries = 500;
-    parametrizedSetup(regionShortcut, new ExpirationAttributes(EXPIRATION_TIME, DESTROY));
+    int expirationTime = (int) GeodeAwaitility.getTimeout().getValueInMS() / 1000;
+    parametrizedSetup(regionShortcut, new ExpirationAttributes(expirationTime, DESTROY));
     populateRegion(accessor, entries, asList(accessor, server1, server2));
 
     // Clear the region.
@@ -332,7 +334,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
 
     // Assert Region Buckets are consistent and region is empty,
     accessor.invoke(this::assertRegionBucketsConsistency);
-    assertRegionIsEmpty(asList(accessor, server1, server2));
+    assertRegionIsEmpty(asList(accessor, server1, server1));
   }
 
   /**
@@ -475,7 +477,7 @@ public class PartitionedRegionClearWithExpirationDUnitTest implements Serializab
 
     // Assert Region Buckets are consistent and region is empty,
     accessor.invoke(this::assertRegionBucketsConsistency);
-    assertRegionIsEmpty(asList(accessor, server1, server2));
+    assertRegionIsEmpty(asList(accessor, server1, server1));
   }
 
   /**

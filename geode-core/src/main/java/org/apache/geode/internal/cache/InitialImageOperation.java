@@ -1439,7 +1439,8 @@ public class InitialImageOperation {
     public String toString() {
       // bug 37189 These strings are a work-around for an escaped reference
       // in ReplyProcessor21 constructor
-      String msgsBeingProcessedStr = String.valueOf(this.msgsBeingProcessed.get());
+      String msgsBeingProcessedStr = (this.msgsBeingProcessed == null) ? "nullRef"
+          : String.valueOf(this.msgsBeingProcessed.get());
       String regionStr = (InitialImageOperation.this.region == null) ? "nullRef"
           : InitialImageOperation.this.region.getFullPath();
       String numMembersStr = (this.members == null) ? "nullRef" : String.valueOf(numMembers());

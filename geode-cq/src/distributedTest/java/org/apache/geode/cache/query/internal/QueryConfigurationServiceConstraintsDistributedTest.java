@@ -198,10 +198,6 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       InternalCache internalCache = (InternalCache) serverLauncher.getCache();
       assertThat(internalCache.getCqService().getAllCqs()).hasSize(1);
 
-      // Make Sure Cq is running before continuing.
-      internalCache.getCqService().getAllCqs()
-          .forEach(cq -> await().untilAsserted(() -> assertThat(cq.isRunning()).isTrue()));
-
       // Change the authorizer (still allow 'getId' to be executed)
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, true, TestMethodAuthorizer.class.getName(),
@@ -214,8 +210,9 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     });
 
     clientVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(cqListener.getEventCount()).isEqualTo(Operation.values().length));
+      await().untilAsserted(() -> {
+        assertThat(cqListener.getEventCount()).isEqualTo(Operation.values().length);
+      });
       assertThat(cqListener.getErrorCount()).isEqualTo(0);
     });
 
@@ -248,10 +245,6 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       InternalCache internalCache = (InternalCache) serverLauncher.getCache();
       assertThat(internalCache.getCqService().getAllCqs()).hasSize(1);
 
-      // Make Sure Cq is running before continuing.
-      internalCache.getCqService().getAllCqs()
-          .forEach(cq -> await().untilAsserted(() -> assertThat(cq.isRunning()).isTrue()));
-
       // Change the authorizer (deny everything not allowed by default).
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, true, RestrictedMethodAuthorizer.class.getName(), Collections.emptySet());
@@ -263,8 +256,9 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     });
 
     clientVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(cqListener.getErrorCount()).isEqualTo(Operation.values().length));
+      await().untilAsserted(() -> {
+        assertThat(cqListener.getErrorCount()).isEqualTo(Operation.values().length);
+      });
       assertThat(cqListener.getEventCount()).isEqualTo(0);
     });
 
@@ -286,7 +280,9 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
     IntStream
         .range(0, ENTRIES)
-        .forEach(id -> region.put(id, new QueryObject(id, "name_" + id)));
+        .forEach(id -> {
+          region.put(id, new QueryObject(id, "name_" + id));
+        });
 
     await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ENTRIES));
   }
@@ -298,7 +294,9 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
     Arrays.stream(Operation.values())
         .filter(op -> !operation.equals(op))
-        .forEach(op -> op.operate(region));
+        .forEach(op -> {
+          op.operate(region);
+        });
   }
 
   private void validateRegionValues() {

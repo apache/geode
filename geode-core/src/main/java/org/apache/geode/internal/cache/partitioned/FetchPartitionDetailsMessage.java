@@ -353,7 +353,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
      * message was processed.
      */
     @Override
-    protected synchronized void processException(ReplyException ex) {
+    protected void processException(ReplyException ex) {
       logger.debug("FetchPartitionDetailsResponse ignoring exception {}", ex.getMessage(), ex);
     }
 

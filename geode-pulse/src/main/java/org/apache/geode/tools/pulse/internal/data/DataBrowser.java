@@ -45,18 +45,12 @@ import org.apache.logging.log4j.Logger;
 public class DataBrowser {
 
   private static final Logger logger = LogManager.getLogger();
-  private final ResourceBundle resourceBundle;
-  private final Repository repository;
+  private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
 
   private SimpleDateFormat simpleDateFormat =
       new SimpleDateFormat(PulseConstants.PULSE_QUERY_HISTORY_DATE_PATTERN);
 
   private final ObjectMapper mapper = new ObjectMapper();
-
-  public DataBrowser(ResourceBundle resourceBundle, Repository repository) {
-    this.resourceBundle = resourceBundle;
-    this.repository = repository;
-  }
 
   /**
    * addQueryInHistory method adds user's query into query history file
@@ -162,7 +156,7 @@ public class DataBrowser {
 
     try {
       inputStream =
-          new FileInputStream(repository.getPulseConfig().getQueryHistoryFileName());
+          new FileInputStream(Repository.get().getPulseConfig().getQueryHistoryFileName());
       String inputStreamString = new Scanner(inputStream, "UTF-8").useDelimiter("\\A").next();
       queriesJSON = mapper.readTree(inputStreamString);
     } catch (FileNotFoundException e) {
@@ -193,7 +187,7 @@ public class DataBrowser {
     boolean operationStatus = false;
     FileOutputStream fileOut = null;
 
-    File file = new File(repository.getPulseConfig().getQueryHistoryFileName());
+    File file = new File(Repository.get().getPulseConfig().getQueryHistoryFileName());
     try {
       fileOut = new FileOutputStream(file);
 

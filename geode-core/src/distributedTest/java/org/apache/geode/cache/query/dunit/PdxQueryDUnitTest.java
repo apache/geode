@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -2608,7 +2607,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         }
         // Create Index on empty region
         try {
-          cache.getQueryService().createIndex("myFuncIndex", "intId", SEPARATOR + name);
+          cache.getQueryService().createIndex("myFuncIndex", "intId", "/" + name);
         } catch (Exception e) {
           Assert.fail("index creation failed", e);
         }
@@ -2710,7 +2709,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
     final int numberOfEntries = 10;
-    final String name = SEPARATOR + regionName;
+    final String name = "/" + regionName;
     final String[] qs = {"select * from " + name + " where pdxStatus = 'active'",
         "select pdxStatus from " + name + " where id > 4"};
 
@@ -2816,7 +2815,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
     final int numberOfEntries = 10;
-    final String name = SEPARATOR + regionName;
+    final String name = "/" + regionName;
     final String[] qs = {"select * from " + name + " where status = 'active'",
         "select status from " + name + " where id >= 5"};
 
@@ -2962,7 +2961,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
     final int numberOfEntries = 10;
-    final String name = SEPARATOR + regionName;
+    final String name = "/" + regionName;
     final String[] qs = {"select pdxStatus from " + name + " where pdxStatus = 'active'",
         "select pdxStatus from " + name + " where id > 8 and id < 14"};
 
@@ -3199,7 +3198,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
     final int numberOfEntries = 10;
-    final String name = SEPARATOR + regionName;
+    final String name = "/" + regionName;
     final String[] qs = {"select pdxStatus from " + name + " where pdxStatus = 'active'",
         "select status from " + name + " where id > 8 and id < 14"};
 
@@ -3335,7 +3334,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final VM vm0 = host.getVM(0);
     final VM vm3 = host.getVM(3);
     final int numberOfEntries = 10;
-    final String name = SEPARATOR + regionName;
+    final String name = "/" + regionName;
     final String[] qs = {"select * from " + name + " where pdxStatus = 'active'",
         "select pdxStatus from " + name + " where id > 4"};
 
@@ -3424,7 +3423,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
     final int numberOfEntries = 10;
-    final String name = SEPARATOR + regionName;
+    final String name = "/" + regionName;
     final String query =
         "select stringField, booleanField, charField, shortField, intField, longField, floatField, doubleField from "
             + name;

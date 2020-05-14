@@ -46,7 +46,6 @@ import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
-import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.internal.ClientUpdater;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.EndpointManager;
@@ -273,11 +272,10 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   public CacheClientUpdater(String name, ServerLocation location, boolean primary,
       DistributedSystem ids, ClientSideHandshake handshake, QueueManager qManager,
       EndpointManager eManager, Endpoint endpoint, int handshakeTimeout,
-      SocketCreator socketCreator, SocketFactory socketFactory)
-      throws AuthenticationRequiredException,
+      SocketCreator socketCreator) throws AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     this(name, location, primary, ids, handshake, qManager, eManager, endpoint, handshakeTimeout,
-        socketCreator, new StatisticsProvider(), socketFactory);
+        socketCreator, new StatisticsProvider());
   }
 
   /**
@@ -287,8 +285,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   public CacheClientUpdater(String name, ServerLocation location, boolean primary,
       DistributedSystem distributedSystem, ClientSideHandshake handshake, QueueManager qManager,
       EndpointManager eManager, Endpoint endpoint, int handshakeTimeout,
-      SocketCreator socketCreator, StatisticsProvider statisticsProvider,
-      SocketFactory socketFactory)
+      SocketCreator socketCreator, StatisticsProvider statisticsProvider)
       throws AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     super(name);
@@ -321,7 +318,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       mySock = socketCreator.forClient().connect(
           new HostAndPort(location.getHostName(), location.getPort()),
-          handshakeTimeout, socketBufferSize, socketFactory::createSocket);
+          handshakeTimeout, socketBufferSize);
       mySock.setTcpNoDelay(true);
       mySock.setSendBufferSize(socketBufferSize);
 

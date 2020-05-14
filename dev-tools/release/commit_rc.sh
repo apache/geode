@@ -52,8 +52,6 @@ else
     exit 1
 fi
 
-VERSION_MM=${VERSION%.*}
-
 set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
@@ -69,14 +67,6 @@ else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
     exit 1
 fi
-
-
-function failMsg {
-  errln=$1
-  echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 80-$(( errln - 1 ))) and try again"
-}
-trap 'failMsg $LINENO' ERR
 
 
 echo ""
@@ -109,21 +99,12 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Re-adding -SNAPSHOT in case this is not the final RC"
+echo "Pushing tags..."
 echo "============================================================"
-set -x
-${0%/*}/set_versions.sh -v ${VERSION} -s -n -w "${WORKSPACE}"
-set +x
 
-
-echo ""
-echo "============================================================"
-echo "Pushing copyrights, versions, and tags..."
-echo "============================================================"
-for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS }; do
     set -x
     cd ${DIR}
-    git push -u origin
     git push origin rel/v${FULL_VERSION}
     set +x
 done
@@ -134,8 +115,8 @@ echo "============================================================"
 echo "Done publishing the release candidate!  Next steps:"
 echo "============================================================"
 cd ${GEODE}/../..
-echo "1. ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION_MM}"
-echo "2. Monitor https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-rc until all green"
+echo "1. ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION}"
+echo "2. Monitor https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-rc until all green"
 echo "3. Send the following email to announce the RC:"
 echo "To: dev@geode.apache.org"
 echo "Subject: [VOTE] Apache Geode ${FULL_VERSION}"

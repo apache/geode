@@ -62,9 +62,6 @@ public class QueryTestObject implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof QueryTestObject)) {
-      return false;
-    }
     QueryTestObject qto = (QueryTestObject) obj;
     return (this.id == qto.id && this.name.equals(qto.getName()));
   }

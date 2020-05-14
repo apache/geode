@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -199,7 +198,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
   public static void createEntry() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
 
       if (!r.containsKey("key-1")) {
@@ -214,7 +213,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
   public static void put() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
 
       r.put("key-1", "vm0-key-1");
@@ -228,7 +227,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
   public static void destroy() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.destroy("key-1");
     } catch (Exception ex) {
@@ -238,7 +237,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
   public static void destroyRegion() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.destroyRegion();
     } catch (Exception ex) {
@@ -248,7 +247,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
   public static void invalidateRegion() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.invalidateRegion();
     } catch (Exception ex) {

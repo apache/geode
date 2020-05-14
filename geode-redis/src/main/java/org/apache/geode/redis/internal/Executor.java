@@ -29,7 +29,4 @@ public interface Executor {
    */
   void executeCommand(Command command, ExecutionHandlerContext context);
 
-  default void execute(Command command, ExecutionHandlerContext context) {
-    executeCommand(command, context);
-  }
 }

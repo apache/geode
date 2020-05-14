@@ -238,7 +238,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       return true;
     }
 
-    return timeout <= System.nanoTime();
+    return timeout < System.nanoTime();
 
   }
 
@@ -263,7 +263,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
-        Connection connection = availableConnectionManager.useFirst();
+        PooledConnection connection = availableConnectionManager.useFirst();
         if (null != connection) {
           return connection;
         }
@@ -301,50 +301,31 @@ public class ConnectionManagerImpl implements ConnectionManager {
     throw new AllConnectionsInUseException();
   }
 
+  /**
+   * Borrow a connection to a specific server. This task currently allows us to break the connection
+   * limit, because it is used by tasks from the background thread that shouldn't be constrained by
+   * the limit. They will only violate the limit by 1 connection, and that connection will be
+   * destroyed when returned to the pool.
+   */
   @Override
-  public Connection borrowConnection(ServerLocation server, long acquireTimeout,
-      boolean onlyUseExistingCnx)
-      throws AllConnectionsInUseException, NoAvailableServersException,
-      ServerConnectivityException {
-
-    Connection connection;
-    logger.trace("Connection borrowConnection single hop connection");
-
-    long waitStart = NOT_WAITING;
-    try {
-      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
-      while (true) {
-
-        connection =
-            availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
-
-        if (null != connection) {
-          return connection;
-        }
-
-        if (!onlyUseExistingCnx) {
-          connection = forceCreateConnection(server);
-          if (null != connection) {
-            return connection;
-          }
-          throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
-        }
-
-        if (checkShutdownInterruptedOrTimeout(timeout)) {
-          break;
-        }
-
-        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
-
-        Thread.yield();
-      }
-    } finally {
-      endConnectionWaitStatIfStarted(waitStart);
+  public PooledConnection borrowConnection(ServerLocation server,
+      boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
+    PooledConnection connection =
+        availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
+    if (null != connection) {
+      return connection;
     }
 
-    cancelCriterion.checkCancelInProgress(null);
+    if (onlyUseExistingCnx) {
+      throw new AllConnectionsInUseException();
+    }
 
-    throw new AllConnectionsInUseException();
+    connection = forceCreateConnection(server);
+    if (null != connection) {
+      return connection;
+    }
+
+    throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
   }
 
   @Override
@@ -353,7 +334,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       throws AllConnectionsInUseException {
 
     try {
-      Connection connection = availableConnectionManager
+      PooledConnection connection = availableConnectionManager
           .useFirst((c) -> !excludedServers.contains(c.getServer()));
       if (null != connection) {
         return connection;

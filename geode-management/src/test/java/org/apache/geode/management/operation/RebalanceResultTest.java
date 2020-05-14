@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +36,6 @@ public class RebalanceResultTest {
   @Before
   public void setUp() {
     mapper = GeodeJsonMapper.getMapper();
-    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     RebalanceRegionResultImpl summary = new RebalanceRegionResultImpl();
     summary.setRegionName("testRegion");
     List<RebalanceRegionResult> results = Collections.singletonList(summary);
@@ -57,6 +55,6 @@ public class RebalanceResultTest {
   public void toStringRebalanceResult() {
     String toStr = result.toString();
     assertThat(toStr).isEqualTo(
-        "{{bucketCreateBytes=0, bucketCreateTimeInMilliseconds=0, bucketCreatesCompleted=0, bucketTransferBytes=0, bucketTransferTimeInMilliseconds=0, bucketTransfersCompleted=0, primaryTransferTimeInMilliseconds=0, primaryTransfersCompleted=0, timeInMilliseconds=0, numOfMembers=0, regionName=testRegion}}");
+        "{{bucketCreateBytes=0, bucketCreateTimeInMilliseconds=0, bucketCreatesCompleted=0, bucketTransferBytes=0, bucketTransferTimeInMilliseconds=0, bucketTransfersCompleted=0, primaryTransferTimeInMilliseconds=0, primaryTransfersCompleted=0, timeInMilliseconds=0, regionName=testRegion}}");
   }
 }

@@ -167,7 +167,9 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   }
 
   public void setPublicKeys(GMSMembershipView<ID> otherView) {
-    this.publicKeys.putAll(otherView.publicKeys);
+    if (otherView.publicKeys != null) {
+      this.publicKeys.putAll(otherView.publicKeys);
+    }
   }
 
   public void setViewId(int viewId) {

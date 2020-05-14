@@ -28,13 +28,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.GenericXmlWebContextLoader;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF/pulse-servlet.xml"})
+@ContextConfiguration(locations = {"classpath*:WEB-INF/pulse-servlet.xml"},
+    loader = GenericXmlWebContextLoader.class)
 @WebAppConfiguration
 @ActiveProfiles({"pulse.authentication.custom"})
 public class CustomSecurityConfigTest {

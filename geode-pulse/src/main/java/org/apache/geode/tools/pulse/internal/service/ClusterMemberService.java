@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -53,18 +52,12 @@ public class ClusterMemberService implements PulseService {
   private final ObjectMapper mapper = new ObjectMapper();
 
   private static final String HEAP_USAGE = "heapUsage";
-  private final Repository repository;
-
-  @Autowired
-  public ClusterMemberService(Repository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
-    Cluster cluster = repository.getCluster();
+    Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();

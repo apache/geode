@@ -21,20 +21,18 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 public class ExpirationExecutor implements Runnable {
   private final ByteArrayWrapper key;
-  private final RedisDataType dataType;
-  private final RegionProvider regionProvider;
+  private final RedisDataType type;
+  private final RegionProvider rC;
 
-  public ExpirationExecutor(ByteArrayWrapper k,
-      RedisDataType dataType,
-      RegionProvider regionProvider) {
+  public ExpirationExecutor(ByteArrayWrapper k, RedisDataType type, RegionProvider rC) {
     this.key = k;
-    this.dataType = dataType;
-    this.regionProvider = regionProvider;
+    this.type = type;
+    this.rC = rC;
   }
 
   @Override
   public void run() {
-    regionProvider.removeKey(key, dataType, false);
+    rC.removeKey(key, type, false);
   }
 
 

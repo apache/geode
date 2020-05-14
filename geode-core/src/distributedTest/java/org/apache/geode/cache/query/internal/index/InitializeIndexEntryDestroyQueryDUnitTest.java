@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
@@ -130,9 +129,9 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
       vm0.invoke(() -> createRegionInVM(name, null));
       final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
       vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-      vm0.invoke(() -> createIndex(name, "statusIndex", "p.status", SEPARATOR + name + " p"));
-      vm0.invoke(() -> createIndex(name, "idIndex", "p.ID", SEPARATOR + name + " p"));
-      vm0.invoke(() -> createIndex(name, "pkidIndex", "p.pk", SEPARATOR + name + " p"));
+      vm0.invoke(() -> createIndex(name, "statusIndex", "p.status", "/" + name + " p"));
+      vm0.invoke(() -> createIndex(name, "idIndex", "p.ID", "/" + name + " p"));
+      vm0.invoke(() -> createIndex(name, "pkidIndex", "p.pk", "/" + name + " p"));
       vm0.invoke(() -> executeAndValidateQueryResults(query));
     } finally {
       vm0.invoke(() -> clearIndexesAndDestroyRegion(name));
@@ -184,8 +183,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
       Index index = null;
       try {
         index =
-            cache.getQueryService().createIndex("statusIndex", "p.status",
-                SEPARATOR + regionName + " p");
+            cache.getQueryService().createIndex("statusIndex", "p.status", "/" + regionName + " p");
       } catch (Exception e1) {
         logger.error("Index creation failed", e1);
         fail();

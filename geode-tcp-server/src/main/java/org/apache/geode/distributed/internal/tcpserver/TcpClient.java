@@ -29,10 +29,10 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
@@ -54,13 +54,13 @@ public class TcpClient {
 
   private static final int DEFAULT_REQUEST_TIMEOUT = 60 * 2 * 1000;
 
-  private final Map<HostAndPort, Short> serverVersions =
+  @MakeNotStatic
+  private static final Map<HostAndPort, Short> serverVersions =
       new HashMap<>();
 
   private final TcpSocketCreator socketCreator;
   private final ObjectSerializer objectSerializer;
   private final ObjectDeserializer objectDeserializer;
-  private final TcpSocketFactory socketFactory;
 
   /**
    * Constructs a new TcpClient
@@ -70,11 +70,10 @@ public class TcpClient {
    * @param objectDeserializer deserializer for responses from the TcpServer
    */
   public TcpClient(TcpSocketCreator socketCreator, final ObjectSerializer objectSerializer,
-      final ObjectDeserializer objectDeserializer, TcpSocketFactory socketFactory) {
+      final ObjectDeserializer objectDeserializer) {
     this.socketCreator = socketCreator;
     this.objectSerializer = objectSerializer;
     this.objectDeserializer = objectDeserializer;
-    this.socketFactory = socketFactory;
   }
 
   /**
@@ -171,7 +170,7 @@ public class TcpClient {
     logger.debug("TcpClient sending {} to {}", request, addr);
 
     Socket sock =
-        socketCreator.forCluster().connect(addr, (int) newTimeout, null, socketFactory);
+        socketCreator.forCluster().connect(addr, (int) newTimeout, null);
     sock.setSoTimeout((int) newTimeout);
     DataOutputStream out = null;
     try {
@@ -254,15 +253,8 @@ public class TcpClient {
     gossipVersion = TcpServer.getOldGossipVersion();
 
     try {
-      sock = socketCreator.forCluster().connect(addr, timeout, null, socketFactory);
+      sock = socketCreator.forCluster().connect(addr, timeout, null);
       sock.setSoTimeout(timeout);
-    } catch (SSLHandshakeException e) {
-      if ((e.getCause() instanceof EOFException)
-          && (e.getCause().getMessage().contains("SSL peer shut down incorrectly"))) {
-        throw new IOException("Remote host terminated the handshake", e);
-      } else {
-        throw new IllegalStateException("Unable to form SSL connection", e);
-      }
     } catch (SSLException e) {
       throw new IllegalStateException("Unable to form SSL connection", e);
     }
@@ -301,22 +293,33 @@ public class TcpClient {
         // old locators will not recognize the version request and will close the connection
       }
     } finally {
-      if (!sock.isClosed()) {
-        try {
-          sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
-        } catch (Exception e) {
-          logger.error("Error aborting socket ", e);
-        }
-        try {
-          sock.close();
-        } catch (Exception e) {
-          logger.error("Error closing socket ", e);
-        }
+      try {
+        sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
+      } catch (Exception e) {
+        logger.error("Error aborting socket ", e);
       }
+      try {
+        sock.close();
+      } catch (Exception e) {
+        logger.error("Error closing socket ", e);
+      }
+
     }
     synchronized (serverVersions) {
       serverVersions.put(addr, Version.GFE_57.ordinal());
     }
     return Version.GFE_57.ordinal();
+  }
+
+
+  /**
+   * Clear static class information concerning Locators. This is used in unit tests. It will force
+   * TcpClient to send version-request messages to locators to reestablish knowledge of their
+   * communication protocols.
+   */
+  public static void clearStaticData() {
+    synchronized (serverVersions) {
+      serverVersions.clear();
+    }
   }
 }

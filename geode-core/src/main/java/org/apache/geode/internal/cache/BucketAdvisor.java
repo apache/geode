@@ -33,8 +33,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -166,7 +164,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   private PartitionedRegion pRegion;
 
-  final ConcurrentMap<String, Boolean> destroyedShadowBuckets = new ConcurrentHashMap<>();
+  private volatile boolean shadowBucketDestroyed;
 
   /**
    * Constructs a new BucketAdvisor for the Bucket owned by RegionAdvisor.
@@ -543,7 +541,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @see #adviseProfileUpdate()
    */
   @Override
-  public synchronized boolean putProfile(Profile profile, boolean forceProfile) {
+  public boolean putProfile(Profile profile, boolean forceProfile) {
     assert profile instanceof BucketProfile;
     BucketProfile bp = (BucketProfile) profile;
 
@@ -2305,7 +2303,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    */
   public static class ServerBucketProfile extends BucketProfile {
 
-    private Set<BucketServerLocation66> bucketServerLocations;
+    public Set<BucketServerLocation66> bucketServerLocations;
 
     private int bucketId;
 
@@ -2744,19 +2742,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  void markAllShadowBucketsAsNonDestroyed() {
-    destroyedShadowBuckets.clear();
+  void setShadowBucketDestroyed(boolean destroyed) {
+    shadowBucketDestroyed = destroyed;
   }
 
-  void markAllShadowBucketsAsDestroyed() {
-    destroyedShadowBuckets.forEach((k, v) -> destroyedShadowBuckets.put(k, true));
-  }
-
-  void markShadowBucketAsDestroyed(String shadowBucketPath) {
-    destroyedShadowBuckets.put(shadowBucketPath, true);
-  }
-
-  public boolean isShadowBucketDestroyed(String shadowBucketPath) {
-    return destroyedShadowBuckets.getOrDefault(shadowBucketPath, false);
+  public boolean getShadowBucketDestroyed() {
+    return shadowBucketDestroyed;
   }
 }

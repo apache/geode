@@ -16,8 +16,6 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
@@ -77,7 +75,7 @@ public class IndexRealizer implements ConfigurationRealizer<Index, IndexInfo> {
     if (regionName == null || indexName == null) {
       return null;
     }
-    Region<Object, Object> region = cache.getRegion(SEPARATOR + regionName);
+    Region<Object, Object> region = cache.getRegion("/" + regionName);
     if (region == null) {
       return null;
     }
@@ -99,7 +97,7 @@ public class IndexRealizer implements ConfigurationRealizer<Index, IndexInfo> {
   public RealizationResult delete(Index config, InternalCache cache) {
     QueryService queryService = cache.getQueryService();
     RealizationResult realizationResult = new RealizationResult();
-    Region<Object, Object> region = cache.getRegion(SEPARATOR + config.getRegionName());
+    Region<Object, Object> region = cache.getRegion("/" + config.getRegionName());
     if (region == null) {
       realizationResult.setSuccess(false);
       realizationResult.setMessage("Region for index not found: " + config.getRegionName());

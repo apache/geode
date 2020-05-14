@@ -265,7 +265,7 @@ public class MoveBucketMessage extends PartitionMessage {
      * message was processed.
      */
     @Override
-    protected synchronized void processException(ReplyException ex) {
+    protected void processException(ReplyException ex) {
       logger.debug("MoveBucketMessage ignoring exception: {}", ex.getMessage(), ex);
     }
 

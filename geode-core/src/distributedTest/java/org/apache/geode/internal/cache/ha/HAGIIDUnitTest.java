@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
@@ -184,7 +183,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   public static void registerInterestList() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.registerInterest("key-1", InterestResultPolicy.KEYS_VALUES);
       r.registerInterest("key-2", InterestResultPolicy.KEYS_VALUES);
@@ -196,7 +195,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.create("key-1", "key-1");
       r.create("key-2", "key-2");
@@ -221,7 +220,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   public static void put() {
     try {
-      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
 
       r.put("key-1", "value-1");
@@ -235,7 +234,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   /** queue a tombstone GC message for the client. See bug #46832 */
   public static void tombstonegc() throws Exception {
-    LocalRegion r = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
+    LocalRegion r = (LocalRegion) cache.getRegion("/" + REGION_NAME);
     assertNotNull(r);
 
     DistributedMember id = r.getCache().getDistributedSystem().getDistributedMember();
@@ -254,7 +253,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyEntries() {
     try {
-      final Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      final Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       // wait until we
       // have a dead
@@ -356,7 +355,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyEntriesAfterGII() {
     try {
-      final Region r = cache.getRegion(SEPARATOR + REGION_NAME);
+      final Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       // wait until
       // we have a

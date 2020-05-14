@@ -412,8 +412,7 @@ public abstract class DistributionMessage
    */
   protected void schedule(final ClusterDistributionManager dm) {
     boolean inlineProcess = INLINE_PROCESS
-        && getProcessorType() == OperationExecutors.SERIAL_EXECUTOR
-        && !isMembershipMessengerThread();
+        && getProcessorType() == OperationExecutors.SERIAL_EXECUTOR && !isPreciousThread();
 
     boolean forceInline = this.acker != null || getInlineProcess() || Connection.isDominoThread();
 
@@ -477,19 +476,13 @@ public abstract class DistributionMessage
   }
 
   /**
-   * returns true if the current thread should not be used for inline processing because it
-   * is responsible for reading geode-membership messages. Blocking such a thread can cause
-   * a server to be kicked out
+   * returns true if the current thread should not be used for inline processing. i.e., it is a
+   * "precious" resource
    */
-  public static boolean isMembershipMessengerThread() {
+  public static boolean isPreciousThread() {
     String thrname = Thread.currentThread().getName();
-
-    return isMembershipMessengerThreadName(thrname);
-  }
-
-  public static boolean isMembershipMessengerThreadName(String thrname) {
-    return thrname.startsWith("unicast receiver") || thrname.startsWith("multicast receiver")
-        || thrname.startsWith("Geode UDP");
+    // return thrname.startsWith("Geode UDP");
+    return thrname.startsWith("unicast receiver") || thrname.startsWith("multicast receiver");
   }
 
 

@@ -53,10 +53,4 @@ public interface InternalPool extends Pool, ExecutablePool {
    */
   @VisibleForTesting
   int getPrimaryPort();
-
-  /**
-   * Test hook to find out current number of connections this pool has.
-   */
-  @VisibleForTesting
-  int getConnectionCount();
 }

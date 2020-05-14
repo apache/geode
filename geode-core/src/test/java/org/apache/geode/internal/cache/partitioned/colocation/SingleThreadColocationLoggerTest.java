@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
@@ -47,7 +48,7 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class SingleThreadColocationLoggerTest {
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
 
   private Function<PartitionedRegion, Set<String>> allColocationRegionsProvider;
   private Consumer<String> logger;
@@ -190,7 +191,7 @@ public class SingleThreadColocationLoggerTest {
 
     colocationLogger.addMissingChildRegion("/childRegion");
 
-    verifyNoMoreInteractions(logger);
+    verifyZeroInteractions(logger);
   }
 
   @Test

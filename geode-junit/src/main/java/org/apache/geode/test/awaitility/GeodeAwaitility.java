@@ -15,9 +15,12 @@
 package org.apache.geode.test.awaitility;
 
 import static java.lang.Long.getLong;
+import static java.time.Duration.ofMillis;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
 import org.mockito.Mockito;
 
@@ -32,9 +35,9 @@ public class GeodeAwaitility {
    */
   public static final String TIMEOUT_SECONDS_PROPERTY = "GEODE_AWAITILITY_TIMEOUT_SECONDS";
 
-  private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
-  private static final Duration POLL_INTERVAL = Duration.ofMillis(50);
-  private static final Duration POLL_DELAY = Duration.ofMillis(100);
+  private static final Duration DEFAULT_TIMEOUT = Duration.FIVE_MINUTES;
+  private static final Duration POLL_INTERVAL = new Duration(50, TimeUnit.MILLISECONDS);
+  private static final Duration POLL_DELAY = Duration.ONE_HUNDRED_MILLISECONDS;
 
   /**
    * Start building an await statement using Geode's default testing timeout.
@@ -72,7 +75,7 @@ public class GeodeAwaitility {
    * <pre>
    * import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
    *
-   * private static final long TIMEOUT = getTimeout().toMillis();
+   * private static final long TIMEOUT = getTimeout().getValueInMS();
    *
    * {@literal @}Test
    * public void test() {
@@ -86,6 +89,17 @@ public class GeodeAwaitility {
    * @return the current timeout value as a {@code Duration}
    */
   public static Duration getTimeout() {
-    return Duration.ofSeconds(getLong(TIMEOUT_SECONDS_PROPERTY, DEFAULT_TIMEOUT.getSeconds()));
+    return new Duration(getLong(TIMEOUT_SECONDS_PROPERTY, DEFAULT_TIMEOUT.getValue()), SECONDS);
+  }
+
+  /**
+   * Converts from {@code org.awaitility.Duration} to {@link java.time.Duration}.
+   *
+   * @param duration a {@code org.awaitility.Duration} to convert to {@code java.time.Duration}
+   *
+   * @return the {@code java.time.Duration} value of duration
+   */
+  public static java.time.Duration toTimeDuration(Duration duration) {
+    return ofMillis(duration.getValueInMS());
   }
 }

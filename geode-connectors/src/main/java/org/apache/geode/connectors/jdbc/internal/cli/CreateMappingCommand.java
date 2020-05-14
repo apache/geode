@@ -15,8 +15,6 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -133,7 +131,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups)
       throws IOException {
-    if (regionName.startsWith(SEPARATOR)) {
+    if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 

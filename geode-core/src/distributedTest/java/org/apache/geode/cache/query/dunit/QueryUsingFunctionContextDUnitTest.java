@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -1026,9 +1025,9 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
   public void createIndex() {
     QueryService qs = CacheFactory.getAnyInstance().getQueryService();
     try {
-      qs.createIndex("ID1", "ID", SEPARATOR + PartitionedRegionName1);
-      qs.createIndex("ID2", "ID", SEPARATOR + PartitionedRegionName2);
-      qs.createIndex("ID3", "ID", SEPARATOR + PartitionedRegionName3);
+      qs.createIndex("ID1", "ID", "/" + PartitionedRegionName1);
+      qs.createIndex("ID2", "ID", "/" + PartitionedRegionName2);
+      qs.createIndex("ID3", "ID", "/" + PartitionedRegionName3);
     } catch (Exception e) {
       fail("Index creation failed " + e);
     }

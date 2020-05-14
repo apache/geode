@@ -39,7 +39,6 @@ import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
-import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -83,7 +82,6 @@ public class ClientServerHostNameVerificationDistributedTest {
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
-        .sanIpAddress(LocalHostUtil.getLocalHost())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
         .generate();
@@ -93,7 +91,6 @@ public class ClientServerHostNameVerificationDistributedTest {
         .issuedBy(ca)
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
-        .sanIpAddress(LocalHostUtil.getLocalHost())
         .sanIpAddress(InetAddress.getLocalHost())
         .generate();
 
@@ -165,7 +162,6 @@ public class ClientServerHostNameVerificationDistributedTest {
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
-        .sanIpAddress(LocalHostUtil.getLocalHost())
         .sanIpAddress(InetAddress.getLocalHost())
         .generate();
 

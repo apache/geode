@@ -74,8 +74,7 @@ import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInf
 public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   private static final Logger logger = LogManager.getLogger();
-  private final ResourceBundle resourceBundle;
-  private final Repository repository;
+  private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
 
   private JMXConnector conn = null;
   private MBeanServerConnection mbs = null;
@@ -100,13 +99,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * constructor used for creating JMX connection
    */
-  public JMXDataUpdater(String server, String port, Cluster cluster, ResourceBundle resourceBundle,
-      Repository repository) {
+  public JMXDataUpdater(String server, String port, Cluster cluster) {
     serverName = server;
     this.port = port;
     this.cluster = cluster;
-    this.resourceBundle = resourceBundle;
-    this.repository = repository;
 
     try {
       // Initialize MBean object names
@@ -168,11 +164,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
     return null;
   }
 
+
   /**
    * Get the jmx connection
    */
   @Override
-  public JMXConnector connect(Object credentials) {
+  public JMXConnector connect(String username, String password) {
+    // Reference to repository
+    Repository repository = Repository.get();
     try {
 
       String jmxSerURL = "";
@@ -204,8 +203,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       if (StringUtils.isNotBlank(jmxSerURL)) {
         JMXServiceURL url = new JMXServiceURL(jmxSerURL);
+        String[] creds = {username, password};
         Map<String, Object> env = new HashMap<>();
-        env.put(JMXConnector.CREDENTIALS, credentials);
+        env.put(JMXConnector.CREDENTIALS, creds);
 
         Properties originalProperties = System.getProperties();
         try {

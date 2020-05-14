@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -56,7 +54,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
 
   final String rootRegionName = "root";
   final String regionName = "PdxTest";
-  final String regName = SEPARATOR + rootRegionName + SEPARATOR + regionName;
+  final String regName = "/" + rootRegionName + "/" + regionName;
   private Host host;
   private VM vm0;
   private VM vm1;

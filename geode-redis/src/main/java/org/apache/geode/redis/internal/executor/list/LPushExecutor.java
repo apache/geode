@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.list;
 
+import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 
 public class LPushExecutor extends PushExecutor {
@@ -23,5 +24,9 @@ public class LPushExecutor extends PushExecutor {
     return ListDirection.LEFT;
   }
 
+  @Override
+  public String getArgsError() {
+    return ArityDef.LPUSH;
+  }
 
 }

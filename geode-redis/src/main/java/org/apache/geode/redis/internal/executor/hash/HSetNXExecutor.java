@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 /**
  * <pre>
@@ -37,5 +38,10 @@ public class HSetNXExecutor extends HSetExecutor {
   @Override
   protected boolean onlySetOnAbsent() {
     return true;
+  }
+
+  @Override
+  public String getArgsError() {
+    return ArityDef.HSETNX;
   }
 }

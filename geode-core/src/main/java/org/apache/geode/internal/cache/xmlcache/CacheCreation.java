@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import static java.lang.String.format;
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.logging.LogWriterFactory.toSecurityLogWriter;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
@@ -1162,7 +1161,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public Region getRegion(String path) {
-    if (path.contains(SEPARATOR)) {
+    if (path.contains("/")) {
       throw new UnsupportedOperationException("Region path '" + path + "' contains '/'");
     }
     return roots.get(path);
@@ -1254,7 +1253,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void close(final String reason, final Throwable systemFailureCause,
-      final boolean keepAlive, final boolean keepDS, boolean skipAwait) {
+      final boolean keepAlive, final boolean keepDS) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

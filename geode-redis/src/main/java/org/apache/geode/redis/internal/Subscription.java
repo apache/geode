@@ -32,8 +32,7 @@ public interface Subscription {
   /**
    * Will publish a message to the designated channel.
    */
-  void publishMessage(String channel, byte[] message,
-      PublishResultCollector publishResultCollector);
+  PublishResult publishMessage(String channel, byte[] message);
 
   /**
    * Verifies that the subscription is established with the designated client.

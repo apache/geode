@@ -14,8 +14,6 @@
  */
 package org.apache.geode.admin;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -143,7 +141,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
    * @return full path of region
    */
   public String getFullPath() {
-    return (getParent() == null ? SEPARATOR : getParent().getFullPath()) + getName() + SEPARATOR;
+    return (getParent() == null ? "/" : getParent().getFullPath()) + getName() + "/";
   }
 
   @Override

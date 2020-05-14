@@ -14,8 +14,11 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.FINE;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -40,8 +43,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
@@ -51,30 +54,33 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(ClientServerTest.class)
+@Category({ClientServerTest.class})
 public class OpExecutorImplJUnitTest {
 
-  private DummyManager manager;
+  DummyManager manager;
+  private LogWriter logger;
   private DummyEndpointManager endpointManager;
   private DummyQueueManager queueManager;
   private RegisterInterestTracker riTracker;
 
-  private int borrows;
-  private int returns;
-  private int invalidateConnections;
-  private int exchanges;
-  private int serverCrashes;
-  private int getPrimary;
-  private int getBackups;
+  protected int borrows;
+  protected int returns;
+  protected int invalidateConnections;
+  protected int exchanges;
+  protected int serverCrashes;
+  protected int getPrimary;
+  protected int getBackups;
   private CancelCriterion cancelCriterion;
 
   @Before
   public void setUp() {
-    endpointManager = new DummyEndpointManager();
-    queueManager = new DummyQueueManager();
-    manager = new DummyManager();
+    this.logger = new LocalLogWriter(FINE.intLevel(), System.out);
+    this.endpointManager = new DummyEndpointManager();
+    this.queueManager = new DummyQueueManager();
+    this.manager = new DummyManager();
     riTracker = new RegisterInterestTracker();
     cancelCriterion = new CancelCriterion() {
 
@@ -91,281 +97,76 @@ public class OpExecutorImplJUnitTest {
   }
 
   @Test
-  public void testExecute() {
-    ExecutablePool exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
-    Object result = exec.execute(cnx -> "hello");
-
-    assertThat(result).isEqualTo("hello");
-    assertThat(borrows).isEqualTo(1);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(0);
-    assertThat(serverCrashes).isEqualTo(0);
-
-    reset();
-
-    Throwable thrown = catchThrowable(() -> {
-      exec.execute(cnx -> {
-        throw new SocketTimeoutException("test");
-      });
-    });
-    assertThat(thrown).isInstanceOf(ServerConnectivityException.class);
-
-    assertThat(borrows).isEqualTo(1);
-    assertThat(exchanges).isEqualTo(3);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(4);
-    assertThat(serverCrashes).isEqualTo(0);
-
-    reset();
-
-    thrown = catchThrowable(() -> {
-      exec.execute(cnx -> {
-        throw new ServerOperationException("Something didn't work");
-      });
-    });
-    assertThat(thrown).isInstanceOf(ServerOperationException.class);
-
-    assertThat(borrows).isEqualTo(1);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(0);
-    assertThat(serverCrashes).isEqualTo(0);
-
-    reset();
-
-    thrown = catchThrowable(() -> {
-      exec.execute(cnx -> {
-        throw new IOException("Something didn't work");
-      });
-    });
-    assertThat(thrown).isInstanceOf(ServerConnectivityException.class);
-
-    assertThat(borrows).isEqualTo(1);
-    assertThat(exchanges).isEqualTo(3);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(4);
-    assertThat(serverCrashes).isEqualTo(4);
-  }
-
-  @Test
-  public void testExecuteOncePerServer() {
-    ExecutablePool exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
-
-    manager.numServers = 5;
-
-    Throwable thrown = catchThrowable(() -> {
-      exec.execute(cnx -> {
-        throw new IOException("Something didn't work");
-      });
-    });
-    assertThat(thrown).isInstanceOf(ServerConnectivityException.class);
-
-    assertThat(borrows).isEqualTo(1);
-    assertThat(exchanges).isEqualTo(4);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(6);
-    assertThat(serverCrashes).isEqualTo(6);
-  }
-
-  @Test
-  public void testRetryFailedServers() {
-    ExecutablePool exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 10,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
-
-    manager.numServers = 5;
-
-    Throwable thrown = catchThrowable(() -> {
-      exec.execute(cnx -> {
-        throw new IOException("Something didn't work");
-      });
-    });
-    assertThat(thrown).isInstanceOf(ServerConnectivityException.class);
-
-    assertThat(borrows).isEqualTo(1);
-    assertThat(exchanges).isEqualTo(10);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(11);
-    assertThat(serverCrashes).isEqualTo(11);
-  }
-
-  @Test
-  public void testExecuteOn() {
-    ExecutablePool exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
-    ServerLocation server = new ServerLocation("localhost", -1);
-    Object result = exec.executeOn(server, cnx -> "hello");
-
-    assertThat(result).isEqualTo("hello");
-    assertThat(borrows).isEqualTo(1);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(0);
-    assertThat(serverCrashes).isEqualTo(0);
-
-    reset();
-
-    Throwable thrown = catchThrowable(() -> {
-      exec.executeOn(server, cnx -> {
-        throw new SocketTimeoutException("test");
-      });
-    });
-    assertThat(thrown).isInstanceOf(ServerConnectivityException.class);
-
-    assertThat(borrows).isEqualTo(1);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(1);
-    assertThat(serverCrashes).isEqualTo(0);
-
-    reset();
-
-    thrown = catchThrowable(() -> {
-      exec.executeOn(server, cnx -> {
-        throw new ServerOperationException("Something didn't work");
-      });
-    });
-    assertThat(thrown).isInstanceOf(ServerOperationException.class);
-
-    assertThat(borrows).isEqualTo(1);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(0);
-    assertThat(serverCrashes).isEqualTo(0);
-
-    reset();
-
-    thrown = catchThrowable(() -> {
-      exec.executeOn(server, cnx -> {
-        throw new Exception("Something didn't work");
-      });
-    });
-    assertThat(thrown).isInstanceOf(ServerConnectivityException.class);
-
-    assertThat(borrows).isEqualTo(1);
-    assertThat(returns).isEqualTo(1);
-    assertThat(invalidateConnections).isEqualTo(1);
-    assertThat(serverCrashes).isEqualTo(1);
-  }
-
-  @Test
-  public void testExecuteOnAllQueueServers() {
-    ExecutablePool exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
-    exec.executeOnAllQueueServers(cnx -> "hello");
-
-    assertThat(invalidateConnections).isEqualTo(0);
-    assertThat(serverCrashes).isEqualTo(0);
-    assertThat(getPrimary).isEqualTo(1);
-    assertThat(getBackups).isEqualTo(1);
-
-    reset();
-
-    queueManager.backups = 3;
-    exec.executeOnAllQueueServers(cnx -> {
-      throw new SocketTimeoutException("test");
-    });
-
-    assertThat(invalidateConnections).isEqualTo(4);
-    assertThat(serverCrashes).isEqualTo(0);
-    assertThat(getPrimary).isEqualTo(1);
-    assertThat(getBackups).isEqualTo(1);
-
-    reset();
-
-    queueManager.backups = 3;
-    Object result = exec.executeOnQueuesAndReturnPrimaryResult(new Op() {
-      private int i;
-
+  public void testExecute() throws Exception {
+    OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
+        10, cancelCriterion, null);
+    Object result = exec.execute(new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
-        i++;
-        if (i < 15) {
-          throw new IOException("test");
-        }
         return "hello";
       }
     });
+    assertEquals("hello", result);
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
 
-    assertThat(result).isEqualTo("hello");
-    assertThat(serverCrashes).isEqualTo(14);
-    assertThat(invalidateConnections).isEqualTo(14);
-    assertThat(getPrimary).isEqualTo(12);
-    assertThat(getBackups).isEqualTo(1);
-  }
+    reset();
 
-  @Test
-  public void executeWithServerAffinityDoesNotChangeInitialRetryCountOfZero() {
-    OpExecutorImpl opExecutor =
-        new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion,
-            mock(PoolImpl.class));
-    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
-    ServerLocation serverLocation = mock(ServerLocation.class);
-    opExecutor.setAffinityRetryCount(0);
+    try {
+      result = exec.execute(new Op() {
+        @Override
+        public Object attempt(Connection cnx) throws Exception {
+          throw new SocketTimeoutException();
+        }
+      });
+      fail("Should have got an exception");
+    } catch (ServerConnectivityException expected) {
+      // do nothing
+    }
+    assertEquals(1, borrows);
+    assertEquals(3, exchanges);
+    assertEquals(1, returns);
+    assertEquals(4, invalidateConnections);
+    assertEquals(0, serverCrashes);
 
-    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+    reset();
 
-    assertThat(opExecutor.getAffinityRetryCount()).isEqualTo(0);
-  }
+    try {
+      result = exec.execute(new Op() {
+        @Override
+        public Object attempt(Connection cnx) throws Exception {
+          throw new ServerOperationException("Something didn't work");
+        }
+      });
+      fail("Should have got an exception");
+    } catch (ServerOperationException expected) {
+      // do nothing
+    }
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
 
-  @Test
-  public void executeWithServerAffinityWithNonZeroAffinityRetryCountWillNotSetToZero() {
-    OpExecutorImpl opExecutor =
-        new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion,
-            mock(PoolImpl.class));
-    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
-    ServerLocation serverLocation = mock(ServerLocation.class);
-    opExecutor.setAffinityRetryCount(1);
+    reset();
 
-    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
-
-    assertThat(opExecutor.getAffinityRetryCount()).isNotEqualTo(0);
-  }
-
-  @Test
-  public void executeWithServerAffinityWithServerConnectivityExceptionIncrementsRetryCountAndResetsToZero() {
-    OpExecutorImpl opExecutor =
-        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion,
-            mock(PoolImpl.class)));
-    AbstractOp txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
-    ServerLocation serverLocation = mock(ServerLocation.class);
-    ServerConnectivityException serverConnectivityException =
-        new ServerConnectivityException("test");
-    doThrow(serverConnectivityException)
-        .when(opExecutor)
-        .executeOnServer(serverLocation, txSynchronizationOp, true, false);
-    when(txSynchronizationOp.getMessage())
-        .thenReturn(mock(Message.class));
-    opExecutor.setupServerAffinity(true);
-    opExecutor.setAffinityRetryCount(0);
-
-    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
-
-    verify(opExecutor, times(1)).setAffinityRetryCount(1);
-    assertThat(opExecutor.getAffinityRetryCount()).isEqualTo(0);
-  }
-
-  @Test
-  public void executeWithServerAffinityAndRetryCountGreaterThansTxRetryAttemptThrowsServerConnectivityException() {
-    OpExecutorImpl opExecutor =
-        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion,
-            mock(PoolImpl.class)));
-    AbstractOp txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
-    ServerLocation serverLocation = mock(ServerLocation.class);
-    ServerConnectivityException serverConnectivityException =
-        new ServerConnectivityException("test");
-    doThrow(serverConnectivityException)
-        .when(opExecutor)
-        .executeOnServer(serverLocation, txSynchronizationOp, true, false);
-    when(txSynchronizationOp.getMessage()).thenReturn(mock(Message.class));
-    opExecutor.setupServerAffinity(true);
-    opExecutor.setAffinityRetryCount(OpExecutorImpl.TX_RETRY_ATTEMPT + 1);
-
-    Throwable thrown = catchThrowable(() -> {
-      opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
-    });
-    assertThat(thrown).isSameAs(serverConnectivityException);
+    try {
+      result = exec.execute(new Op() {
+        @Override
+        public Object attempt(Connection cnx) throws Exception {
+          throw new IOException("Something didn't work");
+        }
+      });
+      fail("Should have got an exception");
+    } catch (ServerConnectivityException expected) {
+      // do nothing
+    }
+    assertEquals(1, borrows);
+    assertEquals(3, exchanges);
+    assertEquals(1, returns);
+    assertEquals(4, invalidateConnections);
+    assertEquals(4, serverCrashes);
   }
 
   private void reset() {
@@ -378,33 +179,288 @@ public class OpExecutorImplJUnitTest {
     getBackups = 0;
   }
 
+  @Test
+  public void testExecuteOncePerServer() throws Exception {
+    OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+        10, cancelCriterion, null);
+
+    manager.numServers = 5;
+    try {
+      exec.execute(new Op() {
+        @Override
+        public Object attempt(Connection cnx) throws Exception {
+          throw new IOException("Something didn't work");
+        }
+      });
+      fail("Should have got an exception");
+    } catch (ServerConnectivityException expected) {
+      // do nothing
+    }
+    assertEquals(1, borrows);
+    assertEquals(4, exchanges);
+    assertEquals(1, returns);
+    assertEquals(6, invalidateConnections);
+    assertEquals(6, serverCrashes);
+  }
+
+  @Test
+  public void testRetryFailedServers() throws Exception {
+    OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 10,
+        10, cancelCriterion, null);
+
+    manager.numServers = 5;
+    try {
+      exec.execute(new Op() {
+        @Override
+        public Object attempt(Connection cnx) throws Exception {
+          throw new IOException("Something didn't work");
+        }
+      });
+      fail("Should have got an exception");
+    } catch (ServerConnectivityException expected) {
+      // do nothing
+    }
+    assertEquals(1, borrows);
+    assertEquals(10, exchanges);
+    assertEquals(1, returns);
+    assertEquals(11, invalidateConnections);
+    assertEquals(11, serverCrashes);
+  }
+
+  @Test
+  public void testExecuteOn() throws Exception {
+    OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
+        10, cancelCriterion, null);
+    ServerLocation server = new ServerLocation("localhost", -1);
+    Object result = exec.executeOn(server, new Op() {
+      @Override
+      public Object attempt(Connection cnx) throws Exception {
+        return "hello";
+      }
+    });
+    assertEquals("hello", result);
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
+
+    reset();
+
+    try {
+      result = exec.executeOn(server, new Op() {
+        @Override
+        public Object attempt(Connection cnx) throws Exception {
+          throw new SocketTimeoutException();
+        }
+      });
+      fail("Should have got an exception");
+    } catch (ServerConnectivityException expected) {
+      // do nothing
+    }
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(1, invalidateConnections);
+    assertEquals(0, serverCrashes);
+
+    reset();
+
+    try {
+      result = exec.executeOn(server, new Op() {
+        @Override
+        public Object attempt(Connection cnx) throws Exception {
+          throw new ServerOperationException("Something didn't work");
+        }
+      });
+      fail("Should have got an exception");
+    } catch (ServerOperationException expected) {
+      // do nothing
+    }
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
+
+    reset();
+
+    {
+      final String expectedEx = "java.lang.Exception";
+      final String addExpected =
+          "<ExpectedException action=add>" + expectedEx + "</ExpectedException>";
+      final String removeExpected =
+          "<ExpectedException action=remove>" + expectedEx + "</ExpectedException>";
+      logger.info(addExpected);
+      try {
+        result = exec.executeOn(server, new Op() {
+          @Override
+          public Object attempt(Connection cnx) throws Exception {
+            throw new Exception("Something didn't work");
+          }
+        });
+        fail("Should have got an exception");
+      } catch (ServerConnectivityException expected) {
+        // do nothing
+      } finally {
+        logger.info(removeExpected);
+      }
+    }
+    assertEquals(1, borrows);
+    assertEquals(1, returns);
+    assertEquals(1, invalidateConnections);
+    assertEquals(1, serverCrashes);
+  }
+
+  @Test
+  public void testExecuteOnAllQueueServers() {
+    OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
+        10, cancelCriterion, null);
+    exec.executeOnAllQueueServers(new Op() {
+      @Override
+      public Object attempt(Connection cnx) throws Exception {
+        return "hello";
+      }
+    });
+    assertEquals(0, invalidateConnections);
+    assertEquals(0, serverCrashes);
+    assertEquals(1, getPrimary);
+    assertEquals(1, getBackups);
+
+    reset();
+
+    queueManager.backups = 3;
+    exec.executeOnAllQueueServers(new Op() {
+      @Override
+      public Object attempt(Connection cnx) throws Exception {
+        throw new SocketTimeoutException();
+      }
+    });
+
+    assertEquals(4, invalidateConnections);
+    assertEquals(0, serverCrashes);
+    assertEquals(1, getPrimary);
+    assertEquals(1, getBackups);
+
+    reset();
+
+    queueManager.backups = 3;
+    Object result = exec.executeOnQueuesAndReturnPrimaryResult(new Op() {
+      int i = 0;
+
+      @Override
+      public Object attempt(Connection cnx) throws Exception {
+        i++;
+        if (i < 15) {
+          throw new IOException();
+        }
+        return "hello";
+      }
+    });
+
+    assertEquals("hello", result);
+    assertEquals(14, serverCrashes);
+    assertEquals(14, invalidateConnections);
+    assertEquals(12, getPrimary);
+    assertEquals(1, getBackups);
+
+  }
+
+  @Test
+  public void executeWithServerAffinityDoesNotChangeInitialRetryCountOfZero() {
+    OpExecutorImpl opExecutor =
+        new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, cancelCriterion, mock(PoolImpl.class));
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    opExecutor.setAffinityRetryCount(0);
+
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+
+    assertEquals(0, opExecutor.getAffinityRetryCount());
+  }
+
+  @Test
+  public void executeWithServerAffinityWithNonZeroAffinityRetryCountWillNotSetToZero() {
+    OpExecutorImpl opExecutor =
+        new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, cancelCriterion, mock(PoolImpl.class));
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    opExecutor.setAffinityRetryCount(1);
+
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+
+    assertNotEquals(0, opExecutor.getAffinityRetryCount());
+  }
+
+  @Test
+  public void executeWithServerAffinityWithServerConnectivityExceptionIncrementsRetryCountAndResetsToZero() {
+    OpExecutorImpl opExecutor =
+        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, cancelCriterion, mock(PoolImpl.class)));
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    ServerConnectivityException serverConnectivityException = new ServerConnectivityException();
+
+    doThrow(serverConnectivityException).when(opExecutor).executeOnServer(serverLocation,
+        txSynchronizationOp, true, false);
+    opExecutor.setupServerAffinity(true);
+    when(((AbstractOp) txSynchronizationOp).getMessage()).thenReturn(mock(Message.class));
+    opExecutor.setAffinityRetryCount(0);
+
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+
+    verify(opExecutor, times(1)).setAffinityRetryCount(1);
+    assertEquals(0, opExecutor.getAffinityRetryCount());
+  }
+
+  @Test
+  public void executeWithServerAffinityAndRetryCountGreaterThansTxRetryAttemptThrowsServerConnectivityException() {
+    OpExecutorImpl opExecutor =
+        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, cancelCriterion, mock(PoolImpl.class)));
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    ServerConnectivityException serverConnectivityException = new ServerConnectivityException();
+
+    doThrow(serverConnectivityException).when(opExecutor).executeOnServer(serverLocation,
+        txSynchronizationOp, true, false);
+    opExecutor.setupServerAffinity(true);
+    when(((AbstractOp) txSynchronizationOp).getMessage()).thenReturn(mock(Message.class));
+    opExecutor.setAffinityRetryCount(opExecutor.TX_RETRY_ATTEMPT + 1);
+
+    assertThatThrownBy(
+        () -> opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp))
+            .isSameAs(serverConnectivityException);
+  }
+
+
   private class DummyManager implements ConnectionManager {
 
-    private int numServers = Integer.MAX_VALUE;
-    private int currentServer;
+    protected int numServers = Integer.MAX_VALUE;
+    private int currentServer = 0;
+
+    public DummyManager() {}
 
     @Override
-    public void emergencyClose() {
-      // nothing
-    }
+    public void emergencyClose() {}
 
     @Override
-    public Connection borrowConnection(long acquireTimeout) {
+    public Connection borrowConnection(long aquireTimeout) {
       borrows++;
       return new DummyConnection(new ServerLocation("localhost", currentServer++ % numServers));
     }
 
     @Override
-    public Connection borrowConnection(ServerLocation server, long acquireTimeout,
+    public Connection borrowConnection(ServerLocation server,
         boolean onlyUseExistingCnx) {
       borrows++;
       return new DummyConnection(server);
     }
 
     @Override
-    public void close(boolean keepAlive) {
-      // nothing
-    }
+    public void close(boolean keepAlive) {}
 
     @Override
     public void returnConnection(Connection connection) {
@@ -419,14 +475,12 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void start(ScheduledExecutorService backgroundProcessor) {
-      // nothing
-    }
+    public void start(ScheduledExecutorService backgroundProcessor) {}
 
     @Override
     public Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers) {
       if (excludedServers.size() >= numServers) {
-        throw new NoAvailableServersException("test");
+        throw new NoAvailableServersException();
       }
       exchanges++;
       return new DummyConnection(new ServerLocation("localhost", currentServer++ % numServers));
@@ -440,16 +494,14 @@ public class OpExecutorImplJUnitTest {
 
   private class DummyConnection implements Connection {
 
-    private final ServerLocation server;
+    private ServerLocation server;
 
-    DummyConnection(ServerLocation serverLocation) {
-      server = serverLocation;
+    public DummyConnection(ServerLocation serverLocation) {
+      this.server = serverLocation;
     }
 
     @Override
-    public void close(boolean keepAlive) {
-      // nothing
-    }
+    public void close(boolean keepAlive) throws Exception {}
 
     @Override
     public void destroy() {
@@ -477,23 +529,8 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public long getBirthDate() {
-      return 0;
-    }
-
-    @Override
-    public void setBirthDate(long ts) {
-      // nothing
-    }
-
-    @Override
     public ConnectionStats getStats() {
       return null;
-    }
-
-    @Override
-    public boolean isActive() {
-      return false;
     }
 
     @Override
@@ -517,9 +554,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void emergencyClose() {
-      // nothing
-    }
+    public void emergencyClose() {}
 
     @Override
     public short getWanSiteVersion() {
@@ -527,9 +562,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void setWanSiteVersion(short wanSiteVersion) {
-      // nothing
-    }
+    public void setWanSiteVersion(short wanSiteVersion) {}
 
     @Override
     public InputStream getInputStream() {
@@ -542,9 +575,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void setConnectionID(long id) {
-      // nothing
-    }
+    public void setConnectionID(long id) {}
 
     @Override
     public long getConnectionID() {
@@ -555,14 +586,10 @@ public class OpExecutorImplJUnitTest {
   private class DummyEndpointManager implements EndpointManager {
 
     @Override
-    public void addListener(EndpointListener listener) {
-      // nothing
-    }
+    public void addListener(EndpointListener listener) {}
 
     @Override
-    public void close() {
-      // nothing
-    }
+    public void close() {}
 
     @Override
     public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
@@ -570,14 +597,12 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public Map<ServerLocation, Endpoint> getEndpointMap() {
+    public Map getEndpointMap() {
       return null;
     }
 
     @Override
-    public void removeListener(EndpointListener listener) {
-      // nothing
-    }
+    public void removeListener(EndpointListener listener) {}
 
     @Override
     public void serverCrashed(Endpoint endpoint) {
@@ -590,7 +615,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public Map<ServerLocation, ConnectionStats> getAllStats() {
+    public Map getAllStats() {
       return null;
     }
 
@@ -602,8 +627,8 @@ public class OpExecutorImplJUnitTest {
 
   private class DummyQueueManager implements QueueManager {
 
-    private int backups;
-    private int currentServer;
+    int backups = 0;
+    int currentServer = 0;
 
     @Override
     public QueueConnections getAllConnectionsNoWait() {
@@ -611,17 +636,15 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void emergencyClose() {
-      // nothing
-    }
+    public void emergencyClose() {}
 
     @Override
     public QueueConnections getAllConnections() {
       return new QueueConnections() {
         @Override
-        public List<Connection> getBackups() {
+        public List getBackups() {
           getBackups++;
-          List<Connection> result = new ArrayList<>(backups);
+          ArrayList result = new ArrayList(backups);
           for (int i = 0; i < backups; i++) {
             result.add(new DummyConnection(new ServerLocation("localhost", currentServer++)));
           }
@@ -642,14 +665,10 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void close(boolean keepAlive) {
-      // nothing
-    }
+    public void close(boolean keepAlive) {}
 
     @Override
-    public void start(ScheduledExecutorService background) {
-      // nothing
-    }
+    public void start(ScheduledExecutorService background) {}
 
     @Override
     public QueueState getState() {
@@ -662,9 +681,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void readyForEvents(InternalDistributedSystem system) {
-      // nothing
-    }
+    public void readyForEvents(InternalDistributedSystem system) {}
 
     @Override
     public InternalLogWriter getSecurityLogger() {
@@ -672,8 +689,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void checkEndpoint(ClientUpdater qc, Endpoint endpoint) {
-      // nothing
-    }
+    public void checkEndpoint(ClientUpdater qc, Endpoint endpoint) {}
   }
+
 }

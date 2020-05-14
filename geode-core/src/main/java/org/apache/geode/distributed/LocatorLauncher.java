@@ -63,7 +63,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -324,8 +323,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       final TcpSocketCreator socketCreator = new SocketCreator(sslConfig);
       final TcpClient client = new TcpClient(socketCreator,
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-          TcpSocketFactory.DEFAULT);
+          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
 
       return (LocatorStatusResponse) client.requestToServer(
           new HostAndPort(bindAddress == null ? null : bindAddress.getCanonicalHostName(), port),

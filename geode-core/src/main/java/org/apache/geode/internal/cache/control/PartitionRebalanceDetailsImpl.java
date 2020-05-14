@@ -46,7 +46,6 @@ public class PartitionRebalanceDetailsImpl
   private int primaryTransfersCompleted;
   private final transient PartitionedRegion region;
   private long time;
-  private int numOfMembers;
 
   public PartitionRebalanceDetailsImpl(PartitionedRegion region) {
     this.region = region;
@@ -146,11 +145,6 @@ public class PartitionRebalanceDetailsImpl
   @Override
   public long getPrimaryTransferTime() {
     return TimeUnit.NANOSECONDS.toMillis(this.primaryTransferTime);
-  }
-
-  @Override
-  public int getNumberOfMembersExecutedOn() {
-    return getPartitionMemberDetailsAfter().size();
   }
 
   @Override

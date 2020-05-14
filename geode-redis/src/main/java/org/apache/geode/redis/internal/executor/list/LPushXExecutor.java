@@ -14,11 +14,19 @@
  */
 package org.apache.geode.redis.internal.executor.list;
 
+import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+
+
 public class LPushXExecutor extends PushXExecutor {
 
   @Override
   protected ListDirection pushType() {
     return ListDirection.LEFT;
+  }
+
+  @Override
+  public String getArgsError() {
+    return ArityDef.LPUSHX;
   }
 
 }

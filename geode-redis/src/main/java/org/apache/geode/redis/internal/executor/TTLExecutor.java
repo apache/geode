@@ -27,9 +27,9 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 public class TTLExecutor extends AbstractExecutor implements Extendable {
 
-  public static final int NOT_EXISTS = -2;
+  private final int NOT_EXISTS = -2;
 
-  public static final int NO_TIMEOUT = -1;
+  private final int NO_TIMEOUT = -1;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {

@@ -35,7 +35,6 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
-import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.QueryService;
@@ -85,16 +84,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       throw new IllegalArgumentException("connectionTimeout must be greater than zero");
     }
     attributes.connectionTimeout = connectionTimeout;
-    return this;
-  }
-
-  @Override
-  public PoolFactory setServerConnectionTimeout(int serverConnectionTimeout) {
-    if (serverConnectionTimeout < 0) {
-      throw new IllegalArgumentException(
-          "serverConnectionTimeout must be greater than or equal to 0");
-    }
-    attributes.serverConnectionTimeout = serverConnectionTimeout;
     return this;
   }
 
@@ -224,12 +213,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     return this;
   }
 
-  @Override
-  public PoolFactory setSocketFactory(SocketFactory socketFactory) {
-    attributes.socketFactory = socketFactory;
-    return this;
-  }
-
   public PoolFactory setStartDisabled(boolean disable) {
     attributes.startDisabled = disable;
     return this;
@@ -318,7 +301,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   public void init(Pool cp) {
     setSocketConnectTimeout(cp.getSocketConnectTimeout());
     setFreeConnectionTimeout(cp.getFreeConnectionTimeout());
-    setServerConnectionTimeout(cp.getServerConnectionTimeout());
     setLoadConditioningInterval(cp.getLoadConditioningInterval());
     setSocketBufferSize(cp.getSocketBufferSize());
     setReadTimeout(cp.getReadTimeout());
@@ -336,7 +318,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     setSubscriptionAckInterval(cp.getSubscriptionAckInterval());
     setServerGroup(cp.getServerGroup());
     setMultiuserAuthentication(cp.getMultiuserAuthentication());
-    setSocketFactory(cp.getSocketFactory());
     for (InetSocketAddress address : cp.getLocators()) {
       addLocator(address.getHostString(), address.getPort());
     }
@@ -416,9 +397,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     private static final long serialVersionUID = 1L; // for findbugs
 
     int socketConnectTimeout = DEFAULT_SOCKET_CONNECT_TIMEOUT;
-    SocketFactory socketFactory = DEFAULT_SOCKET_FACTORY;
     int connectionTimeout = DEFAULT_FREE_CONNECTION_TIMEOUT;
-    int serverConnectionTimeout = DEFAULT_SERVER_CONNECTION_TIMEOUT;
     int connectionLifetime = DEFAULT_LOAD_CONDITIONING_INTERVAL;
     public int socketBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
     @Deprecated
@@ -456,11 +435,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     @Override
     public int getFreeConnectionTimeout() {
       return connectionTimeout;
-    }
-
-    @Override
-    public int getServerConnectionTimeout() {
-      return serverConnectionTimeout;
     }
 
     @Override
@@ -575,11 +549,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     }
 
     @Override
-    public SocketFactory getSocketFactory() {
-      return socketFactory;
-    }
-
-    @Override
     public List<InetSocketAddress> getLocators() {
       if (locators.size() == 0 && servers.size() == 0) {
         throw new IllegalStateException(
@@ -636,7 +605,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
 
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writePrimitiveInt(connectionTimeout, out);
-      DataSerializer.writePrimitiveInt(serverConnectionTimeout, out);
       DataSerializer.writePrimitiveInt(connectionLifetime, out);
       DataSerializer.writePrimitiveInt(socketBufferSize, out);
       DataSerializer.writePrimitiveInt(readTimeout, out);
@@ -659,7 +627,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
 
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       connectionTimeout = DataSerializer.readPrimitiveInt(in);
-      serverConnectionTimeout = DataSerializer.readPrimitiveInt(in);
       connectionLifetime = DataSerializer.readPrimitiveInt(in);
       socketBufferSize = DataSerializer.readPrimitiveInt(in);
       readTimeout = DataSerializer.readPrimitiveInt(in);
@@ -683,13 +650,12 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     @Override
     public int hashCode() {
       return Objects
-          .hash(socketConnectTimeout, connectionTimeout, serverConnectionTimeout,
-              connectionLifetime, socketBufferSize,
+          .hash(socketConnectTimeout, connectionTimeout, connectionLifetime, socketBufferSize,
               threadLocalConnections, readTimeout, minConnections, maxConnections, idleTimeout,
               retryAttempts, pingInterval, statisticInterval, queueEnabled, prSingleHopEnabled,
               queueRedundancyLevel, queueMessageTrackingTimeout, queueAckInterval,
               subscriptionTimeoutMultipler, serverGroup, multiuserSecureModeEnabled, locators,
-              servers, startDisabled, locatorCallback, gatewaySender, gateway, socketFactory);
+              servers, startDisabled, locatorCallback, gatewaySender, gateway);
     }
 
     @Override
@@ -703,7 +669,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       PoolAttributes that = (PoolAttributes) o;
       return socketConnectTimeout == that.socketConnectTimeout
           && connectionTimeout == that.connectionTimeout
-          && serverConnectionTimeout == that.serverConnectionTimeout
           && connectionLifetime == that.connectionLifetime
           && socketBufferSize == that.socketBufferSize
           && threadLocalConnections == that.threadLocalConnections
@@ -721,8 +686,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
           && Objects.equals(new HashSet<>(locators), new HashSet<>(that.locators))
           && Objects.equals(new HashSet<>(servers), new HashSet<>(that.servers))
           && Objects.equals(locatorCallback, that.locatorCallback)
-          && Objects.equals(gatewaySender, that.gatewaySender)
-          && Objects.equals(socketFactory, that.socketFactory);
+          && Objects.equals(gatewaySender, that.gatewaySender);
     }
 
     @Override

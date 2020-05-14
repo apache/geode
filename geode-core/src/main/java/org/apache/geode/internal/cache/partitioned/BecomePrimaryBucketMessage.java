@@ -291,7 +291,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
      * message was processed.
      */
     @Override
-    protected synchronized void processException(ReplyException ex) {
+    protected void processException(ReplyException ex) {
       logger.debug("BecomePrimaryBucketMessage ignoring exception {}", ex.getMessage(), ex);
     }
 

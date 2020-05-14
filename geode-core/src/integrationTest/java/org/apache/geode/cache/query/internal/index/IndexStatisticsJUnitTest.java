@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -716,7 +715,7 @@ public class IndexStatisticsJUnitTest {
     String regionName = "testCompactRegionIndexNumKeysStats_region";
     Region region = CacheUtils.createRegion(regionName, Numbers.class);
 
-    Index index = qs.createIndex("idIndexName", "r.max1", SEPARATOR + regionName + " r");
+    Index index = qs.createIndex("idIndexName", "r.max1", "/" + regionName + " r");
     IndexStatistics stats = index.getStatistics();
 
     // Add an object and check stats
@@ -785,7 +784,7 @@ public class IndexStatisticsJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     String regionName = "exampleRegion";
-    String name = SEPARATOR + regionName;
+    String name = "/" + regionName;
 
     final Cache cache = CacheUtils.getCache();
     Region r1 = null;
@@ -821,7 +820,7 @@ public class IndexStatisticsJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(observer);
 
     String regionName = "exampleRegion";
-    String name = SEPARATOR + regionName;
+    String name = "/" + regionName;
 
     final Cache cache = CacheUtils.getCache();
     Region r1 = cache.getRegion(regionName);

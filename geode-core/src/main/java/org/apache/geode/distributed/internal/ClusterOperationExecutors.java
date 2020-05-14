@@ -737,7 +737,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
       // UDP readers are throttled in the FC protocol, which queries
       // the queue to see if it should throttle
       if (stats.getInternalSerialQueueBytes() > TOTAL_SERIAL_QUEUE_THROTTLE
-          && !DistributionMessage.isMembershipMessengerThread()) {
+          && !DistributionMessage.isPreciousThread()) {
         do {
           boolean interrupted = Thread.interrupted();
           try {

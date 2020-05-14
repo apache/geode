@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.fail;
@@ -92,7 +91,7 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
         }
         // Create Index on empty region
         try {
-          cache.getQueryService().createIndex("idIndex", "ID", SEPARATOR + name);
+          cache.getQueryService().createIndex("idIndex", "ID", "/" + name);
         } catch (Exception e) {
           Assert.fail("index creation failed", e);
         }
@@ -153,7 +152,7 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
           Cache cache = CacheFactory.getAnyInstance();
           cache.getQueryService().removeIndexes();
           cache.getRegion(name).clear();
-          cache.getQueryService().createIndex("idIndex", "p.ID", SEPARATOR + name + " p");
+          cache.getQueryService().createIndex("idIndex", "p.ID", "/" + name + " p");
         } catch (Exception e) {
           Assert.fail("index creation failed", e);
         }

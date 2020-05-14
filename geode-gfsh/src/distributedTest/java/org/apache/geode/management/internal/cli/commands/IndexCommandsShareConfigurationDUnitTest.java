@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,8 +79,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
     createStringBuilder.addOption(CliStrings.GROUP, groupName);
-    createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
-        SEPARATOR + partitionedRegionName);
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
 
     gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess().containsOutput(indexName);
@@ -96,8 +94,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     createStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     createStringBuilder.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     createStringBuilder.addOption(CliStrings.GROUP, groupName);
-    createStringBuilder.addOption(CliStrings.DESTROY_INDEX__REGION,
-        SEPARATOR + partitionedRegionName);
+    createStringBuilder.addOption(CliStrings.DESTROY_INDEX__REGION, "/" + partitionedRegionName);
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
 
     locator.invoke(() -> {

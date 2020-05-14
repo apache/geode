@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -51,18 +50,12 @@ public class MemberClientsService implements PulseService {
   // String constants used for forming a json response
   private static final String NAME = "name";
   private static final String HOST = "host";
-  private final Repository repository;
-
-  @Autowired
-  public MemberClientsService(Repository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
-    Cluster cluster = repository.getCluster();
+    Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();

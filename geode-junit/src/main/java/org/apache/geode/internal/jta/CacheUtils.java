@@ -144,13 +144,12 @@ public class CacheUtils {
     String sql = "select * from " + tableName;
 
     Connection conn = ds.getConnection();
-    try (Statement sm = conn.createStatement()) {
-      ResultSet rs = sm.executeQuery(sql);
-      while (rs.next()) {
-        System.out.println("id " + rs.getString(1) + " name " + rs.getString(2));
-      }
-      rs.close();
+    Statement sm = conn.createStatement();
+    ResultSet rs = sm.executeQuery(sql);
+    while (rs.next()) {
+      System.out.println("id " + rs.getString(1) + " name " + rs.getString(2));
     }
+    rs.close();
     conn.close();
   }
 
@@ -160,9 +159,8 @@ public class CacheUtils {
     Connection conn = ds.getConnection();
     // System.out.println (" trying to drop table: " + tableName);
     String sql = "drop table " + tableName;
-    try (Statement sm = conn.createStatement()) {
-      sm.execute(sql);
-    }
+    Statement sm = conn.createStatement();
+    sm.execute(sql);
     conn.close();
   }
 

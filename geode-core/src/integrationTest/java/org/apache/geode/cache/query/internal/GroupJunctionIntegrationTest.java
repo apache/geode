@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -99,7 +98,7 @@ public class GroupJunctionIntegrationTest {
         .<String, TestObject>createRegionFactory(regionShortcut).create(REGION_NAME);
     indexedFields.forEach(fieldName -> {
       try {
-        queryService.createIndex(fieldName + "Index", fieldName, SEPARATOR + REGION_NAME);
+        queryService.createIndex(fieldName + "Index", fieldName, "/" + REGION_NAME);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

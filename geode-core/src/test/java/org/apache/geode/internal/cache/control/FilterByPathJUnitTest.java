@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -85,7 +84,7 @@ public class FilterByPathJUnitTest {
     private String name;
 
     public RegionHandler(String name) {
-      this.name = SEPARATOR + name;
+      this.name = "/" + name;
     }
 
     @Override

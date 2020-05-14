@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-@FunctionalInterface
 public interface RegionMapOwner {
-
   InternalCache getCache();
 }

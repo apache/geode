@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -105,8 +104,7 @@ public class GeodeConnectionConfig extends ConnectionConfig {
         new TcpClient(SocketCreatorFactory.setDistributionConfig(config)
             .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-            TcpSocketFactory.DEFAULT);
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     cmsInfo = null;
     for (InetSocketAddress locator : locators) {
       try {

@@ -93,7 +93,7 @@ import org.apache.geode.test.junit.categories.PersistenceTest;
 public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase {
 
   private static final int TEST_REPLICATED_TOMBSTONE_TIMEOUT = 1_000;
-  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
+  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =

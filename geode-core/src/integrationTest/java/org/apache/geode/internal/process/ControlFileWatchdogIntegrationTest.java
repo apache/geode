@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.io.File;
 
@@ -171,7 +171,7 @@ public class ControlFileWatchdogIntegrationTest {
     watchdog.start();
 
     // assert
-    verifyNoMoreInteractions(requestHandler); // would be prefer to wait some time
+    verifyZeroInteractions(requestHandler); // would be prefer to wait some time
   }
 
   @Test
@@ -184,7 +184,7 @@ public class ControlFileWatchdogIntegrationTest {
     File file = new EmptyFileWriter(requestFile).createNewFile();
 
     // assert
-    verifyNoMoreInteractions(requestHandler); // would be prefer to wait some time
+    verifyZeroInteractions(requestHandler); // would be prefer to wait some time
     assertThat(file).exists();
   }
 

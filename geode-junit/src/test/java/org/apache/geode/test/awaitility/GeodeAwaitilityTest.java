@@ -15,11 +15,16 @@
 package org.apache.geode.test.awaitility;
 
 import static java.lang.String.valueOf;
+import static java.time.Duration.ofMinutes;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.TIMEOUT_SECONDS_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.toTimeDuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.awaitility.Duration.FIVE_MINUTES;
+import static org.awaitility.Duration.ONE_MINUTE;
+import static org.awaitility.Duration.ONE_SECOND;
 
 import java.time.Duration;
 
@@ -43,16 +48,14 @@ public class GeodeAwaitilityTest {
 
   @Test
   public void getTimeoutIsFiveMinutesByDefault() {
-    Duration fiveMinutes = Duration.ofMinutes(5);
-    assertThat(getTimeout()).isEqualTo(fiveMinutes);
+    assertThat(getTimeout()).isEqualTo(FIVE_MINUTES);
   }
 
   @Test
   public void getTimeoutIsOverriddenWithSystemProperty() {
-    Duration oneMinute = Duration.ofMinutes(1);
-    System.setProperty(TIMEOUT_SECONDS_PROPERTY, valueOf(oneMinute.getSeconds()));
+    System.setProperty(TIMEOUT_SECONDS_PROPERTY, valueOf(ONE_MINUTE.getValue()));
 
-    assertThat(getTimeout()).isEqualTo(oneMinute);
+    assertThat(getTimeout()).isEqualTo(ONE_MINUTE);
   }
 
   @Test
@@ -67,12 +70,18 @@ public class GeodeAwaitilityTest {
 
   @Test
   public void awaitWithAliasActuallyUsesAlias() {
-    Duration oneMinute = Duration.ofMinutes(1);
-    System.setProperty(TIMEOUT_SECONDS_PROPERTY, valueOf(oneMinute.getSeconds()));
+    System.setProperty(TIMEOUT_SECONDS_PROPERTY, valueOf(ONE_SECOND.getValue()));
     String alias = testName.getMethodName();
 
     Throwable thrown = catchThrowable(() -> await(alias).until(() -> false));
 
     assertThat(thrown).isInstanceOf(ConditionTimeoutException.class).hasMessageContaining(alias);
+  }
+
+  @Test
+  public void toTimeDurationConverts() {
+    assertThat(ONE_MINUTE).isNotEqualTo(ofMinutes(1));
+
+    assertThat(toTimeDuration(ONE_MINUTE)).isInstanceOf(Duration.class).isEqualTo(ofMinutes(1));
   }
 }

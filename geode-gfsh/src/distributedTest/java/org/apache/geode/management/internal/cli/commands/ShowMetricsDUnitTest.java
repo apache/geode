@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -93,7 +92,7 @@ public class ShowMetricsDUnitTest {
         bean = mgmtService.getDistributedSystemMXBean();
         break;
       case 2:
-        bean = mgmtService.getDistributedRegionMXBean(SEPARATOR + regionName);
+        bean = mgmtService.getDistributedRegionMXBean("/" + regionName);
         break;
       case 3:
         ObjectName memberMBeanName = mgmtService.getMemberMBeanName(distributedMember);
@@ -101,7 +100,7 @@ public class ShowMetricsDUnitTest {
         break;
       case 4:
         ObjectName regionMBeanName =
-            mgmtService.getRegionMBeanName(distributedMember, SEPARATOR + regionName);
+            mgmtService.getRegionMBeanName(distributedMember, "/" + regionName);
         bean = mgmtService.getMBeanInstance(regionMBeanName, RegionMXBean.class);
         break;
       case 5:

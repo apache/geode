@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -56,28 +57,30 @@ public class SingleHopClientExecutor {
 
   static void submitAll(List callableTasks) {
     if (callableTasks != null && !callableTasks.isEmpty()) {
-      List futures;
+      List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }
-      Iterator itr = futures.iterator();
-      while (itr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
-        Future fut = (Future) itr.next();
-        try {
-          fut.get();
-        } catch (InterruptedException e) {
-          throw new InternalGemFireException(e.getMessage());
-        } catch (ExecutionException ee) {
-          if (ee.getCause() instanceof FunctionException) {
-            throw (FunctionException) ee.getCause();
-          } else if (ee.getCause() instanceof ServerOperationException) {
-            throw (ServerOperationException) ee.getCause();
-          } else if (ee.getCause() instanceof ServerConnectivityException) {
-            throw (ServerConnectivityException) ee.getCause();
-          } else {
-            throw executionThrowable(ee.getCause());
+      if (futures != null) {
+        Iterator itr = futures.iterator();
+        while (itr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
+          Future fut = (Future) itr.next();
+          try {
+            fut.get();
+          } catch (InterruptedException e) {
+            throw new InternalGemFireException(e.getMessage());
+          } catch (ExecutionException ee) {
+            if (ee.getCause() instanceof FunctionException) {
+              throw (FunctionException) ee.getCause();
+            } else if (ee.getCause() instanceof ServerOperationException) {
+              throw (ServerOperationException) ee.getCause();
+            } else if (ee.getCause() instanceof ServerConnectivityException) {
+              throw (ServerConnectivityException) ee.getCause();
+            } else {
+              throw executionThrowable(ee.getCause());
+            }
           }
         }
       }
@@ -93,112 +96,114 @@ public class SingleHopClientExecutor {
     int maxRetryAttempts = MAX_RETRY_INITIAL_VALUE;
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
-      List futures;
+      List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }
-      GemFireException functionExecutionException = null;
-      Iterator futureItr = futures.iterator();
-      Iterator taskItr = callableTasks.iterator();
-      final boolean isDebugEnabled = logger.isDebugEnabled();
-      while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
-        Future fut = (Future) futureItr.next();
-        SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
-        ServerLocation server = task.getServer();
-        try {
-          fut.get();
-          if (isDebugEnabled) {
-            logger.debug("ExecuteRegionFunctionSingleHopOp#got result from {}", server);
-          }
-        } catch (InterruptedException e) {
-          throw new InternalGemFireException(e.getMessage());
-        } catch (ExecutionException ee) {
-
-          if (maxRetryAttempts == MAX_RETRY_INITIAL_VALUE) {
-            maxRetryAttempts = pool.calculateRetryAttempts(ee.getCause());
-          }
-
-          if (ee.getCause() instanceof InternalFunctionInvocationTargetException) {
+      if (futures != null) {
+        GemFireException functionExecutionException = null;
+        Iterator futureItr = futures.iterator();
+        Iterator taskItr = callableTasks.iterator();
+        final boolean isDebugEnabled = logger.isDebugEnabled();
+        while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
+          Future fut = (Future) futureItr.next();
+          SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
+          ServerLocation server = task.getServer();
+          try {
+            fut.get();
             if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.InternalFunctionInvocationTargetException : Caused by :{}",
-                  ee.getCause());
+              logger.debug("ExecuteRegionFunctionSingleHopOp#got result from {}", server);
             }
-            try {
-              cms = region.getCache().getClientMetadataService();
-            } catch (CacheClosedException e) {
-              return 0;
-            }
-            cms.removeBucketServerLocation(server);
-            cms.scheduleGetPRMetaData(region, false);
+          } catch (InterruptedException e) {
+            throw new InternalGemFireException(e.getMessage());
+          } catch (ExecutionException ee) {
 
-            failedNodes.addAll(
-                ((InternalFunctionInvocationTargetException) ee.getCause()).getFailedNodeSet());
-            // Clear the results only if isHA so that partial results can be returned.
-            if (isHA && maxRetryAttempts != 0) {
-              rc.clearResults();
-            } else {
-              if (ee.getCause().getCause() != null) {
-                functionExecutionException =
-                    new FunctionInvocationTargetException(ee.getCause().getCause());
-              } else {
-                functionExecutionException =
-                    new FunctionInvocationTargetException(new BucketMovedException(
-                        "Bucket migrated to another node. Please retry."));
+            if (maxRetryAttempts == MAX_RETRY_INITIAL_VALUE) {
+              maxRetryAttempts = pool.calculateRetryAttempts(ee.getCause());
+            }
+
+            if (ee.getCause() instanceof InternalFunctionInvocationTargetException) {
+              if (isDebugEnabled) {
+                logger.debug(
+                    "ExecuteRegionFunctionSingleHopOp#ExecutionException.InternalFunctionInvocationTargetException : Caused by :{}",
+                    ee.getCause());
               }
-            }
-          } else if (ee.getCause() instanceof FunctionException) {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.FunctionException : Caused by :{}",
-                  ee.getCause());
-            }
-            FunctionException fe = (FunctionException) ee.getCause();
-            if (isHA) {
-              throw fe;
+              try {
+                cms = region.getCache().getClientMetadataService();
+              } catch (CacheClosedException e) {
+                return 0;
+              }
+              cms.removeBucketServerLocation(server);
+              cms.scheduleGetPRMetaData(region, false);
+
+              failedNodes.addAll(
+                  ((InternalFunctionInvocationTargetException) ee.getCause()).getFailedNodeSet());
+              // Clear the results only if isHA so that partial results can be returned.
+              if (isHA && maxRetryAttempts != 0) {
+                rc.clearResults();
+              } else {
+                if (ee.getCause().getCause() != null) {
+                  functionExecutionException =
+                      new FunctionInvocationTargetException(ee.getCause().getCause());
+                } else {
+                  functionExecutionException =
+                      new FunctionInvocationTargetException(new BucketMovedException(
+                          "Bucket migrated to another node. Please retry."));
+                }
+              }
+            } else if (ee.getCause() instanceof FunctionException) {
+              if (isDebugEnabled) {
+                logger.debug(
+                    "ExecuteRegionFunctionSingleHopOp#ExecutionException.FunctionException : Caused by :{}",
+                    ee.getCause());
+              }
+              FunctionException fe = (FunctionException) ee.getCause();
+              if (isHA) {
+                throw fe;
+              } else {
+                functionExecutionException = fe;
+              }
+            } else if (ee.getCause() instanceof ServerOperationException) {
+              if (isDebugEnabled) {
+                logger.debug(
+                    "ExecuteRegionFunctionSingleHopOp#ExecutionException.ServerOperationException : Caused by :{}",
+                    ee.getCause());
+              }
+              ServerOperationException soe = (ServerOperationException) ee.getCause();
+              if (isHA) {
+                throw soe;
+              } else {
+                functionExecutionException = soe;
+              }
+            } else if (ee.getCause() instanceof ServerConnectivityException) {
+              if (isDebugEnabled) {
+                logger.debug(
+                    "ExecuteRegionFunctionSingleHopOp#ExecutionException.ServerConnectivityException : Caused by :{} The failed server is: {}",
+                    ee.getCause(), server);
+              }
+              try {
+                cms = region.getCache().getClientMetadataService();
+              } catch (CacheClosedException e) {
+                return 0;
+              }
+              cms.removeBucketServerLocation(server);
+              cms.scheduleGetPRMetaData(region, false);
+              // Clear the results only if isHA so that partial results can be returned.
+              if (isHA && maxRetryAttempts != 0) {
+                rc.clearResults();
+              } else {
+                functionExecutionException = (ServerConnectivityException) ee.getCause();
+              }
             } else {
-              functionExecutionException = fe;
+              throw executionThrowable(ee.getCause());
             }
-          } else if (ee.getCause() instanceof ServerOperationException) {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.ServerOperationException : Caused by :{}",
-                  ee.getCause());
-            }
-            ServerOperationException soe = (ServerOperationException) ee.getCause();
-            if (isHA) {
-              throw soe;
-            } else {
-              functionExecutionException = soe;
-            }
-          } else if (ee.getCause() instanceof ServerConnectivityException) {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.ServerConnectivityException : Caused by :{} The failed server is: {}",
-                  ee.getCause(), server);
-            }
-            try {
-              cms = region.getCache().getClientMetadataService();
-            } catch (CacheClosedException e) {
-              return 0;
-            }
-            cms.removeBucketServerLocation(server);
-            cms.scheduleGetPRMetaData(region, false);
-            // Clear the results only if isHA so that partial results can be returned.
-            if (isHA && maxRetryAttempts != 0) {
-              rc.clearResults();
-            } else {
-              functionExecutionException = (ServerConnectivityException) ee.getCause();
-            }
-          } else {
-            throw executionThrowable(ee.getCause());
           }
         }
-      }
-      if (functionExecutionException != null) {
-        throw functionExecutionException;
+        if (functionExecutionException != null) {
+          throw functionExecutionException;
+        }
       }
     }
     return maxRetryAttempts;
@@ -215,73 +220,75 @@ public class SingleHopClientExecutor {
       LocalRegion region,
       Map<ServerLocation, RuntimeException> failedServers) {
     if (callableTasks != null && !callableTasks.isEmpty()) {
-      Map<ServerLocation, Object> resultMap = new HashMap<>();
+      Map<ServerLocation, Object> resultMap = new HashMap<ServerLocation, Object>();
       boolean anyPartialResults = false;
-      List futures;
+      List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }
-      Iterator futureItr = futures.iterator();
-      Iterator taskItr = callableTasks.iterator();
-      RuntimeException rte = null;
-      while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
-        Future fut = (Future) futureItr.next();
-        SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
-        ServerLocation server = task.getServer();
-        try {
-          VersionedObjectList versions = (VersionedObjectList) fut.get();
-          if (logger.isDebugEnabled()) {
-            logger.debug("submitBulkOp#got result from {}:{}", server, versions);
-          }
-          resultMap.put(server, versions);
-        } catch (InterruptedException e) {
-          InternalGemFireException ige = new InternalGemFireException(e);
-          // only to make this server as failed server, not to throw right now
-          failedServers.put(server, ige);
-          if (rte == null) {
-            rte = ige;
-          }
-        } catch (ExecutionException ee) {
-          if (ee.getCause() instanceof ServerOperationException) {
+      if (futures != null) {
+        Iterator futureItr = futures.iterator();
+        Iterator taskItr = callableTasks.iterator();
+        RuntimeException rte = null;
+        while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
+          Future fut = (Future) futureItr.next();
+          SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
+          ServerLocation server = task.getServer();
+          try {
+            VersionedObjectList versions = (VersionedObjectList) fut.get();
             if (logger.isDebugEnabled()) {
-              logger.debug("submitBulkOp#ExecutionException from server {}", server, ee);
+              logger.debug("submitBulkOp#got result from {}:{}", server, versions);
             }
-            ServerOperationException soe = (ServerOperationException) ee.getCause();
+            resultMap.put(server, versions);
+          } catch (InterruptedException e) {
+            InternalGemFireException ige = new InternalGemFireException(e);
             // only to make this server as failed server, not to throw right now
-            failedServers.put(server, soe);
+            failedServers.put(server, ige);
             if (rte == null) {
-              rte = soe;
+              rte = ige;
             }
-          } else if (ee.getCause() instanceof ServerConnectivityException) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("submitBulkOp#ExecutionException for server {}", server, ee);
-            }
-            cms = region.getCache().getClientMetadataService();
-            cms.removeBucketServerLocation(server);
-            cms.scheduleGetPRMetaData(region, false);
-            failedServers.put(server, (ServerConnectivityException) ee.getCause());
-          } else {
-            Throwable t = ee.getCause();
-            if (t instanceof PutAllPartialResultException) {
-              resultMap.put(server, t);
-              anyPartialResults = true;
-              failedServers.put(server, (PutAllPartialResultException) t);
-            } else {
-              RuntimeException other_rte = executionThrowable(ee.getCause());
-              failedServers.put(server, other_rte);
+          } catch (ExecutionException ee) {
+            if (ee.getCause() instanceof ServerOperationException) {
+              if (logger.isDebugEnabled()) {
+                logger.debug("submitBulkOp#ExecutionException from server {}", server, ee);
+              }
+              ServerOperationException soe = (ServerOperationException) ee.getCause();
+              // only to make this server as failed server, not to throw right now
+              failedServers.put(server, soe);
               if (rte == null) {
-                rte = other_rte;
+                rte = soe;
+              }
+            } else if (ee.getCause() instanceof ServerConnectivityException) {
+              if (logger.isDebugEnabled()) {
+                logger.debug("submitBulkOp#ExecutionException for server {}", server, ee);
+              }
+              cms = region.getCache().getClientMetadataService();
+              cms.removeBucketServerLocation(server);
+              cms.scheduleGetPRMetaData(region, false);
+              failedServers.put(server, (ServerConnectivityException) ee.getCause());
+            } else {
+              Throwable t = ee.getCause();
+              if (t instanceof PutAllPartialResultException) {
+                resultMap.put(server, t);
+                anyPartialResults = true;
+                failedServers.put(server, (PutAllPartialResultException) t);
+              } else {
+                RuntimeException other_rte = executionThrowable(ee.getCause());
+                failedServers.put(server, other_rte);
+                if (rte == null) {
+                  rte = other_rte;
+                }
               }
             }
-          }
-        } // catch
-      } // while
-      // if there are any partial results we suppress throwing an exception
-      // so the partial results can be processed
-      if (rte != null && !anyPartialResults) {
-        throw rte;
+          } // catch
+        } // while
+        // if there are any partial results we suppress throwing an exception
+        // so the partial results can be processed
+        if (rte != null && !anyPartialResults) {
+          throw rte;
+        }
       }
       return resultMap;
     }
@@ -289,76 +296,78 @@ public class SingleHopClientExecutor {
   }
 
   static Map<ServerLocation, Object> submitGetAll(
-      Map<ServerLocation, Set> serverToFilterMap,
+      Map<ServerLocation, HashSet> serverToFilterMap,
       List callableTasks, ClientMetadataService cms,
       LocalRegion region) {
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
-      Map<ServerLocation, Object> resultMap = new HashMap<>();
-      List futures;
+      Map<ServerLocation, Object> resultMap = new HashMap<ServerLocation, Object>();
+      List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }
-      Iterator futureItr = futures.iterator();
-      Iterator taskItr = callableTasks.iterator();
-      while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
-        Future fut = (Future) futureItr.next();
-        SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
-        List keys = ((GetAllOpImpl) task.getOperation()).getKeyList();
-        ServerLocation server = task.getServer();
-        try {
+      if (futures != null) {
+        Iterator futureItr = futures.iterator();
+        Iterator taskItr = callableTasks.iterator();
+        while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
+          Future fut = (Future) futureItr.next();
+          SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
+          List keys = ((GetAllOpImpl) task.getOperation()).getKeyList();
+          ServerLocation server = task.getServer();
+          try {
 
-          VersionedObjectList valuesFromServer = (VersionedObjectList) fut.get();
-          valuesFromServer.setKeys(keys);
+            VersionedObjectList valuesFromServer = (VersionedObjectList) fut.get();
+            valuesFromServer.setKeys(keys);
 
-          for (VersionedObjectList.Iterator it = valuesFromServer.iterator(); it.hasNext();) {
-            VersionedObjectList.Entry entry = it.next();
-            Object key = entry.getKey();
-            Object value = entry.getValue();
-            if (!entry.isKeyNotOnServer()) {
-              if (value instanceof Throwable) {
-                logger.warn(String.format(
-                    "%s: Caught the following exception attempting to get value for key=%s",
-                    value, key),
-                    (Throwable) value);
+            for (VersionedObjectList.Iterator it = valuesFromServer.iterator(); it.hasNext();) {
+              VersionedObjectList.Entry entry = it.next();
+              Object key = entry.getKey();
+              Object value = entry.getValue();
+              if (!entry.isKeyNotOnServer()) {
+                if (value instanceof Throwable) {
+                  logger.warn(String.format(
+                      "%s: Caught the following exception attempting to get value for key=%s",
+                      new Object[] {value, key}),
+                      (Throwable) value);
+                }
               }
             }
-          }
-          if (logger.isDebugEnabled()) {
-            logger.debug("GetAllOp#got result from {}: {}", server, valuesFromServer);
-          }
-          resultMap.put(server, valuesFromServer);
-        } catch (InterruptedException e) {
-          throw new InternalGemFireException(e.getMessage());
-        } catch (ExecutionException ee) {
-          if (ee.getCause() instanceof ServerOperationException) {
             if (logger.isDebugEnabled()) {
-              logger.debug("GetAllOp#ExecutionException.ServerOperationException : Caused by :{}",
-                  ee.getCause());
+              logger.debug("GetAllOp#got result from {}: {}", server, valuesFromServer);
             }
-            throw (ServerOperationException) ee.getCause();
-          } else if (ee.getCause() instanceof ServerConnectivityException) {
-            if (logger.isDebugEnabled()) {
-              logger.debug(
-                  "GetAllOp#ExecutionException.ServerConnectivityException : Caused by :{} The failed server is: {}",
-                  ee.getCause(), server);
+            resultMap.put(server, valuesFromServer);
+          } catch (InterruptedException e) {
+            throw new InternalGemFireException(e.getMessage());
+          } catch (ExecutionException ee) {
+            if (ee.getCause() instanceof ServerOperationException) {
+              if (logger.isDebugEnabled()) {
+                logger.debug("GetAllOp#ExecutionException.ServerOperationException : Caused by :{}",
+                    ee.getCause());
+              }
+              throw (ServerOperationException) ee.getCause();
+            } else if (ee.getCause() instanceof ServerConnectivityException) {
+              if (logger.isDebugEnabled()) {
+                logger.debug(
+                    "GetAllOp#ExecutionException.ServerConnectivityException : Caused by :{} The failed server is: {}",
+                    ee.getCause(), server);
+              }
+              try {
+                cms = region.getCache().getClientMetadataService();
+              } catch (CacheClosedException e) {
+                return null;
+              }
+              cms.removeBucketServerLocation(server);
+              cms.scheduleGetPRMetaData((LocalRegion) region, false);
+              resultMap.put(server, ee.getCause());
+            } else {
+              throw executionThrowable(ee.getCause());
             }
-            try {
-              cms = region.getCache().getClientMetadataService();
-            } catch (CacheClosedException e) {
-              return null;
-            }
-            cms.removeBucketServerLocation(server);
-            cms.scheduleGetPRMetaData(region, false);
-            resultMap.put(server, ee.getCause());
-          } else {
-            throw executionThrowable(ee.getCause());
           }
         }
+        return resultMap;
       }
-      return resultMap;
     }
     return null;
   }

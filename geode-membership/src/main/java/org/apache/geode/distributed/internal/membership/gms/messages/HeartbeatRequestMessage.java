@@ -83,10 +83,4 @@ public class HeartbeatRequestMessage<ID extends MemberIdentifier> extends Abstra
     requestId = in.readInt();
     target = context.getDeserializer().readObject(in);
   }
-
-  @Override
-  public boolean isHighPriority() {
-    return true;
-  }
-
 }

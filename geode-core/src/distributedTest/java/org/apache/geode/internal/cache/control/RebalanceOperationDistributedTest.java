@@ -122,7 +122,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @SuppressWarnings("serial")
 public class RebalanceOperationDistributedTest extends CacheTestCase {
 
-  private static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getSeconds();
+  private static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getValue();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -1055,7 +1055,6 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       assertThat(details.getPrimaryTransfersCompleted()).isEqualTo(0);
       assertThat(details.getBucketTransferBytes()).isGreaterThan(0);
       assertThat(details.getBucketTransfersCompleted()).isEqualTo(3);
-      assertThat(details.getNumberOfMembersExecutedOn()).isEqualTo(2);
 
       Set<PartitionMemberInfo> afterDetails = details.getPartitionMemberDetailsAfter();
       assertThat(afterDetails).hasSize(2);

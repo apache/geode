@@ -84,8 +84,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
                     .getSocketCreatorForComponent(distributionConfig,
                         SecurableCommunicationChannel.SERVER),
             new ClientSideHandshakeImpl(proxyId, sys, sys.getSecurityService(),
-                multiuserSecureMode),
-            pool.getSocketFactory()),
+                multiuserSecureMode)),
         source, pingInterval, pool, cancelCriterion);
   }
 

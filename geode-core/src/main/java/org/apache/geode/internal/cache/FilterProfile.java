@@ -1203,10 +1203,16 @@ public class FilterProfile implements DataSerializableFixedID {
             fillInCQRoutingInfo(ev, true, NO_PROFILES, fri);
             fi = fri.getLocalFilterInfo();
           }
-          clientsInv = this.getInterestedClients(ev, this.allKeyClientsInv,
-              this.keysOfInterestInv, this.patternsOfInterestInv, this.filtersOfInterestInv);
-          clients = this.getInterestedClients(ev, this.allKeyClients, this.keysOfInterest,
-              this.patternsOfInterest, this.filtersOfInterest);
+          if (this.allKeyClientsInv != null || this.keysOfInterestInv != null
+              || this.patternsOfInterestInv != null || this.filtersOfInterestInv != null) {
+            clientsInv = this.getInterestedClients(ev, this.allKeyClientsInv,
+                this.keysOfInterestInv, this.patternsOfInterestInv, this.filtersOfInterestInv);
+          }
+          if (this.allKeyClients != null || this.keysOfInterest != null
+              || this.patternsOfInterest != null || this.filtersOfInterest != null) {
+            clients = this.getInterestedClients(ev, this.allKeyClients, this.keysOfInterest,
+                this.patternsOfInterest, this.filtersOfInterest);
+          }
           if (clients != null || clientsInv != null) {
             if (fi == null) {
               fi = new FilterInfo();
@@ -1252,10 +1258,16 @@ public class FilterProfile implements DataSerializableFixedID {
             fillInCQRoutingInfo(ev, true, NO_PROFILES, fri);
             fi = fri.getLocalFilterInfo();
           }
-          clientsInv = this.getInterestedClients(ev, this.allKeyClientsInv,
-              this.keysOfInterestInv, this.patternsOfInterestInv, this.filtersOfInterestInv);
-          clients = this.getInterestedClients(ev, this.allKeyClients, this.keysOfInterest,
-              this.patternsOfInterest, this.filtersOfInterest);
+          if (this.allKeyClientsInv != null || this.keysOfInterestInv != null
+              || this.patternsOfInterestInv != null || this.filtersOfInterestInv != null) {
+            clientsInv = this.getInterestedClients(ev, this.allKeyClientsInv,
+                this.keysOfInterestInv, this.patternsOfInterestInv, this.filtersOfInterestInv);
+          }
+          if (this.allKeyClients != null || this.keysOfInterest != null
+              || this.patternsOfInterest != null || this.filtersOfInterest != null) {
+            clients = this.getInterestedClients(ev, this.allKeyClients, this.keysOfInterest,
+                this.patternsOfInterest, this.filtersOfInterest);
+          }
           if (clients != null || clientsInv != null) {
             if (fi == null) {
               fi = new FilterInfo();
@@ -1334,10 +1346,16 @@ public class FilterProfile implements DataSerializableFixedID {
 
       if (event.getOperation().isEntry()) {
         EntryEvent entryEvent = (EntryEvent) event;
-        clientsInv = pf.getInterestedClients(entryEvent, pf.allKeyClientsInv,
-            pf.keysOfInterestInv, pf.patternsOfInterestInv, pf.filtersOfInterestInv);
-        clients = pf.getInterestedClients(entryEvent, pf.allKeyClients, pf.keysOfInterest,
-            pf.patternsOfInterest, pf.filtersOfInterest);
+        if (pf.allKeyClientsInv != null || pf.keysOfInterestInv != null
+            || pf.patternsOfInterestInv != null || pf.filtersOfInterestInv != null) {
+          clientsInv = pf.getInterestedClients(entryEvent, pf.allKeyClientsInv,
+              pf.keysOfInterestInv, pf.patternsOfInterestInv, pf.filtersOfInterestInv);
+        }
+        if (pf.allKeyClients != null || pf.keysOfInterest != null || pf.patternsOfInterest != null
+            || pf.filtersOfInterest != null) {
+          clients = pf.getInterestedClients(entryEvent, pf.allKeyClients, pf.keysOfInterest,
+              pf.patternsOfInterest, pf.filtersOfInterest);
+        }
       } else {
         if (event.getOperation().isRegionDestroy() || event.getOperation().isClear()) {
           clientsInv = pf.getAllClientsWithInterestInv();

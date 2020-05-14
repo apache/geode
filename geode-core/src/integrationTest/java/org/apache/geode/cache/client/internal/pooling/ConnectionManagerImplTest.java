@@ -90,20 +90,11 @@ public class ConnectionManagerImplTest {
   }
 
   @Test
-  public void borrowConnectionThrowsWhenUsingExistingConnectionsAndNoFreeConnectionsExist() {
+  public void borrowConnectionThrowsWhenUsingExistingConnectionsAndNoConnectionsExist() {
     ServerLocation serverLocation = mock(ServerLocation.class);
-    Connection connection = mock(Connection.class);
 
-    when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
-
-    connectionManager = new ConnectionManagerImpl(poolName, connectionFactory, endpointManager, 1,
-        0, idleTimeout, lifetimeTimeout, securityLogger, pingInterval, cancelCriterion,
-        poolStats);
-    connectionManager.start(backgroundProcessor);
-
-    assertThat(connectionManager.borrowConnection(timeout)).isInstanceOf(PooledConnection.class);
-
-    assertThatThrownBy(() -> connectionManager.borrowConnection(serverLocation, timeout, true))
+    connectionManager = createDefaultConnectionManager();
+    assertThatThrownBy(() -> connectionManager.borrowConnection(serverLocation, true))
         .isInstanceOf(AllConnectionsInUseException.class);
 
     connectionManager.close(false);
@@ -119,7 +110,7 @@ public class ConnectionManagerImplTest {
     connectionManager = createDefaultConnectionManager();
     connectionManager.start(backgroundProcessor);
 
-    assertThat(connectionManager.borrowConnection(serverLocation, timeout, false))
+    assertThat(connectionManager.borrowConnection(serverLocation, false))
         .isInstanceOf(PooledConnection.class);
     assertThat(connectionManager.getConnectionCount()).isEqualTo(1);
 
@@ -275,9 +266,9 @@ public class ConnectionManagerImplTest {
         cancelCriterion, poolStats);
     connectionManager.start(backgroundProcessor);
 
-    connectionManager.borrowConnection(serverLocation1, timeout, false);
-    connectionManager.borrowConnection(serverLocation2, timeout, false);
-    connectionManager.borrowConnection(serverLocation3, timeout, false);
+    connectionManager.borrowConnection(serverLocation1, false);
+    connectionManager.borrowConnection(serverLocation2, false);
+    connectionManager.borrowConnection(serverLocation3, false);
 
     assertThat(connectionManager.getConnectionCount()).isGreaterThan(maxConnections);
 
@@ -304,9 +295,9 @@ public class ConnectionManagerImplTest {
     connectionManager = createDefaultConnectionManager();
     connectionManager.start(backgroundProcessor);
     Connection heldConnection1 =
-        connectionManager.borrowConnection(serverLocation1, timeout, false);
+        connectionManager.borrowConnection(serverLocation1, false);
     Connection heldConnection2 =
-        connectionManager.borrowConnection(serverLocation2, timeout, false);
+        connectionManager.borrowConnection(serverLocation2, false);
     assertThat(connectionManager.getConnectionCount()).isEqualTo(2);
 
     connectionManager.returnConnection(heldConnection1, true);
@@ -361,11 +352,11 @@ public class ConnectionManagerImplTest {
     connectionManager.start(backgroundProcessor);
 
     Connection heldConnection1 =
-        connectionManager.borrowConnection(serverLocation1, timeout, false);
+        connectionManager.borrowConnection(serverLocation1, false);
     Connection heldConnection2 =
-        connectionManager.borrowConnection(serverLocation2, timeout, false);
+        connectionManager.borrowConnection(serverLocation2, false);
     Connection heldConnection3 =
-        connectionManager.borrowConnection(serverLocation3, timeout, false);
+        connectionManager.borrowConnection(serverLocation3, false);
 
     assertThat(connectionManager.getConnectionCount()).isGreaterThan(maxConnections);
 
@@ -400,7 +391,7 @@ public class ConnectionManagerImplTest {
     connectionManager = createDefaultConnectionManager();
     connectionManager.start(backgroundProcessor);
 
-    Connection heldConnection = connectionManager.borrowConnection(serverLocation1, timeout, false);
+    Connection heldConnection = connectionManager.borrowConnection(serverLocation1, false);
     heldConnection = connectionManager.exchangeConnection(heldConnection, excluded);
 
     assertThat(heldConnection.getServer()).isEqualTo(connection2.getServer());
@@ -444,9 +435,9 @@ public class ConnectionManagerImplTest {
         cancelCriterion, poolStats);
     connectionManager.start(backgroundProcessor);
 
-    Connection heldConnection = connectionManager.borrowConnection(serverLocation1, timeout, false);
-    connectionManager.borrowConnection(serverLocation2, timeout, false);
-    connectionManager.borrowConnection(serverLocation3, timeout, false);
+    Connection heldConnection = connectionManager.borrowConnection(serverLocation1, false);
+    connectionManager.borrowConnection(serverLocation2, false);
+    connectionManager.borrowConnection(serverLocation3, false);
     assertThat(connectionManager.getConnectionCount()).isGreaterThan(maxConnections);
 
     heldConnection = connectionManager.exchangeConnection(heldConnection, excluded);
@@ -479,9 +470,9 @@ public class ConnectionManagerImplTest {
     connectionManager.start(backgroundProcessor);
 
     Connection heldConnection1 =
-        connectionManager.borrowConnection(serverLocation1, timeout, false);
+        connectionManager.borrowConnection(serverLocation1, false);
     Connection heldConnection2 =
-        connectionManager.borrowConnection(serverLocation2, timeout, false);
+        connectionManager.borrowConnection(serverLocation2, false);
 
     connectionManager.returnConnection(heldConnection2);
     heldConnection2 = connectionManager.exchangeConnection(heldConnection1, excluded);

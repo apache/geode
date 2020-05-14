@@ -14,13 +14,17 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 /**
  * <pre>
@@ -45,11 +49,32 @@ public class HGetAllExecutor extends HashExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
+    List<byte[]> commandElems = command.getProcessedCommand();
+
+    if (commandElems.size() < 2) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.HGETALL));
+      return;
+    }
     Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries;
     ByteArrayWrapper key = command.getKey();
 
-    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
-    entries = hash.hgetall();
+    Map<ByteArrayWrapper, ByteArrayWrapper> results = getMap(context, key);
+
+    if (results == null || results.isEmpty()) {
+      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+      return;
+    }
+
+    entries = results.entrySet();
+
+    if (entries == null || entries.isEmpty()) {
+      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+      return;
+    }
+
+    // create a copy
+    entries = new ArrayList<>(entries);
+
     command.setResponse(Coder.getKeyValArrayResponse(context.getByteBufAllocator(), entries));
   }
 

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
@@ -258,7 +257,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   public void destroysAsyncMappingWithRegionPath() {
     setupAsyncMapping();
     CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
-    csb.addOption(REGION_NAME, SEPARATOR + TEST_REGION);
+    csb.addOption(REGION_NAME, "/" + TEST_REGION);
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -377,7 +376,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   public void destroysSynchronousMappingWithRegionPath() throws Exception {
     setupSynchronousMapping();
     CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
-    csb.addOption(REGION_NAME, SEPARATOR + TEST_REGION);
+    csb.addOption(REGION_NAME, "/" + TEST_REGION);
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 

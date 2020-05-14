@@ -17,15 +17,14 @@
 package org.apache.geode.redis.internal;
 
 import java.util.List;
-
-import org.apache.logging.log4j.Logger;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
 /**
@@ -35,8 +34,6 @@ import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
  */
 public class PubSubImpl implements PubSub {
   public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
-
-  private static final Logger logger = LogService.getLogger();
 
   private final Subscriptions subscriptions;
 
@@ -54,13 +51,7 @@ public class PubSubImpl implements PubSub {
         .setArguments(new Object[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
-    List<Long> subscriberCounts = null;
-    try {
-      subscriberCounts = subscriberCountCollector.getResult();
-    } catch (Exception e) {
-      logger.warn("Failed to execute publish function {}", e.getMessage());
-      return 0;
-    }
+    List<Long> subscriberCounts = subscriberCountCollector.getResult();
 
     return subscriberCounts.stream().mapToLong(x -> x).sum();
   }
@@ -100,17 +91,6 @@ public class PubSubImpl implements PubSub {
             publishMessageToSubscribers((String) publishMessage[0], (byte[]) publishMessage[1]);
         context.getResultSender().lastResult(subscriberCount);
       }
-
-      /**
-       * Since the publish process uses an onMembers function call, we don't want to re-publish
-       * to members if one fails.
-       * TODO: Revisit this in the event that we instead use an onMember call against individual
-       * members.
-       */
-      @Override
-      public boolean isHA() {
-        return false;
-      }
     });
   }
 
@@ -129,19 +109,23 @@ public class PubSubImpl implements PubSub {
   @VisibleForTesting
   long publishMessageToSubscribers(String channel, byte[] message) {
 
-    List<Subscription> foundSubscriptions = subscriptions
-        .findSubscriptions(channel);
-    if (foundSubscriptions.isEmpty()) {
-      return 0;
-    }
+    Map<Boolean, List<PublishResult>> results = subscriptions
+        .findSubscriptions(channel)
+        .stream()
+        .map(subscription -> subscription.publishMessage(channel, message))
+        .collect(Collectors.partitioningBy(PublishResult::isSuccessful));
 
-    PublishResultCollector publishResultCollector =
-        new PublishResultCollector(foundSubscriptions.size(), subscriptions);
+    prune(results.get(false));
 
-    foundSubscriptions.forEach(
-        subscription -> subscription.publishMessage(channel, message, publishResultCollector));
-
-    return publishResultCollector.getSuccessCount();
+    return results.get(true).size();
   }
 
+  private void prune(List<PublishResult> failedSubscriptions) {
+    failedSubscriptions.forEach(publishResult -> {
+      Client client = publishResult.getClient();
+      if (client.isDead()) {
+        subscriptions.remove(client);
+      }
+    });
+  }
 }

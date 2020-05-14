@@ -199,7 +199,7 @@ public class ConnectionTable {
   private ConnectionTable(TCPConduit conduit) {
     owner = conduit;
     idleConnTimer = owner.idleConnectionTimeout != 0
-        ? new SystemTimer(conduit.getDM().getSystem()) : null;
+        ? new SystemTimer(conduit.getDM().getSystem(), true) : null;
     threadConnMaps = new ArrayList();
     threadConnectionMap = new ConcurrentHashMap();
     p2pReaderThreadPool = createThreadPoolForIO(conduit.getDM().getSystem().isShareSockets());
@@ -519,12 +519,8 @@ public class ConnectionTable {
           if (!closed) {
             IdleConnTT task = new IdleConnTT(conn);
             conn.setIdleTimeoutTask(task);
-            synchronized (task) {
-              if (!task.isCancelled()) {
-                getIdleConnTimer().scheduleAtFixedRate(task, owner.idleConnectionTimeout,
-                    owner.idleConnectionTimeout);
-              }
-            }
+            getIdleConnTimer().scheduleAtFixedRate(task, owner.idleConnectionTimeout,
+                owner.idleConnectionTimeout);
           }
         }
       } catch (IllegalStateException e) {
@@ -624,7 +620,7 @@ public class ConnectionTable {
       return null;
     }
     if (idleConnTimer == null) {
-      idleConnTimer = new SystemTimer(getDM().getSystem());
+      idleConnTimer = new SystemTimer(getDM().getSystem(), true);
     }
     return idleConnTimer;
   }
@@ -1220,25 +1216,25 @@ public class ConnectionTable {
 
   private static class IdleConnTT extends SystemTimer.SystemTimerTask {
 
-    private Connection connection;
+    private Connection c;
 
     private IdleConnTT(Connection c) {
-      this.connection = c;
+      this.c = c;
     }
 
     @Override
     public boolean cancel() {
-      Connection con = connection;
+      Connection con = c;
       if (con != null) {
         con.cleanUpOnIdleTaskCancel();
       }
-      connection = null;
+      c = null;
       return super.cancel();
     }
 
     @Override
     public void run2() {
-      Connection con = connection;
+      Connection con = c;
       if (con != null) {
         if (con.checkForIdleTimeout()) {
           cancel();

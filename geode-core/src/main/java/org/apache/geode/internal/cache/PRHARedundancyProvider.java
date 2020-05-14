@@ -1657,11 +1657,6 @@ public class PRHARedundancyProvider {
       for (ProxyBucketRegion proxyBucket : bucketsHostedLocally) {
         proxyBucket.waitForPrimaryPersistentRecovery();
       }
-
-      if (!partitionedRegion.isInternalRegion() && !bucketsNotHostedLocally.isEmpty()) {
-        partitionedRegion.notifyRegionCreated();
-      }
-
       for (ProxyBucketRegion proxyBucket : bucketsNotHostedLocally) {
         proxyBucket.recoverFromDiskRecursively();
       }

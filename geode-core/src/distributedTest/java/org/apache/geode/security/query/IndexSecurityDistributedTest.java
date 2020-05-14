@@ -14,7 +14,6 @@
  */
 package org.apache.geode.security.query;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,7 +71,7 @@ public class IndexSecurityDistributedTest extends AbstractQuerySecurityDistribut
     server.invoke(() -> {
       assertThat(ClusterStartupRule.getCache()).isNotNull();
       QueryService queryService = ClusterStartupRule.getCache().getQueryService();
-      queryService.createIndex("IdIndex", "id", SEPARATOR + regionName);
+      queryService.createIndex("IdIndex", "id", "/" + regionName);
     });
 
     putIntoRegion(specificUserClient, keys, values, regionName);
@@ -83,7 +82,7 @@ public class IndexSecurityDistributedTest extends AbstractQuerySecurityDistribut
     server.invoke(() -> {
       assertThat(ClusterStartupRule.getCache()).isNotNull();
       QueryService queryService = ClusterStartupRule.getCache().getQueryService();
-      queryService.createIndex("IdIndex", "e.id", SEPARATOR + regionName + ".entries e");
+      queryService.createIndex("IdIndex", "e.id", "/" + regionName + ".entries e");
     });
 
     putIntoRegion(specificUserClient, keys, values, regionName);
@@ -97,7 +96,7 @@ public class IndexSecurityDistributedTest extends AbstractQuerySecurityDistribut
       assertThat(ClusterStartupRule.getCache()).isNotNull();
       QueryService queryService = ClusterStartupRule.getCache().getQueryService();
       assertThatThrownBy(
-          () -> queryService.createIndex("IdIndex", "e.getName()", SEPARATOR + regionName + " e"))
+          () -> queryService.createIndex("IdIndex", "e.getName()", "/" + regionName + " e"))
               .isInstanceOf(IndexInvalidException.class)
               .hasMessageContaining("Unauthorized access to method: getName");
     });
@@ -108,7 +107,7 @@ public class IndexSecurityDistributedTest extends AbstractQuerySecurityDistribut
     server.invoke(() -> {
       assertThat(ClusterStartupRule.getCache()).isNotNull();
       QueryService queryService = ClusterStartupRule.getCache().getQueryService();
-      queryService.createIndex("IdIndex", "e.getName()", SEPARATOR + regionName + " e");
+      queryService.createIndex("IdIndex", "e.getName()", "/" + regionName + " e");
     });
 
     putIntoRegion(superUserClient, keys, values, regionName);

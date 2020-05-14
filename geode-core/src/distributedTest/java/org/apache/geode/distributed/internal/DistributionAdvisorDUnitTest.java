@@ -137,6 +137,6 @@ public class DistributionAdvisorDUnitTest extends DistributedTestCase {
       verify(logger, atLeastOnce()).info("Wait for current operations completed");
     });
 
-    waitForCurrentOperations.get(getTimeout().toMillis(), MILLISECONDS);
+    waitForCurrentOperations.get(getTimeout().getValueInMS(), MILLISECONDS);
   }
 }

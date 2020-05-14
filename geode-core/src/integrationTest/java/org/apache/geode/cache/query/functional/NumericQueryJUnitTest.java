@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -163,7 +162,7 @@ public class NumericQueryJUnitTest {
     populateRegion(testRegion);
     assertNotNull(cache.getRegion(testRegionName));
     assertEquals(numElem * 2, cache.getRegion(testRegionName).size());
-    String regionPath = SEPARATOR + testRegionName + " r";
+    String regionPath = "/" + testRegionName + " r";
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", EQ), "r.max1", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", LT), "r.max1", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", GT), "r.max1", regionPath);
@@ -181,7 +180,7 @@ public class NumericQueryJUnitTest {
     populateRegion(testRegion);
     assertNotNull(cache.getRegion(testRegionName));
     assertEquals(numElem * 2, cache.getRegion(testRegionName).size());
-    String regionPath = SEPARATOR + testRegionName + " r";
+    String regionPath = "/" + testRegionName + " r";
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", EQ), "r.max1", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", LT), "r.max1", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", GT), "r.max1", regionPath);
@@ -199,7 +198,7 @@ public class NumericQueryJUnitTest {
     populateRegion(testRegion);
     assertNotNull(cache.getRegion(testRegionName));
     assertEquals(numElem * 2, cache.getRegion(testRegionName).size());
-    String regionPath = SEPARATOR + testRegionName + " r";
+    String regionPath = "/" + testRegionName + " r";
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", EQ), "r.max1", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", LT), "r.max1", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.max1", GT), "r.max1", regionPath);
@@ -218,7 +217,7 @@ public class NumericQueryJUnitTest {
     populateRegion(testRegion);
     assertNotNull(cache.getRegion(testRegionName));
     assertEquals(numElem * 2, cache.getRegion(testRegionName).size());
-    String regionPath = SEPARATOR + testRegionName + " r";
+    String regionPath = "/" + testRegionName + " r";
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", EQ), "r.id", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", LT), "r.id", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", GT), "r.id", regionPath);
@@ -236,7 +235,7 @@ public class NumericQueryJUnitTest {
     populateRegion(testRegion);
     assertNotNull(cache.getRegion(testRegionName));
     assertEquals(numElem * 2, cache.getRegion(testRegionName).size());
-    String regionPath = SEPARATOR + testRegionName + " r";
+    String regionPath = "/" + testRegionName + " r";
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", EQ), "r.id", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", LT), "r.id", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", GT), "r.id", regionPath);
@@ -254,7 +253,7 @@ public class NumericQueryJUnitTest {
     populateRegion(testRegion);
     assertNotNull(cache.getRegion(testRegionName));
     assertEquals(numElem * 2, cache.getRegion(testRegionName).size());
-    String regionPath = SEPARATOR + testRegionName + " r";
+    String regionPath = "/" + testRegionName + " r";
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", EQ), "r.id", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", LT), "r.id", regionPath);
     executeQueryTest(getQueriesOnRegion(testRegionName, "r.id", GT), "r.id", regionPath);

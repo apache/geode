@@ -35,8 +35,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.UniquePortSupplier;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
@@ -324,11 +324,11 @@ public class Tomcat8ClientServerRollingUpgradeTest {
    * @return Paths to required jars
    */
   private String getClassPathTomcat8AndCurrentModules() {
-    String currentVersion = GemFireVersion.getGemFireVersion();
+    String currentVersion = Version.CURRENT.getName();
 
     final String[] requiredClasspathJars = {
-        "/lib/geode-modules-" + currentVersion + ".jar",
-        "/lib/geode-modules-tomcat8-" + currentVersion + ".jar",
+        "/lib/geode-modules-" + currentVersion + "-SNAPSHOT.jar",
+        "/lib/geode-modules-tomcat8-" + currentVersion + "-SNAPSHOT.jar",
         "/lib/servlet-api.jar",
         "/lib/catalina.jar",
         "/lib/tomcat-util.jar",

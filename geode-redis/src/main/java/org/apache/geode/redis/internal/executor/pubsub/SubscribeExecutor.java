@@ -59,10 +59,7 @@ public class SubscribeExecutor extends AbstractExecutor {
       } catch (CoderException e) {
         logger.warn("Error encoding subscribe response", e);
       }
-      if (response != null) {
-        aggregatedResponse.writeBytes(response);
-        response.release();
-      }
+      aggregatedResponse.writeBytes(response);
     });
     command.setResponse(aggregatedResponse);
   }
