@@ -16,6 +16,13 @@
 package org.apache.geode.management.client;
 
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.concurrent.Future;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,15 +36,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementException;
-import org.apache.geode.management.api.ClusterManagementGetResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
-import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.junit.rules.ConcurrencyRule;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
@@ -53,7 +59,7 @@ public class GetStartingMemberTest {
   public ClusterStartupRule cluster = new ClusterStartupRule(1);
 
   @Rule
-  public ConcurrencyRule concurrency = new ConcurrencyRule();
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   private ClusterManagementService client;
   private LocatorWebContext webContext;
@@ -72,18 +78,16 @@ public class GetStartingMemberTest {
   public void getStartingMember() throws Exception {
     Member server0 = new Member();
     server0.setId("server-0");
-    concurrency.add(() -> cluster.startServerVM(0, webContext.getLocator().getPort()));
-    concurrency.add(() -> {
-      ClusterManagementGetResult<Member, MemberInformation> result = null;
-      while (result == null) {
-        try {
-          result = client.get(server0);
-        } catch (ClusterManagementException e) {
-          // this is expected for the first several tries
-        }
-      }
-      return result;
+
+    Future<Void> startServer = executorServiceRule.submit(() -> {
+      cluster.startServerVM(0, webContext.getLocator().getPort());
     });
-    concurrency.executeInParallel();
+
+    await()
+        .ignoreException(ClusterManagementException.class)
+        .untilAsserted(() -> assertThat(client.get(server0).getStatusCode()).isEqualTo(
+            ClusterManagementResult.StatusCode.OK));
+
+    startServer.get(getTimeout().toMillis(), MILLISECONDS);
   }
 }

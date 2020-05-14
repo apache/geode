@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
@@ -115,6 +116,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     }
   }
 
+  @VisibleForTesting
   void logError(String s, Exception e) {
     logger.error(s, e);
   }
