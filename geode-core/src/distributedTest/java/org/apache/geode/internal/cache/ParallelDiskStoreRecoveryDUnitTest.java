@@ -69,8 +69,6 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
 
-  private VM locator;
-
   private String locatorName;
 
   private File locatorDir;
@@ -101,17 +99,17 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
 
   private final int NUM_ENTRIES = 1000;
 
-  private String diskStoreName1 = "disk1";
+  private final String diskStoreName1 = "disk1";
 
-  private String diskStoreName2 = "disk2";
+  private final String diskStoreName2 = "disk2";
 
-  private String regionName1 = "region1";
+  private final String regionName1 = "region1";
 
-  private String regionName2 = "region2";
+  private final String regionName2 = "region2";
 
   @Before
   public void setUp() throws Exception {
-    locator = getVM(0);
+    VM locator = getVM(0);
     server = getVM(1);
 
     locatorName = "locator";
@@ -128,9 +126,7 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
 
     locators = "localhost[" + locatorPort + "]";
 
-    locator.invoke(() -> {
-      startLocator(locatorName, locatorDir, locatorPort, locatorJmxPort);
-    });
+    locator.invoke(() -> startLocator(locatorName, locatorDir, locatorPort, locatorJmxPort));
 
     gfsh.connectAndVerify(locatorJmxPort, GfshCommandRule.PortType.jmxManager);
 
@@ -148,7 +144,7 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
 
 
   @Test
-  public void testParallelDiskStoreRecovery() throws Exception {
+  public void testParallelDiskStoreRecovery() {
 
     createDiskStore(diskStoreName1);
 
@@ -158,20 +154,20 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
 
     createRegion(regionName2, diskStoreName2);
 
-    populateRegion(NUM_ENTRIES, regionName1, regionName2);
+    populateRegions();
 
-    AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
+    AssertRegionSizeAndDiskStore();
 
-    server.invoke(() -> stopServer());
+    server.invoke(ParallelDiskStoreRecoveryDUnitTest::stopServer);
 
     server.invoke(() -> startServer(serverName, serverDir, serverPort, locators, true));
 
-    AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
+    AssertRegionSizeAndDiskStore();
 
   }
 
   @Test
-  public void testSequentialDiskStoreRecovery() throws Exception {
+  public void testSequentialDiskStoreRecovery() {
 
     createDiskStore(diskStoreName1);
 
@@ -181,15 +177,15 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
 
     createRegion(regionName2, diskStoreName2);
 
-    populateRegion(NUM_ENTRIES, regionName1, regionName2);
+    populateRegions();
 
-    AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
+    AssertRegionSizeAndDiskStore();
 
-    server.invoke(() -> stopServer());
+    server.invoke(ParallelDiskStoreRecoveryDUnitTest::stopServer);
 
     server.invoke(() -> startServer(serverName, serverDir, serverPort, locators, false));
 
-    AssertRegionSizeAndDiskStore(diskStoreName1, diskStoreName2, regionName1, regionName2);
+    AssertRegionSizeAndDiskStore();
 
   }
 
@@ -242,8 +238,7 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
     SERVER.get().stop();
   }
 
-  private void AssertRegionSizeAndDiskStore(String diskStoreName1, String diskStoreName2,
-      String regionName1, String regionName2) {
+  private void AssertRegionSizeAndDiskStore() {
     assertRegionSize(regionName1);
 
     assertRegionSize(regionName2);
@@ -273,7 +268,7 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
         .containsOutput(String.valueOf(NUM_ENTRIES));
   }
 
-  private void populateRegion(int numEntries, String regionName1, String regionName2) {
+  private void populateRegions() {
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
     ClientCache clientCache =
         clientCacheFactory.addPoolLocator("localhost", locatorPort).create();
@@ -283,7 +278,7 @@ public class ParallelDiskStoreRecoveryDUnitTest implements Serializable {
     Region<Object, Object> clientRegion2 = clientCache
         .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName2);
 
-    IntStream.range(0, numEntries).forEach(i -> {
+    IntStream.range(0, NUM_ENTRIES).forEach(i -> {
       clientRegion1.put("key-" + i, "value-" + i);
       clientRegion2.put("key-" + i, "value-" + i);
     });
