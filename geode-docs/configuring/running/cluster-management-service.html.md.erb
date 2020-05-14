@@ -22,59 +22,46 @@ limitations under the License.
 **Note:** This feature is experimental and is subject to change in future releases of <%=vars.product_name_long%>.
 
 The cluster management service enables you to change the configuration of
-the cluster (for example, create/destroy regions, indexes, or gateway receivers/senders), and have these
+the cluster (for example, create/destroy regions, indexes, or gateway receivers/senders) via rest service, and have these
 changes replicated on all the applicable servers and persisted in the cluster configuration service.
 
-With the cluster management service, you can:
+This is different from Gfsh commands in:
 
-- Create regions/indexes on the fly.
+- this is a rest interface that allows for more programmable access
 
-- Persist the configuration and apply it to the cluster, so when a new node joins, it has the configuration, and when the server restarts, it has the configuration.
+- changes to all elements of the cluster are applied in a consistent manner to the cluster
 
-- Obtain a consistent view of the current configuration
+- you can invoke this rest service from a server (via function) or from any client application
 
-- Apply a change to all elements of the cluster in the same way
+- you can configure your cluster without having any servers running (only a locator is sufficient).
 
-- Be able to change the configuration in one place
+- not all gfsh commands capabilities are available in this rest service. Some of these dropped support are deliberate because Geode wants to simplify configuration management, some are just timing.
 
-- Obtain this configuration without being on the cluster
+Currently, Geode provide a java client and go client that interacts with this rest service.
 
-- Invoke the configuration service from the server or from a client
+## Start Cluster Management Rest Service
+Every locator started by Gfsh will start Cluster Management Rest Service by default. The following are the Geode properties that control
+whether this service will be started correctly or not:
 
-The cluster management service is documented in the Geode Wiki: [Cluster Management Service](https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service).
-The Wiki write-up offers separate choices for the cluster management service implementation on each Geode version that supports it.
+- http-service-port: it needs to be be set to a non 0 value. Otherwise, there won't be any http service available on this locator. Default value is 7070.
 
-The cluster management service is available as a [REST API](#cms-reference) and as a [Java API](#cms-java-api).
+- enable-cluster-configuration: default is true. If this is set to false, the cluster management rest service will return error status in every invocation.
+
+- enable-management-rest-service: default is true. This will also start jmx manager automatically on the locator if not started. If set false, the rest service will not be started.
+
+By default, every request/response through the Cluster Management Rest Service is logged in debug level. If you would like to bump the logging to info level,
+you need to set the system property "-Dgeode.management.request.logging=true" when you start up the locator.
 
 ## <a id='cms-reference'>Cluster Management Service REST API</a>
 
 The cluster management service REST API adheres to standard REST semantics, so users can use POST, PATCH, DELETE, and GET to create,
 update, delete, and read, respectively.
 
+Here is a list of Rest API documentation for each version of Geode: [Cluster Management Service Rest API](https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service+Rest+API)
+
 This version of <%=vars.product_name%> uses the [<%=vars.product_version_geode%>.0 Management REST API](https://cwiki.apache.org/confluence/display/GEODE/<%=vars.product_version_geode%>.0+Management+REST+API+-+v1).
-As mentioned, the feature is experimental and still undergoing revision.
 
-For a definitive description of the cluster management service for your version of <%=vars.product_name%>, you can use the Swagger™ framework.
-To use the Swagger UI to browse the cluster management service API:
-
-1. Using `gfsh`, start a locator using the default settings.
-2. Open a browser and enter the following URL:
-
-```
-http://localhost:7070/management/docs
-```
-
-This produces a browsable description of the cluster management service API:
-
-<img src="../../images/swagger_cluster_mgmt.png" class="image" />
-
-
-## <a id='cms-java-api'>Cluster Management Service Java API</a>
-
-The cluster management service is available to Java clients via a Java API. To enable the cluster management service Java API, include `geode-management.jar` in your client classpath.
-See the [Cluster Management Service Java Client topic on the Geode Wiki](https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service#ClusterManagementService-JavaClient) for more details.
-
-## <a id='cms-security'>Authentication and Authorization</a>
+### <a id='cms-security'>Authentication and Authorization</a>
 
 The cluster management service REST API is secured by the <code class="ph codeph">security-manager</code> of your cluster. If a security-manager is specified, you must provide authorization in order to invoke the REST api.
 
@@ -84,9 +71,42 @@ By default, the security manager accepts authorization for REST API access in th
 curl --user username:password http://example.com/management/regions
 ```
 
-When <code class="ph codeph">security-auth-token-enabled-components</code> is set to "all" or "management", 
+When <code class="ph codeph">security-auth-token-enabled-components</code> is set to "all" or "management",
 you must provide REST API authorization in the form of a valid bearer token (instead of username/password):
 
 ```
 curl -H "Authorization: Bearer YWhhbWlsdG9uQGFwaWdlZS5jb206bXlwYXNzdzByZAo" http://example.com/management/regions
+```
+
+## <a id='cms-java-api'>Cluster Management Service Java API</a>
+
+Geode provides a java client allows you to use this rest service in your java application. To use it, you will need to follow these steps:
+
+- include `geode-management.jar` in your client classpath.
+
+- use `ClusterManagementServiceBuilder` class to build a `ClusterManagementService` object, using the various methods available on the builder to set the connection configurations.
+
+- start using the `ClsuterManagementService` to interact with the cluster.
+
+Example:
+
+```
+ClusterManagementService cmsClient = new ClusterManagementServiceBuilder()
+        .setHost("localhost")
+        .setPort("7070")
+        .build();
+Region regionConfig = new Region();
+ClusterManagementListResult<Region, RuntimeRegionInfo> list = client.list(region);
+```
+
+## <a id='cms-cli'>Cluster Management Service CLI Tool</a>
+
+Geode also provides a go client that interact with this service. You can obtain this tool here: https://github.com/gemfire/tanzu-gemfire-management-cf-plugin
+
+After [download](https://github.com/gemfire/tanzu-gemfire-management-cf-plugin/releases) this tool, you can use it to interact with any running cluster:
+
+Example:
+
+```
+./gemfire http://localhost:7070 list regions
 ```
