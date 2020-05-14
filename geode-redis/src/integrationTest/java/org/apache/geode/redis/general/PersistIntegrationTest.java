@@ -15,9 +15,6 @@
 
 package org.apache.geode.redis.general;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -25,14 +22,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.internal.GeodeRedisServer;
+import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class PersistIntegrationTest {
@@ -40,23 +35,15 @@ public class PersistIntegrationTest {
   public static Jedis jedis;
   public static Jedis jedis2;
   public static int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @BeforeClass
   public static void setUp() {
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-
-    server.start();
-    jedis = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -68,8 +55,6 @@ public class PersistIntegrationTest {
   public static void tearDown() {
     jedis.close();
     jedis2.close();
-    cache.close();
-    server.shutdown();
   }
 
   @Test

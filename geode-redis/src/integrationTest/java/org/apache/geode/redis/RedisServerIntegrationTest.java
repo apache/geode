@@ -29,7 +29,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.categories.RedisTest;
 
@@ -49,7 +48,6 @@ public class RedisServerIntegrationTest {
     props.setProperty("mcast-port", "0");
     CacheFactory cacheFactory = new CacheFactory(props);
     cache = cacheFactory.create();
-    redisPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
   }
 
   @After
@@ -62,7 +60,7 @@ public class RedisServerIntegrationTest {
 
   @Test
   public void initializeRedisCreatesFourRegions() {
-    redisServer = new GeodeRedisServer(redisPort);
+    redisServer = new GeodeRedisServer();
     redisServer.start();
     assertThat(cache.rootRegions()).hasSize(4);
     assertThat(cache.getRegion(GeodeRedisServer.REDIS_META_DATA_REGION)).isNotNull();
@@ -70,7 +68,7 @@ public class RedisServerIntegrationTest {
 
   @Test
   public void initializeRedisCreatesPartitionedRegionByDefault() {
-    redisServer = new GeodeRedisServer(redisPort);
+    redisServer = new GeodeRedisServer();
     redisServer.start();
     Region r = cache.getRegion(GeodeRedisServer.STRING_REGION);
     assertThat(r.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.PARTITION);
@@ -80,7 +78,7 @@ public class RedisServerIntegrationTest {
   @Test
   public void initializeRedisCreatesPartitionedRegionIfSystemPropertyBogus() {
     System.setProperty("gemfireredis.regiontype", "bogus");
-    redisServer = new GeodeRedisServer(redisPort);
+    redisServer = new GeodeRedisServer();
     redisServer.start();
     Region r = cache.getRegion(GeodeRedisServer.STRING_REGION);
     assertThat(r.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.PARTITION);
@@ -90,7 +88,7 @@ public class RedisServerIntegrationTest {
   @Test
   public void initializeRedisCreatesRegionsUsingSystemProperty() {
     System.setProperty("gemfireredis.regiontype", "REPLICATE");
-    redisServer = new GeodeRedisServer(redisPort);
+    redisServer = new GeodeRedisServer();
     redisServer.start();
     Region r = cache.getRegion(GeodeRedisServer.STRING_REGION);
     assertThat(r.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);

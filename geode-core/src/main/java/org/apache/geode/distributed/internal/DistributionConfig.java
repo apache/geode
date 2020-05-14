@@ -3479,7 +3479,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttributeSetter(name = REDIS_PORT)
   void setRedisPort(int value);
 
-  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+  @ConfigAttribute(type = Integer.class, min = -1, max = 65535)
   String REDIS_PORT_NAME = REDIS_PORT;
   int DEFAULT_REDIS_PORT = 0;
 

@@ -36,7 +36,9 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
     this.cache = (InternalCache) cache;
     this.cache.getInternalDistributedSystem().addResourceListener(this);
 
-    return true;
+    int port = this.cache.getInternalDistributedSystem().getConfig().getRedisPort();
+
+    return port != 0;
   }
 
   @Override
@@ -85,5 +87,9 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   @Override
   public CacheServiceMBeanBase getMBean() {
     return null;
+  }
+
+  public int getPort() {
+    return redisServer.getPort();
   }
 }

@@ -168,6 +168,8 @@ public class GeodeRedisServer {
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
 
+  private static final int RANDOM_PORT_INDICATOR = -1;
+
   /**
    * The number of threads that will work on handling requests
    */
@@ -181,7 +183,7 @@ public class GeodeRedisServer {
   /**
    * The actual port being used by the server
    */
-  private final int serverPort;
+  private int serverPort;
 
   /**
    * The address to bind to
@@ -336,6 +338,14 @@ public class GeodeRedisServer {
   }
 
   /**
+   * Constructor for {@code GeodeRedisServer} that will start the server on a random port and bind
+   * to the first non-loopback address
+   */
+  public GeodeRedisServer() {
+    this(null, -1, null);
+  }
+
+  /**
    * Constructor for {@code GeodeRedisServer} that will start the server on the given port and bind
    * to the first non-loopback address
    *
@@ -366,11 +376,12 @@ public class GeodeRedisServer {
    *
    * @param bindAddress The address to which the server will attempt to bind to
    * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
-   *        by default if argument is less than or equal to 0
+   *        by default if argument is less than -1. If the port is {@value #RANDOM_PORT_INDICATOR}
+   *        a random port is assigned.
    * @param logLevel The logging level to be used by GemFire
    */
   public GeodeRedisServer(String bindAddress, int port, String logLevel) {
-    serverPort = port <= 0 ? DEFAULT_REDIS_SERVER_PORT : port;
+    serverPort = port < RANDOM_PORT_INDICATOR ? DEFAULT_REDIS_SERVER_PORT : port;
     this.bindAddress = bindAddress;
     this.logLevel = logLevel;
     numWorkerThreads = setNumWorkerThreads();
@@ -594,8 +605,14 @@ public class GeodeRedisServer {
   private Channel createBoundChannel(ServerBootstrap serverBootstrap)
       throws InterruptedException, UnknownHostException {
     ChannelFuture channelFuture =
-        serverBootstrap.bind(new InetSocketAddress(getBindAddress(), serverPort)).sync();
+        serverBootstrap.bind(new InetSocketAddress(getBindAddress(),
+            serverPort == RANDOM_PORT_INDICATOR ? 0 : serverPort))
+            .sync();
+
+    serverPort = ((InetSocketAddress) channelFuture.channel().localAddress()).getPort();
+
     logStartupMessage();
+
     return channelFuture.channel();
   }
 
@@ -753,6 +770,10 @@ public class GeodeRedisServer {
       closeFuture.syncUninterruptibly();
       shutdown = true;
     }
+  }
+
+  public int getPort() {
+    return serverPort;
   }
 
   /**

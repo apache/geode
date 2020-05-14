@@ -15,9 +15,6 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -33,14 +30,12 @@ import java.util.concurrent.Future;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -51,35 +46,24 @@ public class RenameIntegrationTest {
   static Jedis jedis;
   static final int REDIS_CLIENT_TIMEOUT = 100000;
   static Random rand;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
-  private static int port = 6379;
   private static ThreePhraseGenerator generator = new ThreePhraseGenerator();
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @BeforeClass
   public static void setUp() {
     rand = new Random();
-    CacheFactory cacheFactory = new CacheFactory();
-    cacheFactory.set(LOG_LEVEL, "info");
-    cacheFactory.set(MCAST_PORT, "0");
-    cacheFactory.set(LOCATORS, "");
-    cache = cacheFactory.create();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-    jedis = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
-
-    server.start();
+    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
   public static void tearDown() {
     jedis.close();
-    cache.close();
-    server.shutdown();
   }
 
   public int getPort() {
-    return port;
+    return server.getPort();
   }
 
   @After

@@ -14,9 +14,6 @@
  */
 package org.apache.geode.redis.sets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -27,47 +24,34 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.internal.GeodeRedisServer;
+import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class SUnionIntegrationTest {
   static Jedis jedis;
   static Jedis jedis2;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
-  private static int port = 6379;
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @BeforeClass
   public static void setUp() {
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-
-    server.start();
-    jedis = new Jedis("localhost", port, 10000000);
-    jedis2 = new Jedis("localhost", port, 10000000);
+    jedis = new Jedis("localhost", server.getPort(), 10000000);
+    jedis2 = new Jedis("localhost", server.getPort(), 10000000);
   }
 
   @AfterClass
   public static void tearDown() {
     jedis.close();
     jedis2.close();
-    cache.close();
-    server.shutdown();
   }
 
   @After

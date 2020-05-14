@@ -16,9 +16,6 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.AfterClass;
@@ -28,43 +25,27 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisLockServiceIntegrationTest {
 
   private static final int REDIS_CLIENT_TIMEOUT = 100000;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
   private static Jedis jedis;
-  private static int port = 6379;
 
   @ClassRule
   public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+
   @BeforeClass
   public static void setUp() {
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "warn");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-    server.start();
-
-    jedis = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
   public static void tearDown() {
     jedis.close();
-    cache.close();
-    server.shutdown();
   }
 
   @Test

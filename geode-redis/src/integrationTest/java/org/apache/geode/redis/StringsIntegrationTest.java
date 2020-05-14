@@ -15,9 +15,6 @@
 package org.apache.geode.redis;
 
 import static java.lang.Integer.parseInt;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.redis.internal.GeodeRedisServer.REDIS_META_DATA_REGION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,10 +44,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -60,25 +54,16 @@ public class StringsIntegrationTest {
   static Jedis jedis;
   static Jedis jedis2;
   static Random rand;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
-  private static int port = 6379;
   private static int ITERATION_COUNT = 4000;
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @BeforeClass
   public static void setUp() {
     rand = new Random();
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-
-    server.start();
-    jedis = new Jedis("localhost", port, 10000000);
-    jedis2 = new Jedis("localhost", port, 10000000);
+    jedis = new Jedis("localhost", server.getPort(), 10000000);
+    jedis2 = new Jedis("localhost", server.getPort(), 10000000);
   }
 
   @After
@@ -90,8 +75,6 @@ public class StringsIntegrationTest {
   public static void tearDown() {
     jedis.close();
     jedis2.close();
-    cache.close();
-    server.shutdown();
   }
 
   @Test
