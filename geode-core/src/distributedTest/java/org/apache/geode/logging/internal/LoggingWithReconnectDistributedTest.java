@@ -50,12 +50,12 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.logging.LogFileAssert;
 
 /**
  * Distributed tests for logging during reconnect.

@@ -32,9 +32,9 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.logging.LogFileAssert;
 
 @Category(OQLQueryTest.class)
 public class DefaultQueryServiceIntegrationTest {

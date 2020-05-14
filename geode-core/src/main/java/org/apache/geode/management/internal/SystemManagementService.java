@@ -74,7 +74,8 @@ import org.apache.geode.management.membership.MembershipListener;
  *
  * @since GemFire 7.0
  */
-public class SystemManagementService extends BaseManagementService {
+public class SystemManagementService extends BaseManagementService
+    implements InternalManagementService {
   private static final Logger logger = LogService.getLogger();
 
   @Immutable
@@ -539,6 +540,51 @@ public class SystemManagementService extends BaseManagementService {
   @Override
   public void removeMembershipListener(MembershipListener listener) {
     universalListenerContainer.removeMembershipListener(listener);
+  }
+
+  @Override
+  public ObjectName getCacheServerMBeanName(int serverPort, String member) {
+    return MBeanJMXAdapter.getClientServiceMBeanName(serverPort, member);
+  }
+
+  @Override
+  public ObjectName getDiskStoreMBeanName(String member, String diskName) {
+    return MBeanJMXAdapter.getDiskStoreMBeanName(member, diskName);
+  }
+
+  @Override
+  public ObjectName getGatewayReceiverMBeanName(String member) {
+    return MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
+  }
+
+  @Override
+  public ObjectName getGatewaySenderMBeanName(String member, String gatewaySenderId) {
+    return MBeanJMXAdapter.getGatewaySenderMBeanName(member, gatewaySenderId);
+  }
+
+  @Override
+  public ObjectName getAsyncEventQueueMBeanName(String member, String queueId) {
+    return MBeanJMXAdapter.getAsyncEventQueueMBeanName(member, queueId);
+  }
+
+  @Override
+  public ObjectName getLockServiceMBeanName(String member, String lockServiceName) {
+    return MBeanJMXAdapter.getLockServiceMBeanName(member, lockServiceName);
+  }
+
+  @Override
+  public ObjectName getMemberMBeanName(String member) {
+    return MBeanJMXAdapter.getMemberMBeanName(member);
+  }
+
+  @Override
+  public ObjectName getRegionMBeanName(String member, String regionPath) {
+    return MBeanJMXAdapter.getRegionMBeanName(member, regionPath);
+  }
+
+  @Override
+  public ObjectName getLocatorMBeanName(String member) {
+    return MBeanJMXAdapter.getLocatorMBeanName(member);
   }
 
   public LocalManager getLocalManager() {

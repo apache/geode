@@ -25,7 +25,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.addListener;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.removeListener;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
-import static org.apache.geode.management.internal.MBeanJMXAdapter.mbeanServer;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getController;
@@ -135,7 +134,7 @@ public class AlertingServiceWithoutListenerDistributedTest implements Serializab
   @Test
   public void distributedSystemMXBeanIsRegistered() {
     managerVM.invoke(() -> {
-      assertThat(mbeanServer.isRegistered(getDistributedSystemName())).isTrue();
+      assertThat(getPlatformMBeanServer().isRegistered(getDistributedSystemName())).isTrue();
     });
   }
 

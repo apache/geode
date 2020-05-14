@@ -24,12 +24,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.Banner;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
+import org.apache.geode.test.logging.LogFileAssert;
 
 @Category({LoggingTest.class, GfshTest.class})
 public class GfshStartLocatorLogAcceptanceTest {

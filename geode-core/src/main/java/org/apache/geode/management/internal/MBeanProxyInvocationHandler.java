@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+
 import java.io.InvalidObjectException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -321,7 +323,7 @@ public class MBeanProxyInvocationHandler implements InvocationHandler {
           throw new IllegalArgumentException("getNotificationInfo has " + "args");
         }
 
-        if (!MBeanJMXAdapter.mbeanServer.isRegistered(objectName)) {
+        if (!getPlatformMBeanServer().isRegistered(objectName)) {
           return new MBeanNotificationInfo[0];
         }
 

@@ -55,8 +55,8 @@ import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.test.logging.LogFileAssert;
 
 /**
  * Integration tests for logging with {@link InternalDistributedSystem} lifecycle.

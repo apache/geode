@@ -26,8 +26,8 @@ import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncherIntegrationTestCase;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.test.logging.LogFileAssert;
 
 /**
  * Integration tests of logging with {@link LocatorLauncher}.

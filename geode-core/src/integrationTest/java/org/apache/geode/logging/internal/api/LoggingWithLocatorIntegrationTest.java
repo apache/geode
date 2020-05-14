@@ -44,8 +44,8 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.logging.internal.log4j.LogWriterLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.test.logging.LogFileAssert;
 
 /**
  * Integration tests for logging with {@link InternalLocator} lifecycle.

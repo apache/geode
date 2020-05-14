@@ -12,27 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.logging.error;
+package org.apache.geode.test.management.error;
 
-import org.apache.logging.log4j.Level;
 import org.assertj.core.error.BasicErrorMessageFactory;
 import org.assertj.core.error.ErrorMessageFactory;
 
-public class ShouldBeLessSpecificThan extends BasicErrorMessageFactory {
+/**
+ * Creates an error message indicating that an assertion that verifies that a {@link Notification}
+ * has no user data failed.
+ */
+public class ShouldHaveNoUserData extends BasicErrorMessageFactory {
 
   /**
-   * Creates a new {@code ShouldBeLessSpecificThan}.
+   * Creates a new <code>{@link ShouldHaveNoUserData}</code>.
    *
    * @param actual the actual value in the failed assertion.
-   * @param level the value that actual is being compared to in the failed assertion.
    * @return the created {@code ErrorMessageFactory}.
    */
-  public static ErrorMessageFactory shouldBeLessSpecificThan(final Level actual,
-      final Level level) {
-    return new ShouldBeLessSpecificThan(actual, level);
+  public static ErrorMessageFactory shouldHaveNoUserData(Object actual) {
+    return new ShouldHaveNoUserData(actual);
   }
 
-  private ShouldBeLessSpecificThan(final Level actual, final Level level) {
-    super("%nExpecting:%n <%s>%nto be less specific than:%n <%s>%n", actual, level);
+  private ShouldHaveNoUserData(Object actual) {
+    super("%nExpecting notification without user data, but user data was:<%s>", actual);
   }
 }

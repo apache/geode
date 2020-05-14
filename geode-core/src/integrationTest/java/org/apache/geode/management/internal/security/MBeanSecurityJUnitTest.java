@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -102,7 +103,7 @@ public class MBeanSecurityJUnitTest {
    */
   @Test
   public void testLocalCalls() throws Exception {
-    MBeanServer server = MBeanJMXAdapter.mbeanServer;
+    MBeanServer server = getPlatformMBeanServer();
     assertThatThrownBy(
         () -> server.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo")))
             .isInstanceOf(ReflectionException.class);

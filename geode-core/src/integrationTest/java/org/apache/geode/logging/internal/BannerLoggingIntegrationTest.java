@@ -38,8 +38,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.test.logging.LogFileAssert;
 
 /**
  * Integration tests for logging of the {@link Banner}.

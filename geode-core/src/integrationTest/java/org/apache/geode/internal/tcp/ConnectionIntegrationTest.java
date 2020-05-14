@@ -16,8 +16,8 @@ package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.test.logging.LogFileAssert.assertThat;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.logging.LogFileAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.STRICT_STUBS;

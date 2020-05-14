@@ -14,12 +14,12 @@
  */
 package org.apache.geode.management;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -391,7 +391,7 @@ public class CacheManagementDUnitTest implements Serializable {
         assertThat(proxyNames).isEmpty();
 
         ObjectName proxyMBeanName = service.getMemberMBeanName(member);
-        assertThat(MBeanJMXAdapter.mbeanServer.isRegistered(proxyMBeanName)).isFalse();
+        assertThat(getPlatformMBeanServer().isRegistered(proxyMBeanName)).isFalse();
       }
     });
   }
@@ -612,7 +612,7 @@ public class CacheManagementDUnitTest implements Serializable {
         }
       };
 
-      ManagementFactory.getPlatformMBeanServer().addNotificationListener(
+      getPlatformMBeanServer().addNotificationListener(
           MBeanJMXAdapter.getDistributedSystemName(), listener, null, null);
     });
   }

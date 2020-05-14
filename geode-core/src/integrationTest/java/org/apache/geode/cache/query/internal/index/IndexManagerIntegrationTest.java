@@ -45,9 +45,9 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.logging.LogFileAssert;
 
 @Category(OQLIndexTest.class)
 @RunWith(JUnitParamsRunner.class)

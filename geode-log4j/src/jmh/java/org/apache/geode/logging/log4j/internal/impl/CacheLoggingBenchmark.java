@@ -44,8 +44,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.rules.accessible.AccessibleTemporaryFolder;
+import org.apache.geode.test.logging.LogFileAssert;
 
 @Measurement(iterations = 1, time = 1, timeUnit = MINUTES)
 @Warmup(iterations = 1, time = 1, timeUnit = MINUTES)

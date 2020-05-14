@@ -26,8 +26,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.logging.LogFileAssert;
 
 public class DefaultQueryServiceDeprecationTest implements Serializable {
 

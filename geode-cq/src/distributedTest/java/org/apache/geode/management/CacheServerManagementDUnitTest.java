@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -82,15 +83,15 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  private static int CONNECT_LOCATOR_TIMEOUT_MS = 30000;
+  private static final int CONNECT_LOCATOR_TIMEOUT_MS = 30000;
 
-  private ManagementTestBase helper;
+  private final ManagementTestBase helper;
 
   private static final String queryName = "testClientWithFeederAndCQ_0";
 
   private static final String indexName = "testIndex";
 
-  private static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  private static final MBeanServer mbeanServer = getPlatformMBeanServer();
 
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 

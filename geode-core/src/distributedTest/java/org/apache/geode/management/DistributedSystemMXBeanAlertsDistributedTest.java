@@ -82,7 +82,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  */
 @Category({ManagementTest.class, AlertingTest.class})
 @SuppressWarnings("serial")
-public class DistributedSystemMXBeanWithAlertsDistributedTest implements Serializable {
+public class DistributedSystemMXBeanAlertsDistributedTest implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
 

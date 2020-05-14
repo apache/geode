@@ -65,7 +65,7 @@ public class MBeanJMXAdapterTest {
     doThrow(new InstanceNotFoundException()).when(mockMBeanServer).unregisterMBean(objectName);
 
     MBeanJMXAdapter mBeanJMXAdapter = spy(new MBeanJMXAdapter(distMember));
-    MBeanJMXAdapter.mbeanServer = mockMBeanServer;
+    MBeanJMXAdapter.setMBeanServer(mockMBeanServer);
 
     mBeanJMXAdapter.unregisterMBean(objectName);
 
@@ -86,7 +86,7 @@ public class MBeanJMXAdapterTest {
         .registerMBean(any(Object.class), eq(objectName));
 
     MBeanJMXAdapter mBeanJMXAdapter = spy(new MBeanJMXAdapter(distMember));
-    MBeanJMXAdapter.mbeanServer = mockMBeanServer;
+    MBeanJMXAdapter.setMBeanServer(mockMBeanServer);
 
     mBeanJMXAdapter.registerMBeanProxy(objectName, objectName);
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static org.junit.Assert.fail;
 
 import javax.management.InstanceNotFoundException;
@@ -27,7 +28,6 @@ import javax.management.ReflectionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -41,7 +41,7 @@ public class MBeanUtil {
 
   private static final int MAX_WAIT = 8 * ManagementConstants.REFRESH_TIME;
 
-  public static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  public static MBeanServer mbeanServer = getPlatformMBeanServer();
 
   /**
    * Utility Method to obtain MemberMXBean proxy reference for a particular Member

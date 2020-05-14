@@ -65,13 +65,13 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.logging.LogFileAssert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.logging.LogFileAssert;
 
 @Category({OQLQueryTest.class, SecurityTest.class})
 @RunWith(JUnitParamsRunner.class)

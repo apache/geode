@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+
 import java.io.Serializable;
 
 import javax.management.Attribute;
@@ -47,7 +49,7 @@ public class ManagementFunction implements InternalFunction {
   /**
    * Platform MBean server.
    */
-  private MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  private MBeanServer mbeanServer = getPlatformMBeanServer();
 
   /**
    * Notification hub instance

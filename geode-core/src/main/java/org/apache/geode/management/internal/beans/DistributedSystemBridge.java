@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -102,22 +104,22 @@ public class DistributedSystemBridge {
   /**
    * Map of the member proxies
    */
-  private Map<ObjectName, MemberMXBean> mapOfMembers;
+  private final Map<ObjectName, MemberMXBean> mapOfMembers;
 
   /**
    * Map of cache server proxies
    */
-  private Map<ObjectName, CacheServerMXBean> mapOfServers;
+  private final Map<ObjectName, CacheServerMXBean> mapOfServers;
 
   /**
    * Map of Gateway Sender proxies
    */
-  private Map<ObjectName, GatewaySenderMXBean> mapOfGatewaySenders;
+  private final Map<ObjectName, GatewaySenderMXBean> mapOfGatewaySenders;
 
   /**
    * Map of Gateway Receiver proxies
    */
-  private Map<ObjectName, GatewayReceiverMXBean> mapOfGatewayReceivers;
+  private final Map<ObjectName, GatewayReceiverMXBean> mapOfGatewayReceivers;
 
   /**
    * Member Proxy set size
@@ -142,36 +144,36 @@ public class DistributedSystemBridge {
   /**
    * Cache instance
    */
-  private InternalCache cache;
+  private final InternalCache cache;
 
   /**
    * private instance of SystemManagementService
    */
-  private SystemManagementService service;
+  private final SystemManagementService service;
 
   /**
    * Internal distributed system
    */
-  private InternalDistributedSystem system;
+  private final InternalDistributedSystem system;
 
   /**
    * distributed-system-id of this DS.
    */
-  private int distributedSystemId;
+  private final int distributedSystemId;
 
   /**
    * Distribution manager
    */
-  private DistributionManager dm;
+  private final DistributionManager dm;
 
   private String alertLevel;
 
-  private ObjectName thisMemberName;
+  private final ObjectName thisMemberName;
 
 
-  private Map<ObjectName, DistributedRegionBridge> distrRegionMap;
+  private final Map<ObjectName, DistributedRegionBridge> distrRegionMap;
 
-  private Map<ObjectName, DistributedLockServiceBridge> distrLockServiceMap;
+  private final Map<ObjectName, DistributedLockServiceBridge> distrLockServiceMap;
 
   private MemberClusterStatsMonitor memberMBeanMonitor;
 
@@ -191,7 +193,7 @@ public class DistributedSystemBridge {
    * Static reference to the platform mbean server
    */
   @MakeNotStatic
-  private static final MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  private static final MBeanServer mbeanServer = getPlatformMBeanServer();
 
   /**
    * emitter is a helper class for sending notifications on behalf of the MemberMBean
@@ -212,7 +214,7 @@ public class DistributedSystemBridge {
   /**
    * used to issue queries
    */
-  private DataQueryEngine dataQueryEngine;
+  private final DataQueryEngine dataQueryEngine;
 
   /**
    * Helper method to get a member bean reference given a member name or id
