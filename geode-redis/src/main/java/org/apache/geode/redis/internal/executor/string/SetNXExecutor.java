@@ -22,6 +22,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisData;
 
 public class SetNXExecutor extends StringExecutor {
 
@@ -35,7 +36,7 @@ public class SetNXExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> region =
+    Region<ByteArrayWrapper, RedisData> region =
         context.getRegionProvider().getStringsRegion();
 
     if (commandElems.size() < 3) {
@@ -47,7 +48,8 @@ public class SetNXExecutor extends StringExecutor {
     checkAndSetDataType(key, context);
     byte[] value = commandElems.get(VALUE_INDEX);
 
-    Object oldValue = region.putIfAbsent(key, new ByteArrayWrapper(value));
+    Object oldValue =
+        region.putIfAbsent(key, (RedisData) new RedisString(new ByteArrayWrapper(value)));
 
     if (oldValue != null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));

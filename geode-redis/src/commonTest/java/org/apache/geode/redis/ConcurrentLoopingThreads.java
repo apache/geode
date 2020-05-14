@@ -16,9 +16,11 @@
 package org.apache.geode.redis;
 
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
+import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class ConcurrentLoopingThreads {
   private final int iterationCount;
@@ -32,13 +34,12 @@ public class ConcurrentLoopingThreads {
   }
 
   public void run() {
-    CountDownLatch latch = new CountDownLatch(1);
-    Stream<LoopingThread> loopingThreadStream = Arrays
+    CyclicBarrier latch = new CyclicBarrier(functions.length);
+    List<LoopingThread> loopingThreadStream = Arrays
         .stream(functions)
         .map((r) -> new LoopingThread(r, iterationCount, latch))
-        .peek(Thread::start);
-
-    latch.countDown();
+        .peek(Thread::start)
+        .collect(Collectors.toList());
 
     loopingThreadStream.forEach(loopingThread -> {
       try {
@@ -53,20 +54,20 @@ public class ConcurrentLoopingThreads {
   private static class LoopingRunnable implements Runnable {
     private final Consumer<Integer> runnable;
     private final int iterationCount;
-    private final CountDownLatch startLatch;
+    private final CyclicBarrier barrier;
 
     public LoopingRunnable(Consumer<Integer> runnable, int iterationCount,
-        CountDownLatch startLatch) {
+        CyclicBarrier barrier) {
       this.runnable = runnable;
       this.iterationCount = iterationCount;
-      this.startLatch = startLatch;
+      this.barrier = barrier;
     }
 
     @Override
     public void run() {
       try {
-        startLatch.await();
-      } catch (InterruptedException e) {
+        barrier.await();
+      } catch (InterruptedException | BrokenBarrierException e) {
         throw new RuntimeException(e);
       }
       for (int i = 0; i < iterationCount; i++) {
@@ -78,8 +79,8 @@ public class ConcurrentLoopingThreads {
 
   private static class LoopingThread extends Thread {
     public LoopingThread(Consumer<Integer> runnable, int iterationCount,
-        CountDownLatch latch) {
-      super(new LoopingRunnable(runnable, iterationCount, latch));
+        CyclicBarrier barrier) {
+      super(new LoopingRunnable(runnable, iterationCount, barrier));
     }
   }
 }

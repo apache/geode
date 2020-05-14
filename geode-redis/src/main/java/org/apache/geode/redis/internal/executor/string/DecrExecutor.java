@@ -24,6 +24,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class DecrExecutor extends StringExecutor {
@@ -42,8 +43,8 @@ public class DecrExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     long value;
 
-    RegionProvider rC = context.getRegionProvider();
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = rC.getStringsRegion();
+    RegionProvider regionProvider = context.getRegionProvider();
+    Region<ByteArrayWrapper, RedisData> region = regionProvider.getStringsRegion();
 
     if (commandElems.size() < 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.DECR));
@@ -54,20 +55,21 @@ public class DecrExecutor extends StringExecutor {
     checkAndSetDataType(key, context);
 
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      ByteArrayWrapper valueWrapper = r.get(key);
 
       /*
        * Value does not exist
        */
+      RedisString redisString = (RedisString) region.get(key);
 
-      if (valueWrapper == null) {
+      if (redisString == null) {
         byte[] newValue = INIT_VALUE_BYTES;
-        r.put(key, new ByteArrayWrapper(newValue));
+        region.put(key, new RedisString(new ByteArrayWrapper(newValue)));
         command
             .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), INIT_VALUE_INT));
         return;
       }
 
+      ByteArrayWrapper valueWrapper = redisString.getValue();
       /*
        * Value exists
        */
@@ -90,7 +92,10 @@ public class DecrExecutor extends StringExecutor {
 
       stringValue = "" + value;
 
-      r.put(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)));
+      region.put(key, new RedisString(
+          new ByteArrayWrapper(
+              Coder.stringToBytes(stringValue))));
+
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       command.setResponse(

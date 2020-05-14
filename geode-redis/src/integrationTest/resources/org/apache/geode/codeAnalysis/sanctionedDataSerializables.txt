@@ -18,3 +18,6 @@ org/apache/geode/redis/internal/executor/set/RedisSet,2
 toData,9
 fromData,9
 
+org/apache/geode/redis/internal/executor/string/RedisString,2
+fromData,16
+toData,12

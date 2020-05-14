@@ -17,68 +17,33 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.KeyRegistrar;
-import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.RedisData;
 
 @SuppressWarnings("unchecked")
 public class StringGetExecutorJUnitTest {
 
   private ExecutionHandlerContext context;
   private GetExecutor executor;
-  private Region<ByteArrayWrapper, ByteArrayWrapper> region;
+  private Region<ByteArrayWrapper, RedisData> region;
 
   @Before
   public void setup() {
     context = mock(ExecutionHandlerContext.class);
-
-    RegionProvider regionProvider = mock(RegionProvider.class);
-    when(context.getRegionProvider()).thenReturn(regionProvider);
-    region = mock(Region.class);
-    when(regionProvider.getStringsRegion()).thenReturn(region);
-
-    ByteBufAllocator allocator = mock(ByteBufAllocator.class);
-    ByteBuf buffer = Unpooled.buffer();
-    when(allocator.buffer()).thenReturn(buffer);
-    when(allocator.buffer(anyInt())).thenReturn(buffer);
-    when(context.getByteBufAllocator()).thenReturn(allocator);
-
-    KeyRegistrar keyRegistrar = mock(KeyRegistrar.class);
-    when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
-
     executor = spy(new GetExecutor());
-  }
-
-  @Test
-  public void testBasicGet() {
-    List<byte[]> args = Arrays.asList("get".getBytes(), "key".getBytes());
-
-    executor.executeCommand(new Command(args), context);
-
-    ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    verify(region).get(keyCaptor.capture());
-
-    assertThat(keyCaptor.getValue()).isEqualTo("key");
   }
 
   @Test
@@ -87,10 +52,10 @@ public class StringGetExecutorJUnitTest {
         "GET".getBytes());
 
     Command command = new Command(commandArgumentWithTooFewArgs);
-    executor.executeCommand(command, context);
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    Throwable thrown = catchThrowable(() -> command.execute(context));
+
+    assertThat(thrown).hasMessageContaining("wrong number of arguments for 'get' command");
   }
 
   @Test
@@ -102,10 +67,8 @@ public class StringGetExecutorJUnitTest {
         "somethingelse".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    executor.executeCommand(command, context);
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
-        .contains(
-            "-ERR The wrong number of arguments or syntax was provided, the format for the GET command is \"GET key\"");
+    assertThat(thrown).hasMessageContaining("wrong number of arguments for 'get' command");
   }
 }
