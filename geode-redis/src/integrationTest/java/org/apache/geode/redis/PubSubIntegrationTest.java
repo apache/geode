@@ -15,9 +15,6 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -32,10 +29,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -47,39 +40,27 @@ public class PubSubIntegrationTest {
   static Jedis publisher;
   static Jedis subscriber;
   static final int REDIS_CLIENT_TIMEOUT = 100000;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
-  private static int port = 6379;
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @BeforeClass
   public static void setUp() {
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "info");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-    server.start();
-
-    subscriber = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
-    publisher = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
+    subscriber = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    publisher = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
   public static void tearDown() {
     subscriber.close();
     publisher.close();
-    cache.close();
-    server.shutdown();
   }
 
   public int getPort() {
-    return port;
+    return server.getPort();
   }
 
   @Test
