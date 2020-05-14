@@ -15,7 +15,7 @@
 package org.apache.geode.redis;
 
 import static java.lang.Integer.parseInt;
-import static org.apache.geode.redis.GeodeRedisServer.REDIS_META_DATA_REGION;
+import static org.apache.geode.redis.internal.GeodeRedisServer.REDIS_META_DATA_REGION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

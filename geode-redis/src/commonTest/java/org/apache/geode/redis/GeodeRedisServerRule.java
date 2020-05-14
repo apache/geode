@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWOR
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
