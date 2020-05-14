@@ -31,7 +31,8 @@ public interface Executor {
     executeCommandWithResponse(command, context);
   }
 
-  default RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  default RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     executeCommand(command, context);
     return null;
   }
