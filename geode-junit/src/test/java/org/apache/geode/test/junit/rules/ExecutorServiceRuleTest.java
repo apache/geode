@@ -17,8 +17,10 @@ package org.apache.geode.test.junit.rules;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -110,6 +112,17 @@ public class ExecutorServiceRuleTest {
     assertThat(failure.getException()).isInstanceOf(TimeoutException.class);
   }
 
+  @Test
+  public void futureRethrowsFailureWrappedInExecutionException() {
+    Result result = TestRunner.runTest(FutureRethrows.class);
+    assertThat(result.wasSuccessful()).isFalse();
+    assertThat(result.getFailures()).hasSize(1);
+    Failure failure = result.getFailures().get(0);
+    assertThat(failure.getException())
+        .isInstanceOf(ExecutionException.class)
+        .hasRootCauseInstanceOf(AssertionError.class);
+  }
+
   private static void awaitLatch(CountDownLatch latch) {
     await().untilAsserted(() -> assertThat(latch.getCount())
         .as("Latch failed to countDown within timeout").isZero());
@@ -170,6 +183,19 @@ public class ExecutorServiceRuleTest {
 
       // this is expected to timeout
       future.get(1, MILLISECONDS);
+    }
+  }
+
+  public static class FutureRethrows extends HasExecutorServiceRule {
+
+    @Test
+    public void doTest() throws Exception {
+      Future<Void> future = executorServiceRule.runAsync(() -> {
+        fail("Fails");
+      });
+
+      // this is expected to throw
+      future.get();
     }
   }
 }
