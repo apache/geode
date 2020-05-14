@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal;
 
+import static org.apache.geode.redis.internal.RedisCommandType.PUBLISH;
+
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -245,13 +247,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.error(RedisConstants.ERROR_NOT_AUTH);
     }
 
-    if (response != null) {
+    // PUBLISH responses are always deferred
+    // TODO: Clean this up once all Executors are using RedisResponse
+    if (response == null && !command.isOfType(PUBLISH)) {
+      writeToChannel(command.getResponse());
+    } else if (response != null) {
       writeToChannel(response);
-    } else {
-      // PUBLISH responses are always deferred
-      if (command.getCommandType() != RedisCommandType.PUBLISH) {
-        writeToChannel(command.getResponse());
-      }
     }
 
     if (command.isOfType(RedisCommandType.QUIT)) {
