@@ -217,10 +217,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       }
 
       if (logger.isDebugEnabled() && command.getResponse() != null) {
-        ByteBuf response = command.getResponse()
-            .copy(0, Math.min(command.getResponse().readableBytes(), 100));
-        logger.debug("Redis command returned: {}", getPrintableByteBuf(response));
-        response.release();
+        ByteBuf response = null;
+        try {
+          response = command.getResponse()
+              .copy(0, Math.min(command.getResponse().readableBytes(), 100));
+          logger.debug("Redis command returned: {}", getPrintableByteBuf(response));
+        } finally {
+          if (response != null) {
+            response.release();
+          }
+        }
       }
 
       if (hasTransaction() && command.isOfType(RedisCommandType.MULTI)) {

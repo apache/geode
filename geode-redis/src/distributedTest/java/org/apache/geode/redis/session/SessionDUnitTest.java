@@ -100,21 +100,21 @@ public abstract class SessionDUnitTest {
     jedisConnetedToServer1.flushAll();
   }
 
-  protected static void startRedisServer(int server1) {
-    cluster.startServerVM(server1, redisProperties(server1),
+  protected static void startRedisServer(int server) {
+    cluster.startServerVM(server, redisProperties(server),
         cluster.getMember(LOCATOR).getPort());
 
-    cluster.getVM(server1).invoke("Set logging level to DEBUG", () -> {
+    cluster.getVM(server).invoke("Set logging level to DEBUG", () -> {
       Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
       Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
       FastLogger.setDelegating(true);
     });
   }
 
-  private static Properties redisProperties(int server2) {
+  private static Properties redisProperties(int server) {
     Properties redisPropsForServer = new Properties();
     redisPropsForServer.setProperty("redis-bind-address", "localHost");
-    redisPropsForServer.setProperty("redis-port", "" + ports.get(server2));
+    redisPropsForServer.setProperty("redis-port", "" + ports.get(server));
     redisPropsForServer.setProperty("log-level", "info");
     return redisPropsForServer;
   }
