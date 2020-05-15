@@ -16,13 +16,11 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class SRemExecutor extends SetExecutor {
   @Override
@@ -31,30 +29,18 @@ public class SRemExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    checkDataType(key, RedisDataType.REDIS_SET, context);
-
     RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
 
     ArrayList<ByteArrayWrapper> membersToRemove =
         new ArrayList<>(
             commandElements
                 .subList(2, commandElements.size()));
 
-    AtomicBoolean setWasDeleted = new AtomicBoolean();
-
     long membersRemoved =
         redisSetCommands.srem(
             key,
-            membersToRemove,
-            setWasDeleted);
-    if (setWasDeleted.get()) {
-      context
-          .getKeyRegistrar()
-          .unregisterIfType(
-              key,
-              RedisDataType.REDIS_SET);
-    }
+            membersToRemove);
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), membersRemoved));
   }

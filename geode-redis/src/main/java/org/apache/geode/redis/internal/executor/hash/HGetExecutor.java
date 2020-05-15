@@ -47,8 +47,8 @@ public class HGetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisHash entry = getMap(context, key);
-    ByteArrayWrapper valueWrapper = entry.get(field);
+    RedisHash redisHash = getRedisHash(context, key);
+    ByteArrayWrapper valueWrapper = redisHash.get(field);
     try {
       if (valueWrapper != null) {
         command.setResponse(

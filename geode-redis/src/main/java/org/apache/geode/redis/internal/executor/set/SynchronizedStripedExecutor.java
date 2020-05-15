@@ -45,6 +45,8 @@ public class SynchronizedStripedExecutor implements StripedExecutor {
     synchronized (getSync(stripeId)) {
       try {
         return callable.call();
+      } catch (RuntimeException re) {
+        throw re;
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

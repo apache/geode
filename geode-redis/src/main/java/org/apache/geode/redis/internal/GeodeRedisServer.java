@@ -65,7 +65,6 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -84,8 +83,6 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.redis.internal.executor.CommandFunction;
-import org.apache.geode.redis.internal.executor.hash.RedisHash;
-import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
 
 /**
@@ -97,7 +94,7 @@ import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
  * Each Redis data type instance is stored in a separate {@link Region} except for the Strings and
  * HyperLogLogs which are collectively stored in one Region respectively. That Region along with a
  * meta data region used internally are protected so the client may not store keys with the name
- * {@link GeodeRedisServer#REDIS_META_DATA_REGION} or {@link GeodeRedisServer#STRING_REGION}. The
+ * {@link GeodeRedisServer#REDIS_DATA_REGION} or {@link GeodeRedisServer#STRING_REGION}. The
  * default Region type is {@link RegionShortcut#PARTITION_REDUNDANT}. If the
  * {@link GeodeRedisServer#NUM_THREADS_SYS_PROP_NAME} system property is set
  * to 0, one thread per client will be created. Otherwise a worker thread pool of specified size is
@@ -118,7 +115,7 @@ import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
  * HMSET, HSETNX, HLEN, HSCAN, HSET, HVALS
  * <p>
  * Supported Set commands - SADD, SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER,
- * SMEMBERS, SMOVE, SREM, SPOP, SRANDMEMBER, SCAN, SUNION, SUNIONSTORE
+ * SMEMBERS, SMOVE, SREM, SPOP, SRANDMEMBER, SSCAN, SUNION, SUNIONSTORE
  * <p>
  * Supported SortedSet commands - ZADD, ZCARD, ZCOUNT, ZINCRBY, ZLEXCOUNT, ZRANGE, ZRANGEBYLEX,
  * ZRANGEBYSCORE, ZRANK, ZREM, ZREMRANGEBYLEX, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZREVRANGE,
@@ -220,7 +217,7 @@ public class GeodeRedisServer {
   @SuppressWarnings("deprecation")
   private org.apache.geode.LogWriter logger;
 
-  private RegionProvider regionCache;
+  private RegionProvider regionProvider;
 
   private final MetaCacheListener metaListener;
 
@@ -242,29 +239,17 @@ public class GeodeRedisServer {
   public static final String STRING_REGION = "ReDiS_StRiNgS";
 
   /**
-   * TThe field that defines the name of the {@link Region} which holds non-named hash. The current
-   * value of this field is {@value #HASH_REGION}.
-   */
-  public static final String HASH_REGION = "ReDiS_HASH";
-
-  /**
-   * TThe field that defines the name of the {@link Region} which holds sets. The current value of
-   * this field is {@value #SET_REGION}.
-   */
-  public static final String SET_REGION = "ReDiS_SET";
-
-
-  /**
    * The field that defines the name of the {@link Region} which holds all of the HyperLogLogs. The
    * current value of this field is {@code HLL_REGION}.
    */
   public static final String HLL_REGION = "ReDiS_HlL";
 
   /**
-   * The field that defines the name of the {@link Region} which holds all of the Redis meta data.
-   * The current value of this field is {@code REDIS_META_DATA_REGION}.
+   * The name of the region that holds data stored in redis.
+   * Currently this is the meta data but at some point the value for a particular
+   * type will be changed to an instance of {@link RedisData}
    */
-  public static final String REDIS_META_DATA_REGION = "ReDiS_MeTa_DaTa";
+  public static final String REDIS_DATA_REGION = "ReDiS_DaTa";
 
   /**
    * System property name that can be used to set the number of threads to be used by the
@@ -420,8 +405,8 @@ public class GeodeRedisServer {
   }
 
   @VisibleForTesting
-  public RegionProvider getRegionCache() {
-    return regionCache;
+  public RegionProvider getRegionProvider() {
+    return regionProvider;
   }
 
   private void initializeRedis() {
@@ -429,9 +414,7 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
 
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
-      Region<ByteArrayWrapper, RedisHash> redisHash;
-      Region<String, RedisDataType> redisMetaData;
-      Region<ByteArrayWrapper, RedisSet> redisSet;
+      Region<ByteArrayWrapper, RedisData> redisData;
       InternalCache gemFireCache = (InternalCache) cache;
 
       if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
@@ -445,37 +428,25 @@ public class GeodeRedisServer {
         hLLRegion = regionFactory.create(HLL_REGION);
       }
 
-      if ((redisHash = cache.getRegion(HASH_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, RedisHash> regionFactory =
-            gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
-        redisHash = regionFactory.create(HASH_REGION);
-      }
-
-      if ((redisSet = cache.getRegion(SET_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, RedisSet> regionFactory =
-            gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
-        redisSet = regionFactory.create(SET_REGION);
-      }
-
-      if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
-        InternalRegionFactory<String, RedisDataType> redisMetaDataFactory =
-            gemFireCache.createInternalRegionFactory();
+      if ((redisData = cache.getRegion(REDIS_DATA_REGION)) == null) {
+        InternalRegionFactory<ByteArrayWrapper, RedisData> redisMetaDataFactory =
+            gemFireCache.createInternalRegionFactory(DEFAULT_REGION_TYPE);
         redisMetaDataFactory.addCacheListener(metaListener);
-        redisMetaDataFactory.setDataPolicy(DataPolicy.REPLICATE);
         redisMetaDataFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
-        redisMetaData = redisMetaDataFactory.create(REDIS_META_DATA_REGION);
+        redisData = redisMetaDataFactory.create(REDIS_DATA_REGION);
       }
 
-      keyRegistrar = new KeyRegistrar(redisMetaData);
+      keyRegistrar = new KeyRegistrar(redisData);
       hashLockService = new RedisLockService();
       pubSub = new PubSubImpl(new Subscriptions());
-      regionCache = new RegionProvider(stringsRegion, hLLRegion, keyRegistrar,
-          expirationFutures, expirationExecutor, DEFAULT_REGION_TYPE, redisHash, redisSet);
-      redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
-      redisMetaData.put(HLL_REGION, RedisDataType.REDIS_PROTECTED);
-      redisMetaData.put(STRING_REGION, RedisDataType.REDIS_PROTECTED);
-      redisMetaData.put(SET_REGION, RedisDataType.REDIS_PROTECTED);
-      redisMetaData.put(HASH_REGION, RedisDataType.REDIS_PROTECTED);
+      regionProvider = new RegionProvider(stringsRegion, hLLRegion, keyRegistrar,
+          expirationFutures, expirationExecutor, DEFAULT_REGION_TYPE, redisData);
+      keyRegistrar.register(Coder.stringToByteArrayWrapper(REDIS_DATA_REGION),
+          RedisDataType.REDIS_PROTECTED);
+      keyRegistrar.register(Coder.stringToByteArrayWrapper(HLL_REGION),
+          RedisDataType.REDIS_PROTECTED);
+      keyRegistrar.register(Coder.stringToByteArrayWrapper(STRING_REGION),
+          RedisDataType.REDIS_PROTECTED);
 
       CommandFunction.register();
     }
@@ -483,6 +454,8 @@ public class GeodeRedisServer {
     checkForRegions();
     registerLockServiceMBean();
   }
+
+  public static final int PROTECTED_KEY_COUNT = 3;
 
   @VisibleForTesting
   public RedisLockService getLockService() {
@@ -509,20 +482,28 @@ public class GeodeRedisServer {
   }
 
   private void checkForRegions() {
-    Collection<Entry<String, RedisDataType>> entrySet = keyRegistrar.keyInfos();
-    for (Entry<String, RedisDataType> entry : entrySet) {
-      String regionName = entry.getKey();
-      RedisDataType type = entry.getValue();
-      Region<?, ?> newRegion = cache.getRegion(regionName);
-      if (newRegion == null && type != RedisDataType.REDIS_STRING && type != RedisDataType.REDIS_HLL
-          && type != RedisDataType.REDIS_PROTECTED) {
-        try {
-          regionCache
-              .createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(regionName), type);
-        } catch (Exception e) {
-          if (logger.errorEnabled()) {
-            logger.error(e);
-          }
+    Collection<Entry<ByteArrayWrapper, RedisData>> entrySet = keyRegistrar.keyInfos();
+    for (Entry<ByteArrayWrapper, RedisData> entry : entrySet) {
+      ByteArrayWrapper key = entry.getKey();
+      RedisDataType type = entry.getValue().getType();
+      if (!regionProvider.typeUsesDynamicRegions(type)) {
+        continue;
+      }
+      if (cache.getRegion(key.toString()) != null) {
+        // TODO: this seems to be correct (i.e. no need to call createRemoteRegionReferenceLocally
+        // if region already exists).
+        // HOWEVER: createRemoteRegionReferenceLocally ends up doing nothing if the region does not
+        // exist. So this caller of createRemoteRegionReferenceLocally basically does nothing.
+        // createRemoteRegionReferenceLocally might be needed even if the region exists because
+        // local state needs to be initialized (like indexes and queries).
+        continue;
+      }
+      try {
+        regionProvider.createRemoteRegionReferenceLocally(key, type);
+      } catch (Exception e) {
+        // TODO: this eats the exception so if something really is wrong we don't fail but just log.
+        if (logger.errorEnabled()) {
+          logger.error(e);
         }
       }
     }
@@ -614,7 +595,7 @@ public class GeodeRedisServer {
         pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
-            new ExecutionHandlerContext(socketChannel, cache, regionCache, GeodeRedisServer.this,
+            new ExecutionHandlerContext(socketChannel, cache, regionProvider, GeodeRedisServer.this,
                 redisPasswordBytes,
                 keyRegistrar, pubSub, hashLockService));
       }
@@ -659,17 +640,13 @@ public class GeodeRedisServer {
    *
    * @param event EntryEvent from meta data region
    */
-  private void afterKeyCreate(EntryEvent<String, RedisDataType> event) {
+  private void afterKeyCreate(EntryEvent<ByteArrayWrapper, RedisData> event) {
     if (event.isOriginRemote()) {
-      final String key = event.getKey();
-      final RedisDataType value = event.getNewValue();
-      if (value != RedisDataType.REDIS_STRING && value != RedisDataType.REDIS_HLL
-          && value != RedisDataType.REDIS_PROTECTED) {
-        try {
-          regionCache.createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(key),
-              value);
-        } catch (RegionDestroyedException ignore) { // Region already destroyed, ignore
-        }
+      final ByteArrayWrapper key = event.getKey();
+      final RedisData value = event.getNewValue();
+      try {
+        regionProvider.createRemoteRegionReferenceLocally(key, value.getType());
+      } catch (RegionDestroyedException ignore) { // Region already destroyed, ignore
       }
     }
   }
@@ -678,29 +655,22 @@ public class GeodeRedisServer {
    * When a key is removed then this function will make sure the associated queries with the key are
    * also removed from each vm to avoid unnecessary data retention
    */
-  private void afterKeyDestroy(EntryEvent<String, RedisDataType> event) {
+  private void afterKeyDestroy(EntryEvent<ByteArrayWrapper, RedisData> event) {
     if (event.isOriginRemote()) {
-      final String key = event.getKey();
-      final RedisDataType value = event.getOldValue();
-      if (value != null && value != RedisDataType.REDIS_STRING && value != RedisDataType.REDIS_HLL
-          && value != RedisDataType.REDIS_PROTECTED) {
-        ByteArrayWrapper kW = Coder.stringToByteArrayWrapper(key);
-        Region<?, ?> r = regionCache.getRegion(kW);
-        if (r != null) {
-          regionCache.removeRegionReferenceLocally(kW, value);
-        }
-      }
+      final ByteArrayWrapper key = event.getKey();
+      final RedisData value = event.getOldValue();
+      regionProvider.removeRegionReferenceLocally(key, value.getType());
     }
   }
 
-  private class MetaCacheListener extends CacheListenerAdapter<String, RedisDataType> {
+  private class MetaCacheListener extends CacheListenerAdapter<ByteArrayWrapper, RedisData> {
     @Override
-    public void afterCreate(EntryEvent<String, RedisDataType> event) {
+    public void afterCreate(EntryEvent<ByteArrayWrapper, RedisData> event) {
       afterKeyCreate(event);
     }
 
     @Override
-    public void afterDestroy(EntryEvent<String, RedisDataType> event) {
+    public void afterDestroy(EntryEvent<ByteArrayWrapper, RedisData> event) {
       afterKeyDestroy(event);
     }
   }
@@ -730,7 +700,7 @@ public class GeodeRedisServer {
       serverChannel.close();
       c.syncUninterruptibly();
       c2.syncUninterruptibly();
-      regionCache.close();
+      regionProvider.close();
       if (mainThread != null) {
         mainThread.interrupt();
       }

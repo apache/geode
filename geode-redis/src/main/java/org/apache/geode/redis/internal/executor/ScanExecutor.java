@@ -113,9 +113,9 @@ public class ScanExecutor extends AbstractScanExecutor {
     int numElements = 0;
     int i = -1;
     for (String key : (Collection<String>) list) {
-      if (key.equals(GeodeRedisServer.REDIS_META_DATA_REGION)
-          || key.equals(GeodeRedisServer.STRING_REGION) || key
-              .equals(GeodeRedisServer.HLL_REGION)) {
+      if (key.equals(GeodeRedisServer.REDIS_DATA_REGION)
+          || key.equals(GeodeRedisServer.STRING_REGION)
+          || key.equals(GeodeRedisServer.HLL_REGION)) {
         continue;
       }
       i++;

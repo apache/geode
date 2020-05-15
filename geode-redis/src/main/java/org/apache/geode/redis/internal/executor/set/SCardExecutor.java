@@ -28,7 +28,7 @@ public class SCardExecutor extends SetExecutor {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
     RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
     int size = redisSetCommands.scard(key);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
   }

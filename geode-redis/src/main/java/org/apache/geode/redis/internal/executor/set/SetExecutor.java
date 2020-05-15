@@ -20,6 +20,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
@@ -31,12 +32,12 @@ public abstract class SetExecutor extends AbstractExecutor {
    * @param context the execution handler
    * @return the set Region
    */
-  Region<ByteArrayWrapper, RedisSet> getRegion(
+  Region<ByteArrayWrapper, RedisData> getRegion(
       ExecutionHandlerContext context) {
 
     return context
         .getRegionProvider()
-        .getSetRegion();
+        .getDataRegion();
   }
 
   protected AutoCloseableLock withRegionLock(

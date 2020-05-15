@@ -14,10 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.List;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -46,26 +43,12 @@ public class HKeysExecutor extends HashExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    List<ByteArrayWrapper> keys;
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      RedisHash keyMap = getMap(context, key);
-      keys = keyMap.keys();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
-
-    if (keys.isEmpty()) {
+    RedisHash keyMap = getRedisHash(context, key);
+    if (keyMap.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
     }
 
-    respondBulkStrings(command, context, keys);
+    respondBulkStrings(command, context, keyMap.keys());
   }
 }
