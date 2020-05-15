@@ -22,7 +22,6 @@ import org.mockito.Mockito;
 
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.string.SetExecutor;
 
@@ -41,10 +40,10 @@ public class AbstractExecutorJUnitTest {
 
     // Assert false to protected or null types
     assertFalse(abstractExecutor.removeEntry(Coder.stringToByteArrayWrapper("junit"),
-        RedisDataType.REDIS_PROTECTED, context));
+        context));
 
     assertFalse(
-        abstractExecutor.removeEntry(Coder.stringToByteArrayWrapper("junit"), null, context));
+        abstractExecutor.removeEntry(Coder.stringToByteArrayWrapper("junit"), context));
 
 
 
