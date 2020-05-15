@@ -102,4 +102,16 @@ public class RedisKeyInRegion implements RedisKeyCommands {
       return result;
     }
   }
+
+  public boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey) {
+    RedisData value = getRedisData(oldKey);
+    if (value == null) {
+      return false;
+    }
+
+    region.put(newKey, value);
+    region.remove(oldKey);
+
+    return true;
+  }
 }

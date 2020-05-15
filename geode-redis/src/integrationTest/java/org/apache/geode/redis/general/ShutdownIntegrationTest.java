@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -56,6 +57,7 @@ public class ShutdownIntegrationTest {
   }
 
   @Test
+  @Ignore("will be remedied in: https://github.com/apache/geode/pull/5204")
   public void shutdownIsDisabled_whenOnlySupportedCommandsAreAllowed() {
     server.getServer().setAllowUnsupportedCommands(false);
 

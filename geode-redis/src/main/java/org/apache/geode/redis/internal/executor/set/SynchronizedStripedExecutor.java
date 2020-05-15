@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.concurrent.Callable;
 
 
+
 /**
  * Implements {@link StripedExecutor} by using synchronization.
  * The thread that calls execute will also be the thread that
@@ -54,10 +55,19 @@ public class SynchronizedStripedExecutor implements StripedExecutor {
   }
 
   private Object getSync(Object stripeId) {
+    return syncs[getStripeIndex(stripeId)];
+  }
+
+  private int getStripeIndex(Object stripeId) {
     int hash = stripeId.hashCode();
     if (hash < 0) {
       hash = -hash;
     }
-    return syncs[hash % syncs.length];
+    return hash % syncs.length;
+  }
+
+  @Override
+  public int compareStripes(Object object1, Object object2) {
+    return getStripeIndex(object1) - getStripeIndex(object2);
   }
 }

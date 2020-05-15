@@ -21,9 +21,15 @@ import static org.apache.geode.redis.internal.RedisCommandType.PEXPIREAT;
 import static org.apache.geode.redis.internal.RedisCommandType.PTTL;
 import static org.apache.geode.redis.internal.RedisCommandType.TYPE;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.executor.set.SingleResultCollector;
 
 public class RedisKeyCommandsFunctionExecutor implements RedisKeyCommands {
   private final Region<ByteArrayWrapper, RedisData> region;
@@ -61,5 +67,33 @@ public class RedisKeyCommandsFunctionExecutor implements RedisKeyCommands {
   @Override
   public String type(ByteArrayWrapper key) {
     return CommandFunction.execute(TYPE, key, null, region);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey) {
+
+    if (!region.containsKey(oldKey)) {
+      return false;
+    }
+
+    List<ByteArrayWrapper> keysToOperateOn = new ArrayList<>();
+    keysToOperateOn.add(oldKey);
+    keysToOperateOn.add(newKey);
+
+    SingleResultCollector<Boolean> rc = new SingleResultCollector<>();
+
+
+
+    FunctionService
+        .onRegion(region)
+        .withFilter(Collections.singleton(keysToOperateOn.get(0)))
+        .setArguments(
+            new Object[] {oldKey, newKey, keysToOperateOn, new ArrayList<>(), new ArrayList<>()})
+        .withCollector(rc)
+        .execute(RenameFunction.ID)
+        .getResult();
+
+    return rc.getResult();
   }
 }

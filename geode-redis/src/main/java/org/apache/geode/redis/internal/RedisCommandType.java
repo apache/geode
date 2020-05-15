@@ -122,7 +122,7 @@ public enum RedisCommandType {
   PEXPIRE(new PExpireExecutor(), true),
   PEXPIREAT(new PExpireAtExecutor(), true),
   PTTL(new PTTLExecutor(), true),
-  RENAME(new RenameExecutor(), true),
+  RENAME(new RenameExecutor(), true, new ExactParameterRequirements(3)),
   TTL(new TTLExecutor(), true),
   TYPE(new TypeExecutor(), true),
 

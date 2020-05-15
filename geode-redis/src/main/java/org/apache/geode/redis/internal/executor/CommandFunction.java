@@ -30,7 +30,6 @@ import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.executor.set.RedisSetInRegion;
 import org.apache.geode.redis.internal.executor.set.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.set.StripedExecutor;
-import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
 import org.apache.geode.redis.internal.executor.string.RedisStringInRegion;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 
@@ -41,8 +40,7 @@ public class CommandFunction extends SingleResultRedisFunction {
 
   private final transient StripedExecutor stripedExecutor;
 
-  public static void register() {
-    SynchronizedStripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+  public static void register(StripedExecutor stripedExecutor) {
     FunctionService.registerFunction(new CommandFunction(stripedExecutor));
   }
 
