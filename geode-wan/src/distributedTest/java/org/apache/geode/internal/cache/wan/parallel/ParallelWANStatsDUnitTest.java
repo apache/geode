@@ -763,6 +763,81 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStatsHA(NUM_PUTS, 1000, 1000));
   }
 
+  @Category({WanTest.class})
+  @Test
+  public void testParallelPropagationHAWithGroupTransactionEvents() throws Exception {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2);
+
+    createReceiverPR(vm2, 0);
+
+    createReceiverInVMs(vm2);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    createSenderPRs(3);
+
+    int batchSize = 9;
+    boolean groupTransactionEvents = false;
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
+            groupTransactionEvents,
+            -1));
+    vm5.invoke(
+        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
+            groupTransactionEvents,
+            -1));
+    vm6.invoke(
+        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
+            groupTransactionEvents,
+            -1));
+    vm7.invoke(
+        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
+            groupTransactionEvents,
+            -1));
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    AsyncInvocation inv1 = vm5.invokeAsync(() -> WANTestBase.doTxPuts(testName, 2, 500, 0));
+    AsyncInvocation inv2 = vm6.invokeAsync(() -> WANTestBase.doTxPuts(testName, 2, 500, 1));
+
+    vm2.invoke(() -> await()
+        .untilAsserted(() -> assertEquals("Waiting for some batches to be received", true,
+            getRegionSize(testName) > 40)));
+    AsyncInvocation inv3 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    inv1.join();
+    inv2.join();
+    inv3.join();
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(testName, 2000));
+
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v6List =
+        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v7List =
+        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    assertEquals(0, v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
+    int receivedEvents = v5List.get(1) + v6List.get(1) + v7List.get(1);
+    // We may see a single retried event on all members due to the kill
+    assertTrue("Received " + receivedEvents,
+        6000 <= receivedEvents && 6003 >= receivedEvents); // eventsReceived
+    int queuedEvents = v5List.get(2) + v6List.get(2) + v7List.get(2);
+    assertTrue("Queued " + queuedEvents,
+        6000 <= queuedEvents && 6003 >= queuedEvents); // eventsQueued
+    assertEquals(0, v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches redistributed
+
+    // batchesReceived is equal to numberOfEntries/(batchSize+1)
+    // given that as transactions are 2 events big, for each batch it will always be necessary to
+    // add one more entry to the 9 events batch in order to have complete transactions in the batch.
+    int batchesReceived = (1000 + 1000) / (batchSize + 1);
+    vm2.invoke(() -> WANTestBase.checkGatewayReceiverStatsHA(batchesReceived, 2000, 2000));
+  }
+
+
   /**
    * 1 region and sender configured on local site and 1 region and a receiver configured on remote
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.

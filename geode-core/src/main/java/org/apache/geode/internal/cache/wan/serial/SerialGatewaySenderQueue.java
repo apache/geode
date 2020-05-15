@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -102,7 +103,18 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private final AtomicLong tailKey = new AtomicLong();
 
+  /**
+   * Last key peeked from the queue.
+   */
+  private long lastPeekedId = -1;
+
   private final Deque<Long> peekedIds = new LinkedBlockingDeque<Long>();
+
+  /**
+   * Contains the set of peekedIds that were peeked to complete a transaction
+   * inside a batch when groupTransactionEvents is set.
+   */
+  private final Set<Long> extraPeekedIds = ConcurrentHashMap.newKeySet();
 
   /**
    * The name of the <code>Region</code> backing this queue
@@ -298,10 +310,11 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   public void remove() throws CacheException {
     lock.writeLock().lock();
     try {
-      if (this.peekedIds.isEmpty()) {
+      if (peekedIds.isEmpty()) {
         return;
       }
-      Long key = this.peekedIds.remove();
+      Long key = peekedIds.remove();
+      extraPeekedIds.remove(key);
       try {
         // Increment the head key
         updateHeadKey(key.longValue());
@@ -459,7 +472,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       int retries = 0;
       long lastKeyForTransaction = lastKey;
       while (!areAllEventsForTransactionInBatch
-          && retries++ <= GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+          && retries++ < GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
         EventsAndLastKey eventsAndKey =
             peekEventsWithTransactionId(transactionId, lastKeyForTransaction);
 
@@ -477,7 +490,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         lastKeyForTransaction = eventsAndKey.lastKey;
       }
       if (!areAllEventsForTransactionInBatch) {
-        logger.warn("Not able to retrieve all events for transaction {} after {} retries",
+        logger.warn("Not able to retrieve all events for transaction {} after {} tries",
             transactionId, retries);
       }
     }
@@ -691,6 +704,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   public void resetLastPeeked() {
     this.peekedIds.clear();
+    extraPeekedIds.clear();
+    lastPeekedId = -1;
   }
 
   /**
@@ -699,14 +714,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private Long getCurrentKey() {
     long currentKey;
-    if (this.peekedIds.isEmpty()) {
+    if (lastPeekedId == -1) {
       currentKey = getHeadKey();
     } else {
-      Long lastPeek = this.peekedIds.peekLast();
-      if (lastPeek == null) {
-        return null;
-      }
-      currentKey = lastPeek.longValue() + 1;
+      currentKey = inc(lastPeekedId);
     }
     return currentKey;
   }
@@ -761,8 +772,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // Note: getting the serialized form here (if it has overflowed to disk)
     // does not save anything since GatewayBatchOp needs to GatewayEventImpl
     // in object form.
-    while (before(currentKey, getTailKey())
-        && (null == (object = getObjectInSerialSenderQueue(currentKey)))) {
+    while (before(currentKey, getTailKey())) {
+      if (!extraPeekedIds.contains(currentKey)) {
+        object = getObjectInSerialSenderQueue(currentKey);
+        if (object != null) {
+          break;
+        }
+      }
       if (logger.isTraceEnabled()) {
         logger.trace("{}: Trying head key + offset: {}", this, currentKey);
       }
@@ -778,6 +794,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     if (object != null) {
       this.peekedIds.add(currentKey);
+      lastPeekedId = currentKey;
       return new KeyAndEventPair(currentKey, object);
     }
     return null;
@@ -810,6 +827,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     long currentKey = lastKey;
 
     while ((currentKey = inc(currentKey)) != getTailKey()) {
+      if (extraPeekedIds.contains(currentKey)) {
+        continue;
+      }
       object = optimalGet(currentKey);
       if (object == null) {
         continue;
@@ -817,7 +837,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
       if (condition.test(object)) {
         elementsMatching.add(object);
-        this.peekedIds.add((Long) currentKey);
+        peekedIds.add(currentKey);
+        extraPeekedIds.add(currentKey);
         lastKey = currentKey;
 
         if (stopCondition.test(object)) {

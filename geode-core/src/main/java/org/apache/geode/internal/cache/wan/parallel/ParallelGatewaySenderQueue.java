@@ -1359,7 +1359,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       boolean areAllEventsForTransactionInBatch = false;
       int retries = 0;
       while (!areAllEventsForTransactionInBatch
-          && retries++ <= GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+          && retries++ < GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
         List<Object> events = peekEventsWithTransactionId(prQ, bucketId, transactionId);
         for (Object object : events) {
           GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
@@ -1375,7 +1375,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
       }
       if (!areAllEventsForTransactionInBatch) {
-        logger.warn("Not able to retrieve all events for transaction {} after {} retries",
+        logger.warn("Not able to retrieve all events for transaction {} after {} tries",
             transactionId, retries);
       }
     }

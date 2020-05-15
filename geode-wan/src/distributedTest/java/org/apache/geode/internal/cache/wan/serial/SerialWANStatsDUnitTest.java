@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan.serial;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Wait.pause;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
@@ -297,20 +298,21 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     int batchTimeInterval = 10000;
     boolean groupTransactionEvents = true;
+    int batchSize = 10;
     vm4.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
             groupTransactionEvents,
             batchTimeInterval));
     vm5.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
             groupTransactionEvents,
             batchTimeInterval));
     vm6.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
             groupTransactionEvents,
             batchTimeInterval));
     vm7.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
             groupTransactionEvents,
             batchTimeInterval));
 
@@ -507,6 +509,80 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStatsHA(1000, 10000, 10000));
 
     vm5.invoke(() -> WANTestBase.checkStats_Failover("ln", 10000));
+  }
+
+  @Test
+  public void testReplicatedSerialPropagationHAWithGroupTransactionEvents() throws Exception {
+
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort));
+    vm6.invoke(() -> WANTestBase.createCache(lnPort));
+    vm7.invoke(() -> WANTestBase.createCache(lnPort));
+
+    int batchSize = 9;
+    boolean groupTransactionEvents = true;
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
+            groupTransactionEvents, -1));
+    vm5.invoke(
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
+            groupTransactionEvents, -1));
+    vm6.invoke(
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
+            groupTransactionEvents, -1));
+    vm7.invoke(
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
+            groupTransactionEvents, -1));
+
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", null, isOffHeap()));
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
+
+    AsyncInvocation inv1 =
+        vm6.invokeAsync(() -> WANTestBase.doTxPuts(testName + "_RR", 2, 5000, 0));
+    AsyncInvocation inv2 =
+        vm7.invokeAsync(() -> WANTestBase.doTxPuts(testName + "_RR", 2, 5000, 1));
+
+    vm2.invoke(() -> await()
+        .untilAsserted(() -> assertEquals("Waiting for some batches to be received", true,
+            getRegionSize(testName + "_RR") > 40)));
+
+    AsyncInvocation inv3 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
+    Boolean isKilled = Boolean.FALSE;
+    try {
+      isKilled = (Boolean) inv3.getResult();
+    } catch (Throwable e) {
+      fail("Unexpected exception while killing a sender");
+    }
+    AsyncInvocation inv4;
+    if (!isKilled) {
+      inv4 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
+      inv4.join();
+    }
+    inv1.join();
+    inv2.join();
+    inv3.join();
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 20000));
+
+    // batchesReceived is equal to numberOfEntries/(batchSize+1)
+    // given that as transactions are 2 events big, for each batch it will always be necessary to
+    // add one more entry to the 9 events batch in order to have complete transactions in the batch.
+    int batchesReceived = (10000 + 10000) / (batchSize + 1);
+    vm2.invoke(() -> WANTestBase.checkGatewayReceiverStatsHA(batchesReceived, 20000, 20000));
+
+    vm5.invoke(() -> WANTestBase.checkStats_Failover("ln", 20000));
   }
 
   @Test

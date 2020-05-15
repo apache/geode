@@ -2758,6 +2758,24 @@ public class WANTestBase extends DistributedTestCase {
     mgr.commit();
   }
 
+  public static void doTxPuts(String regionName, final long putsPerTransaction,
+      final long transactions, long offset) {
+    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(r);
+    CacheTransactionManager mgr = cache.getCacheTransactionManager();
+
+    long keyOffset = offset * ((putsPerTransaction + (10 * transactions)) * 100);
+    for (long i = 0; i < transactions; i++) {
+      mgr.begin();
+      for (long j = 0; j < putsPerTransaction; j++) {
+        long key = keyOffset + ((j + (10 * i)) * 100);
+        String value = "Value_" + key;
+        r.put(key, value);
+      }
+      mgr.commit();
+    }
+  }
+
   public static void doNextPuts(String regionName, int start, int numPuts) {
     IgnoredException exp =
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
