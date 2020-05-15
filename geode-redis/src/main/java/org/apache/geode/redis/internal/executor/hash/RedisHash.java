@@ -176,6 +176,10 @@ public class RedisHash implements RedisData {
     return results;
   }
 
+  public synchronized Collection<ByteArrayWrapper> hvals() {
+    return new ArrayList<>(hash.values());
+  }
+
   private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       boolean doingAdds) {
     if (hasDelta()) {
@@ -214,13 +218,8 @@ public class RedisHash implements RedisData {
     return new ArrayList<>(hash.keySet());
   }
 
-  public synchronized Collection<ByteArrayWrapper> values() {
-    return new ArrayList<>(hash.values());
-  }
-
   @Override
   public RedisDataType getType() {
     return RedisDataType.REDIS_HASH;
   }
-
 }

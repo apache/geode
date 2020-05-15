@@ -37,4 +37,6 @@ public interface RedisHashCommands {
   int hlen(ByteArrayWrapper key);
 
   List<ByteArrayWrapper> hmget(ByteArrayWrapper key, List<ByteArrayWrapper> fields);
+
+  Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key);
 }

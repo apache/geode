@@ -152,6 +152,10 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> new RedisHashInRegion(localRegion).hmget(key, fields);
         break;
       }
+      case HVALS: {
+        callable = () -> new RedisHashInRegion(localRegion).hvals(key);
+        break;
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
