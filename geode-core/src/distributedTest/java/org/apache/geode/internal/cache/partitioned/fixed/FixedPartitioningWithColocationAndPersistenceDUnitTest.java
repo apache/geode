@@ -1555,15 +1555,13 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
       InternalDistributedMember idmForShipment = shipments.getBucketPrimary(i);
 
       // take all the keys from the shipment for each bucket
-      Set<CustomerId> customerKey =
-          uncheckedCast(customers.getBucketKeys(i));
+      Set<CustomerId> customerKey = uncheckedCast(customers.getBucketKeys(i));
       assertThat(customerKey).isNotNull();
 
       for (CustomerId customerId : customerKey) {
         assertThat(customers.get(customerId)).isNotNull();
 
-        Set<OrderId> orderKey =
-            uncheckedCast(orders.getBucketKeys(i));
+        Set<OrderId> orderKey = uncheckedCast(orders.getBucketKeys(i));
         for (OrderId orderId : orderKey) {
           assertThat(orders.get(orderId)).isNotNull();
           if (orderId.getCustomerId().equals(customerId)) {

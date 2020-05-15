@@ -8941,7 +8941,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
       try {
         proxyResult = getServerProxy().putAll(
-            uncheckedCast(map), eventId,
+            uncheckedCast(map),
+            eventId,
             !event.isGenerateCallbacks(),
             event.getCallbackArgument());
         if (isDebugEnabled) {
