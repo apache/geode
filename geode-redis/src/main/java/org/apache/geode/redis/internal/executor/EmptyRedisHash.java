@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor;
 
 import static java.util.Collections.emptyList;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
@@ -26,41 +25,26 @@ import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.executor.hash.RedisHash;
 
 public class EmptyRedisHash extends RedisHash {
+  public EmptyRedisHash() {
+    super(emptyList());
+  }
+
   @Override
-  public synchronized int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public synchronized int hdel(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      List<ByteArrayWrapper> fieldsToRemove) {
-    return 0;
+  public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, long increment)
+      throws NumberFormatException, ArithmeticException {
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public synchronized Collection<ByteArrayWrapper> hgetall() {
-    return emptyList();
+  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, double increment) throws NumberFormatException {
+    throw new UnsupportedOperationException();
   }
-
-  @Override
-  public synchronized boolean isEmpty() {
-    return true;
-  }
-
-  @Override
-  public synchronized boolean containsKey(ByteArrayWrapper field) {
-    return false;
-  }
-
-  @Override
-  public synchronized ByteArrayWrapper get(ByteArrayWrapper field) {
-    return null;
-  }
-
-  @Override
-  public synchronized int size() {
-    return 0;
-  }
-
 }

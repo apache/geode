@@ -253,6 +253,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8143")
   public void callingSDIFFSTOREonExistingKey_ShouldClearExpirationTime() {
 
     String key1 = "key1";
@@ -277,6 +278,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8143")
   public void callingSINTERSTOREonExistingKey_ShouldClearExpirationTime() {
     String key1 = "key1";
     String key2 = "key2";
@@ -300,6 +302,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8143")
   public void callingSUNIONSTOREonExistingKey_ShouldClearExpirationTime() {
     String key1 = "key1";
     String key2 = "key2";

@@ -27,8 +27,7 @@ public class SMembersExecutor extends SetExecutor {
   public RedisResponse executeCommandWithResponse(Command command,
       ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     Set<ByteArrayWrapper> members = redisSetCommands.smembers(key);
 
     return RedisResponse.array(members);

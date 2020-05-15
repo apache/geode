@@ -44,11 +44,9 @@ public class HGetExecutor extends HashExecutor {
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
-
     ByteArrayWrapper key = command.getKey();
-
-    RedisHash redisHash = getRedisHash(context, key);
-    ByteArrayWrapper valueWrapper = redisHash.get(field);
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    ByteArrayWrapper valueWrapper = redisHashCommands.hget(key, field);
     try {
       if (valueWrapper != null) {
         command.setResponse(

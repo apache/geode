@@ -42,4 +42,10 @@ public interface RedisSetCommands {
   Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount);
 
   List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor);
+
+  int sunionstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys);
+
+  int sinterstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys);
+
+  int sdiffstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys);
 }

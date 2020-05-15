@@ -14,13 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.redis.internal.executor.RedisHashInRegion.checkType;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -42,12 +37,6 @@ public class HScanExecutor extends AbstractScanExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisHash hash = checkType(context.getRegionProvider().getDataRegion().get(key));
-
-    if (hash.isEmpty()) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
-      return;
-    }
     byte[] cAr = commandElems.get(2);
     String cursorString = Coder.bytesToString(cAr);
 
@@ -113,51 +102,14 @@ public class HScanExecutor extends AbstractScanExecutor {
       return;
     }
 
-    List<Object> returnList =
-        getIteration(hash.entries(), matchPattern, count, cursor);
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    List<Object> returnList = redisHashCommands.hscan(key, matchPattern, count, cursor);
 
-    command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
-  }
-
-  @SuppressWarnings("unchecked")
-  protected List<Object> getIteration(
-      Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> list, Pattern matchPattern,
-      int count, int cursor) {
-    List<Object> returnList = new ArrayList<Object>();
-    int size = list.size();
-    int beforeCursor = 0;
-    int numElements = 0;
-    int i = -1;
-    for (Entry<ByteArrayWrapper, ByteArrayWrapper> entry : list) {
-      ByteArrayWrapper key = entry.getKey();
-      ByteArrayWrapper value = entry.getValue();
-      i++;
-      if (beforeCursor < cursor) {
-        beforeCursor++;
-        continue;
-      } else if (numElements < count) {
-        if (matchPattern != null) {
-          if (matchPattern.matcher(key.toString()).matches()) {
-            returnList.add(key);
-            returnList.add(value);
-            numElements++;
-          }
-        } else {
-          returnList.add(key);
-          returnList.add(value);
-          numElements++;
-        }
-      } else {
-        break;
-      }
-    }
-
-    if (i == size - 1) {
-      returnList.add(0, String.valueOf(0));
+    if (returnList.isEmpty()) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
     } else {
-      returnList.add(0, String.valueOf(i));
+      command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
     }
-    return returnList;
   }
-
 }
