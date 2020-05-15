@@ -152,6 +152,14 @@ public class RedisHash implements RedisData {
     return result;
   }
 
+  public synchronized int hexists(ByteArrayWrapper field) {
+    if (hash.containsKey(field)) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+
   private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       boolean doingAdds) {
     if (hasDelta()) {
@@ -196,10 +204,6 @@ public class RedisHash implements RedisData {
 
   public synchronized Collection<ByteArrayWrapper> values() {
     return new ArrayList<>(hash.values());
-  }
-
-  public synchronized boolean containsKey(ByteArrayWrapper field) {
-    return hash.containsKey(field);
   }
 
   @Override

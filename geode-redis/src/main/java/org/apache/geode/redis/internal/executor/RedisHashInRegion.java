@@ -58,6 +58,11 @@ public class RedisHashInRegion implements RedisHashCommands {
   }
 
   @Override
+  public int hexists(ByteArrayWrapper key, ByteArrayWrapper field) {
+    return getRedisHash(key).hexists(field);
+  }
+
+  @Override
   public boolean del(ByteArrayWrapper key) {
     return region.remove(key) != null;
   }

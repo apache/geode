@@ -39,10 +39,6 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
  */
 public class HExistsExecutor extends HashExecutor {
 
-  private static final int NOT_EXISTS = 0;
-
-  private static final int EXISTS = 1;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
@@ -50,15 +46,10 @@ public class HExistsExecutor extends HashExecutor {
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
     ByteArrayWrapper key = command.getKey();
-    RedisHash map = getRedisHash(context, key);
-    boolean hasField = map.containsKey(field);
-
-    if (hasField) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
-    } else {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-    }
-
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(),
+        redisHashCommands.hexists(key, field)));
   }
 
 }

@@ -133,6 +133,11 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> new RedisHashInRegion(localRegion).hgetall(key);
         break;
       }
+      case HEXISTS: {
+        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        callable = () -> new RedisHashInRegion(localRegion).hexists(key, field);
+        break;
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }

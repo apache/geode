@@ -44,13 +44,13 @@ public class EmptyRedisHash extends RedisHash {
   }
 
   @Override
-  public synchronized boolean isEmpty() {
-    return true;
+  public synchronized int hexists(ByteArrayWrapper field) {
+    return 0;
   }
 
   @Override
-  public synchronized boolean containsKey(ByteArrayWrapper field) {
-    return false;
+  public synchronized boolean isEmpty() {
+    return true;
   }
 
   @Override
