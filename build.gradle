@@ -117,6 +117,7 @@ tasks.register('test') {
 }
 
 tasks.register('devBuild') {
+  group 'Build'
   description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
   dependsOn tasks.named('assemble')
   // Each subproject injects its SpotlessApply as a dependency to this task in the standard config
