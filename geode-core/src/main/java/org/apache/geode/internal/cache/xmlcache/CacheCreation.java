@@ -40,6 +40,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
@@ -161,6 +162,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
@@ -189,6 +191,10 @@ public class CacheCreation implements InternalCache {
 
   @Immutable
   private static final RegionAttributes defaults = new AttributesFactory().create();
+
+  @Immutable
+  private static final Optional<Boolean> parallelDiskStoreRecovery = SystemPropertyHelper
+      .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
 
   /**
    * Store the current CacheCreation that is doing a create. Used from PoolManager to defer to
@@ -522,12 +528,7 @@ public class CacheCreation implements InternalCache {
 
     cache.initializePdxRegistry();
 
-    for (DiskStore diskStore : diskStores.values()) {
-      DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
-      if (creation != pdxRegDSC) {
-        createDiskStore(creation, cache);
-      }
-    }
+    createDiskStores(cache, pdxRegDSC);
 
     if (hasDynamicRegionFactory()) {
       DynamicRegionFactory.get().open(getDynamicRegionFactoryConfig());
@@ -634,6 +635,21 @@ public class CacheCreation implements InternalCache {
 
     // Create all extensions
     extensionPoint.fireCreate(cache);
+  }
+
+  private void createDiskStores(InternalCache cache, DiskStoreAttributesCreation pdxRegDSC) {
+    Stream<DiskStore> diskStoreStream;
+    if (parallelDiskStoreRecovery.orElse(true)) {
+      diskStoreStream = diskStores.values().parallelStream();
+    } else {
+      diskStoreStream = diskStores.values().stream();
+    }
+    diskStoreStream.forEach(diskStore -> {
+      DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
+      if (creation != pdxRegDSC) {
+        createDiskStore(creation, cache);
+      }
+    });
   }
 
   public void initializeDeclarablesMap(InternalCache cache) {
@@ -1087,6 +1103,16 @@ public class CacheCreation implements InternalCache {
   @Override
   public InternalQueryService getInternalQueryService() {
     return queryService;
+  }
+
+  @Override
+  public void lockDiskStore(String diskStoreName) {
+
+  }
+
+  @Override
+  public void unlockDiskStore(String diskStoreName) {
+
   }
 
   public QueryConfigurationServiceCreation getQueryConfigurationServiceCreation() {

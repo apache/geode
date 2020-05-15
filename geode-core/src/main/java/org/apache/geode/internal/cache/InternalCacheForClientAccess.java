@@ -1216,6 +1216,16 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  public void lockDiskStore(String diskStoreName) {
+
+  }
+
+  @Override
+  public void unlockDiskStore(String diskStoreName) {
+
+  }
+
+  @Override
   public JSONFormatter getJsonFormatter() {
     return delegate.getJsonFormatter();
   }

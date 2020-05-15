@@ -725,6 +725,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private List<File> backupFiles = emptyList();
 
+  private ConcurrentMap<String, CountDownLatch> diskStoreLatches = new ConcurrentHashMap();
+
   static {
     // this works around jdk bug 6427854
     String propertyName = "sun.nio.ch.bugLevel";
@@ -1088,6 +1090,57 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     clientMetadataService = clientMetadataServiceFactory.apply(this);
+  }
+
+  @Override
+  public void lockDiskStore(String diskStoreName) {
+    doLockDiskStore(diskStoreName);
+  }
+
+  /**
+   * If the disk store is not associated with a {@code CountDownLatch},
+   * constructs a {@code CountDownLatch} with count one, and associate it with the disk store;
+   * otherwise wait until the associated {@code CountDownLatch} has counted down to zero.
+   *
+   * @param diskStoreName the name of the disk store
+   * @return {@code true} if it does not call {@code CountDownLatch.await()};
+   *         {@code false} otherwise.
+   */
+  @VisibleForTesting
+  boolean doLockDiskStore(String diskStoreName) {
+    CountDownLatch countDownLatch =
+        diskStoreLatches.putIfAbsent(diskStoreName, new CountDownLatch(1));
+    if (countDownLatch != null) {
+      try {
+        countDownLatch.await();
+        return false;
+      } catch (InterruptedException e) {
+        throw new InternalGemFireError(e);
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public void unlockDiskStore(String diskStoreName) {
+    doUnlockDiskStore(diskStoreName);
+  }
+
+  /**
+   * Decrements the count of the {@code CountDownLatch} associated with the disk store.
+   *
+   * @param diskStoreName the name of the disk store
+   * @return {@code true} if the disk store associated {@code CountDownLatch} has decremented;
+   *         {@code false} otherwise.
+   */
+  @VisibleForTesting
+  boolean doUnlockDiskStore(String diskStoreName) {
+    CountDownLatch countDownLatch = diskStoreLatches.get(diskStoreName);
+    if (countDownLatch != null) {
+      countDownLatch.countDown();
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -2490,6 +2543,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public void removeDiskStore(DiskStoreImpl diskStore) {
     diskStores.remove(diskStore.getName());
+    diskStoreLatches.remove(diskStore.getName());
     regionOwnedDiskStores.remove(diskStore.getName());
     if (!diskStore.getOwnedByRegion()) {
       system.handleResourceEvent(ResourceEvent.DISKSTORE_REMOVE, diskStore);

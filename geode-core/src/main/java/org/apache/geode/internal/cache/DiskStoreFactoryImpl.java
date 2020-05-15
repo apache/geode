@@ -141,10 +141,9 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
   @Override
   public DiskStore create(String name) {
     this.attrs.name = name;
-    // As a simple fix for 41290, only allow one DiskStore to be created
-    // at a time per cache by syncing on the cache.
     DiskStore result;
-    synchronized (this.cache) {
+    try {
+      this.cache.lockDiskStore(name);
       result = findExisting(name);
       if (result == null) {
         if (this.cache instanceof GemFireCacheImpl) {
@@ -165,6 +164,8 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
           creation.addDiskStore(result);
         }
       }
+    } finally {
+      this.cache.unlockDiskStore(name);
     }
 
     // Don't allow this disk store to be created
