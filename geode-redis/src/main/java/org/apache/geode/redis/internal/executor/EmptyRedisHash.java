@@ -54,6 +54,11 @@ public class EmptyRedisHash extends RedisHash {
   }
 
   @Override
+  public synchronized int hlen() {
+    return 0;
+  }
+
+  @Override
   public synchronized boolean isEmpty() {
     return true;
   }
@@ -62,10 +67,4 @@ public class EmptyRedisHash extends RedisHash {
   public synchronized ByteArrayWrapper get(ByteArrayWrapper field) {
     return null;
   }
-
-  @Override
-  public synchronized int size() {
-    return 0;
-  }
-
 }

@@ -38,8 +38,10 @@ public class HLenExecutor extends HashExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    RedisHash map = getRedisHash(context, key);
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), map.size()));
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    int len = redisHashCommands.hlen(key);
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), len));
   }
 
 }

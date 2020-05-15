@@ -33,4 +33,6 @@ public interface RedisHashCommands {
   int hexists(ByteArrayWrapper key, ByteArrayWrapper field);
 
   ByteArrayWrapper hget(ByteArrayWrapper key, ByteArrayWrapper field);
+
+  int hlen(ByteArrayWrapper key);
 }
