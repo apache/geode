@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.hash;
 import static org.apache.geode.redis.internal.RedisCommandType.DEL;
 import static org.apache.geode.redis.internal.RedisCommandType.HDEL;
 import static org.apache.geode.redis.internal.RedisCommandType.HEXISTS;
+import static org.apache.geode.redis.internal.RedisCommandType.HGET;
 import static org.apache.geode.redis.internal.RedisCommandType.HGETALL;
 import static org.apache.geode.redis.internal.RedisCommandType.HSET;
 
@@ -62,5 +63,10 @@ public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
   @Override
   public int hexists(ByteArrayWrapper key, ByteArrayWrapper field) {
     return CommandFunction.execute(HEXISTS, key, field, region);
+  }
+
+  @Override
+  public ByteArrayWrapper hget(ByteArrayWrapper key, ByteArrayWrapper field) {
+    return CommandFunction.execute(HGET, key, field, region);
   }
 }

@@ -49,6 +49,11 @@ public class EmptyRedisHash extends RedisHash {
   }
 
   @Override
+  public synchronized ByteArrayWrapper hget(ByteArrayWrapper field) {
+    return null;
+  }
+
+  @Override
   public synchronized boolean isEmpty() {
     return true;
   }
