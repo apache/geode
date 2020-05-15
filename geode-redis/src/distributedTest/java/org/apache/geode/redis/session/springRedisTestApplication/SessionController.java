@@ -12,12 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.springRedisTestApplication;
+package org.apache.geode.redis.session.springRedisTestApplication;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,9 +30,13 @@ public class SessionController {
   @SuppressWarnings("unchecked")
   @GetMapping("/getSessionNotes")
   public List<String> getSessionNotes(HttpServletRequest request) {
-    List<String> notes =
-        (List<String>) request.getSession().getAttribute("NOTES");
-    return notes;
+    HttpSession session = request.getSession(false);
+
+    if (session == null) {
+      return null;
+    } else {
+      return (List<String>) session.getAttribute("NOTES");
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -55,6 +60,6 @@ public class SessionController {
 
   @PostMapping("/invalidateSession")
   public void invalidateSession(HttpServletRequest request) {
-    request.getSession(false).invalidate();
+    request.getSession().invalidate();
   }
 }

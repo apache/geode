@@ -263,6 +263,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     dependencySet(group: 'org.springframework.boot', version: '2.2.1.RELEASE') {
       entry('spring-boot-starter')
+      entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')
       entry('spring-boot-starter-data-redis')
     }
