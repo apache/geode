@@ -57,6 +57,6 @@ public class UncheckedUtilsTest {
 
     assertThat(thrown)
         .isInstanceOf(ClassCastException.class)
-        .hasMessage("java.lang.Integer cannot be cast to java.lang.String");
+        .hasMessageContaining("java.lang.Integer cannot be cast to java.lang.String");
   }
 }
