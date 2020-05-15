@@ -89,7 +89,7 @@ import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
  * server, each command is picked up by a thread, interpreted and then executed and a response is
  * sent back to the client. The default connection port is 6379 but that can be altered when run
- * through GFSH or started through the provided static main class.
+ * through gfsh or started through the provided static main class.
  */
 
 @Experimental

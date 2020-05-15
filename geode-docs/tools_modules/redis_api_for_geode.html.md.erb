@@ -17,66 +17,46 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
--   **[What Is the Redis API for <%=vars.product_name%>?](#what-is-the-redis-api-for-<%=vars.product_name_lowercase%>)**
-
--   **[Using the Redis API for <%=vars.product_name%>](#using-the-redis-api-for-<%=vars.product_name_lowercase%>)**
-
--   **[Included Redis Commands](#included-redis-commands)**
-
--   **[Advantages of <%=vars.product_name%> over Redis](#advantages-of-<%=vars.product_name_lowercase%>-over-redis)**
-
-## <a id="what-is-the-redis-api-for-<%=vars.product_name_lowercase%>" class="no-quick-link"></a>What Is the Redis API for <%=vars.product_name%>?
-
-The Redis API for Geode allows Geode to function as a drop-in replacement for a Redis data store,
-letting Redis applications take advantage of Geode’s scaling capabilities without changing their
-client code. Redis clients connect to a Geode server in the same way they connect to a Redis server,
-using a hostname and a port number, with optional password authentication.
+The Redis API for <%=vars.product_name%> allows a single <%=vars.product_name%> cluster to function as a drop-in replacement for a
+highly-available Redis data store with one database, letting Redis applications take advantage of
+<%=vars.product_name%>’s scaling capabilities without changing their client code. Redis clients connect to a <%=vars.product_name%>
+server in the same way they connect to a Redis server, using a hostname and a port number, with
+optional password authentication.
 
 <img src="../images/redis_api_for_geode.png" class="image" />
 
 ## <a id="using-the-redis-api-for-<%=vars.product_name_lowercase%>" class="no-quick-link"></a>Using the Redis API for <%=vars.product_name%>
 
-To start a Geode instance using the Redis API for Geode:
+The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis
+commands.
 
-1. [Install Geode](https://geode.apache.org/releases/)
-2. Start the Geode command-line interface (GFSH) by running the gfsh command in a terminal:
+Use gfsh to start at least one server with a command of the form:
 
-    ``` pre
-gfsh
-    ```
-3. Once GFSH is running, start a locator:
-
-    ``` pre
-start locator
-    ```
-4. After the locator has started, start the Redis server by running the following command:
-
-    ``` pre
+``` pre
 start server --name=<serverName> --locators=<locatorPort> --redis-port=<redisPort> --redis-bind-address=<redisBindAddress>
-    ```
-    Replace `<serverName>` with the name of your server.
+```
 
-    Replace `<locatorPort>` with your locator port from step 3.
+Replace `<serverName>` with the name of your server.
 
-    Replace `<redisPort>` to specify the port the Geode server will listen on for Redis commands (the typical default Redis port is 6379).
+Replace `<locatorPort>` with your locator port.
 
-    Replace `<redisBindAddress>` to specify the IP address of the server host. This parameter is
-  optional. If not specified, the default is determined from the /etc/hosts file.
-5. To confirm the Redis server is running correctly, **_in a separate terminal run_**:
+Replace `<redisPort>` to specify the port the <%=vars.product_name%> server will listen on for Redis commands (the typical default Redis port is 6379).
 
-    ``` pre
-$ redis-cli
-    ```
-    This command assumes your server is running on localhost at port 6379. If you need to run on a
-  different host and port, use the following command:
+Replace `<redisBindAddress>` with the IP address of the server host. If this option is not specified, the default is determined from the `/etc/hosts` file.
 
-    ``` pre
-$ redis-cli -h <redisBindAddress> -p <redisPort>
-    ```
+To confirm the server is listening, run:
+
+``` pre
+redis-cli -h <redisBindAddress> -p <redisPort> ping
+```
+
+Replace `<redisBindAddress>` and `<redisPort>` with the same values as the server.
+
+If the server is functioning properly, you should see a response of `PONG`.
 
 ## <a id="included-redis-commands" class="no-quick-link"></a>Included Redis Commands
 
-The Redis API for <%=vars.product_name%> currently supports the following [Redis Commands](https://redis.io/commands/):
+The Redis API for <%=vars.product_name%> currently supports the following commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
 -   **Strings**: APPEND, GET, GETRANGE, SET
 -   **Hashes**: HGETALL, HMSET, HSET
@@ -84,7 +64,7 @@ The Redis API for <%=vars.product_name%> currently supports the following [Redis
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
 -   **Keys**: DEL, EXISTS, EXPIRE, PERSIST, PEXPIRE, PEXPIREAT, RENAME
 
-The following Redis commands are **experimental**:
+The following Redis API for <%=vars.product_name%> commands are **experimental**:
 
 -   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETSET, INCR, INCRBY, INCRBYFLOAT, MGET,
   MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, STRLEN
