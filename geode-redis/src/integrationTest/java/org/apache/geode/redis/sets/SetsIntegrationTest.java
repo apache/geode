@@ -37,7 +37,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
@@ -92,7 +91,8 @@ public class SetsIntegrationTest {
     setValue[0] = "set value that should never get added";
 
     exceptionRule.expect(JedisDataException.class);
-    exceptionRule.expectMessage(RedisConstants.ERROR_WRONG_TYPE);
+    exceptionRule
+        .expectMessage("WRONGTYPE Operation against a key holding the wrong kind of value");
 
     jedis.set(key, stringValue);
     jedis.sadd(key, setValue);

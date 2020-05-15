@@ -77,7 +77,7 @@ public class HIncrByExecutor extends HashExecutor {
     long value;
 
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      RedisHash map = getMap(context, key);
+      RedisHash redisHash = getModifiableRedisHash(context, key);
 
       byte[] byteField = commandElems.get(FIELD_INDEX);
       ByteArrayWrapper field = new ByteArrayWrapper(byteField);
@@ -86,12 +86,13 @@ public class HIncrByExecutor extends HashExecutor {
        * Put increment as value if field doesn't exist
        */
 
-      ByteArrayWrapper oldValue = map.get(field);
+      ByteArrayWrapper oldValue = redisHash.get(field);
 
       if (oldValue == null) {
-        map.put(field, new ByteArrayWrapper(incrArray));
+        ByteArrayWrapper newValue = new ByteArrayWrapper(incrArray);
+        redisHash.put(field, newValue);
 
-        saveMap(map, context, key);
+        saveRedishHash(redisHash, context, key);
 
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), increment));
 
@@ -114,15 +115,16 @@ public class HIncrByExecutor extends HashExecutor {
        */
       if ((value >= 0 && increment > (Long.MAX_VALUE - value))
           || (value <= 0 && increment < (Long.MIN_VALUE - value))) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
+        command
+            .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
         return;
       }
 
       value += increment;
 
-      map.put(field, new ByteArrayWrapper(Coder.longToBytes(value)));
+      redisHash.put(field, new ByteArrayWrapper(Coder.longToBytes(value)));
 
-      saveMap(map, context, key);
+      saveRedishHash(redisHash, context, key);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       command.setResponse(

@@ -22,11 +22,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RedisData;
 
 class EmptyRedisSet extends RedisSet {
 
@@ -36,7 +36,7 @@ class EmptyRedisSet extends RedisSet {
   }
 
   @Override
-  synchronized Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisSet> region,
+  synchronized Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key, int popCount) {
     return emptyList();
   }
@@ -58,14 +58,13 @@ class EmptyRedisSet extends RedisSet {
 
   @Override
   synchronized long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key) {
+      Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   synchronized long srem(ArrayList<ByteArrayWrapper> membersToRemove,
-      Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key,
-      AtomicBoolean setWasDeleted) {
+      Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
     return 0;
   }
 

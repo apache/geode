@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 
 /**
  * <pre>
@@ -48,9 +47,7 @@ public class HMGetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisHash map = getMap(context, key);
-
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
+    RedisHash map = getRedisHash(context, key);
 
     ArrayList<ByteArrayWrapper> fields = new ArrayList<ByteArrayWrapper>();
     for (int i = 2; i < commandElems.size(); i++) {

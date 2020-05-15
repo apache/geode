@@ -17,8 +17,6 @@ package org.apache.geode.redis.internal;
 
 public class RedisConstants {
 
-  public static final int NUM_DEFAULT_KEYS = 3;
-
   /*
    * Responses
    */

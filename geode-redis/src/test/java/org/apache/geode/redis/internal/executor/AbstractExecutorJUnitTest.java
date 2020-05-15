@@ -26,16 +26,8 @@ import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.string.SetExecutor;
 
-/**
- * Test for AbstractExecutor
- *
- *
- */
 public class AbstractExecutorJUnitTest {
 
-  /**
-   * Test the remove entry mehtod
-   */
   @Test
   public void testRemoveEntry() {
     // Create any instance of the AbstractExecutor

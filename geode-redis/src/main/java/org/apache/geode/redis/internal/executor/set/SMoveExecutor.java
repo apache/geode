@@ -25,6 +25,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class SMoveExecutor extends SetExecutor {
@@ -44,10 +45,10 @@ public class SMoveExecutor extends SetExecutor {
     checkDataType(source, RedisDataType.REDIS_SET, context);
     checkDataType(destination, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, RedisSet> region = getRegion(context);
+    Region<ByteArrayWrapper, RedisData> region = getRegion(context);
 
     try (AutoCloseableLock regionLock = withRegionLock(context, source)) {
-      RedisSet sourceSet = region.get(source);
+      RedisData sourceSet = region.get(source);
 
       if (sourceSet == null) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
@@ -56,9 +57,7 @@ public class SMoveExecutor extends SetExecutor {
 
       boolean removed =
           new RedisSetInRegion(region).srem(source,
-              new ArrayList<>(Collections.singletonList(member)),
-              null) == 1;
-      // TODO: native redis SMOVE that empties the src set causes it to no longer exist
+              new ArrayList<>(Collections.singletonList(member))) == 1;
 
       if (!removed) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
@@ -67,8 +66,6 @@ public class SMoveExecutor extends SetExecutor {
           // TODO: this should invoke a function in case the primary for destination is remote
           new RedisSetInRegion(region).sadd(destination,
               new ArrayList<>(Collections.singletonList(member)));
-          context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
-          context.getKeyRegistrar().register(source, RedisDataType.REDIS_SET);
 
           command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));
         } catch (InterruptedException e) {

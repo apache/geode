@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -28,8 +27,7 @@ public interface RedisSetCommands {
 
   long sadd(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd);
 
-  long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd,
-      AtomicBoolean setWasDeleted);
+  long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove);
 
   Set<ByteArrayWrapper> smembers(ByteArrayWrapper key);
 
