@@ -10417,8 +10417,6 @@ public class PartitionedRegion extends LocalRegion
     this.regionCreationNotified = true;
   }
 
-  protected ClearPartitionedRegion getClearPartitionedRegion() {
-    return clearPartitionedRegion;
   protected PartitionedRegionClear getPartitionedRegionClear() {
     return partitionedRegionClear;
   }
