@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisCommandType.HDEL;
 import static org.apache.geode.redis.internal.RedisCommandType.HEXISTS;
 import static org.apache.geode.redis.internal.RedisCommandType.HGET;
 import static org.apache.geode.redis.internal.RedisCommandType.HGETALL;
+import static org.apache.geode.redis.internal.RedisCommandType.HKEYS;
 import static org.apache.geode.redis.internal.RedisCommandType.HLEN;
 import static org.apache.geode.redis.internal.RedisCommandType.HMGET;
 import static org.apache.geode.redis.internal.RedisCommandType.HSET;
@@ -87,5 +88,10 @@ public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
   @Override
   public Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key) {
     return CommandFunction.execute(HVALS, key, null, region);
+  }
+
+  @Override
+  public Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key) {
+    return CommandFunction.execute(HKEYS, key, null, region);
   }
 }

@@ -180,6 +180,10 @@ public class RedisHash implements RedisData {
     return new ArrayList<>(hash.values());
   }
 
+  public synchronized Collection<ByteArrayWrapper> hkeys() {
+    return new ArrayList<>(hash.keySet());
+  }
+
   private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       boolean doingAdds) {
     if (hasDelta()) {
@@ -212,10 +216,6 @@ public class RedisHash implements RedisData {
 
   public synchronized void put(ByteArrayWrapper field, ByteArrayWrapper value) {
     hash.put(field, value);
-  }
-
-  public synchronized List<ByteArrayWrapper> keys() {
-    return new ArrayList<>(hash.keySet());
   }
 
   @Override

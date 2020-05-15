@@ -83,6 +83,11 @@ public class RedisHashInRegion implements RedisHashCommands {
   }
 
   @Override
+  public Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key) {
+    return getRedisHash(key).hkeys();
+  }
+
+  @Override
   public boolean del(ByteArrayWrapper key) {
     return region.remove(key) != null;
   }
