@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest;
+package org.apache.geode.management.client;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -38,6 +38,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.management.internal.rest.LocatorLauncherContextLoader;
+import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 @RunWith(SpringRunner.class)
@@ -45,7 +47,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
     loader = LocatorLauncherContextLoader.class)
 @WebAppConfiguration
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class MemberManagementServiceRestIntegrationTest {
+public class MemberManagementServiceRestDUnitTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
