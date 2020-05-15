@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.springRedisTestApplication.config;
+package org.apache.geode.redis.session.springRedisTestApplication.config;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

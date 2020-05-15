@@ -151,11 +151,24 @@ public class Command {
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
-    for (byte[] bs : this.commandElems) {
-      b.append(Coder.bytesToString(bs));
+    for (byte[] rawCommand : this.commandElems) {
+      b.append(getHexEncodedString(rawCommand));
       b.append(' ');
     }
     return b.toString();
+  }
+
+  private String getHexEncodedString(byte[] data) {
+    StringBuilder builder = new StringBuilder();
+    for (byte aByte : data) {
+      if (aByte > 31 && aByte < 127) {
+        builder.append((char) aByte);
+      } else {
+        builder.append(String.format("\\x%02x", aByte));
+      }
+    }
+
+    return builder.toString();
   }
 
   public void execute(ExecutionHandlerContext executionHandlerContext) {
