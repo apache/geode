@@ -55,8 +55,6 @@ public class UncheckedUtilsTest {
 
     Throwable thrown = catchThrowable(() -> wrongType.get(0));
 
-    assertThat(thrown)
-        .isInstanceOf(ClassCastException.class)
-        .hasMessageContaining("java.lang.Integer cannot be cast to java.lang.String");
+    assertThat(thrown).isInstanceOf(ClassCastException.class);
   }
 }
