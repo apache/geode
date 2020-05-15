@@ -29,9 +29,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.After;
@@ -58,6 +61,8 @@ import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
  * Unit tests for {@link GemFireCacheImpl}.
@@ -74,6 +79,9 @@ public class GemFireCacheImplTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Before
   public void setUp() {
@@ -618,6 +626,40 @@ public class GemFireCacheImplTest {
   public void getCacheServers_isCanonical() {
     assertThat(gemFireCacheImpl.getCacheServers())
         .isSameAs(gemFireCacheImpl.getCacheServers());
+  }
+
+  @Test
+  public void testMultiThreadLockUnlockDiskStore() throws InterruptedException {
+    int nThread = 10;
+    String diskStoreName = "MyDiskStore";
+    AtomicInteger nTrue = new AtomicInteger();
+    AtomicInteger nFalse = new AtomicInteger();
+    IntStream.range(0, nThread).forEach(tid -> {
+      executorServiceRule.submit(() -> {
+        try {
+          boolean lockResult = gemFireCacheImpl.doLockDiskStore(diskStoreName);
+          if (lockResult) {
+            nTrue.incrementAndGet();
+          } else {
+            nFalse.incrementAndGet();
+          }
+        } finally {
+          boolean unlockResult = gemFireCacheImpl.doUnlockDiskStore(diskStoreName);
+          if (unlockResult) {
+            nTrue.incrementAndGet();
+          } else {
+            nFalse.incrementAndGet();
+          }
+        }
+      });
+    });
+    executorServiceRule.getExecutorService().shutdown();
+    executorServiceRule.getExecutorService()
+        .awaitTermination(GeodeAwaitility.getTimeout().toNanos(), TimeUnit.NANOSECONDS);
+    // 1 thread returns true for locking, all 10 threads return true for unlocking
+    assertThat(nTrue.get()).isEqualTo(11);
+    // 9 threads return false for locking
+    assertThat(nFalse.get()).isEqualTo(9);
   }
 
   @SuppressWarnings({"LambdaParameterHidesMemberVariable", "OverlyCoupledMethod", "unchecked"})
