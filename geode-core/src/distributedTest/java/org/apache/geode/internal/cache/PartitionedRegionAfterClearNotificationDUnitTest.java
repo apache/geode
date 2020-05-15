@@ -96,7 +96,6 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
   protected Properties getProperties() {
     Properties properties = new Properties();
-    // properties.setProperty("log-level", "info");
     return properties;
   }
 
@@ -135,17 +134,6 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
 
   private void initAccessor() {
     RegionShortcut shortcut = getRegionShortCut();
-    if (shortcut.isPersistent()) {
-      if (shortcut == RegionShortcut.PARTITION_PERSISTENT) {
-        shortcut = RegionShortcut.PARTITION;
-      } else if (shortcut == RegionShortcut.PARTITION_PERSISTENT_OVERFLOW) {
-        shortcut = RegionShortcut.PARTITION_OVERFLOW;
-      } else if (shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT) {
-        shortcut = RegionShortcut.PARTITION_REDUNDANT;
-      } else if (shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW) {
-        shortcut = RegionShortcut.PARTITION_REDUNDANT_OVERFLOW;
-      }
-    }
     getCache().createRegionFactory(shortcut)
         .setPartitionAttributes(
             new PartitionAttributesFactory().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
