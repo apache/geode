@@ -168,6 +168,14 @@ public class RedisHash implements RedisData {
     return hash.size();
   }
 
+  public synchronized List<ByteArrayWrapper> hmget(List<ByteArrayWrapper> fields) {
+    ArrayList<ByteArrayWrapper> results = new ArrayList<>(fields.size());
+    for (ByteArrayWrapper field : fields) {
+      results.add(hash.get(field));
+    }
+    return results;
+  }
+
   private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       boolean doingAdds) {
     if (hasDelta()) {
@@ -214,4 +222,5 @@ public class RedisHash implements RedisData {
   public RedisDataType getType() {
     return RedisDataType.REDIS_HASH;
   }
+
 }
