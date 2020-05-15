@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -569,7 +570,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
           .setArguments(Arrays.asList(configuration, operation, null));
       ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
       ResultCollector rc = execution.execute(function);
-      return (List<R>) rc.getResult();
+      return ((List<R>) rc.getResult()).stream().filter(Objects::nonNull)
+          .collect(Collectors.toList());
     }
 
     // if we have file arguments, we need to export the file input stream for each member
