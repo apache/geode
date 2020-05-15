@@ -65,9 +65,9 @@ public class SMoveExecutor extends SetExecutor {
       }
 
       try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
-          // TODO: this should invoke a function in case the primary for destination is remote
-          new RedisSetInRegion(region).sadd(destination,
-              new ArrayList<>(Collections.singletonList(member)));
+        // TODO: this should invoke a function in case the primary for destination is remote
+        new RedisSetInRegion(region).sadd(destination,
+            new ArrayList<>(Collections.singletonList(member)));
 
         response = RedisResponse.integer(MOVED);
       } catch (InterruptedException e) {

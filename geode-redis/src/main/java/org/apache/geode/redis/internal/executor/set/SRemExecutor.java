@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisResponse;
 
 public class SRemExecutor extends SetExecutor {
