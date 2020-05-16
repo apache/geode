@@ -30,8 +30,21 @@ public class EmptyRedisHash extends RedisHash {
   }
 
   @Override
-  public synchronized int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, long increment)
+      throws NumberFormatException, ArithmeticException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, double increment) throws NumberFormatException {
     throw new UnsupportedOperationException();
   }
 }

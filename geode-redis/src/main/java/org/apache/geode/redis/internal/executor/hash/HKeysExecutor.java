@@ -45,8 +45,7 @@ public class HKeysExecutor extends HashExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
     Collection<ByteArrayWrapper> keys = redisHashCommands.hkeys(key);
     if (keys.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));

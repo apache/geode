@@ -46,8 +46,7 @@ public class HDelExecutor extends HashExecutor {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
     ArrayList<ByteArrayWrapper> fieldsToDelete =
         new ArrayList<>(commandElems.subList(2, commandElems.size()));
     int numDeleted = redisHashCommands.hdel(key, fieldsToDelete);

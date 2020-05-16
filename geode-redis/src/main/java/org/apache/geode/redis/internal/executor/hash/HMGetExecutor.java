@@ -48,8 +48,7 @@ public class HMGetExecutor extends HashExecutor {
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
     ArrayList<ByteArrayWrapper> fields =
         new ArrayList<>(commandElements.subList(2, commandElements.size()));
-    RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
     List<ByteArrayWrapper> values = redisHashCommands.hmget(key, fields);
 

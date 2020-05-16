@@ -70,8 +70,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
     try {
       double value = redisHashCommands.hincrbyfloat(key, field, increment);

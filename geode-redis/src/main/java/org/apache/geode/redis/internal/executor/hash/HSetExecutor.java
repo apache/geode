@@ -45,8 +45,7 @@ public class HSetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
     ArrayList<ByteArrayWrapper> fieldsToSet =
         new ArrayList<>(commandElems.subList(2, commandElems.size()));

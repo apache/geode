@@ -15,11 +15,17 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 /**
  * Executor for handling HASH datatypes
  */
 public abstract class HashExecutor extends AbstractExecutor {
-  protected static final int FIELD_INDEX = 2;
+  static final int FIELD_INDEX = 2;
+
+  RedisHashCommands createRedisHashCommands(ExecutionHandlerContext context) {
+    return new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+  }
+
 }

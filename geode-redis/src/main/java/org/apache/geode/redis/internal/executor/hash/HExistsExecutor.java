@@ -46,8 +46,7 @@ public class HExistsExecutor extends HashExecutor {
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(),
         redisHashCommands.hexists(key, field)));
   }

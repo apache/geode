@@ -82,7 +82,7 @@ public class RedisHash implements RedisData {
   }
 
   @Override
-  public synchronized void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
+  public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     boolean deltaAdds = DataSerializer.readBoolean(in);
     try {
       ArrayList<ByteArrayWrapper> deltas = DataSerializer.readArrayList(in);
@@ -103,7 +103,7 @@ public class RedisHash implements RedisData {
     }
   }
 
-  public synchronized int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
     Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
@@ -129,7 +129,7 @@ public class RedisHash implements RedisData {
     return fieldsAdded;
   }
 
-  public synchronized int hdel(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public int hdel(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
     for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
@@ -145,7 +145,7 @@ public class RedisHash implements RedisData {
     return fieldsRemoved;
   }
 
-  public synchronized Collection<ByteArrayWrapper> hgetall() {
+  public Collection<ByteArrayWrapper> hgetall() {
     ArrayList<ByteArrayWrapper> result = new ArrayList<>();
     for (Map.Entry<ByteArrayWrapper, ByteArrayWrapper> entry : hash.entrySet()) {
       result.add(entry.getKey());
@@ -154,7 +154,7 @@ public class RedisHash implements RedisData {
     return result;
   }
 
-  public synchronized int hexists(ByteArrayWrapper field) {
+  public int hexists(ByteArrayWrapper field) {
     if (hash.containsKey(field)) {
       return 1;
     } else {
@@ -162,15 +162,15 @@ public class RedisHash implements RedisData {
     }
   }
 
-  public synchronized ByteArrayWrapper hget(ByteArrayWrapper field) {
+  public ByteArrayWrapper hget(ByteArrayWrapper field) {
     return hash.get(field);
   }
 
-  public synchronized int hlen() {
+  public int hlen() {
     return hash.size();
   }
 
-  public synchronized List<ByteArrayWrapper> hmget(List<ByteArrayWrapper> fields) {
+  public List<ByteArrayWrapper> hmget(List<ByteArrayWrapper> fields) {
     ArrayList<ByteArrayWrapper> results = new ArrayList<>(fields.size());
     for (ByteArrayWrapper field : fields) {
       results.add(hash.get(field));
@@ -178,15 +178,15 @@ public class RedisHash implements RedisData {
     return results;
   }
 
-  public synchronized Collection<ByteArrayWrapper> hvals() {
+  public Collection<ByteArrayWrapper> hvals() {
     return new ArrayList<>(hash.values());
   }
 
-  public synchronized Collection<ByteArrayWrapper> hkeys() {
+  public Collection<ByteArrayWrapper> hkeys() {
     return new ArrayList<>(hash.keySet());
   }
 
-  public synchronized List<Object> hscan(Pattern matchPattern, int count, int cursor) {
+  public List<Object> hscan(Pattern matchPattern, int count, int cursor) {
     List<Object> returnList = new ArrayList<Object>();
     int size = hash.size();
     int beforeCursor = 0;
@@ -224,7 +224,7 @@ public class RedisHash implements RedisData {
     return returnList;
   }
 
-  public synchronized long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       ByteArrayWrapper field, long increment)
       throws NumberFormatException, ArithmeticException {
     ByteArrayWrapper oldValue = hash.get(field);
@@ -299,24 +299,6 @@ public class RedisHash implements RedisData {
         }
       }
     }
-  }
-
-  // the following are needed because not all the hash commands have been converted to functions.
-
-  public synchronized boolean isEmpty() {
-    return hash.isEmpty();
-  }
-
-  public synchronized Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> entries() {
-    return new ArrayList<>(hash.entrySet());
-  }
-
-  public synchronized ByteArrayWrapper get(ByteArrayWrapper field) {
-    return hash.get(field);
-  }
-
-  public synchronized void put(ByteArrayWrapper field, ByteArrayWrapper value) {
-    hash.put(field, value);
   }
 
   @Override

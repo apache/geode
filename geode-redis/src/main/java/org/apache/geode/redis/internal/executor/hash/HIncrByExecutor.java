@@ -70,8 +70,7 @@ public class HIncrByExecutor extends HashExecutor {
       return;
     }
 
-    RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
     try {
       long value = redisHashCommands.hincrby(key, field, increment);
