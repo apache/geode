@@ -24,7 +24,6 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractScanExecutor;
 
 public class SScanExecutor extends AbstractScanExecutor {
@@ -34,7 +33,6 @@ public class SScanExecutor extends AbstractScanExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_SET, context);
 
     byte[] cAr = commandElems.get(2);
     String cursorString = Coder.bytesToString(cAr);
