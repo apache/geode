@@ -16,8 +16,6 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -60,10 +58,12 @@ public class HIncrByExecutor extends HashExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    ByteArrayWrapper key = command.getKey();
+    byte[] byteField = commandElems.get(FIELD_INDEX);
+    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     long increment;
-
     try {
       increment = Coder.bytesToLong(incrArray);
     } catch (NumberFormatException e) {
@@ -72,71 +72,18 @@ public class HIncrByExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper key = command.getKey();
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
 
-    long value;
-
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      RedisHash redisHash = getModifiableRedisHash(context, key);
-
-      byte[] byteField = commandElems.get(FIELD_INDEX);
-      ByteArrayWrapper field = new ByteArrayWrapper(byteField);
-
-      /*
-       * Put increment as value if field doesn't exist
-       */
-
-      ByteArrayWrapper oldValue = redisHash.get(field);
-
-      if (oldValue == null) {
-        ByteArrayWrapper newValue = new ByteArrayWrapper(incrArray);
-        redisHash.put(field, newValue);
-
-        saveRedishHash(redisHash, context, key);
-
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), increment));
-
-        return;
-      }
-
-      /*
-       * If the field did exist then increment the field
-       */
-      try {
-        value = Long.parseLong(oldValue.toString());
-      } catch (NumberFormatException e) {
-        command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
-        return;
-      }
-
-      /*
-       * Check for overflow
-       */
-      if ((value >= 0 && increment > (Long.MAX_VALUE - value))
-          || (value <= 0 && increment < (Long.MIN_VALUE - value))) {
-        command
-            .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
-        return;
-      }
-
-      value += increment;
-
-      redisHash.put(field, new ByteArrayWrapper(Coder.longToBytes(value)));
-
-      saveRedishHash(redisHash, context, key);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+    try {
+      long value = redisHashCommands.hincrby(key, field, increment);
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
+    } catch (NumberFormatException ex) {
       command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
+    } catch (ArithmeticException ex) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
     }
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
-
   }
 
 }

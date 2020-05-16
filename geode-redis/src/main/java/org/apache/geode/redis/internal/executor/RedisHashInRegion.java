@@ -18,12 +18,14 @@ package org.apache.geode.redis.internal.executor;
 
 import static org.apache.geode.redis.internal.RedisDataType.REDIS_HASH;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
@@ -91,6 +93,18 @@ public class RedisHashInRegion implements RedisHashCommands {
   @Override
   public List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     return getRedisHash(key).hscan(matchPattern, count, cursor);
+  }
+
+  @Override
+  public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
+    RedisHash hash = checkType(region.get(key));
+    if (hash != null) {
+      return hash.hincrby(region, key, field, increment);
+    } else {
+      region.put(key,
+          new RedisHash(Arrays.asList(field, new ByteArrayWrapper(Coder.longToBytes(increment)))));
+      return increment;
+    }
   }
 
   @Override

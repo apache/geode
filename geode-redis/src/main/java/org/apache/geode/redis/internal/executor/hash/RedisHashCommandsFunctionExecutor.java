@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisCommandType.HDEL;
 import static org.apache.geode.redis.internal.RedisCommandType.HEXISTS;
 import static org.apache.geode.redis.internal.RedisCommandType.HGET;
 import static org.apache.geode.redis.internal.RedisCommandType.HGETALL;
+import static org.apache.geode.redis.internal.RedisCommandType.HINCRBY;
 import static org.apache.geode.redis.internal.RedisCommandType.HKEYS;
 import static org.apache.geode.redis.internal.RedisCommandType.HLEN;
 import static org.apache.geode.redis.internal.RedisCommandType.HMGET;
@@ -100,5 +101,10 @@ public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
   @Override
   public List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     return CommandFunction.execute(HSCAN, key, new Object[] {matchPattern, count, cursor}, region);
+  }
+
+  @Override
+  public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
+    return CommandFunction.execute(HINCRBY, key, new Object[] {field, increment}, region);
   }
 }

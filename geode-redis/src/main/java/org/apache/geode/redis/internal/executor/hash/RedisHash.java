@@ -31,6 +31,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.EmptyRedisHash;
@@ -221,6 +222,37 @@ public class RedisHash implements RedisData {
       returnList.add(0, String.valueOf(i));
     }
     return returnList;
+  }
+
+  public synchronized long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, long increment)
+      throws NumberFormatException, ArithmeticException {
+    ByteArrayWrapper oldValue = hash.get(field);
+    if (oldValue == null) {
+      ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.longToBytes(increment));
+      hash.put(field, newValue);
+      deltas = new ArrayList<>(2);
+      deltas.add(field);
+      deltas.add(newValue);
+      storeChanges(region, key, true);
+      return increment;
+    }
+
+    long value = Long.parseLong(oldValue.toString());
+    if ((value >= 0 && increment > (Long.MAX_VALUE - value))
+        || (value <= 0 && increment < (Long.MIN_VALUE - value))) {
+      throw new ArithmeticException("overflow");
+    }
+
+    value += increment;
+
+    ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.longToBytes(value));
+    hash.put(field, modifiedValue);
+    deltas = new ArrayList<>(2);
+    deltas.add(field);
+    deltas.add(modifiedValue);
+    storeChanges(region, key, true);
+    return value;
   }
 
   private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
