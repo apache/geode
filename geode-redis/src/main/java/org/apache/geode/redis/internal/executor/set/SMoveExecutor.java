@@ -18,14 +18,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class SMoveExecutor extends SetExecutor {
@@ -42,48 +40,37 @@ public class SMoveExecutor extends SetExecutor {
     ByteArrayWrapper destination = new ByteArrayWrapper(commandElems.get(2));
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(3));
 
-    checkDataType(source, RedisDataType.REDIS_SET, context);
+    // TODO: remove the need for this checkDataType call
     checkDataType(destination, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, RedisData> region = getRegion(context);
+    RedisSetCommands redisSetCommands =
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
 
     try (AutoCloseableLock regionLock = withRegionLock(context, source)) {
-      RedisData sourceSet = region.get(source);
-
-      if (sourceSet == null) {
+      boolean removed = redisSetCommands.srem(source,
+          new ArrayList<>(Collections.singletonList(member))) == 1;
+      if (!removed) {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
         return;
       }
-
-      boolean removed =
-          new RedisSetInRegion(region).srem(source,
-              new ArrayList<>(Collections.singletonList(member))) == 1;
-
-      if (!removed) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
-      } else {
-        try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
-          // TODO: this should invoke a function in case the primary for destination is remote
-          new RedisSetInRegion(region).sadd(destination,
-              new ArrayList<>(Collections.singletonList(member)));
-
-          command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          System.out.println("Interrupt exception!!");
-          command.setResponse(
-              Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-          return;
-        } catch (TimeoutException e) {
-          System.out.println("Timeout exception!!");
-          command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-              "Timeout acquiring lock. Please try again."));
-          return;
-        } catch (Exception e) {
-          System.out.println("Unexpected exception: " + e);
-          command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-              "Unexpected exception."));
-        }
+      try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
+        redisSetCommands.sadd(destination, new ArrayList<>(Collections.singletonList(member)));
+        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        System.out.println("Interrupt exception!!");
+        command.setResponse(
+            Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+        return;
+      } catch (TimeoutException e) {
+        System.out.println("Timeout exception!!");
+        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+            "Timeout acquiring lock. Please try again."));
+        return;
+      } catch (Exception e) {
+        System.out.println("Unexpected exception: " + e);
+        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+            "Unexpected exception."));
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
