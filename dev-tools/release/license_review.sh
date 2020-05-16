@@ -72,7 +72,7 @@ function resolve() {
   if [ "HEAD" = "$spec" ] ; then
     [ "${suffix}" = "-src" ] && target=srcDistTar || target=distTar
     (cd $root && ./gradlew ${target} 1>&2)
-    spec=$root/geode-assembly/build/distributions/$(cd $root/geode-assembly/build/distributions && ls -t | grep apache-geode-.*-SNAPSHOT${suffix}.tgz | tail -1)
+    spec=$root/geode-assembly/build/distributions/$(cd $root/geode-assembly/build/distributions && ls -t | grep -v sha256 | grep "apache-geode-.*-build.[0-9][0-9]*${suffix}.tgz" | tail -1)
     [ -r "$spec" ] || echo "Build not found: $spec" 1>&2
     [ -r "$spec" ]
   fi
@@ -156,7 +156,7 @@ function generateList() {
 
   echo "**** ${dir##*/} wars ****" | tr '[:lower:]-' '[:upper:] ' > $dir/report2
   (cd $dir; find . -name '*.war' | sort | sed 's#^./##' | while read war ; do
-    listJarsInWar $war | sed 's#-[v0-9][-0-9.SNAPSHOT]*[.]#.#' | sort
+    listJarsInWar $war | sed 's#-[v0-9][-0-9.SNAPSHOTbuild]*[.]#.#' | sort
     extractLicense $war ${war%.war}.LICENSE
   done | tee -a report2)
 }
