@@ -40,6 +40,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
+import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
@@ -188,7 +189,9 @@ public class CreateRegionCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
           help = CliStrings.CREATE_REGION__TOTALNUMBUCKETS__HELP) Integer prTotalNumBuckets,
       @CliOption(key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
-          help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint
+          help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint,
+      @CliOption(key = CliStrings.CREATE_REGION__SCOPE,
+          help = CliStrings.CREATE_REGION__SCOPE__HELP) RegionAttributesScope scope
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
     if (regionShortcut != null && templateRegion != null) {
@@ -227,9 +230,21 @@ public class CreateRegionCommand extends SingleGfshCommand {
       regionConfig.setType(regionShortcut.name());
       regionConfig.setRegionAttributes(
           new RegionConverter().createRegionAttributesByType(regionShortcut.name()));
+      RegionAttributesType regionAttributesType = regionConfig.getRegionAttributes();
+      if (!regionShortcut.isReplicate()) {
+        return ResultModel
+            .createError(CliStrings.CREATE_REGION__MSG__SCOPE_CANNOT_BE_SET_ON_PARTITION_REGION);
+      } else {
+        regionAttributesType.setScope(scope);
+      }
     }
     // get the attributes from the template region
     else {
+      // if not type is provided but a scope is mentioned
+      if (scope != null) {
+        return ResultModel
+            .createError(CliStrings.CREATE_REGION__SCOPE__SCOPE_CANNOT_BE_SET_IF_TYPE_NOT_SET);
+      }
       List<RegionConfig> templateRegionConfigs = new ArrayList<>();
       // get the potential template region config from the cluster configuration
       if (persistenceService != null) {

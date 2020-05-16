@@ -468,7 +468,7 @@ public class RegionProvider implements Closeable {
               false,
               true, null, null, null, null, null, null, null, null, null, null, null, null, null,
               false,
-              null, null, null, null, null, null, null, null, null, null, null);
+              null, null, null, null, null, null, null, null, null, null, null, null);
 
       r = cache.getRegion(regionPath);
       if (resultModel.getStatus() == Status.ERROR && r == null) {
