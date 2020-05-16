@@ -23,11 +23,13 @@ import static org.apache.geode.redis.internal.RedisCommandType.HGETALL;
 import static org.apache.geode.redis.internal.RedisCommandType.HKEYS;
 import static org.apache.geode.redis.internal.RedisCommandType.HLEN;
 import static org.apache.geode.redis.internal.RedisCommandType.HMGET;
+import static org.apache.geode.redis.internal.RedisCommandType.HSCAN;
 import static org.apache.geode.redis.internal.RedisCommandType.HSET;
 import static org.apache.geode.redis.internal.RedisCommandType.HVALS;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -93,5 +95,10 @@ public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
   @Override
   public Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key) {
     return CommandFunction.execute(HKEYS, key, null, region);
+  }
+
+  @Override
+  public List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+    return CommandFunction.execute(HSCAN, key, new Object[] {matchPattern, count, cursor}, region);
   }
 }

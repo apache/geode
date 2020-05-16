@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
@@ -41,4 +42,6 @@ public interface RedisHashCommands {
   Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key);
 
   Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key);
+
+  List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor);
 }

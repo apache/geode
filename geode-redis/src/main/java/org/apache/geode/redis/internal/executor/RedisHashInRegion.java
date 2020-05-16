@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisDataType.REDIS_HASH;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -85,6 +86,11 @@ public class RedisHashInRegion implements RedisHashCommands {
   @Override
   public Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key) {
     return getRedisHash(key).hkeys();
+  }
+
+  @Override
+  public List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+    return getRedisHash(key).hscan(matchPattern, count, cursor);
   }
 
   @Override

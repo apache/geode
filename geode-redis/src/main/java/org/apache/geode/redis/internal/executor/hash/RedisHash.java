@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -182,6 +183,44 @@ public class RedisHash implements RedisData {
 
   public synchronized Collection<ByteArrayWrapper> hkeys() {
     return new ArrayList<>(hash.keySet());
+  }
+
+  public synchronized List<Object> hscan(Pattern matchPattern, int count, int cursor) {
+    List<Object> returnList = new ArrayList<Object>();
+    int size = hash.size();
+    int beforeCursor = 0;
+    int numElements = 0;
+    int i = -1;
+    for (Map.Entry<ByteArrayWrapper, ByteArrayWrapper> entry : hash.entrySet()) {
+      ByteArrayWrapper key = entry.getKey();
+      ByteArrayWrapper value = entry.getValue();
+      i++;
+      if (beforeCursor < cursor) {
+        beforeCursor++;
+        continue;
+      } else if (numElements < count) {
+        if (matchPattern != null) {
+          if (matchPattern.matcher(key.toString()).matches()) {
+            returnList.add(key);
+            returnList.add(value);
+            numElements++;
+          }
+        } else {
+          returnList.add(key);
+          returnList.add(value);
+          numElements++;
+        }
+      } else {
+        break;
+      }
+    }
+
+    if (i == size - 1) {
+      returnList.add(0, String.valueOf(0));
+    } else {
+      returnList.add(0, String.valueOf(i));
+    }
+    return returnList;
   }
 
   private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
