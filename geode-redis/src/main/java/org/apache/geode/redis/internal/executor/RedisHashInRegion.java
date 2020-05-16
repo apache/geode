@@ -108,6 +108,19 @@ public class RedisHashInRegion implements RedisHashCommands {
   }
 
   @Override
+  public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
+    RedisHash hash = checkType(region.get(key));
+    if (hash != null) {
+      return hash.hincrbyfloat(region, key, field, increment);
+    } else {
+      region.put(key,
+          new RedisHash(
+              Arrays.asList(field, new ByteArrayWrapper(Coder.doubleToBytes(increment)))));
+      return increment;
+    }
+  }
+
+  @Override
   public boolean del(ByteArrayWrapper key) {
     return region.remove(key) != null;
   }

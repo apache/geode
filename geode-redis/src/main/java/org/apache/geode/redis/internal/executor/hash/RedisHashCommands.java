@@ -46,4 +46,6 @@ public interface RedisHashCommands {
   List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor);
 
   long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment);
+
+  double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment);
 }

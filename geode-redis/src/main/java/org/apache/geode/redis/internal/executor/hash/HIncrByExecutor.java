@@ -51,9 +51,7 @@ public class HIncrByExecutor extends HashExecutor {
   private static final String ERROR_OVERFLOW =
       "This incrementation cannot be performed due to overflow";
 
-  private static final int FIELD_INDEX = 2;
-
-  private static final int INCREMENT_INDEX = 3;
+  private static final int INCREMENT_INDEX = FIELD_INDEX + 1;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {

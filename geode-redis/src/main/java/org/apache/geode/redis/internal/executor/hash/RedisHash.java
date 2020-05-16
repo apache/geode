@@ -255,6 +255,36 @@ public class RedisHash implements RedisData {
     return value;
   }
 
+  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, double increment) throws NumberFormatException {
+    ByteArrayWrapper oldValue = hash.get(field);
+    if (oldValue == null) {
+      ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.doubleToBytes(increment));
+      hash.put(field, newValue);
+      deltas = new ArrayList<>(2);
+      deltas.add(field);
+      deltas.add(newValue);
+      storeChanges(region, key, true);
+      return increment;
+    }
+
+    String valueS = oldValue.toString();
+    if (valueS.contains(" ")) {
+      throw new NumberFormatException("could not convert " + valueS + " to a double");
+    }
+    double value = Coder.stringToDouble(valueS);
+
+    value += increment;
+
+    ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.doubleToBytes(value));
+    hash.put(field, modifiedValue);
+    deltas = new ArrayList<>(2);
+    deltas.add(field);
+    deltas.add(modifiedValue);
+    storeChanges(region, key, true);
+    return value;
+  }
+
   private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       boolean doingAdds) {
     if (hasDelta()) {
