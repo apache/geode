@@ -861,7 +861,7 @@ for syntax details.
     [--recovery-delay=value] [--redundant-copies=value]
     [--startup-recovery-delay=value] [--total-max-memory=value]
     [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)?]
-    [--partition-resolver=value] [--eviction-entry-count=value]
+    [--partition-resolver=value] [--eviction-entry-count=value] [--scope=value]
     [--eviction-max-memory=value] [--eviction-action=value] [--eviction-object-sizer=value]
 ```
 
@@ -1117,6 +1117,11 @@ If this option is specified without a value or is specified with a value of <cod
 <td><span class="keyword parmname">\-\-eviction-object-sizer</span></td>
 <td>Specifies your implementation of the ObjectSizer interface to measure the size of objects in the region.
 The sizer applies only to heap and memory based eviction.</td>
+<td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-scope</span></td>
+<td>Specifies the scope of the Replicated region. This field can be only used if the --type parameter is set with a replicated region type. This parameter is invalid for all other region types. If this parameter is not set and --type is set to a replicated region, the the default scope DISTRIBUTED_ACK is set.</td>
 <td></td>
 </tr>
 </tbody>

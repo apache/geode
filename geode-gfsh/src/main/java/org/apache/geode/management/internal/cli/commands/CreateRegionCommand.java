@@ -40,6 +40,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
+import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
@@ -188,7 +189,9 @@ public class CreateRegionCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
           help = CliStrings.CREATE_REGION__TOTALNUMBUCKETS__HELP) Integer prTotalNumBuckets,
       @CliOption(key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
-          help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint
+          help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint,
+      @CliOption(key = CliStrings.CREATE_REGION__SCOPE,
+          help = CliStrings.CREATE_REGION__SCOPE__HELP) RegionAttributesScope scope
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
     if (regionShortcut != null && templateRegion != null) {
@@ -227,6 +230,10 @@ public class CreateRegionCommand extends SingleGfshCommand {
       regionConfig.setType(regionShortcut.name());
       regionConfig.setRegionAttributes(
           new RegionConverter().createRegionAttributesByType(regionShortcut.name()));
+      RegionAttributesType regionAttributesType = regionConfig.getRegionAttributes();
+      if (scope != null && regionShortcut.isReplicate()) {
+        regionAttributesType.setScope(scope);
+      }
     }
     // get the attributes from the template region
     else {
@@ -694,6 +701,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
               "PartitionAttributes localMaxMemory must not be negative.");
         }
       }
+
       Long totalMaxMemory =
           (Long) parseResult.getParamValue(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
       if (totalMaxMemory != null) {
@@ -827,7 +835,18 @@ public class CreateRegionCommand extends SingleGfshCommand {
           && EvictionAction.parseAction(evictionAction) == EvictionAction.NONE) {
         return ResultModel.createError(CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_ACTION);
       }
-
+      RegionAttributesScope scope =
+          (RegionAttributesScope) parseResult.getParamValue(CliStrings.CREATE_REGION__SCOPE);
+      RegionShortcut regionShortcut =
+          (RegionShortcut) parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONSHORTCUT);
+      if (scope != null && regionShortcut == null) {
+        return ResultModel
+            .createError(CliStrings.CREATE_REGION__SCOPE__SCOPE_CANNOT_BE_SET_IF_TYPE_NOT_SET);
+      } else if (scope != null && !regionShortcut.isReplicate()) {
+        return ResultModel
+            .createError(
+                CliStrings.CREATE_REGION__MSG__SCOPE_CANNOT_BE_SET_ON_NON_REPLICATED_REGION);
+      }
       return ResultModel.createInfo("");
     }
   }

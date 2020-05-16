@@ -84,7 +84,7 @@ public class DescribeRegionCommand extends GfshCommand {
       if (regionDescription.isPartition()) {
         regionDescription.getCndRegionAttributes().remove(RegionAttributesNames.SCOPE);
       } else {
-        String scope = regionDescription.getCndRegionAttributes().get(RegionAttributesNames.SCOPE);
+        String scope = regionDescription.getScope().toString();
         if (scope != null) {
           scope = scope.toLowerCase().replace('_', '-');
           regionDescription.getCndRegionAttributes().put(RegionAttributesNames.SCOPE, scope);

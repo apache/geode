@@ -104,7 +104,7 @@ public class DescribeRegionJUnitTest {
     commandAssert.hasDataSection("region-1").hasContent().containsEntry("Name", "testRegion")
         .containsEntry("Data Policy", "normal")
         .containsEntry("Hosting Members", "mockA");
-    commandAssert.hasTableSection("non-default-1").hasRowSize(3).hasColumns()
+    commandAssert.hasTableSection("non-default-1").hasRowSize(4).hasColumns()
         .containsExactly("Type", "Name", "Value")
         .hasAnyRow().containsExactly("Region", "regKey", "regVal")
         .hasAnyRow().containsExactly("Eviction", "evictKey", "evictVal")
@@ -138,7 +138,7 @@ public class DescribeRegionJUnitTest {
         .extracting(DescribeRegionJUnitTest::extractHostingMembers)
         .asList()
         .containsExactlyInAnyOrder("mockA", "mockB");
-    commandAssert.hasTableSection("non-default-1").hasRowSize(3).hasColumns()
+    commandAssert.hasTableSection("non-default-1").hasRowSize(4).hasColumns()
         .containsExactly("Type", "Name", "Value")
         .hasAnyRow().containsExactly("Region", "regKey", "regVal")
         .hasAnyRow().containsExactly("Eviction", "evictKey", "evictVal")
@@ -179,7 +179,7 @@ public class DescribeRegionJUnitTest {
         .extracting(DescribeRegionJUnitTest::extractHostingMembers)
         .asList()
         .containsExactlyInAnyOrder("mockA", "mockB");
-    commandAssert.hasTableSection("non-default-1").hasRowSize(1).hasColumns()
+    commandAssert.hasTableSection("non-default-1").hasRowSize(2).hasColumns()
         .containsExactly("Type", "Name", "Value").hasAnyRow()
         .containsExactly("Eviction", "sharedEvictionKey", "sharedEvictionValue");
     commandAssert.hasTableSection("member-non-default-1").hasRowSize(4).hasColumns()
