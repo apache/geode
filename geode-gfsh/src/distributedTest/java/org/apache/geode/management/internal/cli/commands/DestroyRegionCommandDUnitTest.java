@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -66,24 +67,25 @@ public class DestroyRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create region --name=Order --type=PARTITION --colocated-with=Customer").statusIsSuccess();
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/Customer", 3);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/Order", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "Customer", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "Order", 3);
 
     // Test unable to destroy with co-location
-    gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "Customer").statusIsError()
         .tableHasRowCount(3)
-        .containsOutput("The parent region [/Customer] in colocation chain cannot be destroyed");
+        .containsOutput("The parent region [" + SEPARATOR
+            + "Customer] in colocation chain cannot be destroyed");
 
     // Test success
-    gfsh.executeAndAssertThat("destroy region --name=/Order").statusIsSuccess()
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "Order").statusIsSuccess()
         .tableHasRowCount(3).containsOutput("destroyed successfully");
-    gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsSuccess()
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "Customer").statusIsSuccess()
         .tableHasRowCount(3).containsOutput("destroyed successfully");
 
     // destroy something that's not exist anymore
-    gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "Customer").statusIsError()
         .containsOutput("Could not find a Region");
-    gfsh.executeAndAssertThat("destroy region --name=/Customer --if-exists")
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "Customer --if-exists")
         .containsOutput("Skipping: Could not find a Region").statusIsSuccess();
   }
 
@@ -91,7 +93,7 @@ public class DestroyRegionCommandDUnitTest {
   public void testDestroyLocalRegions() {
     gfsh.executeAndAssertThat("create region --name=region1 --type=LOCAL").statusIsSuccess();
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region1", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region1", 3);
 
     gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()
         .tableHasRowCount(3).containsOutput("destroyed successfully");
@@ -109,7 +111,7 @@ public class DestroyRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE --group=group2")
         .statusIsSuccess();
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region1", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region1", 3);
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService service =

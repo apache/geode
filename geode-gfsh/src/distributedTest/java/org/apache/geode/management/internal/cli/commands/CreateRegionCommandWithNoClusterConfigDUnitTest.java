@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -72,7 +72,8 @@ public class CreateRegionCommandWithNoClusterConfigDUnitTest {
     gfsh.executeAndAssertThat("create region --name=failed --template-region=" + regionName)
         .statusIsError()
         .hasInfoSection().hasOutput()
-        .contains("Multiple types of template region /multipleTemplateRegionTypes exist.");
+        .contains("Multiple types of template region " + SEPARATOR
+            + "multipleTemplateRegionTypes exist.");
   }
 
   @Test

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
@@ -72,26 +73,28 @@ public class ExecuteFunctionCommandDUnitTest {
         .statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "regionA", 2);
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
-      Region<String, String> region = cache.getRegion("/regionA");
+      Region<String, String> region = cache.getRegion(SEPARATOR + "regionA");
       region.put("a", "a");
       region.put("b", "b");
     });
 
     // this makes sure entry a and entry b are on different member
     CommandResultAssert locateACommand =
-        gfsh.executeAndAssertThat("locate entry --key=a --region=/regionA").statusIsSuccess()
+        gfsh.executeAndAssertThat("locate entry --key=a --region=" + SEPARATOR + "regionA")
+            .statusIsSuccess()
             .hasSection("location", "data-info");
     locateACommand.hasDataSection().hasContent().containsEntry("Locations Found", "1");
     locateACommand.hasTableSection().hasColumnSize(4).hasColumn("MemberName").hasSize(1)
         .isSubsetOf("server-1", "server-2");
 
     CommandResultAssert locateBCommand =
-        gfsh.executeAndAssertThat("locate entry --key=b --region=/regionA").statusIsSuccess()
+        gfsh.executeAndAssertThat("locate entry --key=b --region=" + SEPARATOR + "regionA")
+            .statusIsSuccess()
             .hasSection("location", "data-info");
     locateBCommand.hasDataSection().hasContent().containsEntry("Locations Found", "1");
     locateBCommand.hasTableSection().hasColumnSize(4).hasColumn("MemberName").hasSize(1)
@@ -154,7 +157,7 @@ public class ExecuteFunctionCommandDUnitTest {
   public void withRegionOnly() {
     // function is only executed on one member, but the returned message is repeated twice
     // i.e. that member will execute the function on other members
-    gfsh.executeAndAssertThat(command + "--region=/regionA").statusIsSuccess()
+    gfsh.executeAndAssertThat(command + "--region=" + SEPARATOR + "regionA").statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
         .hasColumnSize(3)
@@ -168,7 +171,8 @@ public class ExecuteFunctionCommandDUnitTest {
     // "[genericFunctionId-a, genericFunctionId-b]"
     // or "[genericFunctionId-b, genericFunctionId-a]" depending which server's function gets
     // executed first
-    gfsh.executeAndAssertThat(command + "--region=/regionA --filter=a,b").statusIsSuccess()
+    gfsh.executeAndAssertThat(command + "--region=" + SEPARATOR + "regionA --filter=a,b")
+        .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
         .hasColumnSize(3)
@@ -179,7 +183,8 @@ public class ExecuteFunctionCommandDUnitTest {
 
   @Test
   public void withRegionAndFilterMatchingOnlyOneMember() {
-    gfsh.executeAndAssertThat(command + "--region=/regionA --filter=a").statusIsSuccess()
+    gfsh.executeAndAssertThat(command + "--region=" + SEPARATOR + "regionA --filter=a")
+        .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
         .hasColumnSize(3)
@@ -189,7 +194,8 @@ public class ExecuteFunctionCommandDUnitTest {
 
   @Test
   public void withRegionAndArguments() {
-    gfsh.executeAndAssertThat(command + "--region=/regionA --arguments=arguments").statusIsSuccess()
+    gfsh.executeAndAssertThat(command + "--region=" + SEPARATOR + "regionA --arguments=arguments")
+        .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
         .hasColumnSize(3)
@@ -200,7 +206,8 @@ public class ExecuteFunctionCommandDUnitTest {
 
   @Test
   public void withRegionAndFilterAndArgument() {
-    gfsh.executeAndAssertThat(command + "--region=/regionA --filter=b --arguments=arguments")
+    gfsh.executeAndAssertThat(
+        command + "--region=" + SEPARATOR + "regionA --filter=b --arguments=arguments")
         .hasTableSection()
         .hasRowSize(1)
         .hasColumnSize(3)
@@ -211,7 +218,8 @@ public class ExecuteFunctionCommandDUnitTest {
   @Test
   public void withRegionAndFilterAndArgumentAndResultCollector() {
     gfsh.executeAndAssertThat(
-        command + "--region=/regionA --filter=a --arguments=arguments --result-collector="
+        command + "--region=" + SEPARATOR
+            + "regionA --filter=a --arguments=arguments --result-collector="
             + ToUpperResultCollector.class.getName())
         .hasTableSection()
         .hasRowSize(1)
@@ -223,7 +231,7 @@ public class ExecuteFunctionCommandDUnitTest {
   @Test
   public void withRegionAndArgumentAndResultCollector() {
     gfsh.executeAndAssertThat(
-        command + "--region=/regionA --arguments=arguments --result-collector="
+        command + "--region=" + SEPARATOR + "regionA --arguments=arguments --result-collector="
             + ToUpperResultCollector.class.getName())
         .hasTableSection()
         .hasRowSize(1)

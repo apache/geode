@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 
 import org.junit.BeforeClass;
@@ -77,10 +78,12 @@ public class CreateRegionSecurityDUnitTest {
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + regionName).statusIsError()
-        .containsOutput("Region /dataManageAuthorized already exists on the cluster");
+        .containsOutput(
+            "Region " + SEPARATOR + "dataManageAuthorized already exists on the cluster");
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE_PROXY --name=" + regionName)
         .statusIsError()
-        .containsOutput("Region /dataManageAuthorized already exists on these members");
+        .containsOutput(
+            "Region " + SEPARATOR + "dataManageAuthorized already exists on these members");
   }
 }

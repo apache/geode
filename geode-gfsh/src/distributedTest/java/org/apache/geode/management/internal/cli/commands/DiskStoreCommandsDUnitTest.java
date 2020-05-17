@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -500,7 +500,8 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         String.format(
             "alter disk-store --name=%s --region=INVALID --disk-dirs=%s --compressor=foo.Bar",
             DISKSTORE, diskDirs))
-        .statusIsError().containsOutput("The disk store does not contain a region named: /INVALID");
+        .statusIsError()
+        .containsOutput("The disk store does not contain a region named: " + SEPARATOR + "INVALID");
   }
 
   @Test
