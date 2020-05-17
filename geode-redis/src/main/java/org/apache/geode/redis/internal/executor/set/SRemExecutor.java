@@ -29,8 +29,7 @@ public class SRemExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
 
     ArrayList<ByteArrayWrapper> membersToRemove =
         new ArrayList<>(

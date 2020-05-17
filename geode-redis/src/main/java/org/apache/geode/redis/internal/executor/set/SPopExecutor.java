@@ -35,8 +35,7 @@ public class SPopExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
     if (popped.isEmpty()) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));

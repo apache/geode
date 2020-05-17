@@ -32,8 +32,7 @@ public class SIsMemberExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     int result = redisSetCommands.sismember(key, member) ? EXISTS : NOT_EXISTS;
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), result));
   }

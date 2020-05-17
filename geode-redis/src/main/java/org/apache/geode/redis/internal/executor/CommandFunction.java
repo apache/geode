@@ -73,6 +73,7 @@ public class CommandFunction extends SingleResultRedisFunction {
   protected Object compute(Region localRegion, ByteArrayWrapper key,
       RedisCommandType command, Object[] args) {
     Callable<Object> callable;
+    boolean useStripedExecutor = true;
     switch (command) {
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
@@ -115,6 +116,32 @@ public class CommandFunction extends SingleResultRedisFunction {
         int cursor = (int) args[2];
         callable =
             () -> new RedisSetInRegion(localRegion).sscan(key, matchPattern, count, cursor);
+        break;
+      }
+      case SCREATE: {
+        ArrayList<ByteArrayWrapper> membersToCreate = (ArrayList<ByteArrayWrapper>) args[1];
+        callable = () -> new RedisSetInRegion(localRegion).screate(key, membersToCreate);
+        break;
+      }
+      case SUNIONSTORE: {
+        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        callable =
+            () -> new RedisSetInRegion(localRegion).sunionstore(stripedExecutor, key, setKeys);
+        useStripedExecutor = false;
+        break;
+      }
+      case SINTERSTORE: {
+        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        callable =
+            () -> new RedisSetInRegion(localRegion).sinterstore(stripedExecutor, key, setKeys);
+        useStripedExecutor = false;
+        break;
+      }
+      case SDIFFSTORE: {
+        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        callable =
+            () -> new RedisSetInRegion(localRegion).sdiffstore(stripedExecutor, key, setKeys);
+        useStripedExecutor = false;
         break;
       }
       case HSET: {
@@ -185,7 +212,17 @@ public class CommandFunction extends SingleResultRedisFunction {
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
-    return stripedExecutor.execute(key, callable);
+    if (useStripedExecutor) {
+      return stripedExecutor.execute(key, callable);
+    } else {
+      try {
+        return callable.call();
+      } catch (RuntimeException re) {
+        throw re;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
 

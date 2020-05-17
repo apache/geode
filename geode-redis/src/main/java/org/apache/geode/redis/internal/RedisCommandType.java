@@ -270,6 +270,9 @@ public enum RedisCommandType {
   SUNIONSTORE(new SUnionStoreExecutor(), new MinimumParameterRequirements(3)),
   SSCAN(new SScanExecutor(), new MinimumParameterRequirements(3)),
   SREM(new SRemExecutor(), new MinimumParameterRequirements(3)),
+  // SCREATE is an internal command used to force a set to be recreated.
+  // It is basically an atomic DEL+SADD.
+  SCREATE(null, null),
 
   /***************************************
    ************* Sorted Sets *************

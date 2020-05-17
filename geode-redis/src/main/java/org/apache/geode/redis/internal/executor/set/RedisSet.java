@@ -37,13 +37,6 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
-/**
- * This class still uses "synchronized" to protect the
- * underlying HashSet even though all writers do so under
- * the {@link SynchronizedStripedExecutor}. The synchronization on this
- * class can be removed once readers are changed to
- * also use the {@link SynchronizedStripedExecutor}.
- */
 public class RedisSet implements RedisData {
 
   public static transient RedisSet EMPTY = new EmptyRedisSet();
@@ -64,7 +57,7 @@ public class RedisSet implements RedisData {
   // for serialization
   public RedisSet() {}
 
-  synchronized List<Object> sscan(Pattern matchPattern, int count, int cursor) {
+  List<Object> sscan(Pattern matchPattern, int count, int cursor) {
 
     List<Object> returnList = new ArrayList<>();
     int size = members.size();
@@ -100,7 +93,7 @@ public class RedisSet implements RedisData {
     return returnList;
   }
 
-  synchronized Collection<ByteArrayWrapper> spop(
+  Collection<ByteArrayWrapper> spop(
       Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key, int popCount) {
     int originalSize = scard();
     if (originalSize == 0) {
@@ -136,7 +129,7 @@ public class RedisSet implements RedisData {
     return popped;
   }
 
-  synchronized Collection<ByteArrayWrapper> srandmember(int count) {
+  Collection<ByteArrayWrapper> srandmember(int count) {
     int membersSize = members.size();
 
     if (membersSize <= count && count != 1) {
@@ -164,11 +157,11 @@ public class RedisSet implements RedisData {
     return result;
   }
 
-  public synchronized boolean sismember(ByteArrayWrapper member) {
+  public boolean sismember(ByteArrayWrapper member) {
     return members.contains(member);
   }
 
-  public synchronized int scard() {
+  public int scard() {
     return members.size();
   }
 
@@ -185,7 +178,7 @@ public class RedisSet implements RedisData {
   }
 
   @Override
-  public synchronized void fromDelta(DataInput in)
+  public void fromDelta(DataInput in)
       throws IOException, InvalidDeltaException {
     boolean deltaAdds = DataSerializer.readBoolean(in);
     try {
@@ -220,7 +213,7 @@ public class RedisSet implements RedisData {
    * @param key the name of the set to add to
    * @return the number of members actually added
    */
-  synchronized long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
+  long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
@@ -245,7 +238,7 @@ public class RedisSet implements RedisData {
    * @param key the name of the set to remove from
    * @return the number of members actually removed
    */
-  synchronized long srem(ArrayList<ByteArrayWrapper> membersToRemove,
+  long srem(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
@@ -273,7 +266,7 @@ public class RedisSet implements RedisData {
    *
    * @return a set containing all the members in this set
    */
-  synchronized Set<ByteArrayWrapper> smembers() {
+  Set<ByteArrayWrapper> smembers() {
     return new HashSet<>(members);
   }
 

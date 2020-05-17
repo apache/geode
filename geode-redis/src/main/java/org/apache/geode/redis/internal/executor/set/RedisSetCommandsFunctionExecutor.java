@@ -18,12 +18,16 @@ package org.apache.geode.redis.internal.executor.set;
 import static org.apache.geode.redis.internal.RedisCommandType.DEL;
 import static org.apache.geode.redis.internal.RedisCommandType.SADD;
 import static org.apache.geode.redis.internal.RedisCommandType.SCARD;
+import static org.apache.geode.redis.internal.RedisCommandType.SCREATE;
+import static org.apache.geode.redis.internal.RedisCommandType.SDIFFSTORE;
+import static org.apache.geode.redis.internal.RedisCommandType.SINTERSTORE;
 import static org.apache.geode.redis.internal.RedisCommandType.SISMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SMEMBERS;
 import static org.apache.geode.redis.internal.RedisCommandType.SPOP;
 import static org.apache.geode.redis.internal.RedisCommandType.SRANDMEMBER;
 import static org.apache.geode.redis.internal.RedisCommandType.SREM;
 import static org.apache.geode.redis.internal.RedisCommandType.SSCAN;
+import static org.apache.geode.redis.internal.RedisCommandType.SUNIONSTORE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,5 +93,25 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   @Override
   public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
     return CommandFunction.execute(SSCAN, key, new Object[] {matchPattern, count, cursor}, region);
+  }
+
+  @Override
+  public long screate(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> members) {
+    return CommandFunction.execute(SCREATE, key, members, region);
+  }
+
+  @Override
+  public int sunionstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
+    return CommandFunction.execute(SUNIONSTORE, destination, setKeys, region);
+  }
+
+  @Override
+  public int sinterstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
+    return CommandFunction.execute(SINTERSTORE, destination, setKeys, region);
+  }
+
+  @Override
+  public int sdiffstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
+    return CommandFunction.execute(SDIFFSTORE, destination, setKeys, region);
   }
 }
