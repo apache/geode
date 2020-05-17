@@ -16,6 +16,8 @@
 package org.apache.geode.management.configuration;
 
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -83,7 +85,7 @@ public class Index extends AbstractConfiguration<IndexInfo> implements RegionSco
     }
 
     String regionName = regionPath.trim().split(" ")[0];
-    regionName = StringUtils.removeStart(regionName, "/");
+    regionName = StringUtils.removeStart(regionName, SEPARATOR);
     if (regionName.contains(".")) {
       regionName = regionName.substring(0, regionName.indexOf('.'));
     }

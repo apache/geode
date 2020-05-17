@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.configuration;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -42,22 +43,22 @@ public class IndexTest {
       index.setRegionPath("   regionA   ");
       softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-      index.setRegionPath("/regionA");
+      index.setRegionPath(SEPARATOR + "regionA");
       softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-      index.setRegionPath("/regionA.method()");
+      index.setRegionPath(SEPARATOR + "regionA.method()");
       softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-      index.setRegionPath("/regionA.method() a");
+      index.setRegionPath(SEPARATOR + "regionA.method() a");
       softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-      index.setRegionPath("/regionA.fieled.method() a");
+      index.setRegionPath(SEPARATOR + "regionA.fieled.method() a");
       softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-      index.setRegionPath("/regionA a");
+      index.setRegionPath(SEPARATOR + "regionA a");
       softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-      index.setRegionPath("/regionA a, a.foo");
+      index.setRegionPath(SEPARATOR + "regionA a, a.foo");
       softly.assertThat(index.getRegionName()).isEqualTo("regionA");
     });
   }
@@ -73,7 +74,7 @@ public class IndexTest {
       softly.assertThat(index.getLinks().getList()).as("only name defined - list")
           .isEqualTo("/indexes");
 
-      index.setRegionPath("/regionPath");
+      index.setRegionPath(SEPARATOR + "regionPath");
       softly.assertThat(index.getLinks().getSelf()).as("region and name defined - self")
           .isEqualTo("/regions/regionPath/indexes/testSelf");
       softly.assertThat(index.getLinks().getList()).as("region and name defined - list")

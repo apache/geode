@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.util.internal.GeodeJsonMapper;
+import org.apache.geode.common.internal.GeodeJsonMapper;
 
 /**
  * Used to configure an attribute that represents an instance of a java class.
