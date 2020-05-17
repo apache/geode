@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
@@ -348,7 +348,8 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
 
       putDataSerializableAndVerify(currentServer1, regionName, 0, 100, currentServer2, oldServer,
           oldServerAndLocator);
-      query("Select * from /" + regionName + " p where p.timeout > 0L", 99, currentServer1,
+      query("Select * from " + SEPARATOR + regionName + " p where p.timeout > 0L", 99,
+          currentServer1,
           currentServer2, oldServer, oldServerAndLocator);
 
     } finally {

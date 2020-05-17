@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
