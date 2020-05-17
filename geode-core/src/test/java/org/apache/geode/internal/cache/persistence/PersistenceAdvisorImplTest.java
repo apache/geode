@@ -18,6 +18,7 @@ import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -212,7 +213,7 @@ public class PersistenceAdvisorImplTest {
   @Test
   public void waitingForMembersMessage_logsMessage1_whenHasOfflineMembersWaitingFor() {
     DistributedLockService distributedLockService = mock(DistributedLockService.class);
-    String regionPath = "/region";
+    String regionPath = SEPARATOR + "region";
     DiskRegionStats diskRegionStats = mock(DiskRegionStats.class);
     PersistentMemberManager persistentMemberManager = mock(PersistentMemberManager.class);
     StartupStatus startupStatus = mock(StartupStatus.class);
@@ -251,7 +252,7 @@ public class PersistenceAdvisorImplTest {
   @Test
   public void waitingForMembersMessage_logsMessage2_whenNoOfflineMembersWaitingFor() {
     DistributedLockService distributedLockService = mock(DistributedLockService.class);
-    String regionPath = "/region";
+    String regionPath = SEPARATOR + "region";
     DiskRegionStats diskRegionStats = mock(DiskRegionStats.class);
     PersistentMemberManager persistentMemberManager = mock(PersistentMemberManager.class);
     StartupStatus startupStatus = mock(StartupStatus.class);

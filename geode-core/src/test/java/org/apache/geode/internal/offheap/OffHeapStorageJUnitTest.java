@@ -27,12 +27,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.statistics.LocalStatisticsFactory;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class OffHeapStorageJUnitTest {
 

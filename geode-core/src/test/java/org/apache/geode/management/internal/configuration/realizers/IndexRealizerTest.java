@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.configuration.realizers;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
@@ -99,7 +100,7 @@ public class IndexRealizerTest {
     Region<Object, Object> region = mock(Region.class);
     org.apache.geode.cache.query.Index removeIndex = mock(org.apache.geode.cache.query.Index.class);
     when(queryService.getIndex(region, "testIndex")).thenReturn(removeIndex);
-    when(cache.getRegion("/testRegion")).thenReturn(region);
+    when(cache.getRegion(SEPARATOR + "testRegion")).thenReturn(region);
     RealizationResult realizationResult = indexRealizer.delete(index, cache);
     assertSoftly(softly -> {
       softly.assertThat(realizationResult.isSuccess()).isTrue();
@@ -113,7 +114,7 @@ public class IndexRealizerTest {
     Region<Object, Object> region = mock(Region.class);
     org.apache.geode.cache.query.Index removeIndex = mock(org.apache.geode.cache.query.Index.class);
     when(queryService.getIndex(region, "testIndex")).thenReturn(removeIndex);
-    when(cache.getRegion("/testRegion")).thenReturn(region);
+    when(cache.getRegion(SEPARATOR + "testRegion")).thenReturn(region);
     doThrow(new RuntimeException("removal failed")).when(queryService).removeIndex(removeIndex);
     RealizationResult realizationResult = indexRealizer.delete(index, cache);
     assertSoftly(softly -> {
@@ -127,7 +128,7 @@ public class IndexRealizerTest {
     Region<Object, Object> region = mock(Region.class);
     org.apache.geode.cache.query.Index removeIndex = mock(org.apache.geode.cache.query.Index.class);
     when(queryService.getIndex(region, "testIndex")).thenReturn(removeIndex);
-    when(cache.getRegion("/testRegion")).thenReturn(null);
+    when(cache.getRegion(SEPARATOR + "testRegion")).thenReturn(null);
     RealizationResult realizationResult = indexRealizer.delete(index, cache);
     assertSoftly(softly -> {
       softly.assertThat(realizationResult.isSuccess()).isFalse();
@@ -141,7 +142,7 @@ public class IndexRealizerTest {
     Region<Object, Object> region = mock(Region.class);
     org.apache.geode.cache.query.Index removeIndex = mock(org.apache.geode.cache.query.Index.class);
     when(queryService.getIndex(region, "testIndex")).thenReturn(null);
-    when(cache.getRegion("/testRegion")).thenReturn(region);
+    when(cache.getRegion(SEPARATOR + "testRegion")).thenReturn(region);
     RealizationResult realizationResult = indexRealizer.delete(index, cache);
     assertSoftly(softly -> {
       softly.assertThat(realizationResult.isSuccess()).isFalse();

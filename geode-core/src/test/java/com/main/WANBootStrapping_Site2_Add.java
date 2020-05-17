@@ -25,8 +25,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This is a member representing site 2 who wants to receive data from site 1

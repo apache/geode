@@ -17,6 +17,7 @@
 
 package org.apache.geode.cache.configuration;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
@@ -225,27 +226,27 @@ public class CacheConfigTest {
   @Test
   public void findRegionConfiguration() throws Exception {
     CacheConfig config = new CacheConfig();
-    assertThat(config.findRegionConfiguration("/test")).isNull();
+    assertThat(config.findRegionConfiguration(SEPARATOR + "test")).isNull();
     assertThat(config.findRegionConfiguration("test")).isNull();
-    assertThat(config.findRegionConfiguration("test/test1")).isNull();
+    assertThat(config.findRegionConfiguration("test" + SEPARATOR + "test1")).isNull();
 
     RegionConfig testRegion = new RegionConfig();
     testRegion.setName("test");
     config.getRegions().add(testRegion);
 
-    assertThat(config.findRegionConfiguration("/test")).isNotNull();
+    assertThat(config.findRegionConfiguration(SEPARATOR + "test")).isNotNull();
     assertThat(config.findRegionConfiguration("test")).isNotNull();
-    assertThat(config.findRegionConfiguration("test/test1")).isNull();
+    assertThat(config.findRegionConfiguration("test" + SEPARATOR + "test1")).isNull();
 
     RegionConfig test1Region = new RegionConfig();
     test1Region.setName("test1");
     testRegion.getRegions().add(test1Region);
 
-    assertThat(config.findRegionConfiguration("/test")).isNotNull()
+    assertThat(config.findRegionConfiguration(SEPARATOR + "test")).isNotNull()
         .extracting(RegionConfig::getName).isEqualTo("test");
     assertThat(config.findRegionConfiguration("test")).isNotNull()
         .extracting(RegionConfig::getName).isEqualTo("test");
-    assertThat(config.findRegionConfiguration("test/test1")).isNotNull()
+    assertThat(config.findRegionConfiguration("test" + SEPARATOR + "test1")).isNotNull()
         .extracting(RegionConfig::getName).isEqualTo("test1");
   }
 }

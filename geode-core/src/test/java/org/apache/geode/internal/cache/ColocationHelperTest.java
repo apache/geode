@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,7 +66,7 @@ public class ColocationHelperTest {
 
   @Test
   public void getColocatedRegion_throwsIllegalStateException_ifNotColocated() {
-    when(partitionedRegion.getFullPath()).thenReturn("/region1");
+    when(partitionedRegion.getFullPath()).thenReturn(SEPARATOR + "region1");
 
     Throwable thrown = catchThrowable(() -> ColocationHelper.getColocatedRegion(partitionedRegion));
 
@@ -77,7 +78,7 @@ public class ColocationHelperTest {
 
   @Test
   public void getColocatedRegion_logsWarning_ifMissingRegion_whenPRConfigHasRegion() {
-    when(partitionedRegion.getFullPath()).thenReturn("/region1");
+    when(partitionedRegion.getFullPath()).thenReturn(SEPARATOR + "region1");
     when(prRoot.get(eq("#region2"))).thenReturn(partitionRegionConfig);
 
     Throwable thrown = catchThrowable(() -> ColocationHelper.getColocatedRegion(partitionedRegion));

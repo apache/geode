@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -122,7 +124,7 @@ public class PerfQuery {
 
     // WARM-UP
     System.out.println("WARMING UP...");
-    queryString = "select distinct * from /portfolios where type = 'type1'";
+    queryString = "select distinct * from " + SEPARATOR + "portfolios where type = 'type1'";
     query = this.qs.newQuery(queryString);
     runQuery(getType1HandQuery(queryString), HAND_CODED);
     runQuery(query, BRUTE_FORCE);
@@ -133,14 +135,14 @@ public class PerfQuery {
     System.out.println("END WARM UP");
 
     // 1/3 DATASET
-    queryString = "select distinct * from /portfolios where type = 'type1'";
+    queryString = "select distinct * from " + SEPARATOR + "portfolios where type = 'type1'";
     query = this.qs.newQuery(queryString);
     runQuery(getType1HandQuery(queryString), HAND_CODED);
     runQuery(query, BRUTE_FORCE);
     runQuery(query, INDEXED);
 
     // MISS QUERY
-    queryString = "select distinct * from /portfolios where type = 'miss'";
+    queryString = "select distinct * from " + SEPARATOR + "portfolios where type = 'miss'";
     query = this.qs.newQuery(queryString);
     runQuery(getMissHandQuery(queryString), HAND_CODED);
     runQuery(query, BRUTE_FORCE);
@@ -178,7 +180,7 @@ public class PerfQuery {
     return new HandQuery(queryString) {
       @Override
       public Object execute() {
-        Region region = PerfQuery.this.cache.getRegion("/portfolios");
+        Region region = PerfQuery.this.cache.getRegion(SEPARATOR + "portfolios");
         SelectResults results = new ResultsSet();
         for (Iterator itr = region.values().iterator(); itr.hasNext();) {
           Portfolio ptflo = (Portfolio) itr.next();
@@ -195,7 +197,7 @@ public class PerfQuery {
     return new HandQuery(queryString) {
       @Override
       public Object execute() {
-        Region region = PerfQuery.this.cache.getRegion("/portfolios");
+        Region region = PerfQuery.this.cache.getRegion(SEPARATOR + "portfolios");
         SelectResults results = new ResultsSet();
         for (Iterator itr = region.values().iterator(); itr.hasNext();) {
           Portfolio ptflo = (Portfolio) itr.next();
@@ -236,7 +238,7 @@ public class PerfQuery {
     if (indexed) {
       System.out.println("Creating index...");
       long startNanos = NanoTimer.getTime();
-      this.qs.createIndex("portfolios", IndexType.FUNCTIONAL, "type", "/portfolios");
+      this.qs.createIndex("portfolios", IndexType.FUNCTIONAL, "type", SEPARATOR + "portfolios");
       float createTime = (NanoTimer.getTime() - startNanos) / 1e6f;
       System.out.println("Index created in " + createTime + " ms.");
       this.results[INDEX_CREATE].add(createTime);
@@ -254,7 +256,8 @@ public class PerfQuery {
     }
     System.out.println("Warming up index creation...");
     for (int i = 0; i < 20000; i++) {
-      Index index = this.qs.createIndex("portfolios", IndexType.FUNCTIONAL, "type", "/portfolios");
+      Index index =
+          this.qs.createIndex("portfolios", IndexType.FUNCTIONAL, "type", SEPARATOR + "portfolios");
       this.qs.removeIndex(index);
     }
   }

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;

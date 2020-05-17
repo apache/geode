@@ -28,9 +28,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Unit tests for {@link LocatorLauncher.Builder}. Extracted from {@link LocatorLauncherTest}.

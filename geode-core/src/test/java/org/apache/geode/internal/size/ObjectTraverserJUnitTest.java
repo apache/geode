@@ -26,7 +26,7 @@ import java.util.Set;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 public class ObjectTraverserJUnitTest {
 

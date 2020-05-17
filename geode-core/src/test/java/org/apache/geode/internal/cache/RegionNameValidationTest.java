@@ -17,7 +17,7 @@
 package org.apache.geode.internal.cache;
 
 import static java.lang.Character.MAX_VALUE;
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.cache.RegionNameValidation.getNamePattern;
 import static org.apache.geode.internal.cache.RegionNameValidation.validate;
 import static org.assertj.core.api.Assertions.assertThatCode;

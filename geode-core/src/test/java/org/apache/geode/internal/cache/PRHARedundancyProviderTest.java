@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -299,7 +300,7 @@ public class PRHARedundancyProviderTest {
   private enum ExceptionToThrow {
     RUNTIME(new RuntimeException("Runtime error")),
     CANCEL(new CacheClosedException("Cache closed")),
-    REGION_DESTROYED(new RegionDestroyedException("Region destroyed", "/Region"));
+    REGION_DESTROYED(new RegionDestroyedException("Region destroyed", SEPARATOR + "Region"));
 
     private final Exception exception;
 

@@ -22,9 +22,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATO
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -1

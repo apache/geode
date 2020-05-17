@@ -34,6 +34,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -58,7 +59,6 @@ import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category(ClientServerTest.class)
 public class ExecuteFunction65Test {
