@@ -16,6 +16,7 @@
 
 package org.apache.geode.tools.pulse;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 
 import org.junit.Before;
@@ -53,10 +54,11 @@ public class PulseDataExportTest {
     client.loginToPulseAndVerify("admin", "admin");
 
     assertResponse(
-        client.get("/pulse/dataBrowserExport", "query", "select * from /regionA a order by a"))
-            .hasStatusCode(200)
-            .hasResponseBody()
-            .isEqualToIgnoringWhitespace(
-                "{\"result\":[[\"java.lang.String\",\"value1\"],[\"java.lang.String\",\"value2\"],[\"java.lang.String\",\"value3\"]]}");
+        client.get("/pulse/dataBrowserExport", "query",
+            "select * from " + SEPARATOR + "regionA a order by a"))
+                .hasStatusCode(200)
+                .hasResponseBody()
+                .isEqualToIgnoringWhitespace(
+                    "{\"result\":[[\"java.lang.String\",\"value1\"],[\"java.lang.String\",\"value2\"],[\"java.lang.String\",\"value3\"]]}");
   }
 }

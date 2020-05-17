@@ -15,6 +15,7 @@
 
 package org.apache.geode.management;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -76,7 +77,7 @@ public class JQFilterVerificationDUnitTest {
     Index index1 = new Index();
     index1.setName("index1");
     index1.setExpression("id");
-    index1.setRegionPath("/regionA");
+    index1.setRegionPath(SEPARATOR + "regionA");
     index1.setIndexType(IndexType.RANGE);
     cms.create(index1);
 

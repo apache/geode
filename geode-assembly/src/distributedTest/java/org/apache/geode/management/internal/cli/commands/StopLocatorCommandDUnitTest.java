@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.apache.geode.management.internal.i18n.CliStrings.GROUP;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__DIR;
@@ -25,7 +26,6 @@ import static org.apache.geode.management.internal.i18n.CliStrings.STOP_LOCATOR;
 import static org.apache.geode.management.internal.i18n.CliStrings.STOP_LOCATOR__DIR;
 import static org.apache.geode.management.internal.i18n.CliStrings.STOP_LOCATOR__MEMBER;
 import static org.apache.geode.management.internal.i18n.CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE;
-import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;

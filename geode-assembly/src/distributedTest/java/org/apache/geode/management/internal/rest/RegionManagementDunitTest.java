@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.lang.Identifiable.find;
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -114,7 +115,7 @@ public class RegionManagementDunitTest {
     server1.invoke(() -> {
       @SuppressWarnings("unchecked")
       org.apache.geode.cache.Region<Object, Object> customers2 =
-          ClusterStartupRule.getCache().getInternalRegionByPath("/customers2");
+          ClusterStartupRule.getCache().getInternalRegionByPath(SEPARATOR + "customers2");
       assertThatThrownBy(() -> customers2.put("key", 2)).isInstanceOf(ClassCastException.class)
           .hasMessageContaining("does not satisfy keyConstraint");
       assertThatThrownBy(() -> customers2.put(Boolean.TRUE, "2"))

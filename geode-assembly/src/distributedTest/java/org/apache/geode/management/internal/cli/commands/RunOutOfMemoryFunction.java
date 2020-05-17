@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -26,7 +28,7 @@ public class RunOutOfMemoryFunction implements Function<Void> {
     byte[] bytes1 = new byte[Integer.MAX_VALUE / 2];
     byte[] bytes2 = new byte[Integer.MAX_VALUE / 2];
 
-    Region<String, byte[]> testRegion = context.getCache().getRegion("/testRegion");
+    Region<String, byte[]> testRegion = context.getCache().getRegion(SEPARATOR + "testRegion");
     testRegion.put("byteArray", bytes);
     testRegion.put("byteArray1", bytes1);
     testRegion.put("byteArray2", bytes2);

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -72,7 +73,7 @@ public class ListIndexOnPartitionRegionTest {
     config.setGroup("group3");
     cms.create(config);
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/testRegion", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "testRegion", 3);
   }
 
   @Test
@@ -81,7 +82,7 @@ public class ListIndexOnPartitionRegionTest {
     Index index = new Index();
     index.setName("index");
     index.setExpression("id");
-    index.setRegionPath("/testRegion");
+    index.setRegionPath(SEPARATOR + "testRegion");
     index.setIndexType(IndexType.KEY);
     cms.create(index);
 

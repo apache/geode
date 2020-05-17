@@ -16,6 +16,7 @@ package org.apache.geode.client.sni;
 
 import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
 import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
@@ -133,7 +134,7 @@ public class SingleServerSNIAcceptanceTest {
    */
   @Test
   public void query() throws Exception {
-    final SelectResults<String> results = region.query("SELECT * from /jellyfish");
+    final SelectResults<String> results = region.query("SELECT * from " + SEPARATOR + "jellyfish");
     assertThat(results).hasSize(bulkData.size());
     for (String result : results) {
       assertThat(bulkData.containsValue(result)).isTrue();

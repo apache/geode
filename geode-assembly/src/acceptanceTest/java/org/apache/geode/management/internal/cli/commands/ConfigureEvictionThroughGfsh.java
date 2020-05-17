@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -46,11 +47,16 @@ public class ConfigureEvictionThroughGfsh {
             "create region --name=region5 --eviction-action=overflow-to-disk --eviction-entry-count=1000 --type=LOCAL")
         .execute(gfsh);
 
-    assertThat(execution.getOutputText()).contains("Region \"/region1\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region2\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region3\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region4\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region5\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region1\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region2\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region3\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region4\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region5\" created on \"server\"");
 
     execution = GfshScript
         .of("connect --locator=localhost[10334]",
@@ -101,11 +107,16 @@ public class ConfigureEvictionThroughGfsh {
             "create region --name=region4 --eviction-action=local-destroy --eviction-max-memory=1000 --type=LOCAL",
             "create region --name=region5 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --type=LOCAL")
         .execute(gfsh);
-    assertThat(execution.getOutputText()).contains("Region \"/region1\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region2\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region3\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region4\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region5\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region1\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region2\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region3\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region4\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region5\" created on \"server\"");
 
     execution = GfshScript
         .of("connect --locator=localhost[10334]",
@@ -170,11 +181,16 @@ public class ConfigureEvictionThroughGfsh {
             "create region --name=region5 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=LOCAL")
         .execute(gfsh);
 
-    assertThat(execution.getOutputText()).contains("Region \"/region1\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region2\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region3\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region4\" created on \"server\"");
-    assertThat(execution.getOutputText()).contains("Region \"/region5\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region1\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region2\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region3\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region4\" created on \"server\"");
+    assertThat(execution.getOutputText())
+        .contains("Region \"" + SEPARATOR + "region5\" created on \"server\"");
 
     execution = GfshScript
         .of("connect --locator=localhost[10334]",

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -51,7 +53,8 @@ public class GetDeliveredOrders implements Function {
     }
 
     String oql =
-        "SELECT o.purchaseOrderNo, o.deliveryDate  FROM /orders o WHERE o.deliveryDate != NULL";
+        "SELECT o.purchaseOrderNo, o.deliveryDate  FROM " + SEPARATOR
+            + "orders o WHERE o.deliveryDate != NULL";
     final Query query = c.getQueryService().newQuery(oql);
 
     SelectResults result = null;
