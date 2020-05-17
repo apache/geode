@@ -67,6 +67,7 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.OplogCancelledException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
@@ -110,7 +111,6 @@ import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implements an operation log to write to disk. As of prPersistSprint2 this file only supports

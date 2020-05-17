@@ -16,7 +16,7 @@ package org.apache.geode.internal.process;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * Enumeration of GemFire {@link ControllableProcess} types and the file names associated with

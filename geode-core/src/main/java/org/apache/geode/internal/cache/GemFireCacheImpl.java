@@ -25,6 +25,9 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
+import static org.apache.geode.common.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.ConfigurationPersistenceService.CLUSTER_CONFIG;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
@@ -48,7 +51,6 @@ import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.apache.geode.internal.logging.CoreLoggingExecutors.newThreadPoolWithFixedFeed;
 import static org.apache.geode.internal.tcp.ConnectionTable.threadWantsSharedResources;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newFixedThreadPool;
-import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -3011,7 +3013,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           // and we didn't find a region, i.e. the new region is about to be created
 
           if (!isReInitCreate) {
-            String fullPath = Region.SEPARATOR + name;
+            String fullPath = SEPARATOR + name;
             future = reinitializingRegions.get(fullPath);
           }
           if (future == null) {
@@ -3234,8 +3236,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (path.isEmpty()) {
       throw new IllegalArgumentException("path cannot be empty");
     }
-    if (path.equals(Region.SEPARATOR)) {
-      throw new IllegalArgumentException(String.format("path cannot be ' %s '", Region.SEPARATOR));
+    if (path.equals(SEPARATOR)) {
+      throw new IllegalArgumentException(String.format("path cannot be ' %s '", SEPARATOR));
     }
   }
 
@@ -3548,10 +3550,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     String[] result = new String[2];
     result[1] = "";
     // strip off root name from path
-    int slashIndex = path.indexOf(Region.SEPARATOR_CHAR);
+    int slashIndex = path.indexOf(SEPARATOR_CHAR);
     if (slashIndex == 0) {
       path = path.substring(1);
-      slashIndex = path.indexOf(Region.SEPARATOR_CHAR);
+      slashIndex = path.indexOf(SEPARATOR_CHAR);
     }
     result[0] = path;
     if (slashIndex > 0) {

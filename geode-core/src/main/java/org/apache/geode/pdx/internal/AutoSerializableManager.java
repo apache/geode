@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionService;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
@@ -51,7 +52,6 @@ import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The core of auto serialization which is used in both aspect and reflection-based

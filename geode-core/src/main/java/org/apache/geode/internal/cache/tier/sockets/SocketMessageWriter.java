@@ -22,10 +22,10 @@ import java.util.HashMap;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class SocketMessageWriter {
   private static final int CLIENT_PING_TASK_PERIOD =

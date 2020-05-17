@@ -18,7 +18,7 @@ import static org.apache.commons.lang3.Validate.notNull;
 
 import java.util.Properties;
 
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * Thread based context for launching a process. GemFire internals can acquire optional

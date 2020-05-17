@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.cache.wan.GatewayReceiverException;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A GatewayReceiver that receives the events from a {@code GatewaySender}. GatewayReceiver is

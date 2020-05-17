@@ -30,8 +30,8 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Manages the free lists and slabs for a MemoryAllocator

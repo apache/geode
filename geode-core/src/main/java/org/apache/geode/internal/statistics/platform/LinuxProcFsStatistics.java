@@ -29,8 +29,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class LinuxProcFsStatistics {
   @MakeNotStatic

@@ -35,6 +35,7 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.util.GatewayConflictHelper;
 import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -88,7 +89,6 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.ConvertableToBytes;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Abstract implementation class of RegionEntry interface. This is the topmost implementation class

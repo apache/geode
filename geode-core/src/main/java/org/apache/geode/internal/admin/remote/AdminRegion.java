@@ -44,6 +44,7 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.common.GeodePublicGlossary;
 
 /**
  * Represents a snapshot of a {@link Region}.
@@ -55,7 +56,7 @@ public class AdminRegion implements Region {
   private final String userAttributeDesc;
   private final RemoteGemFireVM vm;
 
-  private static final char nameSep = Region.SEPARATOR_CHAR;
+  private static final char nameSep = GeodePublicGlossary.SEPARATOR_CHAR;
 
   /**
    * Creates a root region

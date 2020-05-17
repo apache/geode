@@ -46,6 +46,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.common.GeodePublicGlossary;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.extension.Extensible;
@@ -113,10 +114,10 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   public RegionCreation(CacheCreation cache, RegionCreation parent, String name, String refid) {
     this.cache = cache;
     if (parent != null) {
-      this.fullPath = parent.getFullPath() + SEPARATOR + name;
+      this.fullPath = parent.getFullPath() + GeodePublicGlossary.SEPARATOR + name;
 
     } else {
-      this.fullPath = SEPARATOR + name;
+      this.fullPath = GeodePublicGlossary.SEPARATOR + name;
     }
     this.name = name;
     this.refid = refid;

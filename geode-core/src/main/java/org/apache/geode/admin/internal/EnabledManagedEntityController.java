@@ -30,11 +30,11 @@ import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.ProcessOutputReader;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of GemFire

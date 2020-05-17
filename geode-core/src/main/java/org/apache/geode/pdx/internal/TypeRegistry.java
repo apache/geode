@@ -27,6 +27,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
@@ -36,7 +37,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class TypeRegistry {
   private static final Logger logger = LogService.getLogger();

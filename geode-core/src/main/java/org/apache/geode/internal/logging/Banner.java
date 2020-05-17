@@ -40,13 +40,13 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.VersionDescription;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.logging.internal.ConfigurationInfo;
 import org.apache.geode.logging.internal.OSProcess;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Utility class to print banner information at manager startup.

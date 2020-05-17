@@ -26,6 +26,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
@@ -36,7 +37,6 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogFile;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * HostStatSampler implements a thread which will monitor, sample, and archive statistics. It only

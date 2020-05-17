@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * A utility class for building up arguments used in spawning another VM

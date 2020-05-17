@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.util;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -209,8 +211,8 @@ public class ManagementUtils {
       return Collections.emptySet();
     }
 
-    if (!region.startsWith(Region.SEPARATOR)) {
-      region = Region.SEPARATOR + region;
+    if (!region.startsWith(SEPARATOR)) {
+      region = SEPARATOR + region;
     }
 
     DistributedRegionMXBean regionMXBean =

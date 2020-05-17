@@ -201,6 +201,7 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
@@ -212,7 +213,6 @@ import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 
@@ -65,10 +66,10 @@ import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class uses the JMX Attributes/Operations that use (return/throw) GemFire types. This is the
@@ -97,7 +98,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * String constant used for a region that is used on admin side just as a root for rootRegions
    * defined on the member
    */
-  private static final String PLACE_HOLDER_ROOT_REGION = "/Root/";
+  private static final String PLACE_HOLDER_ROOT_REGION = SEPARATOR + "Root" + SEPARATOR;
 
   /* String that are used to form QueryExp/ObjectName for querying MBeanServer */
   private static final String REGION_QUERY_EXPRESSION = "*GemFire.Cache*:*,owner={0},type=Region";

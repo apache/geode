@@ -69,6 +69,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.DefaultServerLauncherCacheProvider;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
@@ -103,7 +104,6 @@ import org.apache.geode.management.internal.util.JsonUtil;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying

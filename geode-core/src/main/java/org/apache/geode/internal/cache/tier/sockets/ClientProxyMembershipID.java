@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 
 import java.io.DataInput;
@@ -30,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DurableClientAttributes;
@@ -43,7 +45,6 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient
@@ -531,8 +532,8 @@ public class ClientProxyMembershipID
 
   private String getBaseRegionName() {
     String id = isDurable() ? getDurableId() : getDSMembership();
-    if (id.indexOf('/') >= 0) {
-      id = id.replace('/', ':');
+    if (id.indexOf(SEPARATOR_CHAR) >= 0) {
+      id = id.replace(SEPARATOR_CHAR, ':');
     }
     StringBuffer buffer = new StringBuffer().append("_gfe_").append(isDurable() ? "" : "non_")
         .append("durable_client_").append("with_id_" + id).append("_").append(this.uniqueId);

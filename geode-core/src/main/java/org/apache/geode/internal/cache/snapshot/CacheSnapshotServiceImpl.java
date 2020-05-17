@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.snapshot;
 
-import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.io.File;
 import java.io.FileNotFoundException;

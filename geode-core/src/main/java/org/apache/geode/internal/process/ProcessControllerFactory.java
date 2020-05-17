@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 import java.util.ServiceConfigurationError;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * Manages which implementation of {@link ProcessController} will be used and constructs the

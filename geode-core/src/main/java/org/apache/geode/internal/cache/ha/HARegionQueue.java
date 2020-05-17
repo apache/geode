@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.THREAD_ID_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductIntegerProperty;

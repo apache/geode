@@ -83,6 +83,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
@@ -101,7 +102,6 @@ import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.log4j.api.LogWithToString;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Takes care of RegionAttributes, AttributesMutator, and some no-brainer method implementations.

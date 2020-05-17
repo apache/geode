@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -29,7 +31,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedLockService;
@@ -213,7 +214,7 @@ public class ProxyBucketRegion implements Bucket {
 
   @Override
   public String getFullPath() {
-    return Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR
+    return SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
         + getPartitionedRegion().getBucketName(this.bid);
   }
 

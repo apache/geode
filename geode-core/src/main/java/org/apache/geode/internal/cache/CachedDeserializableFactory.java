@@ -20,12 +20,12 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.NullDataOutputStream;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Produces instances that implement CachedDeserializable.

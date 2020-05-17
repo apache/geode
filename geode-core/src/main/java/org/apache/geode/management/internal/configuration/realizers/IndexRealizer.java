@@ -16,7 +16,7 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import org.apache.logging.log4j.Logger;
 

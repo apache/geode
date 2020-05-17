@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.ha;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  *

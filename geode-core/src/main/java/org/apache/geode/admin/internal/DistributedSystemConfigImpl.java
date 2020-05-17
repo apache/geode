@@ -49,6 +49,7 @@ import org.apache.geode.admin.CacheVmConfig;
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -57,7 +58,6 @@ import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * An implementation of the configuration object for an <code>AdminDistributedSystem</code>. After a
