@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.domain;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -31,7 +32,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class IndexDetailsIntegrationTest {
 
   private static final String REGION_1 = "REGION1";
-  private static final String INDEX_REGION_NAME = "/REGION1";
+  private static final String INDEX_REGION_NAME = SEPARATOR + "REGION1";
   private static final String INDEX_1 = "INDEX1";
 
   @SuppressWarnings("deprecation")

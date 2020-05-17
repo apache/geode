@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -85,7 +86,7 @@ public class GfshParserConverterTest {
 
   @Test
   public void testEmptyKey() {
-    String command = "remove  --key=\"\" --region=/GemfireDataCommandsTestRegion";
+    String command = "remove  --key=\"\" --region=" + SEPARATOR + "GemfireDataCommandsTestRegion";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNotNull();
     assertThat(result.getParamValueAsString("key")).isEqualTo("");
@@ -176,13 +177,14 @@ public class GfshParserConverterTest {
   @Test
   public void testRegionPathConverter() {
     RegionPathConverter spy = parser.spyConverter(RegionPathConverter.class);
-    Set<String> regions = Arrays.stream("/regionA,/regionB".split(",")).collect(Collectors.toSet());
+    Set<String> regions = Arrays.stream((SEPARATOR + "regionA," + SEPARATOR + "regionB").split(","))
+        .collect(Collectors.toSet());
     doReturn(regions).when(spy).getAllRegionPaths();
 
     String command = "describe region --name=";
     commandCandidate = parser.complete(command);
     assertThat(commandCandidate.size()).isEqualTo(regions.size());
-    assertThat(commandCandidate.getFirstCandidate()).isEqualTo(command + "/regionA");
+    assertThat(commandCandidate.getFirstCandidate()).isEqualTo(command + SEPARATOR + "regionA");
   }
 
   @Test

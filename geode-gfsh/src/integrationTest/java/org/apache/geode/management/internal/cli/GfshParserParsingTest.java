@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -145,10 +146,11 @@ public class GfshParserParsingTest {
   @Test
   public void testParseOptionStartsWithHyphenWithoutQuotes() throws Exception {
     String input =
-        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+        "rebalance --exclude-region=" + SEPARATOR
+            + "GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
     GfshParseResult result = parseParams(input, "rebalance");
     assertThat(result.getParamValueAsString("exclude-region"))
-        .isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
+        .isEqualTo(SEPARATOR + "GemfireDataCommandsDUnitTestRegion2");
     assertThat(result.getParamValueAsString("simulate")).isEqualTo("true");
     assertThat(result.getParamValueAsString("time-out")).isEqualTo("-1");
   }
@@ -156,30 +158,31 @@ public class GfshParserParsingTest {
   @Test
   public void testParseOptionStartsWithHyphenWithQuotes() throws Exception {
     String input =
-        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
+        "rebalance --exclude-region=" + SEPARATOR
+            + "GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
     GfshParseResult result = parseParams(input, "rebalance");
 
     assertThat(result.getParamValueAsString("exclude-region"))
-        .isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
+        .isEqualTo(SEPARATOR + "GemfireDataCommandsDUnitTestRegion2");
     assertThat(result.getParamValueAsString("simulate")).isEqualTo("true");
     assertThat(result.getParamValueAsString("time-out")).isEqualTo("-1");
   }
 
   @Test
   public void testParseOptionContainingHyphen() throws Exception {
-    String input = "rebalance --exclude-region=/The-Region --simulate=true";
+    String input = "rebalance --exclude-region=" + SEPARATOR + "The-Region --simulate=true";
     GfshParseResult result = parseParams(input, "rebalance");
 
-    assertThat(result.getParamValueAsString("exclude-region")).isEqualTo("/The-Region");
+    assertThat(result.getParamValueAsString("exclude-region")).isEqualTo(SEPARATOR + "The-Region");
     assertThat(result.getParamValueAsString("simulate")).isEqualTo("true");
   }
 
   @Test
   public void testParseOptionContainingUnderscore() throws Exception {
-    String input = "rebalance --exclude-region=/The_region --simulate=true";
+    String input = "rebalance --exclude-region=" + SEPARATOR + "The_region --simulate=true";
     GfshParseResult result = parseParams(input, "rebalance");
 
-    assertThat(result.getParamValueAsString("exclude-region")).isEqualTo("/The_region");
+    assertThat(result.getParamValueAsString("exclude-region")).isEqualTo(SEPARATOR + "The_region");
     assertThat(result.getParamValueAsString("simulate")).isEqualTo("true");
   }
 
@@ -293,7 +296,7 @@ public class GfshParserParsingTest {
 
   @Test
   public void testValueOfJsonWithoutOuterQuoteAndSpace() throws Exception {
-    String command = "put --key=('name':'id') --value=456 --region=/test";
+    String command = "put --key=('name':'id') --value=456 --region=" + SEPARATOR + "test";
     GfshParseResult result = parser.parse(command);
     assertThat(result.getParamValueAsString("key")).isEqualTo("('name':'id')");
   }
@@ -301,14 +304,14 @@ public class GfshParserParsingTest {
   @Test
   public void testValueOfJsonWithSpace() throws Exception {
     // this is considerred an invalid command
-    String command = "put --key=('name' : 'id') --value=456 --region=/test";
+    String command = "put --key=('name' : 'id') --value=456 --region=" + SEPARATOR + "test";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNull();
   }
 
   @Test
   public void testValueOfJsonWithSpaceAndOuterQuotes() throws Exception {
-    String command = "put --key=\"('name' : 'id')\" --value=456 --region=/test";
+    String command = "put --key=\"('name' : 'id')\" --value=456 --region=" + SEPARATOR + "test";
     GfshParseResult result = parser.parse(command);
     assertThat(result.getParamValueAsString("key")).isEqualTo("('name' : 'id')");
   }
