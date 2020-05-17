@@ -14,6 +14,7 @@
  */
 package org.apache.geode.modules.util;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -80,7 +81,7 @@ public class TouchReplicatedRegionEntriesFunctionIntegrationTest {
 
   @Test
   public void executeShouldDoNothingWhenRegionDoesNotExist() {
-    Object[] arguments = new Object[] {"/nonExistingRegion", null};
+    Object[] arguments = new Object[] {SEPARATOR + "nonExistingRegion", null};
     executeFunctionAndAssertLastAccessedTimeIsNotUpdated(arguments);
   }
 

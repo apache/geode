@@ -14,7 +14,7 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

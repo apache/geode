@@ -33,13 +33,13 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.AbstractDistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.modules.util.Banner;
 import org.apache.geode.modules.util.RegionHelper;
 import org.apache.geode.modules.util.ResourceManagerValidator;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public abstract class AbstractCache {
 
