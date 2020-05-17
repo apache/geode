@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.management.internal.cli.remote.CommandExecutor.RUN_ON_MEMBER_CHANGE_NOT_PERSISTED;
 import static org.apache.geode.management.internal.cli.remote.CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED;
 

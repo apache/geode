@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFERS_COMPLETED;
 import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFER_TIME;

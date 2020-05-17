@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.management.configuration.ClassName.isClassNameValid;
 
 import java.util.ArrayList;
@@ -33,7 +34,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
@@ -595,7 +595,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
             ManagementService.getManagementService(cache).getDistributedRegionMXBean(regionName);
         if (bean == null) {
           bean = ManagementService.getManagementService(cache)
-              .getDistributedRegionMXBean(Region.SEPARATOR + regionName);
+              .getDistributedRegionMXBean(SEPARATOR + regionName);
         }
         if (bean != null) {
           return true;
@@ -658,7 +658,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
   }
 
   boolean regionExists(String regionPath) {
-    if (regionPath == null || Region.SEPARATOR.equals(regionPath)) {
+    if (regionPath == null || SEPARATOR.equals(regionPath)) {
       return false;
     }
 

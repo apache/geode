@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.common.internal.GeodeJsonMapper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.NanoTimer;
@@ -58,7 +61,6 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.JsonUtil;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
  * @since GemFire 7.0
@@ -418,7 +420,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
       // Recursively find the keys starting from the specified region path.
       List<String> regionPaths = getAllRegionPaths(cache, true);
       for (String path : regionPaths) {
-        if (path.startsWith(regionPath) || path.startsWith(Region.SEPARATOR + regionPath)) {
+        if (path.startsWith(regionPath) || path.startsWith(SEPARATOR + regionPath)) {
           Region targetRegion = cache.getRegion(path);
           listOfRegionsStartingWithRegionPath.add(targetRegion);
         }

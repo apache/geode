@@ -36,6 +36,7 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
@@ -45,7 +46,6 @@ import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  *

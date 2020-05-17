@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
