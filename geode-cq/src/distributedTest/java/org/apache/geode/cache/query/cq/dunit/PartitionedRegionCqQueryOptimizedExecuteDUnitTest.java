@@ -26,6 +26,7 @@ import org.apache.geode.cache.query.cq.internal.CqServiceImpl;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -34,7 +35,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({ClientSubscriptionTest.class})
 public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest

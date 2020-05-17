@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.cq.internal;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -102,7 +103,8 @@ public class CqSecurityExecutionContextTamperingDistributedTest implements Seria
 
   @Test
   public void executionContextShouldNotBeModifiableForCqQueriesWithMethodInvocations() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r." + attributeAccessor + " = 'Beth'";
+    String query =
+        "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r." + attributeAccessor + " = 'Beth'";
 
     client.invoke(() -> {
       TestCqListener cqListener = new TestCqListener();

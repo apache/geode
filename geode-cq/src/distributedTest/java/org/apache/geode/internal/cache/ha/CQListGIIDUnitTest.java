@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
@@ -109,34 +109,41 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   public String[] cqs = new String[] {
       // 0 - Test for ">"
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID > 0",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + " p where p.ID > 0",
 
       // 1 - Test for "=" and "and".
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID = 2 and p.status='active'",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0]
+          + " p where p.ID = 2 and p.status='active'",
 
       // 2 - Test for "<" and "and".
-      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID < 5 and p.status='active'",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[1]
+          + " p where p.ID < 5 and p.status='active'",
 
       // FOLLOWING CQS ARE NOT TESTED WITH VALUES; THEY ARE USED TO TEST PARSING
       // LOGIC WITHIN CQ.
       // 3
-      "SELECT * FROM /root/" + regions[0] + " ;",
+      "SELECT * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + " ;",
       // 4
-      "SELECT ALL * FROM /root/" + regions[0],
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0],
       // 5
-      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM /root/"
+      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM " + SEPARATOR
+          + "root" + SEPARATOR
           + regions[0] + " TYPE Portfolio",
       // 6
-      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM /root/"
+      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM " + SEPARATOR
+          + "root" + SEPARATOR
           + regions[0] + " p TYPE Portfolio",
       // 7
-      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID < 5 and p.status='active';",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[1]
+          + " p where p.ID < 5 and p.status='active';",
       // 8
-      "SELECT ALL * FROM /root/" + regions[0] + "  ;",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + "  ;",
       // 9
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.description = NULL",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0]
+          + " p where p.description = NULL",
       // 10
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID > 0 and p.status='active'",};
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0]
+          + " p where p.ID > 0 and p.status='active'",};
 
   @Override
   public final void postSetUp() throws Exception {

@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.cq.dunit;
 
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -82,7 +83,8 @@ public class DestroyPartitionedRegionMessageDUnitTest implements Serializable {
     cqaf.addCqListener(testListener);
     CqAttributes cqAttributes = cqaf.create();
 
-    queryService.newCq("Select * from /region r where r.ID + 3 > 4", cqAttributes).execute();
+    queryService.newCq("Select * from " + SEPARATOR + "region r where r.ID + 3 > 4", cqAttributes)
+        .execute();
   }
 
   @Test

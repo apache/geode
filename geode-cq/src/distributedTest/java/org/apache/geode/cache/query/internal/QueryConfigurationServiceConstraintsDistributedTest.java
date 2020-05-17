@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 import static java.util.stream.Collectors.toSet;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
@@ -117,7 +118,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
     regionName = testName.getMethodName();
     queryString = String.join(" ",
-        "SELECT * FROM /" + regionName + " object",
+        "SELECT * FROM " + SEPARATOR + regionName + " object",
         "WHERE object." + GET_ID_METHOD + " > -1");
 
     int serverPort = getRandomAvailableTCPPort();

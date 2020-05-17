@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.cq;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.io.Serializable;
@@ -76,7 +77,7 @@ public class CQDistributedTest implements Serializable {
 
   @Test
   public void cqUsingModShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
-    qs.newCq("Select * from /region r where r.ID % 2 = 1", cqa).execute();
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID % 2 = 1", cqa).execute();
 
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -93,7 +94,7 @@ public class CQDistributedTest implements Serializable {
 
   @Test
   public void cqUsingPlusShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
-    qs.newCq("Select * from /region r where r.ID + 3 > 4", cqa).execute();
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID + 3 > 4", cqa).execute();
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
@@ -109,7 +110,7 @@ public class CQDistributedTest implements Serializable {
 
   @Test
   public void cqUsingSubtractShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
-    qs.newCq("Select * from /region r where r.ID - 3 < 0", cqa).execute();
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID - 3 < 0", cqa).execute();
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
@@ -125,7 +126,7 @@ public class CQDistributedTest implements Serializable {
 
   @Test
   public void cqUsingDivideShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
-    qs.newCq("Select * from /region r where r.ID / 2 = 1", cqa).execute();
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID / 2 = 1", cqa).execute();
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
@@ -141,7 +142,7 @@ public class CQDistributedTest implements Serializable {
 
   @Test
   public void cqUsingMultiplyShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
-    qs.newCq("Select * from /region r where r.ID * 2 > 3", cqa).execute();
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID * 2 > 3", cqa).execute();
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
@@ -161,7 +162,7 @@ public class CQDistributedTest implements Serializable {
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       ClusterStartupRule.getCache().getQueryService().createKeyIndex("PrimaryKeyIndex", "ID",
-          "/region");
+          SEPARATOR + "region");
       regionOnServer.put(0, new Portfolio(0));
       regionOnServer.put(1, new Portfolio(1));
       regionOnServer.put(2, new Portfolio(2));
@@ -170,7 +171,8 @@ public class CQDistributedTest implements Serializable {
     });
 
     SelectResults results =
-        qs.newCq("Select * from /region where ID = 1", cqa).executeWithInitialResults();
+        qs.newCq("Select * from " + SEPARATOR + "region where ID = 1", cqa)
+            .executeWithInitialResults();
     assertEquals(1, results.size());
   }
 

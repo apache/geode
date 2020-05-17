@@ -32,6 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -39,7 +40,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**

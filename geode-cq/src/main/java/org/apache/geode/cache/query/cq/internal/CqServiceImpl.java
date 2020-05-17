@@ -65,6 +65,7 @@ import org.apache.geode.cache.query.internal.cq.ClientCQ;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -80,7 +81,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implements the CqService functionality.

@@ -14,10 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.cache.tier.sockets.DeltaToRegionRelationCQRegistrationDUnitTest.getClientProxy;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -34,7 +33,6 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
@@ -95,22 +93,22 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
   /*
    * cq 1
    */
-  private static final String CQ1 = "SELECT * FROM " + Region.SEPARATOR + REGION_NAME1;
+  private static final String CQ1 = "SELECT * FROM " + SEPARATOR + REGION_NAME1;
 
   /*
    * cq 2
    */
-  private static final String CQ2 = "SELECT * FROM " + Region.SEPARATOR + REGION_NAME2;
+  private static final String CQ2 = "SELECT * FROM " + SEPARATOR + REGION_NAME2;
 
   /*
    * cq 3
    */
-  private static final String CQ3 = "SELECT ALL * FROM " + Region.SEPARATOR + REGION_NAME1;
+  private static final String CQ3 = "SELECT ALL * FROM " + SEPARATOR + REGION_NAME1;
 
   /*
    * cq 4
    */
-  private static final String CQ4 = "SELECT ALL * FROM " + Region.SEPARATOR + REGION_NAME2;
+  private static final String CQ4 = "SELECT ALL * FROM " + SEPARATOR + REGION_NAME2;
 
   private static final String cqName1 = "cqNameFirst";
   private static final String cqName2 = "cqNameSecond";

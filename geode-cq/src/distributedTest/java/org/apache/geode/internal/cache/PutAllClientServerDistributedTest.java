@@ -23,6 +23,7 @@ import static org.apache.geode.cache.client.PoolFactory.DEFAULT_READ_TIMEOUT;
 import static org.apache.geode.cache.client.PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
 import static org.apache.geode.cache.client.PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED;
 import static org.apache.geode.cache.client.PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
@@ -263,7 +264,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       String cqName = "EOInfoTracker";
       String query = String.join(" ",
-          "SELECT ALL * FROM /" + regionName + " ii",
+          "SELECT ALL * FROM " + SEPARATOR + regionName + " ii",
           "WHERE ii.getTicker() >= '10' and ii.getTicker() < '20'");
 
       CqQuery cqQuery = getClientCache().getQueryService().newCq(cqName, query, cqAttributes);

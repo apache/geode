@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -118,10 +119,10 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
 
   public static String DELTA_KEY = "DELTA_KEY";
 
-  private static final String[] CQs = new String[] {"select * from /" + REGION_NAME,
-      "select * from /" + REGION_NAME + " where intVar = 0",
-      "select * from /" + REGION_NAME + " where intVar > 0",
-      "select * from /" + REGION_NAME + " where intVar < 0"};
+  private static final String[] CQs = new String[] {"select * from " + SEPARATOR + REGION_NAME,
+      "select * from " + SEPARATOR + REGION_NAME + " where intVar = 0",
+      "select * from " + SEPARATOR + REGION_NAME + " where intVar > 0",
+      "select * from " + SEPARATOR + REGION_NAME + " where intVar < 0"};
 
   public static String LAST_KEY = "LAST_KEY";
 

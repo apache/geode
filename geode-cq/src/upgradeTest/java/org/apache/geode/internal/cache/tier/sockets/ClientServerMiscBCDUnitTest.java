@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -297,7 +298,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
   public static void registerCQ() throws Exception {
     Cache cache = new ClientServerMiscDUnitTestBase().getCache();
-    Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+    Region r = cache.getRegion(SEPARATOR + REGION_NAME2);
     assertNotNull(r);
     CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
     cqAttributesFactory.addCqListener(Mockito.mock(CqListener.class));

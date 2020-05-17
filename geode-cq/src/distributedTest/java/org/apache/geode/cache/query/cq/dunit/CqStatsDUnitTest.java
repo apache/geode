@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -186,8 +187,9 @@ public class CqStatsDUnitTest extends JUnit4CacheTestCase {
                 + " CQs active: " + cqServiceStats.numCqsActive() + " CQs stopped: "
                 + cqServiceStats.numCqsStopped() + " CQs closed: " + cqServiceStats.numCqsClosed()
                 + " CQs on Client: " + cqServiceStats.numCqsOnClient()
-                + " CQs on region /root/regionA : "
-                + cqServiceVsdStats.numCqsOnRegion(getCache(), "/root/regionA")
+                + " CQs on region " + SEPARATOR + "root" + SEPARATOR + "regionA : "
+                + cqServiceVsdStats.numCqsOnRegion(getCache(),
+                    SEPARATOR + "root" + SEPARATOR + "regionA")
                 + " Clients with CQs: " + cqServiceVsdStats.getNumClientsWithCqs());
 
 
@@ -220,8 +222,11 @@ public class CqStatsDUnitTest extends JUnit4CacheTestCase {
 
         // Check for CQs on region.
         if (cqsOnRegion != CqQueryDUnitTest.noTest) {
-          assertEquals("Number of CQs on region /root/regionA mismatch", cqsOnRegion,
-              cqServiceVsdStats.numCqsOnRegion(getCache(), "/root/regionA"));
+          assertEquals(
+              "Number of CQs on region " + SEPARATOR + "root" + SEPARATOR + "regionA mismatch",
+              cqsOnRegion,
+              cqServiceVsdStats.numCqsOnRegion(getCache(),
+                  SEPARATOR + "root" + SEPARATOR + "regionA"));
         }
 
         // Check for clients with CQs count.

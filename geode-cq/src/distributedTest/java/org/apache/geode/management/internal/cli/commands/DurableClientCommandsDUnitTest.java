@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -304,10 +305,12 @@ public class DurableClientCommandsDUnitTest {
       CqAttributesFactory cqAf = new CqAttributesFactory();
 
       try {
-        qs.newCq(CQ1, "select * from /" + STOCKS_REGION, cqAf.create(), true).execute();
-        qs.newCq(CQ2, "select * from /" + STOCKS_REGION + " where id = 1", cqAf.create(), true)
+        qs.newCq(CQ1, "select * from " + SEPARATOR + STOCKS_REGION, cqAf.create(), true).execute();
+        qs.newCq(CQ2, "select * from " + SEPARATOR + STOCKS_REGION + " where id = 1", cqAf.create(),
+            true)
             .execute();
-        qs.newCq(CQ3, "select * from /" + STOCKS_REGION + " where id > 2", cqAf.create(), true)
+        qs.newCq(CQ3, "select * from " + SEPARATOR + STOCKS_REGION + " where id > 2", cqAf.create(),
+            true)
             .execute();
       } catch (CqException | CqExistsException | RegionNotFoundException e) {
         throw new RuntimeException(e);

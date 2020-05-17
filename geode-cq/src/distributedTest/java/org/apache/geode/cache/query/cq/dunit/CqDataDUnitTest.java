@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.HashSet;
@@ -414,7 +415,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(new CacheSerializableRunnable("Load from second server") {
       @Override
       public void run2() throws CacheException {
-        Region region1 = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region1 =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         for (int i = 1; i <= size; i++) {
           region1.get(CqQueryDUnitTest.KEY + i);
         }
@@ -783,7 +785,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         logger.info("### Clearing the region on the server ###");
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         for (int i = 1; i <= 5; i++) {
           region.put(CqQueryDUnitTest.KEY + i, new Portfolio(i));
         }
@@ -798,7 +801,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         logger.info("### Invalidate the region on the server ###");
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         for (int i = 1; i <= 5; i++) {
           region.put(CqQueryDUnitTest.KEY + i, new Portfolio(i));
         }
@@ -813,7 +817,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         logger.info("### Destroying the region on the server ###");
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[1]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[1]);
         for (int i = 1; i <= 5; i++) {
           region.put(CqQueryDUnitTest.KEY + i, new Portfolio(i));
         }
@@ -865,7 +870,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     server.invoke(new CacheSerializableRunnable("Update Region") {
       @Override
       public void run2() throws CacheException {
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
           Portfolio p = new Portfolio(i);
           region.put("" + i, p);
@@ -954,7 +960,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         for (int i = numObjects + 1; i <= totalObjects; i++) {
           Portfolio p = new Portfolio(i);
           region.put("" + i, p);
@@ -1005,7 +1012,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     server.invoke(new CacheSerializableRunnable("Update Region") {
       @Override
       public void run2() throws CacheException {
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
           Portfolio p = new Portfolio(i);
           region.put("" + i, p);
@@ -1023,7 +1031,8 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
-        Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
+        Region region =
+            getCache().getRegion(SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         for (int i = numObjects + 1; i <= totalObjects; i++) {
           Portfolio p = new Portfolio(i);
           region.put("" + i, p);

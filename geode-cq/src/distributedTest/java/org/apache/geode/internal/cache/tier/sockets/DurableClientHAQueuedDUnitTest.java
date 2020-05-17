@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.fail;
 
 import org.junit.Test;
@@ -35,9 +36,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testHAQueueSizeStat() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -74,10 +75,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startDurableClient(durableClientVM, durableClientId, server1Port, regionName);
 
     // Re-register durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -115,9 +119,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
   @Test
   public void testHAQueueSizeStatExpired() {
     int timeoutInSeconds = 20;
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -160,10 +164,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startDurableClient(durableClientVM, durableClientId, server1Port, regionName);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -201,9 +208,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testHAQueueSizeStatForGII() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -259,10 +266,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     closeCache(server1VM);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -299,9 +309,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testHAQueuedCqStat() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -340,10 +350,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startDurableClient(durableClientVM, durableClientId, server1Port, regionName);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -377,9 +390,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
 
   @Test
   public void testHAQueuedCqStatOnSecondary() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -434,10 +447,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -476,9 +492,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testHAQueuedCqStatForGII() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -540,10 +556,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     closeCache(server1VM);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -579,9 +598,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testHAQueuedCqStatForGII2() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -639,10 +658,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     closeCache(server1VM);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -679,9 +701,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testHAQueuedCqStatForGIINoFailover() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -741,10 +763,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server2VM, durableClientId, "LessThan5", 5);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -780,9 +805,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testHAQueuedCqStatForFailover() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
     server1Port = this.server1VM.invoke(
@@ -837,10 +862,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);
@@ -875,9 +903,9 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
    */
   @Test
   public void testHAQueuedCqStatWithTimeOut() {
-    String greaterThan5Query = "select * from /" + regionName + " p where p.ID > 5";
-    String allQuery = "select * from /" + regionName + " p where p.ID > -1";
-    String lessThan5Query = "select * from /" + regionName + " p where p.ID < 5";
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     int timeoutInSeconds = 20;
     // Start server 1
@@ -924,10 +952,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startDurableClient(durableClientVM, durableClientId, server1Port, regionName);
 
     // Reregister durable cqs
-    createCq(durableClientVM, "GreaterThan5", "select * from /" + regionName + " p where p.ID > 5",
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
         true);
-    createCq(durableClientVM, "All", "select * from /" + regionName + " p where p.ID > -1", true);
-    createCq(durableClientVM, "LessThan5", "select * from /" + regionName + " p where p.ID < 5",
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
         true);
     // send client ready
     sendClientReady(durableClientVM);

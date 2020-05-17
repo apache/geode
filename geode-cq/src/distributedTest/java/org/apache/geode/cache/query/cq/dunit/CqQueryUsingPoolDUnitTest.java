@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
@@ -124,39 +125,46 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   public final String[] cqs = new String[] {
       // 0 - Test for ">"
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID > 0",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + " p where p.ID > 0",
 
       // 1 - Test for "=" and "and".
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID = 2 and p.status='active'",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0]
+          + " p where p.ID = 2 and p.status='active'",
 
       // 2 - Test for "<" and "and".
-      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID < 5 and p.status='active'",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[1]
+          + " p where p.ID < 5 and p.status='active'",
 
       // FOLLOWING CQS ARE NOT TESTED WITH VALUES; THEY ARE USED TO TEST PARSING LOGIC WITHIN CQ.
       // 3
-      "SELECT * FROM /root/" + regions[0] + " ;",
+      "SELECT * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + " ;",
       // 4
-      "SELECT ALL * FROM /root/" + regions[0],
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0],
       // 5
-      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM /root/"
+      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM " + SEPARATOR
+          + "root" + SEPARATOR
           + regions[0] + " TYPE Portfolio",
       // 6
-      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM /root/"
+      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM " + SEPARATOR
+          + "root" + SEPARATOR
           + regions[0] + " p TYPE Portfolio",
       // 7
-      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID < 5 and p.status='active';",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[1]
+          + " p where p.ID < 5 and p.status='active';",
       // 8
-      "SELECT ALL * FROM /root/" + regions[0] + "  ;",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + "  ;",
       // 9
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.description = NULL",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0]
+          + " p where p.description = NULL",
       // 10
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID > 0 and p.status='active'",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0]
+          + " p where p.ID > 0 and p.status='active'",
       // 11 - Test for "No Alias"
-      "SELECT ALL * FROM /root/" + regions[0] + " where ID > 0",};
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + " where ID > 0",};
 
   private String[] invalidCQs = new String[] {
       // Test for ">"
-      "SELECT ALL * FROM /root/invalidRegion p where p.ID > 0"};
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + "invalidRegion p where p.ID > 0"};
 
   @Override
   public final void postSetUp() throws Exception {
@@ -2278,7 +2286,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         QueryService cqService = null;
         try {
           cqService = getCache().getQueryService();
-          cqService.stopCqs("/root/" + regions[0]);
+          cqService.stopCqs(SEPARATOR + "root" + SEPARATOR + regions[0]);
         } catch (Exception cqe) {
           Assert.fail("Failed to getCQService.", cqe);
         }
@@ -2301,7 +2309,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         QueryService cqService = null;
         try {
           cqService = getCache().getQueryService();
-          cqService.executeCqs("/root/" + regions[0]);
+          cqService.executeCqs(SEPARATOR + "root" + SEPARATOR + regions[0]);
         } catch (Exception cqe) {
           Assert.fail("Failed to getCQService.", cqe);
         }
@@ -2786,23 +2794,32 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         QueryService cqService = null;
         try {
           cqService = getCache().getQueryService();
-          CqQuery[] cq = cqService.getCqs("/root/" + regions[0]);
+          CqQuery[] cq = cqService.getCqs(SEPARATOR + "root" + SEPARATOR + regions[0]);
           assertNotNull(
-              "CQservice should not return null for cqs on this region : /root/" + regions[0], cq);
-          getCache().getLogger().info("cqs for region: /root/" + regions[0] + " : " + cq.length);
+              "CQservice should not return null for cqs on this region : " + SEPARATOR + "root"
+                  + SEPARATOR + regions[0],
+              cq);
+          getCache().getLogger().info(
+              "cqs for region: " + SEPARATOR + "root" + SEPARATOR + regions[0] + " : " + cq.length);
           // closing on of the cqs.
 
           cq[0].close();
-          cq = cqService.getCqs("/root/" + regions[0]);
+          cq = cqService.getCqs(SEPARATOR + "root" + SEPARATOR + regions[0]);
           assertNotNull(
-              "CQservice should not return null for cqs on this region : /root/" + regions[0], cq);
-          getCache().getLogger().info("cqs for region: /root/" + regions[0]
-              + " after closeing one of the cqs : " + cq.length);
+              "CQservice should not return null for cqs on this region : " + SEPARATOR + "root"
+                  + SEPARATOR + regions[0],
+              cq);
+          getCache().getLogger()
+              .info("cqs for region: " + SEPARATOR + "root" + SEPARATOR + regions[0]
+                  + " after closeing one of the cqs : " + cq.length);
 
-          cq = cqService.getCqs("/root/" + regions[1]);
-          getCache().getLogger().info("cqs for region: /root/" + regions[1] + " : " + cq.length);
+          cq = cqService.getCqs(SEPARATOR + "root" + SEPARATOR + regions[1]);
+          getCache().getLogger().info(
+              "cqs for region: " + SEPARATOR + "root" + SEPARATOR + regions[1] + " : " + cq.length);
           assertNotNull(
-              "CQservice should not return null for cqs on this region : /root/" + regions[1], cq);
+              "CQservice should not return null for cqs on this region : " + SEPARATOR + "root"
+                  + SEPARATOR + regions[1],
+              cq);
         } catch (Exception cqe) {
           Assert.fail("Failed to getCQService", cqe);
         }

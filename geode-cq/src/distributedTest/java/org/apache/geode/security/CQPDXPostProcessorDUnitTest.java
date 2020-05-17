@@ -15,6 +15,7 @@
 
 package org.apache.geode.security;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
@@ -86,7 +87,7 @@ public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testCQ() {
-    String query = "select * from /" + REGION_NAME;
+    String query = "select * from " + SEPARATOR + REGION_NAME;
     client1.invoke(() -> {
       ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
