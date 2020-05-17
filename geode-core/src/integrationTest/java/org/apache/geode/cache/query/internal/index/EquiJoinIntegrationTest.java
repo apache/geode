@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -87,10 +87,14 @@ public class EquiJoinIntegrationTest {
     createRegions();
 
     String[] queries = new String[] {
-        "<trace>select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid",
-        "<trace>select * from /region1 c, /region2 s where c.pkid=1 and s.pkid = c.pkid",
-        "<trace>select * from /region1 c, /region2 s where c.pkid = s.pkid and c.pkid=1",
-        "<trace>select * from /region1 c, /region2 s where s.pkid = c.pkid and c.pkid=1",};
+        "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid=1 and c.pkid = s.pkid",
+        "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid=1 and s.pkid = c.pkid",
+        "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid = s.pkid and c.pkid=1",
+        "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where s.pkid = c.pkid and c.pkid=1",};
 
     for (int i = 0; i < 1000; i++) {
       region1.put(i, new Customer(i, i));
@@ -108,48 +112,53 @@ public class EquiJoinIntegrationTest {
       createAdditionalRegions();
 
       String[] queries = new String[] {
-          "<trace>select * from /region1 c, /region2 s, /region3 d where c.pkid=1 and c.pkid = s.pkid and d.pkid = s.pkid", // this
-                                                                                                                            // should
-                                                                                                                            // derive
-                                                                                                                            // d
-                                                                                                                            // after
-                                                                                                                            // deriving
-                                                                                                                            // s
-                                                                                                                            // from
-                                                                                                                            // c
-          "<trace>select * from /region1 c, /region2 s, /region3 d, /region4 f where c.pkid=1 and c.pkid = s.pkid and d.pkid = s.pkid and f.pkid = d.pkid", // this
-                                                                                                                                                            // should
-                                                                                                                                                            // f
-                                                                                                                                                            // from
-                                                                                                                                                            // d
-                                                                                                                                                            // from
-                                                                                                                                                            // s
-                                                                                                                                                            // from
-                                                                                                                                                            // c
-          "<trace>select * from /region1 c, /region2 s, /region3 d where c.pkid=1 and c.pkid = s.pkid and d.pkid = c.pkid", // this
-                                                                                                                            // should
-                                                                                                                            // derive
-                                                                                                                            // d
-                                                                                                                            // and
-                                                                                                                            // s
-                                                                                                                            // from
-                                                                                                                            // c
-          "<trace>select * from /region1 c, /region2 s, /region3 d where c.pkid=1 and c.pkid = s.pkid and s.pkid = d.pkid", // this
-                                                                                                                            // should
-                                                                                                                            // derive
-                                                                                                                            // d
-                                                                                                                            // after
-                                                                                                                            // deriving
-                                                                                                                            // s
-                                                                                                                            // from
-                                                                                                                            // c
-                                                                                                                            // (order
-                                                                                                                            // is
-                                                                                                                            // just
-                                                                                                                            // switched
-                                                                                                                            // in
-                                                                                                                            // the
-                                                                                                                            // query)
+          "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR + "region2 s, "
+              + SEPARATOR + "region3 d where c.pkid=1 and c.pkid = s.pkid and d.pkid = s.pkid", // this
+          // should
+          // derive
+          // d
+          // after
+          // deriving
+          // s
+          // from
+          // c
+          "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR + "region2 s, "
+              + SEPARATOR + "region3 d, " + SEPARATOR
+              + "region4 f where c.pkid=1 and c.pkid = s.pkid and d.pkid = s.pkid and f.pkid = d.pkid", // this
+          // should
+          // f
+          // from
+          // d
+          // from
+          // s
+          // from
+          // c
+          "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR + "region2 s, "
+              + SEPARATOR + "region3 d where c.pkid=1 and c.pkid = s.pkid and d.pkid = c.pkid", // this
+          // should
+          // derive
+          // d
+          // and
+          // s
+          // from
+          // c
+          "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR + "region2 s, "
+              + SEPARATOR + "region3 d where c.pkid=1 and c.pkid = s.pkid and s.pkid = d.pkid", // this
+          // should
+          // derive
+          // d
+          // after
+          // deriving
+          // s
+          // from
+          // c
+          // (order
+          // is
+          // just
+          // switched
+          // in
+          // the
+          // query)
       };
 
       for (int i = 0; i < 30; i++) {
@@ -175,11 +184,16 @@ public class EquiJoinIntegrationTest {
     createRegions();
 
     String[] queries =
-        new String[] {"select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid",
-            "select * from /region1 c, /region2 s where c.pkid=1 and s.pkid = c.pkid",
-            "select * from /region1 c, /region2 s where c.pkid = s.pkid and c.pkid=1",
-            "select * from /region1 c, /region2 s where s.pkid = c.pkid and c.pkid=1",
-            "select distinct * from /region1 c, /region2 s where s.pkid = c.pkid and c.pkid=1"};
+        new String[] {"select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid=1 and c.pkid = s.pkid",
+            "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+                + "region2 s where c.pkid=1 and s.pkid = c.pkid",
+            "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+                + "region2 s where c.pkid = s.pkid and c.pkid=1",
+            "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+                + "region2 s where s.pkid = c.pkid and c.pkid=1",
+            "select distinct * from " + SEPARATOR + "region1 c, " + SEPARATOR
+                + "region2 s where s.pkid = c.pkid and c.pkid=1"};
 
     for (int i = 0; i < 1000; i++) {
       region1.put(i, new Customer(i, i));
@@ -200,8 +214,10 @@ public class EquiJoinIntegrationTest {
     createRegions();
 
     String[] queries = new String[] {
-        "select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid and c.id = 1",
-        "select * from /region1 c, /region2 s where c.id = 1 and c.pkid=1 and s.pkid = c.pkid",
+        "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid=1 and c.pkid = s.pkid and c.id = 1",
+        "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.id = 1 and c.pkid=1 and s.pkid = c.pkid",
 
     };
 
@@ -216,7 +232,7 @@ public class EquiJoinIntegrationTest {
       @Override
       public void createIndexForRegion1(int indexTypeId)
           throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
-        secondaryIndex = qs.createIndex("region1 id", "p.id", "/region1 p");
+        secondaryIndex = qs.createIndex("region1 id", "p.id", SEPARATOR + "region1 p");
         super.createIndexForRegion1(indexTypeId);
       }
 
@@ -234,8 +250,10 @@ public class EquiJoinIntegrationTest {
     createRegions();
 
     String[] queries = new String[] {
-        "<trace>select * from /region1 c, /region2 s where c.pkid = 1 and c.id > 1 and c.id < 10 and c.pkid = s.pkid",
-        "<trace>select * from /region1 c, /region2 s where c.pkid >= 0 and c.pkid < 10 and c.id < 10 and c.pkid = s.pkid"};
+        "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid = 1 and c.id > 1 and c.id < 10 and c.pkid = s.pkid",
+        "<trace>select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid >= 0 and c.pkid < 10 and c.id < 10 and c.pkid = s.pkid"};
 
     // just need enough so that there are 1-10 ids per pkid
     for (int i = 0; i < 1000; i++) {
@@ -260,7 +278,8 @@ public class EquiJoinIntegrationTest {
     createRegions();
 
     String[] queries = new String[] {
-        "select * from /region1 c, /region2 s where c.id = 3 and c.pkid > 2  and c.pkid = s.pkid limit 1",};
+        "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.id = 3 and c.pkid > 2  and c.pkid = s.pkid limit 1",};
 
     for (int i = 0; i < 1000; i++) {
       region1.put(i, new Customer(i, i % 10));
@@ -273,7 +292,7 @@ public class EquiJoinIntegrationTest {
       @Override
       public void createIndexForRegion1(int indexTypeId)
           throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
-        secondaryIndex = qs.createIndex("region1 id", "p.id", "/region1 p");
+        secondaryIndex = qs.createIndex("region1 id", "p.id", SEPARATOR + "region1 p");
         super.createIndexForRegion1(indexTypeId);
       }
 
@@ -291,8 +310,12 @@ public class EquiJoinIntegrationTest {
     createRegions();
 
     String[] queries = new String[] {
-        "select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid and c.pkid in (select t.pkid from /region1 t,/region2 s where s.pkid=t.pkid and s.pkid = 1)",
-        "select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid or c.pkid in set (1,2,3,4)",};
+        "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid=1 and c.pkid = s.pkid and c.pkid in (select t.pkid from "
+            + SEPARATOR + "region1 t," + SEPARATOR
+            + "region2 s where s.pkid=t.pkid and s.pkid = 1)",
+        "select * from " + SEPARATOR + "region1 c, " + SEPARATOR
+            + "region2 s where c.pkid=1 and c.pkid = s.pkid or c.pkid in set (1,2,3,4)",};
 
     for (int i = 0; i < 1000; i++) {
       region1.put(i, new Customer(i, i));

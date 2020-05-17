@@ -18,6 +18,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
@@ -71,7 +72,7 @@ public class DeclarativeIndexCreationJUnitTest {
 
   @Test
   public void testAsynchronousIndexCreatedOnRoot_PortfoliosRegion() {
-    Region root = cache.getRegion("/root/portfolios");
+    Region root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "portfolios");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
@@ -86,7 +87,7 @@ public class DeclarativeIndexCreationJUnitTest {
 
   @Test
   public void testSynchronousIndexCreatedOnRoot_StringRegion() {
-    Region root = cache.getRegion("/root/string");
+    Region root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
@@ -97,7 +98,7 @@ public class DeclarativeIndexCreationJUnitTest {
     } else
       fail(
           "DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion Region:No index found in the root region");
-    root = cache.getRegion("/root/string1");
+    root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string1");
     im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     if (!im.isIndexMaintenanceTypeSynchronous())
       fail(
@@ -106,7 +107,7 @@ public class DeclarativeIndexCreationJUnitTest {
 
   @Test
   public void testSynchronousIndexCreatedOnRootRegion() {
-    Region root = cache.getRegion("/root");
+    Region root = cache.getRegion(SEPARATOR + "root");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -39,8 +40,8 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLQueryTest.class})
 public class SelectToDateJUnitTest {
@@ -65,11 +66,16 @@ public class SelectToDateJUnitTest {
   }
 
   private static String[] toDateQueries = new String[] {
-      "select * from /test p where p.createDate = to_date('" + mayDate + "', '" + format + "')",
-      "select * from /test p where p.createDate < to_date('" + mayDate + "', '" + format + "')",
-      "select * from /test p where p.createDate > to_date('" + mayDate + "', '" + format + "')",
-      "select * from /test p where p.createDate <= to_date('" + mayDate + "', '" + format + "')",
-      "select * from /test p where p.createDate >= to_date('" + mayDate + "', '" + format + "')"};
+      "select * from " + SEPARATOR + "test p where p.createDate = to_date('" + mayDate + "', '"
+          + format + "')",
+      "select * from " + SEPARATOR + "test p where p.createDate < to_date('" + mayDate + "', '"
+          + format + "')",
+      "select * from " + SEPARATOR + "test p where p.createDate > to_date('" + mayDate + "', '"
+          + format + "')",
+      "select * from " + SEPARATOR + "test p where p.createDate <= to_date('" + mayDate + "', '"
+          + format + "')",
+      "select * from " + SEPARATOR + "test p where p.createDate >= to_date('" + mayDate + "', '"
+          + format + "')"};
 
   // the test will be validating against the May date, so expected values revolve around month of
   // May
@@ -80,15 +86,20 @@ public class SelectToDateJUnitTest {
           (numMonthsAfterMay + 1) * numElementsExpectedPerMonth};
 
   private static String[] projectionQueries = new String[] {
-      "select p.createDate from /test p where p.createDate = to_date('" + mayDate + "', '" + format
+      "select p.createDate from " + SEPARATOR + "test p where p.createDate = to_date('" + mayDate
+          + "', '" + format
           + "')",
-      "select p.createDate from /test p where p.createDate < to_date('" + mayDate + "', '" + format
+      "select p.createDate from " + SEPARATOR + "test p where p.createDate < to_date('" + mayDate
+          + "', '" + format
           + "')",
-      "select p.createDate from /test p where p.createDate > to_date('" + mayDate + "', '" + format
+      "select p.createDate from " + SEPARATOR + "test p where p.createDate > to_date('" + mayDate
+          + "', '" + format
           + "')",
-      "select p.createDate from /test p where p.createDate <= to_date('" + mayDate + "', '" + format
+      "select p.createDate from " + SEPARATOR + "test p where p.createDate <= to_date('" + mayDate
+          + "', '" + format
           + "')",
-      "select p.createDate from /test p where p.createDate >= to_date('" + mayDate + "', '" + format
+      "select p.createDate from " + SEPARATOR + "test p where p.createDate >= to_date('" + mayDate
+          + "', '" + format
           + "')",};
 
   private void executeQueryTest(Cache cache, String[] queries, int[] expectedResults) {

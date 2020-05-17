@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,9 +40,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category(OQLQueryTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -74,22 +74,22 @@ public class GroupJunctionIntegrationTest {
   private Object[] regionTypeAndQuery() {
     return new Object[] {
         // The comparison order matters, so we test both combinations (see GEODE-7728).
-        new Object[] {"REPLICATE", "SELECT * FROM /" + REGION_NAME
+        new Object[] {"REPLICATE", "SELECT * FROM " + SEPARATOR + REGION_NAME
             + " WHERE code=utilityCode AND functionalCode=managementCode"},
-        new Object[] {"REPLICATE", "SELECT * FROM /" + REGION_NAME
+        new Object[] {"REPLICATE", "SELECT * FROM " + SEPARATOR + REGION_NAME
             + " WHERE functionalCode=managementCode AND code=utilityCode"},
-        new Object[] {"REPLICATE", "SELECT * FROM /" + REGION_NAME
+        new Object[] {"REPLICATE", "SELECT * FROM " + SEPARATOR + REGION_NAME
             + " WHERE code=utilityCode OR functionalCode=managementCode"},
-        new Object[] {"REPLICATE", "SELECT * FROM /" + REGION_NAME
+        new Object[] {"REPLICATE", "SELECT * FROM " + SEPARATOR + REGION_NAME
             + " WHERE functionalCode=managementCode OR code=utilityCode"},
 
-        new Object[] {"PARTITION", "SELECT * FROM /" + REGION_NAME
+        new Object[] {"PARTITION", "SELECT * FROM " + SEPARATOR + REGION_NAME
             + " WHERE code=utilityCode AND functionalCode=managementCode"},
-        new Object[] {"PARTITION", "SELECT * FROM /" + REGION_NAME
+        new Object[] {"PARTITION", "SELECT * FROM " + SEPARATOR + REGION_NAME
             + " WHERE functionalCode=managementCode AND code=utilityCode"},
-        new Object[] {"PARTITION", "SELECT * FROM /" + REGION_NAME
+        new Object[] {"PARTITION", "SELECT * FROM " + SEPARATOR + REGION_NAME
             + " WHERE code=utilityCode OR functionalCode=managementCode"},
-        new Object[] {"PARTITION", "SELECT * FROM /" + REGION_NAME
+        new Object[] {"PARTITION", "SELECT * FROM " + SEPARATOR + REGION_NAME
             + " WHERE functionalCode=managementCode OR code=utilityCode"},
     };
   }

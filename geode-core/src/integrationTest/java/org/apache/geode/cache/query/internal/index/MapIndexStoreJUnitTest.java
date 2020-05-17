@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -79,7 +80,8 @@ public class MapIndexStoreJUnitTest {
     region = (LocalRegion) cache.createRegion("portfolios", regionAttributes);
 
     IndexStore indexStorage =
-        new MapIndexStore(region.getIndexMap("testIndex", "p.ID", "/portfolios p"), region);
+        new MapIndexStore(region.getIndexMap("testIndex", "p.ID", SEPARATOR + "portfolios p"),
+            region);
     return indexStorage;
   }
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -31,7 +32,6 @@ import org.junit.Test;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
@@ -82,7 +82,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
         ((HAContainerWrapper) server.getAcceptor().getCacheClientNotifier().getHaContainer())
             .getName();
     EvictionAttributesImpl ea = (EvictionAttributesImpl) cache
-        .getRegion(Region.SEPARATOR + regionName).getAttributes().getEvictionAttributes();
+        .getRegion(SEPARATOR + regionName).getAttributes().getEvictionAttributes();
     assertTrue("Eviction Algorithm is not LIFO", ea.isLIFO());
     // The CacheClientNotifier is a singleton.
     if (cache.getCacheServers().size() <= 1) {
@@ -133,12 +133,12 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
       String rName =
           ((HAContainerWrapper) server.getAcceptor().getCacheClientNotifier().getHaContainer())
               .getName();
-      assertNotNull("client messages region is null ", cache.getRegion(Region.SEPARATOR + rName));
+      assertNotNull("client messages region is null ", cache.getRegion(SEPARATOR + rName));
       server.stop();
 
       if (!itr.hasNext()) {
         assertNull("client messages region is not null ",
-            cache.getRegion(Region.SEPARATOR + rName));
+            cache.getRegion(SEPARATOR + rName));
       }
     }
   }

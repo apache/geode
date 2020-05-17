@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -37,8 +38,8 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLIndexTest.class})
 public class CompactRangeIndexIndexMapJUnitTest {
@@ -71,29 +72,34 @@ public class CompactRangeIndexIndexMapJUnitTest {
     Cache cache = CacheUtils.getCache();
     Region region = createLDMRegion("portfolios");
     QueryService queryService = cache.getQueryService();
-    Index index = queryService.createIndex("IDIndex", "p.ID", "/portfolios p, p.positions ps");
+    Index index =
+        queryService.createIndex("IDIndex", "p.ID", SEPARATOR + "portfolios p, p.positions ps");
     assertTrue(index instanceof CompactRangeIndex);
   }
 
   @Test
   public void testFirstLevelEqualityQuery() throws Exception {
-    testIndexAndQuery("p.ID", "/portfolios p", "Select * from /portfolios p where p.ID = 1");
-    testIndexAndQuery("p.ID", "/portfolios p", "Select * from /portfolios p where p.ID > 1");
-    testIndexAndQuery("p.ID", "/portfolios p", "Select * from /portfolios p where p.ID < 10");
+    testIndexAndQuery("p.ID", SEPARATOR + "portfolios p",
+        "Select * from " + SEPARATOR + "portfolios p where p.ID = 1");
+    testIndexAndQuery("p.ID", SEPARATOR + "portfolios p",
+        "Select * from " + SEPARATOR + "portfolios p where p.ID > 1");
+    testIndexAndQuery("p.ID", SEPARATOR + "portfolios p",
+        "Select * from " + SEPARATOR + "portfolios p where p.ID < 10");
   }
 
   @Test
   public void testSecondLevelEqualityQuery() throws Exception {
     boolean oldTestLDMValue = IndexManager.IS_TEST_LDM;
     boolean oldTestExpansionValue = IndexManager.IS_TEST_EXPANSION;
-    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps",
-        "Select * from /portfolios p where p.ID = 1");
-    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps",
-        "Select p.ID from /portfolios p where p.ID = 1");
-    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps",
-        "Select p from /portfolios p where p.ID > 3");
-    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps",
-        "Select ps from /portfolios p, p.positions.values ps where ps.secId = 'VMW'");
+    testIndexAndQuery("p.ID", SEPARATOR + "portfolios p, p.positions.values ps",
+        "Select * from " + SEPARATOR + "portfolios p where p.ID = 1");
+    testIndexAndQuery("p.ID", SEPARATOR + "portfolios p, p.positions.values ps",
+        "Select p.ID from " + SEPARATOR + "portfolios p where p.ID = 1");
+    testIndexAndQuery("p.ID", SEPARATOR + "portfolios p, p.positions.values ps",
+        "Select p from " + SEPARATOR + "portfolios p where p.ID > 3");
+    testIndexAndQuery("p.ID", SEPARATOR + "portfolios p, p.positions.values ps",
+        "Select ps from " + SEPARATOR
+            + "portfolios p, p.positions.values ps where ps.secId = 'VMW'");
     IndexManager.IS_TEST_LDM = oldTestLDMValue;
     IndexManager.IS_TEST_EXPANSION = oldTestExpansionValue;
   }
@@ -102,8 +108,9 @@ public class CompactRangeIndexIndexMapJUnitTest {
   public void testMultipleSecondLevelMatches() throws Exception {
     boolean oldTestLDMValue = IndexManager.IS_TEST_LDM;
     boolean oldTestExpansionValue = IndexManager.IS_TEST_EXPANSION;
-    testIndexAndQuery("ps.secId", "/portfolios p, p.positions.values ps",
-        "Select * from /portfolios p, p.positions.values ps where ps.secId = 'VMW'");
+    testIndexAndQuery("ps.secId", SEPARATOR + "portfolios p, p.positions.values ps",
+        "Select * from " + SEPARATOR
+            + "portfolios p, p.positions.values ps where ps.secId = 'VMW'");
     IndexManager.IS_TEST_LDM = oldTestLDMValue;
     IndexManager.IS_TEST_EXPANSION = oldTestExpansionValue;
   }

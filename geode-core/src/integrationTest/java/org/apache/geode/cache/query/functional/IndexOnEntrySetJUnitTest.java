@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -43,8 +43,8 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLIndexTest.class})
 public class IndexOnEntrySetJUnitTest {
@@ -72,28 +72,28 @@ public class IndexOnEntrySetJUnitTest {
 
   private String[] getQueriesOnRegion(String regionName) {
     return new String[] {
-        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+        "SELECT DISTINCT entry.value, entry.key FROM " + SEPARATOR + regionName
             + ".entrySet entry WHERE entry.key.PartitionID > 0 AND "
             + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
-        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+        "SELECT DISTINCT entry.value, entry.key FROM " + SEPARATOR + regionName
             + ".entrySet entry WHERE entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
-        "SELECT DISTINCT * FROM /" + regionName
+        "SELECT DISTINCT * FROM " + SEPARATOR + regionName
             + ".entrySet entry WHERE entry.key.PartitionID > 0 AND "
             + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
-        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+        "SELECT DISTINCT entry.value, entry.key FROM " + SEPARATOR + regionName
             + ".entrySet entry WHERE entry.key.PartitionID > 0 AND "
             + "entry.key.Index > 1 LIMIT 2",
-        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+        "SELECT DISTINCT entry.value, entry.key FROM " + SEPARATOR + regionName
             + ".entrySet entry WHERE entry.key.PartitionID > 0 AND "
             + "entry.key.Index > 1 ORDER BY entry.key.Index ASC",};
   }
 
   private String[] getQueriesOnRegionForPut(String regionName) {
     return new String[] {
-        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+        "SELECT DISTINCT entry.value, entry.key FROM " + SEPARATOR + regionName
             + ".entrySet entry WHERE entry.key.PartitionID = 50 AND "
             + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
-        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+        "SELECT DISTINCT entry.value, entry.key FROM " + SEPARATOR + regionName
             + ".entrySet entry WHERE entry.value = 50 AND "
             + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2"};
   }

@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.transaction;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -88,14 +89,14 @@ public class QueryAndJtaJUnitTest {
     UserTransaction ta = null;
     // Connection conn = null;
     try {
-      qs.createIndex("iIndex", IndexType.FUNCTIONAL, "ID", "/portfolios");
+      qs.createIndex("iIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolios");
       // PUT 4 objects in region, QUERY, CREATEINDEX
       for (int i = 0; i < 4; i++) {
         currRegion.put("key" + i, new Portfolio(i));
       }
       QueryObserverImpl observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where ID != 53");
+      q = qs.newQuery("select distinct * from " + SEPARATOR + "portfolios where ID != 53");
       Object r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -116,7 +117,7 @@ public class QueryAndJtaJUnitTest {
       }
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where ID != 53");
+      q = qs.newQuery("select distinct * from " + SEPARATOR + "portfolios where ID != 53");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -126,11 +127,11 @@ public class QueryAndJtaJUnitTest {
       }
       // print("Size of query result :"+ ((Collection)r).size());
       // print("Result of query =" + Utils.printResult(r));
-      Index i1 = qs.createIndex("tIndex", IndexType.FUNCTIONAL, "status", "/portfolios");
+      Index i1 = qs.createIndex("tIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolios");
       // print("Index IS: " + ((RangeIndex)i1).dump());
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where status = 'active'");
+      q = qs.newQuery("select distinct * from " + SEPARATOR + "portfolios where status = 'active'");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -140,7 +141,8 @@ public class QueryAndJtaJUnitTest {
       }
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where status = 'inactive'");
+      q = qs
+          .newQuery("select distinct * from " + SEPARATOR + "portfolios where status = 'inactive'");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -152,7 +154,7 @@ public class QueryAndJtaJUnitTest {
       // PRINT INDEX AFTER ROLLBACK, REMOVEINDEX.
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where status = 'active'");
+      q = qs.newQuery("select distinct * from " + SEPARATOR + "portfolios where status = 'active'");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -168,11 +170,11 @@ public class QueryAndJtaJUnitTest {
       for (int i = 9; i < 13; i++) {
         currRegion.put("key" + i, new Portfolio(i));
       }
-      i1 = qs.createIndex("tIndex", IndexType.FUNCTIONAL, "status", "/portfolios");
+      i1 = qs.createIndex("tIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolios");
       // print("Index IS: " + ((RangeIndex)i1).dump());
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where status = 'active'");
+      q = qs.newQuery("select distinct * from " + SEPARATOR + "portfolios where status = 'active'");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -185,7 +187,7 @@ public class QueryAndJtaJUnitTest {
       }
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where status = 'active'");
+      q = qs.newQuery("select distinct * from " + SEPARATOR + "portfolios where status = 'active'");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -206,7 +208,7 @@ public class QueryAndJtaJUnitTest {
       // print("Index IS: " + ((RangeIndex)i1).dump());
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where status = 'active'");
+      q = qs.newQuery("select distinct * from " + SEPARATOR + "portfolios where status = 'active'");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -216,7 +218,8 @@ public class QueryAndJtaJUnitTest {
       }
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where status = 'inactive'");
+      q = qs
+          .newQuery("select distinct * from " + SEPARATOR + "portfolios where status = 'inactive'");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -226,7 +229,7 @@ public class QueryAndJtaJUnitTest {
       }
       observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
-      q = qs.newQuery("select distinct * from /portfolios where ID != 53");
+      q = qs.newQuery("select distinct * from " + SEPARATOR + "portfolios where ID != 53");
       r = q.execute();
       if (!observer2.isIndexesUsed) {
         fail("NO INDEX WAS USED, IT WAS EXPECTED TO BE USED");
@@ -275,14 +278,14 @@ public class QueryAndJtaJUnitTest {
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.REPLICATE);
     Region region = cache.createRegion("sample", af.create());
-    qs.createIndex("foo", IndexType.FUNCTIONAL, "age", "/sample");
+    qs.createIndex("foo", IndexType.FUNCTIONAL, "age", SEPARATOR + "sample");
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
     Integer x = new Integer(0);
     utx.begin();
     region.create(x, new Person("xyz", 45));
     utx.commit();
-    Query q = qs.newQuery("select * from /sample where age < 50");
+    Query q = qs.newQuery("select * from " + SEPARATOR + "sample where age < 50");
     assertEquals(1, ((SelectResults) q.execute()).size());
     Person dsample = (Person) CopyHelper.copy(region.get(x));
     dsample.setAge(55);
@@ -298,14 +301,14 @@ public class QueryAndJtaJUnitTest {
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.REPLICATE);
     Region region = cache.createRegion("sample", af.create());
-    qs.createIndex("foo", IndexType.FUNCTIONAL, "age", "/sample");
+    qs.createIndex("foo", IndexType.FUNCTIONAL, "age", SEPARATOR + "sample");
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
     Integer x = new Integer(0);
     utx.begin();
     region.create(x, new Person("xyz", 45));
     utx.commit();
-    Query q = qs.newQuery("select * from /sample where age < 50");
+    Query q = qs.newQuery("select * from " + SEPARATOR + "sample where age < 50");
     assertEquals(1, ((SelectResults) q.execute()).size());
     Person dsample = (Person) CopyHelper.copy(region.get(x));
     dsample.setAge(55);
@@ -328,16 +331,22 @@ public class QueryAndJtaJUnitTest {
       region.put(i, new Portfolio(i));
     }
 
-    String[] queries = {"select * from /sample where ID = 5", "select ID from /sample where ID < 5",
-        "select ID from /sample where ID > 5", "select ID from /sample where ID != 5",
-        "select status from /sample where status = 'active'",
-        "select status from /sample where status > 'active'",
-        "select status from /sample where status < 'active'",
-        "select status from /sample where status != 'active'",
-        "select pos.secId from /sample p, p.positions.values pos where pos.secId = 'IBM'",
-        "select pos.secId from /sample p, p.positions.values pos where pos.secId < 'VMW'",
-        "select pos.secId from /sample p, p.positions.values pos where pos.secId > 'IBM'",
-        "select pos.secId from /sample p, p.positions.values pos where pos.secId != 'IBM'"};
+    String[] queries = {"select * from " + SEPARATOR + "sample where ID = 5",
+        "select ID from " + SEPARATOR + "sample where ID < 5",
+        "select ID from " + SEPARATOR + "sample where ID > 5",
+        "select ID from " + SEPARATOR + "sample where ID != 5",
+        "select status from " + SEPARATOR + "sample where status = 'active'",
+        "select status from " + SEPARATOR + "sample where status > 'active'",
+        "select status from " + SEPARATOR + "sample where status < 'active'",
+        "select status from " + SEPARATOR + "sample where status != 'active'",
+        "select pos.secId from " + SEPARATOR
+            + "sample p, p.positions.values pos where pos.secId = 'IBM'",
+        "select pos.secId from " + SEPARATOR
+            + "sample p, p.positions.values pos where pos.secId < 'VMW'",
+        "select pos.secId from " + SEPARATOR
+            + "sample p, p.positions.values pos where pos.secId > 'IBM'",
+        "select pos.secId from " + SEPARATOR
+            + "sample p, p.positions.values pos where pos.secId != 'IBM'"};
 
     SelectResults[][] sr = new SelectResults[queries.length][2];
 
@@ -347,9 +356,9 @@ public class QueryAndJtaJUnitTest {
     }
 
     // create indexes
-    qs.createKeyIndex("IDIndex", "ID", "/sample");
-    qs.createIndex("statusIndex", "status", "/sample");
-    qs.createIndex("secIdIndex", "pos.secId", "/sample p, p.positions.values pos");
+    qs.createKeyIndex("IDIndex", "ID", SEPARATOR + "sample");
+    qs.createIndex("statusIndex", "status", SEPARATOR + "sample");
+    qs.createIndex("secIdIndex", "pos.secId", SEPARATOR + "sample p, p.positions.values pos");
 
     // begin transaction
     Context ctx = cache.getJNDIContext();
@@ -378,14 +387,14 @@ public class QueryAndJtaJUnitTest {
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.REPLICATE);
     Region region = cache.createRegion("sample", af.create());
-    qs.createIndex("foo", IndexType.FUNCTIONAL, "age", "/sample");
+    qs.createIndex("foo", IndexType.FUNCTIONAL, "age", SEPARATOR + "sample");
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
     Integer x = new Integer(0);
     utx.begin();
     region.create(x, new Person("xyz", 45));
     utx.commit();
-    Query q = qs.newQuery("select * from /sample where age < 50");
+    Query q = qs.newQuery("select * from " + SEPARATOR + "sample where age < 50");
     assertEquals(1, ((SelectResults) q.execute()).size());
     Person dsample = (Person) CopyHelper.copy(region.get(x));
     dsample.setAge(55);
@@ -406,7 +415,7 @@ public class QueryAndJtaJUnitTest {
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.REPLICATE);
     Region region = cache.createRegion("sample", af.create());
-    qs.createIndex("foo", IndexType.FUNCTIONAL, "index", "/sample");
+    qs.createIndex("foo", IndexType.FUNCTIONAL, "index", SEPARATOR + "sample");
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
     Integer x = new Integer(0);

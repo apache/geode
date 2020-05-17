@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -381,7 +382,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     PartitionedRegion pr = (PartitionedRegion) PartitionedRegionTestHelper
         .createPartitionedRegion("testGetFullPath", String.valueOf(200), 0);
     String fullPath = pr.getFullPath();
-    if (!(Region.SEPARATOR + "testGetFullPath").equals(fullPath)) {
+    if (!(SEPARATOR + "testGetFullPath").equals(fullPath)) {
       fail("testGetFullPath() - getFullPath method is not returning proper fullPath");
     }
     if (logWriter.fineEnabled()) {

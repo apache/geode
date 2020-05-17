@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -63,72 +63,78 @@ public class QueryREUpdateInProgressJUnitTest {
   public static String[] queries = new String[] {
 
       // Queries with * to be executed with corresponding result count.
-      "select * from /" + regionName, "select * from /" + regionName + " where ID > 0",
-      "select * from /" + regionName + " where ID < 0",
-      "select * from /" + regionName + " where ID > 0 AND status='active'",
-      "select * from /" + regionName + " where ID > 0 OR status='active'",
-      "select * from /" + regionName + " where ID > 0 AND status LIKE 'act%'",
-      "select * from /" + regionName + " where ID > 0 OR status LIKE 'ina%'",
-      "select * from /" + regionName + " where ID IN SET(1, 2, 3, 4, 5)",
-      "select * from /" + regionName + " where NOT (ID > 5)",
+      "select * from " + SEPARATOR + regionName,
+      "select * from " + SEPARATOR + regionName + " where ID > 0",
+      "select * from " + SEPARATOR + regionName + " where ID < 0",
+      "select * from " + SEPARATOR + regionName + " where ID > 0 AND status='active'",
+      "select * from " + SEPARATOR + regionName + " where ID > 0 OR status='active'",
+      "select * from " + SEPARATOR + regionName + " where ID > 0 AND status LIKE 'act%'",
+      "select * from " + SEPARATOR + regionName + " where ID > 0 OR status LIKE 'ina%'",
+      "select * from " + SEPARATOR + regionName + " where ID IN SET(1, 2, 3, 4, 5)",
+      "select * from " + SEPARATOR + regionName + " where NOT (ID > 5)",
 
       // StructSet queries.
-      "select * from /" + regionName
+      "select * from " + SEPARATOR + regionName
           + " p, p.positions.values pos where p.ID > 0 AND pos.secId = 'IBM'",
-      "select DISTINCT * from /" + regionName
+      "select DISTINCT * from " + SEPARATOR + regionName
           + " p, p.positions.values pos where p.ID > 0 AND pos.secId = 'IBM' ORDER BY p.ID",
-      "select * from /" + regionName
+      "select * from " + SEPARATOR + regionName
           + " p, p.positions.values pos where p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
 
-      "select * from /" + regionName
+      "select * from " + SEPARATOR + regionName
           + " p, p.positions.values pos where p.ID > 0 AND p.status = 'active' OR pos.secId = 'IBM'",
 
-      "select * from /" + regionName
+      "select * from " + SEPARATOR + regionName
           + " p, p.positions.values pos where p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'",
-      "select DISTINCT * from /" + regionName
+      "select DISTINCT * from " + SEPARATOR + regionName
           + " p, p.positions.values pos where p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM' ORDER BY p.ID",
 
       // EquiJoin Queries
-      "select * from /" + regionName + " p, /" + exampleRegionName
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + exampleRegionName
           + " e where p.ID = e.ID AND p.ID > 0",
-      "select * from /" + regionName + " p, /" + exampleRegionName
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + exampleRegionName
           + " e where p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
-      "select * from /" + regionName + " p, /" + exampleRegionName
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + exampleRegionName
           + " e where p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
-      "select * from /" + regionName + " p, /" + exampleRegionName
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + exampleRegionName
           + " e where p.ID = e.ID OR e.status = 'active' ",
 
       // SelfJoin Queries
-      "select * from /" + regionName + " p, /" + regionName + " e where p.ID = e.ID AND p.ID > 0",
-      "select * from /" + regionName + " p, /" + regionName
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + regionName
+          + " e where p.ID = e.ID AND p.ID > 0",
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + regionName
           + " e where e.ID != 0 AND p.status = 'active'",
-      "select * from /" + regionName + " p, /" + regionName
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + regionName
           + " e where p.ID = e.ID AND e.ID > 20 AND p.ID > 40",
-      "select * from /" + regionName + " p, /" + regionName
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + regionName
           + " e where p.ID = e.ID AND e.ID > 0 AND p.status = 'active'",
-      "select * from /" + regionName + " p, /" + regionName
+      "select * from " + SEPARATOR + regionName + " p, " + SEPARATOR + regionName
           + " e where p.ID = e.ID OR e.status = 'active' ",
 
       // EquiJoin Queries with entry iterator
-      "select p_ent.key, e_ent.key from /" + regionName + ".entries p_ent, /" + exampleRegionName
+      "select p_ent.key, e_ent.key from " + SEPARATOR + regionName + ".entries p_ent, " + SEPARATOR
+          + exampleRegionName
           + ".entries e_ent where p_ent.key = e_ent.key AND p_ent.value.ID > 0",
-      "select DISTINCT p_ent.key, p_ent.value, e_ent.key, e_ent.value from /" + regionName
-          + ".entries p_ent, p_ent.value.positions.values ppos, /" + exampleRegionName
+      "select DISTINCT p_ent.key, p_ent.value, e_ent.key, e_ent.value from " + SEPARATOR
+          + regionName
+          + ".entries p_ent, p_ent.value.positions.values ppos, " + SEPARATOR + exampleRegionName
           + ".entries e_ent, e_ent.value.positions.values epos "
           + "WHERE ppos.secId = epos.secId AND p_ent.key = e_ent.key "
           + "ORDER by p_ent.key, ppos.secId",
-      "select DISTINCT p_ent.key, p_ent.value, e_ent.key, e_ent.value from /" + regionName
-          + ".entries p_ent, p_ent.value.positions.values ppos, /" + exampleRegionName
+      "select DISTINCT p_ent.key, p_ent.value, e_ent.key, e_ent.value from " + SEPARATOR
+          + regionName
+          + ".entries p_ent, p_ent.value.positions.values ppos, " + SEPARATOR + exampleRegionName
           + ".entries e_ent, e_ent.value.positions.values epos "
           + "WHERE ppos.secId = epos.secId AND p_ent.key = e_ent.key ",
-      "select distinct * from /" + regionForAsyncIndex + ".keys where toString > '1'",
-      "select distinct key  from /" + regionForAsyncIndex + ".keys where toString > '1'"};
+      "select distinct * from " + SEPARATOR + regionForAsyncIndex + ".keys where toString > '1'",
+      "select distinct key  from " + SEPARATOR + regionForAsyncIndex
+          + ".keys where toString > '1'"};
 
   public static String[] limitQueries =
-      new String[] {"select * from /" + regionName + " where ID > 0 LIMIT 50",
-          "select * from /" + regionName
+      new String[] {"select * from " + SEPARATOR + regionName + " where ID > 0 LIMIT 50",
+          "select * from " + SEPARATOR + regionName
               + " p, p.positions.values pos where p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM' LIMIT 150",
-          "select * from /" + regionName
+          "select * from " + SEPARATOR + regionName
               + " p, p.positions.values pos where p.ID >= 0 AND pos.secId = 'IBM' LIMIT 5",};
 
   /**
@@ -246,9 +252,9 @@ public class QueryREUpdateInProgressJUnitTest {
     Cache cache = CacheUtils.getCache();
     QueryService qs = cache.getQueryService();
     String[] queries = new String[] {
-        "select * from /" + regionName + " z, /" + regionName
+        "select * from " + SEPARATOR + regionName + " z, " + SEPARATOR + regionName
             + " q where z.position1.secId = 'IBM' and q.ID > 0",
-        "select * from /" + regionName + " y where position1.secId='IBM'"};
+        "select * from " + SEPARATOR + regionName + " y where position1.secId='IBM'"};
     Object[][] results = new Object[queries.length][2];
 
     // Put values in Region.
@@ -292,8 +298,9 @@ public class QueryREUpdateInProgressJUnitTest {
     Cache cache = CacheUtils.getCache();
     QueryService qs = cache.getQueryService();
     String[] queries = new String[] {
-        "select * from /" + regionName + " pf where pf.positions['IBM'] != null", "select * from /"
-            + regionName + " pf, pf.positions.values pos where pf.positions['IBM'] != null"};
+        "select * from " + SEPARATOR + regionName + " pf where pf.positions['IBM'] != null",
+        "select * from " + SEPARATOR + regionName
+            + " pf, pf.positions.values pos where pf.positions['IBM'] != null"};
     Object[][] results = new Object[queries.length][2];
 
     // Put values in Region.

@@ -64,6 +64,7 @@ import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -84,7 +85,6 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @SuppressWarnings("deprecation")
 @Category(ClientServerTest.class)

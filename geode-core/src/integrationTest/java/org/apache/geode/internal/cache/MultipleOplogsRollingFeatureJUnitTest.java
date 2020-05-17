@@ -23,7 +23,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import org.apache.geode.cache.Scope;
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * The test will verify <br>

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.partitioned.colocation;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.addCacheLifecycleListener;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.removeCacheLifecycleListener;
@@ -87,10 +88,10 @@ public class ModifyColocationIntegrationTest {
     Throwable thrown = catchThrowable(() -> createCacheAndColocatedPRs("region2"));
     assertThat(thrown)
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("For partition region /region3")
-        .hasMessageContaining("cannot change colocated-with to \"/region2\"")
+        .hasMessageContaining("For partition region " + SEPARATOR + "region3")
+        .hasMessageContaining("cannot change colocated-with to \"" + SEPARATOR + "region2\"")
         .hasMessageContaining("because there is persistent data with different colocation.")
-        .hasMessageContaining("Previous configured value is \"/region1\"");
+        .hasMessageContaining("Previous configured value is \"" + SEPARATOR + "region1\"");
 
     // await cache close is complete
     awaitCacheClose();
@@ -106,10 +107,10 @@ public class ModifyColocationIntegrationTest {
 
     assertThat(thrown)
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("For partition region /region3")
+        .hasMessageContaining("For partition region " + SEPARATOR + "region3")
         .hasMessageContaining("cannot change colocated-with to \"\"")
         .hasMessageContaining("because there is persistent data with different colocation.")
-        .hasMessageContaining("Previous configured value is \"/region1\"");
+        .hasMessageContaining("Previous configured value is \"" + SEPARATOR + "region1\"");
 
     awaitCacheClose();
   }

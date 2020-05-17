@@ -48,12 +48,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.lang.AvailablePid;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Abstract base class for integration tests of both {@link LocatorLauncher} and

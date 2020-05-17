@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -153,10 +154,14 @@ public class JoinQueriesIntegrationTest {
   private static Object[] getQueryStrings() {
     return new Object[] {
         new Object[] {
-            "<trace>select STA.id as STACID, STA.pkid as STAacctNum, STC.id as STCCID, STC.pkid as STCacctNum from /region1 STA, /region2 STC where STA.pkid = 1 AND STA.joinId = STC.joinId AND STA.id = STC.id",
+            "<trace>select STA.id as STACID, STA.pkid as STAacctNum, STC.id as STCCID, STC.pkid as STCacctNum from "
+                + SEPARATOR + "region1 STA, " + SEPARATOR
+                + "region2 STC where STA.pkid = 1 AND STA.joinId = STC.joinId AND STA.id = STC.id",
             20},
         new Object[] {
-            "<trace>select STA.id as STACID, STA.pkid as STAacctNum, STC.id as STCCID, STC.pkid as STCacctNum from /region1 STA, /region2 STC where STA.pkid = 1 AND STA.joinId = STC.joinId OR STA.id = STC.id",
+            "<trace>select STA.id as STACID, STA.pkid as STAacctNum, STC.id as STCCID, STC.pkid as STCacctNum from "
+                + SEPARATOR + "region1 STA, " + SEPARATOR
+                + "region2 STC where STA.pkid = 1 AND STA.joinId = STC.joinId OR STA.id = STC.id",
             22}};
   }
 
@@ -191,13 +196,13 @@ public class JoinQueriesIntegrationTest {
     int resultsWithoutIndex = results.size();
     assertThat(resultsWithoutIndex).isEqualTo(expectedResultSize);
 
-    queryService.createIndex("pkidregion1", "p.pkid", "/region1 p");
-    queryService.createIndex("pkidregion2", "p.pkid", "/region2 p");
-    queryService.createIndex("indexIDRegion2", "p.id", "/region2 p");
-    queryService.createIndex("indexIDRegion1", "p.id", "/region1 p");
-    queryService.createIndex("joinIdregion1", "p.joinId", "/region1 p");
-    queryService.createIndex("joinIdregion2", "p.joinId", "/region2 p");
-    queryService.createIndex("nameIndex", "p.name", "/region2 p");
+    queryService.createIndex("pkidregion1", "p.pkid", SEPARATOR + "region1 p");
+    queryService.createIndex("pkidregion2", "p.pkid", SEPARATOR + "region2 p");
+    queryService.createIndex("indexIDRegion2", "p.id", SEPARATOR + "region2 p");
+    queryService.createIndex("indexIDRegion1", "p.id", SEPARATOR + "region1 p");
+    queryService.createIndex("joinIdregion1", "p.joinId", SEPARATOR + "region1 p");
+    queryService.createIndex("joinIdregion2", "p.joinId", SEPARATOR + "region2 p");
+    queryService.createIndex("nameIndex", "p.name", SEPARATOR + "region2 p");
 
     results = (SelectResults) queryService.newQuery(queryString).execute();
     int resultsSizeWithIndex = results.size();
@@ -289,7 +294,8 @@ public class JoinQueriesIntegrationTest {
     InternalCache cache = serverRule.getCache();
     QueryService queryService = cache.getQueryService();
     String queryString = "SELECT issue.issueId, issue.createdTime, o.orderId, o.version "
-        + "FROM /ValidationIssue issue, /OrderValidationIssueXRef xRef, /Order o "
+        + "FROM " + SEPARATOR + "ValidationIssue issue, " + SEPARATOR
+        + "OrderValidationIssueXRef xRef, " + SEPARATOR + "Order o "
         + "WHERE "
         + "issue.issueId = xRef.referenceIssueId "
         + "AND "
@@ -335,7 +341,8 @@ public class JoinQueriesIntegrationTest {
     InternalCache cache = serverRule.getCache();
     QueryService queryService = cache.getQueryService();
     String queryString = "SELECT issue.issueId, issue.createdTime, o.orderId, o.version "
-        + "FROM /ValidationIssue issue, /OrderValidationIssueXRef xRef, /Order o "
+        + "FROM " + SEPARATOR + "ValidationIssue issue, " + SEPARATOR
+        + "OrderValidationIssueXRef xRef, " + SEPARATOR + "Order o "
         + "WHERE "
         + "issue.issueId = xRef.referenceIssueId "
         + "AND "
@@ -362,13 +369,14 @@ public class JoinQueriesIntegrationTest {
     }
 
     // Create Indexes
-    cache.getQueryService().createIndex("order_orderID", "orderId", "/Order", null);
-    cache.getQueryService().createIndex("validationIssue_issueID", "issueId", "/ValidationIssue",
+    cache.getQueryService().createIndex("order_orderID", "orderId", SEPARATOR + "Order", null);
+    cache.getQueryService().createIndex("validationIssue_issueID", "issueId",
+        SEPARATOR + "ValidationIssue",
         null);
     cache.getQueryService().createIndex("orderValidationIssueXRef_referenceOrderId",
-        "referenceOrderId", "/OrderValidationIssueXRef", null);
+        "referenceOrderId", SEPARATOR + "OrderValidationIssueXRef", null);
     cache.getQueryService().createIndex("orderValidationIssueXRef_referenceIssueId",
-        "referenceIssueId", "/OrderValidationIssueXRef", null);
+        "referenceIssueId", SEPARATOR + "OrderValidationIssueXRef", null);
 
     SelectResults baseResultsWithIndexes =
         (SelectResults) queryService.newQuery(queryString).execute();

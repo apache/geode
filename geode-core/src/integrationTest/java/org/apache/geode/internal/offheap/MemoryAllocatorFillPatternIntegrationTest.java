@@ -30,8 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.test.junit.categories.OffHeapTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.

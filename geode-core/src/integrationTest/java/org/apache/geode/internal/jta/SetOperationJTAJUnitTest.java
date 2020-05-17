@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.jta;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -46,12 +47,12 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @RunWith(JUnitParamsRunner.class)
 public class SetOperationJTAJUnitTest {
@@ -200,7 +201,7 @@ public class SetOperationJTAJUnitTest {
   private void verifyRegionValuesWhenSetOperationStartsJTA() throws Exception {
     Context ctx = cache.getJNDIContext();
     UserTransaction userTX = startUserTransaction(ctx);
-    Region<Long, String> region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = cache.getRegion(SEPARATOR + REGION_NAME);
     try {
       userTX.begin();
       Collection<String> set = region.values();
@@ -225,7 +226,7 @@ public class SetOperationJTAJUnitTest {
   private void verifyRegionValuesWhenSetOperationDoesNotStartJTA() throws Exception {
     Context ctx = cache.getJNDIContext();
     UserTransaction userTX = startUserTransaction(ctx);
-    Region<Long, String> region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = cache.getRegion(SEPARATOR + REGION_NAME);
     try {
       userTX.begin();
       Collection<String> set = region.values();

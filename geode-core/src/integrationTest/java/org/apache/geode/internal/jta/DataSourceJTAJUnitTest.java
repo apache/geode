@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.jta;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -110,7 +111,7 @@ public class DataSourceJTAJUnitTest {
     // test task
     cache = CacheUtils.getCache();
     tblName = tableName;
-    currRegion = cache.getRegion("/root");
+    currRegion = cache.getRegion(SEPARATOR + "root");
     tblIDFld = 1;
     tblNameFld = "test1";
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
@@ -288,7 +289,7 @@ public class DataSourceJTAJUnitTest {
     // test task
     cache = CacheUtils.getCache();
     tblName = tableName;
-    currRegion = cache.getRegion("/root");
+    currRegion = cache.getRegion(SEPARATOR + "root");
     tblIDFld = 1;
     tblNameFld = "test2";
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
@@ -578,7 +579,7 @@ public class DataSourceJTAJUnitTest {
     // test task
     cache = CacheUtils.getCache();
     tblName = tableName;
-    currRegion = cache.getRegion("/root");
+    currRegion = cache.getRegion(SEPARATOR + "root");
     tblIDFld = 1;
     tblNameFld = "test4";
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
@@ -741,7 +742,7 @@ public class DataSourceJTAJUnitTest {
     // test task
     cache = CacheUtils.getCache();
     tblName = tableName;
-    currRegion = cache.getRegion("/root");
+    currRegion = cache.getRegion(SEPARATOR + "root");
     tblIDFld = 1;
     tblNameFld = "test5";
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);

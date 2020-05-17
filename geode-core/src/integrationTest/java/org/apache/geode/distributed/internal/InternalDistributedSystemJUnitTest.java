@@ -67,6 +67,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
@@ -76,7 +77,6 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests the functionality of the {@link InternalDistributedSystem} class. Mostly checks

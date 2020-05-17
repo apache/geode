@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
@@ -80,7 +81,7 @@ public class BackupFileCopierIntegrationTest {
   @Test
   public void configFilesNotCreatedIfDoNotExist() throws IOException {
     System.setProperty(DistributedSystem.PROPERTIES_FILE_PROPERTY,
-        tempFolder.getRoot().getAbsolutePath() + "/nonexistent");
+        tempFolder.getRoot().getAbsolutePath() + SEPARATOR + "nonexistent");
     fileCopier.copyConfigFiles();
     Path cacheXmlDestination = tempFilesLocation.resolve(CONFIG_DIRECTORY).resolve(CACHE_XML);
     assertThat(cacheXmlDestination).doesNotExist();

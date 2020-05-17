@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -100,11 +101,13 @@ public class QueryObserverCallbacksTest {
   public void testBeforeAndAfterCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND()
       throws Exception {
     Query query = queryService.newQuery(
-        "select distinct * from /portfolio p, p.positions,/employees e, /portfolio1 p1 where p.ID = 1 and p1.ID = 2 and e.empId = 1");
-    queryService.createIndex("statusIndex", "status", "/portfolio");
-    queryService.createIndex("idIndex", "ID", "/portfolio");
-    queryService.createIndex("idIndex1", "ID", "/portfolio1");
-    queryService.createIndex("empidIndex", "empId", "/employees");
+        "select distinct * from " + SEPARATOR + "portfolio p, p.positions," + SEPARATOR
+            + "employees e, " + SEPARATOR
+            + "portfolio1 p1 where p.ID = 1 and p1.ID = 2 and e.empId = 1");
+    queryService.createIndex("statusIndex", "status", SEPARATOR + "portfolio");
+    queryService.createIndex("idIndex", "ID", SEPARATOR + "portfolio");
+    queryService.createIndex("idIndex1", "ID", SEPARATOR + "portfolio1");
+    queryService.createIndex("empidIndex", "empId", SEPARATOR + "employees");
 
     query.execute();
     verify(myQueryObserver, times(1))
@@ -117,12 +120,14 @@ public class QueryObserverCallbacksTest {
   public void testBeforeAndAfterCartesianOfCompositeGroupJunctionsInAnAllGroupJunctionOfType_AND()
       throws Exception {
     Query query = queryService.newQuery(
-        "select distinct * from /portfolio p, p.positions,/employees e, /portfolio1 p1 where p.ID =p1.ID   and e.empId = 1 and p1.status = 'active' and p.status='active' ");
-    queryService.createIndex("statusIndex1", "status", "/portfolio");
-    queryService.createIndex("statusIndex2", "status", "/portfolio1");
-    queryService.createIndex("idIndex", "ID", "/portfolio");
-    queryService.createIndex("idIndex1", "ID", "/portfolio1");
-    queryService.createIndex("empidIndex", "empId", "/employees");
+        "select distinct * from " + SEPARATOR + "portfolio p, p.positions," + SEPARATOR
+            + "employees e, " + SEPARATOR
+            + "portfolio1 p1 where p.ID =p1.ID   and e.empId = 1 and p1.status = 'active' and p.status='active' ");
+    queryService.createIndex("statusIndex1", "status", SEPARATOR + "portfolio");
+    queryService.createIndex("statusIndex2", "status", SEPARATOR + "portfolio1");
+    queryService.createIndex("idIndex", "ID", SEPARATOR + "portfolio");
+    queryService.createIndex("idIndex1", "ID", SEPARATOR + "portfolio1");
+    queryService.createIndex("empidIndex", "empId", SEPARATOR + "employees");
 
     query.execute();
     verify(myQueryObserver, times(1))
@@ -134,8 +139,9 @@ public class QueryObserverCallbacksTest {
   @Test
   public void testBeforeAndAfterCutDownAndExpansionOfSingleIndexResult() throws Exception {
     Query query =
-        queryService.newQuery("select distinct * from /portfolio p, p.positions where p.ID = 1  ");
-    queryService.createIndex("idIndex", "ID", "/portfolio");
+        queryService.newQuery(
+            "select distinct * from " + SEPARATOR + "portfolio p, p.positions where p.ID = 1  ");
+    queryService.createIndex("idIndex", "ID", SEPARATOR + "portfolio");
 
     query.execute();
     verify(myQueryObserver, times(1)).beforeCutDownAndExpansionOfSingleIndexResult(any(), any());
@@ -145,9 +151,10 @@ public class QueryObserverCallbacksTest {
   @Test
   public void testBeforeAndAfterMergeJoinOfDoubleIndexResults() throws Exception {
     Query query = queryService.newQuery(
-        "select distinct * from /portfolio p, p.positions,/employees e where p.ID =  e.empId  ");
-    queryService.createIndex("idIndex", "ID", "/portfolio");
-    queryService.createIndex("empidIndex", "empId", "/employees");
+        "select distinct * from " + SEPARATOR + "portfolio p, p.positions," + SEPARATOR
+            + "employees e where p.ID =  e.empId  ");
+    queryService.createIndex("idIndex", "ID", SEPARATOR + "portfolio");
+    queryService.createIndex("empidIndex", "empId", SEPARATOR + "employees");
 
     query.execute();
     verify(myQueryObserver, times(1)).beforeMergeJoinOfDoubleIndexResults(any(), any(), any());
@@ -157,10 +164,12 @@ public class QueryObserverCallbacksTest {
   @Test
   public void testBeforeAndAfterIterJoinOfSingleIndexResults() throws Exception {
     Query query = queryService.newQuery(
-        "select distinct * from /portfolio p, p.positions,/employees e, /portfolio1 p1 where p.ID =p1.ID   and e.empId = p1.ID ");
-    queryService.createIndex("idIndex", "ID", "/portfolio");
-    queryService.createIndex("idIndex1", "ID", "/portfolio1");
-    queryService.createIndex("empidIndex", "empId", "/employees");
+        "select distinct * from " + SEPARATOR + "portfolio p, p.positions," + SEPARATOR
+            + "employees e, " + SEPARATOR
+            + "portfolio1 p1 where p.ID =p1.ID   and e.empId = p1.ID ");
+    queryService.createIndex("idIndex", "ID", SEPARATOR + "portfolio");
+    queryService.createIndex("idIndex1", "ID", SEPARATOR + "portfolio1");
+    queryService.createIndex("empidIndex", "empId", SEPARATOR + "employees");
 
     query.execute();
     verify(myQueryObserver, times(1)).beforeIterJoinOfSingleIndexResults(any(), any());
@@ -175,10 +184,11 @@ public class QueryObserverCallbacksTest {
   @Test
   public void testBeforeRangeJunctionDoubleConditionLookup() throws Exception {
     Query query = queryService
-        .newQuery("select distinct * from /portfolio p where p.ID > 1   and  p.ID < 3 ");
-    queryService.createIndex("idIndex", "ID", "/portfolio");
-    queryService.createIndex("idIndex1", "ID", "/portfolio1");
-    queryService.createIndex("empidIndex", "empId", "/employees");
+        .newQuery(
+            "select distinct * from " + SEPARATOR + "portfolio p where p.ID > 1   and  p.ID < 3 ");
+    queryService.createIndex("idIndex", "ID", SEPARATOR + "portfolio");
+    queryService.createIndex("idIndex1", "ID", SEPARATOR + "portfolio1");
+    queryService.createIndex("empidIndex", "empId", SEPARATOR + "employees");
 
     query.execute();
     verify(myQueryObserver, times(1)).beforeIndexLookup(any(), anyInt(), any(), anyInt(), any(),
@@ -188,28 +198,40 @@ public class QueryObserverCallbacksTest {
   @Test
   public void beforeAggregationsAndGroupByShouldBeCalledForAggregateFunctions() throws Exception {
     List<String> queries = Arrays.asList(
-        "SELECT MIN(pf.ID) FROM /portfolio pf WHERE pf.ID > 0",
-        "SELECT pf.status, MIN(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
-        "SELECT pf.status, MIN(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT MIN(pf.ID) FROM " + SEPARATOR + "portfolio pf WHERE pf.ID > 0",
+        "SELECT pf.status, MIN(pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT pf.status, MIN(pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
 
-        "SELECT MAX(pf.ID) FROM /portfolio pf WHERE pf.ID > 0",
-        "SELECT pf.status, MAX(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT MAX(pf.ID) FROM " + SEPARATOR + "portfolio pf WHERE pf.ID > 0",
+        "SELECT pf.status, MAX(pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
 
-        "SELECT AVG(pf.ID) FROM /portfolio pf WHERE pf.ID > 0",
-        "SELECT pf.status, AVG(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
-        "SELECT pf.status, AVG(DISTINCT pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT AVG(pf.ID) FROM " + SEPARATOR + "portfolio pf WHERE pf.ID > 0",
+        "SELECT pf.status, AVG(pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT pf.status, AVG(DISTINCT pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
 
-        "SELECT SUM(pf.ID) FROM /portfolio pf WHERE pf.ID > 0",
-        "SELECT pf.status, SUM(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
-        "SELECT pf.status, SUM(DISTINCT pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT SUM(pf.ID) FROM " + SEPARATOR + "portfolio pf WHERE pf.ID > 0",
+        "SELECT pf.status, SUM(pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT pf.status, SUM(DISTINCT pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
 
-        "SELECT COUNT(pf.ID) FROM /portfolio pf WHERE pf.ID > 0",
-        "SELECT pf.status, COUNT(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
-        "SELECT pf.status, COUNT(DISTINCT pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT COUNT(pf.ID) FROM " + SEPARATOR + "portfolio pf WHERE pf.ID > 0",
+        "SELECT pf.status, COUNT(pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT pf.status, COUNT(DISTINCT pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
 
-        "SELECT MIN(pf.ID), MAX(pf.ID), AVG(pf.ID), SUM(pf.ID), COUNT(pf.ID) FROM /portfolio pf WHERE pf.ID > 0",
-        "SELECT pf.status, MIN(pf.ID), MAX(pf.ID), AVG(pf.ID), SUM(pf.ID), COUNT(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
-        "SELECT pf.status, MIN(pf.ID), MAX(pf.ID), AVG(DISTINCT pf.ID), SUM(DISTINCT pf.ID), COUNT(DISTINCT pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status");
+        "SELECT MIN(pf.ID), MAX(pf.ID), AVG(pf.ID), SUM(pf.ID), COUNT(pf.ID) FROM " + SEPARATOR
+            + "portfolio pf WHERE pf.ID > 0",
+        "SELECT pf.status, MIN(pf.ID), MAX(pf.ID), AVG(pf.ID), SUM(pf.ID), COUNT(pf.ID) FROM "
+            + SEPARATOR + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
+        "SELECT pf.status, MIN(pf.ID), MAX(pf.ID), AVG(DISTINCT pf.ID), SUM(DISTINCT pf.ID), COUNT(DISTINCT pf.ID) FROM "
+            + SEPARATOR + "portfolio pf WHERE pf.ID > 0 GROUP BY pf.status");
 
     MyQueryObserverImpl myQueryObserver = spy(new MyQueryObserverImpl());
     QueryObserverHolder.setInstance(myQueryObserver);

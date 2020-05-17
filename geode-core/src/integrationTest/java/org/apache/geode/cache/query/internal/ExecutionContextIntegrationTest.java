@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -185,7 +186,7 @@ public class ExecutionContextIntegrationTest {
   public void addToIndependentRuntimeItrMapShouldCorrectlySetTheIndexInternalIdUsedToIdentifyAvailableIndexes()
       throws Exception {
     QCompiler compiler = new QCompiler();
-    List list = compiler.compileFromClause("/portfolio p, p.positions");
+    List list = compiler.compileFromClause(SEPARATOR + "portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, server.getCache());
     context.newScope(context.associateScopeID());
 
@@ -208,8 +209,8 @@ public class ExecutionContextIntegrationTest {
   public void testFunctionalAddToIndependentRuntimeItrMapWithIndex() throws Exception {
     QCompiler compiler = new QCompiler();
     DefaultQueryService qs = new DefaultQueryService(server.getCache());
-    qs.createIndex("myindex", "pf.id", "/portfolio pf, pf.positions pos");
-    List list = compiler.compileFromClause("/portfolio p, p.positions");
+    qs.createIndex("myindex", "pf.id", SEPARATOR + "portfolio pf, pf.positions pos");
+    List list = compiler.compileFromClause(SEPARATOR + "portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, server.getCache());
     context.newScope(context.associateScopeID());
     Iterator iter = list.iterator();
@@ -226,11 +227,12 @@ public class ExecutionContextIntegrationTest {
       throws Exception {
     QCompiler compiler = new QCompiler();
     DefaultQueryService qs = new DefaultQueryService(server.getCache());
-    qs.createIndex("myindex", "pf.id", "/portfolio pf, pf.positions pos");
+    qs.createIndex("myindex", "pf.id", SEPARATOR + "portfolio pf, pf.positions pos");
 
     @SuppressWarnings("unchecked")
     List<CompiledIteratorDef> list =
-        (List<CompiledIteratorDef>) compiler.compileFromClause("/portfolio p, p.positions");
+        (List<CompiledIteratorDef>) compiler
+            .compileFromClause(SEPARATOR + "portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, server.getCache());
     context.newScope(context.associateScopeID());
     Iterator<CompiledIteratorDef> iter = list.iterator();
@@ -247,8 +249,8 @@ public class ExecutionContextIntegrationTest {
     context.computeUltimateDependencies(iterDef, temp);
     String regionPath = context.getRegionPathForIndependentRuntimeIterator(temp.iterator().next());
 
-    assertThat(regionPath.equals("/portfolio"))
-        .as("Region path " + regionPath + " should be equal to /portfolio.")
+    assertThat(regionPath.equals(SEPARATOR + "portfolio"))
+        .as("Region path " + regionPath + " should be equal to " + SEPARATOR + "portfolio.")
         .isTrue();
   }
 
@@ -258,7 +260,8 @@ public class ExecutionContextIntegrationTest {
     // compileFromClause returns a List<CompiledIteratorDef>
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause(
-        "/portfolio p, p.positions, p.addreses addrs, addrs.collection1 coll1, /dummy d1, d1.collection2 d2");
+        SEPARATOR + "portfolio p, p.positions, p.addreses addrs, addrs.collection1 coll1, "
+            + SEPARATOR + "dummy d1, d1.collection2 d2");
     RuntimeIterator indItr = null;
     ExecutionContext context = new QueryExecutionContext(null, server.getCache());
     context.newScope(context.associateScopeID());
@@ -302,8 +305,11 @@ public class ExecutionContextIntegrationTest {
     server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("positions");
     // compileFromClause returns a List<CompiledIteratorDef>
     String qry =
-        "select distinct p.pf, ELEMENT(select distinct pf1 from /portfolio pf1 where pf1.getID = p.pf.getID )  from (select distinct pf, pos from /portfolio pf, pf.positions.values pos) p, (select distinct * from /positions rtPos where rtPos.secId = p.pos.secId) as y "
-            + "where ( select distinct pf2 from /portfolio pf2 ).size() <> 0 ";
+        "select distinct p.pf, ELEMENT(select distinct pf1 from " + SEPARATOR
+            + "portfolio pf1 where pf1.getID = p.pf.getID )  from (select distinct pf, pos from "
+            + SEPARATOR + "portfolio pf, pf.positions.values pos) p, (select distinct * from "
+            + SEPARATOR + "positions rtPos where rtPos.secId = p.pos.secId) as y "
+            + "where ( select distinct pf2 from " + SEPARATOR + "portfolio pf2 ).size() <> 0 ";
 
     QCompiler compiler = new QCompiler();
     CompiledValue query = compiler.compileQuery(qry);
@@ -325,7 +331,9 @@ public class ExecutionContextIntegrationTest {
     server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("positions");
     // compileFromClause returns a List<CompiledIteratorDef>
     String qry =
-        "select distinct p.pf from (select distinct pf, pos from /portfolio pf, pf.positions.values pos) p, (select distinct * from /positions rtPos where rtPos.secId = p.pos.secId) as y";
+        "select distinct p.pf from (select distinct pf, pos from " + SEPARATOR
+            + "portfolio pf, pf.positions.values pos) p, (select distinct * from " + SEPARATOR
+            + "positions rtPos where rtPos.secId = p.pos.secId) as y";
     final int TOTAL_THREADS = 80;
     QCompiler compiler = new QCompiler();
     final CompiledValue query = compiler.compileQuery(qry);

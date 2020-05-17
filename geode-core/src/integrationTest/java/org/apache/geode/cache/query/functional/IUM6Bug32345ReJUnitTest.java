@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -93,7 +94,8 @@ public class IUM6Bug32345ReJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
     SelectResults sr[][] = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -126,13 +128,15 @@ public class IUM6Bug32345ReJUnitTest {
 
     qs = CacheUtils.getQueryService();
     qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status",
-        "/pos pf, pf.positions.values pos");
+        SEPARATOR + "pos pf, pf.positions.values pos");
     // Retesting BUG # 32345
     // Index index2 = (Index)qs.createIndex("secIdIndex", IndexType.FUNCTIONAL,"pos.secId","/pos pf,
     // pf.positions.values pos");
-    qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", "/pos pf, pf.positions.values pos");
+    qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID",
+        SEPARATOR + "pos pf, pf.positions.values pos");
     String queries2[] = {
-        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {

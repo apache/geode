@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -69,8 +70,9 @@ public class TestNewFunctionSSorRSIntegrationTest {
     qs = CacheUtils.getQueryService();
 
     String queries[] =
-        {"SELECT DISTINCT * from /portfolios pf , pf.positions.values pos where status = 'inactive'",
-            "select distinct * from /portfolios where ID > 1 ",
+        {"SELECT DISTINCT * from " + SEPARATOR
+            + "portfolios pf , pf.positions.values pos where status = 'inactive'",
+            "select distinct * from " + SEPARATOR + "portfolios where ID > 1 ",
 
         };
 
@@ -82,8 +84,8 @@ public class TestNewFunctionSSorRSIntegrationTest {
       r[i][0] = q.execute();
     }
 
-    qs.createIndex("sIndex", IndexType.FUNCTIONAL, "status", "/portfolios");
-    qs.createIndex("iIndex", IndexType.FUNCTIONAL, "ID", "/portfolios");
+    qs.createIndex("sIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolios");
+    qs.createIndex("iIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolios");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = CacheUtils.getQueryService().newQuery(queries[i]);
