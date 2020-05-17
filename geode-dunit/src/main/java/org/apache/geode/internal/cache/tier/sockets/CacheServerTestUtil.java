@@ -51,6 +51,7 @@ import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CqListenerAdapter;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -62,7 +63,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**

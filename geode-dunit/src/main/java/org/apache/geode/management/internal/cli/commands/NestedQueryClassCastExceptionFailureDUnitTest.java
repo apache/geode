@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.junit.Assert.assertEquals;
 
@@ -58,10 +59,10 @@ public class NestedQueryClassCastExceptionFailureDUnitTest {
       cacheServer.start();
       Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("product");
       QueryService queryService = cache.getQueryService();
-      queryService.createKeyIndex("productIDPKIndex", "productID", "/product");
-      queryService.createIndex("productIdIndex", "productId", "/product");
+      queryService.createKeyIndex("productIDPKIndex", "productID", SEPARATOR + "product");
+      queryService.createIndex("productIdIndex", "productId", SEPARATOR + "product");
       queryService
-          .createIndex("productCodesGMIIndex", "productCodes['GMI']", "/product");
+          .createIndex("productCodesGMIIndex", "productCodes['GMI']", SEPARATOR + "product");
       TreeMap<String, String> tempMap = new TreeMap<>();
       tempMap.put("GMI", "GMI");
       region.put(1, new Product(1L, tempMap, "2L", "ACTIVE"));
@@ -71,7 +72,10 @@ public class NestedQueryClassCastExceptionFailureDUnitTest {
       SelectResults results =
           (SelectResults) cache.getQueryService()
               .newQuery(
-                  "select  productId, productCodes['GMI'], contractSize from /product where contractSize = null and productCodes['GMI'] in (select  distinct b.productCodes['GMI'] from /product b where b.contractSize != null and b.status='ACTIVE') LIMIT 2000")
+                  "select  productId, productCodes['GMI'], contractSize from " + SEPARATOR
+                      + "product where contractSize = null and productCodes['GMI'] in (select  distinct b.productCodes['GMI'] from "
+                      + SEPARATOR
+                      + "product b where b.contractSize != null and b.status='ACTIVE') LIMIT 2000")
               .execute();
       assertEquals(2, results.size());
     });

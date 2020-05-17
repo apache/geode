@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -78,22 +79,34 @@ public abstract class OrderByTestImplementation {
   public void testOrderByWithIndexResultDefaultProjection() throws Exception {
     String queries[] = {
         // Test case No. IUMR021
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 order by ID desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 order by ID asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID != 10 order by ID asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID != 10 order by ID desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 order by ID desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 order by ID asc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc limit 5 ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID != 10 order by ID asc limit 10",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID != 10 order by ID desc limit 10",
+        "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 10 order by ID desc ",
+        "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 10 order by ID asc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc",
+        "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 where ID != 10 order by ID asc ",
+        "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 where ID != 10 order by ID desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID asc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc limit 5 ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID asc limit 10",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID desc limit 10",
 
     };
     Object r[][] = new Object[queries.length][2];
@@ -123,7 +136,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", "/portfolio1");
+    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -186,7 +199,8 @@ public abstract class OrderByTestImplementation {
       region.put("" + i, pf);
     }
     String queryStr =
-        "select distinct p.status, p.shortID as short_id  from /portfolio p where p.ID >= 0 "
+        "select distinct p.status, p.shortID as short_id  from " + SEPARATOR
+            + "portfolio p where p.ID >= 0 "
             + "order by short_id asc";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
@@ -216,7 +230,8 @@ public abstract class OrderByTestImplementation {
       region.put("" + i, pf);
     }
     String queryStr =
-        "select distinct p.ID as _id, p.shortID as short_id  from /portfolio p where p.ID >= 0 "
+        "select distinct p.ID as _id, p.shortID as short_id  from " + SEPARATOR
+            + "portfolio p where p.ID >= 0 "
             + "order by short_id asc, p.ID desc";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
@@ -242,22 +257,38 @@ public abstract class OrderByTestImplementation {
   public void testOrderByWithIndexResultWithProjection() throws Exception {
     String queries[] = {
         // Test case No. IUMR021
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 10 order by ID desc ",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 10 order by ID asc ",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc ",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc ",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc ",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID != 10 order by ID asc ",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID != 10 order by ID desc ",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 10 order by ID desc limit 5",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 10 order by ID asc limit 5",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc limit 5 ",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc limit 5",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc limit 5",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc limit 5",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID != 10 order by ID asc limit 10",
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID != 10 order by ID desc limit 10",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID desc ",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID asc ",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc ",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc ",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc ",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID asc ",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID desc ",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID desc limit 5",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID asc limit 5",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc limit 5 ",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc limit 5",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc limit 5",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc limit 5",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID asc limit 10",
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID desc limit 10",
 
     };
     Object r[][] = new Object[queries.length][2];
@@ -287,7 +318,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", "/portfolio1");
+    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -343,22 +374,38 @@ public abstract class OrderByTestImplementation {
   public void testMultiColOrderByWithIndexResultDefaultProjection() throws Exception {
     String queries[] = {
         // Test case No. IUMR021
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 order by ID desc, pkid asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 order by ID asc, pkid desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc, pkid asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc , pkid desc",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc, pkid desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc, pkid asc",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID != 10 order by ID asc, pkid asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID != 10 order by ID desc, pkid desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 order by ID asc, pkid desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc, pkid asc limit 5 ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc, pkid desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc, pkid desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID != 10 order by ID asc, pkid asc limit 10",
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID != 10 order by ID desc, pkid desc limit 10",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID desc, pkid asc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID asc, pkid desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc, pkid asc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc , pkid desc",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc, pkid desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc, pkid asc",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID asc, pkid asc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID desc, pkid desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID asc, pkid desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc, pkid asc limit 5 ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc, pkid desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc, pkid desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID asc, pkid asc limit 10",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID desc, pkid desc limit 10",
 
     };
     Object r[][] = new Object[queries.length][2];
@@ -388,7 +435,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", "/portfolio1");
+    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -468,7 +515,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", "/portfolio1");
+    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -520,22 +567,38 @@ public abstract class OrderByTestImplementation {
   public void testMultiColOrderByWithMultiIndexResultDefaultProjection() throws Exception {
     String queries[] = {
         // Test case No. IUMR021
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid > '1' and ID > 10 order by ID asc, pkid desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid = '13'and  ID > 10 and ID < 20 order by ID asc, pkid asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid <'9' and ID > 10 and ID < 20 order by ID desc , pkid desc",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid = '15' and ID >= 10 and ID <= 20 order by ID desc, pkid desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid > '1' and pkid <='9' and ID >= 10 and ID <= 20 order by ID asc, pkid asc",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID asc, pkid asc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid = '17' and ID > 10 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid > '17' and ID > 10 order by ID asc, pkid desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid < '7' and ID > 10 and ID < 20 order by ID asc, pkid asc limit 5 ",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid = '18' and ID > 10 and ID < 20 order by ID desc, pkid desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid > '1' and ID >= 10 and ID <= 20 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid != '17' and ID >= 10 and ID <= 20 order by ID asc, pkid desc limit 5",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid > '0' and ID != 10 order by ID asc, pkid asc limit 10",
-        "SELECT  distinct * FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc limit 10",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID > 10 order by ID asc, pkid desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '13'and  ID > 10 and ID < 20 order by ID asc, pkid asc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid <'9' and ID > 10 and ID < 20 order by ID desc , pkid desc",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '15' and ID >= 10 and ID <= 20 order by ID desc, pkid desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and pkid <='9' and ID >= 10 and ID <= 20 order by ID asc, pkid asc",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID asc, pkid asc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '17' and ID > 10 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '17' and ID > 10 order by ID asc, pkid desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid < '7' and ID > 10 and ID < 20 order by ID asc, pkid asc limit 5 ",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '18' and ID > 10 and ID < 20 order by ID desc, pkid desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID >= 10 and ID <= 20 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid != '17' and ID >= 10 and ID <= 20 order by ID asc, pkid desc limit 5",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '0' and ID != 10 order by ID asc, pkid asc limit 10",
+        "SELECT  distinct * FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc limit 10",
 
     };
     Object r[][] = new Object[queries.length][2];
@@ -565,8 +628,8 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", "/portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", "/portfolio1");
+    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -648,8 +711,8 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", "/portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", "/portfolio1");
+    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -729,7 +792,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", "/portfolio1");
+    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -785,31 +848,44 @@ public abstract class OrderByTestImplementation {
   public void testOrderByWithNullValuesUseIndex() throws Exception {
     // IN ORDER BY NULL values are treated as smallest. E.g For an ascending order by field
     // its null values are reported first and then the values in ascending order.
-    String queries[] = {"SELECT  distinct * FROM /portfolio1 pf1 where ID > 0 order by pkid", // 0
-                                                                                              // null
-                                                                                              // values
-                                                                                              // are
-                                                                                              // first
-                                                                                              // in
-                                                                                              // the
-                                                                                              // order.
-        "SELECT  distinct * FROM /portfolio1 pf1 where ID > 0 order by pkid asc", // 1 same as
-                                                                                  // above.
-        "SELECT  distinct * FROM /portfolio1 where ID > 0 order by pkid desc", // 2 null values are
-                                                                               // last in the order.
-        "SELECT  distinct pkid FROM /portfolio1 pf1 where ID > 0 order by pkid", // 3 null values
-                                                                                 // are first in the
-                                                                                 // order.
-        "SELECT  distinct pkid FROM /portfolio1 pf1 where ID > 0 order by pkid asc", // 4
-        "SELECT  distinct pkid FROM /portfolio1 pf1 where ID > 0 order by pkid desc", // 5 null
-                                                                                      // values are
-                                                                                      // last in the
-                                                                                      // order.
-        "SELECT  distinct ID, pkid FROM /portfolio1 pf1 where ID < 1000 order by pkid", // 6
-        "SELECT  distinct ID, pkid FROM /portfolio1 pf1 where ID > 3 order by pkid", // 7
-        "SELECT  distinct ID, pkid FROM /portfolio1 pf1 where ID < 1000 order by pkid", // 8
-        "SELECT  distinct ID, pkid FROM /portfolio1 pf1 where ID > 0 order by pkid", // 9
-    };
+    String queries[] =
+        {"SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 0 order by pkid", // 0
+            // null
+            // values
+            // are
+            // first
+            // in
+            // the
+            // order.
+            "SELECT  distinct * FROM " + SEPARATOR
+                + "portfolio1 pf1 where ID > 0 order by pkid asc", // 1 same as
+            // above.
+            "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 where ID > 0 order by pkid desc", // 2
+                                                                                                   // null
+                                                                                                   // values
+                                                                                                   // are
+            // last in the order.
+            "SELECT  distinct pkid FROM " + SEPARATOR + "portfolio1 pf1 where ID > 0 order by pkid", // 3
+                                                                                                     // null
+                                                                                                     // values
+            // are first in the
+            // order.
+            "SELECT  distinct pkid FROM " + SEPARATOR
+                + "portfolio1 pf1 where ID > 0 order by pkid asc", // 4
+            "SELECT  distinct pkid FROM " + SEPARATOR
+                + "portfolio1 pf1 where ID > 0 order by pkid desc", // 5 null
+            // values are
+            // last in the
+            // order.
+            "SELECT  distinct ID, pkid FROM " + SEPARATOR
+                + "portfolio1 pf1 where ID < 1000 order by pkid", // 6
+            "SELECT  distinct ID, pkid FROM " + SEPARATOR
+                + "portfolio1 pf1 where ID > 3 order by pkid", // 7
+            "SELECT  distinct ID, pkid FROM " + SEPARATOR
+                + "portfolio1 pf1 where ID < 1000 order by pkid", // 8
+            "SELECT  distinct ID, pkid FROM " + SEPARATOR
+                + "portfolio1 pf1 where ID > 0 order by pkid", // 9
+        };
 
     Object r[][] = new Object[queries.length][2];
     QueryService qs;
@@ -830,8 +906,8 @@ public abstract class OrderByTestImplementation {
     }
 
     // Create Indexes
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", "/portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", "/portfolio1");
+    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
 
     Query q = null;
     SelectResults results = null;
@@ -1062,13 +1138,19 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testOrderByForUndefined() throws Exception {
-    String queries[] = {"SELECT DISTINCT position1.secId FROM /test ORDER BY position1.secId", // 0
-        "SELECT DISTINCT position1.secId FROM /test ORDER BY position1.secId desc", // 1
-        "SELECT DISTINCT position1.secId FROM /test where ID > 0  ORDER BY position1.secId", // 2
-        "SELECT DISTINCT position1.secId FROM /test where ID > 0  ORDER BY position1.secId desc", // 3
-        "SELECT DISTINCT position1.secId, ID FROM /test ORDER BY position1.secId, ID", // 4
-        "SELECT DISTINCT position1.secId, ID FROM /test ORDER BY position1.secId desc, ID",// 5
-    };
+    String queries[] =
+        {"SELECT DISTINCT position1.secId FROM " + SEPARATOR + "test ORDER BY position1.secId", // 0
+            "SELECT DISTINCT position1.secId FROM " + SEPARATOR
+                + "test ORDER BY position1.secId desc", // 1
+            "SELECT DISTINCT position1.secId FROM " + SEPARATOR
+                + "test where ID > 0  ORDER BY position1.secId", // 2
+            "SELECT DISTINCT position1.secId FROM " + SEPARATOR
+                + "test where ID > 0  ORDER BY position1.secId desc", // 3
+            "SELECT DISTINCT position1.secId, ID FROM " + SEPARATOR
+                + "test ORDER BY position1.secId, ID", // 4
+            "SELECT DISTINCT position1.secId, ID FROM " + SEPARATOR
+                + "test ORDER BY position1.secId desc, ID",// 5
+        };
     Region r1 = this.createRegion("test", Portfolio.class);
     for (int i = 0; i < 10; i++) {
       Portfolio pf = new Portfolio(i);

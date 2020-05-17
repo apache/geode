@@ -14,8 +14,8 @@
  */
 package org.apache.geode.test.dunit;
 
+import static org.apache.geode.common.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
-import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.UncheckedIOException;
 import java.net.InetAddress;

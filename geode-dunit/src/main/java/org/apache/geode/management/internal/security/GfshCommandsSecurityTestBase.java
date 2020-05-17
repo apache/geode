@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -166,7 +167,7 @@ public class GfshCommandsSecurityTestBase {
     gfshConnection.executeCommand("put --region=region1 --key=key3 --value=value3");
 
     // gfsh.executeCommand("get --region=region1 --key=key1");
-    gfshConnection.executeCommand("query --query=\"select * from /region1\"");
+    gfshConnection.executeCommand("query --query=\"select * from " + SEPARATOR + "region1\"");
   }
 
   @Test

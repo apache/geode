@@ -15,6 +15,7 @@
 package org.apache.geode.cache30;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.lang.ThrowableUtils.hasCauseMessage;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -223,7 +224,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
     }
 
-    concurrentMapTest("/R1");
+    concurrentMapTest(SEPARATOR + "R1");
   }
 
   /**
