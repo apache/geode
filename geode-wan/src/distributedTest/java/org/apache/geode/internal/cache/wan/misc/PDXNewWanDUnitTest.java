@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -559,13 +560,13 @@ public class PDXNewWanDUnitTest extends WANTestBase {
       vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 20));
 
       vm4.invoke(() -> {
-        final Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_PR");
+        final Region r = cache.getRegion(SEPARATOR + getTestMethodName() + "_PR");
         PdxValue result = (PdxValue) r.put(KEY_0, new PdxValue(0));
       });
 
       // Force VM4 to be the primary
       vm4.invoke(() -> {
-        final Region region = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_PR");
+        final Region region = cache.getRegion(SEPARATOR + getTestMethodName() + "_PR");
         DistributedMember primary = PartitionRegionHelper.getPrimaryMemberForKey(region, KEY_0);
         // If we are not the primary
         DistributedMember localMember = cache.getDistributedSystem().getDistributedMember();
@@ -588,14 +589,14 @@ public class PDXNewWanDUnitTest extends WANTestBase {
       vm4.invoke(() -> WANTestBase.resumeSender("ln"));
 
       vm2.invoke(() -> {
-        final Region region = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_PR");
+        final Region region = cache.getRegion(SEPARATOR + getTestMethodName() + "_PR");
         await().until(() -> region.containsKey(KEY_0));
 
       });
 
       // Make sure vm3 can deserialize the value
       deserializationFuture = vm3.invokeAsync(() -> {
-        final Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_PR");
+        final Region r = cache.getRegion(SEPARATOR + getTestMethodName() + "_PR");
         PdxValue result = (PdxValue) r.get(KEY_0);
         assertEquals(result, new PdxValue(0));
       });

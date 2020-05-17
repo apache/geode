@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -30,7 +31,6 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class represent a runnable task which exchange the locator information with local
