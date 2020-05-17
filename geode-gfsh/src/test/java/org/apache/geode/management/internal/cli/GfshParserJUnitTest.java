@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -40,22 +41,22 @@ public class GfshParserJUnitTest {
 
   @Test
   public void testSplitUserInputDoubleQuotes() {
-    input = "query --query=\"select * from /region\"";
+    input = "query --query=\"select * from " + SEPARATOR + "region\"";
     tokens = GfshParser.splitUserInput(input);
     assertThat(tokens.size()).isEqualTo(3);
     assertThat(tokens.get(0)).isEqualTo("query");
     assertThat(tokens.get(1)).isEqualTo("--query");
-    assertThat(tokens.get(2)).isEqualTo("\"select * from /region\"");
+    assertThat(tokens.get(2)).isEqualTo("\"select * from " + SEPARATOR + "region\"");
   }
 
   @Test
   public void testSplitUserInputSingleQuotes() {
-    input = "query --query='select * from /region'";
+    input = "query --query='select * from " + SEPARATOR + "region'";
     tokens = GfshParser.splitUserInput(input);
     assertThat(tokens.size()).isEqualTo(3);
     assertThat(tokens.get(0)).isEqualTo("query");
     assertThat(tokens.get(1)).isEqualTo("--query");
-    assertThat(tokens.get(2)).isEqualTo("'select * from /region'");
+    assertThat(tokens.get(2)).isEqualTo("'select * from " + SEPARATOR + "region'");
   }
 
   @Test
@@ -153,7 +154,7 @@ public class GfshParserJUnitTest {
 
   @Test
   public void spaceOrEmptyStringIsParsedCorrectly() {
-    input = "alter region --name=/Person --cache-writer='' --cache-loader=' '";
+    input = "alter region --name=" + SEPARATOR + "Person --cache-writer='' --cache-loader=' '";
     tokens = GfshParser.splitUserInput(input);
     assertThat(tokens.size()).isEqualTo(8);
     assertThat(tokens.get(7)).isEqualTo("' '");

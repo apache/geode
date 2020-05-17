@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -195,21 +196,22 @@ public class ListIndexFunctionJUnitTest {
   @SuppressWarnings({"unchecked", "deprecation"})
   public void testExecute() throws Throwable {
     // Expected Results
-    final IndexDetails indexDetailsOne = createIndexDetails("/Employees", "empIdIdx",
-        org.apache.geode.cache.query.IndexType.PRIMARY_KEY, "/Employees", "id",
+    final IndexDetails indexDetailsOne = createIndexDetails(SEPARATOR + "Employees", "empIdIdx",
+        org.apache.geode.cache.query.IndexType.PRIMARY_KEY, SEPARATOR + "Employees", "id",
         "id, firstName, lastName", "Employees");
     indexDetailsOne.setIndexStatisticsDetails(
         createIndexStatisticsDetails(10124L, 4096L, 10124L, 1284100L, 280120L));
-    final IndexDetails indexDetailsTwo = createIndexDetails("/Employees", "empGivenNameIdx",
-        org.apache.geode.cache.query.IndexType.FUNCTIONAL, "/Employees", "lastName",
-        "id, firstName, lastName", "Employees");
-    final IndexDetails indexDetailsThree = createIndexDetails("/Contractors", "empIdIdx",
-        org.apache.geode.cache.query.IndexType.PRIMARY_KEY, "/Contrators", "id",
+    final IndexDetails indexDetailsTwo =
+        createIndexDetails(SEPARATOR + "Employees", "empGivenNameIdx",
+            org.apache.geode.cache.query.IndexType.FUNCTIONAL, SEPARATOR + "Employees", "lastName",
+            "id, firstName, lastName", "Employees");
+    final IndexDetails indexDetailsThree = createIndexDetails(SEPARATOR + "Contractors", "empIdIdx",
+        org.apache.geode.cache.query.IndexType.PRIMARY_KEY, SEPARATOR + "Contrators", "id",
         "id, firstName, lastName", "Contractors");
     indexDetailsThree.setIndexStatisticsDetails(
         createIndexStatisticsDetails(1024L, 256L, 20248L, 768001L, 24480L));
-    final IndexDetails indexDetailsFour = createIndexDetails("/Employees", "empIdIdx",
-        org.apache.geode.cache.query.IndexType.FUNCTIONAL, "/Employees", "emp_id",
+    final IndexDetails indexDetailsFour = createIndexDetails(SEPARATOR + "Employees", "empIdIdx",
+        org.apache.geode.cache.query.IndexType.FUNCTIONAL, SEPARATOR + "Employees", "emp_id",
         "id, surname, givenname", "Employees");
     final Set<IndexDetails> expectedIndexDetailsSet =
         new HashSet<>(Arrays.asList(indexDetailsOne, indexDetailsTwo, indexDetailsThree));

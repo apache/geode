@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class RegionPathTest {
 
   @Test
   public void rootNameWithSlash() {
-    RegionPath path = new RegionPath("/test");
+    RegionPath path = new RegionPath(SEPARATOR + "test");
     assertThat(path.getParent()).isNull();
     assertThat(path.getName()).isEqualTo("test");
     assertThat(path.isRoot()).isTrue();
@@ -44,8 +45,8 @@ public class RegionPathTest {
 
   @Test
   public void subRegionName() {
-    RegionPath path = new RegionPath("test1/test2");
-    assertThat(path.getParent()).isEqualTo("/test1");
+    RegionPath path = new RegionPath("test1" + SEPARATOR + "test2");
+    assertThat(path.getParent()).isEqualTo(SEPARATOR + "test1");
     assertThat(path.getName()).isEqualTo("test2");
     assertThat(path.isRoot()).isFalse();
     assertThat(path.getRegionsOnParentPath()).containsExactly("test1");
@@ -54,8 +55,8 @@ public class RegionPathTest {
 
   @Test
   public void subRegionNameWithSlash() {
-    RegionPath path = new RegionPath("/test1/test2");
-    assertThat(path.getParent()).isEqualTo("/test1");
+    RegionPath path = new RegionPath(SEPARATOR + "test1" + SEPARATOR + "test2");
+    assertThat(path.getParent()).isEqualTo(SEPARATOR + "test1");
     assertThat(path.getName()).isEqualTo("test2");
     assertThat(path.isRoot()).isFalse();
     assertThat(path.getRegionsOnParentPath()).containsExactly("test1");
@@ -64,8 +65,8 @@ public class RegionPathTest {
 
   @Test
   public void subSubRegionName() {
-    RegionPath path = new RegionPath("test1/test2/test3");
-    assertThat(path.getParent()).isEqualTo("/test1/test2");
+    RegionPath path = new RegionPath("test1" + SEPARATOR + "test2" + SEPARATOR + "test3");
+    assertThat(path.getParent()).isEqualTo(SEPARATOR + "test1" + SEPARATOR + "test2");
     assertThat(path.getName()).isEqualTo("test3");
     assertThat(path.isRoot()).isFalse();
     assertThat(path.getRegionsOnParentPath()).containsExactly("test1", "test2");
@@ -74,8 +75,9 @@ public class RegionPathTest {
 
   @Test
   public void subSubRegionNameWithSlash() {
-    RegionPath path = new RegionPath("/test1/test2/test3");
-    assertThat(path.getParent()).isEqualTo("/test1/test2");
+    RegionPath path =
+        new RegionPath(SEPARATOR + "test1" + SEPARATOR + "test2" + SEPARATOR + "test3");
+    assertThat(path.getParent()).isEqualTo(SEPARATOR + "test1" + SEPARATOR + "test2");
     assertThat(path.getName()).isEqualTo("test3");
     assertThat(path.isRoot()).isFalse();
     assertThat(path.getRegionsOnParentPath()).containsExactly("test1", "test2");

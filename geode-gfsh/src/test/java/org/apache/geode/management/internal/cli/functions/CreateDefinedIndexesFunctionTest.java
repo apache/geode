@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -76,7 +77,7 @@ public class CreateDefinedIndexesFunctionTest {
       {
         setName("index1");
         setExpression("value1");
-        setFromClause("/Region1");
+        setFromClause(SEPARATOR + "Region1");
         setType(org.apache.geode.cache.query.IndexType.HASH.getName());
       }
     });
@@ -84,7 +85,7 @@ public class CreateDefinedIndexesFunctionTest {
       {
         setName("index2");
         setExpression("value2");
-        setFromClause("/Region2");
+        setFromClause(SEPARATOR + "Region2");
         setType(org.apache.geode.cache.query.IndexType.FUNCTIONAL.getName());
       }
     });
@@ -92,7 +93,7 @@ public class CreateDefinedIndexesFunctionTest {
       {
         setName("index3");
         setExpression("value3");
-        setFromClause("/Region1");
+        setFromClause(SEPARATOR + "Region1");
         setType(org.apache.geode.cache.query.IndexType.PRIMARY_KEY.getName());
       }
     });

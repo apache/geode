@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
@@ -34,7 +35,8 @@ public class RegionPathConverterJUnitTest {
   public static GfshParserRule parser = new GfshParserRule();
   private static RegionPathConverter converter;
 
-  private static String[] allRegionPaths = {"/region1", "/region2", "/rg3"};
+  private static String[] allRegionPaths =
+      {SEPARATOR + "region1", SEPARATOR + "region2", SEPARATOR + "rg3"};
 
   @BeforeClass
   public static void before() {
@@ -52,25 +54,31 @@ public class RegionPathConverterJUnitTest {
 
   @Test
   public void convert() throws Exception {
-    assertThatThrownBy(() -> converter.convertFromText("/", String.class, ""))
-        .isInstanceOf(IllegalArgumentException.class).hasMessage("invalid region path: /");
+    assertThatThrownBy(() -> converter.convertFromText(SEPARATOR, String.class, ""))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid region path: " + SEPARATOR);
 
-    assertThat(converter.convertFromText("region", String.class, "")).isEqualTo("/region");
-    assertThat(converter.convertFromText("/region/t", String.class, "")).isEqualTo("/region/t");
+    assertThat(converter.convertFromText("region", String.class, ""))
+        .isEqualTo(SEPARATOR + "region");
+    assertThat(converter.convertFromText(SEPARATOR + "region" + SEPARATOR + "t", String.class, ""))
+        .isEqualTo(SEPARATOR + "region" + SEPARATOR + "t");
   }
 
   @Test
   public void complete() throws Exception {
     CommandCandidate candidate = parser.complete("destroy region --name=");
     assertThat(candidate.size()).isEqualTo(allRegionPaths.length);
-    assertThat(candidate.getFirstCandidate()).isEqualTo("destroy region --name=/region1");
+    assertThat(candidate.getFirstCandidate())
+        .isEqualTo("destroy region --name=" + SEPARATOR + "region1");
 
-    candidate = parser.complete("destroy region --name=/");
+    candidate = parser.complete("destroy region --name=" + SEPARATOR);
     assertThat(candidate.size()).isEqualTo(allRegionPaths.length);
-    assertThat(candidate.getFirstCandidate()).isEqualTo("destroy region --name=/region1");
+    assertThat(candidate.getFirstCandidate())
+        .isEqualTo("destroy region --name=" + SEPARATOR + "region1");
 
-    candidate = parser.complete("destroy region --name=/region");
+    candidate = parser.complete("destroy region --name=" + SEPARATOR + "region");
     assertThat(candidate.size()).isEqualTo(2);
-    assertThat(candidate.getFirstCandidate()).isEqualTo("destroy region --name=/region1");
+    assertThat(candidate.getFirstCandidate())
+        .isEqualTo("destroy region --name=" + SEPARATOR + "region1");
   }
 }

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -89,14 +90,14 @@ public class DestroyRegionCommandTest {
     parser.executeAndAssertThat(command, "destroy region --name=").statusIsError()
         .containsOutput("Invalid command");
 
-    parser.executeAndAssertThat(command, "destroy region --name=/").statusIsError()
+    parser.executeAndAssertThat(command, "destroy region --name=" + SEPARATOR).statusIsError()
         .containsOutput("Invalid command");
   }
 
   @Test
   public void regionConverterApplied() {
     GfshParseResult parseResult = parser.parse("destroy region --name=test");
-    assertThat(parseResult.getParamValue("name")).isEqualTo("/test");
+    assertThat(parseResult.getParamValue("name")).isEqualTo(SEPARATOR + "test");
   }
 
   @Test
@@ -182,7 +183,7 @@ public class DestroyRegionCommandTest {
   public void checkForJDBCMappingWithRegionPathThrowsIllegalStateException() {
     setupJDBCMappingOnRegion("regionName");
 
-    command.checkForJDBCMapping("/regionName");
+    command.checkForJDBCMapping(SEPARATOR + "regionName");
   }
 
   @Test(expected = IllegalStateException.class)

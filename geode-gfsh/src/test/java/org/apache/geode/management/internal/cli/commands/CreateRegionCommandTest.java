@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -330,8 +331,8 @@ public class CreateRegionCommandTest {
     when(regionMXBean.getEmptyNodes()).thenReturn(1);
     when(regionMXBean.getRegionType()).thenReturn("REPLICATE");
     parser.executeAndAssertThat(command, COMMAND).statusIsError()
-        .containsOutput("Region /region already exists on the cluster");
+        .containsOutput("Region " + SEPARATOR + "region already exists on the cluster");
     parser.executeAndAssertThat(command, COMMAND + " --if-not-exists").statusIsSuccess()
-        .containsOutput("Skipping: Region /region already exists on the cluster");
+        .containsOutput("Skipping: Region " + SEPARATOR + "region already exists on the cluster");
   }
 }

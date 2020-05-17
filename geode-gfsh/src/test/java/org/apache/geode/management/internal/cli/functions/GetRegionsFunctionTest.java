@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -103,7 +104,7 @@ public class GetRegionsFunctionTest {
     Cache cache = mock(Cache.class);
     when(regionAttributes.getDataPolicy()).thenReturn(mock(DataPolicy.class));
     when(regionAttributes.getScope()).thenReturn(mock(Scope.class));
-    when(region.getFullPath()).thenReturn(Region.SEPARATOR + regionName);
+    when(region.getFullPath()).thenReturn(SEPARATOR + regionName);
     when(region.subregions(anyBoolean())).thenReturn(Collections.emptySet());
     when(region.getAttributes()).thenReturn(regionAttributes);
     when(cache.rootRegions()).thenReturn(Collections.singleton(region));
