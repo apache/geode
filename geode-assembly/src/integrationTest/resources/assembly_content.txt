@@ -573,6 +573,10 @@ javadoc/org/apache/geode/cache/wan/GatewayTransportFilter.html
 javadoc/org/apache/geode/cache/wan/package-frame.html
 javadoc/org/apache/geode/cache/wan/package-summary.html
 javadoc/org/apache/geode/cache/wan/package-tree.html
+javadoc/org/apache/geode/common/GeodePublicGlossary.html
+javadoc/org/apache/geode/common/package-frame.html
+javadoc/org/apache/geode/common/package-summary.html
+javadoc/org/apache/geode/common/package-tree.html
 javadoc/org/apache/geode/compression/CompressionException.html
 javadoc/org/apache/geode/compression/Compressor.html
 javadoc/org/apache/geode/compression/SnappyCompressor.html

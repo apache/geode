@@ -12,11 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.util.internal;
+package org.apache.geode.common;
 
-public class GeodeGlossary {
+public class GeodePublicGlossary {
   /**
-   * The prefix used for Gemfire properties set through java system properties
+   * The region name separator character.
    */
-  public static final String GEMFIRE_PREFIX = "gemfire.";
+  public static final char SEPARATOR_CHAR = '/';
+
+  /**
+   * The region name separator character, represented as a string for convenience.
+   */
+  public static final String SEPARATOR = "/";
 }

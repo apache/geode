@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.util.internal;
+package org.apache.geode.common.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.junit.Test;
+
+import org.apache.geode.common.internal.GeodeJsonMapper;
 
 public class GeodeJsonMapperTest {
   @Test
