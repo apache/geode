@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -89,7 +90,8 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
       IntStream.range(0, numPuts).forEach(id -> region.put("key-" + id, new TestObject(id)));
       ArrayList results = (ArrayList) FunctionService.onRegion(region)
           .execute(new QueryWithoutTurningIntoListFunction(regionName,
-              "select distinct r.id, r.name from /" + regionName + " r, /" + regionName
+              "select distinct r.id, r.name from " + SEPARATOR + regionName + " r, " + SEPARATOR
+                  + regionName
                   + " t where t.id = r.id"))
           .getResult();
       SelectResults rs = (SelectResults) results.get(0);
@@ -114,7 +116,8 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
       IntStream.range(0, numPuts).forEach(id -> region.put("key-" + id, new TestObject(id)));
       ArrayList results = (ArrayList) FunctionService.onRegion(region)
           .execute(new QueryWithoutTurningIntoListFunction(regionName,
-              "select distinct r.id, r.name from /" + regionName + " r, /" + regionName
+              "select distinct r.id, r.name from " + SEPARATOR + regionName + " r, " + SEPARATOR
+                  + regionName
                   + " t where t.id = r.id order by r.id"))
           .getResult();
       SelectResults rs = (SelectResults) results.get(0);

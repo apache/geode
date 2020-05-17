@@ -17,6 +17,7 @@
 
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
@@ -55,7 +56,7 @@ public class CacheConfigDAODUnitTest {
     MemberVM server = cluster.startServerVM(1, locator.getPort());
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache().getRegion("/regionB")).isNotNull();
+      assertThat(ClusterStartupRule.getCache().getRegion(SEPARATOR + "regionB")).isNotNull();
     });
 
   }

@@ -20,6 +20,7 @@ import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENFORCE_UNIQUE_HOST;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -86,6 +87,7 @@ import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -110,7 +112,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * TODO test colocated regions where buckets aren't created for all subregions
@@ -1127,8 +1128,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     excluded.add("region3");
 
     Set<String> expectedRebalanced = new HashSet<>();
-    expectedRebalanced.add("/region0");
-    expectedRebalanced.add("/region1");
+    expectedRebalanced.add(SEPARATOR + "region0");
+    expectedRebalanced.add(SEPARATOR + "region1");
 
     int numRegions = 4;
 
@@ -1514,7 +1515,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Create some buckets
     vm0.invoke(() -> {
-      Region<Number, String> region = getCache().getRegion("parent/region1");
+      Region<Number, String> region = getCache().getRegion("parent" + SEPARATOR + "region1");
       for (int i = 0; i < 12; i++) {
         region.put(i, "A");
       }
@@ -1570,7 +1571,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
       vm.invoke(() -> {
-        Region region = getCache().getRegion("parent/region1");
+        Region region = getCache().getRegion("parent" + SEPARATOR + "region1");
 
         PartitionRegionInfo details = PartitionRegionHelper.getPartitionRegionInfo(region);
         assertThat(details.getCreatedBucketCount()).isEqualTo(12);

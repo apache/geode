@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -163,7 +163,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             Cache cache = getCache();
 
             Query statusQuery = getCache().getQueryService()
-                .newQuery("select * from /" + name + " p where p.ID > -1");
+                .newQuery("select * from " + SEPARATOR + name + " p where p.ID > -1");
 
             while (!hooked) {
               Wait.pause(100);
@@ -268,7 +268,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             Cache cache = getCache();
 
             Query statusQuery = getCache().getQueryService()
-                .newQuery("select * from /" + name + " p where p.ID > -1");
+                .newQuery("select * from " + SEPARATOR + name + " p where p.ID > -1");
 
             while (!hooked) {
               Wait.pause(100);
@@ -370,7 +370,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           @Override
           public void run2() throws CacheException {
             Query statusQuery = getCache().getQueryService()
-                .newQuery("select * from /" + name + " p where p.ID > -1");
+                .newQuery("select * from " + SEPARATOR + name + " p where p.ID > -1");
 
             while (!hooked) {
               Wait.pause(100);
@@ -472,7 +472,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           @Override
           public void run2() throws CacheException {
             Query statusQuery = getCache().getQueryService()
-                .newQuery("select * from /" + name + " p where p.ID > -1");
+                .newQuery("select * from " + SEPARATOR + name + " p where p.ID > -1");
 
             while (!hooked) {
               Wait.pause(100);
@@ -568,7 +568,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
             Cache cache = getCache();
 
             Query statusQuery = getCache().getQueryService()
-                .newQuery("select * from /" + name + " p where p.ID > -1");
+                .newQuery("select * from " + SEPARATOR + name + " p where p.ID > -1");
 
             while (!hooked) {
               Wait.pause(10);
@@ -660,7 +660,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           @Override
           public void run2() throws CacheException {
             Query statusQuery = getCache().getQueryService()
-                .newQuery("select * from /" + name + " p where p.ID > -1");
+                .newQuery("select * from " + SEPARATOR + name + " p where p.ID > -1");
 
             while (!hooked) {
               Wait.pause(10);

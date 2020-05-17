@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -128,7 +129,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(checkSizeRegion(regionSize));
     client1.invoke(checkSizeRegion(regionSize));
     client2.invoke(checkSizeRegion(regionSize));
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     assertEquals(region.size(), regionSize);
     clearRegion();
@@ -195,7 +196,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(checkSizeRegion(regionSize));
     client1.invoke(checkSizeRegion(regionSize));
     client2.invoke(checkSizeRegion(regionSize));
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     assertEquals(region.size(), NO_OF_PUTS);
     server1.invoke(clearRegionFromServer());
@@ -240,7 +241,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     });
 
     regionSize = 0;
-    region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     synchronized (HAClearDUnitTest.class) {
       while (!gotClearCallback) {
@@ -277,7 +278,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     putKnownKeys();
     Thread.sleep(5000);
     int regionSize = NO_OF_PUTS;
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     assertEquals(region.size(), regionSize);
     server1.invoke(checkSizeRegion(regionSize));
@@ -327,7 +328,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNull(region);
     client1.invoke(checkDestroyRegion());
     client2.invoke(checkDestroyRegion());
@@ -351,7 +352,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(checkSizeRegion(regionSize));
     client1.invoke(checkSizeRegion(regionSize));
     client2.invoke(checkSizeRegion(regionSize));
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     assertEquals(region.size(), NO_OF_PUTS);
     server1.invoke(destroyRegionFromServer());
@@ -409,7 +410,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     }
     gotDestroyRegionCallback = false;
 
-    region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNull(region);
     client1.invoke(checkDestroyRegion());
     client2.invoke(checkDestroyRegion());
@@ -423,7 +424,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     CacheSerializableRunnable putFromServer = new CacheSerializableRunnable("putFromServer") {
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         assertNotNull(region);
         for (int i = 0; i < NO_OF_PUTS; i++) {
           region.put("key" + i, "value" + i);
@@ -436,7 +437,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
   // function to perform put operations for the known set of keys.
   private void putKnownKeys() {
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     for (int i = 0; i < NO_OF_PUTS; i++) {
       region.put("key" + i, "value" + i);
@@ -445,14 +446,14 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
   // function to perform clear operation from client.
   private void clearRegion() {
-    LocalRegion region = (LocalRegion) cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    LocalRegion region = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     region.clear();
   }
 
   // function to perform destroyRegion operation from client.
   private void destroyRegion() {
-    LocalRegion region = (LocalRegion) cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    LocalRegion region = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     region.destroyRegion();
   }
@@ -463,7 +464,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     CacheSerializableRunnable clearFromServer = new CacheSerializableRunnable("clearFromServer") {
       @Override
       public void run2() {
-        LocalRegion region = (LocalRegion) cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        LocalRegion region = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
         assertNotNull(region);
         region.clear();
       }
@@ -477,7 +478,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
         new CacheSerializableRunnable("destroyRegionFromServer") {
           @Override
           public void run2() {
-            LocalRegion region = (LocalRegion) cache.getRegion(Region.SEPARATOR + REGION_NAME);
+            LocalRegion region = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
             assertNotNull(region);
             region.destroyRegion();
           }
@@ -492,7 +493,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         assertNotNull(region);
         LogWriterUtils.getLogWriter().info("Size of the region " + region.size());
         assertEquals(size, region.size());
@@ -506,7 +507,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     CacheSerializableRunnable destroyRegion = new CacheSerializableRunnable("checkDestroyRegion") {
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         LogWriterUtils.getLogWriter().warning("Found region " + region);
         assertNull(region);
       }
@@ -590,7 +591,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     }
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     if (isRegisterInterest) {
       region.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);

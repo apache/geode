@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -235,7 +236,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   private void validateResults(boolean isSecond) {
     HARegion regionForQueue = (HARegion) cache.getRegion(
-        Region.SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
+        SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
     LogWriterUtils.getLogWriter().info("Region Queue size : " + regionForQueue.keys().size());
     Iterator itr = regionForQueue.entrySet(false).iterator();
     while (itr.hasNext()) {
@@ -275,7 +276,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
       @Override
       public void run2() throws CacheException {
 
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         for (int i = 0; i < NO_OF_PUTS_BEFORE_GII; i++) {
           region.put(whichVm + i, whichVm + i);
         }
@@ -291,7 +292,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     CacheSerializableRunnable putFromVM = new CacheSerializableRunnable("putFromVM") {
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         int j = 0;
         while (true) {
           if (isStop)
@@ -354,7 +355,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
       Cache cache = event.getRegion().getCache();
       HARegion regionForQueue = (HARegion) cache.getRegion(
-          Region.SEPARATOR + HARegionQueue.createRegionName(regionQueueName));
+          SEPARATOR + HARegionQueue.createRegionName(regionQueueName));
       HARegionQueue regionqueue = regionForQueue.getOwner();
 
       try {
@@ -372,7 +373,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
       if (isHARegionQueueUp) {
         Cache cache = event.getRegion().getCache();
         HARegion regionForQueue = (HARegion) cache.getRegion(
-            Region.SEPARATOR + HARegionQueue.createRegionName(regionQueueName));
+            SEPARATOR + HARegionQueue.createRegionName(regionQueueName));
         HARegionQueue regionqueue = regionForQueue.getOwner();
         try {
           regionqueue.put(new ConflatableObject(event.getKey(), event.getNewValue(),

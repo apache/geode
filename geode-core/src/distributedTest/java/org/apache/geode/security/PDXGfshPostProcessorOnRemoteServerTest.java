@@ -14,7 +14,7 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -102,7 +102,8 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     gfsh.executeAndAssertThat("get --key=key1 --region=AuthRegion").statusIsSuccess()
         .containsOutput(SimpleClass.class.getName());
 
-    gfsh.executeAndAssertThat("query --query=\"select * from /AuthRegion\"").statusIsSuccess();
+    gfsh.executeAndAssertThat("query --query=\"select * from " + SEPARATOR + "AuthRegion\"")
+        .statusIsSuccess();
 
     serverVM.invoke(() -> {
       PDXPostProcessor pp =

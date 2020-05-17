@@ -14,12 +14,13 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createNewPortfoliosAndPositions;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -232,7 +233,8 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
                 .setArguments("Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
-                    + " * from /" + name + " r1, /" + coloName + " r2 where " + queries[j])
+                    + " * from " + SEPARATOR + name + " r1, " + SEPARATOR + coloName + " r2 where "
+                    + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);
@@ -762,22 +764,15 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
       addIgnoredException(ReplyException.class.getName());
 
       QueryService qs = getCache().getQueryService();
-      try {
+      assertThatThrownBy(() -> {
         for (int i = 0; i < queries.length; i++) {
           getCache().getLogger().info("About to execute local query: " + queries[i]);
-          r[i][1] = qs.newQuery("Select " + (queries[i].contains("ORDER BY") ? "DISTINCT" : "")
-              + " * from /" + name + " r1, /" + coloName + " r2 where " + queries[i]).execute();
+          r[i][1] = qs.newQuery("Select " + " * from " + SEPARATOR + name + " r1, " + SEPARATOR
+              + coloName + " r2 where " + queries[i]).execute();
         }
-        fail("Expected UnsupportedOperationException");
-
-      } catch (UnsupportedOperationException e) {
-        if (!e.getMessage().equalsIgnoreCase(
-            String.format(
-                "A query on a Partitioned Region ( %s ) may not reference any other region if query is NOT executed within a Function",
-                name))) {
-          throw e;
-        }
-      }
+      }).isInstanceOf(UnsupportedOperationException.class)
+          .hasMessageContaining("A query on a Partitioned Region").hasMessageContaining(
+              "may not reference any other region if query is NOT executed within a Function");
     });
   }
 
@@ -992,7 +987,8 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
               .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                   ? getCache().getRegion(name) : getCache().getRegion(coloName))
               .setArguments("Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
-                  + " * from /" + name + " r1, /" + coloName + " r2 where " + queries[j])
+                  + " * from " + SEPARATOR + name + " r1, " + SEPARATOR + coloName + " r2 where "
+                  + queries[j])
               .execute(func).getResult();
 
           r[j][0] = ((ArrayList) funcResult).get(0);

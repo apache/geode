@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache.tx;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -37,13 +38,13 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 
 public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
@@ -133,14 +134,14 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
   }
 
   private void loadRegion() {
-    Region<Long, String> region = basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
     testData.forEach((k, v) -> region.put(k, v));
   }
 
   private void verifyRegionValuesWhenSetOperationStartsJTA() throws Exception {
     Context ctx = getCache().getJNDIContext();
     UserTransaction userTX = startUserTransaction(ctx);
-    Region<Long, String> region = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = getCache().getRegion(SEPARATOR + REGION_NAME);
     try {
       userTX.begin();
       Collection<String> set = region.values();
@@ -172,7 +173,7 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
   private void verifyRegionValuesWhenSetOperationDoesNotStartJTA() throws Exception {
     Context ctx = getCache().getJNDIContext();
     UserTransaction userTX = startUserTransaction(ctx);
-    Region<Long, String> region = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = getCache().getRegion(SEPARATOR + REGION_NAME);
     try {
       userTX.begin();
       Collection<String> set = region.values();

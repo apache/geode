@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -243,7 +243,8 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
     String queryString =
-        "<TRACE> SELECT object." + QueryObject.GET_NAME_METHOD + " FROM /" + regionName + " object";
+        "<TRACE> SELECT object." + QueryObject.GET_NAME_METHOD + " FROM " + SEPARATOR + regionName
+            + " object";
 
     // Set test query observer.
     server.invoke(() -> {
@@ -290,7 +291,8 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
     String queryString =
-        "<TRACE> SELECT object." + QueryObject.GET_NAME_METHOD + " FROM /" + regionName + " object";
+        "<TRACE> SELECT object." + QueryObject.GET_NAME_METHOD + " FROM " + SEPARATOR + regionName
+            + " object";
 
     server.invoke(() -> {
       // Set test query observer.

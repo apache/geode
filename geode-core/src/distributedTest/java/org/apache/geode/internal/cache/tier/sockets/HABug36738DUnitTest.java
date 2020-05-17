@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -130,7 +131,7 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
 
   private void checkRegionQueueSize() {
     final HARegion region =
-        (HARegion) cache.getRegion(Region.SEPARATOR + HAHelper.getRegionQueueName(HAREGION_NAME));
+        (HARegion) cache.getRegion(SEPARATOR + HAHelper.getRegionQueueName(HAREGION_NAME));
     assertNotNull(region);
     assertEquals(COUNT, region.size());
   }
@@ -140,6 +141,6 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
   }
 
   private boolean regionExists(final String name) {
-    return cache.getRegion(Region.SEPARATOR + HAHelper.getRegionQueueName(HAREGION_NAME)) != null;
+    return cache.getRegion(SEPARATOR + HAHelper.getRegionQueueName(HAREGION_NAME)) != null;
   }
 }

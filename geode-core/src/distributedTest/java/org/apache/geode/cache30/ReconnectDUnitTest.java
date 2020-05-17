@@ -22,6 +22,7 @@ import static org.apache.geode.cache.DataPolicy.REPLICATE;
 import static org.apache.geode.cache.LossAction.RECONNECT;
 import static org.apache.geode.cache.ResumptionAction.NONE;
 import static org.apache.geode.cache.Scope.DISTRIBUTED_ACK;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
@@ -266,7 +267,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             cache = (InternalCache) new CacheFactory(props).create();
             IgnoredException.addIgnoredException(
                 "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
-            Region myRegion = cache.getRegion("root/myRegion");
+            Region myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
             return savedSystem.getDistributedMember();
@@ -332,7 +333,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
             props.put(MAX_WAIT_TIME_RECONNECT, "1000");
             cache = (InternalCache) new CacheFactory(props).create();
-            Region myRegion = cache.getRegion("root/myRegion");
+            Region myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
             return savedSystem.getDistributedMember();
@@ -352,7 +353,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             getSystem(props);
             cache = getCache();
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
-            Region myRegion = cache.getRegion("root/myRegion");
+            Region myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
             myRegion.put("Mykey2", "MyValue2");
             assertNotNull(myRegion.get("MyKey1"));
             if (createInAppToo) {
@@ -585,7 +586,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       props.put(MAX_WAIT_TIME_RECONNECT, "1000");
       ReconnectDUnitTest.savedSystem = getSystem(props);
       cache = getCache();
-      Region myRegion = cache.getRegion("root/myRegion");
+      Region myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
       myRegion.put("MyKey1", "MyValue1");
       return savedSystem.getDistributedMember();
     });

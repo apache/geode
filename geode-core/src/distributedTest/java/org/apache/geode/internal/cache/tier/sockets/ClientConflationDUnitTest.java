@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.lang.Thread.yield;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -388,8 +389,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void assertValue() {
     try {
-      Region r1 = cacheClient.getRegion(Region.SEPARATOR + REGION_NAME1);
-      Region r2 = cacheClient.getRegion(Region.SEPARATOR + REGION_NAME2);
+      Region r1 = cacheClient.getRegion(SEPARATOR + REGION_NAME1);
+      Region r2 = cacheClient.getRegion(SEPARATOR + REGION_NAME2);
       assertTrue(r1.containsKey("key-1"));
       assertTrue(r1.get("key-1").equals("55"));
       assertTrue(r2.containsKey("key-1"));
@@ -464,8 +465,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void registerInterest() {
     try {
-      Region region1 = cacheClient.getRegion(Region.SEPARATOR + REGION_NAME1);
-      Region region2 = cacheClient.getRegion(Region.SEPARATOR + REGION_NAME2);
+      Region region1 = cacheClient.getRegion(SEPARATOR + REGION_NAME1);
+      Region region2 = cacheClient.getRegion(SEPARATOR + REGION_NAME2);
       assertTrue(region1 != null);
       assertTrue(region2 != null);
       region1.registerInterest("ALL_KEYS");
@@ -483,8 +484,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
 
   public static void unregisterInterest() {
     try {
-      Region region1 = cacheClient.getRegion(Region.SEPARATOR + REGION_NAME1);
-      Region region2 = cacheClient.getRegion(Region.SEPARATOR + REGION_NAME2);
+      Region region1 = cacheClient.getRegion(SEPARATOR + REGION_NAME1);
+      Region region2 = cacheClient.getRegion(SEPARATOR + REGION_NAME2);
       region1.unregisterInterest("ALL_KEYS");
       region2.unregisterInterest("ALL_KEYS");
     } catch (CacheWriterException e) {
@@ -499,8 +500,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   public static void putEntries() {
     try {
       LogWriterUtils.getLogWriter().info("Putting entries...");
-      Region r1 = cacheFeeder.getRegion(Region.SEPARATOR + REGION_NAME1);
-      Region r2 = cacheFeeder.getRegion(Region.SEPARATOR + REGION_NAME2);
+      Region r1 = cacheFeeder.getRegion(SEPARATOR + REGION_NAME1);
+      Region r2 = cacheFeeder.getRegion(SEPARATOR + REGION_NAME2);
       r1.put("key-1", "11");
       r2.put("key-1", "11");
       r1.put("key-1", "22");

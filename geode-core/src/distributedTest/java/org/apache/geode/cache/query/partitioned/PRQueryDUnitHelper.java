@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -767,42 +768,60 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         // Querying the localRegion and the PR region
 
-        String[] queries = new String[] {"p.status from /REGION_NAME p order by p.status",
-            "* from /REGION_NAME order by status, ID desc",
-            "status, ID from /REGION_NAME order by status",
-            "p.status, p.ID from /REGION_NAME p order by p.status",
-            "p.position1.secId, p.ID from /REGION_NAME p order by p.position1.secId",
-            "key from /REGION_NAME.keys key order by key.status",
-            "key.ID from /REGION_NAME.keys key order by key.ID",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status desc, key.ID",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID desc",
-            "p.status, p.ID from /REGION_NAME p order by p.status asc, p.ID",
-            "* from /REGION_NAME p order by p.status, p.ID",
-            "p.ID from /REGION_NAME p, p.positions.values order by p.ID",
-            "* from /REGION_NAME p, p.positions.values order by p.ID",
-            "p.ID, p.status from /REGION_NAME p, p.positions.values order by p.status",
-            "pos.secId from /REGION_NAME p, p.positions.values pos order by pos.secId",
-            "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by pos.secId",
-            "* from /REGION_NAME p order by p.iD", "p.iD from /REGION_NAME p order by p.iD",
-            "p.iD, p.status from /REGION_NAME p order by p.iD",
-            "iD, status from /REGION_NAME order by iD", "* from /REGION_NAME p order by p.getID()",
-            "p.getID() from /REGION_NAME p order by p.getID()",
-            "* from /REGION_NAME p order by p.names[1]",
-            "* from /REGION_NAME p order by p.getP1().secId",
-            "* from /REGION_NAME p order by p.getP1().getSecId()",
-            "* from /REGION_NAME p order by p.position1.secId",
-            "p.ID, p.position1.secId from /REGION_NAME p order by p.position1.secId",
-            "p.position1.secId, p.ID from /REGION_NAME p order by p.position1.secId",
-            "e.key.ID from /REGION_NAME.entries e order by e.key.ID",
-            "e.key.ID, e.value.status from /REGION_NAME.entries e order by e.key.ID",
-            "e.key.ID, e.value.status from /REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
-            "e.key, e.value from /REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
-            "e.key from /REGION_NAME.entrySet e order by e.key.ID, e.key.pkid desc",
-            "p, pos from /REGION_NAME p, p.positions.values pos order by p.ID",
-            "p, pos from /REGION_NAME p, p.positions.values pos order by pos.secId",
-            "p, pos from /REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",};
+        String[] queries =
+            new String[] {"p.status from " + SEPARATOR + "REGION_NAME p order by p.status",
+                "* from " + SEPARATOR + "REGION_NAME order by status, ID desc",
+                "status, ID from " + SEPARATOR + "REGION_NAME order by status",
+                "p.status, p.ID from " + SEPARATOR + "REGION_NAME p order by p.status",
+                "p.position1.secId, p.ID from " + SEPARATOR
+                    + "REGION_NAME p order by p.position1.secId",
+                "key from " + SEPARATOR + "REGION_NAME.keys key order by key.status",
+                "key.ID from " + SEPARATOR + "REGION_NAME.keys key order by key.ID",
+                "key.ID, key.status from " + SEPARATOR + "REGION_NAME.keys key order by key.status",
+                "key.ID, key.status from " + SEPARATOR
+                    + "REGION_NAME.keys key order by key.status, key.ID",
+                "key.ID, key.status from " + SEPARATOR
+                    + "REGION_NAME.keys key order by key.status desc, key.ID",
+                "key.ID, key.status from " + SEPARATOR
+                    + "REGION_NAME.keys key order by key.status, key.ID desc",
+                "p.status, p.ID from " + SEPARATOR + "REGION_NAME p order by p.status asc, p.ID",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.status, p.ID",
+                "p.ID from " + SEPARATOR + "REGION_NAME p, p.positions.values order by p.ID",
+                "* from " + SEPARATOR + "REGION_NAME p, p.positions.values order by p.ID",
+                "p.ID, p.status from " + SEPARATOR
+                    + "REGION_NAME p, p.positions.values order by p.status",
+                "pos.secId from " + SEPARATOR
+                    + "REGION_NAME p, p.positions.values pos order by pos.secId",
+                "p.ID, pos.secId from " + SEPARATOR
+                    + "REGION_NAME p, p.positions.values pos order by pos.secId",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.iD",
+                "p.iD from " + SEPARATOR + "REGION_NAME p order by p.iD",
+                "p.iD, p.status from " + SEPARATOR + "REGION_NAME p order by p.iD",
+                "iD, status from " + SEPARATOR + "REGION_NAME order by iD",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.getID()",
+                "p.getID() from " + SEPARATOR + "REGION_NAME p order by p.getID()",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.names[1]",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.getP1().secId",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.getP1().getSecId()",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.position1.secId",
+                "p.ID, p.position1.secId from " + SEPARATOR
+                    + "REGION_NAME p order by p.position1.secId",
+                "p.position1.secId, p.ID from " + SEPARATOR
+                    + "REGION_NAME p order by p.position1.secId",
+                "e.key.ID from " + SEPARATOR + "REGION_NAME.entries e order by e.key.ID",
+                "e.key.ID, e.value.status from " + SEPARATOR
+                    + "REGION_NAME.entries e order by e.key.ID",
+                "e.key.ID, e.value.status from " + SEPARATOR
+                    + "REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
+                "e.key, e.value from " + SEPARATOR
+                    + "REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
+                "e.key from " + SEPARATOR
+                    + "REGION_NAME.entrySet e order by e.key.ID, e.key.pkid desc",
+                "p, pos from " + SEPARATOR + "REGION_NAME p, p.positions.values pos order by p.ID",
+                "p, pos from " + SEPARATOR
+                    + "REGION_NAME p, p.positions.values pos order by pos.secId",
+                "p, pos from " + SEPARATOR
+                    + "REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",};
 
         Object r[][] = new Object[queries.length][2];
         Region region = cache.getRegion(regionName);
@@ -912,34 +931,51 @@ public class PRQueryDUnitHelper implements Serializable {
         try {
           String distinct = "SELECT DISTINCT ";
           Object[][] r = new Object[1][2];
-          String[] queries = new String[] {"p.status from /REGION_NAME p order by p.status",
-              "status, ID from /REGION_NAME order by status, ID",
-              "p.status, p.ID from /REGION_NAME p order by p.status, p.ID",
-              "key.ID from /REGION_NAME.keys key order by key.ID",
-              "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID",
-              "key.ID, key.status from /REGION_NAME.keys key order by key.status desc, key.ID",
-              "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID desc",
-              "p.status, p.ID from /REGION_NAME p order by p.status asc, p.ID",
-              "p.ID, p.status from /REGION_NAME p order by p.ID desc, p.status asc",
-              "p.ID from /REGION_NAME p, p.positions.values order by p.ID",
-              "p.ID, p.status from /REGION_NAME p, p.positions.values order by p.status, p.ID",
-              "pos.secId from /REGION_NAME p, p.positions.values pos order by pos.secId",
-              "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by pos.secId, p.ID",
-              "p.iD from /REGION_NAME p order by p.iD",
-              "p.iD, p.status from /REGION_NAME p order by p.iD",
-              "iD, status from /REGION_NAME order by iD",
-              "p.getID() from /REGION_NAME p order by p.getID()",
-              "p.names[1] from /REGION_NAME p order by p.names[1]",
-              "p.position1.secId, p.ID from /REGION_NAME p order by p.position1.secId desc, p.ID",
-              "p.ID, p.position1.secId from /REGION_NAME p order by p.position1.secId, p.ID",
-              "e.key.ID from /REGION_NAME.entries e order by e.key.ID",
-              "e.key.ID, e.value.status from /REGION_NAME.entries e order by e.key.ID",
-              "e.key.ID, e.value.status from /REGION_NAME.entrySet e order by e.key.ID desc , e.value.status desc",
-              "e.key, e.value from /REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
-              "e.key from /REGION_NAME.entrySet e order by e.key.ID desc, e.key.pkid desc",
-              "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",
-              "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId desc",
-              "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId",};
+          String[] queries =
+              new String[] {"p.status from " + SEPARATOR + "REGION_NAME p order by p.status",
+                  "status, ID from " + SEPARATOR + "REGION_NAME order by status, ID",
+                  "p.status, p.ID from " + SEPARATOR + "REGION_NAME p order by p.status, p.ID",
+                  "key.ID from " + SEPARATOR + "REGION_NAME.keys key order by key.ID",
+                  "key.ID, key.status from " + SEPARATOR
+                      + "REGION_NAME.keys key order by key.status, key.ID",
+                  "key.ID, key.status from " + SEPARATOR
+                      + "REGION_NAME.keys key order by key.status desc, key.ID",
+                  "key.ID, key.status from " + SEPARATOR
+                      + "REGION_NAME.keys key order by key.status, key.ID desc",
+                  "p.status, p.ID from " + SEPARATOR + "REGION_NAME p order by p.status asc, p.ID",
+                  "p.ID, p.status from " + SEPARATOR
+                      + "REGION_NAME p order by p.ID desc, p.status asc",
+                  "p.ID from " + SEPARATOR + "REGION_NAME p, p.positions.values order by p.ID",
+                  "p.ID, p.status from " + SEPARATOR
+                      + "REGION_NAME p, p.positions.values order by p.status, p.ID",
+                  "pos.secId from " + SEPARATOR
+                      + "REGION_NAME p, p.positions.values pos order by pos.secId",
+                  "p.ID, pos.secId from " + SEPARATOR
+                      + "REGION_NAME p, p.positions.values pos order by pos.secId, p.ID",
+                  "p.iD from " + SEPARATOR + "REGION_NAME p order by p.iD",
+                  "p.iD, p.status from " + SEPARATOR + "REGION_NAME p order by p.iD",
+                  "iD, status from " + SEPARATOR + "REGION_NAME order by iD",
+                  "p.getID() from " + SEPARATOR + "REGION_NAME p order by p.getID()",
+                  "p.names[1] from " + SEPARATOR + "REGION_NAME p order by p.names[1]",
+                  "p.position1.secId, p.ID from " + SEPARATOR
+                      + "REGION_NAME p order by p.position1.secId desc, p.ID",
+                  "p.ID, p.position1.secId from " + SEPARATOR
+                      + "REGION_NAME p order by p.position1.secId, p.ID",
+                  "e.key.ID from " + SEPARATOR + "REGION_NAME.entries e order by e.key.ID",
+                  "e.key.ID, e.value.status from " + SEPARATOR
+                      + "REGION_NAME.entries e order by e.key.ID",
+                  "e.key.ID, e.value.status from " + SEPARATOR
+                      + "REGION_NAME.entrySet e order by e.key.ID desc , e.value.status desc",
+                  "e.key, e.value from " + SEPARATOR
+                      + "REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
+                  "e.key from " + SEPARATOR
+                      + "REGION_NAME.entrySet e order by e.key.ID desc, e.key.pkid desc",
+                  "p.ID, pos.secId from " + SEPARATOR
+                      + "REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",
+                  "p.ID, pos.secId from " + SEPARATOR
+                      + "REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId desc",
+                  "p.ID, pos.secId from " + SEPARATOR
+                      + "REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId",};
           for (final String query : queries) {
             synchronized (region) {
               // Execute on local region.
@@ -1005,31 +1041,47 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         // Querying the localRegion and the PR region
 
-        String[] queries = new String[] {"status as st from /REGION_NAME order by status",
-            "p.status from /REGION_NAME p order by p.status",
-            "p.position1.secId, p.ID from /REGION_NAME p order by p.position1.secId, p.ID desc",
-            "key from /REGION_NAME.keys key order by key.status, key.ID",
-            "key.ID from /REGION_NAME.keys key order by key.ID",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID asc",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status desc, key.ID",
-            "p.status, p.ID from /REGION_NAME p order by p.status asc, p.ID",
-            "p.ID from /REGION_NAME p, p.positions.values order by p.ID",
-            "* from /REGION_NAME p, p.positions.values val order by p.ID, val.secId",
-            "p.iD, p.status from /REGION_NAME p order by p.iD",
-            "iD, status from /REGION_NAME order by iD", "* from /REGION_NAME p order by p.getID()",
-            "* from /REGION_NAME p order by p.getP1().secId, p.ID desc, p.ID",
-            " p.position1.secId , p.ID as st from /REGION_NAME p order by p.position1.secId, p.ID",
-            "e.key.ID, e.value.status from /REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
-            "e.key from /REGION_NAME.entrySet e order by e.key.ID, e.key.pkid desc",
-            "p, pos from /REGION_NAME p, p.positions.values pos order by p.ID, pos.secId desc",
-            "p, pos from /REGION_NAME p, p.positions.values pos order by pos.secId, p.ID",
-            "status , ID as ied from /REGION_NAME where ID > 0 order by status, ID desc",
-            "p.status as st, p.ID as id from /REGION_NAME p where ID > 0 and status = 'inactive' order by p.status, p.ID desc",
-            "p.position1.secId as st, p.ID as ied from /REGION_NAME p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId, p.ID",
-            " key.status as st, key.ID from /REGION_NAME.keys key where key.ID > 5 order by key.status, key.ID desc",
-            " key.ID, key.status as st from /REGION_NAME.keys key where key.status = 'inactive' order by key.status desc, key.ID",
+        String[] queries =
+            new String[] {"status as st from " + SEPARATOR + "REGION_NAME order by status",
+                "p.status from " + SEPARATOR + "REGION_NAME p order by p.status",
+                "p.position1.secId, p.ID from " + SEPARATOR
+                    + "REGION_NAME p order by p.position1.secId, p.ID desc",
+                "key from " + SEPARATOR + "REGION_NAME.keys key order by key.status, key.ID",
+                "key.ID from " + SEPARATOR + "REGION_NAME.keys key order by key.ID",
+                "key.ID, key.status from " + SEPARATOR
+                    + "REGION_NAME.keys key order by key.status, key.ID asc",
+                "key.ID, key.status from " + SEPARATOR
+                    + "REGION_NAME.keys key order by key.status desc, key.ID",
+                "p.status, p.ID from " + SEPARATOR + "REGION_NAME p order by p.status asc, p.ID",
+                "p.ID from " + SEPARATOR + "REGION_NAME p, p.positions.values order by p.ID",
+                "* from " + SEPARATOR
+                    + "REGION_NAME p, p.positions.values val order by p.ID, val.secId",
+                "p.iD, p.status from " + SEPARATOR + "REGION_NAME p order by p.iD",
+                "iD, status from " + SEPARATOR + "REGION_NAME order by iD",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.getID()",
+                "* from " + SEPARATOR + "REGION_NAME p order by p.getP1().secId, p.ID desc, p.ID",
+                " p.position1.secId , p.ID as st from " + SEPARATOR
+                    + "REGION_NAME p order by p.position1.secId, p.ID",
+                "e.key.ID, e.value.status from " + SEPARATOR
+                    + "REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
+                "e.key from " + SEPARATOR
+                    + "REGION_NAME.entrySet e order by e.key.ID, e.key.pkid desc",
+                "p, pos from " + SEPARATOR
+                    + "REGION_NAME p, p.positions.values pos order by p.ID, pos.secId desc",
+                "p, pos from " + SEPARATOR
+                    + "REGION_NAME p, p.positions.values pos order by pos.secId, p.ID",
+                "status , ID as ied from " + SEPARATOR
+                    + "REGION_NAME where ID > 0 order by status, ID desc",
+                "p.status as st, p.ID as id from " + SEPARATOR
+                    + "REGION_NAME p where ID > 0 and status = 'inactive' order by p.status, p.ID desc",
+                "p.position1.secId as st, p.ID as ied from " + SEPARATOR
+                    + "REGION_NAME p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId, p.ID",
+                " key.status as st, key.ID from " + SEPARATOR
+                    + "REGION_NAME.keys key where key.ID > 5 order by key.status, key.ID desc",
+                " key.ID, key.status as st from " + SEPARATOR
+                    + "REGION_NAME.keys key where key.status = 'inactive' order by key.status desc, key.ID",
 
-        };
+            };
 
         Object r[][] = new Object[queries.length][2];
         Region local = cache.getRegion(localRegion);
@@ -1138,36 +1190,43 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         // Querying the localRegion and the PR region
 
-        String[] queries = new String[] {"select COUNT(*) from /" + regionName,
-            "select COUNT(*) from /" + regionName + " where ID > 0",
-            "select COUNT(*) from /" + regionName + " where ID > 0 AND status='active'",
-            "select COUNT(*) from /" + regionName + " where ID > 0 OR status='active'",
-            "select COUNT(*) from /" + regionName + " where ID > 0 AND status LIKE 'act%'",
-            "select COUNT(*) from /" + regionName + " where ID > 0 OR status LIKE 'ina%'",
-            "select COUNT(*) from /" + regionName + " where ID IN SET(1, 2, 3, 4, 5)",
-            "select COUNT(*) from /" + regionName + " where NOT (ID > 5)",
-            "select DISTINCT COUNT(*) from /" + regionName + " where ID > 0",
-            "select DISTINCT COUNT(*) from /" + regionName + " where ID > 0 AND status='active'",
-            "select DISTINCT COUNT(*) from /" + regionName + " where ID > 0 OR status='active'",
-            "select DISTINCT COUNT(*) from /" + regionName + " where ID > 0 AND status LIKE 'act%'",
-            "select DISTINCT COUNT(*) from /" + regionName + " where ID > 0 OR status LIKE 'ina%'",
-            "select DISTINCT COUNT(*) from /" + regionName + " where ID IN SET(1, 2, 3, 4, 5)",
-            "select DISTINCT COUNT(*) from /" + regionName + " where NOT (ID > 5)",
-            "select COUNT(*) from /" + regionName
+        String[] queries = new String[] {"select COUNT(*) from " + SEPARATOR + regionName,
+            "select COUNT(*) from " + SEPARATOR + regionName + " where ID > 0",
+            "select COUNT(*) from " + SEPARATOR + regionName + " where ID > 0 AND status='active'",
+            "select COUNT(*) from " + SEPARATOR + regionName + " where ID > 0 OR status='active'",
+            "select COUNT(*) from " + SEPARATOR + regionName
+                + " where ID > 0 AND status LIKE 'act%'",
+            "select COUNT(*) from " + SEPARATOR + regionName
+                + " where ID > 0 OR status LIKE 'ina%'",
+            "select COUNT(*) from " + SEPARATOR + regionName + " where ID IN SET(1, 2, 3, 4, 5)",
+            "select COUNT(*) from " + SEPARATOR + regionName + " where NOT (ID > 5)",
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName + " where ID > 0",
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName
+                + " where ID > 0 AND status='active'",
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName
+                + " where ID > 0 OR status='active'",
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName
+                + " where ID > 0 AND status LIKE 'act%'",
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName
+                + " where ID > 0 OR status LIKE 'ina%'",
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName
+                + " where ID IN SET(1, 2, 3, 4, 5)",
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName + " where NOT (ID > 5)",
+            "select COUNT(*) from " + SEPARATOR + regionName
                 + " p, p.positions.values pos where p.ID > 0 AND pos.secId = 'IBM'",
-            "select DISTINCT COUNT(*) from /" + regionName
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName
                 + " p, p.positions.values pos where p.ID > 0 AND pos.secId = 'IBM'",
-            "select COUNT(*) from /" + regionName
+            "select COUNT(*) from " + SEPARATOR + regionName
                 + " p, p.positions.values pos where p.ID > 0 AND pos.secId = 'IBM' LIMIT 5",
-            "select DISTINCT COUNT(*) from /" + regionName
+            "select DISTINCT COUNT(*) from " + SEPARATOR + regionName
                 + " p, p.positions.values pos where p.ID > 0 AND pos.secId = 'IBM' ORDER BY p.ID",
-            "select COUNT(*) from /" + regionName
+            "select COUNT(*) from " + SEPARATOR + regionName
                 + " p, p.positions.values pos where p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
-            "select COUNT(*) from /" + regionName
+            "select COUNT(*) from " + SEPARATOR + regionName
                 + " p, p.positions.values pos where p.ID > 0 AND p.status = 'active' OR pos.secId = 'IBM'",
-            "select COUNT(*) from /" + regionName
+            "select COUNT(*) from " + SEPARATOR + regionName
                 + " p, p.positions.values pos where p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'",
-            "select COUNT(*) from /" + regionName
+            "select COUNT(*) from " + SEPARATOR + regionName
                 + " p, p.positions.values pos where p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM' LIMIT 150",
             // "select DISTINCT COUNT(*) from /" + regionName + " p, p.positions.values pos where
             // p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM' ORDER BY p.ID",
@@ -1884,7 +1943,8 @@ public class PRQueryDUnitHelper implements Serializable {
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
                 .setArguments(
                     "<trace> Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
-                        + " * from /" + name + " r1, /" + coloName + " r2 where " + queries[j])
+                        + " * from " + SEPARATOR + name + " r1, " + SEPARATOR + coloName
+                        + " r2 where " + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);
@@ -1892,8 +1952,9 @@ public class PRQueryDUnitHelper implements Serializable {
 
             SelectResults r2 = (SelectResults) qs
                 .newQuery(
-                    "Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /"
-                        + localName + " r1, /" + coloLocalName + " r2 where " + queries[j])
+                    "Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from "
+                        + SEPARATOR + localName + " r1, " + SEPARATOR + coloLocalName + " r2 where "
+                        + queries[j])
                 .execute();
             r[j][1] = r2.asList();
           }
@@ -1997,16 +2058,20 @@ public class PRQueryDUnitHelper implements Serializable {
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
                 .setArguments("<trace> Select "
-                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + name
-                    + " r1, /" + coloName + " r2, r2.positions.values pos2 where " + queries[j])
+                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from " + SEPARATOR
+                    + name
+                    + " r1, " + SEPARATOR + coloName + " r2, r2.positions.values pos2 where "
+                    + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);
             getCache().getLogger().info("About to execute local query: " + queries[j]);
 
             SelectResults r2 = (SelectResults) qs.newQuery("Select "
-                + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + localName
-                + " r1, /" + coloLocalName + " r2, r2.positions.values pos2 where " + queries[j])
+                + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from " + SEPARATOR
+                + localName
+                + " r1, " + SEPARATOR + coloLocalName + " r2, r2.positions.values pos2 where "
+                + queries[j])
                 .execute();
             r[j][1] = r2.asList();
           }
@@ -2109,16 +2174,20 @@ public class PRQueryDUnitHelper implements Serializable {
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
                 .setArguments("<trace> Select "
-                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + name
-                    + " r1, /" + coloName + " r2, r2.positions.values pos2 where " + queries[j])
+                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from " + SEPARATOR
+                    + name
+                    + " r1, " + SEPARATOR + coloName + " r2, r2.positions.values pos2 where "
+                    + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);
             getCache().getLogger().info("About to execute local query: " + queries[j]);
 
             SelectResults r2 = (SelectResults) qs.newQuery("Select "
-                + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + localName
-                + " r1, /" + coloLocalName + " r2, r2.positions.values pos2 where " + queries[j])
+                + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from " + SEPARATOR
+                + localName
+                + " r1, " + SEPARATOR + coloLocalName + " r2, r2.positions.values pos2 where "
+                + queries[j])
                 .execute();
             r[j][1] = r2.asList();
           }
@@ -2224,16 +2293,20 @@ public class PRQueryDUnitHelper implements Serializable {
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
                 .setArguments("<trace> Select "
-                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + name
-                    + " r1, r1.positions.values pos1, /" + coloName + " r2 where " + queries[j])
+                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from " + SEPARATOR
+                    + name
+                    + " r1, r1.positions.values pos1, " + SEPARATOR + coloName + " r2 where "
+                    + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);
             getCache().getLogger().info("About to execute local query: " + queries[j]);
 
             SelectResults r2 = (SelectResults) qs.newQuery("Select "
-                + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + localName
-                + " r1, r1.positions.values pos1, /" + coloLocalName + " r2 where " + queries[j])
+                + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from " + SEPARATOR
+                + localName
+                + " r1, r1.positions.values pos1, " + SEPARATOR + coloLocalName + " r2 where "
+                + queries[j])
                 .execute();
             r[j][1] = r2.asList();
           }

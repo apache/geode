@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.pulse;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.getInstance;
@@ -185,7 +186,7 @@ public class TestSubscriptionsDUnitTest extends ManagementTestBase {
   private void registerInterest(final VM vm) {
     vm.invoke("TestSubscriptionsDUnitTest registerInterest", () -> {
       Cache cache = GemFireCacheImpl.getInstance();
-      Region<Object, Object> region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region<Object, Object> region = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(region);
 
       region.registerInterest(KEY1);
@@ -196,7 +197,7 @@ public class TestSubscriptionsDUnitTest extends ManagementTestBase {
   private void put(final VM vm) {
     vm.invoke("put", () -> {
       Cache cache = GemFireCacheImpl.getInstance();
-      Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region region = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(region);
 
       region.put(KEY1, CLIENT_VALUE1);

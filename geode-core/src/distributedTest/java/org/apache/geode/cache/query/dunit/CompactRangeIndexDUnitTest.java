@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -62,7 +63,7 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
     utils.createServer(vm0,
         DistributedTestUtils.getAllDistributedSystemProperties(new Properties()));
     utils.createReplicateRegion("exampleRegion", vm0);
-    utils.createIndex(vm0, "type", "\"type\"", "/exampleRegion");
+    utils.createIndex(vm0, "type", "\"type\"", SEPARATOR + "exampleRegion");
   }
 
   /*
@@ -80,7 +81,8 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
       }
     });
     try {
-      utils.createIndex(vm0, "partitionedIndex", "\"albs\"", "/examplePartitionedRegion");
+      utils.createIndex(vm0, "partitionedIndex", "\"albs\"",
+          SEPARATOR + "examplePartitionedRegion");
     } catch (Exception e) {
       // expected
       assertTrue(e.getCause().toString().contains("albs"));

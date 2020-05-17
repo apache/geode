@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -101,7 +101,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
     VM vm0 = host.getVM(0);
     setCacheInVMs(vm0);
     String regionName = "PartionedPortfoliosPR";
-    String query = "select * from /" + regionName + " p where p.status = 'active'";
+    String query = "select * from " + SEPARATOR + regionName + " p where p.status = 'active'";
     try {
       vm0.invoke(() -> createRegionInVM(regionName, scope));
       final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
@@ -125,7 +125,8 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
     setCacheInVMs(vm0);
     String name = "PartionedPortfoliosPR";
     String query =
-        "select * from /" + name + " p where p.status = 'active' and p.ID > 0 and p.pk != ' ' ";
+        "select * from " + SEPARATOR + name
+            + " p where p.status = 'active' and p.ID > 0 and p.pk != ' ' ";
     try {
       vm0.invoke(() -> createRegionInVM(name, null));
       final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);

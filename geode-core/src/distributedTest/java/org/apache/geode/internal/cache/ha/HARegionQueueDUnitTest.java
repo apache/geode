@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.ha;
 
 import static java.lang.Thread.yield;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.NON_BLOCKING_HA_QUEUE;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.getHARegionQueueInstance;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
@@ -382,7 +383,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    */
   private static void putValue1() {
     try {
-      Region r1 = cache.getRegion("/HARegionQueueDUnitTest_region");
+      Region r1 = cache.getRegion(SEPARATOR + "HARegionQueueDUnitTest_region");
       r1.put("key-1", "value-1");
     } catch (Exception ex) {
       fail("failed while region.put()", ex);
@@ -479,7 +480,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    */
   private static void putValue2() {
     try {
-      Region r1 = cache.getRegion("/HARegionQueueDUnitTest_region");
+      Region r1 = cache.getRegion(SEPARATOR + "HARegionQueueDUnitTest_region");
       r1.put("key-1", "value-2");
     } catch (Exception ex) {
       fail("failed while region.put()", ex);
@@ -491,7 +492,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    */
   private static void getValue1() {
     try {
-      Region r = cache.getRegion("/HARegionQueueDUnitTest_region");
+      Region r = cache.getRegion(SEPARATOR + "HARegionQueueDUnitTest_region");
       if (!(r.get("key-1").equals("value-1"))) {
         fail("expected value to be value-1 but it is not so");
       }
@@ -506,7 +507,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    */
   private static void getNull() {
     try {
-      Region r = cache.getRegion("/HARegionQueueDUnitTest_region");
+      Region r = cache.getRegion(SEPARATOR + "HARegionQueueDUnitTest_region");
       if (!(r.get("key-1") == (null))) {
         fail("expected value to be null but it is not so");
       }
@@ -521,7 +522,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void getValue2() {
     try {
-      Region r = cache.getRegion("/HARegionQueueDUnitTest_region");
+      Region r = cache.getRegion(SEPARATOR + "HARegionQueueDUnitTest_region");
       if (!(r.get("key-1").equals("value-2"))) {
         fail("expected value to be value-2 but it is not so");
       }
@@ -536,7 +537,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void destroy() {
     try {
-      Region region1 = cache.getRegion("/HARegionQueueDUnitTest_region");
+      Region region1 = cache.getRegion(SEPARATOR + "HARegionQueueDUnitTest_region");
       region1.localDestroy("key-1");
     } catch (Exception e) {
       fail("test failed due to exception in destroy", e);
@@ -712,7 +713,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
               try {
                 for (int i = 0; i < 100; ++i) {
                   hrq.put(new ConflatableObject("1", "1", new EventID(new byte[] {1}, 100, i),
-                      false, "/x"));
+                      false, SEPARATOR + "x"));
                 }
               } catch (Exception e) {
                 throw new AssertionError(e);

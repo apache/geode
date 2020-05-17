@@ -18,7 +18,7 @@ import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.management.ObjectName.getInstance;
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -549,8 +549,9 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
       throws MalformedObjectNameException {
     return new HashSet<>(asList(
         getInstance("GemFire:type=Member,member=" + memberName),
-        getInstance("GemFire:service=Region,name=/" + regionName + ",type=Member,member=" +
-            memberName)));
+        getInstance(
+            "GemFire:service=Region,name=" + SEPARATOR + regionName + ",type=Member,member=" +
+                memberName)));
   }
 
   private static Set<ObjectName> expectedLocatorMXBeans(String memberName)
@@ -571,7 +572,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
         getInstance("GemFire:service=AccessControl,type=Distributed"),
         getInstance("GemFire:service=FileUploader,type=Distributed"),
         getInstance("GemFire:service=LockService,name=__CLUSTER_CONFIG_LS,type=Distributed"),
-        getInstance("GemFire:service=Region,name=/" + regionName + ",type=Distributed"),
+        getInstance("GemFire:service=Region,name=" + SEPARATOR + regionName + ",type=Distributed"),
         getInstance("GemFire:service=System,type=Distributed")));
   }
 }

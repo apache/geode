@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -301,7 +302,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void put() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     DeltaTestImpl test = new DeltaTestImpl();
     r1.put("KEY", test);
 
@@ -315,7 +316,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void create() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     DeltaTestImpl test = new DeltaTestImpl();
     r1.create("KEY", test);
 
@@ -329,41 +330,41 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void putDelta() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     DeltaTestImpl test = new DeltaTestImpl(9999, NEW_STR);
     test.setIntVar(NEW_INT);
     r1.put("KEY", test);
   }
 
   public static void invalidate() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     r1.localInvalidate("KEY");
   }
 
   public static void destroy() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     r1.localDestroy("KEY");
   }
 
   public static void getOnDeltaEnabledWithInvalidate() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertTrue(((DeltaTestImpl) r1.getEntry("KEY").getValue()).getIntVar() == NEW_INT);
     assertTrue(((DeltaTestImpl) r1.getEntry("KEY").getValue()).getStr().equals(NEW_STR));
   }
 
   public static void getOnDeltaEnabledWithDestroy() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNull(((DeltaTestImpl) r1.getEntry("KEY")));
   }
 
   public static void getOnDeltaEnabledServer() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertTrue(((DeltaTestImpl) r1.getEntry("KEY").getValue()).getIntVar() == NEW_INT);
     assertTrue(((DeltaTestImpl) r1.getEntry("KEY").getValue()).getStr().equals(NEW_STR));
   }
 
   public static void getOnDeltaDisabledServer() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertFalse(((DeltaTestImpl) r1.getEntry("KEY").getValue()).getIntVar() == NEW_INT);// should be
                                                                                         // overwritten
                                                                                         // as delta
@@ -373,7 +374,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void checkForNoFullObjectResend() throws Exception {
-    Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNull(((DeltaTestImpl) r1.getEntry("KEY").getValue()));
   }
 
@@ -488,7 +489,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
 
   public static void verifyNoFailurePeer() throws Exception {
-    Region reg = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region reg = cache.getRegion(SEPARATOR + REGION_NAME);
     long elapsed = 0;
     long start = System.currentTimeMillis();
     while (elapsed < 10000 && reg.size() < NUM_OF_CREATES) {
@@ -512,7 +513,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void verifyDeltaReceived(Integer updates) {
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     CachePerfStats stats = ((DistributedRegion) cache.getRegion(REGION_NAME)).getCachePerfStats();
     long deltaFailures = stats.getDeltaFailedUpdates();
     long deltas = stats.getDeltaUpdates();

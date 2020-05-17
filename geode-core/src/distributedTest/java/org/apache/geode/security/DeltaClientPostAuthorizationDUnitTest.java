@@ -14,7 +14,7 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.OTHER_EXCEPTION;

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static junit.framework.TestCase.assertNotNull;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -47,6 +48,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Host;
@@ -55,7 +57,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Start client 1 Start client 2 Start Server 1 Start Server 2 Register interest for client 1 on
@@ -180,7 +181,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void acquireConnectionsAndPutonK1andK2(String host) {
-    Region r1 = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
     r1.put("key1", "server-value1");
     r1.put("key2", "server-value2");
   }
@@ -206,7 +207,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
    * Creates entries on the server
    */
   private void createEntriesK1andK2() {
-    Region r1 = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     if (!r1.containsKey("key1")) {
       r1.put("key1", "key-1");
@@ -267,7 +268,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void registerKeysK1andK2() {
-    Region r = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r = getCache().getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r);
     List list = new ArrayList();
     list.add("key1");
@@ -276,7 +277,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void verifySenderUpdateCount() {
-    Region r = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region r = getCache().getRegion(SEPARATOR + REGION_NAME);
     EventTrackingCacheListener listener =
         (EventTrackingCacheListener) r.getAttributes().getCacheListeners()[0];
 
@@ -291,7 +292,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
   private void verifyUpdates() {
     await().untilAsserted(() -> {
-      Region r = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = getCache().getRegion(SEPARATOR + REGION_NAME);
       // verify updates
       if (r.getAttributes().getPartitionAttributes() == null) {
         assertEquals("server-value2", r.getEntry("key2").getValue());

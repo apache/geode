@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -103,7 +104,7 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
         // Grab the regions right away, before they get destroyed by the other thread
         PartitionedRegion regions[] = new PartitionedRegion[numberOfRegions];
         for (int i = 0; i < numberOfRegions; i++) {
-          regions[i] = (PartitionedRegion) cache.getRegion(Region.SEPARATOR + prNamePrefix + i);
+          regions[i] = (PartitionedRegion) cache.getRegion(SEPARATOR + prNamePrefix + i);
           assertThat(regions[i]).isNotNull();
         }
 

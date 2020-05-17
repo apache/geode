@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -248,7 +249,7 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
     assertThat(proxy).isNotNull();
 
     await().until(() -> getClientProxy().isAlive() && getClientProxy()
-        .getRegionsWithEmptyDataPolicy().containsKey(Region.SEPARATOR + PROXY_REGION_NAME));
+        .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + PROXY_REGION_NAME));
   }
 
   private void validateServerMetaDataKnowsThatClientRegisteredInterest() {
@@ -259,12 +260,12 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
   private void validateServerMetaDataKnowsWhichClientRegionIsEmpty() {
     CacheClientProxy proxy = getClientProxy();
     assertThat(proxy.getRegionsWithEmptyDataPolicy())
-        .containsKey(Region.SEPARATOR + PROXY_REGION_NAME);
+        .containsKey(SEPARATOR + PROXY_REGION_NAME);
     assertThat(proxy.getRegionsWithEmptyDataPolicy())
-        .doesNotContainKey(Region.SEPARATOR + CACHING_PROXY_REGION_NAME);
+        .doesNotContainKey(SEPARATOR + CACHING_PROXY_REGION_NAME);
     assertThat(proxy.getRegionsWithEmptyDataPolicy()).hasSize(1);
     assertThat(proxy.getRegionsWithEmptyDataPolicy())
-        .containsEntry(Region.SEPARATOR + PROXY_REGION_NAME, 0);
+        .containsEntry(SEPARATOR + PROXY_REGION_NAME, 0);
   }
 
   private InternalCacheServer getCacheServer() {

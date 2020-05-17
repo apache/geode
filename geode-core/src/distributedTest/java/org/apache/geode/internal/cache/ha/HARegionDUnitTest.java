@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -291,7 +292,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void putValue1() {
     try {
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       r1.put("key-1", "value-1");
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -305,7 +306,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void putValue2() {
     try {
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       r1.put("key-1", "value-2");
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -319,7 +320,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void getValue1() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       if (!(r.get("key-1").equals("value-1"))) {
         fail("expected value to be value-1 but it is not so");
       }
@@ -336,7 +337,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void getNull() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       if (!(r.get("key-1") == (null))) {
         fail("expected value to be null but it is not so");
       }
@@ -353,7 +354,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void getValue2() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       if (!(r.get("key-1").equals("value-2"))) {
         fail("expected value to be value-2 but it is not so");
       }
@@ -370,7 +371,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void destroy() {
     try {
-      Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
       region1.localDestroy("key-1");
     } catch (Exception e) {
       e.printStackTrace();

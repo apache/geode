@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -35,6 +36,7 @@ import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -43,7 +45,6 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 
 @RunWith(JUnitParamsRunner.class)
@@ -131,7 +132,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void loadRegion() {
-    Region<Long, String> region = basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
     testData.forEach((k, v) -> region.put(k, v));
   }
 
@@ -158,7 +159,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void verifyRegionKeysetWithTx(boolean disableSetOpToStartTx, boolean isAccessor) {
     CacheTransactionManager txMgr = basicGetCache().getCacheTransactionManager();
-    Region<Long, String> region = basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
     try {
       txMgr.begin();
       Collection<Long> set = region.keySet();
@@ -171,7 +172,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void verifyRegionValuesWithTx(boolean disableSetOpToStartTx, boolean isAccessor) {
     CacheTransactionManager txMgr = basicGetCache().getCacheTransactionManager();
-    Region<Long, String> region = basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
     try {
       txMgr.begin();
       Collection<String> set = region.values();
@@ -184,7 +185,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void verifyRegionEntriesWithTx(boolean disableSetOpToStartTx, boolean isAccessor) {
     CacheTransactionManager txMgr = basicGetCache().getCacheTransactionManager();
-    Region<Long, String> region = basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
     try {
       txMgr.begin();
       Collection<Map.Entry<Long, String>> set = region.entrySet();

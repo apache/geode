@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.util.Properties;
 
 import org.junit.Test;
@@ -54,7 +56,7 @@ public class HashIndexDUnitTest extends JUnit4DistributedTestCase {
     utils.createServer(vm0,
         DistributedTestUtils.getAllDistributedSystemProperties(new Properties()));
     utils.createReplicateRegion("exampleRegion", vm0);
-    utils.createHashIndex(vm0, "ID", "r.ID", "/exampleRegion r");
+    utils.createHashIndex(vm0, "ID", "r.ID", SEPARATOR + "exampleRegion r");
   }
 
 

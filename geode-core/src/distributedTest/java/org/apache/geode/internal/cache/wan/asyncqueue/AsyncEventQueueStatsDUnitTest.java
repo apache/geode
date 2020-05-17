@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static junit.framework.TestCase.assertNotNull;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -461,7 +462,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
 
   private void verifyIdConsistencyWarning(String regionName, boolean expected,
       boolean gatewaySenderId) {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
     SenderIdMonitor senderIdMonitor = getSenderIdMonitor(r);
     if (gatewaySenderId) {
       assertThat(senderIdMonitor.getGatewaySenderIdsDifferWarningMessage()).isEqualTo(expected);

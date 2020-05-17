@@ -17,6 +17,7 @@ package org.apache.geode.management;
 import static java.lang.management.ManagementFactory.getRuntimeMXBean;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
@@ -74,13 +75,13 @@ public class MemberMXBeanAttributesDistributedTest extends CacheTestCase {
     regionFactory.create("testRegion2");
     regionFactory.create("testRegion3");
 
-    Region<Number, Number> region1 = getCache().getRegion("/testRegion1");
+    Region<Number, Number> region1 = getCache().getRegion(SEPARATOR + "testRegion1");
     regionFactory.createSubregion(region1, "testSubRegion1");
 
-    Region<Number, Number> region2 = getCache().getRegion("/testRegion2");
+    Region<Number, Number> region2 = getCache().getRegion(SEPARATOR + "testRegion2");
     regionFactory.createSubregion(region2, "testSubRegion2");
 
-    Region<Number, Number> region3 = getCache().getRegion("/testRegion3");
+    Region<Number, Number> region3 = getCache().getRegion(SEPARATOR + "testRegion3");
     regionFactory.createSubregion(region3, "testSubRegion3");
 
     for (int i = 1; i < 1 + 200; i++) {
@@ -108,9 +109,9 @@ public class MemberMXBeanAttributesDistributedTest extends CacheTestCase {
     regionFactory.create("testPRRegion2");
     regionFactory.create("testPRRegion3");
 
-    Region<Number, Number> region1 = getCache().getRegion("/testPRRegion1");
-    Region<Number, Number> region2 = getCache().getRegion("/testPRRegion2");
-    Region<Number, Number> region3 = getCache().getRegion("/testPRRegion3");
+    Region<Number, Number> region1 = getCache().getRegion(SEPARATOR + "testPRRegion1");
+    Region<Number, Number> region2 = getCache().getRegion(SEPARATOR + "testPRRegion2");
+    Region<Number, Number> region3 = getCache().getRegion(SEPARATOR + "testPRRegion3");
 
     for (int i = 1; i < 1 + 200; i++) {
       region1.put(i, i);

@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.internal.index;
 import static org.apache.geode.cache.query.internal.DefaultQuery.QUERY_VERBOSE;
 import static org.apache.geode.cache.query.internal.QueryObserverHolder.getInstance;
 import static org.apache.geode.cache.query.internal.QueryObserverHolder.hasObserver;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -56,7 +57,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
 public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
   private final int NUM_BKTS = 10;
-  private static final String queryStr = "select * from /portfolio where ID >= 0";
+  private static final String queryStr = "select * from " + SEPARATOR + "portfolio where ID >= 0";
   protected static final int TOTAL_OBJECTS = 1000;
 
   public IndexTrackingQueryObserverDUnitTest() {
@@ -197,7 +198,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
           if (create) {
             keyIndex1 = (IndexProtocol) qs.createIndex(IndexTrackingTestHook.INDEX_NAME,
                 IndexType.FUNCTIONAL, "ID",
-                "/portfolio ");
+                SEPARATOR + "portfolio ");
             assertNotNull(keyIndex1);
             assertTrue(keyIndex1 instanceof PartitionedIndex);
           }

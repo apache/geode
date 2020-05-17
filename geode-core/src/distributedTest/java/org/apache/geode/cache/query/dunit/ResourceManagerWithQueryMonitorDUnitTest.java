@@ -15,7 +15,7 @@
 package org.apache.geode.cache.query.dunit;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState.EVICTION_DISABLED;
@@ -54,6 +54,7 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.ClientServerTestCase;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -74,7 +75,6 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLQueryTest.class})
 public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCase {
@@ -283,7 +283,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       client.invoke("Executing query when system is 'Normal'", () -> {
 
-        Query query = getCache().getQueryService().newQuery("Select * From /" + "portfolios");
+        Query query =
+            getCache().getQueryService().newQuery("Select * From " + SEPARATOR + "portfolios");
         SelectResults results = (SelectResults) query.execute();
         assertThat(results.size()).isEqualTo(numObjects);
 
@@ -304,7 +305,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private AsyncInvocation executeQueryOnClient(VM client) {
     return client.invokeAsync("execute query from client", () -> {
       try {
-        Query query1 = getCache().getQueryService().newQuery("Select * From /" + "portfolios");
+        Query query1 =
+            getCache().getQueryService().newQuery("Select * From " + SEPARATOR + "portfolios");
         query1.execute();
         throw new CacheException("Exception should have been thrown due to low memory") {};
       } catch (Exception e2) {
@@ -365,7 +367,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
         QueryService qs;
         try {
           qs = getCache().getQueryService();
-          Query query = qs.newQuery("Select * From /" + "portfolios");
+          Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
           query.execute();
         } catch (ServerOperationException soe) {
           if (soe.getRootCause() instanceof QueryException) {
@@ -392,7 +394,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       client.invoke("Executing query when system is 'Normal'", () -> {
 
         QueryService qs = getCache().getQueryService();
-        Query query = qs.newQuery("Select * From /" + "portfolios");
+        Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
         SelectResults results = (SelectResults) query.execute();
         assertThat(results.size()).isEqualTo(numObjects);
       });
@@ -426,7 +428,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
         QueryService qs;
         try {
           qs = getCache().getQueryService();
-          Query query = qs.newQuery("Select * From /" + "portfolios");
+          Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
           query.execute();
           throw new CacheException("should have hit low memory") {};
         } catch (Exception e) {
@@ -443,7 +445,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       client.invoke("Executing query when system is 'Normal'", () -> {
         QueryService qs = getCache().getQueryService();
-        Query query = qs.newQuery("Select * From /" + "portfolios");
+        Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
         SelectResults results = (SelectResults) query.execute();
         assertThat(results.size()).isEqualTo(numObjects);
       });
@@ -522,7 +524,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       client.invoke("Executing query when system is 'Normal'", () -> {
         QueryService qs = getCache().getQueryService();
-        Query query = qs.newQuery("Select * From /" + "portfolios");
+        Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
         SelectResults results = (SelectResults) query.execute();
         assertThat(results.size()).isEqualTo(numObjects);
 
@@ -624,7 +626,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       server.invoke("Executing query when system is 'Normal'", () -> {
         QueryService qs = getCache().getQueryService();
-        Query query = qs.newQuery("Select * From /" + "portfolios");
+        Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
         SelectResults results = (SelectResults) query.execute();
         assertThat(results.size()).isEqualTo(numObjects);
       });
@@ -705,7 +707,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       QueryService qs;
       try {
         qs = getCache().getQueryService();
-        Query query = qs.newQuery("Select * From /" + "portfolios");
+        Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
         query.execute();
 
       } catch (Exception e) {
@@ -745,7 +747,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       QueryService qs = null;
       try {
         qs = getCache().getQueryService();
-        Query query = qs.newQuery("Select * From /" + "portfolios");
+        Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
         callbackToVM
             .invoke(() -> ResourceManagerWithQueryMonitorDUnitTest.criticalMemoryCountDownLatch
                 .countDown());
@@ -770,7 +772,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       }
 
       try {
-        Query query = qs.newQuery("Select * From /" + "portfolios");
+        Query query = qs.newQuery("Select * From " + SEPARATOR + "portfolios");
 
         query.execute();
 
