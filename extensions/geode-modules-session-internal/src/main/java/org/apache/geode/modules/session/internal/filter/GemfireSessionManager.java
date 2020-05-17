@@ -32,6 +32,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.bootstrap.AbstractCache;
 import org.apache.geode.modules.session.bootstrap.ClientServerCache;
@@ -47,7 +48,6 @@ import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionA
 import org.apache.geode.modules.session.internal.filter.util.TypeAwareMap;
 import org.apache.geode.modules.session.internal.jmx.SessionStatistics;
 import org.apache.geode.modules.util.RegionHelper;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class implements the session management using a Gemfire distributedCache as a persistent

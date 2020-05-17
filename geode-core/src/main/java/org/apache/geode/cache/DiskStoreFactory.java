@@ -17,7 +17,7 @@ package org.apache.geode.cache;
 import java.io.File;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * Factory for creating instances of {@link DiskStore}. To get an instance of this factory call

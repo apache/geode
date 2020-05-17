@@ -16,8 +16,8 @@
 package org.apache.geode.cache.query.internal.aggregate;
 
 import static org.apache.geode.cache.query.internal.aggregate.AbstractAggregator.downCast;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;

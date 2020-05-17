@@ -17,7 +17,7 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;

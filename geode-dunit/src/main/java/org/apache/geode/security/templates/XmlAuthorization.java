@@ -14,7 +14,7 @@
  */
 package org.apache.geode.security.templates;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR_CHAR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.io.IOException;
 import java.io.InputStream;

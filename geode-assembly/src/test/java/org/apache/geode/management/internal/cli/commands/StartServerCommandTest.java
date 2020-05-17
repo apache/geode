@@ -39,11 +39,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.pdx.PdxSerializer;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class StartServerCommandTest {
   private StartServerCommand serverCommands;

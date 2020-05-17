@@ -17,8 +17,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

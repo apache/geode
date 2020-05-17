@@ -16,8 +16,8 @@
 
 package org.apache.geode.tools.pulse;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.Before;
 import org.junit.Rule;

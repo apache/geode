@@ -44,6 +44,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistTXState;
@@ -66,7 +67,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @SuppressWarnings("deprecation")
 

@@ -18,7 +18,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIE
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.IntRangeQueryProvider;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQueryKeyAndValues;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQueryKeys;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.cache.DataPolicy.NORMAL;
 import static org.apache.geode.cache.Scope.DISTRIBUTED_ACK;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;

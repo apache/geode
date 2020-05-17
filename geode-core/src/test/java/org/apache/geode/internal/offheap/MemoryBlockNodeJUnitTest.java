@@ -35,10 +35,10 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
 import org.apache.geode.internal.serialization.DSCODE;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class MemoryBlockNodeJUnitTest {
 

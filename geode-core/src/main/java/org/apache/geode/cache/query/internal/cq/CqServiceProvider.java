@@ -22,8 +22,8 @@ import java.util.ServiceLoader;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class CqServiceProvider {
 

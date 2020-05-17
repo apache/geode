@@ -15,11 +15,11 @@
 package org.apache.geode.internal.cache.partitioned.colocation;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.addCacheLifecycleListener;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.removeCacheLifecycleListener;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 

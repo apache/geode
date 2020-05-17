@@ -17,7 +17,7 @@
 package org.apache.geode.internal.cache;
 
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

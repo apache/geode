@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.util.internal;
+package org.apache.geode.common.internal;
 
 public class GeodeConverter {
   public static Object convertToActualType(String stringValue, String type)

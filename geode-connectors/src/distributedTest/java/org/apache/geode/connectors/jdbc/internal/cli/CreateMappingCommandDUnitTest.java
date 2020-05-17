@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
@@ -26,7 +27,6 @@ import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SCH
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.TABLE_NAME;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;

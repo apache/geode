@@ -15,8 +15,8 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static junit.framework.TestCase.assertFalse;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.Assert.assertTrue;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.After;
 import org.junit.Test;

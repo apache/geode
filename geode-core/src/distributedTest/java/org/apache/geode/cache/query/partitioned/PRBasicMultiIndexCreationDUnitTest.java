@@ -16,9 +16,9 @@ package org.apache.geode.cache.query.partitioned;
 
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

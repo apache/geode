@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.File;
 import java.io.IOException;

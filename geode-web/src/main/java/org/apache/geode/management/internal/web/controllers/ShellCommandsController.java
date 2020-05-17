@@ -48,6 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.common.internal.GeodeConverter;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.IOUtils;
@@ -56,7 +57,6 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.web.domain.QueryParameterSource;
-import org.apache.geode.util.internal.GeodeConverter;
 
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.

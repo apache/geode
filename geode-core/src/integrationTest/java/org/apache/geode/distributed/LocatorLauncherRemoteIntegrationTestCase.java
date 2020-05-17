@@ -31,12 +31,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Abstract base class for integration tests of {@link LocatorLauncher} as an application main in a

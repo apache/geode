@@ -12,16 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.util;
+package org.apache.geode.common;
 
 public class GeodePublicGlossary {
   /**
    * The region name separator character.
    */
-  public static final char SEPARATOR_CHAR = '~';
+  public static final char SEPARATOR_CHAR = '/';
 
   /**
    * The region name separator character, represented as a string for convenience.
    */
-  public static final String SEPARATOR = String.valueOf(SEPARATOR_CHAR);
+  public static final String SEPARATOR = "/";
 }

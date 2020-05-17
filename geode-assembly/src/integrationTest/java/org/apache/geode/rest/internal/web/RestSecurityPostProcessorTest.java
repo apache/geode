@@ -14,10 +14,10 @@
  */
 package org.apache.geode.rest.internal.web;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URLEncoder;

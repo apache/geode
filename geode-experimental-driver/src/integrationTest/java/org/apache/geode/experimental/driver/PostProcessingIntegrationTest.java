@@ -14,7 +14,7 @@
  */
 package org.apache.geode.experimental.driver;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;

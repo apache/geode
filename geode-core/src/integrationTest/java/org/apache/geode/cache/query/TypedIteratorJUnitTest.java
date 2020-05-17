@@ -20,7 +20,7 @@
 
 package org.apache.geode.cache.query;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import org.junit.After;

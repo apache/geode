@@ -16,7 +16,7 @@
  */
 package org.apache.geode.tools.pulse.tests.junit;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

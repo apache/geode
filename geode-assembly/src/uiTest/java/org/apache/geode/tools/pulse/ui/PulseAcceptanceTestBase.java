@@ -15,6 +15,7 @@
  */
 package org.apache.geode.tools.pulse.ui;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_CLIENTS_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_FUNCTIONS_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_GCPAUSES_ID;
@@ -35,7 +36,6 @@ import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.MEMBER_VI
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.MEMBER_VIEW_SOCKETS_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.REDUNDANCY_GRID_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.SERVER_GROUP_GRID_ID;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 

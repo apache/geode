@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * No instances of this class. Just some static method having to do with inline keys.

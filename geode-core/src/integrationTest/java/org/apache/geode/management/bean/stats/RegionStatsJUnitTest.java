@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.bean.stats;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.enabledClock;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends an eviction event

@@ -15,8 +15,8 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.Collections;

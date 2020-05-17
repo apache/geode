@@ -34,9 +34,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * @since GemFire 8.1

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

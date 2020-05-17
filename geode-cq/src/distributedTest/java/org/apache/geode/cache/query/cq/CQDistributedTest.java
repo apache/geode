@@ -15,8 +15,8 @@
 package org.apache.geode.cache.query.cq;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.Serializable;
 import java.util.Properties;

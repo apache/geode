@@ -15,9 +15,9 @@
 package org.apache.geode.distributed.internal;
 
 import static java.util.Arrays.asList;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.io.BufferedWriter;
 import java.io.File;

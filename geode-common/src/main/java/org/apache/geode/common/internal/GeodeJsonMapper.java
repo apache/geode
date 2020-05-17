@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.util.internal;
+package org.apache.geode.common.internal;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 

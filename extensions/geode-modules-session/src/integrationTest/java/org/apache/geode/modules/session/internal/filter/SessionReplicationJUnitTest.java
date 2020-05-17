@@ -20,9 +20,9 @@ import com.mockrunner.mock.web.WebMockObjectFactory;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
 import org.apache.geode.test.junit.categories.SessionTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This runs all tests with a local cache disabled

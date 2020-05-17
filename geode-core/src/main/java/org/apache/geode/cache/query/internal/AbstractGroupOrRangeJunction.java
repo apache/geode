@@ -34,8 +34,8 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     implements Filter, OQLLexerTokenTypes {

@@ -27,10 +27,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class DiskStoreMonitor {
   private static final Logger logger = LogService.getLogger();

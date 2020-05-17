@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management;
 
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * Enumerated type for JMX notification types emitted by GemFire management system. This types can

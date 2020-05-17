@@ -44,7 +44,7 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
-import org.apache.geode.util.GeodePublicGlossary;
+import org.apache.geode.common.GeodePublicGlossary;
 
 /**
  * Represents a snapshot of a {@link Region}.

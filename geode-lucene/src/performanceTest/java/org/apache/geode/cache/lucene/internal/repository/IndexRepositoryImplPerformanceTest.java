@@ -15,9 +15,9 @@
 
 package org.apache.geode.cache.lucene.internal.repository;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.DataInput;
 import java.io.DataOutput;

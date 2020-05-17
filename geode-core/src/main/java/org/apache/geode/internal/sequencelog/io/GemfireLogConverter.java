@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.sequencelog.io;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;

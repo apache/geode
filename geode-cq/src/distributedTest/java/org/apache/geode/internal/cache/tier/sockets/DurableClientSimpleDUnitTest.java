@@ -19,6 +19,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Thread.sleep;
 import static org.apache.geode.cache.InterestResultPolicy.NONE;
 import static org.apache.geode.cache.client.PoolManager.createFactory;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.TYPE_CREATE;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheClient;
@@ -26,7 +27,6 @@ import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.c
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.pause;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR_CHAR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.io.File;
 import java.util.Iterator;

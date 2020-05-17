@@ -14,9 +14,9 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

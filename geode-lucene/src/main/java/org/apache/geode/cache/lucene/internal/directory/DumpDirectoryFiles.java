@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.lucene.internal.directory;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.io.File;
 import java.util.Collection;

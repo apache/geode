@@ -30,6 +30,7 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -38,7 +39,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({WanTest.class})
 public class SerialWANPropagationDUnitTest extends WANTestBase {

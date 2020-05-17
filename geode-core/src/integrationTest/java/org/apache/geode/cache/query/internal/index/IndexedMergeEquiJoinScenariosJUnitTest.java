@@ -17,7 +17,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;

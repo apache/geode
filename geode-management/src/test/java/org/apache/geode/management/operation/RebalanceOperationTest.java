@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.util.internal.GeodeJsonMapper;
+import org.apache.geode.common.internal.GeodeJsonMapper;
 
 public class RebalanceOperationTest {
   private ObjectMapper mapper;

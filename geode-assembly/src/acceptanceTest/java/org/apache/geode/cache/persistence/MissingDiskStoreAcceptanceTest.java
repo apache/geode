@@ -16,10 +16,10 @@ package org.apache.geode.cache.persistence;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.nio.file.Path;
 import java.util.concurrent.Future;

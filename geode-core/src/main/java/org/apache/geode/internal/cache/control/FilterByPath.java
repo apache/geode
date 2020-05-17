@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -38,12 +38,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.test.junit.categories.LoggingTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Integration tests for {@link ChangeLogLevelFunction}.

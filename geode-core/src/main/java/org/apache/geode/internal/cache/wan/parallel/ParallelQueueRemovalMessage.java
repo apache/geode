@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.DataInput;
 import java.io.DataOutput;

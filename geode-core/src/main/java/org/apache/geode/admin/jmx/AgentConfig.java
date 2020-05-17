@@ -15,7 +15,7 @@
 package org.apache.geode.admin.jmx;
 
 import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * A configuration object for a JMX administration {@linkplain Agent agent} that is hosted by a

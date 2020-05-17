@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.junit.Test;
 
+import org.apache.geode.common.internal.GeodeJsonMapper;
+
 public class GeodeJsonMapperTest {
   @Test
   public void ignoreUnknownPropMapper() throws Exception {

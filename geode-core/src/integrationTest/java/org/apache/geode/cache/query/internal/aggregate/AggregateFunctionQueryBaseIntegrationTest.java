@@ -33,9 +33,9 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category(OQLQueryTest.class)
 @RunWith(JUnitParamsRunner.class)

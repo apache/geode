@@ -18,7 +18,7 @@ import static java.net.InetAddress.getLocalHost;
 import static java.util.Arrays.asList;
 import static java.util.Collections.addAll;
 import static java.util.UUID.randomUUID;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;

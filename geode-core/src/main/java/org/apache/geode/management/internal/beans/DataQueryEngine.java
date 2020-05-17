@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.io.StringWriter;
 import java.util.ArrayList;

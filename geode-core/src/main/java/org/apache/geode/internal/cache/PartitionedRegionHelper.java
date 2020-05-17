@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +48,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionNotAvailableException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -58,7 +59,6 @@ import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class PartitionedRegionHelper {
   private static final Logger logger = LogService.getLogger();

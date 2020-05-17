@@ -14,10 +14,10 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

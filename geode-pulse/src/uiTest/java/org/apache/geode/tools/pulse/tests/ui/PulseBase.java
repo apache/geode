@@ -15,6 +15,7 @@
  */
 package org.apache.geode.tools.pulse.tests.ui;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.tools.pulse.internal.data.PulseConstants.TWO_PLACE_DECIMAL_FORMAT;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_CLIENTS_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_FUNCTIONS_ID;
@@ -64,7 +65,6 @@ import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.REGION_PA
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.REGION_PERSISTENCE_LABEL;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.REGION_TYPE_LABEL;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.SERVER_GROUP_GRID_ID;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.configuration;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.util.internal.GeodeJsonMapper;
+import org.apache.geode.common.internal.GeodeJsonMapper;
 
 public class RegionTest {
 

@@ -84,7 +84,6 @@ TOK_LBRACK  :       '['             ;
 TOK_RBRACK  :       ']'             ;
 TOK_DOLLAR  :       '$'             ;
 TOK_PERCENTAGE:     '%'             ;
-TOK_TILDE   :       '~'             ;
 
 /* Character Classes */
 protected
@@ -174,8 +173,8 @@ Identifier
 
 
 
-RegionPath :  ( ( (TOK_TILDE ( RegionNameCharacter )+ )+ ) |
-			  ( (TOK_TILDE StringLiteral )+ ) )
+RegionPath :  ( ( (TOK_SLASH ( RegionNameCharacter )+ )+ ) |
+			  ( (TOK_SLASH StringLiteral )+ ) )
     ;
 
 

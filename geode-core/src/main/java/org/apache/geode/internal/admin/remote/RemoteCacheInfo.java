@@ -28,10 +28,10 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class is an implementation of the {@link CacheInfo} interface.

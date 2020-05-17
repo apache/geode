@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -22,7 +23,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.getInstance;
 import static org.apache.geode.management.ManagementService.getManagementService;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getClientServiceMBeanName;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

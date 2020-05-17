@@ -32,11 +32,11 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class EntryExpiryTask extends ExpiryTask {
 

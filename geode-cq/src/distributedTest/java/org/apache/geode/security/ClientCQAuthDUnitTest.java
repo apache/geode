@@ -14,8 +14,8 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.Rule;
 import org.junit.Test;

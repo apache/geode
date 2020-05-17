@@ -36,7 +36,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
-import org.apache.geode.util.GeodePublicGlossary;
+import org.apache.geode.common.GeodePublicGlossary;
 
 /**
  * Manages subregions and cached data. Each region can contain multiple subregions and entries for

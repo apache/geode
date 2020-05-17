@@ -16,7 +16,7 @@ package org.apache.geode.distributed.internal.membership.api;
 
 
 import org.apache.geode.annotations.internal.MakeImmutable;
-import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.common.internal.GeodeGlossary;
 
 /**
  * MembershipConfig is used to set parameters for a new Membership instance created with

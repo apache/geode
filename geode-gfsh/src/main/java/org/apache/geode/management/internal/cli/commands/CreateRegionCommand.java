@@ -16,8 +16,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.management.configuration.ClassName.isClassNameValid;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.Arrays;

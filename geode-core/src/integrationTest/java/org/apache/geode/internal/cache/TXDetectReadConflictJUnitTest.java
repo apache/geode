@@ -36,9 +36,9 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * junit test for detecting read conflicts

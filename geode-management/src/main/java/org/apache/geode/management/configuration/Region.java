@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.configuration;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.io.Serializable;
 import java.util.ArrayList;

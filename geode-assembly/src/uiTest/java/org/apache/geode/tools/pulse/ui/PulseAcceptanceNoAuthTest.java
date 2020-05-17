@@ -15,7 +15,7 @@
  */
 package org.apache.geode.tools.pulse.ui;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import org.junit.AfterClass;
 import org.junit.Before;

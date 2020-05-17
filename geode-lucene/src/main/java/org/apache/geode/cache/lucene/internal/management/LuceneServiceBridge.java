@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.management;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.Collection;

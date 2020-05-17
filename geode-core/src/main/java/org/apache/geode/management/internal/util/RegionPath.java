@@ -16,7 +16,7 @@
  */
 package org.apache.geode.management.internal.util;
 
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

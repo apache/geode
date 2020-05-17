@@ -46,12 +46,12 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.common.GeodePublicGlossary;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
-import org.apache.geode.util.GeodePublicGlossary;
 
 /**
  * Represents a {@link Region} that is created declaratively. Notice that it implements the

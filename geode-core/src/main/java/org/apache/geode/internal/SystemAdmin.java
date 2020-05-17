@@ -74,6 +74,7 @@ import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
@@ -97,7 +98,6 @@ import org.apache.geode.internal.util.JavaCommandBuilder;
 import org.apache.geode.internal.util.PluckStacks;
 import org.apache.geode.internal.util.PluckStacks.ThreadStack;
 import org.apache.geode.management.BackupStatus;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides static methods for various system administation tasks.

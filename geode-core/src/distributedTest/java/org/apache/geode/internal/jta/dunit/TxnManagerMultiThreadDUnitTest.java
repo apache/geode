@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal.jta.dunit;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

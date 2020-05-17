@@ -28,12 +28,12 @@ import com.fasterxml.jackson.core.JsonToken;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.UserAttributes;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.pdx.internal.json.JSONToPdxMapper;
 import org.apache.geode.pdx.internal.json.PdxInstanceHelper;
 import org.apache.geode.pdx.internal.json.PdxInstanceSortedHelper;
 import org.apache.geode.pdx.internal.json.PdxListHelper;
 import org.apache.geode.pdx.internal.json.PdxToJSON;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**

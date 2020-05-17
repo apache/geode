@@ -34,9 +34,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.w3c.dom.Element;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.common.GeodePublicGlossary;
 import org.apache.geode.internal.config.VersionAdapter;
 import org.apache.geode.lang.Identifiable;
-import org.apache.geode.util.GeodePublicGlossary;
 
 /**
  * <p>

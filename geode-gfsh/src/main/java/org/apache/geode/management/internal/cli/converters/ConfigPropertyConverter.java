@@ -24,7 +24,7 @@ import org.springframework.shell.core.MethodTarget;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.JndiBindingsType;
-import org.apache.geode.util.internal.GeodeJsonMapper;
+import org.apache.geode.common.internal.GeodeJsonMapper;
 
 /***
  * Added converter to enable auto-completion for index-type

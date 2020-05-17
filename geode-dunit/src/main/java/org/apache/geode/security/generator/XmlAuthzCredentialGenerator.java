@@ -14,8 +14,8 @@
  */
 package org.apache.geode.security.generator;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.security.Principal;
 import java.util.HashSet;

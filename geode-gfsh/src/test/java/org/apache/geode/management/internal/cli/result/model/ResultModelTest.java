@@ -30,9 +30,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.common.internal.GeodeJsonMapper;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
-import org.apache.geode.util.internal.GeodeJsonMapper;
 
 
 public class ResultModelTest {

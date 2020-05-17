@@ -18,12 +18,12 @@ import org.jgroups.annotations.GuardedBy;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  *

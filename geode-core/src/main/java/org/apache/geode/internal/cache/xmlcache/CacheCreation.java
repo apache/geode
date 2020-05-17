@@ -15,10 +15,10 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import static java.lang.String.format;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.logging.LogWriterFactory.toSecurityLogWriter;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 
 import java.io.File;
 import java.io.IOException;

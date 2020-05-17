@@ -22,12 +22,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.common.internal.GeodeJsonMapper;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.internal.operation.RebalanceResultImpl;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RebalanceResult;
-import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementOperationResultTest {
   private ObjectMapper mapper;

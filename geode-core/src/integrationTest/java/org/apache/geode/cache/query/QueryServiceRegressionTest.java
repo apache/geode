@@ -15,7 +15,7 @@
 package org.apache.geode.cache.query;
 
 import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

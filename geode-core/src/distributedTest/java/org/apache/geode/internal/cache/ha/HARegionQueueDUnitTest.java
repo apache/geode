@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.ha;
 
 import static java.lang.Thread.yield;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.NON_BLOCKING_HA_QUEUE;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.getHARegionQueueInstance;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
@@ -25,7 +26,6 @@ import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.ThreadUtils.join;
-import static org.apache.geode.util.GeodePublicGlossary.SEPARATOR;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

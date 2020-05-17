@@ -39,9 +39,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class GemcachedDevelopmentJUnitTest {
 
