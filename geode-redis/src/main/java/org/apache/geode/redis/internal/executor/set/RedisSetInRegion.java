@@ -173,10 +173,11 @@ public class RedisSetInRegion implements RedisSetCommands {
    * the corresponding key is the destination.
    * This is all done outside the striped executor to prevent a deadlock.
    */
+  @SuppressWarnings("unchecked")
   private ArrayList<Set<ByteArrayWrapper>> fetchSets(ArrayList<ByteArrayWrapper> setKeys,
       ByteArrayWrapper destination) {
     ArrayList<Set<ByteArrayWrapper>> result = new ArrayList<>(setKeys.size());
-    Region<ByteArrayWrapper, RedisData> fetchRegion = region;
+    Region fetchRegion = region;
     if (fetchRegion instanceof LocalDataSet) {
       LocalDataSet lds = (LocalDataSet) fetchRegion;
       fetchRegion = lds.getProxy();
