@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -63,7 +64,8 @@ public class AuthorizationIntegrationTest {
   private static final String TEST_KEY2 = "testKey2";
 
   private final String OQLTwoRegionTestQuery =
-      "select * from /" + TEST_REGION1 + " one, /" + TEST_REGION2 + " two where one.id = two.id";
+      "select * from " + SEPARATOR + TEST_REGION1 + " one, " + SEPARATOR + TEST_REGION2
+          + " two where one.id = two.id";
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();

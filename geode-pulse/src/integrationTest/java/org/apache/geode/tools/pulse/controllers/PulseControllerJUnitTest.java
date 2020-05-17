@@ -16,7 +16,7 @@ package org.apache.geode.tools.pulse.controllers;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.tools.pulse.internal.data.Cluster.CLUSTER_STAT_GARBAGE_COLLECTION;
 import static org.apache.geode.tools.pulse.internal.data.Cluster.CLUSTER_STAT_MEMORY_USAGE;
 import static org.apache.geode.tools.pulse.internal.data.Cluster.CLUSTER_STAT_THROUGHPUT_READS;

@@ -60,6 +60,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.common.internal.GeodeConverter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -84,7 +85,6 @@ import org.apache.geode.rest.internal.web.util.IdentifiableUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.NumberUtils;
 import org.apache.geode.rest.internal.web.util.ValidationUtils;
-import org.apache.geode.util.internal.GeodeConverter;
 
 /**
  * AbstractBaseController class contains common functionalities required for other controllers.

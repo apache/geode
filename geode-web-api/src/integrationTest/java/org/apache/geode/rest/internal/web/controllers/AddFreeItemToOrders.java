@@ -14,6 +14,8 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,7 +69,8 @@ public class AddFreeItemToOrders implements Function<Object> {
     }
 
     String oql =
-        "SELECT DISTINCT entry.key FROM /orders.entries entry WHERE entry.value.totalPrice > $1";
+        "SELECT DISTINCT entry.key FROM " + SEPARATOR
+            + "orders.entries entry WHERE entry.value.totalPrice > $1";
     Object[] queryArgs = new Object[1];
     queryArgs[0] = argsList.get(0);
 

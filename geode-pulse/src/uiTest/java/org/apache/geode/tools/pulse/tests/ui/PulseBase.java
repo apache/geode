@@ -15,6 +15,7 @@
  */
 package org.apache.geode.tools.pulse.tests.ui;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.tools.pulse.internal.data.PulseConstants.TWO_PLACE_DECIMAL_FORMAT;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_CLIENTS_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_FUNCTIONS_ID;
@@ -556,19 +557,22 @@ public abstract class PulseBase {
     String DataBrowserRegionName1 =
         getWebDriver().findElement(By.id(DATA_BROWSER_REGIONName1)).getText();
     String databrowserRegionNametemp1 = JMXProperties.getInstance().getProperty("region.R1.name");
-    String databrowserRegionName1 = databrowserRegionNametemp1.replaceAll("[/]", "");
+    String databrowserRegionName1 =
+        databrowserRegionNametemp1.replaceAll("[" + SEPARATOR + "]", "");
     assertEquals(databrowserRegionName1, DataBrowserRegionName1);
 
     String DataBrowserRegionName2 =
         getWebDriver().findElement(By.id(DATA_BROWSER_REGIONName2)).getText();
     String databrowserRegionNametemp2 = JMXProperties.getInstance().getProperty("region.R2.name");
-    String databrowserRegionName2 = databrowserRegionNametemp2.replaceAll("[/]", "");
+    String databrowserRegionName2 =
+        databrowserRegionNametemp2.replaceAll("[" + SEPARATOR + "]", "");
     assertEquals(databrowserRegionName2, DataBrowserRegionName2);
 
     String DataBrowserRegionName3 =
         getWebDriver().findElement(By.id(DATA_BROWSER_REGIONName3)).getText();
     String databrowserRegionNametemp3 = JMXProperties.getInstance().getProperty("region.R3.name");
-    String databrowserRegionName3 = databrowserRegionNametemp3.replaceAll("[/]", "");
+    String databrowserRegionName3 =
+        databrowserRegionNametemp3.replaceAll("[" + SEPARATOR + "]", "");
     assertEquals(databrowserRegionName3, DataBrowserRegionName3);
 
   }
@@ -649,15 +653,18 @@ public abstract class PulseBase {
 
     String databrowserColocatedRegiontemp1 =
         JMXProperties.getInstance().getProperty("region.R1.name");
-    String databrowserColocatedRegion1 = databrowserColocatedRegiontemp1.replaceAll("[/]", "");
+    String databrowserColocatedRegion1 =
+        databrowserColocatedRegiontemp1.replaceAll("[" + SEPARATOR + "]", "");
 
     String databrowserColocatedRegiontemp2 =
         JMXProperties.getInstance().getProperty("region.R2.name");
-    String databrowserColocatedRegion2 = databrowserColocatedRegiontemp2.replaceAll("[/]", "");
+    String databrowserColocatedRegion2 =
+        databrowserColocatedRegiontemp2.replaceAll("[" + SEPARATOR + "]", "");
 
     String databrowserColocatedRegiontemp3 =
         JMXProperties.getInstance().getProperty("region.R3.name");
-    String databrowserColocatedRegion3 = databrowserColocatedRegiontemp3.replaceAll("[/]", "");
+    String databrowserColocatedRegion3 =
+        databrowserColocatedRegiontemp3.replaceAll("[" + SEPARATOR + "]", "");
 
     assertEquals(databrowserColocatedRegion1, DataBrowserColocatedRegion1);
     assertEquals(databrowserColocatedRegion2, DataBrowserColocatedRegion2);
