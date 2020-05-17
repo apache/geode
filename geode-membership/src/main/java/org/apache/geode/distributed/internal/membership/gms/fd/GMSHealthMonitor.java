@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
 
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
@@ -73,7 +74,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Failure Detection

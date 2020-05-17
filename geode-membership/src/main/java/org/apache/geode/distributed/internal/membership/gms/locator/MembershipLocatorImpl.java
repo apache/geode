@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
@@ -48,7 +49,6 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public class MembershipLocatorImpl<ID extends MemberIdentifier> implements MembershipLocator<ID> {
   private static final Logger logger = LogService.getLogger();
