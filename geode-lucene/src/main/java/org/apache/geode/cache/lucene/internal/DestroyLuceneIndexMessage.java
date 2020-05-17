@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -22,7 +24,6 @@ import java.util.Collection;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -79,7 +80,7 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
         } catch (IllegalArgumentException e) {
           // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
           String fullRegionPath =
-              regionPath.startsWith(Region.SEPARATOR) ? regionPath : Region.SEPARATOR + regionPath;
+              regionPath.startsWith(SEPARATOR) ? regionPath : SEPARATOR + regionPath;
           String indexNotFoundMessage = String.format("Lucene index %s was not found in region %s",
               this.indexName, fullRegionPath);
           if (!e.getLocalizedMessage().equals(indexNotFoundMessage)) {

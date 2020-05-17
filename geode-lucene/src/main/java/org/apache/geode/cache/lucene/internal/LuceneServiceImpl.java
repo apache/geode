@@ -15,8 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.CREATE_REGION_MESSAGE_LUCENE;
 
 import java.util.ArrayList;
@@ -69,6 +69,7 @@ import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.cache.lucene.internal.results.PageResults;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketNotFoundException;
@@ -84,7 +85,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of LuceneService to create lucene index and query.

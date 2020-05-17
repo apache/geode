@@ -36,11 +36,11 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
+import org.apache.geode.common.internal.GeodeGlossary;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.LockNotHeldException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A repository that writes to a single lucene index writer

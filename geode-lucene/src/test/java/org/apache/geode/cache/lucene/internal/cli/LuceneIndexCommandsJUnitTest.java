@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.any;
@@ -106,13 +107,17 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     fieldAnalyzers.put("field3", null);
     LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
-    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees",
-        searchableFields, fieldAnalyzers, LuceneIndexStatus.INITIALIZED, serverName, serializer);
+    final LuceneIndexDetails indexDetails1 =
+        createIndexDetails("memberFive", SEPARATOR + "Employees",
+            searchableFields, fieldAnalyzers, LuceneIndexStatus.INITIALIZED, serverName,
+            serializer);
     final LuceneIndexDetails indexDetails2 =
-        createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers,
+        createIndexDetails("memberSix", SEPARATOR + "Employees", searchableFields, fieldAnalyzers,
             LuceneIndexStatus.NOT_INITIALIZED, serverName, serializer);
-    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees",
-        searchableFields, fieldAnalyzers, LuceneIndexStatus.INITIALIZED, serverName, serializer);
+    final LuceneIndexDetails indexDetails3 =
+        createIndexDetails("memberTen", SEPARATOR + "Employees",
+            searchableFields, fieldAnalyzers, LuceneIndexStatus.INITIALIZED, serverName,
+            serializer);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
@@ -130,7 +135,8 @@ public class LuceneIndexCommandsJUnitTest {
     assertThat(data.getValuesInColumn("Index Name"))
         .isEqualTo(Arrays.asList("memberFive", "memberSix", "memberTen"));
     assertThat(data.getValuesInColumn("Region Path"))
-        .isEqualTo(Arrays.asList("/Employees", "/Employees", "/Employees"));
+        .isEqualTo(Arrays.asList(SEPARATOR + "Employees", SEPARATOR + "Employees",
+            SEPARATOR + "Employees"));
     assertThat(data.getValuesInColumn("Indexed Fields")).isEqualTo(Arrays.asList(
         "[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"));
     assertThat(data.getValuesInColumn("Field Analyzer"))
@@ -157,13 +163,13 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field3", null);
     LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
     final LuceneIndexDetails indexDetails1 =
-        createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers,
+        createIndexDetails("memberFive", SEPARATOR + "Employees", searchableFields, fieldAnalyzers,
             mockIndexStats1, LuceneIndexStatus.INITIALIZED, serverName, serializer);
     final LuceneIndexDetails indexDetails2 =
-        createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers,
+        createIndexDetails("memberSix", SEPARATOR + "Employees", searchableFields, fieldAnalyzers,
             mockIndexStats2, LuceneIndexStatus.INITIALIZED, serverName, serializer);
     final LuceneIndexDetails indexDetails3 =
-        createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers,
+        createIndexDetails("memberTen", SEPARATOR + "Employees", searchableFields, fieldAnalyzers,
             mockIndexStats3, LuceneIndexStatus.INITIALIZED, serverName, serializer);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
@@ -182,7 +188,8 @@ public class LuceneIndexCommandsJUnitTest {
     assertThat(data.getValuesInColumn("Index Name"))
         .isEqualTo(Arrays.asList("memberFive", "memberSix", "memberTen"));
     assertThat(data.getValuesInColumn("Region Path"))
-        .isEqualTo(Arrays.asList("/Employees", "/Employees", "/Employees"));
+        .isEqualTo(Arrays.asList(SEPARATOR + "Employees", SEPARATOR + "Employees",
+            SEPARATOR + "Employees"));
     assertThat(data.getValuesInColumn("Indexed Fields")).isEqualTo(Arrays.asList(
         "[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"));
     assertThat(data.getValuesInColumn("Field Analyzer"))
@@ -251,20 +258,20 @@ public class LuceneIndexCommandsJUnitTest {
     final LuceneIndexStats mockIndexStats = getMockIndexStats(1, 10, 5, 1);
     final List<LuceneIndexDetails> indexDetails = new ArrayList<>();
     LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
-    indexDetails.add(createIndexDetails("memberFive", "/Employees", searchableFields,
+    indexDetails.add(createIndexDetails("memberFive", SEPARATOR + "Employees", searchableFields,
         fieldAnalyzers, mockIndexStats, LuceneIndexStatus.INITIALIZED, serverName, serializer));
 
     doReturn(mockResultCollector).when(command).executeFunctionOnRegion(
         any(LuceneDescribeIndexFunction.class), any(LuceneIndexInfo.class), eq(true));
     doReturn(indexDetails).when(mockResultCollector).getResult();
 
-    ResultModel result = command.describeIndex("memberFive", "/Employees");
+    ResultModel result = command.describeIndex("memberFive", SEPARATOR + "Employees");
 
     TabularResultModel data = result.getTableSection("lucene-indexes");
     assertThat(data.getValuesInColumn("Index Name"))
         .isEqualTo(Collections.singletonList("memberFive"));
     assertThat(data.getValuesInColumn("Region Path"))
-        .isEqualTo(Collections.singletonList("/Employees"));
+        .isEqualTo(Collections.singletonList(SEPARATOR + "Employees"));
     assertThat(data.getValuesInColumn("Indexed Fields"))
         .isEqualTo(Collections.singletonList("[field1, field2, field3]"));
     assertThat(data.getValuesInColumn("Field Analyzer"))

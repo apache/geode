@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,8 +25,8 @@ public class CreateLuceneCommandParametersValidator {
     validateNameNotEmptyOrNull(name);
     String msg =
         "Region names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens, underscores, or forward slashes: ";
-    Matcher matcher = Pattern.compile("[aA-zZ0-9-_./]+").matcher(name);
-    if (name.startsWith("__") || name.startsWith("/__") || !matcher.matches()) {
+    Matcher matcher = Pattern.compile("[aA-zZ0-9-_." + SEPARATOR + "]+").matcher(name);
+    if (name.startsWith("__") || name.startsWith(SEPARATOR + "__") || !matcher.matches()) {
       throw new IllegalArgumentException(msg + name);
     }
   }
