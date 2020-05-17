@@ -14,7 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -795,7 +795,7 @@ public class CreateMappingCommandTest {
   @Test
   public void createAsyncEventQueueNameWithRegionPathReturnsQueueNameThatIsTheSameAsRegionWithNoSlash() {
     String queueName1 = MappingCommandUtils.createAsyncEventQueueName("regionName");
-    String queueName2 = MappingCommandUtils.createAsyncEventQueueName("/regionName");
+    String queueName2 = MappingCommandUtils.createAsyncEventQueueName(SEPARATOR + "regionName");
     assertThat(queueName1).isEqualTo(queueName2);
   }
 
@@ -807,7 +807,8 @@ public class CreateMappingCommandTest {
 
   @Test
   public void createAsyncEventQueueNameWithSubregionNameReturnsQueueNameWithNoSlashes() {
-    String queueName = MappingCommandUtils.createAsyncEventQueueName("/parent/child/grandchild");
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(
+        SEPARATOR + "parent" + SEPARATOR + "child" + SEPARATOR + "grandchild");
     assertThat(queueName).isEqualTo("JDBC#parent_child_grandchild");
   }
 

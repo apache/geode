@@ -14,7 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.REGION_NAME;
 
 import java.util.ArrayList;

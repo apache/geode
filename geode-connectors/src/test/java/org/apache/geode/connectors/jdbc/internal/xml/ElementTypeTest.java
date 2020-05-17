@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.xml;
 
 import static java.util.Collections.singletonList;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.FIELD_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CATALOG;
@@ -86,7 +87,7 @@ public class ElementTypeTest {
     when(attributes.getValue(IDS)).thenReturn("ids");
     when(attributes.getValue(CATALOG)).thenReturn("catalog");
     when(attributes.getValue(SCHEMA)).thenReturn("schema");
-    when(regionCreation.getFullPath()).thenReturn("/region");
+    when(regionCreation.getFullPath()).thenReturn(SEPARATOR + "region");
     stack.push(regionCreation);
 
     ElementType.JDBC_MAPPING.startElement(stack, attributes);

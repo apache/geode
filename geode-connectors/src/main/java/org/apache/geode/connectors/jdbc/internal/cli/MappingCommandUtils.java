@@ -15,8 +15,8 @@
 
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR;
+import static org.apache.geode.common.GeodePublicGlossary.SEPARATOR_CHAR;
 
 import java.util.ArrayList;
 
