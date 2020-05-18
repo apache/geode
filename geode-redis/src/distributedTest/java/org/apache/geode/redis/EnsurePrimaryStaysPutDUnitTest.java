@@ -16,7 +16,10 @@
 
 package org.apache.geode.redis;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -70,15 +73,26 @@ public class EnsurePrimaryStaysPutDUnitTest {
 
   @Test
   public void primaryRemainsWhileLocalFunctionExecutes() throws InterruptedException {
-    primaryRemainsWhileFunctionExecutes(true);
+    primaryRemainsWhileFunctionExecutes(true, false);
   }
 
   @Test
   public void primaryRemainsWhileRemoteFunctionExecutes() throws InterruptedException {
-    primaryRemainsWhileFunctionExecutes(false);
+    primaryRemainsWhileFunctionExecutes(false, false);
   }
 
-  private void primaryRemainsWhileFunctionExecutes(boolean runLocally) throws InterruptedException {
+  @Test
+  public void localFunctionRetriesIfNotOnPrimary() throws InterruptedException {
+    primaryRemainsWhileFunctionExecutes(true, true);
+  }
+
+  @Test
+  public void remoteFunctionRetriesIfNotOnPrimary() throws InterruptedException {
+    primaryRemainsWhileFunctionExecutes(false, true);
+  }
+
+  private void primaryRemainsWhileFunctionExecutes(boolean runLocally, boolean releaseLatchEarly)
+      throws InterruptedException {
     // Create entry and return name of primary
     String memberForPrimary = server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
@@ -94,16 +108,17 @@ public class EnsurePrimaryStaysPutDUnitTest {
 
     MemberVM memberToRunOn = runLocally ? primary : secondary;
 
-    AsyncInvocation<?> asyncChecking = memberToRunOn.invokeAsync(() -> {
+    AsyncInvocation<Boolean> asyncChecking = memberToRunOn.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Region<String, String> region = cache.getRegion("TEST");
 
       @SuppressWarnings("unchecked")
-      ResultCollector<?, ?> rc = FunctionService.onRegion(region)
+      ResultCollector<?, List<Boolean>> rc = FunctionService.onRegion(region)
           .withFilter(Collections.singleton(KEY))
+          .setArguments(releaseLatchEarly)
           .execute(CheckPrimaryBucketFunction.class.getName());
 
-      rc.getResult();
+      return rc.getResult().get(0);
     });
 
     primary.invoke(CheckPrimaryBucketFunction::awaitLatch);
@@ -118,8 +133,10 @@ public class EnsurePrimaryStaysPutDUnitTest {
       BucketAdvisor bucketAdvisor = region.getRegionAdvisor().getBucketAdvisor(bucketId);
 
       bucketAdvisor.becomePrimary(false);
+      CheckPrimaryBucketFunction.finishedMovingPrimary();
     });
+    primary.invoke(CheckPrimaryBucketFunction::finishedMovingPrimary);
 
-    asyncChecking.get();
+    assertThat(asyncChecking.get()).isTrue();
   }
 }
