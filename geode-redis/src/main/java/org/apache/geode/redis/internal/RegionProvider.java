@@ -225,15 +225,7 @@ public class RegionProvider implements Closeable {
           return hLLRegion.remove(key) != null;
         } else if (type == RedisDataType.REDIS_LIST || type == RedisDataType.REDIS_SORTEDSET) {
           return destroyRegion(key, type);
-        } else if (type == RedisDataType.REDIS_SET) {
-          RedisSetCommands redisSetCommands =
-              new RedisSetCommandsFunctionExecutor(dataRegion);
-          return redisSetCommands.del(key);
-        } else if (type == RedisDataType.REDIS_HASH) {
-          RedisHashCommands redisHashCommands =
-              new RedisHashCommandsFunctionExecutor(dataRegion);
-          return redisHashCommands.del(key);
-        } else {
+        }else {
           return false;
         }
       } catch (Exception exc) {

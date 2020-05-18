@@ -16,11 +16,14 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.List;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisData;
 
 public class DelExecutor extends AbstractExecutor {
 
@@ -35,10 +38,28 @@ public class DelExecutor extends AbstractExecutor {
     long numRemoved = commandElems
         .subList(1, commandElems.size())
         .stream()
-        .filter((key) -> removeEntry(key, context))
+        .filter((key) -> new RedisKeyCommandsFunctionExecutor(
+            context.getRegionProvider().getDataRegion()).del(key))
         .count();
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }
 
+  public interface RedisKeyCommands {
+    boolean del(ByteArrayWrapper key);
+  }
+
+  public class RedisKeyCommandsFunctionExecutor implements RedisKeyCommands {
+    private Region<ByteArrayWrapper, RedisData> region;
+
+    public RedisKeyCommandsFunctionExecutor(
+        Region<ByteArrayWrapper, RedisData> region) {
+      this.region = region;
+    }
+
+    @Override
+    public boolean del(ByteArrayWrapper key) {
+      return (boolean) CommandFunction.execute(RedisCommandType.DEL, key, new Object[]{}, region);
+    }
+  }
 }
