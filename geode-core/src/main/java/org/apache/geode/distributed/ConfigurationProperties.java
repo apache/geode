@@ -1916,11 +1916,11 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"redis-port"</i> property <a name="redis-port"/a>
    * </p>
-   * <U>Description</U>: Specifies the port used by {@code GeodeRedisServer} which enables redis
-   * clients to connect and store data in GemFire distributed system. see {@code GeodeRedisServer}
-   * for other configuration options. A value of "-1" will select a random port.
+   * <U>Description</U>: Specifies the port used by Redis API for Geode which enables Redis
+   * clients to connect and store data in GemFire distributed system. A value of "-1" will select a
+   * random port.
    * </p>
-   * <U>Default</U>: "0" disables {@code GeodeRedisServer}
+   * <U>Default</U>: "0"
    * </p>
    * <U>Allowed values</U>: -1..65535
    */
@@ -1929,7 +1929,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"redis-bind-address"</i> property <a
    * name="redis-bind-address"/a>
    * </p>
-   * <U>Description</U>: Specifies the bind address used by {@code GeodeRedisServer}
+   * <U>Description</U>: Specifies the bind address used by Redis API for Geode
    * </p>
    * <U>Default</U>: ""
    */
@@ -1938,7 +1938,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"redis-password"</i> property <a
    * name="redis-password"/a>
    * </p>
-   * <U>Description</U>: Specifies the password to authenticate a client of {@code GeodeRedisServer}
+   * <U>Description</U>: Specifies the password to authenticate a client of Redis API for Geode
    * </p>
    * <U>Default</U>: ""
    */
