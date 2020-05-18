@@ -16,12 +16,14 @@
 package org.apache.geode.redis.internal.executor;
 
 import static org.junit.Assert.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
 
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.string.SetExecutor;
 
@@ -35,8 +37,10 @@ public class AbstractExecutorJUnitTest {
     // setup mocks
     ExecutionHandlerContext context = Mockito.mock(ExecutionHandlerContext.class);
     RegionProvider rp = Mockito.mock(RegionProvider.class);
+    KeyRegistrar keyRegistrar = Mockito.mock(KeyRegistrar.class);
     Mockito.when(context.getRegionProvider()).thenReturn(rp);
-    Mockito.when(rp.removeKey(Mockito.any())).thenReturn(true);
+    Mockito.when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
+    Mockito.when(rp.removeKey(any())).thenReturn(true);
 
     // Assert false to protected or null types
     assertFalse(abstractExecutor.removeEntry(Coder.stringToByteArrayWrapper("junit"),
@@ -44,8 +48,6 @@ public class AbstractExecutorJUnitTest {
 
     assertFalse(
         abstractExecutor.removeEntry(Coder.stringToByteArrayWrapper("junit"), context));
-
-
 
   }
 

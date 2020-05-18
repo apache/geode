@@ -20,11 +20,11 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RegionProvider;
 
-class RedisDataInRegion {
+class RedisKeyInRegion {
   private Region localRegion;
   private RegionProvider regionProvider;
 
-  public RedisDataInRegion(Region localRegion, RegionProvider regionProvider) {
+  public RedisKeyInRegion(Region localRegion, RegionProvider regionProvider) {
     this.localRegion = localRegion;
     this.regionProvider = regionProvider;
   }
@@ -41,5 +41,9 @@ class RedisDataInRegion {
       default:
         return regionProvider.removeKey(key);
     }
+  }
+
+  public boolean exists(ByteArrayWrapper key) {
+    return localRegion.containsKey(key);
   }
 }

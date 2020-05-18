@@ -20,22 +20,19 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class ExistsExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
-    if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.EXISTS));
-      return;
-    }
+    RedisKeyCommands redisKeyCommands =
+        new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
 
     long existsCount = commandElems
         .subList(1, commandElems.size())
         .stream()
-        .filter(key -> context.getKeyRegistrar().isRegistered(key))
+        .filter(key -> redisKeyCommands.exists(key))
         .count();
 
 

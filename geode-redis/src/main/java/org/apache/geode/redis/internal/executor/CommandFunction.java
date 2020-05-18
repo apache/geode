@@ -88,7 +88,10 @@ public class CommandFunction extends SingleResultRedisFunction {
         break;
       }
       case DEL:
-        callable = () -> new RedisDataInRegion(localRegion, regionProvider).del(key);
+        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).del(key);
+        break;
+      case EXISTS:
+        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).exists(key);
         break;
       case SMEMBERS:
         callable = () -> new RedisSetInRegion(localRegion).smembers(key);

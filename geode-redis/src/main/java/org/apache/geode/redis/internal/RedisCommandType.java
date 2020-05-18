@@ -159,7 +159,7 @@ public enum RedisCommandType {
 
   AUTH(new AuthExecutor()),
   DEL(new DelExecutor(), new MinimumParameterRequirements(2)),
-  EXISTS(new ExistsExecutor()),
+  EXISTS(new ExistsExecutor(), new MinimumParameterRequirements(2)),
   EXPIRE(new ExpireExecutor()),
   EXPIREAT(new ExpireAtExecutor()),
   FLUSHALL(new FlushAllExecutor()),
