@@ -101,6 +101,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -2758,21 +2759,47 @@ public class WANTestBase extends DistributedTestCase {
     mgr.commit();
   }
 
-  public static void doTxPuts(String regionName, final long putsPerTransaction,
+  public static void doTxPutsWithRetryIfError(String regionName, final long putsPerTransaction,
       final long transactions, long offset) {
     Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
-    CacheTransactionManager mgr = cache.getCacheTransactionManager();
 
     long keyOffset = offset * ((putsPerTransaction + (10 * transactions)) * 100);
-    for (long i = 0; i < transactions; i++) {
-      mgr.begin();
-      for (long j = 0; j < putsPerTransaction; j++) {
-        long key = keyOffset + ((j + (10 * i)) * 100);
-        String value = "Value_" + key;
-        r.put(key, value);
-      }
-      mgr.commit();
+    long i = 0;
+    long j = 0;
+    CacheTransactionManager mgr = cache.getCacheTransactionManager();;
+    for (i = 0; i < transactions; i++) {
+      boolean done = false;
+      do {
+        try {
+          mgr.begin();
+          for (j = 0; j < putsPerTransaction; j++) {
+            long key = keyOffset + ((j + (10 * i)) * 100);
+            String value = "Value_" + key;
+            r.put(key, value);
+          }
+          mgr.commit();
+          done = true;
+        } catch (TransactionException e) {
+          logger.info("Something went wrong with transaction [{},{}]. Retrying. Error: {}", i, j,
+              e.getMessage());
+          e.printStackTrace();
+        } catch (IllegalStateException e1) {
+          logger.info("Something went wrong with transaction [{},{}]. Retrying. Error: {}", i, j,
+              e1.getMessage());
+          e1.printStackTrace();
+          try {
+            mgr.rollback();
+            logger.info("Rolled back transaction [{},{}]. Retrying. Error: {}", i, j,
+                e1.getMessage());
+          } catch (Exception e2) {
+            logger.info(
+                "Something went wrong when rolling back transaction [{},{}]. Retrying transaction. Error: {}",
+                i, j, e2.getMessage());
+            e2.printStackTrace();
+          }
+        }
+      } while (!done);
     }
   }
 

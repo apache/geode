@@ -104,9 +104,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private final AtomicLong tailKey = new AtomicLong();
 
   /**
-   * Last key peeked from the queue.
+   * Last key peeked from the queue excluding the keys peeked
+   * to complete transactions when group-transaction-events is enabled.
    */
-  private long lastPeekedId = -1;
+  private final AtomicLong lastPeekedId = new AtomicLong(-1);
 
   private final Deque<Long> peekedIds = new LinkedBlockingDeque<Long>();
 
@@ -705,7 +706,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   public void resetLastPeeked() {
     this.peekedIds.clear();
     extraPeekedIds.clear();
-    lastPeekedId = -1;
+    lastPeekedId.set(-1);
   }
 
   /**
@@ -714,10 +715,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private Long getCurrentKey() {
     long currentKey;
-    if (lastPeekedId == -1) {
+    if (lastPeekedId.equals(-1)) {
       currentKey = getHeadKey();
     } else {
-      currentKey = inc(lastPeekedId);
+      currentKey = inc(lastPeekedId.get());
     }
     return currentKey;
   }
@@ -794,7 +795,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     if (object != null) {
       this.peekedIds.add(currentKey);
-      lastPeekedId = currentKey;
+      lastPeekedId.set(currentKey);
       return new KeyAndEventPair(currentKey, object);
     }
     return null;

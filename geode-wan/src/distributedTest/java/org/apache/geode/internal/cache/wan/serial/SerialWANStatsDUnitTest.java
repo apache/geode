@@ -550,9 +550,9 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
     AsyncInvocation inv1 =
-        vm6.invokeAsync(() -> WANTestBase.doTxPuts(testName + "_RR", 2, 5000, 0));
+        vm6.invokeAsync(() -> WANTestBase.doTxPutsWithRetryIfError(testName + "_RR", 2, 5000, 0));
     AsyncInvocation inv2 =
-        vm7.invokeAsync(() -> WANTestBase.doTxPuts(testName + "_RR", 2, 5000, 1));
+        vm7.invokeAsync(() -> WANTestBase.doTxPutsWithRetryIfError(testName + "_RR", 2, 5000, 1));
 
     vm2.invoke(() -> await()
         .untilAsserted(() -> assertEquals("Waiting for some batches to be received", true,
@@ -577,7 +577,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 20000));
 
     // batchesReceived is equal to numberOfEntries/(batchSize+1)
-    // given that as transactions are 2 events big, for each batch it will always be necessary to
+    // As transactions are 2 events long, for each batch it will always be necessary to
     // add one more entry to the 9 events batch in order to have complete transactions in the batch.
     int batchesReceived = (10000 + 10000) / (batchSize + 1);
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStatsHA(batchesReceived, 20000, 20000));

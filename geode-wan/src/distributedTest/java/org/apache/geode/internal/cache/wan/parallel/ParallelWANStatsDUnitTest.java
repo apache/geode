@@ -780,7 +780,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     createSenderPRs(3);
 
     int batchSize = 9;
-    boolean groupTransactionEvents = false;
+    boolean groupTransactionEvents = true;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
             groupTransactionEvents,
@@ -800,15 +800,14 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    AsyncInvocation inv1 = vm5.invokeAsync(() -> WANTestBase.doTxPuts(testName, 2, 500, 0));
-    AsyncInvocation inv2 = vm6.invokeAsync(() -> WANTestBase.doTxPuts(testName, 2, 500, 1));
+    AsyncInvocation inv1 =
+        vm5.invokeAsync(() -> WANTestBase.doTxPutsWithRetryIfError(testName, 2, 1000, 0));
 
     vm2.invoke(() -> await()
         .untilAsserted(() -> assertEquals("Waiting for some batches to be received", true,
             getRegionSize(testName) > 40)));
     AsyncInvocation inv3 = vm4.invokeAsync(() -> WANTestBase.killSender());
     inv1.join();
-    inv2.join();
     inv3.join();
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName, 2000));
@@ -822,16 +821,17 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     assertEquals(0, v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
     int receivedEvents = v5List.get(1) + v6List.get(1) + v7List.get(1);
-    // We may see a single retried event on all members due to the kill
+    // We may see two retried events (as transactions are made of 2 events) on all members due to
+    // the kill
     assertTrue("Received " + receivedEvents,
-        6000 <= receivedEvents && 6003 >= receivedEvents); // eventsReceived
+        6000 <= receivedEvents && 6006 >= receivedEvents); // eventsReceived
     int queuedEvents = v5List.get(2) + v6List.get(2) + v7List.get(2);
     assertTrue("Queued " + queuedEvents,
-        6000 <= queuedEvents && 6003 >= queuedEvents); // eventsQueued
+        6000 <= queuedEvents && 6006 >= queuedEvents); // eventsQueued
     assertEquals(0, v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches redistributed
 
     // batchesReceived is equal to numberOfEntries/(batchSize+1)
-    // given that as transactions are 2 events big, for each batch it will always be necessary to
+    // As transactions are 2 events long, for each batch it will always be necessary to
     // add one more entry to the 9 events batch in order to have complete transactions in the batch.
     int batchesReceived = (1000 + 1000) / (batchSize + 1);
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStatsHA(batchesReceived, 2000, 2000));

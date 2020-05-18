@@ -156,11 +156,23 @@ public interface GatewaySender {
       .intValue();
 
   /**
-   * Number of times to retry to get events for a transaction from the gateway sender queue
+   * Number of times to retry to get events for a transaction from the gateway sender queue when
+   * group-transaction-events is set to true.
+   * When group-transaction-events is set to true and a batch ready to be sent does not contain
+   * all the events for all the transactions to which the events belong, the gateway sender will try
+   * to get the missing events of the transactions from the queue to add them to the batch
+   * before sending it.
+   * If the missing events are not in the queue when the gateway sender tries to get them
+   * it will retry for a maximum of times equal to the value set in this parameter before
+   * delivering the batch without the missing events and logging an error.
+   * Setting this parameter to a very low value could cause that under heavy load and
+   * group-transaction-events set to true, batches are sent with incomplete transactions. Setting it
+   * to a high value could cause that under heavy load and group-transaction-events set to true,
+   * batches are held for some time before being sent.
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
-          2);
+          3);
 
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
