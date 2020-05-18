@@ -30,7 +30,6 @@ class RedisDataInRegion {
   }
 
   public boolean del(ByteArrayWrapper key) {
-    localRegion.remove(key);
     RedisData redisData = (RedisData) localRegion.get(key);
     if (redisData == null) {
       return false;

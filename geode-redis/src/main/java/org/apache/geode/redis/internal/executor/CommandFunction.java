@@ -47,13 +47,13 @@ public class CommandFunction extends SingleResultRedisFunction {
   }
 
   public static <T> T execute(RedisCommandType command,
-                              ByteArrayWrapper key,
-                              Object commandArguments, Region<ByteArrayWrapper, RedisData> region) {
+      ByteArrayWrapper key,
+      Object commandArguments, Region<ByteArrayWrapper, RedisData> region) {
     SingleResultCollector<T> rc = new SingleResultCollector<>();
     FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
-        .setArguments(new Object[]{command, commandArguments})
+        .setArguments(new Object[] {command, commandArguments})
         .withCollector(rc)
         .execute(CommandFunction.ID)
         .getResult();
@@ -62,7 +62,7 @@ public class CommandFunction extends SingleResultRedisFunction {
 
 
   public CommandFunction(StripedExecutor stripedExecutor,
-                         RegionProvider regionProvider) {
+      RegionProvider regionProvider) {
     this.stripedExecutor = stripedExecutor;
     this.regionProvider = regionProvider;
   }
@@ -74,7 +74,7 @@ public class CommandFunction extends SingleResultRedisFunction {
 
   @Override
   protected Object compute(Region localRegion, ByteArrayWrapper key,
-                           RedisCommandType command, Object[] args) {
+      RedisCommandType command, Object[] args) {
     Callable<Object> callable;
     switch (command) {
       case SADD: {

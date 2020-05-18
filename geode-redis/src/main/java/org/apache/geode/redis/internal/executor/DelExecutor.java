@@ -59,7 +59,7 @@ public class DelExecutor extends AbstractExecutor {
 
     @Override
     public boolean del(ByteArrayWrapper key) {
-      return (boolean) CommandFunction.execute(RedisCommandType.DEL, key, new Object[]{}, region);
+      return (boolean) CommandFunction.execute(RedisCommandType.DEL, key, new Object[] {}, region);
     }
   }
 }

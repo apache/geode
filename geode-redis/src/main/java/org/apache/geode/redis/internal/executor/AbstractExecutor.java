@@ -91,7 +91,7 @@ public abstract class AbstractExecutor implements Executor {
   }
 
   protected boolean removeEntry(ByteArrayWrapper key,
-                                ExecutionHandlerContext context) {
+      ExecutionHandlerContext context) {
 
     RegionProvider rC = context.getRegionProvider();
     RedisDataType type = context.getKeyRegistrar().getType(key);
