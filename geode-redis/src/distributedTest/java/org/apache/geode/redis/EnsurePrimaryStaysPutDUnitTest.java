@@ -35,7 +35,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public class EnsurePrimaryStaysPut {
+public class EnsurePrimaryStaysPutDUnitTest {
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -69,7 +69,16 @@ public class EnsurePrimaryStaysPut {
   }
 
   @Test
-  public void sanity() throws InterruptedException {
+  public void primaryRemainsWhileLocalFunctionExecutes() throws InterruptedException {
+    primaryRemainsWhileFunctionExecutes(true);
+  }
+
+  @Test
+  public void primaryRemainsWhileRemoteFunctionExecutes() throws InterruptedException {
+    primaryRemainsWhileFunctionExecutes(false);
+  }
+
+  private void primaryRemainsWhileFunctionExecutes(boolean runLocally) throws InterruptedException {
     // Create entry and return name of primary
     String memberForPrimary = server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
@@ -83,7 +92,9 @@ public class EnsurePrimaryStaysPut {
     MemberVM primary = memberForPrimary.equals("server-1") ? server1 : server2;
     MemberVM secondary = memberForPrimary.equals("server-1") ? server2 : server1;
 
-    AsyncInvocation<?> asyncChecking = primary.invokeAsync(() -> {
+    MemberVM memberToRunOn = runLocally ? primary : secondary;
+
+    AsyncInvocation<?> asyncChecking = memberToRunOn.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Region<String, String> region = cache.getRegion("TEST");
 
@@ -95,7 +106,6 @@ public class EnsurePrimaryStaysPut {
       rc.getResult();
     });
 
-    Thread.sleep(1000);
     primary.invoke(CheckPrimaryBucketFunction::awaitLatch);
 
     // switch primary to secondary while running test fn()
@@ -111,6 +121,5 @@ public class EnsurePrimaryStaysPut {
     });
 
     asyncChecking.get();
-
   }
 }
