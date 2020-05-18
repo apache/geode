@@ -33,24 +33,26 @@ commands.
 Use gfsh to start at least one server with a command of the form:
 
 ``` pre
-start server --name=<serverName> --locators=<locatorPort> --redis-port=<redisPort> --redis-bind-address=<redisBindAddress>
+start server --name=<serverName> --locators=<locatorPort> --redis-port=<redisPort> --redis-bind-address=<redisBindAddress> --redis-password=<redisPassword>
 ```
 
 Replace `<serverName>` with the name of your server.
 
 Replace `<locatorPort>` with your locator port.
 
-Replace `<redisPort>` with the port that the <%=vars.product_name%> server will listen on for Redis commands. The typical port used with a Redis cluster is 6379.
+Replace `<redisPort>` with the port that the <%=vars.product_name%> server listens on for Redis commands. The typical port used with a Redis cluster is 6379.
 
-Replace `<redisBindAddress>` with the IP address of the server host. If this option is not specified, the default is determined from the `/etc/hosts` file.
+Replace `<redisBindAddress>` with the IP address of the server host.
+
+Replace `<redisPassword>` with the password clients uses to authenticate.
 
 To confirm the server is listening, run:
 
 ``` pre
-redis-cli -h <redisBindAddress> -p <redisPort> ping
+redis-cli -h <redisBindAddress> -p <redisPort> -a <redisPassword> ping
 ```
 
-Replace `<redisBindAddress>` and `<redisPort>` with the same values as the server.
+Replace `<redisBindAddress>`,`<redisPort>`, and `<redisPassword>` with the same values as the server.
 
 If the server is functioning properly, you should see a response of `PONG`.
 

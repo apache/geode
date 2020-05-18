@@ -487,6 +487,32 @@ off-heap-memory-size=120g</code></pre></td>
 <td><em>not set</em></td>
 </tr>
 <tr>
+<td>redis-bind-address</td>
+<td>Specifies the address on which the Redis API for <%=vars.product_name%> is listening. If set to the empty string or this property is not
+specified, localhost is requested from the operating system.</td>
+<td>S</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td>redis-password</td>
+<td>Specifies the password that the server uses when a client attempts to authenticate.</td>
+<td>S</td>
+<td>no password set</td>
+</tr>
+<tr>
+<td>redis-port</td>
+<td>Specifies the port on which the server listens for Redis API for <%=vars.product_name%> connections. A value of 0 selects a random port.</td>
+<td>S</td>
+<td>6379</td>
+</tr>
+<tr>
+<td>redis-service-enabled</td>
+<td>When the default value of false, the Redis API for <%=vars.product_name%> is not available.  Set
+to true to enable the Redis API for <%=vars.product_name%>.</td>
+<td>S</td>
+<td>false</td>
+</tr>
+<tr>
 <td>redundancy-zone</td>
 <td>Defines this member's redundancy zone. Used to separate member's into different groups for satisfying partitioned region redundancy. If this property is set, <%=vars.product_name%> will not put redundant copies of data in members with the same redundancy zone setting. 
 See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Configure High Availability for a Partitioned Region</a> for more details.</td>

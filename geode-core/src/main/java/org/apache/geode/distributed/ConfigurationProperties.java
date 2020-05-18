@@ -1916,20 +1916,21 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"redis-port"</i> property <a name="redis-port"/a>
    * </p>
-   * <U>Description</U>: Specifies the port used by Redis API for Geode which enables Redis
-   * clients to connect and store data in GemFire distributed system. A value of "-1" will select a
-   * random port.
+   * <U>Description</U>: Specifies the port on which the server listens for Redis API for Geode
+   * connections. A value of 0 selects a random port.</td>
    * </p>
-   * <U>Default</U>: "0"
+   * <U>Default</U>: 6379
    * </p>
-   * <U>Allowed values</U>: -1..65535
+   * <U>Allowed values</U>: 0..65535
    */
   String REDIS_PORT = "redis-port";
   /**
    * The static String definition of the <i>"redis-bind-address"</i> property <a
    * name="redis-bind-address"/a>
    * </p>
-   * <U>Description</U>: Specifies the bind address used by Redis API for Geode
+   * <U>Description</U>: Specifies the address on which the Redis API for Geode is listening. If set
+   * to the empty string or this property is not specified, localhost is requested from the
+   * operating system.
    * </p>
    * <U>Default</U>: ""
    */
@@ -1938,9 +1939,10 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"redis-password"</i> property <a
    * name="redis-password"/a>
    * </p>
-   * <U>Description</U>: Specifies the password to authenticate a client of Redis API for Geode
+   * <U>Description</U>: Specifies the password that the server uses when a client attempts to
+   * authenticate.
    * </p>
-   * <U>Default</U>: ""
+   * <U>Default</U>: no password set
    */
   String REDIS_PASSWORD = "redis-password";
   /**
