@@ -21,12 +21,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.SingleResultRedisFunction;
+import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 @SuppressWarnings("unchecked")
@@ -51,14 +56,20 @@ public class CheckPrimaryBucketFunction implements Function {
 
     assertThat(isMemberPrimary(regionFunctionContext, key, member)).isTrue();
 
-    latch.countDown();
+    Region<?, ?> localRegion =
+        regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
 
-    isMemberPrimary(regionFunctionContext, key, member);
+    Runnable r = () -> {
+      latch.countDown();
+      isMemberPrimary(regionFunctionContext, key, member);
 
-    GeodeAwaitility.await()
-        .during(10, TimeUnit.SECONDS)
-        .atMost(15, TimeUnit.SECONDS)
-        .until(() -> !isMemberPrimary(regionFunctionContext, key, member));
+      GeodeAwaitility.await()
+          .during(10, TimeUnit.SECONDS)
+          .atMost(11, TimeUnit.SECONDS)
+          .until(() -> isMemberPrimary(regionFunctionContext, key, member));
+    };
+
+    SingleResultRedisFunction.computeWithPrimaryLocked(key, (LocalDataSet)localRegion, r);
 
     result.lastResult(true);
   }
@@ -69,7 +80,7 @@ public class CheckPrimaryBucketFunction implements Function {
         .getPrimaryMemberForKey(context.getDataSet(), key);
 
     boolean primaryness = primaryForKey.equals(member);
-    System.err.println("--->>> " + primaryness);
+    // System.err.println("--->>> " + primaryness);
 
     return primaryness;
   }
