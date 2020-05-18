@@ -50,7 +50,7 @@ public abstract class SingleResultRedisFunction implements Function<Object[]> {
       context.getResultSender().lastResult(result);
     };
 
-    computeWithPrimaryLocked(key, (LocalDataSet)localRegion, computation);
+    computeWithPrimaryLocked(key, (LocalDataSet) localRegion, computation);
   }
 
   @Override

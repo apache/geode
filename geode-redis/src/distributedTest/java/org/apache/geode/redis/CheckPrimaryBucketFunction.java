@@ -29,14 +29,13 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.SingleResultRedisFunction;
-import org.apache.geode.redis.internal.executor.set.RedisSet;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 @SuppressWarnings("unchecked")
 public class CheckPrimaryBucketFunction implements Function {
   private static final CountDownLatch latch = new CountDownLatch(1);
+  private static final CountDownLatch latch2 = new CountDownLatch(1);
 
   public static void awaitLatch() {
     try {
@@ -46,10 +45,15 @@ public class CheckPrimaryBucketFunction implements Function {
     }
   }
 
+  public static void finishedMovingPrimary() {
+    latch2.countDown();
+  }
+
   @Override
   public void execute(FunctionContext context) {
     RegionFunctionContextImpl regionFunctionContext = (RegionFunctionContextImpl) context;
     String key = (String) regionFunctionContext.getFilter().iterator().next();
+    boolean releaseLatchEarly = (boolean) context.getArguments();
 
     ResultSender result = context.getResultSender();
     DistributedMember member = context.getCache().getDistributedSystem().getDistributedMember();
@@ -59,8 +63,20 @@ public class CheckPrimaryBucketFunction implements Function {
     Region<?, ?> localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
 
-    Runnable r = () -> {
+    if (releaseLatchEarly) {
       latch.countDown();
+      // now wait until test has moved primary
+      try {
+        latch2.await();
+      } catch (InterruptedException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    Runnable r = () -> {
+      if (!releaseLatchEarly) {
+        latch.countDown();
+      }
       isMemberPrimary(regionFunctionContext, key, member);
 
       GeodeAwaitility.await()
@@ -69,7 +85,7 @@ public class CheckPrimaryBucketFunction implements Function {
           .until(() -> isMemberPrimary(regionFunctionContext, key, member));
     };
 
-    SingleResultRedisFunction.computeWithPrimaryLocked(key, (LocalDataSet)localRegion, r);
+    SingleResultRedisFunction.computeWithPrimaryLocked(key, (LocalDataSet) localRegion, r);
 
     result.lastResult(true);
   }
@@ -87,6 +103,11 @@ public class CheckPrimaryBucketFunction implements Function {
 
   @Override
   public boolean optimizeForWrite() {
+    return true;
+  }
+
+  @Override
+  public boolean isHA() {
     return true;
   }
 
