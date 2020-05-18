@@ -41,7 +41,7 @@ public class PartitionedRegionClear {
 
   private static final String CLEAR_OPERATION = "_clearOperation";
 
-  private final int retryTime = 2 * 60 * 1000 /* partitionedRegion.getRetryTimeout() */;
+  private final int retryTime = 2 * 60 * 1000;
 
   private final PartitionedRegion partitionedRegion;
 
@@ -220,7 +220,7 @@ public class PartitionedRegionClear {
   protected void releaseClearLockLocal() {
     synchronized (lockForListenerAndClientNotification) {
       if (lockForListenerAndClientNotification.getLockRequester() == null) {
-        // The member has been left.
+        // The member has left.
         return;
       }
       try {
