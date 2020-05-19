@@ -29,12 +29,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.function.BiFunction;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
@@ -54,21 +52,21 @@ public class OperationManagerTest {
 
   @Test
   public void submitPassesCacheAndOperationToPerformer() {
-    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
-        mock(BiFunction.class);
+    OperationPerformer<ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        mock(OperationPerformer.class);
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     executorManager.registerOperation(
         (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
 
     executorManager.submit(operation);
 
-    await().untilAsserted(() -> verify(performer).apply(same(cache), same(operation)));
+    await().untilAsserted(() -> verify(performer).perform(same(cache), same(operation)));
   }
 
   @Test
   public void submitReturnsOperationState() {
-    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
-        mock(BiFunction.class);
+    OperationPerformer<ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        mock(OperationPerformer.class);
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     String opId = "opId";
     OperationState<ClusterManagementOperation<OperationResult>, OperationResult> expectedOpState =
@@ -87,14 +85,14 @@ public class OperationManagerTest {
 
   @Test
   public void submitUpdatesOperationStateWhenOperationCompletesSuccessfully() {
-    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
-        mock(BiFunction.class);
+    OperationPerformer<ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        mock(OperationPerformer.class);
     OperationResult operationResult = mock(OperationResult.class);
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     executorManager.registerOperation(
         (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
 
-    when(performer.apply(any(), any())).thenReturn(operationResult);
+    when(performer.perform(any(), any())).thenReturn(operationResult);
     String opId = "my-op-id";
     when(operationHistoryManager.recordStart(any())).thenReturn(opId);
 
@@ -108,14 +106,14 @@ public class OperationManagerTest {
 
   @Test
   public void submitUpdatesOperationStateWhenOperationCompletesExceptionally() {
-    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
-        mock(BiFunction.class);
+    OperationPerformer<ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        mock(OperationPerformer.class);
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     executorManager.registerOperation(
         (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
 
     RuntimeException thrownByPerformer = new RuntimeException();
-    doThrow(thrownByPerformer).when(performer).apply(any(), any());
+    doThrow(thrownByPerformer).when(performer).perform(any(), any());
     String opId = "my-op-id";
     when(operationHistoryManager.recordStart(any())).thenReturn(opId);
 
@@ -138,7 +136,7 @@ public class OperationManagerTest {
 
     OperationResult operationResult = mock(OperationResult.class);
 
-    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
+    OperationPerformer<ClusterManagementOperation<OperationResult>, OperationResult> performer =
         (cache, op) -> {
           try {
             performerIsInProgress.countDown();

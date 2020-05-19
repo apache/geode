@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -43,6 +44,12 @@ import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 public class RebalanceOperationPerformerTest {
+  private RebalanceOperationPerformer performer;
+
+  @Before
+  public void before() throws Exception {
+    performer = new RebalanceOperationPerformer();
+  }
 
   @Test
   public void executeRebalanceOnDSWithNoRegionsReturnsSuccessAndNoRegionMessage() {
@@ -58,7 +65,7 @@ public class RebalanceOperationPerformerTest {
     RebalanceOperationPerformer.FunctionExecutor functionExecutor =
         mock(RebalanceOperationPerformer.FunctionExecutor.class);
 
-    RebalanceResult result = RebalanceOperationPerformer.executeRebalanceOnDS(managementService,
+    RebalanceResult result = performer.executeRebalanceOnDS(managementService,
         cache, "true", null, functionExecutor);
 
     assertThat(result.getSuccess()).isTrue();
@@ -89,7 +96,7 @@ public class RebalanceOperationPerformerTest {
         mock(RebalanceOperationPerformer.FunctionExecutor.class);
 
     RebalanceResult result =
-        RebalanceOperationPerformer.executeRebalanceOnDS(managementService, cache, "true",
+        performer.executeRebalanceOnDS(managementService, cache, "true",
             Collections.emptyList(), functionExecutor);
 
     assertThat(result.getSuccess()).isTrue();
@@ -129,7 +136,7 @@ public class RebalanceOperationPerformerTest {
     when(functionExecutor.execute(any(), any(), any())).thenReturn(resultList);
 
     RebalanceResult result =
-        RebalanceOperationPerformer.executeRebalanceOnDS(managementService, cache, "true",
+        performer.executeRebalanceOnDS(managementService, cache, "true",
             Collections.emptyList(), functionExecutor);
 
     assertThat(result.getSuccess()).isTrue();
@@ -158,7 +165,7 @@ public class RebalanceOperationPerformerTest {
     BaseManagementService managementService = mock(BaseManagementService.class);
     BaseManagementService.setManagementService(cache, managementService);
 
-    RebalanceResult result = RebalanceOperationPerformer.perform(cache, rebalanceOperation);
+    RebalanceResult result = performer.perform(cache, rebalanceOperation);
 
     assertThat(result.getSuccess()).isFalse();
     assertThat(result.getStatusMessage())
