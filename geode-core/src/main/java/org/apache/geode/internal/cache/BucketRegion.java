@@ -2503,7 +2503,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   @Override
   protected void basicClear(RegionEventImpl regionEvent) {
-    getDataView().checkSupportsRegionClear();
     basicClear(regionEvent, false);
   }
 

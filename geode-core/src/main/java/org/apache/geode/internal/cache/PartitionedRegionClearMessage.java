@@ -57,8 +57,6 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
 
   private PartitionedRegion partitionedRegion;
 
-  private Set<InternalDistributedMember> recipients;
-
   private ArrayList bucketsCleared;
 
   @Override
@@ -72,7 +70,6 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
       ReplyProcessor21 processor, PartitionedRegionClearMessage.OperationType operationType,
       final RegionEventImpl event) {
     super(recipients, region.getPRId(), processor);
-    this.recipients = recipients;
     partitionedRegion = region;
     op = operationType;
     cbArg = event.getRawCallbackArgument();
@@ -84,7 +81,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
   }
 
   public void send() {
-    Assert.assertTrue(recipients != null, "ClearMessage NULL recipients set");
+    Assert.assertTrue(getRecipients() != null, "ClearMessage NULL recipients set");
     setTransactionDistributed(partitionedRegion.getCache().getTxManager().isDistributed());
     partitionedRegion.getDistributionManager().putOutgoing(this);
   }

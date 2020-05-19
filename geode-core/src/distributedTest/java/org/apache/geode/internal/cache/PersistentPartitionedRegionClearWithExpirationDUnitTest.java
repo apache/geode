@@ -418,13 +418,14 @@ public class PersistentPartitionedRegionClearWithExpirationDUnitTest implements 
       TestVM coordinatorVM, RegionShortcut regionShortcut) throws Exception {
     final int entries = 500;
     // To avoid partition offline exception without redundancy.
+
     if (regionShortcut == PARTITION_PERSISTENT) {
       regionShortcut = PARTITION_REDUNDANT_PERSISTENT;
     } else if (regionShortcut == PARTITION_PERSISTENT_OVERFLOW) {
       regionShortcut = PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
     }
 
-    RegionShortcut rs = regionShortcut;
+    final RegionShortcut rs = regionShortcut;
     ExpirationAttributes expirationAttributes = new ExpirationAttributes(EXPIRATION_TIME, DESTROY);
     parametrizedSetup(regionShortcut, expirationAttributes);
     registerVMKillerAsCacheWriter(Collections.singletonList(server2));
