@@ -1,4 +1,5 @@
 org/apache/geode/redis/internal/CoderException,true,4707944288714910949
+org/apache/geode/redis/internal/DeltaType,false
 org/apache/geode/redis/internal/ParameterRequirements/RedisParametersMismatchException,true,-643700717871858072
 org/apache/geode/redis/internal/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/PubSubImpl
 org/apache/geode/redis/internal/RedisCommandParserException,true,4707944288714910949

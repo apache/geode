@@ -35,21 +35,6 @@ import org.apache.geode.redis.internal.RedisResponse;
  */
 public abstract class AbstractExecutor implements Executor {
 
-  /**
-   * Number of Regions used by GeodeRedisServer internally
-   */
-  public static final int NUM_DEFAULT_REGIONS = 3;
-
-  /**
-   * Max length of a list
-   */
-  protected static final Integer INFINITY_LIMIT = Integer.MAX_VALUE;
-
-  /**
-   * Constant of number of milliseconds in a second
-   */
-  protected static final int millisInSecond = 1000;
-
   protected long getBoundedStartIndex(long index, long size) {
     if (size < 0L) {
       throw new IllegalArgumentException("Size < 0, really?");

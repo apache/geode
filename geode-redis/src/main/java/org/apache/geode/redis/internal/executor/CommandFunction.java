@@ -81,6 +81,24 @@ public class CommandFunction extends SingleResultRedisFunction {
     Callable<Object> callable;
     boolean useStripedExecutor = true;
     switch (command) {
+      case DEL:
+        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).del(key);
+        break;
+      case EXISTS:
+        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).exists(key);
+        break;
+      case PEXPIREAT: {
+        long timestamp = (long) args[1];
+        callable =
+            () -> new RedisKeyInRegion(localRegion, regionProvider).pexpireat(key, timestamp);
+        break;
+      }
+      case PERSIST:
+        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).persist(key);
+        break;
+      case PTTL:
+        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).pttl(key);
+        break;
       case APPEND: {
         ByteArrayWrapper valueToAdd = (ByteArrayWrapper) args[1];
         callable = () -> new RedisStringInRegion(localRegion).append(key, valueToAdd);
@@ -107,12 +125,6 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> new RedisSetInRegion(localRegion).srem(key, membersToRemove);
         break;
       }
-      case DEL:
-        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).del(key);
-        break;
-      case EXISTS:
-        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).exists(key);
-        break;
       case SMEMBERS:
         callable = () -> new RedisSetInRegion(localRegion).smembers(key);
         break;

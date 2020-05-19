@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
@@ -24,15 +25,12 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RegionProvider;
 
 public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    int SET = 1;
-    int NOT_SET = 0;
     int TIMESTAMP_INDEX = 2;
 
     if (commandElems.size() != 3) {
@@ -42,7 +40,6 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
               getArgsError()));
       return;
     }
-    RegionProvider regionProvider = context.getRegionProvider();
     ByteArrayWrapper wKey = command.getKey();
 
     byte[] timestampByteArray = commandElems.get(TIMESTAMP_INDEX);
@@ -56,40 +53,15 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
     }
 
     if (!timeUnitMillis()) {
-      timestamp = timestamp * millisInSecond;
+      timestamp = SECONDS.toMillis(timestamp);
     }
 
-    long currentTimeMillis = System.currentTimeMillis();
-
-    if (timestamp <= currentTimeMillis) {
-      int result = NOT_SET;
-      RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
-      if (redisKeyCommands.del(wKey)) {
-        result = SET;
-      }
-
-      command.setResponse(
-          Coder.getIntegerResponse(
-              context.getByteBufAllocator(),
-              result));
-      return;
-    }
-
-    long delayMillis = timestamp - currentTimeMillis;
-
-    boolean expirationSet;
-
-    if (regionProvider.hasExpiration(wKey)) {
-      expirationSet = regionProvider.modifyExpiration(wKey, delayMillis);
-    } else {
-      expirationSet = regionProvider.setExpiration(wKey, delayMillis);
-    }
-
-    if (expirationSet) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
-    } else {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
-    }
+    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+    int result = redisKeyCommands.pexpireat(wKey, timestamp);
+    command.setResponse(
+        Coder.getIntegerResponse(
+            context.getByteBufAllocator(),
+            result));
   }
 
   protected boolean timeUnitMillis() {

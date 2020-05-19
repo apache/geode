@@ -20,28 +20,113 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RegionProvider;
 
-class RedisKeyInRegion {
-  private Region localRegion;
-  private RegionProvider regionProvider;
+public class RedisKeyInRegion implements RedisKeyCommands {
+  protected final Region<ByteArrayWrapper, RedisData> region;
+  private final RegionProvider regionProvider;
 
-  public RedisKeyInRegion(Region localRegion, RegionProvider regionProvider) {
-    this.localRegion = localRegion;
+  @SuppressWarnings("unchecked")
+  public RedisKeyInRegion(Region region, RegionProvider regionProvider) {
+    this.region = region;
     this.regionProvider = regionProvider;
   }
 
+  @Override
   public boolean del(ByteArrayWrapper key) {
-    RedisData redisData = (RedisData) localRegion.get(key);
+    RedisData redisData = getRedisData(key);
     if (redisData == null) {
       return false;
     }
-    boolean result = localRegion.remove(key) != null;
+    boolean result = region.remove(key) != null;
     if (result) {
       regionProvider.cancelKeyExpiration(key);
     }
     return result;
   }
 
+  @Override
   public boolean exists(ByteArrayWrapper key) {
-    return localRegion.containsKey(key);
+    return getRedisData(key) != null;
+  }
+
+  @Override
+  public long pttl(ByteArrayWrapper key) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null) {
+      return -2;
+    }
+    switch (redisData.getType()) {
+      case REDIS_SET:
+      case REDIS_HASH: {
+        return redisData.pttl(region, key);
+      }
+      default:
+        return regionProvider.getExpirationDelayMillis(key);
+    }
+  }
+
+  @Override
+  public int pexpireat(ByteArrayWrapper key, long timestamp) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null) {
+      return 0;
+    }
+    long now = System.currentTimeMillis();
+    if (now >= timestamp) {
+      // already expired
+      del(key);
+    } else {
+      switch (redisData.getType()) {
+        case REDIS_SET:
+        case REDIS_HASH:
+          redisData.setExpirationTimestamp(region, key, timestamp);
+          break;
+        default:
+          if (regionProvider.hasExpiration(key)) {
+            regionProvider.modifyExpiration(key, timestamp - now);
+          } else {
+            regionProvider.setExpiration(key, timestamp - now);
+          }
+          break;
+      }
+    }
+    return 1;
+  }
+
+  @Override
+  public int persist(ByteArrayWrapper key) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null) {
+      return 0;
+    }
+    switch (redisData.getType()) {
+      case REDIS_SET:
+      case REDIS_HASH:
+        return redisData.persist(region, key);
+      default:
+        if (regionProvider.cancelKeyExpiration(key)) {
+          return 1;
+        } else {
+          return 0;
+        }
+    }
+  }
+
+  protected RedisData getRedisData(ByteArrayWrapper key) {
+    return getRedisDataOrDefault(key, null);
+  }
+
+  protected RedisData getRedisDataOrDefault(ByteArrayWrapper key, RedisData defaultValue) {
+    RedisData result = region.get(key);
+    if (result != null) {
+      if (result.hasExpired()) {
+        region.remove(key);
+        result = null;
+      }
+    }
+    if (result == null) {
+      return defaultValue;
+    } else {
+      return result;
+    }
   }
 }

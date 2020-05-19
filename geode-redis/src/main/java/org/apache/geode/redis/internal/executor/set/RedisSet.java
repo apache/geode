@@ -30,20 +30,19 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.AbstractRedisData;
+import org.apache.geode.redis.internal.AddsDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RemsDeltaInfo;
 
-public class RedisSet implements RedisData {
+public class RedisSet extends AbstractRedisData {
 
-  public static transient RedisSet EMPTY = new EmptyRedisSet();
+  public static final RedisSet EMPTY = new EmptyRedisSet();
   private HashSet<ByteArrayWrapper> members;
-  private transient ArrayList<ByteArrayWrapper> deltas;
-  // true if deltas contains adds; false if removes
-  private transient boolean deltasAreAdds;
 
   @SuppressWarnings("unchecked")
   RedisSet(Collection<ByteArrayWrapper> members) {
@@ -68,7 +67,6 @@ public class RedisSet implements RedisData {
       i++;
       if (beforeCursor < cursor) {
         beforeCursor++;
-        continue;
       } else if (numElements < count) {
         if (matchPattern != null) {
           String valueAsString = Coder.bytesToString(value.toBytes());
@@ -118,13 +116,7 @@ public class RedisSet implements RedisData {
       }
     }
     if (!popped.isEmpty()) {
-      this.deltasAreAdds = false;
-      this.deltas = popped;
-      try {
-        region.put(key, this);
-      } finally {
-        this.deltas = null;
-      }
+      storeChanges(region, key, new RemsDeltaInfo(popped));
     }
     return popped;
   }
@@ -165,44 +157,26 @@ public class RedisSet implements RedisData {
     return members.size();
   }
 
-  // DELTA
   @Override
-  public boolean hasDelta() {
-    return deltas != null;
+  protected void removeDeltas(ArrayList<ByteArrayWrapper> deltas) {
+    members.removeAll(deltas);
   }
 
   @Override
-  public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeBoolean(deltasAreAdds, out);
-    DataSerializer.writeArrayList(deltas, out);
-  }
-
-  @Override
-  public void fromDelta(DataInput in)
-      throws IOException, InvalidDeltaException {
-    boolean deltaAdds = DataSerializer.readBoolean(in);
-    try {
-      ArrayList<ByteArrayWrapper> deltas = DataSerializer.readArrayList(in);
-      if (deltas != null) {
-        if (deltaAdds) {
-          members.addAll(deltas);
-        } else {
-          members.removeAll(deltas);
-        }
-      }
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+  protected void addDeltas(ArrayList<ByteArrayWrapper> deltas) {
+    members.addAll(deltas);
   }
 
   // DATA SERIALIZABLE
   @Override
   public void toData(DataOutput out) throws IOException {
+    super.toData(out);
     DataSerializer.writeHashSet(members, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     members = DataSerializer.readHashSet(in);
   }
 
@@ -220,13 +194,7 @@ public class RedisSet implements RedisData {
     membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      deltasAreAdds = true;
-      deltas = membersToAdd;
-      try {
-        region.put(key, this);
-      } finally {
-        deltas = null;
-      }
+      storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
     }
     return membersAdded;
   }
@@ -245,24 +213,14 @@ public class RedisSet implements RedisData {
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      if (members.isEmpty()) {
-        region.remove(key);
-      } else {
-        deltasAreAdds = false;
-        deltas = membersToRemove;
-        try {
-          region.put(key, this);
-        } finally {
-          deltas = null;
-        }
-      }
+      storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
     }
     return membersRemoved;
   }
 
   /**
    * The returned set is a copy and will not be changed
-   * by future changes to this DeltaSet.
+   * by future changes to this instance.
    *
    * @return a set containing all the members in this set
    */
@@ -273,5 +231,10 @@ public class RedisSet implements RedisData {
   @Override
   public RedisDataType getType() {
     return REDIS_SET;
+  }
+
+  @Override
+  protected boolean removeFromRegion() {
+    return members.isEmpty();
   }
 }

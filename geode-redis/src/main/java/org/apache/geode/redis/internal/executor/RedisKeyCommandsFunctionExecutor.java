@@ -14,13 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.RedisCommandType.DEL;
+import static org.apache.geode.redis.internal.RedisCommandType.EXISTS;
+import static org.apache.geode.redis.internal.RedisCommandType.PERSIST;
+import static org.apache.geode.redis.internal.RedisCommandType.PEXPIREAT;
+import static org.apache.geode.redis.internal.RedisCommandType.PTTL;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisData;
 
 public class RedisKeyCommandsFunctionExecutor implements RedisKeyCommands {
-  private Region<ByteArrayWrapper, RedisData> region;
+  private final Region<ByteArrayWrapper, RedisData> region;
 
   public RedisKeyCommandsFunctionExecutor(
       Region<ByteArrayWrapper, RedisData> region) {
@@ -29,11 +34,26 @@ public class RedisKeyCommandsFunctionExecutor implements RedisKeyCommands {
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    return (boolean) CommandFunction.execute(RedisCommandType.DEL, key, new Object[] {}, region);
+    return CommandFunction.execute(DEL, key, null, region);
   }
 
   @Override
   public boolean exists(ByteArrayWrapper key) {
-    return (boolean) CommandFunction.execute(RedisCommandType.EXISTS, key, new Object[] {}, region);
+    return CommandFunction.execute(EXISTS, key, null, region);
+  }
+
+  @Override
+  public long pttl(ByteArrayWrapper key) {
+    return CommandFunction.execute(PTTL, key, null, region);
+  }
+
+  @Override
+  public int pexpireat(ByteArrayWrapper key, long timestamp) {
+    return CommandFunction.execute(PEXPIREAT, key, timestamp, region);
+  }
+
+  @Override
+  public int persist(ByteArrayWrapper key) {
+    return CommandFunction.execute(PERSIST, key, null, region);
   }
 }

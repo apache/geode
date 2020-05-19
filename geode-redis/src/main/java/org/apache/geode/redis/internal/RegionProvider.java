@@ -140,11 +140,11 @@ public class RegionProvider implements Closeable {
    * Get remaining expiration time
    *
    * @param key Key
-   * @return Remaining time in milliseconds or 0 if no delay or key doesn't exist
+   * @return Remaining time in milliseconds or -1 if no expiration scheduled
    */
   public long getExpirationDelayMillis(ByteArrayWrapper key) {
     ScheduledFuture<?> future = expirationsMap.get(key);
-    return future != null ? future.getDelay(TimeUnit.MILLISECONDS) : 0L;
+    return future != null ? future.getDelay(TimeUnit.MILLISECONDS) : -1L;
   }
 
   @Override

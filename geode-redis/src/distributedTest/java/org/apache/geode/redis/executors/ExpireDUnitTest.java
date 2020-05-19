@@ -32,12 +32,10 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.internal.executor.TTLExecutor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-@Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
 public class ExpireDUnitTest {
 
   @ClassRule
@@ -115,7 +113,7 @@ public class ExpireDUnitTest {
   public void expireOnOneServer_shouldPropagateToAllServers() {
     String key = "key";
 
-    jedis1.set(key, "value");
+    jedis1.sadd(key, "value");
     jedis1.expire(key, 20);
 
     assertThat(jedis2.ttl(key)).isGreaterThan(0);
@@ -125,17 +123,17 @@ public class ExpireDUnitTest {
   public void expireOnOneServer_shouldResultInKeyRemovalFromOtherServer() {
     String key = "key";
 
-    jedis1.set(key, "value");
-    jedis1.expire(key, 2);
+    jedis1.sadd(key, "value");
+    jedis1.expire(key, 1);
 
-    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == TTLExecutor.NOT_EXISTS);
+    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == -2);
   }
 
   @Test
   public void whenExpirationIsSet_andIsUpdatedOnAnotherServer_itIsReflectedOnFirstServer() {
     String key = "key";
 
-    jedis1.set(key, "value");
+    jedis1.sadd(key, "value");
     jedis1.expire(key, 20);
     jedis2.expire(key, 10000);
 
@@ -146,45 +144,47 @@ public class ExpireDUnitTest {
   public void whenExpirationIsSet_andKeyIsResetOnAnotherServer_ttlIsRemovedOnFirstServer() {
     String key = "key";
 
-    jedis1.set(key, "value");
+    jedis1.sadd(key, "value");
     jedis1.expire(key, 20);
-    jedis2.set(key, "newValue");
+    jedis2.del(key);
+    jedis2.sadd(key, "newValue");
 
-    assertThat(jedis1.ttl(key)).isEqualTo(TTLExecutor.NO_TIMEOUT);
+    assertThat(jedis1.ttl(key)).isEqualTo(-1);
   }
 
   @Test
   public void whenExpirationIsSet_andKeyIsPersistedOnAnotherServer_ttlIsRemovedOnFirstServer() {
     String key = "key";
 
-    jedis1.set(key, "value");
+    jedis1.sadd(key, "value");
     jedis1.expire(key, 20);
     jedis2.persist(key);
 
-    assertThat(jedis1.ttl(key)).isEqualTo(TTLExecutor.NO_TIMEOUT);
+    assertThat(jedis1.ttl(key)).isEqualTo(-1);
   }
 
   @Test
   public void whenExpirationIsSet_andKeyIsDeletedOnAnotherServerThenReset_ttlIsRemoved() {
     String key = "key";
 
-    jedis1.set(key, "value");
+    jedis1.sadd(key, "value");
     jedis1.expire(key, 10000);
     jedis2.del(key);
-    jedis2.set(key, "newVal");
+    jedis2.sadd(key, "newVal");
 
-    assertThat(jedis1.ttl(key)).isEqualTo(TTLExecutor.NO_TIMEOUT);
-    assertThat(jedis2.ttl(key)).isEqualTo(TTLExecutor.NO_TIMEOUT);
+    assertThat(jedis1.ttl(key)).isEqualTo(-1);
+    assertThat(jedis2.ttl(key)).isEqualTo(-1);
   }
 
 
   @Test
+  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void whenExpirationIsSet_andKeyWithoutExpirationIsRenamedOnAnotherServer_expirationIsCorrectlyTransferred() {
     String key1 = "key1";
     String key2 = "key2";
 
-    jedis1.set(key1, "value");
-    jedis1.set(key2, "value");
+    jedis1.sadd(key1, "value");
+    jedis1.sadd(key2, "value");
     jedis1.expire(key1, 20);
     jedis2.rename(key1, key2);
 
@@ -196,32 +196,29 @@ public class ExpireDUnitTest {
   public void pExpireOnOneServer_shouldResultInKeyRemovalFromOtherServer() {
     String key = "key";
 
-    jedis1.set(key, "value");
-    jedis1.pexpire(key, 2000);
+    jedis1.sadd(key, "value");
+    jedis1.pexpire(key, 50);
 
-    assertThat(jedis2.ttl(key)).isGreaterThan(0);
-    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == TTLExecutor.NOT_EXISTS);
+    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == -2);
   }
 
   @Test
   public void expireAtOnOneServer_shouldResultInKeyRemovalFromOtherServer() {
     String key = "key";
 
-    jedis1.set(key, "value");
+    jedis1.sadd(key, "value");
     jedis1.expireAt(key, System.currentTimeMillis() / 1000 + 2);
 
-    assertThat(jedis2.ttl(key)).isGreaterThan(0);
-    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == TTLExecutor.NOT_EXISTS);
+    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == -2);
   }
 
   @Test
   public void pExpireAtOnOneServer_shouldResultInKeyRemovalFromOtherServer() {
     String key = "key";
 
-    jedis1.set(key, "value");
-    jedis1.pexpireAt(key, System.currentTimeMillis() + 2000);
+    jedis1.sadd(key, "value");
+    jedis1.pexpireAt(key, System.currentTimeMillis() + 100);
 
-    assertThat(jedis2.ttl(key)).isGreaterThan(0);
-    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == TTLExecutor.NOT_EXISTS);
+    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == -2);
   }
 }

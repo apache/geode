@@ -28,25 +28,19 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.AbstractRedisData;
+import org.apache.geode.redis.internal.AddsDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.EmptyRedisHash;
 
-public class RedisHash implements RedisData {
+public class RedisHash extends AbstractRedisData {
   public static final RedisHash EMPTY = new EmptyRedisHash();
   private HashMap<ByteArrayWrapper, ByteArrayWrapper> hash;
-  /**
-   * When deltas are adds it will always contain an even number of field/value pairs.
-   * When deltas are removes it will just contain field names.
-   */
-  private transient ArrayList<ByteArrayWrapper> deltas;
-  // true if deltas contains adds; false if removes
-  private transient boolean deltasAreAdds;
-
 
   public RedisHash(List<ByteArrayWrapper> fieldsToSet) {
     hash = new HashMap<>();
@@ -62,50 +56,37 @@ public class RedisHash implements RedisData {
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    super.toData(out);
     DataSerializer.writeHashMap(hash, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     hash = DataSerializer.readHashMap(in);
   }
 
   @Override
-  public boolean hasDelta() {
-    return deltas != null;
+  protected void removeDeltas(ArrayList<ByteArrayWrapper> deltas) {
+    for (ByteArrayWrapper field : deltas) {
+      hash.remove(field);
+    }
   }
 
   @Override
-  public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeBoolean(deltasAreAdds, out);
-    DataSerializer.writeArrayList(deltas, out);
-  }
-
-  @Override
-  public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    boolean deltaAdds = DataSerializer.readBoolean(in);
-    try {
-      ArrayList<ByteArrayWrapper> deltas = DataSerializer.readArrayList(in);
-      if (deltas != null) {
-        Iterator<ByteArrayWrapper> iterator = deltas.iterator();
-        while (iterator.hasNext()) {
-          ByteArrayWrapper field = iterator.next();
-          if (deltaAdds) {
-            ByteArrayWrapper value = iterator.next();
-            hash.put(field, value);
-          } else {
-            hash.remove(field);
-          }
-        }
-      }
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+  protected void addDeltas(ArrayList<ByteArrayWrapper> deltas) {
+    Iterator<ByteArrayWrapper> iterator = deltas.iterator();
+    while (iterator.hasNext()) {
+      ByteArrayWrapper field = iterator.next();
+      ByteArrayWrapper value = iterator.next();
+      hash.put(field, value);
     }
   }
 
   public int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
+    AddsDeltaInfo deltaInfo = null;
     Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
       ByteArrayWrapper field = iterator.next();
@@ -117,31 +98,32 @@ public class RedisHash implements RedisData {
         added = hash.put(field, value) == null;
       }
       if (added) {
-        if (deltas == null) {
-          deltas = new ArrayList<>();
+        if (deltaInfo == null) {
+          deltaInfo = new AddsDeltaInfo();
         }
-        deltas.add(field);
-        deltas.add(value);
+        deltaInfo.add(field);
+        deltaInfo.add(value);
         fieldsAdded++;
       }
     }
-    storeChanges(region, key, true);
+    storeChanges(region, key, deltaInfo);
     return fieldsAdded;
   }
 
   public int hdel(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
+    RemsDeltaInfo deltaInfo = null;
     for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
       if (hash.remove(fieldToRemove) != null) {
-        if (deltas == null) {
-          deltas = new ArrayList<>();
+        if (deltaInfo == null) {
+          deltaInfo = new RemsDeltaInfo();
         }
-        deltas.add(fieldToRemove);
+        deltaInfo.add(fieldToRemove);
         fieldsRemoved++;
       }
     }
-    storeChanges(region, key, false);
+    storeChanges(region, key, deltaInfo);
     return fieldsRemoved;
   }
 
@@ -231,10 +213,10 @@ public class RedisHash implements RedisData {
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.longToBytes(increment));
       hash.put(field, newValue);
-      deltas = new ArrayList<>(2);
-      deltas.add(field);
-      deltas.add(newValue);
-      storeChanges(region, key, true);
+      AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
+      deltaInfo.add(field);
+      deltaInfo.add(newValue);
+      storeChanges(region, key, deltaInfo);
       return increment;
     }
 
@@ -248,10 +230,10 @@ public class RedisHash implements RedisData {
 
     ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.longToBytes(value));
     hash.put(field, modifiedValue);
-    deltas = new ArrayList<>(2);
-    deltas.add(field);
-    deltas.add(modifiedValue);
-    storeChanges(region, key, true);
+    AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
+    deltaInfo.add(field);
+    deltaInfo.add(modifiedValue);
+    storeChanges(region, key, deltaInfo);
     return value;
   }
 
@@ -261,10 +243,10 @@ public class RedisHash implements RedisData {
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.doubleToBytes(increment));
       hash.put(field, newValue);
-      deltas = new ArrayList<>(2);
-      deltas.add(field);
-      deltas.add(newValue);
-      storeChanges(region, key, true);
+      AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
+      deltaInfo.add(field);
+      deltaInfo.add(newValue);
+      storeChanges(region, key, deltaInfo);
       return increment;
     }
 
@@ -278,31 +260,20 @@ public class RedisHash implements RedisData {
 
     ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.doubleToBytes(value));
     hash.put(field, modifiedValue);
-    deltas = new ArrayList<>(2);
-    deltas.add(field);
-    deltas.add(modifiedValue);
-    storeChanges(region, key, true);
+    AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
+    deltaInfo.add(field);
+    deltaInfo.add(modifiedValue);
+    storeChanges(region, key, deltaInfo);
     return value;
-  }
-
-  private void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      boolean doingAdds) {
-    if (hasDelta()) {
-      if (!doingAdds && hash.isEmpty()) {
-        region.remove(key);
-      } else {
-        deltasAreAdds = doingAdds;
-        try {
-          region.put(key, this);
-        } finally {
-          deltas = null;
-        }
-      }
-    }
   }
 
   @Override
   public RedisDataType getType() {
     return RedisDataType.REDIS_HASH;
+  }
+
+  @Override
+  protected boolean removeFromRegion() {
+    return hash.isEmpty();
   }
 }

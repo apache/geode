@@ -21,4 +21,10 @@ public interface RedisKeyCommands {
   boolean del(ByteArrayWrapper key);
 
   boolean exists(ByteArrayWrapper key);
+
+  long pttl(ByteArrayWrapper key);
+
+  int pexpireat(ByteArrayWrapper key, long timestamp);
+
+  int persist(ByteArrayWrapper key);
 }

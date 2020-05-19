@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
@@ -24,7 +25,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SetExecutor extends StringExecutor {
 
@@ -138,7 +138,7 @@ public class SetExecutor extends StringExecutor {
     }
 
     if (arg.equalsIgnoreCase("EX")) {
-      return expiration * AbstractExecutor.millisInSecond;
+      return SECONDS.toMillis(expiration);
     } else if (arg.equalsIgnoreCase("PX")) {
       return expiration;
     } else {
