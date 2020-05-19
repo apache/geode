@@ -78,12 +78,8 @@ public class RedisConstants {
     public static final String AUTH =
         "The wrong number of arguments or syntax was provided, the format for the AUTH command is \"AUTH password\"";
     public static final String DBSIZE = null;
-    public static final String DEL =
-        "The wrong number of arguments or syntax was provided, the format for the DEL command is \"DEL key [key ...]\"";
     public static final String ECHO =
         "The wrong number of arguments or syntax was provided, the format for the ECHO command is \"ECHO message\"";
-    public static final String EXISTS =
-        "The wrong number of arguments or syntax was provided, the format for the EXISTS command is \"EXISTS key\"";
     public static final String EXPIREAT =
         "The wrong number of arguments or syntax was provided, the format for the EXPIREAT command is \"EXPIREAT key timestamp\"";
     public static final String EXPIRE =

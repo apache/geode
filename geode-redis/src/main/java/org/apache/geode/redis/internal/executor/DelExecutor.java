@@ -21,8 +21,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class DelExecutor extends AbstractExecutor {
 
@@ -32,24 +30,15 @@ public class DelExecutor extends AbstractExecutor {
       throw new UnsupportedOperationInTransactionException();
     }
 
-    List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.DEL));
-      return;
-    }
+    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
-    int numRemoved = 0;
-
-    for (int i = 1; i < commandElems.size(); i++) {
-      byte[] byteKey = commandElems.get(i);
-      ByteArrayWrapper key = new ByteArrayWrapper(byteKey);
-      RedisDataType type = context.getKeyRegistrar().getType(key);
-      if (removeEntry(key, type, context)) {
-        numRemoved++;
-      }
-    }
+    long numRemoved = commandElems
+        .subList(1, commandElems.size())
+        .stream()
+        .filter((key) -> new RedisKeyCommandsFunctionExecutor(
+            context.getRegionProvider().getDataRegion()).del(key))
+        .count();
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }
-
 }

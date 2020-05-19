@@ -389,7 +389,7 @@ public class GeodeRedisServer {
       keyRegistrar.register(Coder.stringToByteArrayWrapper(STRING_REGION),
           RedisDataType.REDIS_PROTECTED);
 
-      CommandFunction.register();
+      CommandFunction.register(regionProvider);
     }
 
     checkForRegions();
