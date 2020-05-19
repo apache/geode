@@ -57,8 +57,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
   private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
-  private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS; // 60
-                                                                                          // seconds
+  private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS;
+
   private final RedisLockService lockService;
 
   private final Cache cache;
