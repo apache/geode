@@ -3027,13 +3027,17 @@ public class Connection implements Runnable {
         failureMsg = "ClassNotFound deserializing message";
         failureEx = ex;
         rpId = md.getRPid();
-        logger.fatal("ClassNotFound deserializing message: {}", ex.toString());
+        // log at info level first in case fatal-level alert notification becomes blocked
+        logger.info(failureMsg, failureEx);
+        logger.fatal(failureMsg, failureEx.toString());
       } catch (IOException ex) {
         owner.getConduit().getStats().decMessagesBeingReceived(md.size());
         failureMsg = "IOException deserializing message";
         failureEx = ex;
         rpId = md.getRPid();
-        logger.fatal("IOException deserializing message", failureEx);
+        // log at info level first in case fatal-level alert notification becomes blocked
+        logger.info(failureMsg, failureEx);
+        logger.fatal(failureMsg, failureEx);
       } catch (InterruptedException ex) {
         interrupted = true;
         owner.getConduit().getCancelCriterion().checkCancelInProgress(ex);
@@ -3054,7 +3058,9 @@ public class Connection implements Runnable {
         failureMsg = "Unexpected failure deserializing message";
         failureEx = ex;
         rpId = md.getRPid();
-        logger.fatal("Unexpected failure deserializing message", failureEx);
+        // log at info level first in case fatal-level alert notification becomes blocked
+        logger.info(failureMsg, failureEx);
+        logger.fatal(failureMsg, failureEx);
       } finally {
         msgLength = md.size();
         releaseMsgDestreamer(messageId, md);
