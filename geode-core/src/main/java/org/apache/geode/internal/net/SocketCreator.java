@@ -544,7 +544,13 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * Returns an SSLEngine that can be used to perform TLS handshakes and communication
    */
   public SSLEngine createSSLEngine(String hostName, int port) {
-    return getSslContext().createSSLEngine(hostName, port);
+    SSLEngine engine = getSslContext().createSSLEngine(hostName, port);
+    SSLParameters parameters = engine.getSSLParameters();
+    // set server-names so that endpoint identification algorithms can find what's expected
+    if (setServerNames(parameters, new HostAndPort(hostName, port))) {
+      engine.setSSLParameters(parameters);
+    }
+    return engine;
   }
 
   /**
@@ -770,7 +776,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
-  private void setServerNames(SSLParameters modifiedParams, HostAndPort addr) {
+  /**
+   * returns true if the SSLParameters are altered, false if not
+   */
+  private boolean setServerNames(SSLParameters modifiedParams, HostAndPort addr) {
     List<SNIServerName> oldNames = modifiedParams.getServerNames();
     oldNames = oldNames == null ? Collections.emptyList() : oldNames;
     final List<SNIServerName> serverNames = new ArrayList<>(oldNames);
@@ -779,11 +788,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
         .mapToInt(SNIServerName::getType)
         .anyMatch(type -> type == StandardConstants.SNI_HOST_NAME)) {
       // we already have a SNI hostname set. Do nothing.
-      return;
+      return false;
     }
 
     serverNames.add(new SNIHostName(addr.getHostName()));
     modifiedParams.setServerNames(serverNames);
+    return true;
   }
 
   /**
