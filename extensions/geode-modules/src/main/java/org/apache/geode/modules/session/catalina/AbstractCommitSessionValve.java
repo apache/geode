@@ -14,10 +14,13 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.Manager;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
@@ -25,7 +28,9 @@ import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
-public abstract class AbstractCommitSessionValve extends ValveBase {
+
+public abstract class AbstractCommitSessionValve<SelfT extends AbstractCommitSessionValve<?>>
+    extends ValveBase {
 
   private static final Log log = LogFactory.getLog(AbstractCommitSessionValve.class);
 
@@ -37,36 +42,45 @@ public abstract class AbstractCommitSessionValve extends ValveBase {
   }
 
   @Override
-  public void invoke(Request request, Response response) throws IOException, ServletException {
-    // Get the Manager
-    Manager manager = request.getContext().getManager();
-    DeltaSessionFacade session;
-
+  public void invoke(final Request request, final Response response)
+      throws IOException, ServletException {
     // Invoke the next Valve
     try {
       getNext().invoke(request, wrapResponse(response));
     } finally {
-      // Commit and if the correct Manager was found
-      if (manager instanceof DeltaSessionManager) {
-        session = (DeltaSessionFacade) request.getSession(false);
-        DeltaSessionManager dsm = ((DeltaSessionManager) manager);
-        if (session != null) {
-          if (session.isValid()) {
-            dsm.removeTouchedSession(session.getId());
-            session.commit();
-            if (dsm.getTheContext().getLogger().isDebugEnabled()) {
-              dsm.getTheContext().getLogger().debug(session + ": Committed.");
-            }
-          } else {
-            if (dsm.getTheContext().getLogger().isDebugEnabled()) {
-              dsm.getTheContext().getLogger().debug(session + ": Not valid so not committing.");
-            }
+      commitSession(request);
+    }
+  }
+
+  /**
+   * Commit session only if DeltaSessionManager is in place.
+   *
+   * @param request to commit session from.
+   */
+  protected static <SelfT extends AbstractCommitSessionValve<?>> void commitSession(
+      final Request request) {
+    final Context context = request.getContext();
+    final Manager manager = context.getManager();
+    if (manager instanceof DeltaSessionManager) {
+      final DeltaSessionFacade session = (DeltaSessionFacade) request.getSession(false);
+      if (session != null) {
+        final DeltaSessionManager<SelfT> deltaSessionManager = uncheckedCast(manager);
+        final Log contextLogger = context.getLogger();
+        if (session.isValid()) {
+          deltaSessionManager.removeTouchedSession(session.getId());
+          session.commit();
+          if (contextLogger.isDebugEnabled()) {
+            contextLogger.debug(session + ": Committed.");
+          }
+        } else {
+          if (contextLogger.isDebugEnabled()) {
+            contextLogger.debug(session + ": Not valid so not committing.");
           }
         }
       }
     }
   }
 
-  protected abstract Response wrapResponse(Response response);
+  abstract Response wrapResponse(final Response response);
 
 }

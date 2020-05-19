@@ -15,12 +15,22 @@
 
 package org.apache.geode.modules.session.catalina;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
+import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 
-public class Tomcat8CommitSessionValve extends AbstractCommitSessionValve {
+public class Tomcat8CommitSessionValve
+    extends AbstractCommitSessionValve<Tomcat8CommitSessionValve> {
 
   @Override
-  protected Response wrapResponse(Response response) {
-    throw new UnsupportedOperationException();
+  Response wrapResponse(final Response response) {
+    return response;
   }
+  
 }

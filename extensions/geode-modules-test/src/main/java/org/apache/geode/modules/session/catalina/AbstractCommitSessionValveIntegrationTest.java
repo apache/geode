@@ -44,10 +44,10 @@ import org.apache.geode.cache.RegionShortcut;
 @RunWith(JUnitParamsRunner.class)
 public abstract class AbstractCommitSessionValveIntegrationTest<CommitSessionValveT extends AbstractCommitSessionValve>
     extends AbstractSessionValveIntegrationTest {
-  private Request request;
-  private Response response;
+  protected Request request;
+  protected Response response;
   private TestValve testValve;
-  private CommitSessionValveT commitSessionValve;
+  protected CommitSessionValveT commitSessionValve;
   private DeltaSessionFacade deltaSessionFacade;
 
   @Before

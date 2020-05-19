@@ -20,14 +20,15 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.session.StandardSession;
-import org.apache.catalina.util.LifecycleSupport;
 
 public class Tomcat7DeltaSessionManager extends DeltaSessionManager<Tomcat7CommitSessionValve> {
 
   /**
    * The <code>LifecycleSupport</code> for this component.
    */
-  protected LifecycleSupport lifecycle = new LifecycleSupport(this);
+  @SuppressWarnings("deprecation")
+  protected org.apache.catalina.util.LifecycleSupport lifecycle =
+      new org.apache.catalina.util.LifecycleSupport(this);
 
   /**
    * Prepare for the beginning of active use of the public methods of this component. This method

@@ -15,12 +15,24 @@
 
 package org.apache.geode.modules.session.catalina;
 
-public class CommitSessionValveIntegrationTest
-    extends AbstractCommitSessionValveIntegrationTest<Tomcat8CommitSessionValve> {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
-  @Override
-  protected Tomcat8CommitSessionValve createCommitSessionValve() {
-    return new Tomcat8CommitSessionValve();
-  }
+import java.io.IOException;
+import java.io.PrintWriter;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
+import org.apache.catalina.Context;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.junit.Test;
+
+
+public class Tomcat8CommitSessionValveTest {
+  
 }
