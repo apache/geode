@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
@@ -56,19 +57,20 @@ public class EnsurePrimaryStaysPutDUnitTest {
   @Before
   public void setup() throws Exception {
     locator = cluster.startLocatorVM(0);
-    server1 = cluster.startServerVM(1, locator.getPort());
-    server2 = cluster.startServerVM(2, locator.getPort());
+    int locatorPort = locator.getPort();
+    server1 = cluster.startServerVM(1, cf -> cf
+        .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.awaitility.core.*")
+        .withConnectionToLocator(locatorPort));
+    server2 = cluster.startServerVM(2, cf -> cf
+        .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.awaitility.core.*")
+        .withConnectionToLocator(locatorPort));
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=TEST --type=PARTITION_REDUNDANT")
         .statusIsSuccess();
 
-    server1.invoke(() -> {
-      FunctionService.registerFunction(new CheckPrimaryBucketFunction());
-    });
-    server2.invoke(() -> {
-      FunctionService.registerFunction(new CheckPrimaryBucketFunction());
-    });
+    server1.invoke(() -> FunctionService.registerFunction(new CheckPrimaryBucketFunction()));
+    server2.invoke(() -> FunctionService.registerFunction(new CheckPrimaryBucketFunction()));
   }
 
   @Test

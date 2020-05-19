@@ -95,10 +95,7 @@ public class CheckPrimaryBucketFunction implements Function {
     DistributedMember primaryForKey = PartitionRegionHelper
         .getPrimaryMemberForKey(context.getDataSet(), key);
 
-    boolean primaryness = primaryForKey.equals(member);
-    // System.err.println("--->>> " + primaryness);
-
-    return primaryness;
+    return primaryForKey.equals(member);
   }
 
   @Override
