@@ -1,0 +1,97 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../gradle/warnings.gradle"
+
+sourceSets {
+    module1 {
+        java.srcDir "src/testModules/module1/java"
+        resources.srcDir "src/testModules/module1/resources"
+        compileClasspath += configurations.compileClasspath
+        runtimeClasspath += configurations.runtimeClasspath
+    }
+    module2 {
+        java.srcDir "src/testModules/module2/java"
+        resources.srcDir "src/testModules/module2/resources"
+        compileClasspath += configurations.compileClasspath
+        runtimeClasspath += configurations.runtimeClasspath
+    }
+    module3 {
+        java.srcDir "src/testModules/module3/java"
+        resources.srcDir "src/testModules/module3/resources"
+        compileClasspath += configurations.compileClasspath
+        runtimeClasspath += configurations.runtimeClasspath
+    }
+    module4 {
+        java.srcDir "src/testModules/module4/java"
+        resources.srcDir "src/testModules/module4/resources"
+        compileClasspath += configurations.compileClasspath
+        runtimeClasspath += configurations.runtimeClasspath
+    }
+}
+
+task module1Jar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive that contains the module1 classes'
+    from sourceSets.module1.output
+    archiveName 'module1.jar'
+}
+
+task module2Jar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive that contains the module2 classes'
+    from sourceSets.module2.output
+    archiveName 'module2.jar'
+}
+
+task module3Jar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive that contains the module3 classes'
+    from sourceSets.module3.output
+    archiveName 'module3.jar'
+}
+
+task module4Jar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive that contains the module4 classes'
+    from sourceSets.module4.output
+    archiveName 'module4.jar'
+}
+
+tasks.test.dependsOn("module1Jar")
+tasks.test.dependsOn("module2Jar")
+tasks.test.dependsOn("module3Jar")
+tasks.test.dependsOn("module4Jar")
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile(group: 'junit', name: 'junit', version: '4.12')
+    testImplementation('org.assertj:assertj-core')
+
+    compile(platform(project(':boms:geode-all-bom')))
+
+    compile(project(':geode-common'))
+    implementation(project(':geode-logging'))
+    implementation(project(':geode-log4j'))
+
+    compile(project(':geode-common-services'))
+
+    implementation('org.apache.logging.log4j:log4j-core')
+    compile('org.jboss.modules:jboss-modules')
+}
