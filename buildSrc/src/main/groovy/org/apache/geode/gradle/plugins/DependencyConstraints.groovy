@@ -31,6 +31,8 @@ class DependencyConstraints implements Plugin<Project> {
     Map<String,String> deps = new HashMap<>()
     // These versions are consumed beyond the scope of source set dependencies.
 
+    deps.put("jboss-modules.version", "1.10.1.Final")
+
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
     // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
@@ -155,6 +157,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
+        api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
         api(group: 'org.mockito', name: 'mockito-core', version: '3.3.3')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
