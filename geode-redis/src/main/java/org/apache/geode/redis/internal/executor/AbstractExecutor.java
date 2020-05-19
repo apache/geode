@@ -29,6 +29,7 @@ import org.apache.geode.redis.internal.Executor;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.RegionProvider;
 
 /**
@@ -158,5 +159,13 @@ public abstract class AbstractExecutor implements Executor {
     }
 
     command.setResponse(rsp);
+  }
+
+  protected RedisResponse respondBulkStrings(Object message) {
+    if (message instanceof Collection) {
+      return RedisResponse.array((Collection<?>) message);
+    } else {
+      return RedisResponse.string((String) message);
+    }
   }
 }

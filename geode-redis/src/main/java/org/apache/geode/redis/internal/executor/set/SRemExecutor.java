@@ -18,13 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class SRemExecutor extends SetExecutor {
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
     ByteArrayWrapper key = command.getKey();
@@ -33,15 +34,13 @@ public class SRemExecutor extends SetExecutor {
         new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
 
     ArrayList<ByteArrayWrapper> membersToRemove =
-        new ArrayList<>(
-            commandElements
-                .subList(2, commandElements.size()));
+        new ArrayList<>(commandElements.subList(2, commandElements.size()));
 
     long membersRemoved =
         redisSetCommands.srem(
             key,
             membersToRemove);
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), membersRemoved));
+    return RedisResponse.integer(membersRemoved);
   }
 }

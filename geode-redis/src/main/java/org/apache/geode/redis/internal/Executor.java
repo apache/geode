@@ -16,7 +16,7 @@ package org.apache.geode.redis.internal;
 
 
 /**
- * Interface for executors of a {@link Command}
+ * Interface for executors of a {@link Command}.
  */
 public interface Executor {
 
@@ -27,9 +27,18 @@ public interface Executor {
    * @param command The command to be executed
    * @param context The execution context by which this command is to be executed
    */
-  void executeCommand(Command command, ExecutionHandlerContext context);
+  default void executeCommand(Command command, ExecutionHandlerContext context) {
+    executeCommandWithResponse(command, context);
+  }
 
-  default void execute(Command command, ExecutionHandlerContext context) {
+  /**
+   * Interim method to transition to returning a {@link RedisResponse}
+   *
+   * TODO: Once all commands are transitioned, one of these methods needs to be removed.
+   */
+  default RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     executeCommand(command, context);
+    return null;
   }
 }
