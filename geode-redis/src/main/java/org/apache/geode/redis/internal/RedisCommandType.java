@@ -340,18 +340,20 @@ public enum RedisCommandType {
   private final Executor executor;
   private final ParameterRequirements parameterRequirements;
 
-  private RedisCommandType(Executor executor) {
+  RedisCommandType(Executor executor) {
     this(executor, new UnspecifiedParameterRequirements());
   }
 
-  private RedisCommandType(Executor executor, ParameterRequirements parameterRequirements) {
+  RedisCommandType(Executor executor, ParameterRequirements parameterRequirements) {
     this.executor = executor;
     this.parameterRequirements = parameterRequirements;
   }
 
-  public void executeCommand(Command command, ExecutionHandlerContext executionHandlerContext) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext executionHandlerContext) {
     parameterRequirements.checkParameters(command, executionHandlerContext);
-    executor.executeCommand(command, executionHandlerContext);
+
+    return executor.executeCommandWithResponse(command, executionHandlerContext);
   }
 
   public boolean isTransactional() {

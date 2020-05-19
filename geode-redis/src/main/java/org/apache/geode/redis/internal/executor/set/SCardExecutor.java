@@ -16,20 +16,21 @@ package org.apache.geode.redis.internal.executor.set;
 
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class SCardExecutor extends SetExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
     RedisSetCommands redisSetCommands =
         new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
-    int size = redisSetCommands.scard(key);
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
+
+    return RedisResponse.integer(redisSetCommands.scard(key));
   }
 }

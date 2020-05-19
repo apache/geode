@@ -23,16 +23,17 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public abstract class SetOpExecutor extends SetExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int setsStartIndex = isStorage() ? 2 : 1;
 
@@ -43,25 +44,27 @@ public abstract class SetOpExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper firstSetKey = new ByteArrayWrapper(commandElems.get(setsStartIndex++));
+    RedisResponse response;
+
     if (destination != null) {
       try (AutoCloseableLock regionLock = withRegionLock(context, destination)) {
-        doActualSetOperation(command, context, commandElems, setsStartIndex, regionProvider,
-            destination, firstSetKey);
+        response = doActualSetOperation(command, context, commandElems, setsStartIndex,
+            regionProvider, destination, firstSetKey);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+        response = RedisResponse.error("Thread interrupted");
       } catch (TimeoutException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-            "Timeout acquiring lock. Please try again."));
+        return RedisResponse.error("Timeout acquiring lock. Please try again");
       }
     } else {
-      doActualSetOperation(command, context, commandElems, setsStartIndex, regionProvider,
-          destination, firstSetKey);
+      response = doActualSetOperation(command, context, commandElems, setsStartIndex,
+          regionProvider, destination, firstSetKey);
     }
+
+    return response;
   }
 
-  private boolean doActualSetOperation(Command command, ExecutionHandlerContext context,
+  private RedisResponse doActualSetOperation(Command command, ExecutionHandlerContext context,
       List<byte[]> commandElems, int setsStartIndex,
       RegionProvider regionProvider, ByteArrayWrapper destination,
       ByteArrayWrapper firstSetKey) {
@@ -81,9 +84,10 @@ public abstract class SetOpExecutor extends SetExecutor {
     }
 
     if (setList.isEmpty() && !isStorage()) {
-      respondBulkStrings(command, context, firstSet);
-      return true;
+      return respondBulkStrings(firstSet);
     }
+
+    RedisResponse response;
 
     Set<ByteArrayWrapper> resultSet = setOp(firstSet, setList);
     if (isStorage()) {
@@ -92,20 +96,19 @@ public abstract class SetOpExecutor extends SetExecutor {
         if (!resultSet.isEmpty()) {
           region.put(destination, new RedisSet(resultSet));
         }
-        command
-            .setResponse(
-                Coder.getIntegerResponse(context.getByteBufAllocator(), resultSet.size()));
+        response = RedisResponse.integer(resultSet.size());
       } else {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
+        response = RedisResponse.integer(0);
       }
     } else {
       if (resultSet == null || resultSet.isEmpty()) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+        response = RedisResponse.emptyArray();
       } else {
-        respondBulkStrings(command, context, resultSet);
+        response = respondBulkStrings(resultSet);
       }
     }
-    return false;
+
+    return response;
   }
 
   protected abstract boolean isStorage();
