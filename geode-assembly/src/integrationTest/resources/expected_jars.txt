@@ -44,6 +44,7 @@ javax.servlet-api
 javax.transaction-api
 jaxb-api
 jaxb-impl
+jboss-modules
 jcip-annotations
 jetty-http
 jetty-io
