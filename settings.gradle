@@ -68,6 +68,8 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
+include 'geode-common-services'
+include 'geode-modules'
 
 
 ['1.0.0-incubating',
