@@ -25,14 +25,14 @@ import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
-public class CommitSessionValve extends ValveBase {
+public abstract class AbstractCommitSessionValve extends ValveBase {
 
-  private static final Log log = LogFactory.getLog(CommitSessionValve.class);
+  private static final Log log = LogFactory.getLog(AbstractCommitSessionValve.class);
 
   protected static final String info =
       "org.apache.geode.modules.session.catalina.CommitSessionValve/1.0";
 
-  CommitSessionValve() {
+  AbstractCommitSessionValve() {
     log.info("Initialized");
   }
 
@@ -44,7 +44,7 @@ public class CommitSessionValve extends ValveBase {
 
     // Invoke the next Valve
     try {
-      getNext().invoke(request, response);
+      getNext().invoke(request, wrapResponse(response));
     } finally {
       // Commit and if the correct Manager was found
       if (manager instanceof DeltaSessionManager) {
@@ -66,4 +66,7 @@ public class CommitSessionValve extends ValveBase {
       }
     }
   }
+
+  protected abstract Response wrapResponse(Response response);
+
 }

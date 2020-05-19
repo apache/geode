@@ -42,11 +42,12 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.RegionShortcut;
 
 @RunWith(JUnitParamsRunner.class)
-public class CommitSessionValveIntegrationTest extends AbstractSessionValveIntegrationTest {
+public abstract class AbstractCommitSessionValveIntegrationTest<CommitSessionValveT extends AbstractCommitSessionValve>
+    extends AbstractSessionValveIntegrationTest {
   private Request request;
   private Response response;
   private TestValve testValve;
-  private CommitSessionValve commitSessionValve;
+  private CommitSessionValveT commitSessionValve;
   private DeltaSessionFacade deltaSessionFacade;
 
   @Before
@@ -55,9 +56,11 @@ public class CommitSessionValveIntegrationTest extends AbstractSessionValveInteg
     response = spy(Response.class);
     testValve = new TestValve(false);
 
-    commitSessionValve = new CommitSessionValve();
+    commitSessionValve = createCommitSessionValve();
     commitSessionValve.setNext(testValve);
   }
+
+  protected abstract CommitSessionValveT createCommitSessionValve();
 
   protected void parameterizedSetUp(RegionShortcut regionShortcut) {
     super.parameterizedSetUp(regionShortcut);

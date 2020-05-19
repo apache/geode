@@ -22,7 +22,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.util.LifecycleSupport;
 
-public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
+public class Tomcat7DeltaSessionManager extends DeltaSessionManager<Tomcat7CommitSessionValve> {
 
   /**
    * The <code>LifecycleSupport</code> for this component.
@@ -163,6 +163,11 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
   @Override
   protected StandardSession getNewSession() {
     return new DeltaSession7(this);
+  }
+
+  @Override
+  protected Tomcat7CommitSessionValve createCommitSessionValve() {
+    return new Tomcat7CommitSessionValve();
   }
 
 }
