@@ -17,7 +17,7 @@ org/apache/geode/redis/internal/RedisDataType$8,false
 org/apache/geode/redis/internal/RedisDataType$9,false
 org/apache/geode/redis/internal/RedisDataTypeMismatchException,true,-2451663685348513870
 org/apache/geode/redis/internal/RegionCreationException,true,8416820139078312997
-org/apache/geode/redis/internal/executor/CommandFunction,false
+org/apache/geode/redis/internal/executor/CommandFunction,false,regionProvider:org/apache/geode/redis/internal/RegionProvider
 org/apache/geode/redis/internal/executor/ListQuery,false
 org/apache/geode/redis/internal/executor/ListQuery$1,false
 org/apache/geode/redis/internal/executor/ListQuery$2,false

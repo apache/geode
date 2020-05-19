@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.general;
 
-import static java.nio.charset.Charset.defaultCharset;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,8 +29,7 @@ import org.junit.Test;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Executor;
-import org.apache.geode.redis.internal.executor.ExistsExecutor;
+import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 
 public class ExistsExecutorJUnitTest {
 
@@ -47,15 +46,13 @@ public class ExistsExecutorJUnitTest {
 
   @Test
   public void calledWithTooFewCommandArguments_returnsError() {
-    Executor executor = new ExistsExecutor();
     List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
     commandsAsBytesWithTooFewArguments.add("EXISTS".getBytes());
     command = new Command(commandsAsBytesWithTooFewArguments);
 
+    Throwable thrown = catchThrowable(() -> command.execute(context));
 
-    executor.executeCommand(command, context);
-
-    assertThat(command.getResponse().toString(defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments");
+    assertThat(thrown).hasMessageContaining("wrong number of arguments");
+    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
   }
 }

@@ -67,7 +67,7 @@ public class RenameExecutor extends StringExecutor {
             Object value = region.get(key);
             context.getKeyRegistrar().register(newKey, redisDataType);
             region.put(newKey, value);
-            removeEntry(key, redisDataType, context);
+            removeEntry(key, context);
             break;
           case REDIS_HASH:
             // TODO this all needs to be done atomically. Add RENAME support to RedisHashCommands

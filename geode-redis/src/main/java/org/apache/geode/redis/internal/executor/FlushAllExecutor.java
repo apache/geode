@@ -37,7 +37,7 @@ public class FlushAllExecutor extends AbstractExecutor {
       try {
         ByteArrayWrapper skey = e.getKey();
         RedisDataType type = e.getValue().getType();
-        removeEntry(skey, type, context);
+        removeEntry(skey, context);
       } catch (EntryDestroyedException e1) {
         continue;
       }
