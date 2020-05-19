@@ -38,9 +38,7 @@ dependencies {
     //Jgroups is a core component of our membership system.
     implementation('org.jgroups:jgroups')
 
-    testImplementation(project(':geode-junit')) {
-        exclude module: 'geode-logging'
-    }
+    testImplementation(project(':geode-junit'))
     testImplementation(project(':geode-concurrency-test'))
 
     testImplementation('org.mockito:mockito-core')
@@ -49,16 +47,11 @@ dependencies {
 
     testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
-    integrationTestImplementation(project(':geode-junit')) {
-        exclude module: 'geode-logging'
-    }
+    integrationTestImplementation(project(':geode-junit'))
     integrationTestImplementation('pl.pragmatists:JUnitParams')
-    distributedTestImplementation(project(':geode-junit')) {
-        exclude module: 'geode-logging'
-    }
-    distributedTestImplementation(project(':geode-dunit')) {
-        exclude module: 'geode-logging'
-    }
+    distributedTestImplementation(project(':geode-junit'))
+    distributedTestImplementation(project(':geode-dunit'))
+    integrationTestRuntime('org.apache.logging.log4j:log4j-core')
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
