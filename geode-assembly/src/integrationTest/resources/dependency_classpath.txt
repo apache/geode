@@ -59,6 +59,8 @@ javax.servlet-api-3.1.0.jar
 jna-platform-5.6.0.jar
 jna-5.6.0.jar
 jopt-simple-5.0.4.jar
+commons-lang3-3.10.jar
+httpcore-4.4.13.jar
 snappy-0.4.jar
 jgroups-3.6.14.Final.jar
 shiro-cache-1.6.0.jar
