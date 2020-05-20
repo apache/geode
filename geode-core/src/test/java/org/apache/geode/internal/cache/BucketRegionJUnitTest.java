@@ -51,7 +51,9 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     when(ba.getPrimaryMoveReadLock()).thenReturn(primaryMoveReadLock);
     when(ba.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
     when(ba.isPrimary()).thenReturn(true);
-
+    PartitionedRegionClear clearPR = mock(PartitionedRegionClear.class);
+    when(clearPR.isLockedForListenerAndClientNotification()).thenReturn(true);
+    when(pr.getPartitionedRegionClear()).thenReturn(clearPR);
     ira.setPartitionedRegion(pr).setPartitionedRegionBucketRedundancy(1).setBucketAdvisor(ba);
   }
 
