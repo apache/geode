@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -40,7 +40,8 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 public class HSetExecutor extends HashExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     ByteArrayWrapper key = command.getKey();
@@ -51,7 +52,7 @@ public class HSetExecutor extends HashExecutor {
         new ArrayList<>(commandElems.subList(2, commandElems.size()));
     int fieldsAdded = redisHashCommands.hset(key, fieldsToSet, onlySetOnAbsent());
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), fieldsAdded));
+    return RedisResponse.integer(fieldsAdded);
   }
 
   protected boolean onlySetOnAbsent() {
