@@ -17,6 +17,7 @@ package org.apache.geode.redis.executors;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -74,12 +75,15 @@ public class ExpireDUnitTest {
 
     serverProperties1.setProperty(REDIS_PORT, Integer.toString(availablePorts[0]));
     serverProperties1.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
+    serverProperties1.setProperty(REDIS_ENABLED, "true");
 
     serverProperties2.setProperty(REDIS_PORT, Integer.toString(availablePorts[1]));
     serverProperties2.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
+    serverProperties2.setProperty(REDIS_ENABLED, "true");
 
     serverProperties3.setProperty(REDIS_PORT, Integer.toString(availablePorts[2]));
     serverProperties3.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
+    serverProperties3.setProperty(REDIS_ENABLED, "true");
 
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startServerVM(1, serverProperties1, locator.getPort());

@@ -499,6 +499,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String redisPassword = DEFAULT_REDIS_PASSWORD;
 
+  private Boolean redisServiceEnabled = DEFAULT_REDIS_ENABLED;
+
   private boolean jmxManager =
       Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE) || DEFAULT_JMX_MANAGER;
   private boolean jmxManagerStart = DEFAULT_JMX_MANAGER_START;
@@ -789,6 +791,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     redisPort = other.getRedisPort();
     redisBindAddress = other.getRedisBindAddress();
     redisPassword = other.getRedisPassword();
+    redisServiceEnabled = other.getRedisServiceEnabled();
     userCommandPackages = other.getUserCommandPackages();
 
     // following added for 8.0
@@ -3207,7 +3210,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(httpServicePort, that.httpServicePort).append(startDevRestApi, that.startDevRestApi)
         .append(memcachedPort, that.memcachedPort)
         .append(distributedTransactions, that.distributedTransactions)
-        .append(redisPort, that.redisPort).append(jmxManager, that.jmxManager)
+        .append(jmxManager, that.jmxManager)
         .append(jmxManagerStart, that.jmxManagerStart).append(jmxManagerPort, that.jmxManagerPort)
         .append(jmxManagerHttpPort, that.jmxManagerHttpPort)
         .append(jmxManagerUpdateRate, that.jmxManagerUpdateRate)
@@ -3257,7 +3260,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(httpServiceBindAddress, that.httpServiceBindAddress)
         .append(memcachedProtocol, that.memcachedProtocol)
         .append(memcachedBindAddress, that.memcachedBindAddress)
-        .append(redisBindAddress, that.redisBindAddress).append(redisPassword, that.redisPassword)
+        .append(redisBindAddress, that.redisBindAddress)
+        .append(redisPassword, that.redisPassword)
+        .append(redisPort, that.redisPort)
+        .append(redisServiceEnabled, that.redisServiceEnabled)
         .append(jmxManagerBindAddress, that.jmxManagerBindAddress)
         .append(jmxManagerHostnameForClients, that.jmxManagerHostnameForClients)
         .append(jmxManagerPasswordFile, that.jmxManagerPasswordFile)
@@ -3352,7 +3358,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(loadSharedConfigurationFromDir).append(clusterConfigDir).append(httpServicePort)
         .append(httpServiceBindAddress).append(startDevRestApi).append(memcachedPort)
         .append(memcachedProtocol).append(memcachedBindAddress).append(distributedTransactions)
-        .append(redisPort).append(redisBindAddress).append(redisPassword).append(jmxManager)
+        .append(redisPort).append(redisBindAddress).append(redisPassword)
+        .append(redisServiceEnabled).append(jmxManager)
         .append(jmxManagerStart).append(jmxManagerPort).append(jmxManagerBindAddress)
         .append(jmxManagerHostnameForClients).append(jmxManagerPasswordFile)
         .append(jmxManagerAccessFile).append(jmxManagerHttpPort).append(jmxManagerUpdateRate)
@@ -3480,6 +3487,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setRedisPassword(String password) {
     redisPassword = password;
+  }
+
+  @Override
+  public boolean getRedisServiceEnabled() {
+    return redisServiceEnabled;
+  }
+
+  @Override
+  public void setRedisServiceEnabled(boolean redisEnabled) {
+    redisServiceEnabled = redisEnabled;
   }
 
   @Override

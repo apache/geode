@@ -20,6 +20,7 @@ import static java.lang.String.valueOf;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,18 +97,22 @@ public class PubSubDUnitTest {
     serverProperties1.setProperty(REDIS_PORT, valueOf(ports[0]));
     serverProperties1.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
     serverProperties1.setProperty(LOG_LEVEL, "warn");
+    serverProperties1.setProperty(REDIS_ENABLED, "true");
 
     serverProperties2.setProperty(REDIS_PORT, valueOf(ports[1]));
     serverProperties2.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
     serverProperties2.setProperty(LOG_LEVEL, "warn");
+    serverProperties2.setProperty(REDIS_ENABLED, "true");
 
     serverProperties3.setProperty(REDIS_PORT, valueOf(ports[2]));
     serverProperties3.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
     serverProperties3.setProperty(LOG_LEVEL, "warn");
+    serverProperties3.setProperty(REDIS_ENABLED, "true");
 
     serverProperties4.setProperty(REDIS_PORT, valueOf(ports[3]));
     serverProperties4.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
     serverProperties4.setProperty(LOG_LEVEL, "warn");
+    serverProperties4.setProperty(REDIS_ENABLED, "true");
 
     locator = cluster.startLocatorVM(0, locatorProperties);
     server1 = cluster.startServerVM(1, serverProperties1, locator.getPort());

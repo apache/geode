@@ -112,6 +112,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PRO
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
@@ -3481,7 +3482,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
 
   @ConfigAttribute(type = Integer.class, min = -1, max = 65535)
   String REDIS_PORT_NAME = REDIS_PORT;
-  int DEFAULT_REDIS_PORT = 0;
+  int DEFAULT_REDIS_PORT = 6379;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
@@ -3522,6 +3523,27 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttribute(type = String.class)
   String REDIS_PASSWORD_NAME = REDIS_PASSWORD;
   String DEFAULT_REDIS_PASSWORD = "";
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#REDIS_ENABLED} property
+   * <p>
+   * Returns the value of the
+   * {@link ConfigurationProperties#REDIS_ENABLED} property
+   *
+   * @return boolean value indicating whether or not a Redis API for Geode Server should be started
+   *
+   * @since GemFire 14.0
+   */
+  @ConfigAttributeGetter(name = REDIS_ENABLED)
+  boolean getRedisServiceEnabled();
+
+  @ConfigAttributeSetter(name = REDIS_ENABLED)
+  void setRedisServiceEnabled(boolean redisServiceEnabled);
+
+
+  @ConfigAttribute(type = Boolean.class)
+  String REDIS_ENABLED_NAME = REDIS_ENABLED;
+  boolean DEFAULT_REDIS_ENABLED = false;
 
   // Added for the HTTP service
 

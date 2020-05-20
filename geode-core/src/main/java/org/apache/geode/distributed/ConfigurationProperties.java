@@ -1946,6 +1946,24 @@ public interface ConfigurationProperties {
    */
   String REDIS_PASSWORD = "redis-password";
   /**
+   * The static String definition of the <i>"redis-enabled"</i> property <a
+   * name="redis-enabled"/a>
+   * </p>
+   * <U>Description</U>: When the default value of false, the Redis API for Geode is not available.
+   * Set to true to enable the Redis API for Geode.</td>
+   * </p>
+   * <U>Default</U>: false
+   * <td>redis-enabled</td>
+   * <td>When the default value of false, the Redis API for <%=vars.product_name%> is not available.
+   * Set
+   * to true to enable the Redis API for <%=vars.product_name%>.</td>
+   * <td>S</td>
+   * <td>false</td>
+   * </tr>
+   * </p>
+   */
+  String REDIS_ENABLED = "redis-enabled";
+  /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>
    * <U>Description</U>: Include this option to lock GemFire heap and off-heap memory pages into

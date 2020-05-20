@@ -105,7 +105,7 @@ public class GeodeRedisServer {
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
 
-  private static final int RANDOM_PORT_INDICATOR = -1;
+  private static final int RANDOM_PORT_INDICATOR = 0;
 
   /**
    * The number of threads that will work on handling requests
@@ -241,7 +241,7 @@ public class GeodeRedisServer {
    * to the first non-loopback address
    */
   public GeodeRedisServer() {
-    this(null, -1, null);
+    this(null, RANDOM_PORT_INDICATOR, null);
   }
 
   /**
@@ -274,13 +274,16 @@ public class GeodeRedisServer {
    * effect.
    *
    * @param bindAddress The address to which the server will attempt to bind to
-   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
-   *        by default if argument is less than -1. If the port is {@value #RANDOM_PORT_INDICATOR}
-   *        a random port is assigned.
+   * @param port The port the server will bind to, will throw an IllegalArgumentException if
+   *        argument is less than {@value #RANDOM_PORT_INDICATOR}. If the port is
+   *        {@value #RANDOM_PORT_INDICATOR} a random port is assigned.
    * @param logLevel The logging level to be used by GemFire
    */
   public GeodeRedisServer(String bindAddress, int port, String logLevel) {
-    serverPort = port < RANDOM_PORT_INDICATOR ? DEFAULT_REDIS_SERVER_PORT : port;
+    if (port < RANDOM_PORT_INDICATOR) {
+      throw new IllegalArgumentException("Redis port cannot be less than 0");
+    }
+    serverPort = port;
     this.bindAddress = bindAddress;
     this.logLevel = logLevel;
     numWorkerThreads = setNumWorkerThreads();
