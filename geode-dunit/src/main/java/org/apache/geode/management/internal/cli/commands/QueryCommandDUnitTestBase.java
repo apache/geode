@@ -18,6 +18,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.management.internal.i18n.CliStrings.MEMBER;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -50,6 +51,7 @@ import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.dto.Value1;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -72,6 +74,7 @@ public class QueryCommandDUnitTestBase {
 
   private static final String SERIALIZATION_FILTER =
       "org.apache.geode.management.internal.cli.dto.**";
+  private static final String QUERY = "query";
 
   static final int COUNT = 5;
 
@@ -336,14 +339,16 @@ public class QueryCommandDUnitTestBase {
     String member = "server-2";
     Random random = new Random(System.nanoTime());
     int randomInteger = random.nextInt(COUNT);
-    StringBuilder queryString = new StringBuilder();
-    queryString.append("query --member=").append(member)
-        .append(" --query=\"select ID , status , createTime , pk, floatMinValue from ")
-        .append(DATA_REGION_WITH_PROXY_NAME_PATH).append(" where ID <= ").append(randomInteger)
-        .append("\" --interactive=false");
+    String queryString = new StringBuilder()
+        .append("\"select ID , status , createTime , pk, floatMinValue from ")
+        .append(DATA_REGION_WITH_PROXY_NAME_PATH).append(" where ID <= ")
+        .append(randomInteger).append("\"").toString();
 
-    CommandResult commandResult =
-        gfsh.executeAndAssertThat(queryString.toString()).getCommandResult();
+    String command = new CommandStringBuilder(QUERY)
+        .addOption(MEMBER, member)
+        .addOption(QUERY, queryString).getCommandString();
+
+    CommandResult commandResult = gfsh.executeAndAssertThat(command).getCommandResult();
     validateSelectResult(commandResult, true, (randomInteger + 1),
         new String[] {"ID", "status", "createTime", "pk", "floatMinValue"});
   }
