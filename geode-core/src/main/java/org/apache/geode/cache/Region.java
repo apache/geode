@@ -1304,7 +1304,9 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see java.util.Map#clear()
    * @see CacheListener#afterRegionClear
    * @see CacheWriter#beforeRegionClear
-   * @throws UnsupportedOperationException If the region is a partitioned region
+   * @throws PartitionedRegionPartialClearException when data is partially cleared on partitioned
+   *         region. It is caller responsibility to handle the partial data clear either by retrying
+   *         the clear operation or continue working with the partially cleared partitioned region.
    */
   @Override
   void clear();

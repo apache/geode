@@ -235,6 +235,7 @@ import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
 import org.apache.geode.internal.cache.Node;
 import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
+import org.apache.geode.internal.cache.PartitionedRegionClearMessage;
 import org.apache.geode.internal.cache.PreferBytesCachedDeserializable;
 import org.apache.geode.internal.cache.RegionEventImpl;
 import org.apache.geode.internal.cache.ReleaseClearLockMessage;
@@ -686,6 +687,10 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(PR_DUMP_B2N_REPLY_MESSAGE, DumpB2NReplyMessage.class);
     serializer.registerDSFID(DESTROY_PARTITIONED_REGION_MESSAGE,
         DestroyPartitionedRegionMessage.class);
+    serializer.registerDSFID(CLEAR_PARTITIONED_REGION_MESSAGE,
+        PartitionedRegionClearMessage.class);
+    serializer.registerDSFID(CLEAR_PARTITIONED_REGION_REPLY_MESSAGE,
+        PartitionedRegionClearMessage.PartitionedRegionClearReplyMessage.class);
     serializer.registerDSFID(INVALIDATE_PARTITIONED_REGION_MESSAGE,
         InvalidatePartitionedRegionMessage.class);
     serializer.registerDSFID(COMMIT_PROCESS_QUERY_MESSAGE, CommitProcessQueryMessage.class);

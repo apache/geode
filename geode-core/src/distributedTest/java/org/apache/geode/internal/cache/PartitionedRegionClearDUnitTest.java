@@ -80,7 +80,6 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
   protected Properties getProperties() {
     Properties properties = new Properties();
-    properties.setProperty("log-level", "info");
     return properties;
   }
 
