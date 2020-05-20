@@ -97,4 +97,5 @@ dependencies {
 
     module1Compile(sourceSets.test.output)
     module2Compile(sourceSets.test.output)
+    module3Compile(sourceSets.test.output)
 }
