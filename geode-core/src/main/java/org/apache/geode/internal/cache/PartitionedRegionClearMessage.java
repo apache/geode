@@ -276,10 +276,11 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("PartitionedRegionClearReplyMessage ").append("processorid=")
-          .append(this.processorId)
-          .append(" bucketsCleared ").append(this.bucketsCleared).append(" exception=")
-          .append(getException());
+      sb.append("PartitionedRegionClearReplyMessage ")
+          .append("processorId=").append(this.processorId)
+          .append(" sender=").append(sender)
+          .append(" bucketsCleared ").append(this.bucketsCleared)
+          .append(" exception=").append(getException());
       return sb.toString();
     }
   }
