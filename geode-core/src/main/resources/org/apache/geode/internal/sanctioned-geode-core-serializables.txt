@@ -79,6 +79,7 @@ org/apache/geode/cache/NoSubscriptionServersAvailableException,true,848408601915
 org/apache/geode/cache/Operation,true,-7521751729852504238,ordinal:byte
 org/apache/geode/cache/OperationAbortedException,true,-8293166225026556949
 org/apache/geode/cache/PartitionedRegionDistributionException,true,-3004093739855972548
+org/apache/geode/cache/PartitionedRegionPartialClearException,false
 org/apache/geode/cache/PartitionedRegionStorageException,true,5905463619475329732
 org/apache/geode/cache/RegionAccessException,true,3142958723089038406
 org/apache/geode/cache/RegionDestroyedException,true,319804842308010754,regionFullPath:java/lang/String
@@ -302,6 +303,7 @@ org/apache/geode/internal/cache/PRContainsValueFunction,false
 org/apache/geode/internal/cache/PRHARedundancyProvider$ArrayListWithClearState,true,1,wasCleared:boolean
 org/apache/geode/internal/cache/PartitionedRegion$PRIdMap,true,3667357372967498179,cleared:boolean
 org/apache/geode/internal/cache/PartitionedRegion$SizeEntry,false,isPrimary:boolean,size:int
+org/apache/geode/internal/cache/PartitionedRegionClearMessage$OperationType,false
 org/apache/geode/internal/cache/PartitionedRegionDataStore$CreateBucketResult,false,nowExists:boolean
 org/apache/geode/internal/cache/PartitionedRegionException,true,5113786059279106007
 org/apache/geode/internal/cache/PartitionedRegionQueryEvaluator$MemberResultsList,false,isLastChunkReceived:boolean
