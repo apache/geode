@@ -980,6 +980,14 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
   }
 
+  protected void lockBucketCreationForRegionClear() {
+    bucketCreationLock.writeLock().lock();
+  }
+
+  protected void unlockBucketCreationForRegionClear() {
+    bucketCreationLock.writeLock().unlock();
+  }
+
   /**
    * Gets the total amount of memory in bytes allocated for all values for this PR in this VM. This
    * is the current memory (MB) watermark for data in this PR.

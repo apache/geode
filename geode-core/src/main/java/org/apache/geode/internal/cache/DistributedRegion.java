@@ -2132,7 +2132,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    */
   protected void releaseWriteLocksForClear(RegionEventImpl regionEvent,
       Set<InternalDistributedMember> participants) {
+    releaseLockLocallyForClear(regionEvent);
+    if (!isUsedForPartitionedRegionBucket()) {
+      DistributedClearOperation.releaseLocks(regionEvent, participants);
+    }
+  }
 
+  protected void releaseLockLocallyForClear(RegionEventImpl regionEvent) {
     ARMLockTestHook armLockTestHook = getRegionMap().getARMLockTestHook();
     if (armLockTestHook != null) {
       armLockTestHook.beforeRelease(this, regionEvent);
@@ -2141,9 +2147,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     RegionVersionVector rvv = getVersionVector();
     if (rvv != null) {
       rvv.unlockForClear(getMyId());
-    }
-    if (!isUsedForPartitionedRegionBucket()) {
-      DistributedClearOperation.releaseLocks(regionEvent, participants);
     }
 
     if (armLockTestHook != null) {
