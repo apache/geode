@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.management.internal.i18n.CliStrings.MEMBER;
+import static org.apache.geode.management.internal.i18n.CliStrings.QUERY;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -74,7 +75,6 @@ public class QueryCommandDUnitTestBase {
 
   private static final String SERIALIZATION_FILTER =
       "org.apache.geode.management.internal.cli.dto.**";
-  private static final String QUERY = "query";
 
   static final int COUNT = 5;
 
