@@ -50,6 +50,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CN_AUTH_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
@@ -611,6 +612,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private String[] securityAuthTokenEnabledComponents =
       DEFAULT_SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 
+  private boolean securityCommonNameAuthEnabled = DEFAULT_SECURITY_CN_AUTH_ENABLED;
+
   private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_CONTEXT;
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
   private String sslCiphers = DEFAULT_SSL_CIPHERS;
@@ -879,6 +882,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
     enableManagementRestService = other.getEnableManagementRestService();
     securityAuthTokenEnabledComponents = other.getSecurityAuthTokenEnabledComponents();
+    securityCommonNameAuthEnabled = other.getSecurityCommonNameAuthEnabled();
   }
 
   /**
@@ -1545,7 +1549,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         || propName.equals(SECURITY_PEER_AUTH_INIT) || propName.equals(SECURITY_PEER_AUTHENTICATOR)
         || propName.equals(LOG_WRITER_NAME) || propName.equals(DS_CONFIG_NAME)
         || propName.equals(SECURITY_LOG_WRITER_NAME) || propName.equals(LOG_OUTPUTSTREAM_NAME)
-        || propName.equals(SECURITY_LOG_OUTPUTSTREAM_NAME);
+        || propName.equals(SECURITY_LOG_OUTPUTSTREAM_NAME)
+        || propName.equals(SECURITY_CN_AUTH_ENABLED_NAME);
   }
 
   @Override
@@ -1655,6 +1660,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       setAttribute(SECURITY_PEER_AUTHENTICATOR,
           (String) props.get(SECURITY_PEER_AUTHENTICATOR),
           sourceMap.get(SECURITY_PEER_AUTHENTICATOR));
+    }
+
+    if (props.containsKey(SECURITY_CN_AUTH_ENABLED)) {
+      setAttribute(SECURITY_CN_AUTH_ENABLED, (String) props.get(SECURITY_CN_AUTH_ENABLED),
+          sourceMap.get(SECURITY_CN_AUTH_ENABLED));
     }
 
     // Make attributes read only
@@ -2368,6 +2378,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setDurableClientTimeout(int durableClientTimeout) {
     this.durableClientTimeout = durableClientTimeout;
+  }
+
+  @Override
+  public boolean getSecurityCommonNameAuthEnabled() {
+    return this.securityCommonNameAuthEnabled;
+  }
+
+  @Override
+  public void setSecurityCommonNameAuthEnabled(boolean isCommonNameAuthEnabled) {
+    this.securityCommonNameAuthEnabled = isCommonNameAuthEnabled;
   }
 
   @Override

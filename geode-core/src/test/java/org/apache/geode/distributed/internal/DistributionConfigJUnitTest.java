@@ -28,12 +28,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CN_AUTH_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
@@ -56,9 +58,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
@@ -66,6 +72,7 @@ import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
+@RunWith(JUnitParamsRunner.class)
 @Category({MembershipTest.class})
 public class DistributionConfigJUnitTest {
 
@@ -103,7 +110,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertThat(attNames.length).isEqualTo(168);
+    assertThat(attNames.length).isEqualTo(169);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -137,7 +144,7 @@ public class DistributionConfigJUnitTest {
 
     // TODO - This makes no sense. One has no idea what the correct expected number of attributes
     // are.
-    assertEquals(35, boolList.size());
+    assertEquals(36, boolList.size());
     assertEquals(35, intList.size());
     assertEquals(88, stringList.size());
     assertEquals(5, fileList.size());
@@ -451,6 +458,76 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
     assertThat(config.getSSLEndPointIdentificationEnabled()).isEqualTo(true);
+  }
+
+  @Test
+  @Parameters({"CLUSTER\\,GATEWAY\\,WEB\\,JMX\\,LOCATOR\\,SERVER", "ALL"})
+  @TestCaseName("{method}({params})")
+  public void testSecurityCommonNameAuthEnabledIsSet(String components) {
+    Properties props = new Properties();
+    props.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    props.put(SECURITY_CN_AUTH_ENABLED, "true");
+    props.put(SSL_ENABLED_COMPONENTS, components);
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSecurityCommonNameAuthEnabled()).isEqualTo(true);
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  @TestCaseName("{method}({params})")
+  public void testSecurityCommonNameAuthEnabledIsFalse(boolean useDefault) {
+    Properties props = new Properties();
+    props.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    if (!useDefault) {
+      props.put(SECURITY_CN_AUTH_ENABLED, "false");
+    }
+    props.put(SSL_ENABLED_COMPONENTS, "ALL");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSecurityCommonNameAuthEnabled()).isEqualTo(false);
+  }
+
+  @Test
+  public void testSecurityCommonNameAuthEnabledSslWebServiceRequireAuthNotSet() {
+    Properties props = new Properties();
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    props.put(SECURITY_CN_AUTH_ENABLED, "true");
+    props.put(SSL_ENABLED_COMPONENTS, "ALL");
+
+    assertThatThrownBy(() -> new DistributionConfigImpl(props))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void testSecurityCommonNameAuthEnabledSslSecurityManagerNotSet() {
+    Properties props = new Properties();
+    props.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    props.put(SECURITY_CN_AUTH_ENABLED, "true");
+    props.put(SSL_ENABLED_COMPONENTS, "ALL");
+
+    assertThatThrownBy(() -> new DistributionConfigImpl(props))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  @Parameters({
+      "CLUSTER\\,GATEWAY\\,WEB\\,JMX\\,LOCATOR",
+      "CLUSTER\\,GATEWAY\\,JMX\\,LOCATOR",
+      "GATEWAY\\,JMX\\,LOCATOR",
+      "JMX"
+  })
+  @TestCaseName("{method}({params})")
+  public void testSecurityCommonNameAuthEnabledNotSetAllComponentsNotSet(String comp) {
+    Properties props = new Properties();
+    props.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    props.put(SECURITY_CN_AUTH_ENABLED, "true");
+    props.put(SSL_ENABLED_COMPONENTS, comp);
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+
+    assertThatThrownBy(() -> new DistributionConfigImpl(props))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

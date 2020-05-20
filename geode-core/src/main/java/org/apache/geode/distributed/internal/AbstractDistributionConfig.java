@@ -124,6 +124,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_DHALGO;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CN_AUTH_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
@@ -198,6 +199,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -334,6 +336,52 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
               value, LocalHostUtil.getMyAddresses()));
     }
     return value;
+  }
+
+  @ConfigAttributeChecker(name = SECURITY_CN_AUTH_ENABLED)
+  protected Boolean checkSecurityCommonNameAuthEnabled(Boolean value) {
+    if (value) {
+      if (!getSSLRequireAuthentication()) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Could not set %s to %s because its value must be false when %s is not true.",
+                SECURITY_CN_AUTH_ENABLED, value, SSL_REQUIRE_AUTHENTICATION));
+      } else if (!getSSLWebRequireAuthentication()) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Could not set %s to %s because its value must be false when %s is not true.",
+                SECURITY_CN_AUTH_ENABLED, value, SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION));
+      } else if (!isSSLEnabledAllComponents()) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Could not set %s to %s because its value must be false when %s is not enabled on all components.",
+                SECURITY_CN_AUTH_ENABLED, value, SSL_ENABLED_COMPONENTS));
+      } else if (getSecurityManager().isEmpty()) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Could not set %s to %s because its value must be false when %s is not configured.",
+                SECURITY_CN_AUTH_ENABLED, value, SECURITY_MANAGER));
+      }
+    }
+    return value;
+  }
+
+  private boolean isSSLEnabledAllComponents() {
+    SecurableCommunicationChannel[] channels = getSecurableCommunicationChannels();
+    if (channels.length <= 0) {
+      return false;
+    }
+
+    if (!ArrayUtils.contains(channels, SecurableCommunicationChannel.ALL)) {
+      // if ALL is not explicitly set, then check if all components are set individually
+      for (SecurableCommunicationChannel channel : SecurableCommunicationChannel.values()) {
+        if (!channel.equals(SecurableCommunicationChannel.ALL) && !ArrayUtils
+            .contains(channels, channel)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   @ConfigAttributeChecker(name = SERVER_BIND_ADDRESS)
@@ -1449,6 +1497,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_USE_DEFAULT_CONTEXT,
         "When true, either uses the default context as returned by SSLContext.getInstance('Default') or uses the context as set by using SSLContext.setDefault(). "
             + "If false, then specify the keystore and the truststore by setting ssl-keystore-* and ssl-truststore-* properties. If true, then ssl-endpoint-identification-enabled is set to true. This property does not enable SSL.");
+
+    m.put(SECURITY_CN_AUTH_ENABLED,
+        "When set to true then common name from client certificate is used for authentication and authorization");
 
     m.put(SSL_ENABLED_COMPONENTS,
         "A comma delimited list of components that require SSL communications");

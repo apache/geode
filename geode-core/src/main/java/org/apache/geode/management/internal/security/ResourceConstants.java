@@ -119,6 +119,7 @@ public class ResourceConstants {
   public static final String USER_NAME = "security-username";
   public static final String PASSWORD = "security-password";
   public static final String TOKEN = "security-token";
+  public static final String COMMON_NAME = "security-common-name";
 
   public static final String MBEAN_TYPE_DISTRIBUTED = "Distributed";
   public static final String MBEAN_TYPE_MEMBER = "Member";

@@ -124,6 +124,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_DHALGO;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CN_AUTH_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
@@ -4827,6 +4828,32 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttributeGetter(name = SECURITY_SHIRO_INIT)
   String getShiroInit();
 
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SECURITY_CN_AUTH_ENABLED} property.
+   *
+   * @since Geode 1.14
+   */
+  @ConfigAttributeGetter(name = SECURITY_CN_AUTH_ENABLED)
+  boolean getSecurityCommonNameAuthEnabled();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SECURITY_CN_AUTH_ENABLED} property.
+   *
+   * @since Geode 1.14
+   */
+  @ConfigAttributeSetter(name = SECURITY_CN_AUTH_ENABLED)
+  void setSecurityCommonNameAuthEnabled(boolean isCommonNameAuthEnabled);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SECURITY_CN_AUTH_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String SECURITY_CN_AUTH_ENABLED_NAME = SECURITY_CN_AUTH_ENABLED;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#SECURITY_CN_AUTH_ENABLED} property
+   */
+  boolean DEFAULT_SECURITY_CN_AUTH_ENABLED = false;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property.

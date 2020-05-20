@@ -2032,6 +2032,23 @@ public interface ConfigurationProperties {
    * Default: empty. All security components use basic (username/password) authentication
    */
   String SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS = SECURITY_PREFIX + "auth-token-enabled-components";
+
+  /**
+   * The static String definition of the <i>"security-cn-auth-enabled"</i> property
+   * </p>
+   *
+   * <U>Description</U> This parameter only works if SSL with two-way handshake is enabled on
+   * all components and security manager is enabled. This property will determine if common name
+   * from client certificate will be used for authentication and authorization.
+   * </p>
+   *
+   * <U>Default</U>: "false"
+   * </p>
+   *
+   * <U>Since</U>: Geode 1.14
+   * </p>
+   */
+  String SECURITY_CN_AUTH_ENABLED = SECURITY_PREFIX + "cn-auth-enabled";
   /**
    * The static String definition of the <i>"ssl-ciphers"</i> property <a name="ssl-ciphers"/a>
    * </p>
