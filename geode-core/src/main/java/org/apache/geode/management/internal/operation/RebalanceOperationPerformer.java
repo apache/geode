@@ -50,9 +50,10 @@ import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 @Experimental
-public class RebalanceOperationPerformer {
-  public static RebalanceResult perform(Cache cache, RebalanceOperation parameters) {
+public class RebalanceOperationPerformer
+    implements OperationPerformer<RebalanceOperation, RebalanceResult> {
 
+  public RebalanceResult perform(Cache cache, RebalanceOperation parameters) {
     List<String> includeRegions = parameters.getIncludeRegions();
     List<String> excludeRegions = parameters.getExcludeRegions();
     boolean simulate = parameters.isSimulate();
@@ -100,7 +101,7 @@ public class RebalanceOperationPerformer {
     return result;
   }
 
-  private static RebalanceRegionResult performRebalance(Cache cache, String regionName,
+  private RebalanceRegionResult performRebalance(Cache cache, String regionName,
       boolean simulate)
       throws InterruptedException {
     // To be removed after region Name specification with "/" is fixed
@@ -280,14 +281,14 @@ public class RebalanceOperationPerformer {
     return listMemberPRInfo;
   }
 
-  private static boolean checkMemberPresence(InternalCache cache, DistributedMember dsMember) {
+  private boolean checkMemberPresence(InternalCache cache, DistributedMember dsMember) {
     // check if member's presence just before executing function
     // this is to avoid running a function on departed members #47248
     Set<DistributedMember> dsMemberList = ManagementUtils.getAllNormalMembers(cache);
     return dsMemberList.contains(dsMember);
   }
 
-  private static String listOfAllMembers(List<DistributedMember> dsMemberList) {
+  private String listOfAllMembers(List<DistributedMember> dsMemberList) {
     StringBuilder listMembersId = new StringBuilder();
     for (int j = 0; j < dsMemberList.size() - 1; j++) {
       listMembersId.append(dsMemberList.get(j).getId());
@@ -296,7 +297,7 @@ public class RebalanceOperationPerformer {
     return listMembersId.toString();
   }
 
-  private static boolean checkResultList(List<String> errors, List<Object> resultList,
+  private boolean checkResultList(List<String> errors, List<Object> resultList,
       DistributedMember member) {
     boolean toContinueForOtherMembers = false;
     if (CollectionUtils.isNotEmpty(resultList)) {
@@ -337,7 +338,7 @@ public class RebalanceOperationPerformer {
   }
 
   @VisibleForTesting
-  static RebalanceResult executeRebalanceOnDS(ManagementService managementService,
+  RebalanceResult executeRebalanceOnDS(ManagementService managementService,
       InternalCache cache, String simulate,
       List<String> excludeRegionsList, FunctionExecutor functionExecutor) {
     RebalanceResultImpl rebalanceResult = new RebalanceResultImpl();
