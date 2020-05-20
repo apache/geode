@@ -53,20 +53,18 @@ This version of <%=vars.product_name%> uses the [<%=vars.product_version_geode%>
 
 ## Cluster Management Configuration
 
-Locators started by gfsh will use the cluster management service REST API
-interface by default.
-The following properties control its functionality:
+Locators started by gfsh support the cluster management service REST API.
 
-- `http-service-port` needs to be be set to a non-zero value. If set to zero,
-there will not be an HTTP service available for the locator.
-The default value is 7070.
+Three property settings must be in effect to enable the cluster management REST API. These are in effect, by default, for gfsh-initiated locators.
 
-- `enable-cluster-configuration` will need its default value of true.
-When set to false, the cluster management service REST API calls all return errors.
+- `http-service-port` must be set to a non-zero value. If set to zero,
+no HTTP service is available for the locator. The default HTTP service port is 7070.
 
-- `enable-management-rest-service` will need its default value of true.
-The default value also start the JMX manager automatically.
-When set false, the cluster management REST service will not be started.
+- `enable-cluster-configuration` must be set to true.
+When set to false, all of the cluster management service REST API calls return errors.
+
+- `enable-management-rest-service` must be set to true.
+When set to false, the cluster management REST service does not start.
 
 By default, cluster management REST service logging occurs at the debug level.
 To increase logging to the info level,
@@ -77,9 +75,11 @@ when you start up locators.
 
 Secure your cluster management service REST API
 by implementing the `SecurityManager` interface.
-With the interface implemented,
-API requests will require credentials.
-By default, those credentials will need to be in the form of 
+When the interface is implemented,
+API requests require credentials.
+
+Credentials can take the form of a username/password pair or a valid bearer token.
+By default, the cluster management service expects credentials in the form of 
 a username and password, as in the example:
 
 ```
@@ -88,11 +88,11 @@ curl --user username:password http://example.com/management/regions
 
 When the `security-auth-token-enabled-components` property is set to 
 `all` or `management`,
-you must provide credentials in the form of a valid bearer token
-instead of a username and password. For example:
+the cluster management service expects credentials in the form of a valid bearer token.
+For example:
 
 ```
-curl -H "Authorization: Bearer YWhhbWlsdG9uQGFwaWdlZS5jb206bXlwYXNzdzByZAo" http://example.com/management/regions
+curl -H "Authorization: Bearer Y6bXlwYXNzdzByZAo" http://example.com/management/regions
 ```
 
 ## Java API
