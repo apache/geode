@@ -262,9 +262,10 @@ public class QueryCommandDUnitTestBase {
 
   private static void setupReplicatedProxyRegion(String regionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE_PROXY);
+    RegionFactory<Integer, Portfolio> regionFactory =
+        cache.createRegionFactory(RegionShortcut.REPLICATE_PROXY);
 
-    Region proxyRegion = regionFactory.create(regionName);
+    Region<Integer, Portfolio> proxyRegion = regionFactory.create(regionName);
     assertThat(proxyRegion).isNotNull();
     assertThat(proxyRegion.getFullPath()).contains(regionName);
   }
@@ -332,31 +333,18 @@ public class QueryCommandDUnitTestBase {
 
     server1.invoke(() -> prepareDataForRegion(DATA_REGION_WITH_PROXY_NAME_PATH));
 
-    String member = getHostingMember();
+    String member = "server-2";
     Random random = new Random(System.nanoTime());
     int randomInteger = random.nextInt(COUNT);
-    String query = "query --member=" + member
-        + " --query=\"select ID , status , createTime , pk, floatMinValue from "
-        + DATA_REGION_WITH_PROXY_NAME_PATH + " where ID <= " + randomInteger
-        + "\" --interactive=false";
+    StringBuilder queryString = new StringBuilder();
+    queryString.append("query --member=").append(member)
+        .append(" --query=\"select ID , status , createTime , pk, floatMinValue from ")
+        .append(DATA_REGION_WITH_PROXY_NAME_PATH).append(" where ID <= ").append(randomInteger)
+        .append("\" --interactive=false");
 
-    CommandResult commandResult = gfsh.executeCommand(query);
+    CommandResult commandResult =
+        gfsh.executeAndAssertThat(queryString.toString()).getCommandResult();
     validateSelectResult(commandResult, true, (randomInteger + 1),
         new String[] {"ID", "status", "createTime", "pk", "floatMinValue"});
-  }
-
-  private String getHostingMember() {
-    String hostingMember = null;
-    String findMemberCommand = "describe region --name=" + DATA_REGION_WITH_PROXY_NAME;
-    CommandResult findMemberResult = gfsh.executeCommand(findMemberCommand);
-    while (findMemberResult.hasNextLine()) {
-      String s = findMemberResult.nextLine();
-      if (s.contains("Hosting Members :")) {
-        hostingMember = s.substring(s.lastIndexOf(":") + 1);
-        break;
-      }
-    }
-    assertThat(hostingMember).isNotNull();
-    return hostingMember.replaceAll("\\s", "");
   }
 }

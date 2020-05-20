@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
@@ -30,10 +31,15 @@ import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 
 public class QueryCommandTest {
   private final QueryCommand command = new QueryCommand();
+  private QueryCommand spyCommand;
+
+  @Before
+  public void setup() {
+    spyCommand = spy(command);
+  }
 
   @Test
   public void targetMemberIsNotSetIfMemberOptionsIsNotUsed() {
-    QueryCommand spyCommand = spy(command);
     String query = "select query";
     doReturn(mock(DataCommandResult.class)).when(spyCommand).select(query, null);
 
@@ -44,7 +50,6 @@ public class QueryCommandTest {
 
   @Test
   public void targetMemberIsSetIfMemberOptionsIsUsed() {
-    QueryCommand spyCommand = spy(command);
     DistributedMember member = mock(DistributedMember.class);
     String query = "select query";
     String memberName = "member";
@@ -58,7 +63,6 @@ public class QueryCommandTest {
 
   @Test
   public void getQueryRegionsAssociatedMembersInvokedIfNoTargetProvided() {
-    QueryCommand spyCommand = spy(command);
     InternalCache cache = mock(InternalCache.class);
     Set<String> regionsInQuery = new HashSet<>();
     doReturn(new HashSet<>()).when(spyCommand).getQueryRegionsAssociatedMembers(cache,
