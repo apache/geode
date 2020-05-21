@@ -76,6 +76,7 @@ public class CommandFunction extends SingleResultRedisFunction {
   protected Object compute(Region localRegion, ByteArrayWrapper key,
       RedisCommandType command, Object[] args) {
     Callable<Object> callable;
+    boolean useStripedExecutor = true;
     switch (command) {
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
@@ -122,6 +123,27 @@ public class CommandFunction extends SingleResultRedisFunction {
             () -> new RedisSetInRegion(localRegion).sscan(key, matchPattern, count, cursor);
         break;
       }
+      case SUNIONSTORE: {
+        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        callable =
+            () -> new RedisSetInRegion(localRegion).sunionstore(stripedExecutor, key, setKeys);
+        useStripedExecutor = false;
+        break;
+      }
+      case SINTERSTORE: {
+        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        callable =
+            () -> new RedisSetInRegion(localRegion).sinterstore(stripedExecutor, key, setKeys);
+        useStripedExecutor = false;
+        break;
+      }
+      case SDIFFSTORE: {
+        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        callable =
+            () -> new RedisSetInRegion(localRegion).sdiffstore(stripedExecutor, key, setKeys);
+        useStripedExecutor = false;
+        break;
+      }
       case HSET: {
         Object[] hsetArgs = (Object[]) args[1];
         List<ByteArrayWrapper> fieldsToSet = (List<ByteArrayWrapper>) hsetArgs[0];
@@ -138,10 +160,69 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> new RedisHashInRegion(localRegion).hgetall(key);
         break;
       }
+      case HEXISTS: {
+        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        callable = () -> new RedisHashInRegion(localRegion).hexists(key, field);
+        break;
+      }
+      case HGET: {
+        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        callable = () -> new RedisHashInRegion(localRegion).hget(key, field);
+        break;
+      }
+      case HLEN: {
+        callable = () -> new RedisHashInRegion(localRegion).hlen(key);
+        break;
+      }
+      case HMGET: {
+        List<ByteArrayWrapper> fields = (List<ByteArrayWrapper>) args[1];
+        callable = () -> new RedisHashInRegion(localRegion).hmget(key, fields);
+        break;
+      }
+      case HVALS: {
+        callable = () -> new RedisHashInRegion(localRegion).hvals(key);
+        break;
+      }
+      case HKEYS: {
+        callable = () -> new RedisHashInRegion(localRegion).hkeys(key);
+        break;
+      }
+      case HSCAN: {
+        Object[] hsetArgs = (Object[]) args[1];
+        Pattern pattern = (Pattern) hsetArgs[0];
+        int count = (int) hsetArgs[1];
+        int cursor = (int) hsetArgs[2];
+        callable = () -> new RedisHashInRegion(localRegion).hscan(key, pattern, count, cursor);
+        break;
+      }
+      case HINCRBY: {
+        Object[] hsetArgs = (Object[]) args[1];
+        ByteArrayWrapper field = (ByteArrayWrapper) hsetArgs[0];
+        long increment = (long) hsetArgs[1];
+        callable = () -> new RedisHashInRegion(localRegion).hincrby(key, field, increment);
+        break;
+      }
+      case HINCRBYFLOAT: {
+        Object[] hsetArgs = (Object[]) args[1];
+        ByteArrayWrapper field = (ByteArrayWrapper) hsetArgs[0];
+        double increment = (double) hsetArgs[1];
+        callable = () -> new RedisHashInRegion(localRegion).hincrbyfloat(key, field, increment);
+        break;
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
-    return stripedExecutor.execute(key, callable);
+    if (useStripedExecutor) {
+      return stripedExecutor.execute(key, callable);
+    } else {
+      try {
+        return callable.call();
+      } catch (RuntimeException re) {
+        throw re;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
 }

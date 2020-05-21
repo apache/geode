@@ -16,10 +16,10 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -31,45 +31,46 @@ import org.apache.geode.redis.internal.RedisData;
 class EmptyRedisSet extends RedisSet {
 
   @Override
-  synchronized List<Object> sscan(Pattern matchPattern, int count, int cursor) {
+  List<Object> sscan(Pattern matchPattern, int count, int cursor) {
     return emptyList();
   }
 
   @Override
-  synchronized Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisData> region,
+  Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key, int popCount) {
     return emptyList();
   }
 
   @Override
-  synchronized Collection<ByteArrayWrapper> srandmember(int count) {
+  Collection<ByteArrayWrapper> srandmember(int count) {
     return emptyList();
   }
 
   @Override
-  public synchronized boolean sismember(ByteArrayWrapper member) {
+  public boolean sismember(ByteArrayWrapper member) {
     return false;
   }
 
   @Override
-  public synchronized int scard() {
+  public int scard() {
     return 0;
   }
 
   @Override
-  synchronized long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
+  long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  synchronized long srem(ArrayList<ByteArrayWrapper> membersToRemove,
+  long srem(ArrayList<ByteArrayWrapper> membersToRemove,
       Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
     return 0;
   }
 
   @Override
-  synchronized Set<ByteArrayWrapper> smembers() {
-    return emptySet();
+  Set<ByteArrayWrapper> smembers() {
+    // some callers want to be able to modify the set returned
+    return new HashSet<>();
   }
 }

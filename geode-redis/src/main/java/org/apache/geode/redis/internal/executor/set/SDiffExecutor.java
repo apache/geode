@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -23,20 +21,13 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 public class SDiffExecutor extends SetOpExecutor {
 
   @Override
-  protected boolean isStorage() {
-    return false;
+  protected boolean doSetOp(Set<ByteArrayWrapper> resultSet, Set<ByteArrayWrapper> nextSet) {
+    resultSet.removeAll(nextSet);
+    return resultSet.isEmpty();
   }
 
   @Override
-  protected Set<ByteArrayWrapper> setOp(Set<ByteArrayWrapper> firstSet,
-      List<Set<ByteArrayWrapper>> setList) {
-    if (firstSet == null) {
-      return null;
-    }
-    Set<ByteArrayWrapper> copy = new HashSet<>(firstSet);
-    for (Set<ByteArrayWrapper> set : setList) {
-      copy.removeAll(set);
-    }
-    return copy;
+  protected boolean isStorage() {
+    return false;
   }
 }

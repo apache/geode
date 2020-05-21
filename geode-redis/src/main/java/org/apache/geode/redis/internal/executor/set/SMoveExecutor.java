@@ -18,13 +18,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisResponse;
 
@@ -43,50 +39,17 @@ public class SMoveExecutor extends SetExecutor {
     ByteArrayWrapper destination = new ByteArrayWrapper(commandElems.get(2));
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(3));
 
-    checkDataType(source, RedisDataType.REDIS_SET, context);
+    // TODO: remove the need for this checkDataType call
     checkDataType(destination, RedisDataType.REDIS_SET, context);
 
-    Region<ByteArrayWrapper, RedisData> region = getRegion(context);
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
 
-    RedisResponse response;
-    try (AutoCloseableLock regionLock = withRegionLock(context, source)) {
-      RedisData sourceSet = region.get(source);
-
-      if (sourceSet == null) {
-        return RedisResponse.integer(NOT_MOVED);
-      }
-
-      boolean removed =
-          new RedisSetInRegion(region).srem(source,
-              new ArrayList<>(Collections.singletonList(member))) == 1;
-
-      if (!removed) {
-        return RedisResponse.integer(NOT_MOVED);
-      }
-
-      try (AutoCloseableLock destinationLock = withRegionLock(context, destination)) {
-        // TODO: this should invoke a function in case the primary for destination is remote
-        new RedisSetInRegion(region).sadd(destination,
-            new ArrayList<>(Collections.singletonList(member)));
-
-        response = RedisResponse.integer(MOVED);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        response = RedisResponse.error("Thread interrupted");
-      } catch (TimeoutException e) {
-        response = RedisResponse.error("Timeout acquiring lock. Please try again.");
-      } catch (Exception e) {
-        response = RedisResponse.error("Unexpected exception.");
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      response = RedisResponse.error("Thread interrupted.");
-    } catch (TimeoutException e) {
-      response = RedisResponse.error("Timeout acquiring lock. Please try again.");
-    } catch (Exception e) {
-      response = RedisResponse.error("Unexpected exception.");
+    boolean removed = redisSetCommands.srem(source,
+        new ArrayList<>(Collections.singletonList(member))) == 1;
+    if (!removed) {
+      return RedisResponse.integer(NOT_MOVED);
     }
-
-    return response;
+    redisSetCommands.sadd(destination, new ArrayList<>(Collections.singletonList(member)));
+    return RedisResponse.integer(MOVED);
   }
 }

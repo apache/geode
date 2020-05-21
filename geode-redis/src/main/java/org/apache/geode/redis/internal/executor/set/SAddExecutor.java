@@ -30,8 +30,7 @@ public class SAddExecutor extends SetExecutor {
 
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
 
     ArrayList<ByteArrayWrapper> membersToAdd =
         new ArrayList<>(commandElements.subList(2, commandElements.size()));

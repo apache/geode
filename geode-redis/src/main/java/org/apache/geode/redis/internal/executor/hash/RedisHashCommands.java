@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 
@@ -29,4 +30,22 @@ public interface RedisHashCommands {
   boolean del(ByteArrayWrapper key);
 
   Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key);
+
+  int hexists(ByteArrayWrapper key, ByteArrayWrapper field);
+
+  ByteArrayWrapper hget(ByteArrayWrapper key, ByteArrayWrapper field);
+
+  int hlen(ByteArrayWrapper key);
+
+  List<ByteArrayWrapper> hmget(ByteArrayWrapper key, List<ByteArrayWrapper> fields);
+
+  Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key);
+
+  Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key);
+
+  List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor);
+
+  long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment);
+
+  double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment);
 }
