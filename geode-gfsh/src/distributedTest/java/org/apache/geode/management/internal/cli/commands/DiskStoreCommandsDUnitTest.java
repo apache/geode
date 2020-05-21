@@ -66,6 +66,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
   private static final String GROUP2 = "GROUP2";
   private static final String REGION_1 = "REGION1";
   private static final String DISKSTORE = "DISKSTORE";
+  private static final String IF_FILE_EXT = ".if";
 
   @Rule
   public ClusterStartupRule rule = new ClusterStartupRule();
@@ -514,8 +515,26 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     assertThat(Files.exists(nonExistingDiskStorePath)).isFalse();
     gfsh.executeAndAssertThat(baseCommand + " --name=" + DISKSTORE + " --disk-dirs="
         + nonExistingDiskStorePath.toAbsolutePath().toString()).statusIsError()
-        .containsOutput("Could not find disk-dirs:");
+        .containsOutput("Could not find:");
     assertThat(Files.exists(nonExistingDiskStorePath)).isFalse();
+  }
+
+  @Test
+  @Parameters({"compact offline-disk-store", "describe offline-disk-store",
+      "upgrade offline-disk-store", "validate offline-disk-store",
+      "alter disk-store --region=testRegion --enable-statistics=true"})
+  public void offlineDiskStoreCommandShouldNotPassIfDiskStoreFileDoesNotExist(
+      String baseCommand) {
+    Path diskStorePath =
+        Paths.get(tempDir.getRoot().getAbsolutePath());
+    assertThat(Files.exists(diskStorePath)).isTrue();
+    Path diskStoreFilePath =
+        Paths.get(diskStorePath + File.separator + "BACKUPnonExistingDiskStore" + IF_FILE_EXT);
+    assertThat(Files.exists(diskStoreFilePath)).isFalse();
+    gfsh.executeAndAssertThat(baseCommand + " --name=nonExistingDiskStore --disk-dirs="
+        + diskStoreFilePath.toAbsolutePath().toString()).statusIsError()
+        .containsOutput("Could not find:");
+    assertThat(Files.exists(diskStoreFilePath)).isFalse();
   }
 
   @Test
