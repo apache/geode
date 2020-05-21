@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -107,6 +108,16 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private final StoppableCondition regionToDispatchedKeysMapEmpty;
   protected final StoppableReentrantLock queueEmptyLock;
   private volatile boolean isQueueEmpty = true;
+
+  private final boolean cleanQueues;
+
+  @VisibleForTesting
+  boolean getCleanQueues() {
+    return cleanQueues;
+  }
+
+
+  private final boolean asyncEvent;
 
   /**
    * False signal is fine on this condition. As processor will loop again and find out if it was a
@@ -231,19 +242,27 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private MetaRegionFactory metaRegionFactory;
 
   public ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region> userRegions, int idx,
-      int nDispatcher) {
-    this(sender, userRegions, idx, nDispatcher, new MetaRegionFactory());
+      int nDispatcher, boolean cleanQueues) {
+    this(sender, userRegions, idx, nDispatcher, new MetaRegionFactory(), cleanQueues);
   }
 
   ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region> userRegions, int idx,
-      int nDispatcher, MetaRegionFactory metaRegionFactory) {
+      int nDispatcher, MetaRegionFactory metaRegionFactory, boolean cleanQueues) {
 
     this.metaRegionFactory = metaRegionFactory;
+
+    this.cleanQueues = cleanQueues;
 
     this.index = idx;
     this.nDispatcher = nDispatcher;
     this.stats = sender.getStatistics();
     this.sender = sender;
+
+    if (this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
+      this.asyncEvent = true;
+    } else {
+      this.asyncEvent = false;
+    }
 
     List<Region> listOfRegions = new ArrayList<Region>(userRegions);
     Collections.sort(listOfRegions, new Comparator<Region>() {
@@ -259,7 +278,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       } else {
         // Fix for Bug#51491. Once decided to support this configuration we have call
         // addShadowPartitionedRegionForUserRR
-        if (this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
+
+        if (this.asyncEvent) {
           throw new AsyncEventQueueConfigurationException(String.format(
               "Parallel Async Event Queue %s can not be used with replicated region %s",
               AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(this.sender.getId()),
@@ -509,6 +529,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         prQ = (PartitionedRegion) fact.create(prQName);
         // at this point we should be able to assert prQ == meta;
 
+        if (prQ == null)
+          return;
         // TODO This should not be set on the PR but on the GatewaySender
         prQ.enableConflation(sender.isBatchConflationEnabled());
         if (isAccessor)
@@ -523,6 +545,15 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
         }
+        if (this.cleanQueues) {
+          // now, clean up the shadowPR's buckets on this node (primary as well as
+          // secondary) for a fresh start
+          Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
+          for (BucketRegion bucketRegion : localBucketRegions) {
+            bucketRegion.clear();
+          }
+        }
+
       } else {
         if (isAccessor)
           return; // return from here if accessor node
@@ -530,6 +561,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // started from stop operation)
         if (this.index == 0) // HItesh:for first parallelGatewaySenderQueue only
           handleShadowPRExistsScenario(cache, prQ);
+
       }
 
     } finally {
@@ -553,7 +585,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private void addOverflowStatisticsToMBean(Cache cache, PartitionedRegion prQ) {
     // Get the appropriate mbean and add the eviction and disk region stats to it
     ManagementService service = ManagementService.getManagementService(cache);
-    if (this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
+    if (this.asyncEvent) {
       AsyncEventQueueMBean bean = (AsyncEventQueueMBean) service.getLocalAsyncEventQueueMXBean(
           AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(this.sender.getId()));
 
@@ -589,9 +621,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
     // now, clean up the shadowPR's buckets on this node (primary as well as
     // secondary) for a fresh start
-    Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
-    for (BucketRegion bucketRegion : localBucketRegions) {
-      bucketRegion.clear();
+    if (this.cleanQueues) {
+      Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
+      for (BucketRegion bucketRegion : localBucketRegions) {
+        bucketRegion.clear();
+      }
     }
   }
 
@@ -1310,16 +1344,19 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
       // Remove all entries from peekedEvents for buckets that are not longer primary
       // This will prevent repeatedly trying to dispatch non-primary events
-      for (Iterator<GatewaySenderEventImpl> iterator = peekedEvents.iterator(); iterator
-          .hasNext();) {
-        GatewaySenderEventImpl event = iterator.next();
-        final int bucketId = event.getBucketId();
-        final PartitionedRegion region = (PartitionedRegion) event.getRegion();
-        if (!region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
-          iterator.remove();
-          BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
-          if (brq != null) {
-            brq.pushKeyIntoQueue(event.getShadowKey());
+      Object[] helpArray = peekedEvents.toArray();
+      if (helpArray.length > 0) {
+
+        for (int i = helpArray.length - 1; i >= 0; i--) {
+          GatewaySenderEventImpl event = (GatewaySenderEventImpl) helpArray[i];
+          final int bucketId = event.getBucketId();
+          final PartitionedRegion region = (PartitionedRegion) event.getRegion();
+          if (!region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
+            peekedEvents.remove(event);
+            BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
+            if (brq != null) {
+              brq.pushKeyIntoQueue(event.getShadowKey());
+            }
           }
         }
       }
@@ -1572,7 +1609,30 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   @Override
   public void close() {
-    // Because of bug 49060 do not close the regions of a parallel queue
+    if (resetLastPeeked) {
+      returnToQueuePreviouslyPeekedEvents();
+      resetLastPeeked = false;
+    }
+  }
+
+  private void returnToQueuePreviouslyPeekedEvents() {
+    Object[] helpArray = peekedEvents.toArray();
+    peekedEvents.clear();
+    if (helpArray.length == 0) {
+      return;
+    }
+
+    for (int i = helpArray.length - 1; i >= 0; i--) {
+      GatewaySenderEventImpl event = (GatewaySenderEventImpl) helpArray[i];
+      final int bucketId = event.getBucketId();
+      final PartitionedRegion region = (PartitionedRegion) event.getRegion();
+      if (region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
+        BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
+        if (brq != null) {
+          brq.pushKeyIntoQueue(event.getShadowKey());
+        }
+      }
+    }
   }
 
   /**

@@ -55,6 +55,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     IgnoredException.addIgnoredException("Unexpected IOException");
   }
 
+
   @Test
   public void shuttingOneSenderInAVMShouldNotAffectOthersBatchRemovalThread() {
     Integer lnport = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
@@ -118,6 +119,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
                   WANTestBase.getQueueContentSize("ln2", true) == 0));
     });
   }
+
 
   // to test that when userPR is locally destroyed, shadow Pr is also locally
   // destroyed and on recreation userPr , shadow Pr is also recreated.

@@ -1,20 +1,18 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-package org.apache.geode.cache.asyncqueue.internal;
+package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,17 +38,14 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.AEQTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-/**
- * Extracted from AsyncEventListenerDistributedTest.
- */
-@Category(AEQTest.class)
-public class SerialAsyncEventQueueImplTest {
+@Category(WanTest.class)
+public class SerialGatewaySenderImplTest {
 
   private InternalCache cache;
 
-  private SerialAsyncEventQueueImpl serialAsyncEventQueue;
+  private SerialGatewaySenderImpl serialGatewaySender;
   private StatisticsFactory statisticsFactory;
   private GatewaySenderAttributes gatewaySenderAttributes;
   private StatisticsClock statisticsClock;
@@ -58,6 +53,7 @@ public class SerialAsyncEventQueueImplTest {
 
   AbstractGatewaySenderEventProcessor eventProcessor1;
   AbstractGatewaySenderEventProcessor eventProcessor2;
+
 
   @Before
   public void setUp() throws Exception {
@@ -84,7 +80,7 @@ public class SerialAsyncEventQueueImplTest {
     when(cache.getGatewaySenderLockService()).thenReturn(distributedLockService);
   }
 
-  private SerialAsyncEventQueueImpl createSerialAsyncEventQueueImplSpy() {
+  private SerialGatewaySenderImpl createSerialGatewaySenderImplSpy() {
     GatewaySenderAdvisor gatewaySenderAdvisor = mock(GatewaySenderAdvisor.class);
     when(gatewaySenderAdvisor.isPrimary()).thenReturn(true);
 
@@ -97,45 +93,43 @@ public class SerialAsyncEventQueueImplTest {
     when(eventProcessor2.isStopped()).thenReturn(false);
     when(eventProcessor2.getRunningStateLock()).thenReturn(mock(Object.class));
 
+    SerialGatewaySenderImpl serialGatewaySender =
+        new SerialGatewaySenderImpl(cache, statisticsClock, gatewaySenderAttributes);
+    SerialGatewaySenderImpl spySerialGatewaySender = spy(serialGatewaySender);
+    doReturn(gatewaySenderAdvisor).when(spySerialGatewaySender).getSenderAdvisor();
+    doReturn(eventProcessor1).when(spySerialGatewaySender).createEventProcessor(false);
+    doReturn(eventProcessor2).when(spySerialGatewaySender).createEventProcessor(true);
 
-    SerialAsyncEventQueueImpl serialAsyncEventQueue =
-        new SerialAsyncEventQueueImpl(cache, statisticsFactory, statisticsClock,
-            gatewaySenderAttributes);
-    SerialAsyncEventQueueImpl spySerialAsyncEventQueue = spy(serialAsyncEventQueue);
-    doReturn(gatewaySenderAdvisor).when(spySerialAsyncEventQueue).getSenderAdvisor();
-    doReturn(eventProcessor1).when(spySerialAsyncEventQueue).createEventProcessor(false);
-    doReturn(eventProcessor2).when(spySerialAsyncEventQueue).createEventProcessor(true);
+    doReturn(null).when(spySerialGatewaySender).getQueues();
 
-    doReturn(null).when(spySerialAsyncEventQueue).getQueues();
-
-    return spySerialAsyncEventQueue;
+    return spySerialGatewaySender;
   }
 
   @Test
   public void whenStartedShouldCreateEventProcessor() {
-    serialAsyncEventQueue = createSerialAsyncEventQueueImplSpy();
+    serialGatewaySender = createSerialGatewaySenderImplSpy();
 
-    serialAsyncEventQueue.start();
+    serialGatewaySender.start();
 
-    assertThat(serialAsyncEventQueue.getEventProcessor()).isEqualTo(eventProcessor1);
+    assertThat(serialGatewaySender.getEventProcessor()).isEqualTo(eventProcessor1);
   }
 
   @Test
   public void whenStartedwithCleanShouldCreateEventProcessor() {
-    serialAsyncEventQueue = createSerialAsyncEventQueueImplSpy();
+    serialGatewaySender = createSerialGatewaySenderImplSpy();
 
-    serialAsyncEventQueue.startWithCleanQueue();
+    serialGatewaySender.startWithCleanQueue();
 
-    assertThat(serialAsyncEventQueue.getEventProcessor()).isEqualTo(eventProcessor2);
+    assertThat(serialGatewaySender.getEventProcessor()).isEqualTo(eventProcessor2);
   }
 
   @Test
   public void whenStoppedShouldResetTheEventProcessor() {
-    serialAsyncEventQueue = createSerialAsyncEventQueueImplSpy();
+    serialGatewaySender = createSerialGatewaySenderImplSpy();
 
-    serialAsyncEventQueue.stop();
+    serialGatewaySender.stop();
 
-    assertThat(serialAsyncEventQueue.getEventProcessor()).isNull();
+    assertThat(serialGatewaySender.getEventProcessor()).isNull();
   }
 
 }

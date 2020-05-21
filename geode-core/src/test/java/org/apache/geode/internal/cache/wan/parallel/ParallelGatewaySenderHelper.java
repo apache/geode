@@ -62,7 +62,7 @@ public class ParallelGatewaySenderHelper {
   public static ParallelGatewaySenderEventProcessor createParallelGatewaySenderEventProcessor(
       AbstractGatewaySender sender) {
     ParallelGatewaySenderEventProcessor processor =
-        new ParallelGatewaySenderEventProcessor(sender, null);
+        new ParallelGatewaySenderEventProcessor(sender, null, false);
     ConcurrentParallelGatewaySenderQueue queue = new ConcurrentParallelGatewaySenderQueue(sender,
         new ParallelGatewaySenderEventProcessor[] {processor});
     Set<RegionQueue> queues = new HashSet<>();
@@ -77,6 +77,7 @@ public class ParallelGatewaySenderHelper {
     when(sender.getCache()).thenReturn(cache);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(sender.getCancelCriterion()).thenReturn(cancelCriterion);
+    when(sender.getId()).thenReturn("");
     return sender;
   }
 
