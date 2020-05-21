@@ -34,19 +34,19 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 @SuppressWarnings("unchecked")
 public class CheckPrimaryBucketFunction implements Function {
-  private static final CountDownLatch latch = new CountDownLatch(1);
-  private static final CountDownLatch latch2 = new CountDownLatch(1);
+  private static final CountDownLatch signalFunctionHasStarted = new CountDownLatch(1);
+  private static final CountDownLatch signalPrimaryHasMoved = new CountDownLatch(1);
 
-  public static void awaitLatch() {
+  public static void waitForFunctionToStart() {
     try {
-      latch.await();
+      signalFunctionHasStarted.await();
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
   }
 
   public static void finishedMovingPrimary() {
-    latch2.countDown();
+    signalPrimaryHasMoved.countDown();
   }
 
   @Override
@@ -64,10 +64,10 @@ public class CheckPrimaryBucketFunction implements Function {
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
 
     if (releaseLatchEarly) {
-      latch.countDown();
+      signalFunctionHasStarted.countDown();
       // now wait until test has moved primary
       try {
-        latch2.await();
+        signalPrimaryHasMoved.await();
       } catch (InterruptedException e) {
         throw new IllegalStateException(e);
       }
@@ -75,19 +75,22 @@ public class CheckPrimaryBucketFunction implements Function {
 
     Runnable r = () -> {
       if (!releaseLatchEarly) {
-        latch.countDown();
+        signalFunctionHasStarted.countDown();
       }
-      isMemberPrimary(regionFunctionContext, key, member);
 
-      GeodeAwaitility.await()
-          .during(10, TimeUnit.SECONDS)
-          .atMost(11, TimeUnit.SECONDS)
-          .until(() -> isMemberPrimary(regionFunctionContext, key, member));
+      try {
+        GeodeAwaitility.await()
+            .during(10, TimeUnit.SECONDS)
+            .atMost(11, TimeUnit.SECONDS)
+            .until(() -> isMemberPrimary(regionFunctionContext, key, member));
+        result.lastResult(true);
+      } catch (Exception e) {
+        e.printStackTrace();
+        result.lastResult(false);
+      }
     };
 
     SingleResultRedisFunction.computeWithPrimaryLocked(key, (LocalDataSet) localRegion, r);
-
-    result.lastResult(true);
   }
 
   private boolean isMemberPrimary(RegionFunctionContextImpl context, String key,

@@ -20,13 +20,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.control.RebalanceFactory;
+import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -34,6 +39,7 @@ import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -59,10 +65,10 @@ public class EnsurePrimaryStaysPutDUnitTest {
     locator = cluster.startLocatorVM(0);
     int locatorPort = locator.getPort();
     server1 = cluster.startServerVM(1, cf -> cf
-        .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.awaitility.core.*")
+        .withProperty(SERIALIZABLE_OBJECT_FILTER, "*")
         .withConnectionToLocator(locatorPort));
     server2 = cluster.startServerVM(2, cf -> cf
-        .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.awaitility.core.*")
+        .withProperty(SERIALIZABLE_OBJECT_FILTER, "*")
         .withConnectionToLocator(locatorPort));
 
     gfsh.connectAndVerify(locator);
@@ -101,6 +107,11 @@ public class EnsurePrimaryStaysPutDUnitTest {
       Region<String, String> region = cache.getRegion("TEST");
       region.put(KEY, VALUE);
 
+      GeodeAwaitility.await()
+          .until(() -> PartitionRegionHelper.getRedundantMembersForKey(region, KEY).size() == 1);
+
+      rebalanceRegions(cache, region);
+
       return PartitionRegionHelper.getPrimaryMemberForKey(region, KEY).getName();
     });
 
@@ -123,7 +134,7 @@ public class EnsurePrimaryStaysPutDUnitTest {
       return rc.getResult().get(0);
     });
 
-    primary.invoke(CheckPrimaryBucketFunction::awaitLatch);
+    primary.invoke(CheckPrimaryBucketFunction::waitForFunctionToStart);
 
     // switch primary to secondary while running test fn()
     secondary.invoke(() -> {
@@ -139,6 +150,23 @@ public class EnsurePrimaryStaysPutDUnitTest {
     });
     primary.invoke(CheckPrimaryBucketFunction::finishedMovingPrimary);
 
-    assertThat(asyncChecking.get()).isTrue();
+    assertThat(asyncChecking.get())
+        .as("CheckPrimaryBucketFunction determined that the primary has moved")
+        .isTrue();
+  }
+
+  private static void rebalanceRegions(Cache cache, Region<?, ?> region) {
+    ResourceManager manager = cache.getResourceManager();
+    Set<String> includeRegions = new HashSet<>();
+    includeRegions.add(region.getName());
+
+    RebalanceFactory factory = manager.createRebalanceFactory();
+    factory.includeRegions(includeRegions);
+
+    try {
+      factory.start().getResults();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
