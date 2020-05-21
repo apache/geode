@@ -230,7 +230,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('selenium-support')
     }
 
-    dependencySet(group: 'org.springframework.security', version: '5.2.3.RELEASE') {
+    dependencySet(group: 'org.springframework.security', version: '5.2.4.RELEASE') {
       entry('spring-security-config')
       entry('spring-security-core')
       entry('spring-security-ldap')
