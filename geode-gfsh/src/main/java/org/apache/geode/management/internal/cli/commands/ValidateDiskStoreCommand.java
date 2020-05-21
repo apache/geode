@@ -46,11 +46,12 @@ public class ValidateDiskStoreCommand extends GfshCommand {
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__J,
           help = CliStrings.VALIDATE_DISK_STORE__J__HELP) String[] jvmProps) {
 
-    String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
-    if (validatedDirectories != null) {
+    String validatedDirectoriesAndFile =
+        DiskStoreCommandsUtils.validatedDirectoriesAndFile(diskDirs, diskStoreName);
+    if (validatedDirectoriesAndFile != null) {
       throw new IllegalArgumentException(
-          "Could not find " + CliStrings.VALIDATE_DISK_STORE__DISKDIRS + ": \""
-              + validatedDirectories + "\"");
+          "Could not find: \""
+              + validatedDirectoriesAndFile + "\"");
     }
 
     ResultModel result = new ResultModel();
