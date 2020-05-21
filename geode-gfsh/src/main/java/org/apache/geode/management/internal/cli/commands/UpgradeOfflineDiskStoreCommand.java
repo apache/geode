@@ -50,11 +50,12 @@ public class UpgradeOfflineDiskStoreCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
 
-    String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
-    if (validatedDirectories != null) {
+    String validatedDirectoriesAndFileAndFile =
+        DiskStoreCommandsUtils.validatedDirectoriesAndFile(diskDirs, diskStoreName);
+    if (validatedDirectoriesAndFileAndFile != null) {
       throw new IllegalArgumentException(
-          "Could not find " + CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS + ": \""
-              + validatedDirectories + "\"");
+          "Could not find: \""
+              + validatedDirectoriesAndFileAndFile + "\"");
     }
 
     ResultModel result = new ResultModel();

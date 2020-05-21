@@ -50,11 +50,12 @@ public class CompactOfflineDiskStoreCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__J,
           help = CliStrings.COMPACT_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
 
-    String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
-    if (validatedDirectories != null) {
+    String validatedDirectoriesAndFile =
+        DiskStoreCommandsUtils.validatedDirectoriesAndFile(diskDirs, diskStoreName);
+    if (validatedDirectoriesAndFile != null) {
       throw new IllegalArgumentException(
-          "Could not find " + CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS + ": \""
-              + validatedDirectories + "\"");
+          "Could not find: \""
+              + validatedDirectoriesAndFile + "\"");
     }
 
     ResultModel result = new ResultModel();
