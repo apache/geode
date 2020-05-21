@@ -29,7 +29,6 @@ import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
-import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -49,7 +48,6 @@ public class CommandPipeliningIntegrationTest {
 
   @BeforeClass
   public static void setUp() {
-    System.setProperty(GeodeRedisServer.NUM_THREADS_SYS_PROP_NAME, "1");
     subscriber = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
     publisher = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }

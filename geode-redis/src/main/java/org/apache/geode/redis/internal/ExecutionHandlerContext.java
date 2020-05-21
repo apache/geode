@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal;
 
-import static org.apache.geode.redis.internal.RedisCommandType.PUBLISH;
 import static org.apache.geode.redis.internal.RedisCommandType.SUBSCRIBE;
 
 import java.io.IOException;
