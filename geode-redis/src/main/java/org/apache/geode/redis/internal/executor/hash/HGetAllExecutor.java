@@ -47,8 +47,7 @@ public class HGetAllExecutor extends HashExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    RedisHashCommands redisHashCommands =
-        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
     Collection<ByteArrayWrapper> fieldsAndValues = redisHashCommands.hgetall(key);
     try {
       command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), fieldsAndValues));

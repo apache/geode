@@ -17,11 +17,21 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import static org.apache.geode.redis.internal.RedisCommandType.DEL;
 import static org.apache.geode.redis.internal.RedisCommandType.HDEL;
+import static org.apache.geode.redis.internal.RedisCommandType.HEXISTS;
+import static org.apache.geode.redis.internal.RedisCommandType.HGET;
 import static org.apache.geode.redis.internal.RedisCommandType.HGETALL;
+import static org.apache.geode.redis.internal.RedisCommandType.HINCRBY;
+import static org.apache.geode.redis.internal.RedisCommandType.HINCRBYFLOAT;
+import static org.apache.geode.redis.internal.RedisCommandType.HKEYS;
+import static org.apache.geode.redis.internal.RedisCommandType.HLEN;
+import static org.apache.geode.redis.internal.RedisCommandType.HMGET;
+import static org.apache.geode.redis.internal.RedisCommandType.HSCAN;
 import static org.apache.geode.redis.internal.RedisCommandType.HSET;
+import static org.apache.geode.redis.internal.RedisCommandType.HVALS;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -56,5 +66,51 @@ public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
   @Override
   public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
     return CommandFunction.execute(HGETALL, key, null, region);
+  }
+
+  @Override
+  public int hexists(ByteArrayWrapper key, ByteArrayWrapper field) {
+    return CommandFunction.execute(HEXISTS, key, field, region);
+  }
+
+  @Override
+  public ByteArrayWrapper hget(ByteArrayWrapper key, ByteArrayWrapper field) {
+    return CommandFunction.execute(HGET, key, field, region);
+  }
+
+  @Override
+  public int hlen(ByteArrayWrapper key) {
+    return CommandFunction.execute(HLEN, key, null, region);
+  }
+
+  @Override
+  public List<ByteArrayWrapper> hmget(ByteArrayWrapper key,
+      List<ByteArrayWrapper> fields) {
+    return CommandFunction.execute(HMGET, key, fields, region);
+  }
+
+  @Override
+  public Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key) {
+    return CommandFunction.execute(HVALS, key, null, region);
+  }
+
+  @Override
+  public Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key) {
+    return CommandFunction.execute(HKEYS, key, null, region);
+  }
+
+  @Override
+  public List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+    return CommandFunction.execute(HSCAN, key, new Object[] {matchPattern, count, cursor}, region);
+  }
+
+  @Override
+  public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
+    return CommandFunction.execute(HINCRBY, key, new Object[] {field, increment}, region);
+  }
+
+  @Override
+  public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
+    return CommandFunction.execute(HINCRBYFLOAT, key, new Object[] {field, increment}, region);
   }
 }

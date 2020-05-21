@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -28,12 +26,8 @@ public class SUnionExecutor extends SetOpExecutor {
   }
 
   @Override
-  protected Set<ByteArrayWrapper> setOp(Set<ByteArrayWrapper> firstSet,
-      List<Set<ByteArrayWrapper>> setList) {
-    Set<ByteArrayWrapper> addSet = firstSet == null ? new HashSet<>() : new HashSet<>(firstSet);
-    for (Set<ByteArrayWrapper> set : setList) {
-      addSet.addAll(set);
-    }
-    return addSet;
+  protected boolean doSetOp(Set<ByteArrayWrapper> resultSet, Set<ByteArrayWrapper> nextSet) {
+    resultSet.addAll(nextSet);
+    return false;
   }
 }
