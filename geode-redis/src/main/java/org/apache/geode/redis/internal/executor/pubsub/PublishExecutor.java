@@ -16,52 +16,27 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import io.netty.buffer.ByteBuf;
-
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class PublishExecutor extends AbstractExecutor {
 
-  private ExecutorService executorService = Executors.newSingleThreadExecutor();
-
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> args = command.getProcessedCommand();
     if (args.size() != 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.PUBLISH));
-      return;
+      return RedisResponse.error(ArityDef.PUBLISH);
     }
 
     String channelName = new String(args.get(1));
+    long publishCount = context.getPubSub().publish(channelName, args.get(2));
 
-    executorService.submit(new PublishingRunnable(context, channelName, args.get(2)));
-  }
-
-  public static class PublishingRunnable implements Runnable {
-
-    private final ExecutionHandlerContext context;
-    private final String channelName;
-    private final byte[] message;
-
-    public PublishingRunnable(ExecutionHandlerContext context, String channelName, byte[] message) {
-      this.context = context;
-      this.channelName = channelName;
-      this.message = message;
-    }
-
-    @Override
-    public void run() {
-      long publishCount = context.getPubSub().publish(channelName, message);
-      ByteBuf response = Coder.getIntegerResponse(context.getByteBufAllocator(), publishCount);
-      context.writeToChannel(response);
-    }
+    return RedisResponse.integer(publishCount);
   }
 
 }

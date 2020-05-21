@@ -158,13 +158,24 @@ public class Command {
     return b.toString();
   }
 
-  private String getHexEncodedString(byte[] data) {
+  public static String getHexEncodedString(byte[] data) {
+    return getHexEncodedString(data, data.length);
+  }
+
+  public static String getHexEncodedString(byte[] data, int size) {
     StringBuilder builder = new StringBuilder();
-    for (byte aByte : data) {
+    for (int i = 0; i < size; i++) {
+      byte aByte = data[i];
       if (aByte > 31 && aByte < 127) {
         builder.append((char) aByte);
       } else {
-        builder.append(String.format("\\x%02x", aByte));
+        if (aByte == 0x0a) {
+          builder.append("\\n");
+        } else if (aByte == 0x0d) {
+          builder.append("\\r");
+        } else {
+          builder.append(String.format("\\x%02x", aByte));
+        }
       }
     }
 
