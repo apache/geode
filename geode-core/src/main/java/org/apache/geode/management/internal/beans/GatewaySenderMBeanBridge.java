@@ -209,6 +209,11 @@ public class GatewaySenderMBeanBridge {
     sender.start();
   }
 
+  public void startWithCleanQueue() {
+    sender.startWithCleanQueue();
+  }
+
+
   public void stop() {
     sender.stop();
   }

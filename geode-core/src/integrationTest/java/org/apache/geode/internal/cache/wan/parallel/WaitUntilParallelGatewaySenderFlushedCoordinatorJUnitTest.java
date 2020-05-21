@@ -61,7 +61,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
   @Override
   protected AbstractGatewaySenderEventProcessor getEventProcessor() {
     ConcurrentParallelGatewaySenderEventProcessor processor =
-        spy(new ConcurrentParallelGatewaySenderEventProcessor(this.sender, null));
+        spy(new ConcurrentParallelGatewaySenderEventProcessor(this.sender, null, false));
     return processor;
   }
 

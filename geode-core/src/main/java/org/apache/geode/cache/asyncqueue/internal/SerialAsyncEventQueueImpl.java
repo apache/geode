@@ -61,6 +61,15 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
 
   @Override
   public void start() {
+    this.start(false);
+  }
+
+  @Override
+  public void startWithCleanQueue() {
+    this.start(true);
+  }
+
+  private void start(boolean cleanQueues) {
     if (logger.isDebugEnabled()) {
       logger.debug("Starting gatewaySender : {}", this);
     }
@@ -86,7 +95,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
           getSenderAdvisor().makeSecondary();
         }
       }
-      eventProcessor = createEventProcessor();
+      eventProcessor = createEventProcessor(cleanQueues);
 
       if (startEventProcessorInPausedState) {
         pauseEvenIfProcessorStopped();
@@ -113,15 +122,15 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     }
   }
 
-  protected AbstractGatewaySenderEventProcessor createEventProcessor() {
+  protected AbstractGatewaySenderEventProcessor createEventProcessor(boolean cleanQueues) {
     AbstractGatewaySenderEventProcessor eventProcessor;
     if (getDispatcherThreads() > 1) {
       eventProcessor = new ConcurrentSerialGatewaySenderEventProcessor(
-          SerialAsyncEventQueueImpl.this, getThreadMonitorObj());
+          SerialAsyncEventQueueImpl.this, getThreadMonitorObj(), cleanQueues);
     } else {
       eventProcessor =
           new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this, getId(),
-              getThreadMonitorObj());
+              getThreadMonitorObj(), cleanQueues);
     }
     return eventProcessor;
   }
@@ -184,8 +193,6 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     InternalDistributedSystem system =
         (InternalDistributedSystem) this.cache.getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
-
-    this.eventProcessor = null;
   }
 
   @Override

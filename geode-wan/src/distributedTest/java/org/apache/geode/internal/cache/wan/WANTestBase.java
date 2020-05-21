@@ -1082,6 +1082,20 @@ public class WANTestBase extends DistributedTestCase {
   }
 
 
+  public static void startSenderwithCleanQueuesInVMsAsync(String senderId, VM... vms) {
+    List<AsyncInvocation> tasks = new LinkedList<>();
+    for (VM vm : vms) {
+      tasks.add(vm.invokeAsync(() -> startSenderwithCleanQueues(senderId)));
+    }
+    for (AsyncInvocation invocation : tasks) {
+      try {
+        invocation.await();
+      } catch (InterruptedException e) {
+        fail("Starting senders was interrupted");
+      }
+    }
+  }
+
   public static void startSender(String senderId) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
 
@@ -1099,6 +1113,31 @@ public class WANTestBase extends DistributedTestCase {
         }
       }
       sender.start();
+    } finally {
+      exp.remove();
+      exp1.remove();
+      exln.remove();
+    }
+
+  }
+
+  public static void startSenderwithCleanQueues(String senderId) {
+    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+
+    IgnoredException exp =
+        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+    IgnoredException exp1 =
+        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+    try {
+      Set<GatewaySender> senders = cache.getGatewaySenders();
+      GatewaySender sender = null;
+      for (GatewaySender s : senders) {
+        if (s.getId().equals(senderId)) {
+          sender = s;
+          break;
+        }
+      }
+      sender.startWithCleanQueue();
     } finally {
       exp.remove();
       exp1.remove();
