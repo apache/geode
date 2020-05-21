@@ -962,7 +962,6 @@ public class StringsIntegrationTest {
       return;
     }
     String result = jedis.get(key);
-    // System.out.println(result);
     assertThat(result).isNull();
 
     int psetex = r.nextInt(5000);

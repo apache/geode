@@ -56,6 +56,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
@@ -74,6 +75,7 @@ import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.redis.internal.executor.CommandFunction;
@@ -146,11 +148,7 @@ public class GeodeRedisServer {
    */
   private Channel serverChannel;
 
-  /**
-   * Gem logwriter
-   */
-  @SuppressWarnings("deprecation")
-  private org.apache.geode.LogWriter logger;
+  private static final Logger logger = LogService.getLogger();
 
   private RegionProvider regionProvider;
 
@@ -326,7 +324,6 @@ public class GeodeRedisServer {
       }
     }
     this.cache = cache;
-    logger = cache.getLogger();
   }
 
   @VisibleForTesting
@@ -455,24 +452,22 @@ public class GeodeRedisServer {
   }
 
   private void logStartupMessage() throws UnknownHostException {
-    if (logger.infoEnabled()) {
-      String logMessage = "GeodeRedisServer started {" + getBindAddress() + ":" + serverPort
-          + "}, Selector threads: " + numSelectorThreads;
-      if (singleThreadPerConnection) {
-        logMessage += ", One worker thread per connection";
-      } else {
-        logMessage += ", Worker threads: " + numWorkerThreads;
-      }
-      logger.info(logMessage);
+    String logMessage = "GeodeRedisServer started {" + getBindAddress() + ":" + serverPort
+        + "}, Selector threads: " + numSelectorThreads;
+    if (singleThreadPerConnection) {
+      logMessage += ", One worker thread per connection";
+    } else {
+      logMessage += ", Worker threads: " + numWorkerThreads;
     }
+    logger.info(logMessage);
   }
 
   private ChannelInitializer<SocketChannel> createChannelInitializer(byte[] redisPasswordBytes) {
     return new ChannelInitializer<SocketChannel>() {
       @Override
       public void initChannel(SocketChannel socketChannel) {
-        if (logger.fineEnabled()) {
-          logger.fine(
+        if (logger.isDebugEnabled()) {
+          logger.debug(
               "GeodeRedisServer-Connection established with " + socketChannel.remoteAddress());
         }
         ChannelPipeline pipeline = socketChannel.pipeline();
@@ -534,9 +529,7 @@ public class GeodeRedisServer {
    */
   public synchronized void shutdown() {
     if (!shutdown) {
-      if (logger.infoEnabled()) {
-        logger.info("GeodeRedisServer shutting down");
-      }
+      logger.info("GeodeRedisServer shutting down");
       ChannelFuture closeFuture = serverChannel.closeFuture();
       Future<?> c = workerGroup.shutdownGracefully();
       Future<?> c2 = bossGroup.shutdownGracefully();

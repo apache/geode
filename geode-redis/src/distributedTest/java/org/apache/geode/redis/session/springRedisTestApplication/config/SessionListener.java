@@ -20,18 +20,23 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Configuration;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 @Configuration
 public class SessionListener implements HttpSessionListener {
   public static AtomicLong sessionCount = new AtomicLong(0);
   public static HashSet<String> sessionIds = new HashSet<>();
 
+  private static final Logger logger = LogService.getLogger();
+
   @Override
   public void sessionCreated(HttpSessionEvent event) {
     sessionCount.getAndIncrement();
     sessionIds.add(event.getSession().getId());
-    System.out.println("session created: " + event.getSession().getId());
+    logger.info("session created: " + event.getSession().getId());
     event.getSession().setMaxInactiveInterval(15);
   }
 
@@ -39,6 +44,6 @@ public class SessionListener implements HttpSessionListener {
   public void sessionDestroyed(HttpSessionEvent event) {
     sessionIds.remove(event.getSession().getId());
     sessionCount.getAndDecrement();
-    System.out.println("session destroyed: " + event.getSession().getId());
+    logger.info("session destroyed: " + event.getSession().getId());
   }
 }
