@@ -3023,13 +3023,13 @@ public class Connection implements Runnable {
         failureMsg = "ClassNotFound deserializing message";
         failureEx = ex;
         rpId = md.getRPid();
-        logger.fatal("ClassNotFound deserializing message: {}", ex.toString());
+        logAtInfoAndFatal(failureMsg, failureEx);
       } catch (IOException ex) {
         owner.getConduit().getStats().decMessagesBeingReceived(md.size());
         failureMsg = "IOException deserializing message";
         failureEx = ex;
         rpId = md.getRPid();
-        logger.fatal("IOException deserializing message", failureEx);
+        logAtInfoAndFatal(failureMsg, failureEx);
       } catch (InterruptedException ex) {
         interrupted = true;
         owner.getConduit().getCancelCriterion().checkCancelInProgress(ex);
@@ -3050,7 +3050,7 @@ public class Connection implements Runnable {
         failureMsg = "Unexpected failure deserializing message";
         failureEx = ex;
         rpId = md.getRPid();
-        logger.fatal("Unexpected failure deserializing message", failureEx);
+        logAtInfoAndFatal(failureMsg, failureEx);
       } finally {
         msgLength = md.size();
         releaseMsgDestreamer(messageId, md);
@@ -3089,6 +3089,20 @@ public class Connection implements Runnable {
         sendFailureReply(rpId, failureMsg, failureEx, directAck);
       }
     }
+  }
+
+  /**
+   * For exceptions that we absolutely must see in the log files, use this method
+   * to log the problem first at "info" level and then at "fatal" level. We do this
+   * in case the "fatal" level log entry generates an alert that gets blocked in
+   * transmitting the data to an alert listener like the JMX Manager
+   */
+  private void logAtInfoAndFatal(String failureMsg, Throwable failureEx) {
+    // log at info level first in case fatal-level alert notification becomes blocked
+    logger.info(failureMsg, failureEx);
+    // log at fatal-level with toString() on the exception since this will generate an
+    // alert
+    logger.fatal(failureMsg, failureEx.toString());
   }
 
   void readHandshakeForSender(DataInputStream dis, ByteBuffer peerDataBuffer) {
