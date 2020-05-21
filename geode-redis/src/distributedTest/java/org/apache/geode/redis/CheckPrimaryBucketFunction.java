@@ -16,8 +16,6 @@
 
 package org.apache.geode.redis;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +27,7 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.SingleResultRedisFunction;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -58,7 +57,11 @@ public class CheckPrimaryBucketFunction implements Function {
     ResultSender result = context.getResultSender();
     DistributedMember member = context.getCache().getDistributedSystem().getDistributedMember();
 
-    assertThat(isMemberPrimary(regionFunctionContext, key, member)).isTrue();
+    if (!isMemberPrimary(regionFunctionContext, key, member)) {
+      LogService.getLogger().error("Member is not primary.");
+      result.lastResult(false);
+      return;
+    }
 
     Region<?, ?> localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());

@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
@@ -64,12 +63,8 @@ public class EnsurePrimaryStaysPutDUnitTest {
   public void setup() throws Exception {
     locator = cluster.startLocatorVM(0);
     int locatorPort = locator.getPort();
-    server1 = cluster.startServerVM(1, cf -> cf
-        .withProperty(SERIALIZABLE_OBJECT_FILTER, "*")
-        .withConnectionToLocator(locatorPort));
-    server2 = cluster.startServerVM(2, cf -> cf
-        .withProperty(SERIALIZABLE_OBJECT_FILTER, "*")
-        .withConnectionToLocator(locatorPort));
+    server1 = cluster.startServerVM(1, cf -> cf.withConnectionToLocator(locatorPort));
+    server2 = cluster.startServerVM(2, cf -> cf.withConnectionToLocator(locatorPort));
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=TEST --type=PARTITION_REDUNDANT")
