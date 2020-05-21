@@ -106,17 +106,17 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
 
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
-      ThreadsMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
     super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
 
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
 
-    initializeMessageQueue(id);
+    initializeMessageQueue(id, cleanQueues);
   }
 
   @Override
-  protected void initializeMessageQueue(String id) {
+  protected void initializeMessageQueue(String id, boolean cleanQueues) {
     // Create the region name
     StringBuffer regionNameBuffer = new StringBuffer();
     regionNameBuffer.append(id).append("_SERIAL_GATEWAY_SENDER_QUEUE");
@@ -128,7 +128,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       initializeListenerExecutor();
     }
     // Create the region queue
-    this.queue = new SerialGatewaySenderQueue(sender, regionName, listener);
+    this.queue = new SerialGatewaySenderQueue(sender, regionName, listener, cleanQueues);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Created queue: {}", this.queue);

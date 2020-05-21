@@ -28,8 +28,8 @@ public class RemoteSerialGatewaySenderEventProcessor extends SerialGatewaySender
   private static final Logger logger = LogService.getLogger();
 
   public RemoteSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
-      ThreadsMonitoring tMonitoring) {
-    super(sender, id, tMonitoring);
+      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
+    super(sender, id, tMonitoring, cleanQueues);
   }
 
   @Override

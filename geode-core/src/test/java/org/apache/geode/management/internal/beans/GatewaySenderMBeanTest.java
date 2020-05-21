@@ -12,24 +12,37 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.serial;
+package org.apache.geode.management.internal.beans;
 
-import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-public class TestSerialGatewaySenderEventProcessor extends SerialGatewaySenderEventProcessor {
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-  public TestSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super(sender, id, tMonitoring, cleanQueues);
+import org.apache.geode.test.junit.categories.JMXTest;
+
+@Category(JMXTest.class)
+public class GatewaySenderMBeanTest {
+  private GatewaySenderMBeanBridge bridge;
+  private GatewaySenderMBean bean;
+
+  @Before
+  public void before() throws Exception {
+    bridge = mock(GatewaySenderMBeanBridge.class);
+    bean = new GatewaySenderMBean(bridge);
   }
 
-  @Override
-  protected void initializeMessageQueue(String id, boolean cleanQueues) {
-    // Overridden to not create the RegionQueue in the constructor.
+  @Test
+  public void testStart() {
+    bean.start();
+    verify(bridge).start();
   }
 
-  protected int getUnprocessedTokensSize() {
-    return this.unprocessedTokens.size();
+  @Test
+  public void testStartWithCleanQueue() {
+    bean.startWithCleanQueue();
+    verify(bridge).startWithCleanQueue();
   }
 }
