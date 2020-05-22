@@ -1866,6 +1866,10 @@ public class PutAllClientServerDistributedTest implements Serializable {
       Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
       assertThat(thrown)
           .isInstanceOf(CacheWriterException.class);
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(CacheWriterException.class);
     });
 
     // client1 putAll
@@ -1881,6 +1885,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
           .hasMessageContaining(message);
+      assertThat(thrown.getCause())
+          .isInstanceOf(CacheWriterException.class);
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(ServerOperationException.class);
       assertThat(thrown.getCause())
           .isInstanceOf(CacheWriterException.class);
     });

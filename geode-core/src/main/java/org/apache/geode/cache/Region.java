@@ -27,6 +27,8 @@ import java.util.concurrent.locks.Lock;
 
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -1359,10 +1361,9 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * in the specified map. This operation will be distributed to other caches if the scope is not
    * <code>Scope.LOCAL</code>.
    *
-   * If any exception is thrown due to this call, it can imply that there may have been a partial
-   * update performed on the region. Use putAll from within a transaction to get atomicity with all
-   * the
-   * entries.
+   * If an exception is thrown due to this call, it can imply that there may have been a partial
+   * update performed on the region. Use putAll from within a transaction to to obtain an atomic
+   * update.
    * <p>
    *
    * @see java.util.Map#putAll(Map map)
@@ -1377,6 +1378,11 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @throws PartitionedRegionStorageException if the operation could not be completed on a
    *         partitioned region.
    * @throws LowMemoryException if a low memory condition is detected.
+   * @throws ServerOperationException if call from client and server hits exception such as
+   *         CacheWriterException, PartitionedRegionStorageException or LowMemoryException. These
+   *         exceptions will be packed as ServerOperationException's cause.
+   * @throws ServerConnectivityException if call from client and server hits CancelException. The
+   *         CancelException will be packed as ServerConnectivityExceptionn's cause.
    * @see #invalidate(Object)
    * @see CacheLoader#load
    * @see CacheListener#afterCreate
