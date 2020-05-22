@@ -38,6 +38,8 @@ public interface ModuleService {
 
   /**
    * Unloads a previously loaded module.
+   * unloadModule does not check for dependent modules, therefor you may only use it to unload
+   * modules that are not dependencies of other modules.
    *
    * @param moduleName name of the module to be unloaded.
    * @return true on success, false if the module could not be unloaded.
