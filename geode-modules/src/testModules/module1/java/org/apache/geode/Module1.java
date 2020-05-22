@@ -15,5 +15,9 @@
 
 package org.apache.geode;
 
-public class Module1 {
+public class Module1 implements TestService {
+  @Override
+  public String sayHello() {
+    return "Hello from Module1!";
+  }
 }
