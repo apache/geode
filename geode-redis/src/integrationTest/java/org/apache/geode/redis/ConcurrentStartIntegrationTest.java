@@ -76,7 +76,7 @@ public class ConcurrentStartIntegrationTest {
     for (int i = 0; i < n; i++) {
       final int j = i;
       Runnable r = () -> {
-        GeodeRedisServer s = new GeodeRedisServer(-1);
+        GeodeRedisServer s = new GeodeRedisServer(0);
         s.start();
         s.shutdown();
       };
