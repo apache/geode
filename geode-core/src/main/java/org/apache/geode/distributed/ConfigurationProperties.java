@@ -1914,17 +1914,6 @@ public interface ConfigurationProperties {
    */
   String OFF_HEAP_MEMORY_SIZE = "off-heap-memory-size";
   /**
-   * The static String definition of the <i>"redis-port"</i> property <a name="redis-port"/a>
-   * </p>
-   * <U>Description</U>: Specifies the port on which the server listens for Redis API for Geode
-   * connections. A value of 0 selects a random port.</td>
-   * </p>
-   * <U>Default</U>: 6379
-   * </p>
-   * <U>Allowed values</U>: 0..65535
-   */
-  String REDIS_PORT = "redis-port";
-  /**
    * The static String definition of the <i>"redis-bind-address"</i> property <a
    * name="redis-bind-address"/a>
    * </p>
@@ -1935,16 +1924,6 @@ public interface ConfigurationProperties {
    * <U>Default</U>: ""
    */
   String REDIS_BIND_ADDRESS = "redis-bind-address";
-  /**
-   * The static String definition of the <i>"redis-password"</i> property <a
-   * name="redis-password"/a>
-   * </p>
-   * <U>Description</U>: Specifies the password that the server uses when a client attempts to
-   * authenticate.
-   * </p>
-   * <U>Default</U>: no password set
-   */
-  String REDIS_PASSWORD = "redis-password";
   /**
    * The static String definition of the <i>"redis-enabled"</i> property <a
    * name="redis-enabled"/a>
@@ -1963,6 +1942,27 @@ public interface ConfigurationProperties {
    * </p>
    */
   String REDIS_ENABLED = "redis-enabled";
+  /**
+   * The static String definition of the <i>"redis-password"</i> property <a
+   * name="redis-password"/a>
+   * </p>
+   * <U>Description</U>: Specifies the password that the server uses when a client attempts to
+   * authenticate.
+   * </p>
+   * <U>Default</U>: no password set
+   */
+  String REDIS_PASSWORD = "redis-password";
+  /**
+   * The static String definition of the <i>"redis-port"</i> property <a name="redis-port"/a>
+   * </p>
+   * <U>Description</U>: Specifies the port on which the server listens for Redis API for Geode
+   * connections. A value of 0 selects a random port.</td>
+   * </p>
+   * <U>Default</U>: 6379
+   * </p>
+   * <U>Allowed values</U>: 0..65535
+   */
+  String REDIS_PORT = "redis-port";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>

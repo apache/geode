@@ -3468,23 +3468,6 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
-   *
-   * @return the port on which GeodeRedisServer should be started
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeGetter(name = REDIS_PORT)
-  int getRedisPort();
-
-  @ConfigAttributeSetter(name = REDIS_PORT)
-  void setRedisPort(int value);
-
-  @ConfigAttribute(type = Integer.class, min = -1, max = 65535)
-  String REDIS_PORT_NAME = REDIS_PORT;
-  int DEFAULT_REDIS_PORT = 6379;
-
-  /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
    * <p>
    * Returns the value of the
@@ -3503,6 +3486,27 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttribute(type = String.class)
   String REDIS_BIND_ADDRESS_NAME = REDIS_BIND_ADDRESS;
   String DEFAULT_REDIS_BIND_ADDRESS = "";
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#REDIS_ENABLED} property
+   * <p>
+   * Returns the value of the
+   * {@link ConfigurationProperties#REDIS_ENABLED} property
+   *
+   * @return boolean value indicating whether or not a Redis API for Geode Server should be started
+   *
+   * @since GemFire 14.0
+   */
+  @ConfigAttributeGetter(name = REDIS_ENABLED)
+  boolean getRedisServiceEnabled();
+
+  @ConfigAttributeSetter(name = REDIS_ENABLED)
+  void setRedisServiceEnabled(boolean redisServiceEnabled);
+
+
+  @ConfigAttribute(type = Boolean.class)
+  String REDIS_ENABLED_NAME = REDIS_ENABLED;
+  boolean DEFAULT_REDIS_ENABLED = false;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_PASSWORD} property
@@ -3525,25 +3529,21 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   String DEFAULT_REDIS_PASSWORD = "";
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_ENABLED} property
-   * <p>
-   * Returns the value of the
-   * {@link ConfigurationProperties#REDIS_ENABLED} property
+   * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
    *
-   * @return boolean value indicating whether or not a Redis API for Geode Server should be started
+   * @return the port on which GeodeRedisServer should be started
    *
-   * @since GemFire 14.0
+   * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = REDIS_ENABLED)
-  boolean getRedisServiceEnabled();
+  @ConfigAttributeGetter(name = REDIS_PORT)
+  int getRedisPort();
 
-  @ConfigAttributeSetter(name = REDIS_ENABLED)
-  void setRedisServiceEnabled(boolean redisServiceEnabled);
+  @ConfigAttributeSetter(name = REDIS_PORT)
+  void setRedisPort(int value);
 
-
-  @ConfigAttribute(type = Boolean.class)
-  String REDIS_ENABLED_NAME = REDIS_ENABLED;
-  boolean DEFAULT_REDIS_ENABLED = false;
+  @ConfigAttribute(type = Integer.class, min = -1, max = 65535)
+  String REDIS_PORT_NAME = REDIS_PORT;
+  int DEFAULT_REDIS_PORT = 6379;
 
   // Added for the HTTP service
 

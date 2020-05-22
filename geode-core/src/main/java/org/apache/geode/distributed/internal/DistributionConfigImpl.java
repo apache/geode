@@ -488,18 +488,19 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private boolean distributedTransactions = DEFAULT_DISTRIBUTED_TRANSACTIONS;
 
   /**
-   * port on which GeodeRedisServer is started
-   */
-  private int redisPort = DEFAULT_REDIS_PORT;
-
-  /**
    * Bind address for GeodeRedisServer
    */
   private String redisBindAddress = DEFAULT_REDIS_BIND_ADDRESS;
 
+  private Boolean redisServiceEnabled = DEFAULT_REDIS_ENABLED;
+
   private String redisPassword = DEFAULT_REDIS_PASSWORD;
 
-  private Boolean redisServiceEnabled = DEFAULT_REDIS_ENABLED;
+  /**
+   * port on which GeodeRedisServer is started
+   */
+  private int redisPort = DEFAULT_REDIS_PORT;
+
 
   private boolean jmxManager =
       Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE) || DEFAULT_JMX_MANAGER;

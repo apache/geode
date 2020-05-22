@@ -1312,14 +1312,14 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "The protocol that GemFireMemcachedServer understands. Default is ASCII. Values may be ASCII or BINARY");
     m.put(MEMCACHED_BIND_ADDRESS,
         "The address the GemFireMemcachedServer will listen on for remote connections. Default is \"\" which causes the GemFireMemcachedServer to listen on the host's default address. This property is ignored if memcached-port is \"0\".");
-    m.put(REDIS_PORT,
-        "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.");
     m.put(REDIS_BIND_ADDRESS,
         "Specifies the address on which the Redis API for Geode is listening. If set to the empty string or this property is not specified, localhost is requested from the operating system.");
-    m.put(REDIS_PASSWORD,
-        "Specifies the password that the server uses when a client attempts to authenticate. The default is none and no authentication will be required.");
     m.put(REDIS_ENABLED,
         "When the default value of false, the Redis API for Geode is not available.  Set to true to enable the Redis API for Geode.");
+    m.put(REDIS_PASSWORD,
+        "Specifies the password that the server uses when a client attempts to authenticate. The default is none and no authentication will be required.");
+    m.put(REDIS_PORT,
+        "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.");
     m.put(ENABLE_CLUSTER_CONFIGURATION,
         "Enables cluster configuration support in dedicated locators.  This allows the locator to share configuration information amongst members and save configuration changes made using GFSH.");
     m.put(ENABLE_MANAGEMENT_REST_SERVICE,
