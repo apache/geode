@@ -18,8 +18,6 @@ package org.apache.geode.redis.internal.executor;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.cache.LocalDataSet;
-import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
@@ -38,19 +36,12 @@ public abstract class SingleResultRedisFunction implements Function<Object[]> {
         (RegionFunctionContextImpl) context;
     ByteArrayWrapper key =
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
-
     Region<ByteArrayWrapper, RedisSet> localRegion =
         regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
-
     Object[] args = context.getArguments();
     RedisCommandType command = (RedisCommandType) args[0];
-
-    Runnable computation = () -> {
-      Object result = compute(localRegion, key, command, args);
-      context.getResultSender().lastResult(result);
-    };
-
-    computeWithPrimaryLocked(key, (LocalDataSet) localRegion, computation);
+    Object result = compute(localRegion, key, command, args);
+    context.getResultSender().lastResult(result);
   }
 
   @Override
@@ -62,11 +53,4 @@ public abstract class SingleResultRedisFunction implements Function<Object[]> {
   public boolean isHA() {
     return true;
   }
-
-  public static void computeWithPrimaryLocked(Object key, LocalDataSet localDataSet, Runnable r) {
-    PartitionedRegion partitionedRegion = localDataSet.getProxy();
-
-    partitionedRegion.computeWithPrimaryLocked(key, r);
-  }
-
 }
