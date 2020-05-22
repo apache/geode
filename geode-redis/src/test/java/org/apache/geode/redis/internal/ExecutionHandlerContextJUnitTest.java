@@ -64,7 +64,7 @@ public class ExecutionHandlerContextJUnitTest {
     byte[] pwd = null;
     ExecutionHandlerContext handler =
         new ExecutionHandlerContext(ch, cache, regionProvider, server, pwd, keyRegistrar, pubSub,
-            lockService);
+            lockService, null);
 
     ChannelHandlerContext ctx = null;
     handler.channelRead(ctx, msg);
