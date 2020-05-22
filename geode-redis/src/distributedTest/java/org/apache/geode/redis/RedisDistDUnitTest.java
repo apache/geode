@@ -111,6 +111,7 @@ public class RedisDistDUnitTest implements Serializable {
   }
 
   @Test
+  @Ignore("GEODE-8127")
   public void testConcurrentSaddOperations_runWithoutException_orDataLoss()
       throws InterruptedException {
     List<String> set1 = new ArrayList<>();
