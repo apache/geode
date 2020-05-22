@@ -18,14 +18,18 @@ package org.apache.geode.services.module.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+
 import org.jboss.modules.Module;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.InvalidService;
+import org.apache.geode.TestService;
 import org.apache.geode.services.module.ModuleDescriptor;
 
-public class JBossModuleServiceTest {
+public class JBossModuleServiceImplTest {
 
   private static final String MODULE1_PATH =
       System.getProperty("user.dir") + "/../libs/module1.jar";
@@ -36,11 +40,14 @@ public class JBossModuleServiceTest {
   private static final String MODULE4_PATH =
       System.getProperty("user.dir") + "/../libs/module4.jar";
 
-  private JBossModuleService moduleService;
+  private static final String MODULE1_MESSAGE = "Hello from Module1!";
+  private static final String MODULE2_MESSAGE = "Hello from Module2!";
+
+  private JBossModuleServiceImpl moduleService;
 
   @Before
   public void setup() {
-    moduleService = new JBossModuleService();
+    moduleService = new JBossModuleServiceImpl();
   }
 
   @After
@@ -398,5 +405,87 @@ public class JBossModuleServiceTest {
     Module module2 = moduleService.getModule(module2Descriptor.getVersionedName());
     assertThat(module2).isNotNull();
     assertThat(module2.getName()).isEqualTo(module2Descriptor.getVersionedName());
+  }
+
+  @Test
+  public void loadServiceNoModulesLoaded() {
+    assertThat(moduleService.loadService(TestService.class)).isEmpty();
+  }
+
+  @Test
+  public void loadServiceNoModulesImplementService() {
+    assertThat(moduleService.loadService(InvalidService.class)).isEmpty();
+  }
+
+  @Test
+  public void loadServiceFromSingleModule() {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+
+    List<TestService> serviceList = moduleService.loadService(TestService.class);
+    assertThat(serviceList.size()).isEqualTo(1);
+    assertThat(serviceList.get(0).sayHello()).isEqualTo(MODULE1_MESSAGE);
+  }
+
+  @Test
+  public void loadServicesFromMultipleModules() {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    ModuleDescriptor module2Descriptor = new ModuleDescriptor.Builder("module2", "1.0")
+        .fromSources(MODULE2_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+    moduleService.loadModule(module2Descriptor);
+
+    List<TestService> serviceList = moduleService.loadService(TestService.class);
+    assertThat(serviceList.size()).isEqualTo(2);
+    assertThat(serviceList.stream().map(TestService::sayHello)).contains(MODULE1_MESSAGE,
+        MODULE2_MESSAGE);
+  }
+
+  @Test
+  public void loadServicesFromCompositeModule() {
+    ModuleDescriptor moduleDescriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH, MODULE2_PATH)
+        .build();
+    moduleService.loadModule(moduleDescriptor);
+
+    List<TestService> serviceList = moduleService.loadService(TestService.class);
+    assertThat(serviceList.size()).isEqualTo(2);
+    assertThat(serviceList.stream().map(TestService::sayHello)).contains(MODULE1_MESSAGE,
+        MODULE2_MESSAGE);
+  }
+
+  @Test
+  public void loadServiceFromModulesWithDependencies() {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+    ModuleDescriptor module2Descriptor = new ModuleDescriptor.Builder("module2", "1.0")
+        .fromSources(MODULE2_PATH)
+        .dependsOnModules(module1Descriptor.getVersionedName())
+        .build();
+    moduleService.loadModule(module2Descriptor);
+
+    List<TestService> serviceList = moduleService.loadService(TestService.class);
+    assertThat(serviceList.size()).isEqualTo(2);
+    assertThat(serviceList.stream().map(TestService::sayHello)).contains(MODULE1_MESSAGE,
+        MODULE2_MESSAGE);
+  }
+
+  @Test
+  public void loadServiceFromModuleWithDuplicateContents() {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH, MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+
+    List<TestService> serviceList = moduleService.loadService(TestService.class);
+    assertThat(serviceList.size()).isEqualTo(1);
+    assertThat(serviceList.get(0).sayHello()).isEqualTo(MODULE1_MESSAGE);
   }
 }

@@ -17,15 +17,19 @@ package org.apache.geode.services.module.impl;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
 
 import org.apache.logging.log4j.Logger;
+import org.jboss.modules.DependencySpec;
 import org.jboss.modules.LocalDependencySpecBuilder;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleDependencySpecBuilder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.modules.PathUtils;
 import org.jboss.modules.ResourceLoader;
 import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.ResourceLoaders;
@@ -40,7 +44,7 @@ import org.apache.geode.services.module.ModuleService;
  * Implementation of {@link ModuleService} using JBoss-Modules.
  */
 @Experimental
-public class JBossModuleService implements ModuleService {
+public class JBossModuleServiceImpl implements ModuleService {
 
   private final Map<String, Module> modules = new HashMap<>();
 
@@ -48,11 +52,11 @@ public class JBossModuleService implements ModuleService {
 
   private final Logger logger;
 
-  public JBossModuleService() {
+  public JBossModuleServiceImpl() {
     this(LogService.getLogger());
   }
 
-  public JBossModuleService(Logger logger) {
+  public JBossModuleServiceImpl(Logger logger) {
     this.logger = logger;
   }
 
@@ -70,6 +74,7 @@ public class JBossModuleService implements ModuleService {
       return false;
     }
 
+    // Setting up new module.
     ModuleSpec.Builder builder = ModuleSpec.build(moduleDescriptor.getVersionedName());
     builder.setVersion(Version.parse(moduleDescriptor.getVersion()));
     builder.addDependency(new LocalDependencySpecBuilder()
@@ -77,13 +82,17 @@ public class JBossModuleService implements ModuleService {
         .setExport(true)
         .build());
 
+    // Add dependencies to the module.
     moduleDescriptor.getDependedOnModules().forEach(dependency -> {
       logger.debug(String.format("Adding dependency on module %s", dependency));
       builder.addDependency(new ModuleDependencySpecBuilder()
+          .setExport(true)
+          .setImportServices(true)
           .setName(dependency)
           .build());
     });
 
+    // Add resources to the module.
     try {
       for (String source : moduleDescriptor.getSources()) {
         logger.debug(String.format("Adding resource %s to module", source));
@@ -92,18 +101,24 @@ public class JBossModuleService implements ModuleService {
         builder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(resourceLoader));
       }
     } catch (IOException e) {
-      logger.error(e);
+      logger.error(e.getMessage(), e);
       return false;
     }
 
+    // Add dependency on the system classloader so modules can access classes that aren't in
+    // modules.
+    builder.addDependency(DependencySpec.createSystemDependencySpec(PathUtils.getPathSet(null)));
+
+    // Build and register the ModuleSpec
     ModuleSpec moduleSpec = builder.create();
     moduleLoader.addModuleSpec(moduleSpec);
 
+    // Load the module and add it to the modules map.
     try {
       modules.put(moduleDescriptor.getVersionedName(),
           moduleLoader.loadModule(moduleSpec.getName()));
     } catch (ModuleLoadException e) {
-      logger.error(e);
+      logger.error(e.getMessage(), e);
       return false;
     }
 
@@ -111,5 +126,37 @@ public class JBossModuleService implements ModuleService {
         .debug(String.format("Module %s successfully loaded", moduleDescriptor.getVersionedName()));
 
     return true;
+  }
+
+  @Override
+  public boolean unloadModule(String moduleName) {
+    return false;
+  }
+
+  @Override
+  public <T> List<T> loadService(Class<T> service) {
+    List<T> serviceImpls = new LinkedList<>();
+
+    // Iterate over all the modules looking for implementations of service.
+    modules.values().forEach((module) -> {
+      module.loadService(service).forEach((impl) -> {
+        // Check if class is already loaded.
+        // Modules with dependencies can cause duplicates without this check.
+        boolean duplicate = false;
+        for (T serviceImpl : serviceImpls) {
+          if (serviceImpl.getClass() == impl.getClass()) {
+            duplicate = true;
+            break;
+          }
+        }
+
+        // If impl is not a duplicate, add it to the list to return.
+        if (!duplicate) {
+          serviceImpls.add(impl);
+        }
+      });
+    });
+
+    return serviceImpls;
   }
 }
