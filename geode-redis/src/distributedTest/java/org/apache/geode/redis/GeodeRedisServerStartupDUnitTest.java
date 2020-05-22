@@ -17,6 +17,7 @@
 package org.apache.geode.redis;
 
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +38,8 @@ public class GeodeRedisServerStartupDUnitTest {
   public void startupOnDefaultPort() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_PORT, "6379")
-        .withProperty(REDIS_BIND_ADDRESS, "localhost"));
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
 
     server.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
@@ -46,10 +48,11 @@ public class GeodeRedisServerStartupDUnitTest {
   }
 
   @Test
-  public void startupOnRandomPort_whenPortIsNegativeOne() {
+  public void startupOnRandomPort_whenPortIsZero() {
     MemberVM server = cluster.startServerVM(0, s -> s
-        .withProperty(REDIS_PORT, "-1")
-        .withProperty(REDIS_BIND_ADDRESS, "localhost"));
+        .withProperty(REDIS_PORT, "0")
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
 
     server.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
@@ -58,7 +61,7 @@ public class GeodeRedisServerStartupDUnitTest {
   }
 
   @Test
-  public void doNotStartup_whenPortIsZero() {
+  public void doNotStartup_whenRedisServiceIsNotEnabled() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_BIND_ADDRESS, "localhost"));

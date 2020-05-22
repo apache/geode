@@ -301,6 +301,17 @@ public class StartServerCommand extends OfflineGfshCommand {
         ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
+
+    // if redis-port, redis-bind-address, or redis-password are specified in the command line,
+    // REDIS_ENABLED should be set to true
+    String stringRedisPort;
+    stringRedisPort = redisPort == null ? "" : redisPort.toString();
+
+    if (StringUtils.isNotBlank(stringRedisPort) || StringUtils.isNotBlank(redisPassword)
+        || StringUtils.isNotBlank(redisBindAddress)) {
+      gemfireProperties.setProperty(ConfigurationProperties.REDIS_ENABLED, "true");
+    }
+
     // if username is specified in the command line, it will overwrite what's set in the
     // properties file
     if (StringUtils.isNotBlank(userName)) {

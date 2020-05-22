@@ -43,6 +43,7 @@ public class SSLTest {
       .withSSL("server", true, true)
       .withProperty("redis-bind-address", "localhost")
       .withProperty("redis-port", "11211")
+      .withProperty("redis-enabled", "true")
       .withAutoStart();
 
 

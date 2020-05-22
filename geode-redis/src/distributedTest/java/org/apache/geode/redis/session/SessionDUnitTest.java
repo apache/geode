@@ -115,6 +115,7 @@ public abstract class SessionDUnitTest {
     Properties redisPropsForServer = new Properties();
     redisPropsForServer.setProperty("redis-bind-address", "localHost");
     redisPropsForServer.setProperty("redis-port", "" + ports.get(server));
+    redisPropsForServer.setProperty("redis-enabled", "true");
     redisPropsForServer.setProperty("log-level", "info");
     return redisPropsForServer;
   }

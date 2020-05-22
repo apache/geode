@@ -55,6 +55,7 @@ public class ExistsDUnitTest implements Serializable {
     Properties redisProps = new Properties();
     redisProps.setProperty("redis-bind-address", LOCALHOST);
     redisProps.setProperty("redis-port", Integer.toString(ports[0]));
+    redisProps.setProperty("redis-enabled", "true");
     redisProps.setProperty("log-level", "warn");
     cluster.startServerVM(1, redisProps, locator.getPort());
 
