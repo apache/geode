@@ -94,4 +94,7 @@ dependencies {
 
     implementation('org.apache.logging.log4j:log4j-core')
     compile('org.jboss.modules:jboss-modules')
+
+    module1Compile(sourceSets.test.output)
+    module2Compile(sourceSets.test.output)
 }

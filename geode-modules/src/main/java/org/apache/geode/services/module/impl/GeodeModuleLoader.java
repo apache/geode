@@ -27,7 +27,7 @@ import org.jboss.modules.ModuleSpec;
 import org.apache.geode.annotations.Experimental;
 
 /**
- * {@link ModuleLoader} for use by {@link JBossModuleService}.
+ * {@link ModuleLoader} for use by {@link JBossModuleServiceImpl}.
  */
 @Experimental
 public class GeodeModuleLoader extends DelegatingModuleLoader {
