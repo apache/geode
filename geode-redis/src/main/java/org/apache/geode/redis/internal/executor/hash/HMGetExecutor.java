@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -42,7 +43,8 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 public class HMGetExecutor extends HashExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
 
     ByteArrayWrapper key = command.getKey();
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
@@ -52,6 +54,6 @@ public class HMGetExecutor extends HashExecutor {
 
     List<ByteArrayWrapper> values = redisHashCommands.hmget(key, fields);
 
-    respondBulkStrings(command, context, values);
+    return RedisResponse.array(values);
   }
 }

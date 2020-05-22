@@ -18,9 +18,9 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.util.Collection;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -49,18 +49,18 @@ public class HValsExecutor extends HashExecutor {
    * @param context the context (ex: region provider)
    */
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
 
     RedisHashCommands redisHashCommands = createRedisHashCommands(context);
     Collection<ByteArrayWrapper> values = redisHashCommands.hvals(key);
 
     if (values.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
+      return RedisResponse.emptyArray();
     }
 
-    respondBulkStrings(command, context, values);
+    return RedisResponse.array(values);
   }
 
 }
