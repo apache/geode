@@ -73,6 +73,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -101,6 +102,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.OplogCancelledException;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -1824,6 +1826,135 @@ public class PutAllClientServerDistributedTest implements Serializable {
           .isEqualTo(15 * 2 - 5 - 5);
       assertThat(server2.invoke(() -> getCache().getRegion(regionName).size()))
           .isEqualTo(15 * 2 - 5 - 5);
+    });
+  }
+
+  /**
+   * Verify all the possible exceptions a putAll/put/removeAll/destroy could return
+   */
+  @Test
+  public void testPutAllReturnsExceptions() {
+    // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
+    int serverPort1 = server1.invoke(() -> new ServerBuilder()
+        .regionShortcut(REPLICATE)
+        .create());
+    server2.invoke(() -> new ServerBuilder()
+        .regionShortcut(REPLICATE)
+        .create());
+
+    client1.invoke(() -> new ClientBuilder()
+        .concurrencyChecksEnabled()
+        .prSingleHopEnabled(true)
+        .serverPorts(serverPort1)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
+
+    // server1 add cacheWriter
+    server1.invoke(() -> {
+      Region<String, TickerData> region = getCache().getRegion(regionName);
+      // let the server to trigger exception after created 15 keys
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
+              creates -> {
+                if (creates >= 15) {
+                  throw new CacheWriterException("Expected by test");
+                }
+              })));
+
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(CacheWriterException.class);
+    });
+
+    // client1 putAll
+    client1.invoke(() -> {
+      Region<String, TickerData> region = getClientCache().getRegion(regionName);
+
+      String message =
+          String.format("Region %s putAll at server applied partial keys due to exception.",
+              region.getFullPath());
+
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+
+      assertThat(thrown)
+          .isInstanceOf(ServerOperationException.class)
+          .hasMessageContaining(message);
+      assertThat(thrown.getCause())
+          .isInstanceOf(CacheWriterException.class);
+    });
+
+    // let server1 to throw CancelException
+    server1.invoke(() -> {
+      Region<String, TickerData> region = getCache().getRegion(regionName);
+      // let the server to trigger exception after created 15 keys
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
+              creates -> {
+                throw new OplogCancelledException("Expected by test");
+              })));
+
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(OplogCancelledException.class);
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(OplogCancelledException.class);
+    });
+
+    // client1 putAll
+    client1.invoke(() -> {
+      Region<String, TickerData> region = getClientCache().getRegion(regionName);
+
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(ServerConnectivityException.class);
+      assertThat(thrown.getCause())
+          .isInstanceOf(OplogCancelledException.class);
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(ServerConnectivityException.class);
+      assertThat(thrown.getCause())
+          .isInstanceOf(OplogCancelledException.class);
+    });
+
+    // let server1 to throw LowMemoryException
+    server1.invoke(() -> {
+      Region<String, TickerData> region = getCache().getRegion(regionName);
+      // let the server to trigger exception after created 15 keys
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
+              creates -> {
+                throw new LowMemoryException();
+              })));
+
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(LowMemoryException.class);
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(LowMemoryException.class);
+    });
+
+    // client1 putAll
+    client1.invoke(() -> {
+      Region<String, TickerData> region = getClientCache().getRegion(regionName);
+
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(ServerOperationException.class);
+      assertThat(thrown.getCause())
+          .isInstanceOf(LowMemoryException.class);
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(ServerOperationException.class);
+      assertThat(thrown.getCause())
+          .isInstanceOf(LowMemoryException.class);
     });
   }
 

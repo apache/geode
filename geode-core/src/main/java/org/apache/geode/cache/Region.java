@@ -1359,10 +1359,30 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * in the specified map. This operation will be distributed to other caches if the scope is not
    * <code>Scope.LOCAL</code>.
    *
-   * @param map the key/value pairs to put in this region.
-   * @since GemFire 5.0
+   * If any exception is thrown due to this call, it can imply that there may have been a partial
+   * update performed on the region. Use putAll from within a transaction to get atomicity with all
+   * the
+   * entries.
+   * <p>
+   *
    * @see java.util.Map#putAll(Map map)
+   * @param map the key/value pairs to put in this region.
+   * @throws NullPointerException if key is null or if value is null (use invalidate instead), or if
+   *         the key or value do not meet serializability requirements
+   * @throws ClassCastException if key does not satisfy the keyConstraint
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock
+   *         for Scope.GLOBAL
+   * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
+   * @throws CacheWriterException if a CacheWriter aborts the operation
+   * @throws PartitionedRegionStorageException if the operation could not be completed on a
+   *         partitioned region.
    * @throws LowMemoryException if a low memory condition is detected.
+   * @see #invalidate(Object)
+   * @see CacheLoader#load
+   * @see CacheListener#afterCreate
+   * @see CacheListener#afterUpdate
+   * @see CacheWriter#beforeCreate
+   * @see CacheWriter#beforeUpdate
    */
   @Override
   void putAll(Map<? extends K, ? extends V> map);
