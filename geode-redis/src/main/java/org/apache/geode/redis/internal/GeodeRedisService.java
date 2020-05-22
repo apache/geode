@@ -36,7 +36,7 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
     this.cache = (InternalCache) cache;
     this.cache.getInternalDistributedSystem().addResourceListener(this);
 
-    return this.cache.getInternalDistributedSystem().getConfig().getRedisServiceEnabled();
+    return this.cache.getInternalDistributedSystem().getConfig().getRedisEnabled();
   }
 
   @Override
@@ -54,7 +54,7 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private void startRedisServer(InternalCache cache) {
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
 
-    if (system.getConfig().getRedisServiceEnabled()) {
+    if (system.getConfig().getRedisEnabled()) {
       int port = system.getConfig().getRedisPort();
       String bindAddress = system.getConfig().getRedisBindAddress();
       assert bindAddress != null;

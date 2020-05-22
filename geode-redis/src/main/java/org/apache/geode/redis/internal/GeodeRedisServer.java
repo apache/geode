@@ -261,7 +261,7 @@ public class GeodeRedisServer {
    *
    * @param bindAddress The address to which the server will attempt to bind to
    * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
-   *        by default if argument is less than or equal to 0
+   *        by default, and will throw IllegalArgumentException if argument is less than 0
    */
   public GeodeRedisServer(String bindAddress, int port) {
     this(bindAddress, port, null);
@@ -275,7 +275,7 @@ public class GeodeRedisServer {
    *
    * @param bindAddress The address to which the server will attempt to bind to
    * @param port The port the server will bind to, will throw an IllegalArgumentException if
-   *        argument is less than {@value #RANDOM_PORT_INDICATOR}. If the port is
+   *        argument is less than 0. If the port is
    *        {@value #RANDOM_PORT_INDICATOR} a random port is assigned.
    * @param logLevel The logging level to be used by GemFire
    */

@@ -3498,10 +3498,10 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * @since GemFire 14.0
    */
   @ConfigAttributeGetter(name = REDIS_ENABLED)
-  boolean getRedisServiceEnabled();
+  boolean getRedisEnabled();
 
   @ConfigAttributeSetter(name = REDIS_ENABLED)
-  void setRedisServiceEnabled(boolean redisServiceEnabled);
+  void setRedisEnabled(boolean redisEnabled);
 
 
   @ConfigAttribute(type = Boolean.class)
