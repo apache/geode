@@ -20,7 +20,7 @@ import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
 public abstract class AbstractScanExecutor extends AbstractExecutor {
 
-  protected final String ERROR_CURSOR = "Invalid cursor";
+  protected final String ERROR_CURSOR = "invalid cursor";
 
   protected final String ERROR_COUNT = "Count must be numeric and positive";
 

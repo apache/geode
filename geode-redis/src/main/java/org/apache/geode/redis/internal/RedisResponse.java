@@ -39,6 +39,10 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getIntegerResponse(bba, numericValue));
   }
 
+  public static RedisResponse integer(boolean exists) {
+    return new RedisResponse((bba) -> Coder.getIntegerResponse(bba, exists ? 1 : 0));
+  }
+
   public static RedisResponse string(String stringValue) {
     return new RedisResponse((bba) -> Coder.getSimpleStringResponse(bba, stringValue));
   }

@@ -20,6 +20,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -54,7 +55,8 @@ public class HIncrByExecutor extends HashExecutor {
   private static final int INCREMENT_INDEX = FIELD_INDEX + 1;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
     byte[] byteField = commandElems.get(FIELD_INDEX);
@@ -65,21 +67,18 @@ public class HIncrByExecutor extends HashExecutor {
     try {
       increment = Coder.bytesToLong(incrArray);
     } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INCREMENT_NOT_USABLE));
-      return;
+      return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
     RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
     try {
       long value = redisHashCommands.hincrby(key, field, increment);
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
+      return RedisResponse.integer(value);
     } catch (NumberFormatException ex) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
+      return RedisResponse.error(ERROR_FIELD_NOT_USABLE);
     } catch (ArithmeticException ex) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
+      return RedisResponse.error(ERROR_OVERFLOW);
     }
   }
 

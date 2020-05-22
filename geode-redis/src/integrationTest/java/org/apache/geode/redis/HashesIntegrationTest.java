@@ -17,16 +17,9 @@ package org.apache.geode.redis;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +35,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Maps;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -90,8 +82,8 @@ public class HashesIntegrationTest {
       hash.put(randString(), randString());
     }
     String response = jedis.hmset(key, hash);
-    assertTrue(response.equals("OK"));
-    assertEquals(new Long(hash.size()), jedis.hlen(key));
+    assertThat(response).isEqualTo("OK");
+    assertThat(jedis.hlen(key)).isEqualTo(hash.size());
 
     key = randString();
     hash = new HashMap<String, String>();
@@ -102,8 +94,10 @@ public class HashesIntegrationTest {
     Long count = 1L;
     for (String field : keys) {
       Long res = jedis.hset(key, field, hash.get(field));
-      assertTrue(res == 1L);
-      assertEquals(count++, jedis.hlen(key));
+      assertThat(res).isEqualTo(1);
+      assertThat(jedis.hlen(key)).isEqualTo(count);
+
+      count += 1;
     }
   }
 
@@ -122,20 +116,20 @@ public class HashesIntegrationTest {
     List<String> retList = jedis.hmget(key, keyArray);
 
     for (int i = 0; i < keys.size(); i++) {
-      assertEquals(retList.get(i), hash.get(keyArray[i]));
+      assertThat(hash.get(keyArray[i])).isEqualTo(retList.get(i));
     }
 
     Map<String, String> retMap = jedis.hgetAll(key);
 
-    assertEquals(retMap, hash);
+    assertThat(retMap).containsExactlyInAnyOrderEntriesOf(hash);
 
     List<String> retVals = jedis.hvals(key);
     Set<String> retSet = new HashSet<String>(retVals);
 
-    assertTrue(retSet.containsAll(hash.values()));
+    assertThat(retSet.containsAll(hash.values())).isTrue();
 
     jedis.hdel(key, keyArray);
-    assertTrue(jedis.hlen(key) == 0);
+    assertThat(jedis.hlen(key)).isEqualTo(0);
   }
 
   @Test
@@ -168,7 +162,7 @@ public class HashesIntegrationTest {
     Set<String> keys = hash.keySet();
     Set<String> retSet = jedis.hkeys(key);
 
-    assertTrue(retSet.containsAll(keys));
+    assertThat(retSet.containsAll(keys)).isTrue();
   }
 
   @Test
@@ -182,13 +176,14 @@ public class HashesIntegrationTest {
     }
 
     long response1 = jedis.hincrBy(key, field, incr);
-    assertTrue(response1 == incr);
+    assertThat(response1).isEqualTo(incr);
 
     long response2 = jedis.hincrBy(randString(), randString(), incr);
-    assertTrue(response2 == incr);
+    assertThat(response2).isEqualTo(incr);
 
     long response3 = jedis.hincrBy(key, field, incr);
-    assertTrue(response3 + "=" + 2 * incr, response3 == 2 * incr);
+    assertThat(response3).as(response3 + "=" + 2 * incr)
+        .isEqualTo(2 * incr);
 
     String field1 = randString();
     Exception ex = null;
@@ -199,7 +194,7 @@ public class HashesIntegrationTest {
       ex = e;
     }
 
-    assertNotNull(ex);
+    assertThat(ex).isNotNull();
   }
 
   @Test
@@ -237,25 +232,25 @@ public class HashesIntegrationTest {
     String field = Double.valueOf(rand.nextInt(50)).toString() + ".field";
     String value = Double.valueOf(rand.nextInt(50)).toString() + ".value";
 
-    assertFalse(jedis.hexists(key, field));
+    assertThat(jedis.hexists(key, field)).isFalse();
 
     jedis.hset(key, field, value);
 
-    assertEquals(value, jedis.hget(key, field));
+    assertThat(jedis.hget(key, field)).isEqualTo(value);
 
-    Assert.assertTrue(jedis.hexists(key, field));
+    assertThat(jedis.hexists(key, field)).isTrue();
 
     key = "testObject:" + key;
 
     value = Double.valueOf(rand.nextInt(50)).toString() + ".value";
     jedis.hset(key, field, value);
 
-    Assert.assertTrue(jedis.hexists(key, field));
+    assertThat(jedis.hexists(key, field)).isTrue();
 
     jedis.hdel(key, field);
 
-    assertNull(jedis.hget(key, field));
-    assertFalse(jedis.hexists(key, field));
+    assertThat(jedis.hget(key, field)).isNull();
+    assertThat(jedis.hexists(key, field)).isFalse();
 
   }
 
@@ -268,25 +263,22 @@ public class HashesIntegrationTest {
 
     ScanResult<Entry<String, String>> results = null;
 
-    try {
-      results = jedis.hscan(key, "this cursor is non-numeric and so completely invalid");
-      fail("Must throw exception for invalid cursor");
-    } catch (Exception e) {
-    }
+    assertThatThrownBy(
+        () -> jedis.hscan(key, "this cursor is non-numeric and so completely invalid"))
+            .hasMessageContaining("invalid cursor");
 
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
     hash.put(field, value);
 
     jedis.hmset(key, hash);
 
     results = jedis.hscan(key, "0");
 
-    assertNotNull(results);
-    assertNotNull(results.getResult());
+    assertThat(results).isNotNull();
+    assertThat(results.getResult()).isNotNull();
 
-    assertEquals(1, results.getResult().size());
-    assertEquals(hash.entrySet().iterator().next(), results.getResult().iterator().next());
-
+    assertThat(results.getResult().size()).isEqualTo(1);
+    assertThat(results.getResult()).containsExactlyInAnyOrderElementsOf(hash.entrySet());
   }
 
   /**
@@ -300,19 +292,19 @@ public class HashesIntegrationTest {
 
     // 1 if field is a new field in the hash and value was set.
     Long result = jedis.hsetnx(key, field, value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
 
     // test field value
-    assertEquals(value, jedis.hget(key, field));
+    assertThat(jedis.hget(key, field)).isEqualTo(value);
 
     result = jedis.hsetnx(key, field, "changedValue");
-    assertEquals(Long.valueOf(0), result);
+    assertThat(result).isEqualTo(0);
 
-    assertEquals(value, jedis.hget(key, field));
+    assertThat(jedis.hget(key, field)).isEqualTo(value);
 
     jedis.hdel(key, field);
 
-    assertFalse(jedis.hexists(key, field));
+    assertThat(jedis.hexists(key, field)).isFalse();
 
   }
 
@@ -327,20 +319,20 @@ public class HashesIntegrationTest {
     String value = randString();
 
     List<String> list = jedis.hvals(key);
-    assertTrue(list == null || list.isEmpty());
+    assertThat(list == null || list.isEmpty()).isTrue();
 
     Long result = jedis.hset(key, field1, value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
 
     result = jedis.hset(key, field2, value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
     list = jedis.hvals(key);
 
-    assertNotNull(list);
-    assertTrue(!list.isEmpty());
-    assertEquals(2, list.size());
+    assertThat(list).isNotNull();
+    assertThat(list).isNotEmpty();
+    assertThat(list).hasSize(2);
 
-    list.contains(value);
+    assertThat(list).contains(value);
   }
 
   /**
@@ -369,13 +361,13 @@ public class HashesIntegrationTest {
     Long result = jedis.hlen(key); // check error handling when key does not exist
 
     result = jedis.hset(key, field1, value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
 
     result = jedis.hset(key, field2, value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
 
     result = jedis.hlen(key);
-    assertEquals(Long.valueOf(2), result);
+    assertThat(result).isEqualTo(2);
 
   }
 
@@ -402,20 +394,20 @@ public class HashesIntegrationTest {
     String field2Value = randString();
 
     Set<String> set = jedis.hkeys(key);
-    assertTrue(set == null || set.isEmpty());
+    assertThat(set == null || set.isEmpty()).isTrue();
 
     Long result = jedis.hset(key, field1, field1Value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
 
     result = jedis.hset(key, field2, field2Value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
 
     set = jedis.hkeys(key);
-    assertNotNull(set);
-    assertTrue(!set.isEmpty() && set.size() == 2);
+    assertThat(set).isNotNull();
+    assertThat(set).hasSize(2);
 
-    assertTrue(set.contains(field1));
-    assertTrue(set.contains(field2));
+    assertThat(set).contains(field1);
+    assertThat(set).contains(field2);
   }
 
   /**
@@ -434,7 +426,7 @@ public class HashesIntegrationTest {
     String key = "HGETALL" + randString();
 
     Map<String, String> map = jedis.hgetAll(key);
-    assertTrue(map == null || map.isEmpty());
+    assertThat(map == null || map.isEmpty()).isTrue();
 
     String field1 = randString();
     String field2 = randString();
@@ -442,21 +434,17 @@ public class HashesIntegrationTest {
     String field2Value = randString();
 
     Long result = jedis.hset(key, field1, field1Value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
 
     result = jedis.hset(key, field2, field2Value);
-    assertEquals(Long.valueOf(1), result);
+    assertThat(result).isEqualTo(1);
 
     map = jedis.hgetAll(key);
-    assertNotNull(map);
+    assertThat(map).isNotNull();
 
-    assertTrue(!map.isEmpty() && map.size() == 2);
-
-    assertTrue(map.keySet().contains(field1));
-    assertTrue(map.keySet().contains(field2));
-
-    assertTrue(map.values().contains(field1Value));
-    assertTrue(map.values().contains(field2Value));
+    assertThat(map).hasSize(2);
+    assertThat(map.keySet()).containsExactlyInAnyOrder(field1, field2);
+    assertThat(map.values()).containsExactlyInAnyOrder(field1Value, field2Value);
   }
 
   @Test
@@ -484,10 +472,10 @@ public class HashesIntegrationTest {
   }
 
   @Test
-  public void testConcurrentHMSet_differentKeyPerClient() throws InterruptedException {
+  public void testConcurrentHMSet_differentKeyPerClient() {
     String key1 = "HMSET1";
     String key2 = "HMSET2";
-    Map<String, String> expectedMap = new HashMap<String, String>();
+    Map<String, String> expectedMap = new HashMap<>();
     for (int i = 0; i < ITERATION_COUNT; i++) {
       expectedMap.put("field" + i, "value" + i);
     }
@@ -502,7 +490,7 @@ public class HashesIntegrationTest {
   }
 
   @Test
-  public void testConcurrentHMSet_sameKeyPerClient() throws InterruptedException {
+  public void testConcurrentHMSet_sameKeyPerClient() {
     String key = "HMSET1";
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
@@ -515,14 +503,8 @@ public class HashesIntegrationTest {
   }
 
   @Test
-  public void testConcurrentHSetNX() throws InterruptedException, ExecutionException {
+  public void testConcurrentHSetNX() {
     String key = "HSETNX" + randString();
-
-    ArrayList<String> fields = new ArrayList<>(ITERATION_COUNT);
-
-    for (int i = 0; i < ITERATION_COUNT; i++) {
-      fields.add(randString());
-    }
 
     AtomicLong successCount = new AtomicLong();
     new ConcurrentLoopingThreads(ITERATION_COUNT,

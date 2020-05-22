@@ -17,9 +17,9 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -40,15 +40,16 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 public class HExistsExecutor extends HashExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
     ByteArrayWrapper key = command.getKey();
     RedisHashCommands redisHashCommands = createRedisHashCommands(context);
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(),
-        redisHashCommands.hexists(key, field)));
+
+    return RedisResponse.integer(redisHashCommands.hexists(key, field));
   }
 
 }
