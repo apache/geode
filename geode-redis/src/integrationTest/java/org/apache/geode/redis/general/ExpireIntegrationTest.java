@@ -86,24 +86,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  public void should_setExpiration_givenKeyTo_SortedSetValue() {
-
-    String key = "key";
-    double score = 2.0;
-    String member = "member";
-
-    jedis.zadd(key, score, member);
-    Long timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.expire(key, 20);
-    timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
   public void should_setExpiration_givenKeyTo_HashValue() {
 
     String key = "key";
@@ -113,59 +95,6 @@ public class ExpireIntegrationTest {
     jedis.hset(key, field, value);
     Long timeToLive = jedis.ttl(key);
 
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.expire(key, 20);
-    timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void should_setExpiration_givenKeyTo_GeoValue() {
-
-    String key = "sicily";
-    double latitude = 13.361389;
-    double longitude = 38.115556;
-    String member = "Palermo Catania";
-
-    jedis.geoadd(key, latitude, longitude, member);
-
-    Long timeToLive = jedis.ttl(key);
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.expire(key, 20);
-    timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void should_setExpiration_givenKeyTo_HyperLogLogValue() {
-
-    String key = "crawled:127.0.0.2";
-    String value = "www.insideTheHouse.com";
-
-    jedis.pfadd(key, value);
-
-    Long timeToLive = jedis.ttl(key);
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.expire(key, 20);
-    timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void should_setExpiration_givenKeyTo_ListValue() {
-
-    String key = "list";
-    String value = "value";
-
-    jedis.lpush(key, value);
-
-    Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isEqualTo(-1);
 
     jedis.expire(key, 20);
@@ -336,21 +265,6 @@ public class ExpireIntegrationTest {
     jedis.incr(key);
 
     Long timeToLive = jedis.ttl(key);
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void usingLPUSHCommandToAddNewValueToAKey_should_NOT_ClearExpirationTime() {
-    String key = "list";
-    String value = "value";
-    String value2 = "value2";
-
-    jedis.lpush(key, value);
-    jedis.expire(key, 20);
-
-    jedis.lpush(key, value2);
-    Long timeToLive = jedis.ttl(key);
-
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
   }
 
