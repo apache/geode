@@ -975,7 +975,7 @@ javadoc/org/apache/geode/services/module/ModuleDescriptor.Builder.html
 javadoc/org/apache/geode/services/module/ModuleDescriptor.html
 javadoc/org/apache/geode/services/module/ModuleService.html
 javadoc/org/apache/geode/services/module/impl/GeodeModuleLoader.html
-javadoc/org/apache/geode/services/module/impl/JBossModuleService.html
+javadoc/org/apache/geode/services/module/impl/JBossModuleServiceImpl.html
 javadoc/org/apache/geode/services/module/impl/package-frame.html
 javadoc/org/apache/geode/services/module/impl/package-summary.html
 javadoc/org/apache/geode/services/module/impl/package-tree.html
