@@ -1748,11 +1748,15 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(waitForSenderRunnable());
     vm7.invoke(waitForSenderRunnable());
 
+    LogWriterUtils.getLogWriter().info("All senders are running.");
+
     // pause the senders
     vm4.invoke(pauseSenderRunnable());
     vm5.invoke(pauseSenderRunnable());
     vm6.invoke(pauseSenderRunnable());
     vm7.invoke(pauseSenderRunnable());
+
+    LogWriterUtils.getLogWriter().info("All senders are paused.");
 
     // start puts in region on local site
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 3000));
