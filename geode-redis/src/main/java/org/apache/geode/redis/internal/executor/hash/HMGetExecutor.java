@@ -43,7 +43,8 @@ import org.apache.geode.redis.internal.RedisResponse;
 public class HMGetExecutor extends HashExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
 
     ByteArrayWrapper key = command.getKey();
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
