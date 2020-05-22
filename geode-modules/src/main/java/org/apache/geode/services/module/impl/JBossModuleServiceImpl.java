@@ -130,6 +130,20 @@ public class JBossModuleServiceImpl implements ModuleService {
 
   @Override
   public boolean unloadModule(String moduleName) {
+    logger.debug(String.format("Unloading module %s", moduleName));
+    if (!modules.containsKey(moduleName)) {
+      logger.warn(
+          String.format("Module %s could not be unloaded because it is not loaded", moduleName));
+      return false;
+    }
+
+    if (moduleLoader.unloadModule(modules.get(moduleName))) {
+      modules.remove(moduleName);
+      logger.debug(String.format("Module %s was successfully unloaded", moduleName));
+      return true;
+    }
+
+    logger.debug(String.format("Module %s could not be unloaded", moduleName));
     return false;
   }
 

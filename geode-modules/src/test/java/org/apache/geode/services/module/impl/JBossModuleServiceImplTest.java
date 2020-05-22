@@ -488,4 +488,129 @@ public class JBossModuleServiceImplTest {
     assertThat(serviceList.size()).isEqualTo(1);
     assertThat(serviceList.get(0).sayHello()).isEqualTo(MODULE1_MESSAGE);
   }
+
+  @Test
+  public void unloadModule() {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+    assertThat(moduleService.unloadModule(module1Descriptor.getVersionedName())).isTrue();
+
+    assertThat(moduleService.getModule(module1Descriptor.getVersionedName())).isNull();
+
+    assertThat(moduleService.loadService(TestService.class)).isEmpty();
+  }
+
+  @Test
+  public void unloadModuleFromMultipleJars() {
+    ModuleDescriptor moduleDescriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH, MODULE2_PATH)
+        .build();
+    moduleService.loadModule(moduleDescriptor);
+    assertThat(moduleService.unloadModule(moduleDescriptor.getVersionedName())).isTrue();
+
+    assertThat(moduleService.getModule(moduleDescriptor.getVersionedName())).isNull();
+
+    assertThat(moduleService.loadService(TestService.class)).isEmpty();
+  }
+
+  @Test
+  public void unloadOneOfMultipleModules() throws ClassNotFoundException {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+    ModuleDescriptor module2Descriptor = new ModuleDescriptor.Builder("module2", "1.0")
+        .fromSources(MODULE2_PATH)
+        .build();
+    moduleService.loadModule(module2Descriptor);
+
+    assertThat(moduleService.unloadModule(module1Descriptor.getVersionedName())).isTrue();
+
+    assertThat(moduleService.getModule(module1Descriptor.getVersionedName())).isNull();
+
+    moduleService.getModule(module2Descriptor.getVersionedName()).getClassLoader()
+        .loadClass("org.apache.geode.Module2");
+
+    assertThat(moduleService.loadService(TestService.class).size()).isEqualTo(1);
+  }
+
+  @Test
+  public void unloadInvalidModuleName() {
+    assertThat(moduleService.unloadModule("invalidModuleName")).isFalse();
+  }
+
+  @Test
+  public void reloadUnloadedModule() throws ClassNotFoundException {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+    assertThat(moduleService.unloadModule(module1Descriptor.getVersionedName())).isTrue();
+
+    assertThat(moduleService.getModule(module1Descriptor.getVersionedName())).isNull();
+
+    assertThat(moduleService.loadModule(module1Descriptor)).isTrue();
+    moduleService.getModule(module1Descriptor.getVersionedName()).getClassLoader()
+        .loadClass("org.apache.geode.Module1");
+
+    assertThat(moduleService.loadService(TestService.class).size()).isEqualTo(1);
+  }
+
+  @Test
+  public void unloadModuleWithDependencies() throws ClassNotFoundException {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+    ModuleDescriptor module2Descriptor = new ModuleDescriptor.Builder("module2", "1.0")
+        .fromSources(MODULE2_PATH)
+        .dependsOnModules(module1Descriptor.getVersionedName())
+        .build();
+    moduleService.loadModule(module2Descriptor);
+
+    assertThat(moduleService.unloadModule(module2Descriptor.getVersionedName())).isTrue();
+
+    assertThat(moduleService.getModule(module2Descriptor.getVersionedName())).isNull();
+
+    moduleService.getModule(module1Descriptor.getVersionedName()).getClassLoader()
+        .loadClass("org.apache.geode.Module1");
+
+    assertThat(moduleService.loadService(TestService.class).size()).isEqualTo(1);
+  }
+
+  @Test
+  public void unloadModuleTwice() {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+
+    assertThat(moduleService.unloadModule(module1Descriptor.getVersionedName())).isTrue();
+
+    assertThat(moduleService.unloadModule(module1Descriptor.getVersionedName())).isFalse();
+
+    assertThat(moduleService.getModule(module1Descriptor.getVersionedName())).isNull();
+  }
+
+  @Test
+  public void unloadModuleWithSourceSharedByOtherModule() throws ClassNotFoundException {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH, MODULE2_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+    ModuleDescriptor module2Descriptor = new ModuleDescriptor.Builder("module2", "1.0")
+        .fromSources(MODULE2_PATH, MODULE3_PATH)
+        .build();
+    moduleService.loadModule(module2Descriptor);
+    assertThat(moduleService.unloadModule(module1Descriptor.getVersionedName())).isTrue();
+
+    moduleService.getModule(module2Descriptor.getVersionedName()).getClassLoader()
+        .loadClass("org.apache.geode.Module2");
+    moduleService.getModule(module2Descriptor.getVersionedName()).getClassLoader()
+        .loadClass("org.apache.geode.Module3");
+
+    assertThat(moduleService.loadService(TestService.class).size()).isEqualTo(2);
+  }
 }
