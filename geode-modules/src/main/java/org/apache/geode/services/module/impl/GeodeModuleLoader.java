@@ -41,6 +41,14 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
     moduleSpecs.put(moduleSpec.getName(), moduleSpec);
   }
 
+  public boolean unloadModule(Module module) {
+    if (module != null && unloadModuleLocal(module.getName(), module)) {
+      moduleSpecs.remove(module.getName());
+      return true;
+    }
+    return false;
+  }
+
   @Override
   protected ModuleSpec findModule(String name) throws ModuleLoadException {
     ModuleSpec moduleSpec = moduleSpecs.get(name);
