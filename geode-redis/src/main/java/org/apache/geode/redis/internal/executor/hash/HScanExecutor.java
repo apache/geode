@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_ILLEGAL_GLOB;
+import static org.apache.geode.redis.internal.executor.RedisHashInRegion.checkType;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -23,7 +25,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.executor.AbstractScanExecutor;
 
@@ -95,7 +96,7 @@ public class HScanExecutor extends AbstractScanExecutor {
     try {
       matchPattern = convertGlobToRegex(globMatchPattern);
     } catch (PatternSyntaxException e) {
-      return RedisResponse.error(RedisConstants.ERROR_ILLEGAL_GLOB);
+      return RedisResponse.error(ERROR_ILLEGAL_GLOB);
     }
 
     RedisHashCommands redisHashCommands =

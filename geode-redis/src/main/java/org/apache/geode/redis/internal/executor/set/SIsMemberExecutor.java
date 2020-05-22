@@ -23,8 +23,6 @@ import org.apache.geode.redis.internal.RedisResponse;
 
 public class SIsMemberExecutor extends SetExecutor {
 
-  private static final int EXISTS = 1;
-
   private static final int NOT_EXISTS = 0;
 
   @Override
@@ -39,8 +37,8 @@ public class SIsMemberExecutor extends SetExecutor {
 
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
-    int result = redisSetCommands.sismember(key, member) ? EXISTS : NOT_EXISTS;
+    boolean exists = redisSetCommands.sismember(key, member);
 
-    return RedisResponse.integer(result);
+    return RedisResponse.integer(exists);
   }
 }
