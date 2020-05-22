@@ -14,19 +14,23 @@
  */
 package org.apache.geode.redis.internal;
 
-import static org.apache.geode.redis.internal.RedisCommandType.PUBLISH;
+import static org.apache.geode.redis.internal.RedisCommandType.SUBSCRIBE;
 
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
@@ -64,6 +68,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Cache cache;
   private final GeodeRedisServer server;
   private final Channel channel;
+  private final EventLoopGroup subscriberEventLoopGroup;
   private final AtomicBoolean needChannelFlush;
   private final ByteBufAllocator byteBufAllocator;
   /**
@@ -104,7 +109,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
       GeodeRedisServer server, byte[] password,
       KeyRegistrar keyRegistrar, PubSub pubSub,
-      RedisLockService lockService) {
+      RedisLockService lockService, EventLoopGroup subscriberEventLoopGroup) {
     this.keyRegistrar = keyRegistrar;
     this.lockService = lockService;
     this.pubSub = pubSub;
@@ -114,6 +119,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.cache = cache;
     this.server = server;
     this.channel = channel;
+    this.subscriberEventLoopGroup = subscriberEventLoopGroup;
     this.needChannelFlush = new AtomicBoolean(false);
     this.byteBufAllocator = this.channel.alloc();
     this.transactionID = null;
@@ -236,8 +242,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         response = executeWithoutTransaction(command);
       }
 
-      logResponse(command);
-
       if (hasTransaction() && command.isOfType(RedisCommandType.MULTI)) {
         response = RedisResponse.string(RedisConstants.COMMAND_QUEUED);
       }
@@ -247,9 +251,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.error(RedisConstants.ERROR_NOT_AUTH);
     }
 
-    // PUBLISH responses are always deferred
+    logResponse(response);
+
+    moveSubscribeToNewEventLoopGroup(ctx, command);
+
     // TODO: Clean this up once all Executors are using RedisResponse
-    if (response == null && !command.isOfType(PUBLISH)) {
+    if (response == null) {
       writeToChannel(command.getResponse());
     } else if (response != null) {
       writeToChannel(response);
@@ -260,35 +267,28 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void logResponse(Command command) {
-    if (logger.isDebugEnabled() && command.getResponse() != null) {
-      ByteBuf response = null;
-      try {
-        response = command.getResponse()
-            .copy(0, Math.min(command.getResponse().readableBytes(), 100));
-        logger.debug("Redis command returned: {}", getPrintableByteBuf(response));
-      } finally {
-        if (response != null) {
-          response.release();
-        }
-      }
+  /**
+   * SUBSCRIBE commands run in their own {@link EventLoopGroup}
+   */
+  private void moveSubscribeToNewEventLoopGroup(ChannelHandlerContext ctx, Command command)
+      throws InterruptedException {
+    if (command.isOfType(SUBSCRIBE)) {
+      CountDownLatch latch = new CountDownLatch(0);
+      ctx.channel().deregister().addListener((ChannelFutureListener) future -> {
+        subscriberEventLoopGroup.register(ctx.channel()).sync();
+        latch.countDown();
+      });
+      latch.await();
     }
   }
 
-  private String getPrintableByteBuf(ByteBuf buf) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < buf.readableBytes(); i++) {
-      byte aByte = buf.getByte(i);
-      if (aByte > 31 && aByte < 127) {
-        builder.append((char) aByte);
-      } else {
-        builder.append(String.format("\\x%02x", aByte));
-      }
+  private void logResponse(RedisResponse response) {
+    if (logger.isDebugEnabled() && response != null) {
+      ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
+      logger.debug("Redis command returned: {}",
+          Command.getHexEncodedString(buf.array(), buf.readableBytes()));
     }
-
-    return builder.toString();
   }
-
 
   /**
    * Private helper method to execute a command without a transaction, done for special exception

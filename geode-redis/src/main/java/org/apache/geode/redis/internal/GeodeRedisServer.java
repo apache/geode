@@ -164,6 +164,7 @@ public class GeodeRedisServer {
 
   private EventLoopGroup bossGroup;
   private EventLoopGroup workerGroup;
+  private EventLoopGroup subscriberGroup;
   private static final int numExpirationThreads = 1;
   private final ScheduledExecutorService expirationExecutor;
 
@@ -479,10 +480,13 @@ public class GeodeRedisServer {
   @SuppressWarnings("deprecation")
   private Class<? extends ServerChannel> initializeEventLoopGroups() {
     ThreadFactory selectorThreadFactory =
-        new NamedThreadFactory("GeodeRedisServer-SelectorThread-", true);
+        new NamedThreadFactory("GeodeRedisServer-SelectorThread-", false);
 
     ThreadFactory workerThreadFactory =
-        new NamedThreadFactory("GeodeRedisServer-WorkerThread-", false);
+        new NamedThreadFactory("GeodeRedisServer-WorkerThread-", true);
+
+    ThreadFactory subscriberThreadFactory =
+        new NamedThreadFactory("GeodeRedisServer-SubscriberThread-", true);
 
     Class<? extends ServerChannel> socketClass;
     if (singleThreadPerConnection) {
@@ -494,6 +498,7 @@ public class GeodeRedisServer {
     } else {
       bossGroup = new NioEventLoopGroup(numSelectorThreads, selectorThreadFactory);
       workerGroup = new NioEventLoopGroup(numWorkerThreads, workerThreadFactory);
+      subscriberGroup = new NioEventLoopGroup(numWorkerThreads, subscriberThreadFactory);
       socketClass = NioServerSocketChannel.class;
     }
     return socketClass;
@@ -541,7 +546,7 @@ public class GeodeRedisServer {
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, cache, regionProvider, GeodeRedisServer.this,
                 redisPasswordBytes,
-                keyRegistrar, pubSub, hashLockService));
+                keyRegistrar, pubSub, hashLockService, subscriberGroup));
       }
     };
   }
