@@ -15,6 +15,8 @@
 
 package org.apache.geode.services.module;
 
+import java.util.List;
+
 import org.apache.geode.annotations.Experimental;
 
 /**
@@ -33,4 +35,20 @@ public interface ModuleService {
    * @return true on success, false if the module could not be loaded.
    */
   boolean loadModule(ModuleDescriptor moduleDescriptor);
+
+  /**
+   * Unloads a previously loaded module.
+   *
+   * @param moduleName name of the module to be unloaded.
+   * @return true on success, false if the module could not be unloaded.
+   */
+  boolean unloadModule(String moduleName);
+
+  /**
+   * Loads and returns a service instance for an interface.
+   *
+   * @param service interface type to load and instantiate an implementation of.
+   * @return An instance of an implementation of service
+   */
+  <T> List<T> loadService(Class<T> service);
 }
