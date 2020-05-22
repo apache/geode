@@ -635,8 +635,8 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 <tr>
 <td><span class="keyword parmname">\-\-group-transaction-events</span></td>
 <td>Boolean value to ensure that all the events of a transaction are sent in the same batch, i.e., they are never spread across different batches.
-<p>Only allowed to be set on gateway senders with <code class="ph codeph">is-parallel</code> attribute set to false and <code class="ph codeph">dispatcher-threads</code> attribute equal to 1 or on gatewaysenders with <code class="ph codeph">is-parallel</code> attribute set to true.</p>
-<p>Note that in order to work for a transaction, the regions to which the transaction events belong must be replicated by the same set of senders with this flag enabled.</p></td>
+<p>Only allowed to be set on gateway senders with the <code class="ph codeph">parallel</code> attribute set to false and <code class="ph codeph">dispatcher-threads</code> attribute equal to 1, or on gatewaysenders with the <code class="ph codeph">parallel</code> attribute set to true.</p>
+<p><b>Note:</b> In order to work for a transaction, the regions to which the transaction events belong must be replicated by the same set of senders with this flag enabled.</p></td>
 </td>
 <td>false</td>
 </tr>

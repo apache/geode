@@ -171,7 +171,7 @@ When using a multi-site configuration, you choose which data regions to share be
 
 - Regions using the same parallel gateway sender ID must be colocated.
 
-- If any gateway sender configured for the region has the `group-transaction-events` flag set to true, then the regions involved in transactions must all have the same gateway senders with this flag set to true configured. This requires careful configuration of regions with gateway-senders according to the transactions expected in the system.
+- If any gateway sender configured for the region has the `group-transaction-events` flag set to true, then the regions involved in transactions must all have the same gateway senders configured with this flag set to true. This requires careful configuration of regions with gateway senders according to the transactions expected in the system.
 
     **Example**:
     Assuming the following scenario:
@@ -185,14 +185,21 @@ When using a multi-site configuration, you choose which data regions to share be
 
     - Regions:
 
-      - region1: gateway-sender-ids=sender1,sender2,sender4 type: partition, colocated-with: region2,region3
-      - region2: gateway-sender-ids=sender1,sender2         type: partition, colocated with: region1,region3
-      - region3: gateway-sender-ids=sender3                 type: partition, colocated with: region1,region2
-      - region4: gateway-sender-ids=sender4                 type: replicated
+      - region1: gateway-sender-ids=sender1,sender2,sender4<br />
+          type: partition<br />
+          colocated-with: region2,region3
+      - region2: gateway-sender-ids=sender1,sender2<br />
+          type: partition<br />
+          colocated with: region1,region3
+      - region3: gateway-sender-ids=sender3<br />
+          type: partition<br />
+          colocated with: region1,region2
+      - region4: gateway-sender-ids=sender4<br />
+          type: replicated
 
     - Events for the same transaction will be guaranteed to be sent in the same batch depending on the events involved in the transaction:
 
-      - For transactions containing events for region1 and region2, it will be guaranteed that events for those transactions will be delivered in the same batch by senders1 and sender2.
+      - For transactions containing events for region1 and region2, it will be guaranteed that events for those transactions will be delivered in the same batch by sender1 and sender2.
       - For transactions containing events for region1, region2 and region3, it will NOT be guaranteed that events for those transactions will be delivered in the same batch .
       - For transactions containing events for region3, it will be guaranteed that events for those transactions will be delivered in the same batch.
       - For transactions containing events for region4, it will NOT be guaranteed that events for those transactions will be delivered in the same batch.

@@ -33,7 +33,12 @@ Gateway senders and receivers are defined at startup in the member caches. A sit
 
 Geode ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region, including Geode members that distribute region events across a WAN.
 
-Events are sent over batches from gateway senders to receivers. In order to avoid possible long lasting inconsistencies due to a partial reception of the events belonging to a transaction after a network split, it is possible to configure gateway senders to prevent events belonging to the same transaction to be spread across different batches. It must be noted though, that this setting is only supported on serial senders with just one dispatcher thread or on parallel ones. Besides, the regions to which the transaction events belong must be replicated by the same set of gateway senders that have this setting enabled.
+Events are sent in batches from gateway senders to receivers. In order to avoid inconsistencies due
+to partial reception of the events belonging to a transaction, you can configure gateway senders to
+ensure that events belonging to the same transaction are sent together in the same batch.
+<b>Note:</b> This setting is supported only on serial senders with just one dispatcher
+thread, or on parallel senders. In addition, the regions to which the transaction events belong must
+be replicated by the same set of gateway senders that also have this setting enabled.
 
 By default, potential WAN conflicts are resolved using a timestamp mechanism. You can optionally install a custom conflict resolver to apply custom logic when determining whether to apply a potentially conflicting update received over a WAN.
 
