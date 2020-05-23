@@ -47,11 +47,14 @@ else
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [[ ${BRANCH} != "develop" ]] && [[ ${BRANCH} != "master" ]] && [[ ${BRANCH%/*} != "release" ]] ; then
-    echo "Please git checkout develop, master, or a release branch before running this script"
+if [[ ${BRANCH} != "develop" ]] && [[ ${BRANCH} != "master" ]] && [[ ${BRANCH%/*} != "support" ]] ; then
+    echo "Please git checkout develop, master, or a support branch before running this script"
     exit 1
 fi
 
+SUDO=
+PIP=pip
+PYTHON=python
 
 echo ""
 echo "============================================================"
@@ -71,14 +74,15 @@ else
 fi
 
 
-GEODE_VERSION=$("$GEODE"/bin/gfsh version | sed 's/-SNAPSHOT//')
+GEODE_VERSION=$("$GEODE"/bin/gfsh version | sed -e 's/-SNAPSHOT//' -e 's/-build.*//')
 [[ "${GEODE_VERSION%.*}" == "1.10" ]] && PAGE_ID=115511910
 [[ "${GEODE_VERSION%.*}" == "1.11" ]] && PAGE_ID=135861023
 [[ "${GEODE_VERSION%.*}" == "1.12" ]] && PAGE_ID=132322415
 [[ "${GEODE_VERSION%.*}" == "1.13" ]] && PAGE_ID=147426059
+[[ "${GEODE_VERSION%.*}" == "1.14" ]] && PAGE_ID=153817491
 
 if [[ -z "${PAGE_ID}" ]] ; then
-    echo "Please create a new wiki page for $GEODE_VERSION and add its page ID to $0 near line 79"
+    echo "Please create a new wiki page for $GEODE_VERSION and add its page ID to $0 near line 83"
     exit 1
 fi
 
@@ -97,7 +101,7 @@ echo ""
 echo "============================================================"
 echo "Checking that premailer is installed (ignore warnings/errors if already installed)"
 echo "============================================================"
-pip install premailer
+$SUDO $PIP install premailer
 
 echo ""
 echo "============================================================"
@@ -124,7 +128,7 @@ echo "============================================================"
 echo "Download swagger JSON"
 echo "============================================================"
 set -x
-curl http://localhost:7070/management${URI_VERSION}/api-docs | jq > static/swagger.json
+curl http://localhost:7070/management${URI_VERSION}/api-docs | jq . > static/swagger.json
 set +x
 
 echo ""
@@ -155,7 +159,7 @@ cat static/index.html |
 # clean up a few things premailer will otherwise choke on
 grep -v doctype | sed -e 's/&mdash;/--/g' |
 # convert css style block to inline css (that is the only way confluence accepts styling)
-python -m premailer --method xml --encoding ascii --pretty |
+$SUDO $PYTHON -m premailer --method xml --encoding ascii --pretty |
 # strip off the document envelope (otherwise confluence will not accept it) by keeping only lines between the body tags
 awk '
   /<\/body>/ {inbody=0}
