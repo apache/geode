@@ -82,6 +82,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -1965,6 +1966,75 @@ public class PutAllClientServerDistributedTest implements Serializable {
           .isInstanceOf(ServerOperationException.class);
       assertThat(thrown.getCause())
           .isInstanceOf(LowMemoryException.class);
+    });
+
+    // let server1 to throw TimeoutException
+    server1.invoke(() -> {
+      Region<String, TickerData> region = getCache().getRegion(regionName);
+      // let the server to trigger exception after created 15 keys
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
+              creates -> {
+                throw new TimeoutException();
+              })));
+
+      Map<String, TickerData> map = new LinkedHashMap<>();
+      for (int i = 0; i < ONE_HUNDRED; i++) {
+        map.put(keyPrefix + i, new TickerData(i));
+      }
+      try {
+        region.putAll(map);
+      } catch (TimeoutException e) {
+        assertThat(e.getCause()).isNull();
+      }
+
+      try {
+        region.put("dummyKey", new TickerData(0));
+      } catch (TimeoutException e) {
+        assertThat(e.getCause()).isNull();
+      }
+
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(TimeoutException.class);
+      assertThat(thrown.getCause()).isNull();
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(TimeoutException.class);
+    });
+
+    // client1 putAll
+    client1.invoke(() -> {
+      Region<String, TickerData> region = getClientCache().getRegion(regionName);
+
+      Map<String, TickerData> map = new LinkedHashMap<>();
+      for (int i = 0; i < ONE_HUNDRED; i++) {
+        map.put(keyPrefix + i, new TickerData(i));
+      }
+      try {
+        region.putAll(map);
+      } catch (ServerOperationException e) {
+        assertThat(e.getCause()).isInstanceOf(TimeoutException.class);
+      }
+
+      try {
+        region.put("dummyKey", new TickerData(0));
+      } catch (ServerOperationException e) {
+        assertThat(e.getCause()).isInstanceOf(TimeoutException.class);
+      }
+
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(ServerOperationException.class);
+      assertThat(thrown.getCause())
+          .isInstanceOf(TimeoutException.class);
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(ServerOperationException.class);
+      assertThat(thrown.getCause())
+          .isInstanceOf(TimeoutException.class);
     });
   }
 
