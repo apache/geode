@@ -47,8 +47,8 @@ else
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [[ ${BRANCH} != "develop" ]] && [[ ${BRANCH} != "master" ]] && [[ ${BRANCH%/*} != "release" ]] ; then
-    echo "Please git checkout develop, master, or a release branch before running this script"
+if [[ ${BRANCH} != "develop" ]] && [[ ${BRANCH} != "master" ]] && [[ ${BRANCH%/*} != "support" ]] ; then
+    echo "Please git checkout develop, master, or a support branch before running this script"
     exit 1
 fi
 
