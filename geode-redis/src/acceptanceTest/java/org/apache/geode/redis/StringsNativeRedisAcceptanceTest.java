@@ -55,9 +55,4 @@ public class StringsNativeRedisAcceptanceTest extends StringsIntegrationTest {
   public void testSet_keyExistsWithDifferentDataType_returnsRedisDataTypeMismatchException() {
     // TODO: Fix implementation of SET to always succeed regardless of data type, like Native Redis
   }
-
-  @Test
-  public void testSet_protectedRedisDataType_throwsRedisDataTypeMismatchException() {
-    // There are no protected data types in Native Redis
-  }
 }
