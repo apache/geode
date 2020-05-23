@@ -18,6 +18,8 @@ import java.util.Collection;
 
 import io.netty.buffer.ByteBuf;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Query;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
@@ -51,6 +53,28 @@ public abstract class AbstractExecutor implements Executor {
   protected static final int millisInSecond = 1000;
 
   /**
+   * Getter method for a {@link Region} in the case that a Region should be created if one with the
+   * given name does not exist. Before getting or creating a Region, a check is first done to make
+   * sure the desired key doesn't already exist with a different {@link RedisDataType}. If there is
+   * a data type mismatch this method will throw a {@link RuntimeException}.
+   * <p>
+   * ********************** IMPORTANT NOTE ********************************************** This
+   * method will not fail in returning a Region unless an internal error occurs, so if a Region is
+   * destroyed right after it is created, it will attempt to retry until a reference to that Region
+   * is obtained
+   * *************************************************************************************
+   *
+   * @param context Client client
+   * @param key String key of desired key
+   * @param type Type of data type desired
+   * @return Region with name key
+   */
+  protected Region<?, ?> getOrCreateRegion(ExecutionHandlerContext context, ByteArrayWrapper key,
+      RedisDataType type) {
+    return context.getRegionProvider().getOrCreateRegion(key, type, context);
+  }
+
+  /**
    * Checks if the given key is associated with the passed expectedDataType. If there is a mismatch,
    * a {@link RuntimeException} is thrown
    *
@@ -63,12 +87,38 @@ public abstract class AbstractExecutor implements Executor {
     context.getKeyRegistrar().validate(key, expectedDataType);
   }
 
+  protected Query getQuery(ByteArrayWrapper key, Enum<?> type, ExecutionHandlerContext context) {
+    return context.getRegionProvider().getQuery(key, type);
+  }
+
   protected boolean removeEntry(ByteArrayWrapper key,
       ExecutionHandlerContext context) {
 
     RegionProvider rC = context.getRegionProvider();
     RedisDataType type = context.getKeyRegistrar().getType(key);
     return rC.removeKey(key, type);
+  }
+
+  protected int getBoundedStartIndex(int index, int size) {
+    if (size < 0) {
+      throw new IllegalArgumentException("Size < 0, really?");
+    }
+    if (index >= 0) {
+      return Math.min(index, size);
+    } else {
+      return Math.max(index + size, 0);
+    }
+  }
+
+  protected int getBoundedEndIndex(int index, int size) {
+    if (size < 0) {
+      throw new IllegalArgumentException("Size < 0, really?");
+    }
+    if (index >= 0) {
+      return Math.min(index, size);
+    } else {
+      return Math.max(index + size, -1);
+    }
   }
 
   protected long getBoundedStartIndex(long index, long size) {

@@ -21,6 +21,8 @@ public class RedisConstants {
    * Responses
    */
   public static final String QUIT_RESPONSE = "OK";
+  public static final String COMMAND_QUEUED = "QUEUED";
+
 
   /*
    * Error responses
@@ -29,16 +31,36 @@ public class RedisConstants {
       "The command received by GeodeRedisServer was improperly formatted";
   public static final String SERVER_ERROR_MESSAGE =
       "The server had an internal error please try again";
+  static final String SERVER_ERROR_UNKNOWN_RESPONSE = "Unkown response";
   static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
+  static final String ERROR_UNSUPPORTED_OPERATION_IN_TRANSACTION =
+      "This command is not supported within a transaction";
+  static final String ERROR_TRANSACTION_EXCEPTION =
+      "This transcation cannot be initiated, make sure the command is executed against a replicate region or your data is collocated. If you are using persistent regions, make sure transactions are enabled";
+  public static final String ERROR_NOT_NUMERIC = "Illegal non numeric argument";
+  public static final String ERROR_INVALID_ARGUMENT_UNIT_NUM =
+      "Either illegal non numeric argument or invalid unit" +
+          "(please use either km/m/ft/mi)";
   public static final String ERROR_UNKOWN_COMMAND = "Unable to process unknown command";
+  public static final String ERROR_COMMIT_CONFLICT =
+      "There has been a conflict with another transaction";
+  public static final String ERROR_REGION_CREATION =
+      "This key could not be created. Gemfire does not allow certain characters to used in keys";
+  public static final String ERROR_UNWATCH =
+      "Keys cannot be watched or unwatched because GemFire watches all keys by default for transactions";
+  public static final String ERROR_WATCH =
+      "Keys cannot be watched or unwatched because GemFire watches all keys by default for transactions";
   public static final String ERROR_ILLEGAL_GLOB = "Incorrect syntax for given glob regex";
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
+  public static final String ERROR_INVALID_LATLONG = "Invalid longitude-latitude pair";
+  public static final String ERROR_NESTED_MULTI = "The MULTI command cannot be nested";
   public static final String ERROR_NAN_INF_INCR = "increment would produce NaN or Infinity";
   public static final String ERROR_NO_PASS =
       "Attempting to authenticate when no password has been set";
   public static final String ERROR_INVALID_PWD =
       "Attemping to authenticate with an invalid password";
   public static final String ERROR_NOT_AUTH = "Must authenticate before sending any requests";
+  public static final String ERROR_ZSET_MEMBER_NOT_FOUND = "could not decode requested zset member";
   public static final String ERROR_WRONG_TYPE =
       "Operation against a key holding the wrong kind of value";
   public static final String ERROR_NOT_INTEGER = "value is not an integer or out of range";
@@ -84,6 +106,73 @@ public class RedisConstants {
     public static final String TYPE =
         "The wrong number of arguments or syntax was provided, the format for the TYPE command is \"TYPE key\"";
     public static final String UNKNOWN = null;
+
+
+    /*
+     * Hll
+     */
+    public static final String PFADD =
+        "The wrong number of arguments or syntax was provided, the format for the PFADD command is \"PFADD key element [element ...]\"";
+    public static final String PFCOUNT =
+        "The wrong number of arguments or syntax was provided, the format for the PFCOUNT command is \"PFCOUNT key [key ...]\"";
+    public static final String PFMERGE =
+        "The wrong number of arguments or syntax was provided, the format for the PFMERGE command is \"PFMERGE destkey sourcekey [sourcekey ...]\"";
+
+    /*
+     * Sorted set
+     */
+    public static final String ZADD =
+        "The wrong number of arguments or syntax was provided, the format for the ZADD command is \"ZADD key score member [score member ...]\", or not every score matches to a member";
+    public static final String ZCARD =
+        "The wrong number of arguments or syntax was provided, the format for the ZCARD command is \"ZCARD key\"";
+    public static final String ZCOUNT =
+        "The wrong number of arguments or syntax was provided, the format for the ZCOUNT command is \"ZCOUNT key min max\"";
+    public static final String ZINCRBY =
+        "The wrong number of arguments or syntax was provided, the format for the ZINCRBY command is \"ZINCRBY key increment member\"";
+    public static final String ZLEXCOUNT =
+        "The wrong number of arguments or syntax was provided, the format for the ZLEXCOUNT command is \"ZLEXCOUNT key min max\"";
+    public static final String ZRANGEBYLEX =
+        "The wrong number of arguments or syntax was provided, the format for the ZRANGEBYLEX command is \"ZRANGEBYLEX key min max [LIMIT offset count]\"";
+    public static final String ZRANGEBYSCORE =
+        "The wrong number of arguments or syntax was provided, the format for the ZRANGEBYSCORE command is \"ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]\"";
+    public static final String ZRANGE =
+        "The wrong number of arguments or syntax was provided, the format for the ZRANGE command is \"ZRANGE key start stop [WITHSCORES]\"";
+    public static final String ZRANK =
+        "The wrong number of arguments or syntax was provided, the format for the ZRANK command is \"ZRANK key member\"";
+    public static final String ZREM =
+        "The wrong number of arguments or syntax was provided, the format for the ZREM command is \"ZREM key member [member ...]\"";
+    public static final String ZREMRANGEBYLEX =
+        "The wrong number of arguments or syntax was provided, the format for the ZREMRANGEBYLEX command is \"ZREMRANGEBYLEX key min max\"";
+    public static final String ZREMRANGEBYRANK =
+        "The wrong number of arguments or syntax was provided, the format for the ZREMRANGEBYRANK command is \"ZREMRANGEBYRANK key start stop\"";
+    public static final String ZREMRANGEBYSCORE =
+        "The wrong number of arguments or syntax was provided, the format for the ZREMRANGEBYSCORE command is \"ZREMRANGEBYSCORE key min max\"";
+    public static final String ZREVRANGEBYSCORE =
+        "The wrong number of arguments or syntax was provided, the format for the ZREVRANGEBYSCORE command is \"ZREVRANGEBYSCORE key max min [WITHSCORES] [LIMIT offset count]\"";
+    public static final String ZREVRANGE =
+        "The wrong number of arguments or syntax was provided, the format for the ZREVRANGE command is \"ZREVRANGE key start stop [WITHSCORES]\"";
+    public static final String ZREVRANK =
+        "The wrong number of arguments or syntax was provided, the format for the ZREVRANK command is \"ZREVRANK key member\"";
+    public static final String ZSCAN =
+        "The wrong number of arguments or syntax was provided, the format for the SSCAN command is \"SSCAN key cursor [MATCH pattern] [COUNT count]\"";
+    public static final String ZSCORE =
+        "The wrong number of arguments or syntax was provided, the format for the ZSCORE command is \"ZSCORE key member\"";
+
+    /*
+     * Geospatial
+     */
+    public static final String GEOADD =
+        "The wrong number of arguments or syntax was provided, the format for the GEOADD command is \"GEOADD key longitude latitude member [longitude latitude member ...]\", or not every latitude/longitude pair matches to a member";
+    public static final String GEOHASH =
+        "The wrong number of arguments or syntax was provided, the format for the GEOHASH command is \"GEOHASH key member [member...]\"";
+    public static final String GEOPOS =
+        "The wrong number of arguments or syntax was provided, the format for the GEOPOS command is \"GEOPOS key member [member...]\"";
+    public static final String GEODIST =
+        "The wrong number of arguments or syntax was provided, the format for the GEODIST command is \"GEODIST key member member [unit]\"";
+    public static final String GEORADIUS =
+        "The wrong number of arguments or syntax was provided, the format for the GEORADIUS command is \"GEORADIUS key longitude latitude radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC]\"";
+    public static final String GEORADIUSBYMEMBER =
+        "The wrong number of arguments or syntax was provided, the format for the GEORADIUSBYMEMBER command is \"GEORADIUSBYMEMBER key member radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC]\"";
 
     /*
      * String
@@ -136,6 +225,15 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the SETRANGE command is \"SETRANGE key offset value\"";
     public static final String STRLEN =
         "The wrong number of arguments or syntax was provided, the format for the STRELEN command is \"STRLEN key\"";
+
+    /*
+     * Transaction
+     */
+    public static final String DISCARD = null;
+    public static final String EXEC = null;
+    public static final String MULTI = null;
+    public static final String UNWATCH = null;
+    public static final String WATCH = null;
   }
 
 }

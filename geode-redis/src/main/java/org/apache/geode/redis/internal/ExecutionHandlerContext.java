@@ -17,6 +17,8 @@ package org.apache.geode.redis.internal;
 import static org.apache.geode.redis.internal.RedisCommandType.SUBSCRIBE;
 
 import java.io.IOException;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,7 +36,14 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 
@@ -45,7 +54,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMism
  * by this class.
  * <p>
  * Besides being part of Netty's pipeline, this class also serves as a context to the execution of a
- * command. It provides access to the {@link RegionProvider} and anything
+ * command. It abstracts transactions, provides access to the {@link RegionProvider} and anything
  * else an executing {@link Command} may need.
  */
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
@@ -62,6 +71,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final EventLoopGroup subscriberEventLoopGroup;
   private final AtomicBoolean needChannelFlush;
   private final ByteBufAllocator byteBufAllocator;
+  /**
+   * TransactionId for any transactions started by this client
+   */
+  private TransactionId transactionID;
+
+  /**
+   * Queue of commands for a given transaction
+   */
+  private Queue<Command> transactionQueue;
   private final RegionProvider regionProvider;
   private final byte[] authPassword;
 
@@ -104,6 +122,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.subscriberEventLoopGroup = subscriberEventLoopGroup;
     this.needChannelFlush = new AtomicBoolean(false);
     this.byteBufAllocator = this.channel.alloc();
+    this.transactionID = null;
+    this.transactionQueue = null; // Lazy
     this.regionProvider = regionProvider;
     this.authPassword = password;
     this.isAuthenticated = password != null ? false : true;
@@ -181,6 +201,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         && cause.getCause() instanceof RedisCommandParserException) {
       response = RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE);
 
+    } else if (cause instanceof RegionCreationException) {
+      logger.error(cause);
+      response = RedisResponse.error(RedisConstants.ERROR_REGION_CREATION);
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
       response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
     } else if (cause instanceof IllegalStateException
@@ -213,8 +236,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       }
 
-      response = command.execute(this);
+      if (hasTransaction() && !command.isTransactional()) {
+        response = executeWithTransaction(ctx, command);
+      } else {
+        response = executeWithoutTransaction(command);
+      }
 
+      if (hasTransaction() && command.isOfType(RedisCommandType.MULTI)) {
+        response = RedisResponse.string(RedisConstants.COMMAND_QUEUED);
+      }
     } else if (command.isOfType(RedisCommandType.AUTH)) {
       response = command.execute(this);
     } else {
@@ -261,6 +291,110 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   /**
+   * Private helper method to execute a command without a transaction, done for special exception
+   * handling neatness
+   *
+   * @param command Command to execute
+   * @throws Exception Throws exception if exception is from within execution and not to be handled
+   */
+  private RedisResponse executeWithoutTransaction(Command command) throws Exception {
+    Exception cause = null;
+    for (int i = 0; i < MAXIMUM_NUM_RETRIES; i++) {
+      try {
+        return command.execute(this);
+      } catch (Exception e) {
+        logger.error(e);
+
+        cause = e;
+        if (e instanceof RegionDestroyedException || e instanceof RegionNotFoundException
+            || e.getCause() instanceof QueryInvocationTargetException) {
+          Thread.sleep(WAIT_REGION_DSTRYD_MILLIS);
+        }
+      }
+    }
+    throw cause;
+  }
+
+  private RedisResponse executeWithTransaction(ChannelHandlerContext ctx,
+      Command command) throws Exception {
+    CacheTransactionManager txm = cache.getCacheTransactionManager();
+    TransactionId transactionId = getTransactionID();
+    txm.resume(transactionId);
+
+    RedisResponse response;
+    try {
+      response = command.execute(this);
+    } catch (UnsupportedOperationInTransactionException e) {
+      response = RedisResponse.error(RedisConstants.ERROR_UNSUPPORTED_OPERATION_IN_TRANSACTION);
+    } catch (TransactionException e) {
+      response = RedisResponse.error(RedisConstants.ERROR_TRANSACTION_EXCEPTION);
+    } catch (Exception e) {
+      response = getExceptionResponse(ctx, e);
+    }
+
+    getTransactionQueue().add(command);
+    transactionId = txm.suspend();
+    setTransactionID(transactionId);
+
+    return response;
+  }
+
+  /**
+   * Get the current transacationId
+   *
+   * @return The current transactionId, null if one doesn't exist
+   */
+  public TransactionId getTransactionID() {
+    return this.transactionID;
+  }
+
+  /**
+   * Check if client has transaction
+   *
+   * @return True if client has transaction, false otherwise
+   */
+  public boolean hasTransaction() {
+    return transactionID != null;
+  }
+
+  /**
+   * Setter method for transaction
+   *
+   * @param id TransactionId of current transaction for client
+   */
+  public void setTransactionID(TransactionId id) {
+    this.transactionID = id;
+  }
+
+  /**
+   * Reset the transaction of client
+   */
+  public void clearTransaction() {
+    this.transactionID = null;
+    if (this.transactionQueue != null) {
+      for (Command c : this.transactionQueue) {
+        ByteBuf r = c.getResponse();
+        if (r != null) {
+          r.release();
+        }
+      }
+      this.transactionQueue.clear();
+    }
+  }
+
+  /**
+   * Getter for transaction command queue
+   *
+   * @return Command queue
+   */
+  public Queue<Command> getTransactionQueue() {
+    if (this.transactionQueue == null) {
+      this.transactionQueue = new ConcurrentLinkedQueue<Command>();
+    }
+    return this.transactionQueue;
+  }
+
+  /**
    * {@link ByteBuf} allocator for this context. All executors must use this pooled allocator as
    * opposed to having unpooled buffers for maximum performance
    *
@@ -275,6 +409,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   public RegionProvider getRegionProvider() {
     return this.regionProvider;
+  }
+
+  /**
+   * Getter for manager to allow pausing and resuming transactions
+   */
+  public CacheTransactionManager getCacheTransactionManager() {
+    return this.cache.getCacheTransactionManager();
   }
 
   /**

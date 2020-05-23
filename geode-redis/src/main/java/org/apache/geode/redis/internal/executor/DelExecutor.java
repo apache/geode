@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.List;
 
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -25,6 +26,10 @@ public class DelExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
+    if (context.hasTransaction()) {
+      throw new UnsupportedOperationInTransactionException();
+    }
+
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     long numRemoved = commandElems

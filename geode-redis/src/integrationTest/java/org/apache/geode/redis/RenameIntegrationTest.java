@@ -16,6 +16,7 @@
 package org.apache.geode.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -36,6 +37,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.junit.categories.RedisTest;
 
@@ -93,6 +95,12 @@ public class RenameIntegrationTest {
   }
 
   @Test
+  public void testProtectedString() {
+    jedis.set("foo", "bar");
+    assertThatThrownBy(() -> jedis.rename("foo", GeodeRedisServer.STRING_REGION));
+  }
+
+  @Test
   public void testHashMap() {
     jedis.hset("foo", "field", "va");
     jedis.rename("foo", "newfoo");
@@ -104,6 +112,18 @@ public class RenameIntegrationTest {
     jedis.sadd("foo", "data");
     jedis.rename("foo", "newfoo");
     assertThat(jedis.smembers("newfoo")).contains("data");
+  }
+
+  @Test
+  public void testSortedSet() {
+    jedis.zadd("foo", 1.0, "data");
+    assertThatThrownBy(() -> jedis.rename("foo", "newfoo"));
+  }
+
+  @Test
+  public void testList() {
+    jedis.lpush("person", "Bern");
+    assertThatThrownBy(() -> jedis.rename("person", "newPerson"));
   }
 
   @Test

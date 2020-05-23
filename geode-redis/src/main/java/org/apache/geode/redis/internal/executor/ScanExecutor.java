@@ -23,6 +23,7 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
@@ -112,6 +113,11 @@ public class ScanExecutor extends AbstractScanExecutor {
     int numElements = 0;
     int i = -1;
     for (String key : (Collection<String>) list) {
+      if (key.equals(GeodeRedisServer.REDIS_DATA_REGION)
+          || key.equals(GeodeRedisServer.STRING_REGION)
+          || key.equals(GeodeRedisServer.HLL_REGION)) {
+        continue;
+      }
       i++;
       if (beforeCursor < cursor) {
         beforeCursor++;

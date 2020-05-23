@@ -14,22 +14,34 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import java.util.Map.Entry;
+
 import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.RedisDataType;
 
 public class FlushAllExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    for (ByteArrayWrapper skey : context.getKeyRegistrar().keys()) {
+    if (context.hasTransaction()) {
+      throw new UnsupportedOperationInTransactionException();
+    }
+
+    for (Entry<ByteArrayWrapper, RedisData> e : context.getKeyRegistrar().keyInfos()) {
       try {
+        ByteArrayWrapper skey = e.getKey();
+        RedisDataType type = e.getValue().getType();
         removeEntry(skey, context);
       } catch (EntryDestroyedException e1) {
         continue;
       }
+
     }
 
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), "OK"));

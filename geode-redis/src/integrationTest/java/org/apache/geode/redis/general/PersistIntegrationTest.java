@@ -86,6 +86,19 @@ public class PersistIntegrationTest {
   }
 
   @Test
+  public void shouldPersistKey_givenKeyWith_sortedSetValue() {
+    String sortedSetKey = "sortedSetKey";
+    double score = 2.0;
+    String sortedSetMember = "sortedSetMember";
+
+    jedis.zadd(sortedSetKey, score, sortedSetMember);
+    jedis.expire(sortedSetKey, 20);
+
+    assertThat(jedis.persist(sortedSetKey)).isEqualTo(1L);
+    assertThat(jedis.ttl(sortedSetKey)).isEqualTo(-1L);
+  }
+
+  @Test
   public void shouldPersistKey_givenKeyWith_hashValue() {
     String hashKey = "hashKey";
     String hashField = "hashField";
@@ -96,6 +109,44 @@ public class PersistIntegrationTest {
 
     assertThat(jedis.persist(hashKey)).isEqualTo(1L);
     assertThat(jedis.ttl(hashKey)).isEqualTo(-1L);
+  }
+
+  @Test
+  public void shouldPersistKey_givenKeyWith_geoValue() {
+    String geoKey = "sicily";
+    double latitude = 13.361389;
+    double longitude = 38.115556;
+    String geoMember = "Palermo Catania";
+
+    jedis.geoadd(geoKey, latitude, longitude, geoMember);
+    jedis.expire(geoKey, 20);
+
+    assertThat(jedis.persist(geoKey)).isEqualTo(1L);
+    assertThat(jedis.ttl(geoKey)).isEqualTo(-1L);
+  }
+
+  @Test
+  public void shouldPersistKey_givenKeyWith_hyperLogLogValue() {
+    String hyperLogLogKey = "crawled:127.0.0.2";
+    String hyperLogLogValue = "www.insideTheHouse.com";
+
+    jedis.pfadd(hyperLogLogKey, hyperLogLogValue);
+    jedis.expire(hyperLogLogKey, 20);
+
+    assertThat(jedis.persist(hyperLogLogKey)).isEqualTo(1L);
+    assertThat(jedis.ttl(hyperLogLogKey)).isEqualTo(-1L);
+  }
+
+  @Test
+  public void shouldPersistKey_givenKeyWith_listValue() {
+    String listKey = "listKey";
+    String listValue = "listValue";
+
+    jedis.lpush(listKey, listValue);
+    jedis.expire(listKey, 20);
+
+    assertThat(jedis.persist(listKey)).isEqualTo(1L);
+    assertThat(jedis.ttl(listKey)).isEqualTo(-1L);
   }
 
   @Test

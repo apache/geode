@@ -58,6 +58,22 @@ import org.apache.geode.redis.internal.executor.hash.HScanExecutor;
 import org.apache.geode.redis.internal.executor.hash.HSetExecutor;
 import org.apache.geode.redis.internal.executor.hash.HSetNXExecutor;
 import org.apache.geode.redis.internal.executor.hash.HValsExecutor;
+import org.apache.geode.redis.internal.executor.hll.PFAddExecutor;
+import org.apache.geode.redis.internal.executor.hll.PFCountExecutor;
+import org.apache.geode.redis.internal.executor.hll.PFMergeExecutor;
+import org.apache.geode.redis.internal.executor.list.LIndexExecutor;
+import org.apache.geode.redis.internal.executor.list.LInsertExecutor;
+import org.apache.geode.redis.internal.executor.list.LLenExecutor;
+import org.apache.geode.redis.internal.executor.list.LPopExecutor;
+import org.apache.geode.redis.internal.executor.list.LPushExecutor;
+import org.apache.geode.redis.internal.executor.list.LPushXExecutor;
+import org.apache.geode.redis.internal.executor.list.LRangeExecutor;
+import org.apache.geode.redis.internal.executor.list.LRemExecutor;
+import org.apache.geode.redis.internal.executor.list.LSetExecutor;
+import org.apache.geode.redis.internal.executor.list.LTrimExecutor;
+import org.apache.geode.redis.internal.executor.list.RPopExecutor;
+import org.apache.geode.redis.internal.executor.list.RPushExecutor;
+import org.apache.geode.redis.internal.executor.list.RPushXExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
@@ -78,6 +94,30 @@ import org.apache.geode.redis.internal.executor.set.SRemExecutor;
 import org.apache.geode.redis.internal.executor.set.SScanExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionStoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoAddExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoDistExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoHashExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoPosExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoRadiusByMemberExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoRadiusExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZCardExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZCountExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZIncrByExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZLexCountExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRangeByLexExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRangeByScoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRangeExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRankExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRemExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRemRangeByLexExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRemRangeByRankExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRemRangeByScoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeByScoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRevRankExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZScanExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZScoreExecutor;
 import org.apache.geode.redis.internal.executor.string.AppendExecutor;
 import org.apache.geode.redis.internal.executor.string.BitCountExecutor;
 import org.apache.geode.redis.internal.executor.string.BitOpExecutor;
@@ -101,6 +141,12 @@ import org.apache.geode.redis.internal.executor.string.SetExecutor;
 import org.apache.geode.redis.internal.executor.string.SetNXExecutor;
 import org.apache.geode.redis.internal.executor.string.SetRangeExecutor;
 import org.apache.geode.redis.internal.executor.string.StrlenExecutor;
+import org.apache.geode.redis.internal.executor.transactions.DiscardExecutor;
+import org.apache.geode.redis.internal.executor.transactions.ExecExecutor;
+import org.apache.geode.redis.internal.executor.transactions.MultiExecutor;
+import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
+import org.apache.geode.redis.internal.executor.transactions.UnwatchExecutor;
+import org.apache.geode.redis.internal.executor.transactions.WatchExecutor;
 
 /**
  * The redis command type used by the server. Each command is directly from the redis protocol.
@@ -178,6 +224,32 @@ public enum RedisCommandType {
   HVALS(new HValsExecutor(), new ExactParameterRequirements(2)),
 
   /***************************************
+   *********** HyperLogLogs **************
+   ***************************************/
+
+  PFADD(new PFAddExecutor()),
+  PFCOUNT(new PFCountExecutor()),
+  PFMERGE(new PFMergeExecutor()),
+
+  /***************************************
+   *************** Lists *****************
+   ***************************************/
+
+  LINDEX(new LIndexExecutor(), new MinimumParameterRequirements(3)),
+  LINSERT(new LInsertExecutor()),
+  LLEN(new LLenExecutor(), new MinimumParameterRequirements(2)),
+  LPOP(new LPopExecutor(), new MinimumParameterRequirements(2)),
+  LPUSH(new LPushExecutor(), new MinimumParameterRequirements(3)),
+  LPUSHX(new LPushXExecutor(), new MinimumParameterRequirements(3)),
+  LRANGE(new LRangeExecutor(), new MinimumParameterRequirements(4)),
+  LREM(new LRemExecutor(), new MinimumParameterRequirements(4)),
+  LSET(new LSetExecutor(), new MinimumParameterRequirements(4)),
+  LTRIM(new LTrimExecutor(), new MinimumParameterRequirements(4)),
+  RPOP(new RPopExecutor(), new MinimumParameterRequirements(2)),
+  RPUSH(new RPushExecutor(), new MinimumParameterRequirements(3)),
+  RPUSHX(new RPushXExecutor(), new MinimumParameterRequirements(3)),
+
+  /***************************************
    **************** Sets *****************
    ***************************************/
 
@@ -200,6 +272,29 @@ public enum RedisCommandType {
   SREM(new SRemExecutor(), new MinimumParameterRequirements(3)),
 
   /***************************************
+   ************* Sorted Sets *************
+   ***************************************/
+
+  ZADD(new ZAddExecutor()),
+  ZCARD(new ZCardExecutor()),
+  ZCOUNT(new ZCountExecutor()),
+  ZINCRBY(new ZIncrByExecutor()),
+  ZLEXCOUNT(new ZLexCountExecutor()),
+  ZRANGE(new ZRangeExecutor()),
+  ZRANGEBYLEX(new ZRangeByLexExecutor()),
+  ZRANGEBYSCORE(new ZRangeByScoreExecutor()),
+  ZREVRANGE(new ZRevRangeExecutor()),
+  ZRANK(new ZRankExecutor()),
+  ZREM(new ZRemExecutor()),
+  ZREMRANGEBYLEX(new ZRemRangeByLexExecutor()),
+  ZREMRANGEBYRANK(new ZRemRangeByRankExecutor()),
+  ZREMRANGEBYSCORE(new ZRemRangeByScoreExecutor()),
+  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor()),
+  ZREVRANK(new ZRevRankExecutor()),
+  ZSCAN(new ZScanExecutor()),
+  ZSCORE(new ZScoreExecutor()),
+
+  /***************************************
    ********** Publish Subscribe **********
    ***************************************/
 
@@ -208,6 +303,27 @@ public enum RedisCommandType {
   UNSUBSCRIBE(new UnsubscribeExecutor()),
   PSUBSCRIBE(new PsubscribeExecutor()),
   PUNSUBSCRIBE(new PunsubscribeExecutor()),
+
+  /**************************************
+   * Geospatial commands ****************
+   **************************************/
+
+  GEOADD(new GeoAddExecutor()),
+  GEOHASH(new GeoHashExecutor()),
+  GEOPOS(new GeoPosExecutor()),
+  GEODIST(new GeoDistExecutor()),
+  GEORADIUS(new GeoRadiusExecutor()),
+  GEORADIUSBYMEMBER(new GeoRadiusByMemberExecutor()),
+
+  /***************************************
+   ************ Transactions *************
+   ***************************************/
+
+  DISCARD(new DiscardExecutor()),
+  EXEC(new ExecExecutor()),
+  MULTI(new MultiExecutor()),
+  UNWATCH(new UnwatchExecutor()),
+  WATCH(new WatchExecutor()),
 
   /***************************************
    *************** Server ****************
@@ -238,5 +354,9 @@ public enum RedisCommandType {
     parameterRequirements.checkParameters(command, executionHandlerContext);
 
     return executor.executeCommandWithResponse(command, executionHandlerContext);
+  }
+
+  public boolean isTransactional() {
+    return executor instanceof TransactionExecutor;
   }
 }

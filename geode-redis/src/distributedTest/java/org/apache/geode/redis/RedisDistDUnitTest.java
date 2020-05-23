@@ -15,6 +15,7 @@
 package org.apache.geode.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.Set;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -144,12 +146,51 @@ public class RedisDistDUnitTest implements Serializable {
   }
 
   @Test
+  @Ignore("GEODE-7905")
+  public void testConcListOps() throws Exception {
+    final Jedis jedis1 = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+    final Jedis jedis2 = new Jedis(LOCALHOST, server2Port, JEDIS_TIMEOUT);
+    final int pushes = 20;
+
+    class ConcListOps extends ClientTestBase {
+      protected ConcListOps(int port) {
+        super(port);
+      }
+
+      @Override
+      public void run() {
+        Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
+        Random r = new Random();
+        for (int i = 0; i < pushes; i++) {
+          if (r.nextBoolean()) {
+            jedis.lpush(KEY, randString());
+          } else {
+            jedis.rpush(KEY, randString());
+          }
+        }
+      }
+    }
+
+    AsyncInvocation<Void> i = client1.invokeAsync(new ConcListOps(server1Port));
+    client2.invoke(new ConcListOps(server2Port));
+    i.await();
+    long expected = 2 * pushes;
+    long result1 = jedis1.llen(KEY);
+    long result2 = jedis2.llen(KEY);
+    assertEquals(expected, result1);
+    assertEquals(result1, result2);
+  }
+
+  @Test
+  @Ignore("GEODE-7905")
   public void testConcCreateDestroy() throws Exception {
 
     IgnoredException.addIgnoredException("RegionDestroyedException");
     IgnoredException.addIgnoredException("IndexInvalidException");
     final int ops = 40;
     final String hKey = KEY + "hash";
+    final String lKey = KEY + "list";
+    final String zKey = KEY + "zset";
     final String sKey = KEY + "set";
 
     class ConcCreateDestroy extends ClientTestBase {
@@ -158,7 +199,7 @@ public class RedisDistDUnitTest implements Serializable {
       }
 
       @Override
-      public void run() {
+      public void run() throws InterruptedException {
         Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
@@ -168,6 +209,18 @@ public class RedisDistDUnitTest implements Serializable {
               jedis.hset(hKey, randString(), randString());
             } else {
               jedis.del(hKey);
+            }
+          } else if (n == 1) {
+            if (r.nextBoolean()) {
+              jedis.lpush(lKey, randString());
+            } else {
+              jedis.del(lKey);
+            }
+          } else if (n == 2) {
+            if (r.nextBoolean()) {
+              jedis.zadd(zKey, r.nextDouble(), randString());
+            } else {
+              jedis.del(zKey);
             }
           } else {
             if (r.nextBoolean()) {
@@ -190,10 +243,13 @@ public class RedisDistDUnitTest implements Serializable {
    * Just make sure there are no unexpected server crashes
    */
   @Test
+  @Ignore("GEODE-7905")
   public void testConcOps() throws Exception {
 
     final int ops = 100;
     final String hKey = KEY + "hash";
+    final String lKey = KEY + "list";
+    final String zKey = KEY + "zset";
     final String sKey = KEY + "set";
 
     class ConcOps extends ClientTestBase {
@@ -212,6 +268,16 @@ public class RedisDistDUnitTest implements Serializable {
             jedis.hset(hKey, randString(), randString());
             jedis.hgetAll(hKey);
             jedis.hvals(hKey);
+          } else if (n == 1) {
+            jedis.lpush(lKey, randString());
+            jedis.rpush(lKey, randString());
+            jedis.ltrim(lKey, 0, 100);
+            jedis.lrange(lKey, 0, -1);
+          } else if (n == 2) {
+            jedis.zadd(zKey, r.nextDouble(), randString());
+            jedis.zrangeByLex(zKey, "(a", "[z");
+            jedis.zrangeByScoreWithScores(zKey, 0, 1, 0, 100);
+            jedis.zremrangeByScore(zKey, r.nextDouble(), r.nextDouble());
           } else {
             jedis.sadd(sKey, randString());
             jedis.smembers(sKey);

@@ -106,6 +106,29 @@ public class ExistsIntegrationTest {
   }
 
   @Test
+  public void shouldReturn1_givenSortedSetExists() {
+    String sortedSetKey = "sortedSetKey";
+    double score = 2.0;
+    String sortedSetMember = "sortedSetMember";
+
+    jedis.zadd(sortedSetKey, score, sortedSetMember);
+
+    assertThat(jedis.exists(toArray(sortedSetKey))).isEqualTo(1L);
+  }
+
+  @Test
+  public void shouldReturn0_givenSortedSetDoesNotExist() {
+    String sortedSetKey = "sortedSetKey";
+    double score = 2.0;
+    String sortedSetMember = "sortedSetMember";
+
+    jedis.zadd(sortedSetKey, score, sortedSetMember);
+    jedis.del(sortedSetKey);
+
+    assertThat(jedis.exists(toArray(sortedSetKey))).isEqualTo(0L);
+  }
+
+  @Test
   public void shouldReturn1_givenHashExists() {
     String hashKey = "hashKey";
     String hashField = "hashField";
@@ -126,6 +149,73 @@ public class ExistsIntegrationTest {
     jedis.del(hashKey);
 
     assertThat(jedis.exists(toArray(hashKey))).isEqualTo(0L);
+  }
+
+  @Test
+  public void shouldReturn1_givenGeoExists() {
+    String geoKey = "sicily";
+    double latitude = 13.361389;
+    double longitude = 38.115556;
+    String geoMember = "Palermo Catania";
+
+    jedis.geoadd(geoKey, latitude, longitude, geoMember);
+
+    assertThat(jedis.exists(toArray(geoKey))).isEqualTo(1L);
+  }
+
+  @Test
+  public void shouldReturn0_givenGeoDoesNotExist() {
+    String geoKey = "sicily";
+    double latitude = 13.361389;
+    double longitude = 38.115556;
+    String geoMember = "Palermo Catania";
+
+    jedis.geoadd(geoKey, latitude, longitude, geoMember);
+    jedis.del(geoKey);
+
+    assertThat(jedis.exists(toArray(geoKey))).isEqualTo(0L);
+  }
+
+  @Test
+  public void shouldReturn1_givenHyperLogLogExists() {
+    String hyperLogLogKey = "crawled:127.0.0.2";
+    String hyperLogLogValue = "www.insideTheHouse.com";
+
+    jedis.pfadd(hyperLogLogKey, hyperLogLogValue);
+
+    assertThat(jedis.exists(toArray(hyperLogLogKey))).isEqualTo(1L);
+  }
+
+  @Test
+  public void shouldReturn0_givenHyperLogLogDoesNotExist() {
+    String hyperLogLogKey = "crawled:127.0.0.2";
+    String hyperLogLogValue = "www.insideTheHouse.com";
+
+    jedis.pfadd(hyperLogLogKey, hyperLogLogValue);
+    jedis.del(hyperLogLogKey);
+
+    assertThat(jedis.exists(toArray(hyperLogLogKey))).isEqualTo(0L);
+  }
+
+  @Test
+  public void shouldReturn1_givenListExists() {
+    String listKey = "listKey";
+    String listValue = "listValue";
+
+    jedis.lpush(listKey, listValue);
+
+    assertThat(jedis.exists(toArray(listKey))).isEqualTo(1L);
+  }
+
+  @Test
+  public void shouldReturn0_givenListDoesNotExist() {
+    String listKey = "listKey";
+    String listValue = "listValue";
+
+    jedis.lpush(listKey, listValue);
+    jedis.del(listKey);
+
+    assertThat(jedis.exists(toArray(listKey))).isEqualTo(0L);
   }
 
   @Test

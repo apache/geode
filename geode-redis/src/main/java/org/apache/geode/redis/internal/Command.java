@@ -195,4 +195,8 @@ public class Command {
     return String.format("wrong number of arguments for '%s' command",
         getCommandType().toString().toLowerCase());
   }
+
+  boolean isTransactional() {
+    return getCommandType().isTransactional();
+  }
 }

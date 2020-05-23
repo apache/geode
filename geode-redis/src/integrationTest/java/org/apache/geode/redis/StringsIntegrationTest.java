@@ -15,6 +15,7 @@
 package org.apache.geode.redis;
 
 import static java.lang.Integer.parseInt;
+import static org.apache.geode.redis.internal.GeodeRedisServer.REDIS_DATA_REGION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -577,6 +578,14 @@ public class StringsIntegrationTest {
     assertThatThrownBy(() -> jedis.getSet(key, "this value doesn't matter"))
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testSet_protectedRedisDataType_throwsRedisDataTypeMismatchException() {
+    assertThatThrownBy(
+        () -> jedis.set(REDIS_DATA_REGION, "something else"))
+            .isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("protected");
   }
 
   @Test
