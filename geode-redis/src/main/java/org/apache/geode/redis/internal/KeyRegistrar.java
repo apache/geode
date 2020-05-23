@@ -38,7 +38,7 @@ public class KeyRegistrar {
   public void register(ByteArrayWrapper key, RedisDataType type) {
     RedisData existingValue = this.redisDataRegion.putIfAbsent(key, transformType(type));
     if (!isValidDataType(existingValue, type)) {
-      throwDataTypeException(key, existingValue);
+      throwDataTypeException();
     }
   }
 
@@ -83,16 +83,8 @@ public class KeyRegistrar {
     public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {}
   }
 
-  private static final RedisDataTransformer REDIS_SORTEDSET_DATA =
-      new RedisDataTransformer(RedisDataType.REDIS_SORTEDSET);
-  private static final RedisDataTransformer REDIS_LIST_DATA =
-      new RedisDataTransformer(RedisDataType.REDIS_LIST);
   private static final RedisDataTransformer REDIS_STRING_DATA =
       new RedisDataTransformer(RedisDataType.REDIS_STRING);
-  private static final RedisDataTransformer REDIS_PROTECTED_DATA =
-      new RedisDataTransformer(RedisDataType.REDIS_PROTECTED);
-  private static final RedisDataTransformer REDIS_HLL_DATA =
-      new RedisDataTransformer(RedisDataType.REDIS_HLL);
   private static final RedisDataTransformer REDIS_PUBSUB_DATA =
       new RedisDataTransformer(RedisDataType.REDIS_PUBSUB);
 
@@ -102,16 +94,8 @@ public class KeyRegistrar {
    */
   private RedisData transformType(RedisDataType type) {
     switch (type) {
-      case REDIS_SORTEDSET:
-        return REDIS_SORTEDSET_DATA;
-      case REDIS_LIST:
-        return REDIS_LIST_DATA;
       case REDIS_STRING:
         return REDIS_STRING_DATA;
-      case REDIS_PROTECTED:
-        return REDIS_PROTECTED_DATA;
-      case REDIS_HLL:
-        return REDIS_HLL_DATA;
       case REDIS_PUBSUB:
         return REDIS_PUBSUB_DATA;
       case REDIS_HASH:
@@ -140,7 +124,7 @@ public class KeyRegistrar {
   }
 
   public int numKeys() {
-    return this.redisDataRegion.size() - GeodeRedisServer.PROTECTED_KEY_COUNT;
+    return this.redisDataRegion.size();
   }
 
   public RedisDataType getType(ByteArrayWrapper key) {
@@ -163,22 +147,9 @@ public class KeyRegistrar {
     if (currentValue != null) {
       RedisDataType currentType = currentValue.getType();
       if (!isValidDataType(currentType, type)) {
-        throwDataTypeException(key, currentType);
+        throwDataTypeException();
       }
     }
-  }
-
-  /**
-   * Checks if the given key is a protected string in GeodeRedis
-   *
-   * @param key Key to check
-   */
-  public boolean isProtected(ByteArrayWrapper key) {
-    RedisData redisData = redisDataRegion.get(key);
-    if (redisData == null) {
-      return false;
-    }
-    return RedisDataType.REDIS_PROTECTED.equals(redisData.getType());
   }
 
   private boolean isValidDataType(RedisData actualData, RedisDataType expectedDataType) {
@@ -196,16 +167,7 @@ public class KeyRegistrar {
     return dataType == null;
   }
 
-  private void throwDataTypeException(ByteArrayWrapper key, RedisData data) {
-    throwDataTypeException(key, data.getType());
-  }
-
-  private void throwDataTypeException(ByteArrayWrapper key, RedisDataType dataType) {
-    if (RedisDataType.REDIS_PROTECTED.equals(dataType)) {
-      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    } else {
-      throw new RedisDataTypeMismatchException(
-          RedisConstants.ERROR_WRONG_TYPE);
-    }
+  private void throwDataTypeException() {
+    throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
   }
 }

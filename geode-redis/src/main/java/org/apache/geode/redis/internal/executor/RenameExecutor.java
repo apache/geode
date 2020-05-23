@@ -87,11 +87,6 @@ public class RenameExecutor extends StringExecutor {
             redisSetCommands.del(newKey);
             redisSetCommands.sadd(newKey, new ArrayList<>(members));
             break;
-          case REDIS_LIST:
-            throw new RuntimeException("Renaming List isn't supported");
-          case REDIS_SORTEDSET:
-            throw new RuntimeException("Renaming SortedSet isn't supported");
-          case NONE:
           default:
             break;
         }

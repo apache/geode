@@ -24,7 +24,6 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
@@ -54,11 +53,6 @@ public class KeysExecutor extends AbstractExecutor {
 
     for (ByteArrayWrapper bytesKey : allKeys) {
       String key = bytesKey.toString();
-      if (key.equals(GeodeRedisServer.REDIS_DATA_REGION)
-          || key.equals(GeodeRedisServer.STRING_REGION)
-          || key.equals(GeodeRedisServer.HLL_REGION)) {
-        continue;
-      }
       if (pattern.matcher(key).matches()) {
         matchingKeys.add(key);
       }
