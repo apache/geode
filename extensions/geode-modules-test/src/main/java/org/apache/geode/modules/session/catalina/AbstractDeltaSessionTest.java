@@ -46,9 +46,9 @@ import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEvent;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 
-public class DeltaSessionTest {
+public abstract class AbstractDeltaSessionTest {
 
-  private final DeltaSessionManager manager = mock(DeltaSessionManager.class);
+  protected final DeltaSessionManager manager = mock(DeltaSessionManager.class);
   private final Region<String, HttpSession> sessionRegion = mock(Region.class);
   private final SessionCache sessionCache = mock(ClientServerSessionCache.class);
   DeltaSessionStatistics stats = mock(DeltaSessionStatistics.class);
@@ -195,11 +195,4 @@ public class DeltaSessionTest {
     assertThat(result).isEqualTo(serializedObj);
   }
 
-  // @Test
-  // public void testToData() throws IOException {
-  // DeltaSession session = spy(new DeltaSession(manager));
-  // DataOutput out = mock(DataOutput.class);
-  //
-  // session.toData(out);
-  // }
 }
