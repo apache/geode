@@ -18,10 +18,11 @@ package org.apache.geode.modules.session.catalina;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -29,6 +30,7 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import org.apache.catalina.Context;
 import org.apache.juli.logging.Log;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.internal.util.BlobHelper;
 
@@ -36,73 +38,55 @@ public class DeltaSessionTest extends AbstractDeltaSessionTest {
 
   @Test
   public void serializedAttributesNotLeakedInAttributeReplaceEvent() throws IOException {
-
-    final Object value1 = "value1";
-    final byte[] serializedValue1 = BlobHelper.serializeToBlob(value1);
-    AtomicReference<Object> eventValue = new AtomicReference<>();
-
-    HttpSessionAttributeListener listener = new HttpSessionAttributeListener() {
-      @Override
-      public void attributeAdded(HttpSessionBindingEvent event) {}
-
-      @Override
-      public void attributeRemoved(HttpSessionBindingEvent event) {}
-
-      @Override
-      public void attributeReplaced(HttpSessionBindingEvent event) {
-        eventValue.set(event.getValue());
-      }
-    };
+    final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
 
     final Context context = mock(Context.class);
     when(manager.getContext()).thenReturn(context);
     when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
     when(context.getLogger()).thenReturn(mock(Log.class));
 
-    DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(new DeltaSession(manager));
     session.setValid(true);
+    final String name = "attribute";
+    final Object value1 = "value1";
+    final byte[] serializedValue1 = BlobHelper.serializeToBlob(value1);
     // simulates initial deserialized state with serialized attribute values.
-    final String attributeName = "attribute";
-    session.getAttributes().put(attributeName, serializedValue1);
+    session.getAttributes().put(name, serializedValue1);
 
     final Object value2 = "value2";
-    session.setAttribute(attributeName, value2);
-    assertThat(eventValue.get()).isEqualTo(value1);
+    session.setAttribute(name, value2);
+
+    final ArgumentCaptor<HttpSessionBindingEvent> event =
+        ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
+    verify(listener).attributeReplaced(event.capture());
+    verifyNoMoreInteractions(listener);
+    assertThat(event.getValue().getValue()).isEqualTo(value1);
   }
 
   @Test
   public void serializedAttributesNotLeakedInAttributeRemovedEvent() throws IOException {
-
-    final Object value1 = "value1";
-    final byte[] serializedValue1 = BlobHelper.serializeToBlob(value1);
-    AtomicReference<Object> eventValue = new AtomicReference<>();
-
-    HttpSessionAttributeListener listener = new HttpSessionAttributeListener() {
-      @Override
-      public void attributeAdded(HttpSessionBindingEvent event) {}
-
-      @Override
-      public void attributeRemoved(HttpSessionBindingEvent event) {
-        eventValue.set(event.getValue());
-      }
-
-      @Override
-      public void attributeReplaced(HttpSessionBindingEvent event) {}
-    };
+    final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
 
     final Context context = mock(Context.class);
     when(manager.getContext()).thenReturn(context);
     when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
     when(context.getLogger()).thenReturn(mock(Log.class));
 
-    DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(new DeltaSession(manager));
     session.setValid(true);
+    final String name = "attribute";
+    final Object value1 = "value1";
+    final byte[] serializedValue1 = BlobHelper.serializeToBlob(value1);
     // simulates initial deserialized state with serialized attribute values.
-    final String attributeName = "attribute";
-    session.getAttributes().put(attributeName, serializedValue1);
+    session.getAttributes().put(name, serializedValue1);
 
-    session.removeAttribute(attributeName);
-    assertThat(eventValue.get()).isEqualTo(value1);
+    session.removeAttribute(name);
+
+    final ArgumentCaptor<HttpSessionBindingEvent> event =
+        ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
+    verify(listener).attributeRemoved(event.capture());
+    verifyNoMoreInteractions(listener);
+    assertThat(event.getValue().getValue()).isEqualTo(value1);
   }
 
 }
