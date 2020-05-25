@@ -43,13 +43,11 @@ public class DescribeOfflineDiskStoreCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME__HELP) String regionName) {
 
-    String validatedDirectoriesAndFile =
-        DiskStoreCommandsUtils.validatedDirectoriesAndFile(diskDirs, diskStoreName);
-
-    if (validatedDirectoriesAndFile != null) {
+    String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
+    if (validatedDirectories != null) {
       throw new IllegalArgumentException(
-          "Could not find: \""
-              + validatedDirectoriesAndFile + "\"");
+          "Could not find " + CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS + ": \""
+              + validatedDirectories + "\"");
     }
 
     try {
