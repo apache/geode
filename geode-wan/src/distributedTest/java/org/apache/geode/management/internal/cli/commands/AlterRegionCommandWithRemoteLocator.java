@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -98,19 +100,19 @@ public class AlterRegionCommandWithRemoteLocator {
   @After
   public void cleanup() throws Exception {
     gfsh.connectAndVerify(locator2);
-    gfsh.execute("destroy region --name=/Positions");
-    gfsh.execute("destroy region --name=/RealTimePositions");
-    gfsh.execute("destroy region --name=/Transactions");
-    gfsh.execute("destroy region --name=/Accounts");
-    gfsh.execute("destroy region --name=/RealTimeTransactions");
-    gfsh.execute("destroy region --name=/AccountBalances");
-    gfsh.execute("destroy region --name=/FxRates");
-    gfsh.execute("destroy region --name=/AssetClasses");
-    gfsh.execute("destroy region --name=/MarketPrices");
-    gfsh.execute("destroy region --name=/Currency");
-    gfsh.execute("destroy region --name=/Securities");
-    gfsh.execute("destroy region --name=/SecurityCrossReferences");
-    gfsh.execute("destroy region --name=/Visibility");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "Positions");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "RealTimePositions");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "Transactions");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "Accounts");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "RealTimeTransactions");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "AccountBalances");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "FxRates");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "AssetClasses");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "MarketPrices");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "Currency");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "Securities");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "SecurityCrossReferences");
+    gfsh.execute("destroy region --name=" + SEPARATOR + "Visibility");
 
     gfsh.execute("destroy gateway-sender --id=serialSender1");
     gfsh.execute("destroy gateway-sender --id=serialSender2");
@@ -131,26 +133,39 @@ public class AlterRegionCommandWithRemoteLocator {
       throws Exception {
     gfsh.connectAndVerify(locator2);
     gfsh.execute(
-        "create region --name=/Positions --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
+        "create region --name=" + SEPARATOR
+            + "Positions --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
     gfsh.execute(
-        "create region --name=/RealTimePositions --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
+        "create region --name=" + SEPARATOR
+            + "RealTimePositions --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
     gfsh.execute(
-        "create region --name=/Transactions --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
+        "create region --name=" + SEPARATOR
+            + "Transactions --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
     gfsh.execute(
-        "create region --name=/Accounts --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
+        "create region --name=" + SEPARATOR
+            + "Accounts --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
     gfsh.execute(
-        "create region --name=/RealTimeTransactions --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
+        "create region --name=" + SEPARATOR
+            + "RealTimeTransactions --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
     gfsh.execute(
-        "create region --name=/AccountBalances --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
-    gfsh.execute("create region --name=/FxRates --type=REPLICATE_PERSISTENT --off-heap=true");
-    gfsh.execute("create region --name=/AssetClasses --type=REPLICATE_PERSISTENT --off-heap=true");
-    gfsh.execute("create region --name=/MarketPrices --type=REPLICATE_PERSISTENT --off-heap=true");
-    gfsh.execute("create region --name=/Currency --type=REPLICATE_PERSISTENT --off-heap=true");
-    gfsh.execute("create region --name=/Securities --type=REPLICATE_PERSISTENT --off-heap=true");
+        "create region --name=" + SEPARATOR
+            + "AccountBalances --redundant-copies=2 --type=PARTITION_PERSISTENT --off-heap=true");
+    gfsh.execute("create region --name=" + SEPARATOR
+        + "FxRates --type=REPLICATE_PERSISTENT --off-heap=true");
+    gfsh.execute("create region --name=" + SEPARATOR
+        + "AssetClasses --type=REPLICATE_PERSISTENT --off-heap=true");
+    gfsh.execute("create region --name=" + SEPARATOR
+        + "MarketPrices --type=REPLICATE_PERSISTENT --off-heap=true");
+    gfsh.execute("create region --name=" + SEPARATOR
+        + "Currency --type=REPLICATE_PERSISTENT --off-heap=true");
+    gfsh.execute("create region --name=" + SEPARATOR
+        + "Securities --type=REPLICATE_PERSISTENT --off-heap=true");
     gfsh.execute(
-        "create region --name=/SecurityCrossReferences --type=REPLICATE_PERSISTENT --off-heap=true");
+        "create region --name=" + SEPARATOR
+            + "SecurityCrossReferences --type=REPLICATE_PERSISTENT --off-heap=true");
     gfsh.execute(
-        "create region --name=/Visibility --type=REPLICATE --enable-statistics=true  --entry-time-to-live-expiration-action=destroy --entry-time-to-live-expiration=300");
+        "create region --name=" + SEPARATOR
+            + "Visibility --type=REPLICATE --enable-statistics=true  --entry-time-to-live-expiration-action=destroy --entry-time-to-live-expiration=300");
 
     gfsh.execute("create disk-store --name=gateway_store --dir=gateway_store");
     gfsh.execute(

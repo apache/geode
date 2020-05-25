@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -60,10 +61,10 @@ public class QueryServiceJUnitTest {
   public void testNewQuery() {
     CacheUtils.log("testNewQuery");
     QueryService qs = CacheUtils.getQueryService();
-    qs.newQuery("SELECT DISTINCT * FROM /root");
+    qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "root");
 
     try {
-      qs.newQuery("SELET DISTINCT * FROM /root");
+      qs.newQuery("SELET DISTINCT * FROM " + SEPARATOR + "root");
       fail("Should have thrown an InvalidQueryException");
     } catch (QueryInvalidException e) {
       // pass
@@ -75,7 +76,8 @@ public class QueryServiceJUnitTest {
     String testDate = "01/01/2000";
     QueryService queryService = CacheUtils.getQueryService();
     Query query = queryService.newQuery(
-        "SELECT * FROM /Portfolios WHERE createDate >= to_date('" + testDate + "', 'MM/dd/yyyy')");
+        "SELECT * FROM " + SEPARATOR + "Portfolios WHERE createDate >= to_date('" + testDate
+            + "', 'MM/dd/yyyy')");
     query.execute();
   }
 
@@ -84,7 +86,8 @@ public class QueryServiceJUnitTest {
     String testDate = "01/01/2000";
     QueryService queryService = CacheUtils.getQueryService();
     Query query = queryService
-        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+        .newQuery("SELECT * FROM " + SEPARATOR
+            + "Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
     query.execute(testDate);
   }
 
@@ -94,7 +97,8 @@ public class QueryServiceJUnitTest {
     String invalid = "someInvalidString";
     QueryService queryService = CacheUtils.getQueryService();
     Query query = queryService
-        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+        .newQuery("SELECT * FROM " + SEPARATOR
+            + "Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
     try {
       query.execute(invalid);
       fail();
@@ -109,7 +113,8 @@ public class QueryServiceJUnitTest {
     Object invalid = CacheUtils.getRegion("Portfolios");
     QueryService queryService = CacheUtils.getQueryService();
     Query query = queryService
-        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+        .newQuery("SELECT * FROM " + SEPARATOR
+            + "Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
     try {
       query.execute(invalid);
       fail();
@@ -122,10 +127,12 @@ public class QueryServiceJUnitTest {
   public void testCreateIndex() throws Exception {
     CacheUtils.log("testCreateIndex");
     QueryService qs = CacheUtils.getQueryService();
-    Index index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
+    Index index =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "Portfolios");
 
     try {
-      index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
+      index =
+          qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "Portfolios");
       if (index != null) {
         fail("QueryService.createIndex allows duplicate index names");
       }
@@ -133,7 +140,8 @@ public class QueryServiceJUnitTest {
     }
 
     try {
-      index = qs.createIndex("statusIndex1", IndexType.FUNCTIONAL, "status", "/Portfolios");
+      index =
+          qs.createIndex("statusIndex1", IndexType.FUNCTIONAL, "status", SEPARATOR + "Portfolios");
       if (index != null) {
         fail("QueryService.createIndex allows duplicate indexes");
       }
@@ -143,26 +151,29 @@ public class QueryServiceJUnitTest {
 
   @Test
   public void testIndexDefinitions() {
-    Object[][] testDataFromClauses = {{"status", "/Portfolios", Boolean.TRUE},
-        {"status", "/Portfolios.entries", Boolean.FALSE},
-        {"status", "/Portfolios.values", Boolean.TRUE},
-        {"status", "/Portfolios.keys", Boolean.TRUE}, {"status", "/Portfolios p", Boolean.TRUE},
-        {"status", "/Portfolio", Boolean.FALSE}, {"status", "/Portfolio.positions", Boolean.FALSE},
-        {"status", "/Portfolios p, p.positions", Boolean.TRUE},};
+    Object[][] testDataFromClauses = {{"status", SEPARATOR + "Portfolios", Boolean.TRUE},
+        {"status", SEPARATOR + "Portfolios.entries", Boolean.FALSE},
+        {"status", SEPARATOR + "Portfolios.values", Boolean.TRUE},
+        {"status", SEPARATOR + "Portfolios.keys", Boolean.TRUE},
+        {"status", SEPARATOR + "Portfolios p", Boolean.TRUE},
+        {"status", SEPARATOR + "Portfolio", Boolean.FALSE},
+        {"status", SEPARATOR + "Portfolio.positions", Boolean.FALSE},
+        {"status", SEPARATOR + "Portfolios p, p.positions", Boolean.TRUE},};
 
     runCreateIndexTests(testDataFromClauses);
 
-    Object[][] testDataIndexExpr = {{"positions", "/Portfolios", Boolean.FALSE},
-        {"status.length", "/Portfolios", Boolean.TRUE}, {"p.status", "/Portfolios p", Boolean.TRUE},
-        {"p.getStatus()", "/Portfolios p", Boolean.TRUE},
-        {"pos.value.secId", "/Portfolios p, p.positions pos", Boolean.TRUE},
-        {"pos.getValue().getSecId()", "/Portfolios p, p.positions pos", Boolean.TRUE},
-        {"pos.getValue.secId", "/Portfolios p, p.positions pos", Boolean.TRUE},
-        {"secId", "/Portfolios p, p.positions", Boolean.FALSE},
-        {"is_defined(status)", "/Portfolios", Boolean.FALSE},
-        {"is_undefined(status)", "/Portfolios", Boolean.FALSE},
-        {"NOT(status = null)", "/Portfolios", Boolean.FALSE},
-        {"$1", "/Portfolios", Boolean.FALSE},};
+    Object[][] testDataIndexExpr = {{"positions", SEPARATOR + "Portfolios", Boolean.FALSE},
+        {"status.length", SEPARATOR + "Portfolios", Boolean.TRUE},
+        {"p.status", SEPARATOR + "Portfolios p", Boolean.TRUE},
+        {"p.getStatus()", SEPARATOR + "Portfolios p", Boolean.TRUE},
+        {"pos.value.secId", SEPARATOR + "Portfolios p, p.positions pos", Boolean.TRUE},
+        {"pos.getValue().getSecId()", SEPARATOR + "Portfolios p, p.positions pos", Boolean.TRUE},
+        {"pos.getValue.secId", SEPARATOR + "Portfolios p, p.positions pos", Boolean.TRUE},
+        {"secId", SEPARATOR + "Portfolios p, p.positions", Boolean.FALSE},
+        {"is_defined(status)", SEPARATOR + "Portfolios", Boolean.FALSE},
+        {"is_undefined(status)", SEPARATOR + "Portfolios", Boolean.FALSE},
+        {"NOT(status = null)", SEPARATOR + "Portfolios", Boolean.FALSE},
+        {"$1", SEPARATOR + "Portfolios", Boolean.FALSE},};
 
     runCreateIndexTests(testDataIndexExpr);
   }
@@ -204,17 +215,21 @@ public class QueryServiceJUnitTest {
     CacheUtils.log("testGetIndex");
     QueryService qs = CacheUtils.getQueryService();
 
-    Region r = CacheUtils.getRegion("/Portfolios");
-    Index index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
+    Region r = CacheUtils.getRegion(SEPARATOR + "Portfolios");
+    Index index =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "Portfolios");
     assertNotNull(qs.getIndex(r, "statusIndex"));
     qs.removeIndex(index);
-    index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", "/Portfolios p");
+    index =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "Portfolios p");
     assertNotNull(qs.getIndex(r, "statusIndex"));
     qs.removeIndex(index);
-    index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios.values");
+    index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
+        SEPARATOR + "Portfolios.values");
     assertNotNull(qs.getIndex(r, "statusIndex"));
     qs.removeIndex(index);
-    index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", "/Portfolios.values p");
+    index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status",
+        SEPARATOR + "Portfolios.values p");
     assertNotNull(qs.getIndex(r, "statusIndex"));
     qs.removeIndex(index);
   }
@@ -223,9 +238,10 @@ public class QueryServiceJUnitTest {
   public void testRemoveIndex() throws Exception {
     CacheUtils.log("testRemoveIndex");
     QueryService qs = CacheUtils.getQueryService();
-    Index index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", "/Portfolios p");
+    Index index =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "Portfolios p");
     qs.removeIndex(index);
-    index = qs.getIndex(CacheUtils.getRegion("/Portfolios"), "statusIndex");
+    index = qs.getIndex(CacheUtils.getRegion(SEPARATOR + "Portfolios"), "statusIndex");
     if (index != null) {
       fail("QueryService.removeIndex is not removing index");
     }
@@ -237,8 +253,8 @@ public class QueryServiceJUnitTest {
     CacheUtils.createRegion("Ptfs", Portfolio.class);
     CacheUtils.createRegion("Ptfs1", Portfolio.class);
     QueryService qs = CacheUtils.getQueryService();
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Ptfs");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "Portfolios");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "Ptfs");
     qs.removeIndexes();
     Collection allIndexes = qs.getIndexes();
     if (allIndexes.size() != 0) {
@@ -252,8 +268,8 @@ public class QueryServiceJUnitTest {
     CacheUtils.createRegion("Ptfs", Portfolio.class);
     CacheUtils.createRegion("Ptfs1", Portfolio.class);
     QueryService qs = CacheUtils.getQueryService();
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Ptfs");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "Portfolios");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "Ptfs");
     Collection allIndexes = qs.getIndexes();
     if (allIndexes.size() != 2) {
       fail("QueryService.getIndexes() does not return correct indexes");

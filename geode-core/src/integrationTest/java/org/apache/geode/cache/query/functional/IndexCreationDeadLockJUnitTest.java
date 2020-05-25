@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -185,10 +186,10 @@ public class IndexCreationDeadLockJUnitTest {
         QueryService qs;
         qs = CacheUtils.getQueryService();
         qs.createIndex("status", IndexType.FUNCTIONAL, "pf.status",
-            "/portfolios pf, pf.positions.values posit");
+            SEPARATOR + "portfolios pf, pf.positions.values posit");
 
         qs.createIndex("secId", IndexType.FUNCTIONAL, "posit.secId",
-            "/portfolios pf, pf.positions.values posit");
+            SEPARATOR + "portfolios pf, pf.positions.values posit");
 
         System.out.println("--------------------- Index Creation Done-------------------------");
       } catch (Exception e) {

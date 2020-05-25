@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -71,11 +72,12 @@ public class OffHeapIndexJUnitTest {
     rf.create("r");
     QueryService qs = this.gfc.getQueryService();
     try {
-      qs.createIndex("idx", "age", "/r");
+      qs.createIndex("idx", "age", SEPARATOR + "r");
       fail("expected UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
       assertEquals(
-          "Asynchronous index maintenance is currently not supported for off-heap regions. The off-heap region is /r",
+          "Asynchronous index maintenance is currently not supported for off-heap regions. The off-heap region is "
+              + SEPARATOR + "r",
           expected.getMessage());
     }
   }
@@ -89,11 +91,12 @@ public class OffHeapIndexJUnitTest {
     rf.create("r");
     QueryService qs = this.gfc.getQueryService();
     try {
-      qs.createIndex("idx", "addr", "/r r, r.addresses addr");
+      qs.createIndex("idx", "addr", SEPARATOR + "r r, r.addresses addr");
       fail("expected UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
       assertEquals(
-          "From clauses having multiple iterators(collections) are not supported for off-heap regions. The off-heap region is /r",
+          "From clauses having multiple iterators(collections) are not supported for off-heap regions. The off-heap region is "
+              + SEPARATOR + "r",
           expected.getMessage());
     }
   }

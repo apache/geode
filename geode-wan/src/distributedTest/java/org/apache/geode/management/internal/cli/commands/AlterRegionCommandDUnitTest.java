@@ -134,7 +134,7 @@ public class AlterRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "alter region --name=" + region2Name + " --async-event-queue-id=" + asyncEventQueue)
         .statusIsError().containsOutput("server-1", "ERROR",
-            "Non colocated regions /" + region2Name + ", /" + region1Name
+            "Non colocated regions " + SEPARATOR + region2Name + ", " + SEPARATOR + region1Name
                 + " cannot have the same parallel async event queue id " + asyncEventQueue
                 + " configured.");
 
@@ -182,17 +182,20 @@ public class AlterRegionCommandDUnitTest {
         "alter region --name=" + regionName + " --async-event-queue-id=" + asyncEventQueueName)
         .statusIsError()
         .containsOutput("server-1", "ERROR", "Non persistent asynchronous event queue "
-            + asyncEventQueueName + " can not be attached to persistent region /" + regionName);
+            + asyncEventQueueName + " can not be attached to persistent region " + SEPARATOR
+            + regionName);
     gfsh.executeAndAssertThat(
         "alter region --name=" + regionName + " --async-event-queue-id=" + asyncEventQueueName)
         .statusIsError()
         .containsOutput("server-1", "ERROR", "Non persistent asynchronous event queue "
-            + asyncEventQueueName + " can not be attached to persistent region /" + regionName);
+            + asyncEventQueueName + " can not be attached to persistent region " + SEPARATOR
+            + regionName);
     gfsh.executeAndAssertThat(
         "alter region --name=" + regionName + " --async-event-queue-id=" + asyncEventQueueName)
         .statusIsError()
         .containsOutput("server-1", "ERROR", "Non persistent asynchronous event queue "
-            + asyncEventQueueName + " can not be attached to persistent region /" + regionName);
+            + asyncEventQueueName + " can not be attached to persistent region " + SEPARATOR
+            + regionName);
 
     // The exception must be thrown early in the initialization, so the change shouldn't be
     // persisted to the cluster configuration service.
@@ -277,7 +280,7 @@ public class AlterRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "alter region --name=" + region2Name + " --gateway-sender-id=" + gatewaySenderName)
         .statusIsError().containsOutput("server-1", "ERROR",
-            "Non colocated regions /" + region2Name + ", /" + region1Name
+            "Non colocated regions " + SEPARATOR + region2Name + ", " + SEPARATOR + region1Name
                 + " cannot have the same parallel gateway sender id " + gatewaySenderName
                 + " configured.");
 
@@ -325,15 +328,18 @@ public class AlterRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "alter region --name=" + regionName + " --gateway-sender-id=" + gatewaySenderName)
         .statusIsError().containsOutput("server-1", "ERROR", "Non persistent gateway sender "
-            + gatewaySenderName + " can not be attached to persistent region /" + regionName);
+            + gatewaySenderName + " can not be attached to persistent region " + SEPARATOR
+            + regionName);
     gfsh.executeAndAssertThat(
         "alter region --name=" + regionName + " --gateway-sender-id=" + gatewaySenderName)
         .statusIsError().containsOutput("server-1", "ERROR", "Non persistent gateway sender "
-            + gatewaySenderName + " can not be attached to persistent region /" + regionName);
+            + gatewaySenderName + " can not be attached to persistent region " + SEPARATOR
+            + regionName);
     gfsh.executeAndAssertThat(
         "alter region --name=" + regionName + " --gateway-sender-id=" + gatewaySenderName)
         .statusIsError().containsOutput("server-1", "ERROR", "Non persistent gateway sender "
-            + gatewaySenderName + " can not be attached to persistent region /" + regionName);
+            + gatewaySenderName + " can not be attached to persistent region " + SEPARATOR
+            + regionName);
 
     // The exception must be thrown early in the initialization, so the change shouldn't be
     // persisted to the cluster configuration service.

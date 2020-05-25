@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -879,7 +880,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
 
-      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
         LogWriterUtils.getLogWriter().info("Put : key : " + i);
@@ -898,7 +899,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
 
-      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
         LogWriterUtils.getLogWriter().info("Put : key : " + i);
@@ -916,7 +917,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
         LogWriterUtils.getLogWriter().info("Put : key : " + i);

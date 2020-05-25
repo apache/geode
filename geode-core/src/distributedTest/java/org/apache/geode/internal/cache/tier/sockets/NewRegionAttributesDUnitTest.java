@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -194,7 +195,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * enableAysncConflation are set properly to true for the test-region
    */
   public static void checkAttributes() {
-    Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     // assertTrue(region1.getAttributes().getPublisher());
     assertTrue(region1.getAttributes().getEnableConflation());
     assertTrue(region1.getAttributes().getEnableAsyncConflation());
@@ -204,7 +205,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * Performs PUT operations on the test-region and fails if any Exception occurs during the PUTs
    */
   public static void doPuts() {
-    Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     for (int i = 0; i < TOTAL_PUTS; i++) {
       try {
         region1.put("key-" + i, "val-" + i);
@@ -219,7 +220,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * INVALIDATESs
    */
   public static void doInvalidates() {
-    Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     for (int i = 0; i < TOTAL_PUTS; i++) {
       try {
         region1.invalidate("key-" + i);
@@ -234,7 +235,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * DESTROYs
    */
   public static void doDestroy() {
-    Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     for (int i = 0; i < TOTAL_PUTS; i++) {
       try {
         region1.destroy("key-" + i);
@@ -250,7 +251,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * @return total entries
    */
   public static Object getEntryCount() {
-    Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     int keysSize = region1.entrySet(false).size();
     return new Integer(keysSize);
   }
@@ -268,7 +269,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
   public static void registerInterest() {
     InterestResultPolicy policy = InterestResultPolicy.KEYS_VALUES;
     int totalKeys = 5;
-    Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     List keylist = new ArrayList();
     for (int i = 0; i < totalKeys; i++) {
       keylist.add("key-" + i);
@@ -356,7 +357,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void unregisterInterest() {
     int totalKeys = 5;
-    Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     List keylist = new ArrayList();
     for (int i = 0; i < totalKeys; i++) {
       keylist.add("key-" + i);
@@ -408,7 +409,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * @see Region#getInterestListRegex()
    */
   public static void getInterestForRegion() {
-    Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     boolean exceptionOccurred = false;
 
     // test getInterestList()

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.security.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 
@@ -73,7 +74,7 @@ public class QuerySecurityAllowedQueriesDistributedTest
 
   @Test
   public void queryWithSelectStarShouldNotThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName;
+    String query = "SELECT * FROM " + SEPARATOR + regionName;
     List<Object> expectedResults = Arrays.asList(values);
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
   }
@@ -81,51 +82,52 @@ public class QuerySecurityAllowedQueriesDistributedTest
   /* ----- Public Field Tests ----- */
   @Test
   public void queryWithPublicFieldOnWhereClauseShouldNotThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.id = 1";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.id = 1";
     List<Object> expectedResults = Collections.singletonList(values[0]);
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
   }
 
   @Test
   public void queryingByPublicFieldOnSelectClauseShouldNotThrowSecurityException() {
-    String query = "SELECT r.id FROM /" + regionName + " r";
+    String query = "SELECT r.id FROM " + SEPARATOR + regionName + " r";
     List<Object> expectedResults = Arrays.asList(1, 3);
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
   }
 
   @Test
   public void queriesWithPublicFieldUsedWithinAggregateFunctionsShouldNotThrowSecurityException() {
-    String queryCount = "SELECT COUNT(r.id) FROM /" + regionName + " r";
+    String queryCount = "SELECT COUNT(r.id) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, queryCount,
         Collections.singletonList(2));
 
-    String queryMax = "SELECT MAX(r.id) FROM /" + regionName + " r";
+    String queryMax = "SELECT MAX(r.id) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, queryMax,
         Collections.singletonList(3));
 
-    String queryMin = "SELECT MIN(r.id) FROM /" + regionName + " r";
+    String queryMin = "SELECT MIN(r.id) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, queryMin,
         Collections.singletonList(1));
 
-    String queryAvg = "SELECT AVG(r.id) FROM /" + regionName + " r";
+    String queryAvg = "SELECT AVG(r.id) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, queryAvg,
         Collections.singletonList(2));
 
-    String querySum = "SELECT SUM(r.id) FROM /" + regionName + " r";
+    String querySum = "SELECT SUM(r.id) FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, querySum,
         Collections.singletonList(4));
   }
 
   @Test
   public void queryWithPublicFieldUsedWithinDistinctClauseShouldNotThrowSecurityException() {
-    String query = "<TRACE> SELECT DISTINCT * from /" + regionName
+    String query = "<TRACE> SELECT DISTINCT * from " + SEPARATOR + regionName
         + " WHERE id IN SET(1, 3) ORDER BY id asc LIMIT 2";
     executeQueryAndAssertExpectedResults(specificUserClient, query, Arrays.asList(values));
   }
 
   @Test
   public void queryWithByPublicFieldOnInnerQueriesShouldNotThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName + " r1 WHERE r1.id IN (SELECT r2.id FROM /"
+    String query = "SELECT * FROM " + SEPARATOR + regionName
+        + " r1 WHERE r1.id IN (SELECT r2.id FROM " + SEPARATOR
         + regionName + " r2)";
     List<Object> expectedResults = Arrays.asList(values);
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
@@ -134,17 +136,18 @@ public class QuerySecurityAllowedQueriesDistributedTest
   /* ----- Default Allowed Methods Tests ----- */
   @Test
   public void queriesWithAllowedRegionMethodInvocationsShouldNotThrowSecurityException() {
-    String queryValues = "SELECT * FROM /" + regionName + ".values";
+    String queryValues = "SELECT * FROM " + SEPARATOR + regionName + ".values";
     executeQueryAndAssertExpectedResults(specificUserClient, queryValues, Arrays.asList(values));
 
-    String queryKeySet = "SELECT * FROM /" + regionName + ".keySet";
+    String queryKeySet = "SELECT * FROM " + SEPARATOR + regionName + ".keySet";
     executeQueryAndAssertExpectedResults(specificUserClient, queryKeySet, Arrays.asList(keys));
 
-    String queryContainsKey = "SELECT * FROM /" + regionName + ".containsKey('" + keys[0] + "')";
+    String queryContainsKey =
+        "SELECT * FROM " + SEPARATOR + regionName + ".containsKey('" + keys[0] + "')";
     executeQueryAndAssertExpectedResults(specificUserClient, queryContainsKey,
         Collections.singletonList(true));
 
-    String queryEntrySet = "SELECT * FROM /" + regionName + ".get('" + keys[0] + "')";
+    String queryEntrySet = "SELECT * FROM " + SEPARATOR + regionName + ".get('" + keys[0] + "')";
     executeQueryAndAssertExpectedResults(specificUserClient, queryEntrySet,
         Collections.singletonList(values[0]));
   }
@@ -152,58 +155,62 @@ public class QuerySecurityAllowedQueriesDistributedTest
   @Test
   public void queriesWithAllowedRegionEntryMethodInvocationsShouldNotThrowSecurityException() {
     List<Object> expectedKeys = Arrays.asList(keys);
-    String queryKeyEntrySet = "SELECT e.key FROM /" + regionName + ".entrySet e";
+    String queryKeyEntrySet = "SELECT e.key FROM " + SEPARATOR + regionName + ".entrySet e";
     executeQueryAndAssertExpectedResults(specificUserClient, queryKeyEntrySet, expectedKeys);
-    String queryGetKeyEntrySet = "SELECT e.getKey FROM /" + regionName + ".entrySet e";
+    String queryGetKeyEntrySet = "SELECT e.getKey FROM " + SEPARATOR + regionName + ".entrySet e";
     executeQueryAndAssertExpectedResults(specificUserClient, queryGetKeyEntrySet, expectedKeys);
-    String queryKeyEntries = "SELECT e.key FROM /" + regionName + ".entries e";
+    String queryKeyEntries = "SELECT e.key FROM " + SEPARATOR + regionName + ".entries e";
     executeQueryAndAssertExpectedResults(specificUserClient, queryKeyEntries, expectedKeys);
-    String queryGetKeyEntries = "SELECT e.getKey FROM /" + regionName + ".entries e";
+    String queryGetKeyEntries = "SELECT e.getKey FROM " + SEPARATOR + regionName + ".entries e";
     executeQueryAndAssertExpectedResults(specificUserClient, queryGetKeyEntries, expectedKeys);
 
     List<Object> expectedValues = Arrays.asList(values);
-    String queryValueEntrySet = "SELECT e.value FROM /" + regionName + ".entrySet e";
+    String queryValueEntrySet = "SELECT e.value FROM " + SEPARATOR + regionName + ".entrySet e";
     executeQueryAndAssertExpectedResults(specificUserClient, queryValueEntrySet, expectedValues);
-    String queryGetValueEntrySet = "SELECT e.getValue FROM /" + regionName + ".entrySet e";
+    String queryGetValueEntrySet =
+        "SELECT e.getValue FROM " + SEPARATOR + regionName + ".entrySet e";
     executeQueryAndAssertExpectedResults(specificUserClient, queryGetValueEntrySet, expectedValues);
-    String queryValueEntries = "SELECT e.value FROM /" + regionName + ".entries e";
+    String queryValueEntries = "SELECT e.value FROM " + SEPARATOR + regionName + ".entries e";
     executeQueryAndAssertExpectedResults(specificUserClient, queryValueEntries, expectedValues);
-    String queryGetValueEntries = "SELECT e.getValue FROM /" + regionName + ".entries e";
+    String queryGetValueEntries = "SELECT e.getValue FROM " + SEPARATOR + regionName + ".entries e";
     executeQueryAndAssertExpectedResults(specificUserClient, queryGetValueEntries, expectedValues);
   }
 
   @Test
   public void queriesWithAllowedStringMethodInvocationsShouldNotThrowSecurityException() {
-    String toStringWhere = "SELECT * FROM /" + regionName + " r WHERE r.toString = 'Test_Object'";
+    String toStringWhere =
+        "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.toString = 'Test_Object'";
     executeQueryAndAssertExpectedResults(specificUserClient, toStringWhere, Arrays.asList(values));
 
-    String toStringSelect = "SELECT r.toString() FROM /" + regionName + " r";
+    String toStringSelect = "SELECT r.toString() FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, toStringSelect,
         Arrays.asList("Test_Object", "Test_Object"));
 
     String toUpperCaseWhere =
-        "SELECT * FROM /" + regionName + " r WHERE r.toString().toUpperCase = 'TEST_OBJECT'";
+        "SELECT * FROM " + SEPARATOR + regionName
+            + " r WHERE r.toString().toUpperCase = 'TEST_OBJECT'";
     executeQueryAndAssertExpectedResults(specificUserClient, toUpperCaseWhere,
         Arrays.asList(values));
 
     String toLowerCaseWhere =
-        "SELECT * FROM /" + regionName + " r WHERE r.toString().toLowerCase = 'test_object'";
+        "SELECT * FROM " + SEPARATOR + regionName
+            + " r WHERE r.toString().toLowerCase = 'test_object'";
     executeQueryAndAssertExpectedResults(specificUserClient, toLowerCaseWhere,
         Arrays.asList(values));
   }
 
   @Test
   public void queriesWithAllowedNumberMethodInvocationsShouldNotThrowSecurityException() {
-    String intValue = "SELECT r.id.intValue() FROM /" + regionName + " r";
+    String intValue = "SELECT r.id.intValue() FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, intValue, Arrays.asList(1, 3));
 
-    String longValue = "SELECT r.id.longValue() FROM /" + regionName + " r";
+    String longValue = "SELECT r.id.longValue() FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, longValue, Arrays.asList(1L, 3L));
 
-    String doubleValue = "SELECT r.id.doubleValue() FROM /" + regionName + " r";
+    String doubleValue = "SELECT r.id.doubleValue() FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, doubleValue, Arrays.asList(1d, 3d));
 
-    String shortValue = "SELECT r.id.shortValue() FROM /" + regionName + " r";
+    String shortValue = "SELECT r.id.shortValue() FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertExpectedResults(specificUserClient, shortValue,
         Arrays.asList((short) 1, (short) 3));
   }
@@ -211,7 +218,8 @@ public class QuerySecurityAllowedQueriesDistributedTest
   @Test
   public void queriesWithAllowedDateMethodInvocationsShouldNotThrowSecurityException() {
     String query =
-        "SELECT * FROM /" + regionName + " WHERE dateField = to_date('08/08/2018', 'MM/dd/yyyy')";
+        "SELECT * FROM " + SEPARATOR + regionName
+            + " WHERE dateField = to_date('08/08/2018', 'MM/dd/yyyy')";
     QueryTestObject obj1 = new QueryTestObject(0, "John");
     obj1.setDateField("08/08/2018");
     QueryTestObject obj2 = new QueryTestObject(3, "Beth");
@@ -244,13 +252,15 @@ public class QuerySecurityAllowedQueriesDistributedTest
     putIntoRegion(superUserClient, keys, values, regionName);
 
     String query1 = String.format(
-        "SELECT * FROM /%s WHERE mapField.get('intData') = 1 AND mapField.get(1) = 98 AND mapField.get('strData1') = 'ABC' AND mapField.get('strData2') = 'ZZZ'",
+        "SELECT * FROM " + SEPARATOR
+            + "%s WHERE mapField.get('intData') = 1 AND mapField.get(1) = 98 AND mapField.get('strData1') = 'ABC' AND mapField.get('strData2') = 'ZZZ'",
         regionName);
     executeQueryAndAssertExpectedResults(specificUserClient, query1,
         Arrays.asList(new Object[] {valueObject1}));
 
     String query2 =
-        String.format("SELECT * FROM /%s WHERE mapField.get('strData2') = 'ZZZ'", regionName);
+        String.format("SELECT * FROM " + SEPARATOR + "%s WHERE mapField.get('strData2') = 'ZZZ'",
+            regionName);
     executeQueryAndAssertExpectedResults(specificUserClient, query2, Arrays.asList(values));
   }
 }

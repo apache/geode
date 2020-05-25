@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
@@ -21,7 +23,6 @@ import java.io.PrintStream;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -56,7 +57,7 @@ public class DescribeOfflineDiskStoreCommand extends SingleGfshCommand {
         dirs[i] = new File((diskDirs[i]));
       }
 
-      if (Region.SEPARATOR.equals(regionName)) {
+      if (SEPARATOR.equals(regionName)) {
         return ResultModel.createError(CliStrings.INVALID_REGION_NAME);
       }
 

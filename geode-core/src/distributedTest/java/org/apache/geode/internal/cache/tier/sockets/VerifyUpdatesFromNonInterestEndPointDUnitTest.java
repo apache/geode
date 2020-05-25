@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -119,14 +120,14 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
 
   public static void acquireConnectionsAndPut(Integer port) {
     try {
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       String poolName = r1.getAttributes().getPoolName();
       assertNotNull(poolName);
       PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       assertNotNull(pool);
       Connection conn1 = pool.acquireConnection();
       Connection conn2 = pool.acquireConnection();
-      ServerRegionProxy srp = new ServerRegionProxy(Region.SEPARATOR + REGION_NAME, pool);
+      ServerRegionProxy srp = new ServerRegionProxy(SEPARATOR + REGION_NAME, pool);
       // put on a connection which is is not interest list ep
       if (conn1.getServer().getPort() == port.intValue()) {
         srp.putOnForTestsOnly(conn1, "key-1", "server-value1", new EventID(new byte[] {1}, 1, 1),
@@ -146,7 +147,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
 
   public static void createEntries() {
     try {
-      LocalRegion r1 = (LocalRegion) cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      LocalRegion r1 = (LocalRegion) cache.getRegion(SEPARATOR + REGION_NAME);
       if (!r1.containsKey("key-1")) {
         r1.create("key-1", "key-1");
       }
@@ -205,7 +206,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
 
   public static void registerKey() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       r.registerInterest("key-1");
 
@@ -216,7 +217,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
 
   public static void verifyPut() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       // verify no update
       assertEquals("key-1", r.getEntry("key-1").getValue());

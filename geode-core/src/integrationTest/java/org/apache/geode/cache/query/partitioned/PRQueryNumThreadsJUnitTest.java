@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
@@ -92,14 +93,14 @@ public class PRQueryNumThreadsJUnitTest {
       region.put("" + j, value);
     }
 
-    String queryString = "Select p.get('account') from /" + region.getName() + " p ";
+    String queryString = "Select p.get('account') from " + SEPARATOR + region.getName() + " p ";
     Query query = region.getCache().getQueryService().newQuery(queryString);
     SelectResults sr = (SelectResults) query.execute();
     Assert.assertTrue(sr.size() == size);
 
     PRQueryProcessor.TEST_NUM_THREADS = 10;
     try {
-      queryString = "Select p.get('acc') from /" + region.getName() + " p ";
+      queryString = "Select p.get('acc') from " + SEPARATOR + region.getName() + " p ";
       query = region.getCache().getQueryService().newQuery(queryString);
       sr = (SelectResults) query.execute();
       Assert.assertTrue(sr.size() == 10);
@@ -125,7 +126,8 @@ public class PRQueryNumThreadsJUnitTest {
     try {
       populateData(region, values);
 
-      String queryString = "Select distinct p from /" + region.getName() + " p order by p";
+      String queryString =
+          "Select distinct p from " + SEPARATOR + region.getName() + " p order by p";
       Query query = region.getCache().getQueryService().newQuery(queryString);
       SelectResults sr = (SelectResults) query.execute();
 

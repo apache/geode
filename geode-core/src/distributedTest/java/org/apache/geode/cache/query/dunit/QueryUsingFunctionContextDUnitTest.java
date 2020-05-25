@@ -116,28 +116,34 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
   public static int numOfBuckets = 20;
 
   public static String[] queries =
-      new String[] {"select * from /" + PartitionedRegionName1 + " where ID>=0",
-          "Select * from /" + PartitionedRegionName1 + " r1, /" + PartitionedRegionName2
+      new String[] {"select * from " + SEPARATOR + PartitionedRegionName1 + " where ID>=0",
+          "Select * from " + SEPARATOR + PartitionedRegionName1 + " r1, " + SEPARATOR
+              + PartitionedRegionName2
               + " r2 where r1.ID = r2.ID",
-          "Select * from /" + PartitionedRegionName1 + " r1, /" + PartitionedRegionName2
+          "Select * from " + SEPARATOR + PartitionedRegionName1 + " r1, " + SEPARATOR
+              + PartitionedRegionName2
               + " r2 where r1.ID = r2.ID AND r1.status = r2.status",
-          "Select * from /" + PartitionedRegionName1 + " r1, /" + PartitionedRegionName2 + " r2, /"
+          "Select * from " + SEPARATOR + PartitionedRegionName1 + " r1, " + SEPARATOR
+              + PartitionedRegionName2 + " r2, " + SEPARATOR
               + PartitionedRegionName3 + " r3 where r1.ID = r2.ID and r2.ID = r3.ID",
-          "Select * from /" + PartitionedRegionName1 + " r1, /" + PartitionedRegionName2 + " r2, /"
-              + PartitionedRegionName3 + " r3  , /" + repRegionName
+          "Select * from " + SEPARATOR + PartitionedRegionName1 + " r1, " + SEPARATOR
+              + PartitionedRegionName2 + " r2, " + SEPARATOR
+              + PartitionedRegionName3 + " r3  , " + SEPARATOR + repRegionName
               + " r4 where r1.ID = r2.ID and r2.ID = r3.ID and r3.ID = r4.ID",
       // "Select * from /" + PartitionedRegionName4 + " r4 , /" + PartitionedRegionName5 + " r5
       // where r4.ID = r5.ID"
       };
 
   public static String[] nonColocatedQueries = new String[] {
-      "Select * from /" + PartitionedRegionName1 + " r1, /" + PartitionedRegionName4
+      "Select * from " + SEPARATOR + PartitionedRegionName1 + " r1, " + SEPARATOR
+          + PartitionedRegionName4
           + " r4 where r1.ID = r4.ID",
-      "Select * from /" + PartitionedRegionName1 + " r1, /" + PartitionedRegionName4 + " r4 , /"
+      "Select * from " + SEPARATOR + PartitionedRegionName1 + " r1, " + SEPARATOR
+          + PartitionedRegionName4 + " r4 , " + SEPARATOR
           + PartitionedRegionName5 + " r5 where r1.ID = r4.ID and r4.ID = r5.ID"};
 
   public static String[] queriesForRR =
-      new String[] {"<trace> select * from /" + repRegionName + " where ID>=0"};
+      new String[] {"<trace> select * from " + SEPARATOR + repRegionName + " where ID>=0"};
 
   public QueryUsingFunctionContextDUnitTest() {
     super();
@@ -266,7 +272,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         Set filter = new HashSet();
         filter.add(0);
-        String query = "select * from / " + repRegionName + " where ID>=0";
+        String query = "select * from " + SEPARATOR + " " + repRegionName + " where ID>=0";
         TestServerQueryFunction func = new TestServerQueryFunction("LDS Server function-1");
         function = new TestQueryFunction("queryFunction-1");
         QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
@@ -278,7 +284,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
               ex.getLocalizedMessage().contains("QueryInvalidException"));
         }
 
-        query = "select * from / " + PartitionedRegionName1 + " where ID>=0";
+        query = "select * from " + SEPARATOR + " " + PartitionedRegionName1 + " where ID>=0";
         func = new TestServerQueryFunction("LDS Server function-1");
         function = new TestQueryFunction("queryFunction-1");
         test = new QueryUsingFunctionContextDUnitTest();

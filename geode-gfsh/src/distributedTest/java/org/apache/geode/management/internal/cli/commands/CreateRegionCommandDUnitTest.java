@@ -139,7 +139,8 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=failed --template-region=" + regionName)
         .statusIsError()
         .hasInfoSection().hasOutput()
-        .contains("Multiple types of template region /multipleTemplateRegionTypes exist.");
+        .contains("Multiple types of template region " + SEPARATOR
+            + "multipleTemplateRegionTypes exist.");
   }
 
   @Test
@@ -324,59 +325,67 @@ public class CreateRegionCommandDUnitTest {
 
   @Test
   public void testCreateRegionFromTemplateFailsIfTemplateDoesNotExist() {
-    gfsh.executeAndAssertThat("create region --template-region=/TEMPLATE --name=/TEST"
-        + TestCacheListener.class.getName())
+    gfsh.executeAndAssertThat(
+        "create region --template-region=" + SEPARATOR + "TEMPLATE --name=" + SEPARATOR + "TEST"
+            + TestCacheListener.class.getName())
         .statusIsError()
-        .containsOutput("Template region /TEMPLATE does not exist");
+        .containsOutput("Template region " + SEPARATOR + "TEMPLATE does not exist");
   }
 
   @Test
   public void overrideListenerFromTemplate() {
-    gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION_REDUNDANT"
-        + " --cache-listener=" + TestCacheListener.class.getName()).statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_REDUNDANT"
+            + " --cache-listener=" + TestCacheListener.class.getName())
+        .statusIsSuccess();
 
-    gfsh.executeAndAssertThat("create region --name=/COPY --template-region=/TEMPLATE"
-        + " --cache-listener=" + AnotherTestCacheListener.class.getName()).statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR + "TEMPLATE"
+            + " --cache-listener=" + AnotherTestCacheListener.class.getName())
+        .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion("/COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(SEPARATOR + "COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
               .containsExactly(AnotherTestCacheListener.class.getName());
     });
 
-    gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
-    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "COPY").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
 
   @Test
   public void cannotSetRegionExpirationForPartitionedTemplate() {
-    gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION")
+    gfsh.executeAndAssertThat("create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION")
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create region --name=/COPY --template-region=/TEMPLATE --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
+        "create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR
+            + "TEMPLATE --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
         .statusIsError()
         .containsOutput(
             "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region");
 
-    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
   public void cannotCreateTemplateWithInconsistentPersistence() {
-    gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION_PERSISTENT")
+    gfsh.executeAndAssertThat(
+        "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_PERSISTENT")
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create region --name=/COPY --template-region=/TEMPLATE --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
+        "create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR
+            + "TEMPLATE --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
         .statusIsError()
         .containsOutput(
             "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region");
 
-    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
@@ -390,7 +399,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         String
             .format(
-                "create region --name=/TEMPLATE --type=PARTITION_REDUNDANT "
+                "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_REDUNDANT "
                     + "--cache-listener=%1$s " + "--cache-loader=%1$s " + "--cache-writer=%1$s "
                     + "--compressor=%1$s " + "--key-constraint=%1$s " + "--value-constraint=%1$s",
                 myCallback))
@@ -398,13 +407,14 @@ public class CreateRegionCommandDUnitTest {
 
     String myNewCallback = "io.pivotal.MyNewCallback";
     gfsh.executeAndAssertThat(String
-        .format("create region --name=/COPY --template-region=/TEMPLATE " + "--cache-listener=%1$s "
+        .format("create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR
+            + "TEMPLATE " + "--cache-listener=%1$s "
             + "--cache-loader=%1$s " + "--cache-writer=%1$s " + "--compressor=%1$s "
             + "--key-constraint=%1$s " + "--value-constraint=%1$s", myNewCallback))
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion("/COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(SEPARATOR + "COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -424,8 +434,8 @@ public class CreateRegionCommandDUnitTest {
       assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myNewCallback);
     });
 
-    gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
-    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "COPY").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
@@ -434,18 +444,20 @@ public class CreateRegionCommandDUnitTest {
     new JarBuilder().buildJar(prJarFile, getUniversalClassCode("MyNewCallback"));
     gfsh.executeAndAssertThat("deploy --jar=" + prJarFile.getAbsolutePath()).statusIsSuccess();
 
-    gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION_REDUNDANT")
+    gfsh.executeAndAssertThat(
+        "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_REDUNDANT")
         .statusIsSuccess();
 
     String myNewCallback = "io.pivotal.MyNewCallback";
     gfsh.executeAndAssertThat(String
-        .format("create region --name=/COPY --template-region=/TEMPLATE " + "--cache-listener=%1$s "
+        .format("create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR
+            + "TEMPLATE " + "--cache-listener=%1$s "
             + "--cache-loader=%1$s " + "--cache-writer=%1$s " + "--compressor=%1$s "
             + "--key-constraint=%1$s " + "--value-constraint=%1$s", myNewCallback))
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion("/COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(SEPARATOR + "COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -465,8 +477,8 @@ public class CreateRegionCommandDUnitTest {
       assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myNewCallback);
     });
 
-    gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
-    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "COPY").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
@@ -479,17 +491,18 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         String
             .format(
-                "create region --name=/TEMPLATE --type=PARTITION_REDUNDANT "
+                "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_REDUNDANT "
                     + "--cache-listener=%1$s " + "--cache-loader=%1$s " + "--cache-writer=%1$s "
                     + "--compressor=%1$s " + "--key-constraint=%1$s " + "--value-constraint=%1$s",
                 myCallback))
         .statusIsSuccess();
 
-    gfsh.executeAndAssertThat("create region --name=/COPY --template-region=/TEMPLATE")
+    gfsh.executeAndAssertThat(
+        "create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR + "TEMPLATE")
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion("/COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(SEPARATOR + "COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -506,8 +519,8 @@ public class CreateRegionCommandDUnitTest {
       assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myCallback);
     });
 
-    gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
-    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "COPY").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
@@ -517,10 +530,12 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group1 --name=" + regionName)
         .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
     gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group2 --name=" + regionName)
-        .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
+        .statusIsError()
+        .containsOutput("Region " + SEPARATOR + regionName + " already exists on the cluster");
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
-        .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
+        .statusIsError()
+        .containsOutput("Region " + SEPARATOR + regionName + " already exists on the cluster");
 
     gfsh.executeAndAssertThat(
         "create region --type=REPLICATE_PROXY --group=group2 --name=" + regionName)
@@ -546,7 +561,8 @@ public class CreateRegionCommandDUnitTest {
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 2);
     // the following two should fail with name check on locator, not on server
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
-        .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
+        .statusIsError()
+        .containsOutput("Region " + SEPARATOR + regionName + " already exists on the cluster");
     gfsh.executeAndAssertThat(
         "create region --type=PARTITION_PROXY --group=group2 --name=" + regionName).statusIsError()
         .containsOutput("The existing region is not a partitioned region");
@@ -594,10 +610,12 @@ public class CreateRegionCommandDUnitTest {
         .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
     gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group2 --name=" + regionName)
         .statusIsError()
-        .containsOutput("Region /startWithLocalPersistent already exists on the cluster");
+        .containsOutput(
+            "Region " + SEPARATOR + "startWithLocalPersistent already exists on the cluster");
     gfsh.executeAndAssertThat("create region --type=LOCAL --group=group2 --name=" + regionName)
         .statusIsError()
-        .containsOutput("Region /startWithLocalPersistent already exists on the cluster");
+        .containsOutput(
+            "Region " + SEPARATOR + "startWithLocalPersistent already exists on the cluster");
   }
 
   @Test
@@ -666,7 +684,8 @@ public class CreateRegionCommandDUnitTest {
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 2);
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
-        .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
+        .statusIsError()
+        .containsOutput("Region " + SEPARATOR + regionName + " already exists on the cluster");
     gfsh.executeAndAssertThat(
         "create region --type=REPLICATE_PROXY --group=group2 --name=" + regionName).statusIsError()
         .containsOutput("The existing region is not a replicate region");
@@ -681,13 +700,16 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --type=LOCAL --group=group1 --name=" + regionName)
         .statusIsSuccess();
     gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + regionName).statusIsError()
-        .containsOutput("Region /startWithLocalRegion already exists on the cluster.");
+        .containsOutput(
+            "Region " + SEPARATOR + "startWithLocalRegion already exists on the cluster.");
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
         .statusIsError()
-        .containsOutput("Region /startWithLocalRegion already exists on the cluster.");
+        .containsOutput(
+            "Region " + SEPARATOR + "startWithLocalRegion already exists on the cluster.");
     gfsh.executeAndAssertThat(
         "create region --type=PARTITION_PROXY --group=group2 --name=" + regionName).statusIsError()
-        .containsOutput("Region /startWithLocalRegion already exists on the cluster");
+        .containsOutput(
+            "Region " + SEPARATOR + "startWithLocalRegion already exists on the cluster");
   }
 
   @Test
@@ -706,35 +728,39 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region"
         + " --name=" + regionName
         + " --type=PARTITION"
-        + " --colocated-with=/nonexistent").statusIsError()
+        + " --colocated-with=" + SEPARATOR + "nonexistent").statusIsError()
         .containsOutput("Specify a valid region path for colocated-with")
         .containsOutput("nonexistent not found");
   }
 
   @Test
   public void cannotColocateWithNonPartitionedRegion() {
-    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=/nonpartitioned")
+    gfsh.executeAndAssertThat(
+        "create region --type=REPLICATE --name=" + SEPARATOR + "nonpartitioned")
         .statusIsSuccess();
 
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region"
         + " --name=" + regionName
         + " --type=PARTITION"
-        + " --colocated-with=/nonpartitioned").statusIsError()
-        .containsOutput("\"/nonpartitioned\" is not a Partitioned Region");
+        + " --colocated-with=" + SEPARATOR + "nonpartitioned").statusIsError()
+        .containsOutput("\"" + SEPARATOR + "nonpartitioned\" is not a Partitioned Region");
   }
 
   @Test
   public void cannotCreateSubregionOnNonExistentParentRegion() {
-    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=/nonexistentparent/child")
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + SEPARATOR
+        + "nonexistentparent" + SEPARATOR + "child")
         .statusIsError()
-        .containsOutput("Parent region for \"/nonexistentparent/child\" does not exist");
+        .containsOutput("Parent region for \"" + SEPARATOR + "nonexistentparent" + SEPARATOR
+            + "child\" does not exist");
   }
 
   @Test
   public void cannotCreateWithNonexistentGatewaySenders() {
     gfsh.executeAndAssertThat(
-        "create region --type=REPLICATE --name=/invalid --gateway-sender-id=nonexistent")
+        "create region --type=REPLICATE --name=" + SEPARATOR
+            + "invalid --gateway-sender-id=nonexistent")
         .statusIsError()
         .containsOutput("There are no GatewaySenders");
   }

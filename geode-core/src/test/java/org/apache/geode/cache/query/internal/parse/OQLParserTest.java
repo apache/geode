@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.parse;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.StringReader;
@@ -29,7 +30,8 @@ public class OQLParserTest {
   @Test
   public void testToDatePresetQueryFunction() throws Exception {
     String oqlSource =
-        "SELECT * FROM /Portfolios WHERE createDate >= to_date('01/01/2000', 'MM/dd/yyyy')";
+        "SELECT * FROM " + SEPARATOR
+            + "Portfolios WHERE createDate >= to_date('01/01/2000', 'MM/dd/yyyy')";
     OQLLexer lexer = new OQLLexer(new StringReader(oqlSource));
     OQLParser parser = new OQLParser(lexer);
 
@@ -39,7 +41,8 @@ public class OQLParserTest {
 
   @Test
   public void testToDatePresetQueryFunctionWithQueryParameter() throws Exception {
-    String oqlSource = "SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')";
+    String oqlSource =
+        "SELECT * FROM " + SEPARATOR + "Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')";
     OQLLexer lexer = new OQLLexer(new StringReader(oqlSource));
     OQLParser parser = new OQLParser(lexer);
 

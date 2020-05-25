@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
@@ -95,16 +96,19 @@ public class QueryServiceRegressionTest {
     // Create Index.
     try {
       this.qs.createIndex("pos1_secIdIndex", IndexType.FUNCTIONAL, "p1.position1.secId",
-          "/pos1 p1");
-      this.qs.createIndex("pos1_IdIndex", IndexType.FUNCTIONAL, "p1.position1.Id", "/pos1 p1");
-      this.qs.createIndex("pos_IdIndex", IndexType.FUNCTIONAL, "p.position1.Id", "/pos p");
+          SEPARATOR + "pos1 p1");
+      this.qs.createIndex("pos1_IdIndex", IndexType.FUNCTIONAL, "p1.position1.Id",
+          SEPARATOR + "pos1 p1");
+      this.qs.createIndex("pos_IdIndex", IndexType.FUNCTIONAL, "p.position1.Id",
+          SEPARATOR + "pos p");
     } catch (Exception ex) {
       fail("Failed to create Index. " + ex);
     }
     // Execute Query.
     try {
-      String queryStr = "select distinct * from /pos p, /pos1 p1 where "
-          + "p.position1.Id = p1.position1.Id and p1.position1.secId in set('MSFT')";
+      String queryStr =
+          "select distinct * from " + SEPARATOR + "pos p, " + SEPARATOR + "pos1 p1 where "
+              + "p.position1.Id = p1.position1.Id and p1.position1.secId in set('MSFT')";
       Query q = qs.newQuery(queryStr);
       CacheUtils.getLogger().fine("Executing:" + queryStr);
       q.execute();
@@ -120,12 +124,20 @@ public class QueryServiceRegressionTest {
   @Test
   public void iteratingNestedQueriesShouldWork() throws Exception {
     String[] queries = new String[] {
-        "SELECT DISTINCT * FROM /pos where NOT(SELECT DISTINCT * FROM /pos p where p.ID = 0).isEmpty",
+        "SELECT DISTINCT * FROM " + SEPARATOR + "pos where NOT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos p where p.ID = 0).isEmpty",
         "-- AMBIGUOUS\n" + "import org.apache.geode.cache.\"query\".data.Portfolio; "
-            + "SELECT DISTINCT * FROM /pos TYPE Portfolio where status = ELEMENT(SELECT DISTINCT * FROM /pos p TYPE Portfolio where ID = 0).status",
-        "SELECT DISTINCT * FROM /pos where status = ELEMENT(SELECT DISTINCT * FROM /pos p where p.ID = 0).status",
-        "SELECT DISTINCT * FROM /pos x where status = ELEMENT(SELECT DISTINCT * FROM /pos p where p.ID = x.ID).status",
-        "SELECT DISTINCT * FROM /pos x where status = ELEMENT(SELECT DISTINCT * FROM /pos p where p.ID = 0).status",};
+            + "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos TYPE Portfolio where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos p TYPE Portfolio where ID = 0).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR + "pos where status = ELEMENT(SELECT DISTINCT * FROM "
+            + SEPARATOR + "pos p where p.ID = 0).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos p where p.ID = x.ID).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos p where p.ID = 0).status",};
 
     for (int i = 0; i < queries.length; i++) {
       Object r = null;
@@ -155,7 +167,8 @@ public class QueryServiceRegressionTest {
     Object r;
 
     queryStr = "import org.apache.geode.cache.\"query\".data.Portfolio; "
-        + "select distinct * from /pos, (select distinct * from /pos p TYPE Portfolio, p.positions where value!=null)";
+        + "select distinct * from " + SEPARATOR + "pos, (select distinct * from " + SEPARATOR
+        + "pos p TYPE Portfolio, p.positions where value!=null)";
     q = qs.newQuery(queryStr);
     assertThatCode(() -> q.execute()).doesNotThrowAnyException();
   }
@@ -224,7 +237,7 @@ public class QueryServiceRegressionTest {
 
     // the following used to fail due to inability to determine type of a dependent
     // iterator def, but now succeeds because there is only one untyped iterator
-    queryStr = "Select distinct ID from /pos";
+    queryStr = "Select distinct ID from " + SEPARATOR + "pos";
     q = qs.newQuery(queryStr);
     r = q.execute();
     Set expectedSet = createAndPopulateSet(4);
@@ -232,7 +245,7 @@ public class QueryServiceRegressionTest {
 
     // the following queries still fail because there is more than one
     // untyped iterator:
-    queryStr = "Select distinct value.secId from /pos , positions";
+    queryStr = "Select distinct value.secId from " + SEPARATOR + "pos , positions";
     q = qs.newQuery(queryStr);
     try {
       r = q.execute();
@@ -243,7 +256,7 @@ public class QueryServiceRegressionTest {
       // expected due to bug 32251
     }
 
-    queryStr = "Select distinct value.secId from /pos , getPositions(23)";
+    queryStr = "Select distinct value.secId from " + SEPARATOR + "pos , getPositions(23)";
     q = qs.newQuery(queryStr);
     try {
       r = q.execute();
@@ -254,7 +267,7 @@ public class QueryServiceRegressionTest {
       // expected due to bug 32251
     }
 
-    queryStr = "Select distinct value.secId from /pos , getPositions($1)";
+    queryStr = "Select distinct value.secId from " + SEPARATOR + "pos , getPositions($1)";
     q = qs.newQuery(queryStr);
     try {
       r = q.execute(new Object[] {new Integer(23)});
@@ -266,21 +279,22 @@ public class QueryServiceRegressionTest {
     }
 
     // the following queries, however, should work:
-    queryStr = "Select distinct e.value.secId from /pos, getPositions(23) e";
+    queryStr = "Select distinct e.value.secId from " + SEPARATOR + "pos, getPositions(23) e";
     q = qs.newQuery(queryStr);
     r = q.execute();
     CacheUtils.getLogger().fine(queryStr);
     CacheUtils.getLogger().fine(Utils.printResult(r));
 
     queryStr = "import org.apache.geode.cache.\"query\".data.Position;"
-        + "select distinct value.secId from /pos, (map<string, Position>)getPositions(23)";
+        + "select distinct value.secId from " + SEPARATOR
+        + "pos, (map<string, Position>)getPositions(23)";
     q = qs.newQuery(queryStr);
     r = q.execute();
     CacheUtils.getLogger().fine(queryStr);
     CacheUtils.getLogger().fine(Utils.printResult(r));
 
     queryStr = "import java.util.Map$Entry as Entry;"
-        + "select distinct value.secId from /pos, getPositions(23) type Entry";
+        + "select distinct value.secId from " + SEPARATOR + "pos, getPositions(23) type Entry";
     q = qs.newQuery(queryStr);
     r = q.execute();
     CacheUtils.getLogger().fine(queryStr);
@@ -293,7 +307,8 @@ public class QueryServiceRegressionTest {
    */
   @Test
   public void indexMaintenanceShouldNotThrowNameNotFoundException() throws Exception {
-    this.qs.createIndex("iIndex", IndexType.FUNCTIONAL, "e.value.status", "/pos.entries e");
+    this.qs.createIndex("iIndex", IndexType.FUNCTIONAL, "e.value.status",
+        SEPARATOR + "pos.entries e");
     this.region.put("0", new Portfolio(0));
   }
 
@@ -308,11 +323,13 @@ public class QueryServiceRegressionTest {
     region.put("1", new Portfolio(1));
     region.put("2", new Portfolio(2));
     region.put("3", new Portfolio(3));
-    qs.createIndex("index1", IndexType.FUNCTIONAL, "status", "/portfolios pf");
+    qs.createIndex("index1", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolios pf");
     String query1 =
-        "SELECT   DISTINCT iD as portfolio_id, pos.secId as sec_id from /portfolios p , p.positions.values pos  where p.status= 'active'";
+        "SELECT   DISTINCT iD as portfolio_id, pos.secId as sec_id from " + SEPARATOR
+            + "portfolios p , p.positions.values pos  where p.status= 'active'";
     String query2 = "select  DISTINCT * from  "
-        + "( SELECT   DISTINCT iD as portfolio_id, pos.secId as sec_id from /portfolios p , p.positions.values pos where p.status= 'active')";
+        + "( SELECT   DISTINCT iD as portfolio_id, pos.secId as sec_id from " + SEPARATOR
+        + "portfolios p , p.positions.values pos where p.status= 'active')";
 
     Query q1 = CacheUtils.getQueryService().newQuery(query1);
     Query q2 = CacheUtils.getQueryService().newQuery(query2);
@@ -330,8 +347,10 @@ public class QueryServiceRegressionTest {
     // Task ID: NQIU 9
     CacheUtils.getQueryService();
     String queries =
-        "select distinct p.x from (select distinct x, pos from /pos x, x.positions.values pos) p, (select distinct * from /pos/positions rtPos where rtPos.secId = p.pos.secId)";
-    Region r = CacheUtils.getRegion("/pos");
+        "select distinct p.x from (select distinct x, pos from " + SEPARATOR
+            + "pos x, x.positions.values pos) p, (select distinct * from " + SEPARATOR + "pos"
+            + SEPARATOR + "positions rtPos where rtPos.secId = p.pos.secId)";
+    Region r = CacheUtils.getRegion(SEPARATOR + "pos");
     Region r1 = r.createSubregion("positions", new AttributesFactory().createRegionAttributes());
 
 
@@ -357,7 +376,7 @@ public class QueryServiceRegressionTest {
   public void testBug38422() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    Region rgn = CacheUtils.getRegion("/pos");
+    Region rgn = CacheUtils.getRegion(SEPARATOR + "pos");
     // The region already contains 3 Portfolio object. The 4th Portfolio object
     // has its status field explictly made null. Thus the query below will result
     // in intersection of two non empty sets. One which contains 4th Portfolio
@@ -366,14 +385,15 @@ public class QueryServiceRegressionTest {
     Portfolio pf = new Portfolio(4);
     pf.status = null;
     rgn.put(new Integer(4), pf);
-    String queryStr = "select  * from /pos pf where pf.status != 'active' and pf.status != null";
+    String queryStr =
+        "select  * from " + SEPARATOR + "pos pf where pf.status != 'active' and pf.status != null";
 
     SelectResults r[][] = new SelectResults[1][2];
     Query qry = qs.newQuery(queryStr);
     SelectResults sr = null;
     sr = (SelectResults) qry.execute();
     r[0][0] = sr;
-    qs.createIndex("statusIndx", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
+    qs.createIndex("statusIndx", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     sr = null;
     sr = (SelectResults) qry.execute();
     r[0][1] = sr;
@@ -440,10 +460,11 @@ public class QueryServiceRegressionTest {
     QueryObserverHolder.setInstance(observer);
     QueryService qs = pr1.getCache().getQueryService();
 
-    qs.createIndex("valueIndex", IndexType.FUNCTIONAL, "e.value", "/pr1 e");
-    qs.createIndex("valueIndex", IndexType.FUNCTIONAL, "e.value", "/pr2 e");
+    qs.createIndex("valueIndex", IndexType.FUNCTIONAL, "e.value", SEPARATOR + "pr1 e");
+    qs.createIndex("valueIndex", IndexType.FUNCTIONAL, "e.value", SEPARATOR + "pr2 e");
     String query =
-        "select distinct e1.value from /pr1 e1, " + "/pr2  e2" + " where e1.value=e2.value";
+        "select distinct e1.value from " + SEPARATOR + "pr1 e1, " + SEPARATOR + "pr2  e2"
+            + " where e1.value=e2.value";
     DefaultQuery cury = (DefaultQuery) CacheUtils.getQueryService().newQuery(query);
     final ExecutionContext executionContext =
         new QueryExecutionContext(null, (InternalCache) cache, cury);
@@ -513,10 +534,11 @@ public class QueryServiceRegressionTest {
     QueryObserverHolder.setInstance(observer);
     QueryService qs = pr1.getCache().getQueryService();
 
-    qs.createIndex("valueIndex", IndexType.FUNCTIONAL, "e.value", "/pr1.entries e");
-    qs.createIndex("valueIndex", IndexType.FUNCTIONAL, "e.value", "/pr2.entries e");
+    qs.createIndex("valueIndex", IndexType.FUNCTIONAL, "e.value", SEPARATOR + "pr1.entries e");
+    qs.createIndex("valueIndex", IndexType.FUNCTIONAL, "e.value", SEPARATOR + "pr2.entries e");
     String query =
-        "select distinct e1.key from /pr1.entries e1,/pr2.entries  e2" + " where e1.value=e2.value";
+        "select distinct e1.key from " + SEPARATOR + "pr1.entries e1," + SEPARATOR
+            + "pr2.entries  e2" + " where e1.value=e2.value";
     DefaultQuery cury = (DefaultQuery) CacheUtils.getQueryService().newQuery(query);
     final ExecutionContext executionContext =
         new QueryExecutionContext(null, (InternalCache) cache, cury);

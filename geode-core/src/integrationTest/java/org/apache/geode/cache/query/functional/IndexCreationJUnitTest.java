@@ -22,6 +22,7 @@
 
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -120,19 +121,20 @@ public class IndexCreationJUnitTest {
     qs = CacheUtils.getQueryService();
 
     Index i1 =
-        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolios, positions");
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
+            SEPARATOR + "portfolios, positions");
     // TASK ICM1
     Index i2 = qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios pf, pf.positions.values b");
+        SEPARATOR + "portfolios pf, pf.positions.values b");
     // TASK ICM2
     Index i5 = qs.createIndex("intFunctionIndex", IndexType.FUNCTIONAL, "intFunction(pf.getID)",
-        "/portfolios pf, pf.positions b");
+        SEPARATOR + "portfolios pf, pf.positions b");
     Index i6 = qs.createIndex("statusIndex6", IndexType.FUNCTIONAL, "a.status",
-        "/portfolios.values.toArray a, positions");
+        SEPARATOR + "portfolios.values.toArray a, positions");
     Index i7 = qs.createIndex("statusIndex7", IndexType.FUNCTIONAL, "a.status",
-        "/portfolios.getValues().asList() a, positions");
+        SEPARATOR + "portfolios.getValues().asList() a, positions");
     Index i8 = qs.createIndex("statusIndex8", IndexType.FUNCTIONAL, "a.status",
-        "/portfolios.values.asSet a, positions");
+        SEPARATOR + "portfolios.values.asSet a, positions");
     // TASK ICM6
     Object indices[] = {i1, i2, i5, i6, i7, i8}; // remove any commented Index
     // from Array
@@ -156,7 +158,7 @@ public class IndexCreationJUnitTest {
 
     try {
       idx = qs.createIndex("importsIndex", IndexType.FUNCTIONAL, "status",
-          "/portfolios, (map<string,Position>)positions");
+          SEPARATOR + "portfolios, (map<string,Position>)positions");
       fail("Should have thrown a QueryInvalidException"); // can't find type
       // Position
     } catch (QueryInvalidException e) {
@@ -164,12 +166,12 @@ public class IndexCreationJUnitTest {
     }
 
     idx = qs.createIndex("importsIndex", IndexType.FUNCTIONAL, "status",
-        "/portfolios, (map<string,Position>)positions",
+        SEPARATOR + "portfolios, (map<string,Position>)positions",
         "import org.apache.geode.cache.\"query\".data.Position");
     qs.removeIndex(idx);
 
     idx = qs.createIndex("importsIndex2", IndexType.FUNCTIONAL, "status",
-        "/portfolios, positions TYPE Position",
+        SEPARATOR + "portfolios, positions TYPE Position",
         "import org.apache.geode.cache.\"query\".data.Position");
   }
 
@@ -179,12 +181,13 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     // boolean exceptionoccurred = true;
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolios, positions");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
+        SEPARATOR + "portfolios, positions");
     qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios pf, pf.positions.values b");
+        SEPARATOR + "portfolios pf, pf.positions.values b");
     try {
       qs.createIndex("secIdIndexDuplicate", IndexType.FUNCTIONAL, "b.secId",
-          "/portfolios pf, pf.positions.values b");
+          SEPARATOR + "portfolios pf, pf.positions.values b");
       fail("testSimilarIndexCreation: Allowed duplicate index creation");
     } catch (Exception e) {
       // testSimilarIndexCreation: Exception if duplicate index is
@@ -193,7 +196,7 @@ public class IndexCreationJUnitTest {
 
     try {
       qs.createIndex("secIdIndexDuplicate", IndexType.FUNCTIONAL, "b1.secId",
-          "/portfolios pf1, pf1.positions.values b1");
+          SEPARATOR + "portfolios pf1, pf1.positions.values b1");
       fail("testSimilarIndexCreation: Allowed duplicate index creation");
     } catch (Exception e) {
       // testSimilarIndexCreation: Exception if duplicate index is
@@ -203,7 +206,7 @@ public class IndexCreationJUnitTest {
     // Exists
     try {
       qs.createIndex("statusIndexDuplicate", IndexType.FUNCTIONAL, "b.status",
-          "/portfolios b, positions");
+          SEPARATOR + "portfolios b, positions");
       fail("testSimilarIndexCreation: Allowed duplicate index creation");
     } catch (Exception e) {
       // testSimilarIndexCreation: Exception if duplicate index is
@@ -218,7 +221,7 @@ public class IndexCreationJUnitTest {
     qs = CacheUtils.getQueryService();
     try {
       qs.createIndex("typeIndex", IndexType.FUNCTIONAL, "\"type\"",
-          "/portfolios pf, pf.positions b", "pf.position1");
+          SEPARATOR + "portfolios pf, pf.positions b", "pf.position1");
       // projection attributes are not yet implemented
       // last parameter is the imports statement, so this is a syntax
       // error
@@ -235,8 +238,9 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     qs.createIndex("funcReturnSecIdIndex", IndexType.FUNCTIONAL,
-        "pf.funcReturnSecId(element(select distinct pos from /portfolios pf, pf.positions.values as pos where pos.sharesOutstanding = 5000))",
-        "/portfolios pf, pf.positions b");
+        "pf.funcReturnSecId(element(select distinct pos from " + SEPARATOR
+            + "portfolios pf, pf.positions.values as pos where pos.sharesOutstanding = 5000))",
+        SEPARATOR + "portfolios pf, pf.positions b");
     // TASK ICM8: InvalidIndexCreation
     // Query q = qs.newQuery("(element(select distinct pos from
     // /portfolios pf, pf.positions.values as pos where
@@ -251,10 +255,11 @@ public class IndexCreationJUnitTest {
     qs = CacheUtils.getQueryService();
     Query query = null;
     qs.createIndex("NVLIndex1", IndexType.FUNCTIONAL, "nvl(pf.position2, pf.position1).secId",
-        "/portfolios pf");
+        SEPARATOR + "portfolios pf");
 
     query = CacheUtils.getQueryService().newQuery(
-        "select distinct * from /portfolios pf where nvl(pf.position2, pf.position1).secId = 'SUN'");
+        "select distinct * from " + SEPARATOR
+            + "portfolios pf where nvl(pf.position2, pf.position1).secId = 'SUN'");
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
     query.execute();
@@ -265,7 +270,8 @@ public class IndexCreationJUnitTest {
 
 
     query = CacheUtils.getQueryService().newQuery(
-        "select distinct nvl(pf.position2, 'inProjection') from /portfolios pf where nvl(pf.position2, pf.position1).secId = 'SUN'");
+        "select distinct nvl(pf.position2, 'inProjection') from " + SEPARATOR
+            + "portfolios pf where nvl(pf.position2, pf.position1).secId = 'SUN'");
     observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
     query.execute();
@@ -281,7 +287,7 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Index i3 = qs.createIndex("typeIndex", IndexType.FUNCTIONAL, "\"type\"",
-        "/portfolios type Portfolio, positions b",
+        SEPARATOR + "portfolios type Portfolio, positions b",
         "IMPORT org.apache.geode.cache.\"query\".data.Portfolio");
     // TASK ICM3 Region 'IMPORT' not found:....[BUG : Verified Fixed ]
     // Index i4=(Index)qs.createIndex("boolFunctionIndex",
@@ -309,12 +315,13 @@ public class IndexCreationJUnitTest {
     SelectResults r[][] = new SelectResults[4][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {"select distinct * from /portfolios pf where pf.getCW(pf.ID) = $1",
-        "select distinct * from /portfolios pf where pf.getCW(pf.ID) > $1",
-        "select distinct * from /portfolios pf where pf.getCW(pf.ID) < $1",
-        "select distinct * from /portfolios pf where pf.getCW(pf.ID) != $1"
+    String queries[] =
+        {"select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) = $1",
+            "select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) > $1",
+            "select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) < $1",
+            "select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) != $1"
         // TASK IUM 10
-    };
+        };
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -333,7 +340,7 @@ public class IndexCreationJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    qs.createIndex("cIndex", IndexType.FUNCTIONAL, "pf.getCW(pf.ID)", "/portfolios pf");
+    qs.createIndex("cIndex", IndexType.FUNCTIONAL, "pf.getCW(pf.ID)", SEPARATOR + "portfolios pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -360,7 +367,8 @@ public class IndexCreationJUnitTest {
     qs = CacheUtils.getQueryService();
 
     String[] queries = {
-        "select distinct * from /portfolios pf where pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID] != -1"};
+        "select distinct * from " + SEPARATOR
+            + "portfolios pf where pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID] != -1"};
 
     Object r[][] = new Object[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
@@ -371,9 +379,9 @@ public class IndexCreationJUnitTest {
       CacheUtils.log("Executed query:" + queries[i]);
     }
     Index i1 = qs.createIndex("fIndex", IndexType.FUNCTIONAL, "sIter",
-        "/portfolios pf, pf.collectionHolderMap[(pf.ID).toString()].arr sIter");
+        SEPARATOR + "portfolios pf, pf.collectionHolderMap[(pf.ID).toString()].arr sIter");
     Index i2 = qs.createIndex("cIndex", IndexType.FUNCTIONAL,
-        "pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]", "/portfolios pf");
+        "pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]", SEPARATOR + "portfolios pf");
     // BUG # 32498
     // Index i3 = qs.createIndex("nIndex", IndexType.FUNCTIONAL,
     // "pf.collectionHolderMap[((pf.ID%2)).toString()].arr[pf.ID]","/portfolios
@@ -413,17 +421,22 @@ public class IndexCreationJUnitTest {
     // Task ID : ICM 9
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    Index i1 = qs.createIndex("kIndex", IndexType.FUNCTIONAL, "pf", "/portfolios.keys pf");
-    Index i2 = qs.createIndex("k1Index", IndexType.FUNCTIONAL, "key", "/portfolios.entries");
-    Index i3 = qs.createIndex("k2Index", IndexType.FUNCTIONAL, "pf", "/portfolios.keys.toArray pf");
+    Index i1 =
+        qs.createIndex("kIndex", IndexType.FUNCTIONAL, "pf", SEPARATOR + "portfolios.keys pf");
+    Index i2 =
+        qs.createIndex("k1Index", IndexType.FUNCTIONAL, "key", SEPARATOR + "portfolios.entries");
+    Index i3 = qs.createIndex("k2Index", IndexType.FUNCTIONAL, "pf",
+        SEPARATOR + "portfolios.keys.toArray pf");
     // Index i4 = qs.createIndex("k3Index", IndexType.FUNCTIONAL,
     // "pf","/portfolios.keys().toArray() pf");
     Index i5 =
-        qs.createIndex("k4Index", IndexType.FUNCTIONAL, "pf", "/portfolios.getKeys.asList pf");
+        qs.createIndex("k4Index", IndexType.FUNCTIONAL, "pf",
+            SEPARATOR + "portfolios.getKeys.asList pf");
     // Index i5 = qs.createIndex("k5Index", IndexType.FUNCTIONAL,
     // "pf","/portfolios.getKeys.asList() pf");
     Index i6 =
-        qs.createIndex("k5Index", IndexType.FUNCTIONAL, "pf", "/portfolios.getKeys.asSet() pf");
+        qs.createIndex("k5Index", IndexType.FUNCTIONAL, "pf",
+            SEPARATOR + "portfolios.getKeys.asSet() pf");
     // Index i5 = qs.createIndex("k5Index", IndexType.FUNCTIONAL,
     // "pf","/portfolios.getKeys.asSet pf");
     CacheUtils.log(((CompactRangeIndex) i1).dump());
@@ -439,8 +452,9 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Index i1 = qs.createIndex("r1Index", IndexType.FUNCTIONAL, "secId",
-        "/portfolios.values['1'].positions.values");
-    qs.createIndex("r12Index", IndexType.FUNCTIONAL, "secId", "/portfolios['1'].positions.values");
+        SEPARATOR + "portfolios.values['1'].positions.values");
+    qs.createIndex("r12Index", IndexType.FUNCTIONAL, "secId",
+        SEPARATOR + "portfolios['1'].positions.values");
     CacheUtils.log(((CompactRangeIndex) i1).dump());
     // CacheUtils.log(((RangeIndex)i2).dump());
   }
@@ -454,12 +468,14 @@ public class IndexCreationJUnitTest {
   public void testBug36823() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    qs.createIndex("entryIndex", IndexType.FUNCTIONAL, "value.getID()", "/portfolios.entrySet pf");
-    Region rgn = CacheUtils.getRegion("/portfolios");
+    qs.createIndex("entryIndex", IndexType.FUNCTIONAL, "value.getID()",
+        SEPARATOR + "portfolios.entrySet pf");
+    Region rgn = CacheUtils.getRegion(SEPARATOR + "portfolios");
     rgn.put("4", new Portfolio(4));
     rgn.put("5", new Portfolio(5));
     Query qr =
-        qs.newQuery("Select distinct * from /portfolios.entrySet pf where pf.value.getID() = 4");
+        qs.newQuery("Select distinct * from " + SEPARATOR
+            + "portfolios.entrySet pf where pf.value.getID() = 4");
     SelectResults sr = (SelectResults) qr.execute();
     assertEquals(sr.size(), 1);
   }
@@ -473,11 +489,12 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
 
-    qs.createIndex("keyIndex", IndexType.FUNCTIONAL, "keys", "/portfolios.keySet keys");
-    Region rgn = CacheUtils.getRegion("/portfolios");
+    qs.createIndex("keyIndex", IndexType.FUNCTIONAL, "keys", SEPARATOR + "portfolios.keySet keys");
+    Region rgn = CacheUtils.getRegion(SEPARATOR + "portfolios");
     rgn.put("4", new Portfolio(4));
     rgn.put("5", new Portfolio(5));
-    Query qr = qs.newQuery("Select distinct  * from /portfolios.keySet keys where keys = '4'");
+    Query qr = qs.newQuery(
+        "Select distinct  * from " + SEPARATOR + "portfolios.keySet keys where keys = '4'");
     SelectResults sr = (SelectResults) qr.execute();
     assertEquals(sr.size(), 1);
   }
@@ -491,14 +508,16 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Index i1 =
-        qs.createIndex("keyIndex", IndexType.FUNCTIONAL, "ks.hashCode", "/portfolios.keys ks");
-    Region rgn = CacheUtils.getRegion("/portfolios");
+        qs.createIndex("keyIndex", IndexType.FUNCTIONAL, "ks.hashCode",
+            SEPARATOR + "portfolios.keys ks");
+    Region rgn = CacheUtils.getRegion(SEPARATOR + "portfolios");
     rgn.put("4", new Portfolio(4));
     rgn.put("5", new Portfolio(5));
     CacheUtils.log(((CompactRangeIndex) i1).dump());
 
     Query qr =
-        qs.newQuery("Select distinct * from /portfolios.keys keys where keys.hashCode >= $1");
+        qs.newQuery("Select distinct * from " + SEPARATOR
+            + "portfolios.keys keys where keys.hashCode >= $1");
     SelectResults sr = (SelectResults) qr.execute(new Object[] {new Integer(-1)});
     assertEquals(6, sr.size());
   }
@@ -511,8 +530,9 @@ public class IndexCreationJUnitTest {
   public void testBug43519() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    Index index = qs.createIndex("shortIndex", IndexType.FUNCTIONAL, "p.shortID", "/portfolios p");
-    Region rgn = CacheUtils.getRegion("/portfolios");
+    Index index =
+        qs.createIndex("shortIndex", IndexType.FUNCTIONAL, "p.shortID", SEPARATOR + "portfolios p");
+    Region rgn = CacheUtils.getRegion(SEPARATOR + "portfolios");
     for (int i = 1; i <= 10; i++) {
       String key = "" + i;
       Portfolio p = new Portfolio(i);
@@ -526,7 +546,8 @@ public class IndexCreationJUnitTest {
         rgn.destroy(key);
       }
     }
-    Query qr = qs.newQuery("Select p.shortID from /portfolios p where p.shortID < 5");
+    Query qr =
+        qs.newQuery("Select p.shortID from " + SEPARATOR + "portfolios p where p.shortID < 5");
     SelectResults sr = (SelectResults) qr.execute();
     assertEquals(sr.size(), 2);
   }
@@ -540,14 +561,16 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Index i1 =
-        qs.createIndex("keyIndex", IndexType.FUNCTIONAL, "ks.hashCode", "/portfolios.keys() ks");
-    Region rgn = CacheUtils.getRegion("/portfolios");
+        qs.createIndex("keyIndex", IndexType.FUNCTIONAL, "ks.hashCode",
+            SEPARATOR + "portfolios.keys() ks");
+    Region rgn = CacheUtils.getRegion(SEPARATOR + "portfolios");
     rgn.put("4", new Portfolio(4));
     rgn.put("5", new Portfolio(5));
     CacheUtils.log(((CompactRangeIndex) i1).dump());
 
     Query qr = qs.newQuery(
-        "Select distinct keys.hashCode  from /portfolios.keys() keys where keys.hashCode >= $1");
+        "Select distinct keys.hashCode  from " + SEPARATOR
+            + "portfolios.keys() keys where keys.hashCode >= $1");
     SelectResults sr = (SelectResults) qr.execute(new Object[] {new Integer(-1)});
     assertEquals(6, sr.size());
   }
@@ -558,11 +581,11 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Index i1 = qs.createIndex("SetSecIDIndex1", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios.asSet pf, pf.positions.values b");
+        SEPARATOR + "portfolios.asSet pf, pf.positions.values b");
     Index i2 = qs.createIndex("ListSecIDIndex2", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios.asList pf, pf.positions.values b");
+        SEPARATOR + "portfolios.asList pf, pf.positions.values b");
     Index i3 = qs.createIndex("ArraySecIDIndex3", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios.toArray pf, pf.positions.values b");
+        SEPARATOR + "portfolios.toArray pf, pf.positions.values b");
     CacheUtils.log(((RangeIndex) i1).dump());
     CacheUtils.log(((RangeIndex) i2).dump());
     CacheUtils.log(((RangeIndex) i3).dump());
@@ -575,14 +598,14 @@ public class IndexCreationJUnitTest {
     qs = CacheUtils.getQueryService();
     try {
       Index i1 = qs.createIndex("r1Index", IndexType.FUNCTIONAL, "secId",
-          "/portfolios.toArray[1].positions.values");
+          SEPARATOR + "portfolios.toArray[1].positions.values");
       CacheUtils.log(((RangeIndex) i1).dump());
       fail("Index creation should have failed");
     } catch (Exception e) {
     }
     try {
       Index i2 = qs.createIndex("r12Index", IndexType.FUNCTIONAL, "secId",
-          "/portfolios.asList[1].positions.values");
+          SEPARATOR + "portfolios.asList[1].positions.values");
       CacheUtils.log(((RangeIndex) i2).dump());
       fail("Index creation should have failed");
     } catch (Exception e) {
@@ -596,18 +619,27 @@ public class IndexCreationJUnitTest {
     qs = CacheUtils.getQueryService();
     // BUG #32586 : FIXED
     Index i1 =
-        qs.createIndex("Index11", IndexType.FUNCTIONAL, "status", "/portfolios.values.toArray()");
-    Index i2 = qs.createIndex("Index12", IndexType.FUNCTIONAL, "ID", "/portfolios.values.asSet");
-    Index i3 = qs.createIndex("Index13", IndexType.FUNCTIONAL, "ID", "/portfolios.values.asList");
+        qs.createIndex("Index11", IndexType.FUNCTIONAL, "status",
+            SEPARATOR + "portfolios.values.toArray()");
+    Index i2 = qs.createIndex("Index12", IndexType.FUNCTIONAL, "ID",
+        SEPARATOR + "portfolios.values.asSet");
+    Index i3 = qs.createIndex("Index13", IndexType.FUNCTIONAL, "ID",
+        SEPARATOR + "portfolios.values.asList");
 
-    qs.createIndex("Index14", IndexType.FUNCTIONAL, "value.ID", "/portfolios.entries.toArray()");
-    qs.createIndex("Index15", IndexType.FUNCTIONAL, "value.ID", "/portfolios.entries.asSet");
-    qs.createIndex("Index16", IndexType.FUNCTIONAL, "value.ID", "/portfolios.entries.asList");
+    qs.createIndex("Index14", IndexType.FUNCTIONAL, "value.ID",
+        SEPARATOR + "portfolios.entries.toArray()");
+    qs.createIndex("Index15", IndexType.FUNCTIONAL, "value.ID",
+        SEPARATOR + "portfolios.entries.asSet");
+    qs.createIndex("Index16", IndexType.FUNCTIONAL, "value.ID",
+        SEPARATOR + "portfolios.entries.asList");
 
     // BUG #32586 : FIXED
-    qs.createIndex("Index17", IndexType.FUNCTIONAL, "kIter", "/portfolios.keys.toArray() kIter");
-    qs.createIndex("Index18", IndexType.FUNCTIONAL, "kIter", "/portfolios.keys.asSet kIter");
-    qs.createIndex("Index19", IndexType.FUNCTIONAL, "kIter", "/portfolios.keys.asList kIter");
+    qs.createIndex("Index17", IndexType.FUNCTIONAL, "kIter",
+        SEPARATOR + "portfolios.keys.toArray() kIter");
+    qs.createIndex("Index18", IndexType.FUNCTIONAL, "kIter",
+        SEPARATOR + "portfolios.keys.asSet kIter");
+    qs.createIndex("Index19", IndexType.FUNCTIONAL, "kIter",
+        SEPARATOR + "portfolios.keys.asList kIter");
 
     CacheUtils.log(((CompactRangeIndex) i1).dump());
     CacheUtils.log(((CompactRangeIndex) i2).dump());
@@ -619,7 +651,7 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios pf, pf.positions.values b");
+        SEPARATOR + "portfolios pf, pf.positions.values b");
     ObjectType type = ((IndexProtocol) i1).getResultSetType();
     String fieldNames[] = {"index_iter1", "index_iter2"};
     ObjectType fieldTypes[] =
@@ -632,7 +664,8 @@ public class IndexCreationJUnitTest {
               + type);
     }
 
-    Index i2 = qs.createIndex("Index2", IndexType.FUNCTIONAL, "pf.ID", "/portfolios.values pf");
+    Index i2 =
+        qs.createIndex("Index2", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "portfolios.values pf");
     type = ((IndexProtocol) i2).getResultSetType();
 
     expectedType = new ObjectTypeImpl(Portfolio.class);
@@ -643,7 +676,7 @@ public class IndexCreationJUnitTest {
     }
 
     Index i3 = qs.createIndex("Index3", IndexType.FUNCTIONAL, "pos.secId",
-        "/portfolios['0'].positions.values pos");
+        SEPARATOR + "portfolios['0'].positions.values pos");
     type = ((IndexProtocol) i3).getResultSetType();
 
     expectedType = new ObjectTypeImpl(Object.class);
@@ -653,7 +686,7 @@ public class IndexCreationJUnitTest {
               + type);
     }
 
-    Index i4 = qs.createIndex("Index4", IndexType.PRIMARY_KEY, "ID", "/portfolios");
+    Index i4 = qs.createIndex("Index4", IndexType.PRIMARY_KEY, "ID", SEPARATOR + "portfolios");
     type = ((IndexProtocol) i4).getResultSetType();
 
     expectedType = new ObjectTypeImpl(Portfolio.class);
@@ -682,24 +715,26 @@ public class IndexCreationJUnitTest {
 
     QueryService qs = CacheUtils.getQueryService();
     // Currently supported with compact range-index.
-    Index i1 = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "pf.ID", "/portfolios_overflow pf");
+    Index i1 = qs.createIndex("idIndex", IndexType.FUNCTIONAL, "pf.ID",
+        SEPARATOR + "portfolios_overflow pf");
     Index i2 = qs.createIndex("keyIdIndex", IndexType.FUNCTIONAL, "key.ID",
-        "/portfolios_overflow.keys key");
+        SEPARATOR + "portfolios_overflow.keys key");
 
     // Not yet supported with range-index.
     try {
       Index i3 = qs.createIndex("idIndex2", IndexType.FUNCTIONAL, "pf.ID",
-          "/portfolios_overflow pf, pf.positions pos");
+          SEPARATOR + "portfolios_overflow pf, pf.positions pos");
       fail("Range index not supported on overflow region.");
     } catch (UnsupportedOperationException ex) {
       // Expected.
     }
 
     // Execute query.
-    String[] queryStr = new String[] {"Select * from /portfolios_overflow pf where pf.ID = 2",
-        "Select * from /portfolios_overflow.keys key where key.ID = 2",
-        "Select * from /portfolios_overflow pf where pf.ID > 1",
-        "Select * from /portfolios_overflow pf where pf.ID < 2",};
+    String[] queryStr =
+        new String[] {"Select * from " + SEPARATOR + "portfolios_overflow pf where pf.ID = 2",
+            "Select * from " + SEPARATOR + "portfolios_overflow.keys key where key.ID = 2",
+            "Select * from " + SEPARATOR + "portfolios_overflow pf where pf.ID > 1",
+            "Select * from " + SEPARATOR + "portfolios_overflow pf where pf.ID < 2",};
 
     int[] resultSize = new int[] {1, 1, 2, 2};
 
@@ -726,7 +761,8 @@ public class IndexCreationJUnitTest {
   public void testMapKeyIndexCreation_1_NonCompactType() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "pf.positions[*]", "/portfolios pf");
+    Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "pf.positions[*]",
+        SEPARATOR + "portfolios pf");
     assertEquals(i1.getCanonicalizedIndexedExpression(), "index_iter1.positions[*]");
     assertTrue(i1 instanceof CompactMapRangeIndex);
   }
@@ -736,7 +772,7 @@ public class IndexCreationJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "pf.positions['key1','key2','key3']",
-        "/portfolios pf");
+        SEPARATOR + "portfolios pf");
     assertEquals(i1.getCanonicalizedIndexedExpression(),
         "index_iter1.positions['key1','key2','key3']");
     assertTrue(i1 instanceof CompactMapRangeIndex);
@@ -795,7 +831,8 @@ public class IndexCreationJUnitTest {
       // verify that a query on the creation time works as expected
       SelectResults results = (SelectResults) qs
           .newQuery(
-              "<trace>SELECT * FROM /mainReportRegion.entrySet mr Where mr.value.createTime > 1L and mr.value.createTime < 3L")
+              "<trace>SELECT * FROM " + SEPARATOR
+                  + "mainReportRegion.entrySet mr Where mr.value.createTime > 1L and mr.value.createTime < 3L")
           .execute();
       assertEquals("OQL index results did not match", 1, results.size());
       cache.close();
@@ -818,7 +855,8 @@ public class IndexCreationJUnitTest {
       // verify that a query on the creation time works as expected
       SelectResults results = (SelectResults) qs
           .newQuery(
-              "<trace>SELECT * FROM /mainReportRegion.entrySet mr Where mr.value.createTime > 1L and mr.value.createTime < 3L")
+              "<trace>SELECT * FROM " + SEPARATOR
+                  + "mainReportRegion.entrySet mr Where mr.value.createTime > 1L and mr.value.createTime < 3L")
           .execute();
       assertEquals("OQL index results did not match", 1, results.size());
       ds.disconnect();
@@ -923,7 +961,8 @@ public class IndexCreationJUnitTest {
       // verify that a query on the creation time works as expected
       SelectResults results = (SelectResults) qs
           .newQuery(
-              "<trace>SELECT * FROM /mainReportRegion.entrySet mr Where mr.value.createTime > 1L and mr.value.createTime < 3L")
+              "<trace>SELECT * FROM " + SEPARATOR
+                  + "mainReportRegion.entrySet mr Where mr.value.createTime > 1L and mr.value.createTime < 3L")
           .execute();
       assertEquals("OQL index results did not match", 1, results.size());
       cache.close();
@@ -957,7 +996,8 @@ public class IndexCreationJUnitTest {
       // verify that a query on the creation time works as expected
       SelectResults results = (SelectResults) qs
           .newQuery(
-              "<trace>SELECT * FROM /mainReportRegion.entrySet mr Where mr.value.createTime > 1L and mr.value.createTime < 3L")
+              "<trace>SELECT * FROM " + SEPARATOR
+                  + "mainReportRegion.entrySet mr Where mr.value.createTime > 1L and mr.value.createTime < 3L")
           .execute();
       assertEquals("OQL index results did not match", 1, results.size());
       ds.disconnect();
@@ -971,11 +1011,11 @@ public class IndexCreationJUnitTest {
     qs = CacheUtils.getQueryService();
 
     Index i1 = ((DefaultQueryService) qs).createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
-        "/portfolios", null, false);
+        SEPARATOR + "portfolios", null, false);
     Index i2 = ((DefaultQueryService) qs).createIndex("secIndex", IndexType.FUNCTIONAL, "pos.secId",
-        "/portfolios p, p.positions.values pos", null, false);
+        SEPARATOR + "portfolios p, p.positions.values pos", null, false);
     Index i3 = ((DefaultQueryService) qs).createIndex("statusHashIndex", IndexType.HASH, "status",
-        "/portfolios", null, false);
+        SEPARATOR + "portfolios", null, false);
 
     assertEquals("Index should have been empty ", 0, i1.getStatistics().getNumberOfKeys());
     assertEquals("Index should have been empty ", 0, i1.getStatistics().getNumberOfValues());
@@ -987,11 +1027,11 @@ public class IndexCreationJUnitTest {
     qs.removeIndexes();
 
     i1 = ((DefaultQueryService) qs).createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
-        "/portfolios", null, true);
+        SEPARATOR + "portfolios", null, true);
     i2 = ((DefaultQueryService) qs).createIndex("secIndex", IndexType.FUNCTIONAL, "pos.secId",
-        "/portfolios p, p.positions.values pos", null, true);
+        SEPARATOR + "portfolios p, p.positions.values pos", null, true);
     i3 = ((DefaultQueryService) qs).createIndex("statusHashIndex", IndexType.HASH, "status",
-        "/portfolios", null, true);
+        SEPARATOR + "portfolios", null, true);
 
     assertEquals("Index should not have been empty ", 2, i1.getStatistics().getNumberOfKeys());
     assertEquals("Index should not have been empty ", 4, i1.getStatistics().getNumberOfValues());
@@ -1013,16 +1053,17 @@ public class IndexCreationJUnitTest {
     qs = CacheUtils.getQueryService();
     Cache cache = CacheUtils.getCache();
     cache.createRegionFactory(RegionShortcut.PARTITION).create("portfoliosInPartitionedRegion");
-    Region region = CacheUtils.getCache().getRegion("/portfoliosInPartitionedRegion");
+    Region region = CacheUtils.getCache().getRegion(SEPARATOR + "portfoliosInPartitionedRegion");
     IntStream.range(0, 3).forEach((i) -> {
       region.put(i, new Portfolio(i));
     });
 
     Index i1 = qs.createIndex("statusIndex", "secId",
-        "/portfoliosInPartitionedRegion p, p.positions pos, pos.secId secId");
+        SEPARATOR + "portfoliosInPartitionedRegion p, p.positions pos, pos.secId secId");
     try {
       Index i2 =
-          qs.createIndex("anotherIndex", "secId", "/portfoliosInPartitionedRegion p, p.positions");
+          qs.createIndex("anotherIndex", "secId",
+              SEPARATOR + "portfoliosInPartitionedRegion p, p.positions");
       // index should fail to create
       fail();
     } catch (IndexInvalidException e) {
@@ -1030,7 +1071,7 @@ public class IndexCreationJUnitTest {
     qs.removeIndex(i1);
     // This test should not throw an exception if i2 was properly cleaned up.
     Index i3 = qs.createIndex("anotherIndex", "secType",
-        "/portfoliosInPartitionedRegion p, p.positions pos, pos.secType secType");
+        SEPARATOR + "portfoliosInPartitionedRegion p, p.positions pos, pos.secType secType");
     assertNotNull(i3);
   }
 

@@ -348,7 +348,8 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
 
       putDataSerializableAndVerify(currentServer1, regionName, 0, 100, currentServer2, oldServer,
           oldServerAndLocator);
-      query("Select * from /" + regionName + " p where p.timeout > 0L", 99, currentServer1,
+      query("Select * from " + SEPARATOR + regionName + " p where p.timeout > 0L", 99,
+          currentServer1,
           currentServer2, oldServer, oldServerAndLocator);
 
     } finally {

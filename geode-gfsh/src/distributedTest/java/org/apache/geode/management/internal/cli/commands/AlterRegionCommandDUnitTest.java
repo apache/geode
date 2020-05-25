@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -114,7 +115,7 @@ public class AlterRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("alter region --group=group1 --name=regionA --cache-listener=''")
         .statusIsError()
         .hasInfoSection()
-        .hasOutput().contains("/regionA does not exist in group group1");
+        .hasOutput().contains(SEPARATOR + "regionA does not exist in group group1");
 
     // since this region exists on "cluster" group, we can only alter it with a "cluster" group
     gfsh.executeAndAssertThat("alter region --name=regionA --cache-listener=''")
@@ -249,7 +250,7 @@ public class AlterRegionCommandDUnitTest {
   @Test
   public void alterEvictionMaxOnRegionWithoutEvictionAttributesHasNoEffect() throws Exception {
     gfsh.executeAndAssertThat("create region --name=regionA --type=REPLICATE").statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "regionA", 3);
 
     gfsh.executeAndAssertThat("alter region --name=regionA --eviction-max=20").statusIsSuccess();
 
@@ -263,7 +264,7 @@ public class AlterRegionCommandDUnitTest {
     });
 
     server1.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion("/regionA");
+      Region region = ClusterStartupRule.getCache().getRegion(SEPARATOR + "regionA");
       EvictionAttributes evictionAttributes = region.getAttributes().getEvictionAttributes();
       assertThat(evictionAttributes.getAlgorithm()).isEqualTo(EvictionAlgorithm.NONE);
     });
@@ -274,7 +275,7 @@ public class AlterRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create region --name=regionA --type=REPLICATE --eviction-entry-count=20 --eviction-action=local-destroy")
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "regionA", 3);
 
     gfsh.executeAndAssertThat("alter region --name=regionA --eviction-max=30").statusIsSuccess();
 

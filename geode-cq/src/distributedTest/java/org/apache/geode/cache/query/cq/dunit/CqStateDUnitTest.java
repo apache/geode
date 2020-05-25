@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
@@ -67,7 +68,7 @@ public class CqStateDUnitTest extends HelperTestCase {
 
     final String host0 = NetworkUtils.getServerHostName(serverA.getHost());
     startClient(client, new VM[] {serverA, serverB}, ports, 1, getClientProperties());
-    createCQ(client, cqName, "select * from /" + regionName, null);
+    createCQ(client, cqName, "select * from " + SEPARATOR + regionName, null);
 
     // create the cacheserver but regions must be present first or else cq execute will fail with no
     // region found

@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -130,9 +131,10 @@ public class ParameterBindingJUnitTest {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
     Query query = CacheUtils.getQueryService()
-        .newQuery("SELECT DISTINCT * FROM /Portfolios where status.equals($1)");
+        .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status.equals($1)");
     Object params[] = new Object[] {"active"};
-    validateQueryWithBindParameter("SELECT DISTINCT * FROM /Portfolios where status.equals($1)",
+    validateQueryWithBindParameter(
+        "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status.equals($1)",
         params, 2);
   }
 
@@ -141,9 +143,10 @@ public class ParameterBindingJUnitTest {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
     Query query = CacheUtils.getQueryService()
-        .newQuery("SELECT DISTINCT * FROM /Portfolios where status = $1");
+        .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status = $1");
     Object params[] = new Object[] {"active"};
-    validateQueryWithBindParameter("SELECT DISTINCT * FROM /Portfolios where status = $1", params,
+    validateQueryWithBindParameter(
+        "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status = $1", params,
         2);
   }
 
@@ -152,16 +155,18 @@ public class ParameterBindingJUnitTest {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
     Object params[] = new Object[] {new Integer(1)};
-    validateQueryWithBindParameter("SELECT DISTINCT * FROM /Portfolios where ID = $1", params, 1);
+    validateQueryWithBindParameter(
+        "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where ID = $1", params, 1);
   }
 
   @Test
   public void testMultithreadedBindUsingSameQueryObject() throws Exception {
     int numObjects = 10000;
     Region region = createAndPopulateRegion("Portfolios", numObjects);
-    createIndex("Status Index", "status", "/Portfolios");
+    createIndex("Status Index", "status", SEPARATOR + "Portfolios");
     final Query query =
-        CacheUtils.getQueryService().newQuery("SELECT * FROM /Portfolios where status like $1");
+        CacheUtils.getQueryService()
+            .newQuery("SELECT * FROM " + SEPARATOR + "Portfolios where status like $1");
     final Object[] bindParam = new Object[] {"%a%"};
     Collection<Callable> callables = new ConcurrentLinkedQueue<>();
     IntStream.range(0, 1000).parallel().forEach(i -> {

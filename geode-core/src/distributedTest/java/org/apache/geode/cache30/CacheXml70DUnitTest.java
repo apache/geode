@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -269,9 +270,9 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     setXmlFile(findFile("coLocation3.xml"));
     Cache c = getCache();
     assertNotNull(c);
-    Region cust = c.getRegion(Region.SEPARATOR + "Customer");
+    Region cust = c.getRegion(SEPARATOR + "Customer");
     assertNotNull(cust);
-    Region order = c.getRegion(Region.SEPARATOR + "Order");
+    Region order = c.getRegion(SEPARATOR + "Order");
     assertNotNull(order);
 
     assertTrue(cust.getAttributes().getPartitionAttributes().getColocatedWith() == null);
@@ -285,11 +286,11 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     setXmlFile(findFile("bug44710.xml"));
     Cache c = getCache();
     assertNotNull(c);
-    Region r1 = c.getRegion(Region.SEPARATOR + "r1");
+    Region r1 = c.getRegion(SEPARATOR + "r1");
     assertNotNull(r1);
     assertTrue(r1.getAttributes().getDataPolicy().withPersistence());
     assertTrue(r1.getAttributes().getDataPolicy().withPartitioning());
-    Region r2 = c.getRegion(Region.SEPARATOR + "r2");
+    Region r2 = c.getRegion(SEPARATOR + "r2");
     assertNotNull(r2);
     assertTrue(r2.getAttributes().getDataPolicy().withPersistence());
     assertTrue(r2.getAttributes().getDataPolicy().withPartitioning());

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -70,10 +71,11 @@ public class MapRangeIndexMaintenanceJUnitTest {
     p.positions = null;
     region.put(1, p);
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio ");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio ");
 
     SelectResults result = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = null").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = null")
+        .execute();
     assertEquals(0, result.size());
   }
 
@@ -90,7 +92,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     // Create map index
     qs = CacheUtils.getQueryService();
     qs.createIndex(INDEX_NAME, "tl.alternateReferences['SOME_KEY', 'SOME_OTHER_KEY']",
-        "/instrument i, i.tradingLines tl");
+        SEPARATOR + "instrument i, i.tradingLines tl");
 
     // Add instruments
     int numInstruments = 20;
@@ -102,7 +104,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     // Execute query
     Query query = qs.newQuery(
-        "<trace> select distinct i from /instrument i, i.tradingLines t where t.alternateReferences[$1]='SOME_VALUE'");
+        "<trace> select distinct i from " + SEPARATOR
+            + "instrument i, i.tradingLines t where t.alternateReferences[$1]='SOME_VALUE'");
     SelectResults results = (SelectResults) query.execute(new Object[] {"SOME_KEY"});
 
     // Verify index was used
@@ -127,7 +130,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     assertEquals(100, region.size());
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio p");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", SEPARATOR + "portfolio p");
 
     assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
 
@@ -159,7 +162,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     assertEquals(100, region.size());
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof MapRangeIndex);
 
@@ -193,7 +196,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
 
@@ -231,7 +234,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     assertTrue(keyIndex1 instanceof MapRangeIndex);
 
@@ -257,7 +260,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", SEPARATOR + "portfolio ");
     assertTrue("Index should be a MapRangeIndex ", keyIndex1 instanceof MapRangeIndex);
 
     if (region.size() == 0) {
@@ -275,7 +278,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs.removeIndexes();
 
     // recreate index to verify they get updated correctly
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", SEPARATOR + "portfolio ");
     assertTrue("Index should be a MapRangeIndex ", keyIndex1 instanceof MapRangeIndex);
   }
 
@@ -286,7 +289,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", SEPARATOR + "portfolio ");
     assertTrue("Index should be a CompactMapRangeIndex ",
         keyIndex1 instanceof CompactMapRangeIndex);
 
@@ -305,7 +308,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs.removeIndexes();
 
     // recreate index to verify they get updated correctly
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", SEPARATOR + "portfolio ");
     assertTrue("Index should be a CompactMapRangeIndex ",
         keyIndex1 instanceof CompactMapRangeIndex);
   }
@@ -315,7 +318,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
     qs = CacheUtils.getQueryService();
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio ");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio ");
 
     Portfolio p = new Portfolio(1, 1);
     p.positions = new HashMap();
@@ -333,7 +336,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(3, p3);
 
     SelectResults result = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = null").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = null")
+        .execute();
     assertEquals(1, result.size());
   }
 
@@ -343,7 +347,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region =
         CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
     qs = CacheUtils.getQueryService();
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio ");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio ");
 
     Portfolio p = new Portfolio(1, 1);
     p.positions = new HashMap();
@@ -359,7 +363,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(3, p3);
 
     SelectResults result = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = null").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = null")
+        .execute();
     assertEquals(1, result.size());
   }
 
@@ -379,7 +384,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p);
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
 
@@ -391,7 +396,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     SelectResults results = (SelectResults) qs
         .newQuery(
-            "select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+            "select * from " + SEPARATOR
+                + "portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
         .execute();
     assertEquals(0, results.size());
   }
@@ -411,7 +417,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p);
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
 
@@ -424,7 +430,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     SelectResults results = (SelectResults) qs
         .newQuery(
-            "select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+            "select * from " + SEPARATOR
+                + "portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
         .execute();
     assertEquals(1, results.size());
   }
@@ -445,7 +452,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p);
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p2 = new Portfolio(1, 1);
     HashMap map2 = new HashMap();
@@ -454,7 +461,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     SelectResults results = (SelectResults) qs
         .newQuery(
-            "select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+            "select * from " + SEPARATOR
+                + "portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
         .execute();
     assertEquals(0, results.size());
   }
@@ -472,7 +480,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p);
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p2 = new Portfolio(1, 1);
     HashMap map2 = new HashMap();
@@ -483,7 +491,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     SelectResults results = (SelectResults) qs
         .newQuery(
-            "select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+            "select * from " + SEPARATOR
+                + "portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
         .execute();
     assertEquals(1, results.size());
   }
@@ -502,11 +511,12 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p);
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
     region.put(1, p);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(1, results.size());
   }
 
@@ -524,7 +534,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p);
     qs = CacheUtils.getQueryService();
 
-    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
     Portfolio p2 = new Portfolio(1, 1);
     HashMap map2 = new HashMap();
     p2.positions = map2;
@@ -533,10 +543,12 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p2);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(0, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 3")
         .execute();
     assertEquals(1, results.size());
   }
@@ -548,7 +560,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -564,7 +576,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p2);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(0, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
@@ -574,16 +587,19 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 4);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 3")
         .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['GOOG'] = 1")
+        .execute();
 
     assertEquals(0, results.size());
   }
@@ -595,7 +611,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -605,12 +621,14 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p1);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(1, results.size());
 
     region.destroy(1);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
@@ -621,16 +639,19 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 4);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 3")
         .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['GOOG'] = 1")
+        .execute();
 
     assertEquals(0, results.size());
   }
@@ -642,7 +663,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -652,7 +673,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p1);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(1, results.size());
 
     map1.remove("SUN");
@@ -661,7 +683,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     region.put(1, p1);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
@@ -672,16 +695,19 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 4);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 3")
         .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['GOOG'] = 1")
+        .execute();
 
     assertEquals(0, results.size());
   }
@@ -693,7 +719,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -703,7 +729,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p1);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(1, results.size());
 
     Portfolio p2 = new Portfolio(1, 1);
@@ -712,7 +739,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map2.put("GOOG", 1);
     region.put(1, p2);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
@@ -723,11 +751,13 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 2);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(1, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['IBM'] = 2")
         .execute();
     assertEquals(1, results.size());
   }
@@ -739,7 +769,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -749,12 +779,14 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p1);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(1, results.size());
 
     region.destroy(1);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
@@ -765,11 +797,13 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 2);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(1, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['IBM'] = 2")
         .execute();
     assertEquals(1, results.size());
   }
@@ -781,7 +815,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -791,7 +825,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p1);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(1, results.size());
 
     map1.remove("SUN");
@@ -800,7 +835,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map1.put("GOOG", 2);
     region.put(1, p1);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
@@ -811,11 +847,13 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 2);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(1, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['IBM'] = 2")
         .execute();
     assertEquals(1, results.size());
   }
@@ -827,7 +865,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -844,7 +882,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(2, p2);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(2, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
@@ -853,7 +892,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map2.put("GOOG", 1);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(1, results.size());
 
@@ -864,11 +904,13 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map4.put("IBM", 2);
     region.put(1, p4);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(2, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['IBM'] = 2")
         .execute();
     assertEquals(2, results.size());
   }
@@ -880,7 +922,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -897,12 +939,14 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(2, p2);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(2, results.size());
 
     region.destroy(1);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(1, results.size());
 
@@ -913,11 +957,13 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 2);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(2, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['IBM'] = 2")
         .execute();
     assertEquals(2, results.size());
   }
@@ -929,7 +975,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -946,7 +992,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(2, p2);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(2, results.size());
 
     map1.remove("SUN");
@@ -955,7 +1002,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map1.put("GOOG", 2);
     region.put(1, p1);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(1, results.size());
 
@@ -966,11 +1014,13 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 2);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(2, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['IBM'] = 2")
         .execute();
     assertEquals(2, results.size());
   }
@@ -982,7 +1032,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -1005,7 +1055,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(1, p2);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(0, results.size());
 
     Portfolio p4 = new Portfolio(1, 1);
@@ -1015,16 +1066,19 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map4.put("IBM", 4);
     region.put(1, p4);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 3")
         .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['GOOG'] = 1")
+        .execute();
 
     assertEquals(0, results.size());
   }
@@ -1036,7 +1090,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -1053,12 +1107,14 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(2, p2);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(1, results.size());
 
     region.destroy(1);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
@@ -1069,16 +1125,19 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 4);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 3")
         .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['GOOG'] = 1")
+        .execute();
 
     assertEquals(0, results.size());
   }
@@ -1090,7 +1149,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
     qs = CacheUtils.getQueryService();
-    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio");
 
     Portfolio p1 = new Portfolio(1, 1);
     HashMap map1 = new HashMap();
@@ -1107,7 +1166,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
     region.put(2, p2);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
+        .execute();
     assertEquals(1, results.size());
 
     map1.remove("SUN");
@@ -1116,7 +1176,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     region.put(1, p1);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
@@ -1127,16 +1188,19 @@ public class MapRangeIndexMaintenanceJUnitTest {
     map3.put("IBM", 4);
     region.put(1, p3);
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 1")
         .execute();
     assertEquals(0, results.size());
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+    results = (SelectResults) qs
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 3")
         .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs
-        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['GOOG'] = 1")
+        .execute();
 
     assertEquals(0, results.size());
   }

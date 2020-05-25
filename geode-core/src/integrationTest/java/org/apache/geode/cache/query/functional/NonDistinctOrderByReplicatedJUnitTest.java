@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -80,8 +81,10 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
         // The PK index should be used but limit should not be applied as order
         // by cannot be applied while data is fetched
         // from index
-        "SELECT   ID, description, createTime FROM /portfolio1 pf1 where pf1.ID != '10' order by ID desc limit 5 ",
-        "SELECT   ID, description, createTime FROM /portfolio1 pf1 where pf1.ID != $1 order by ID "
+        "SELECT   ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where pf1.ID != '10' order by ID desc limit 5 ",
+        "SELECT   ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where pf1.ID != $1 order by ID "
 
     };
 
@@ -111,7 +114,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
     }
     // Create Indexes
 
-    qs.createIndex("PKIDIndexPf1", IndexType.PRIMARY_KEY, "ID", "/portfolio1");
+    qs.createIndex("PKIDIndexPf1", IndexType.PRIMARY_KEY, "ID", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -176,7 +179,8 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
         // The PK index should be used but limit should not be applied as order by
         // cannot be applied while data is fetched
         // from index
-        "SELECT   ID, description, createTime FROM /portfolio1 pf1 where pf1.ID != $1 limit 10",};
+        "SELECT   ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where pf1.ID != $1 limit 10",};
 
     Object r[][] = new Object[queries.length][2];
     QueryService qs;
@@ -204,7 +208,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
     }
     // Create Indexes
 
-    qs.createIndex("PKIDIndexPf1", IndexType.PRIMARY_KEY, "ID", "/portfolio1");
+    qs.createIndex("PKIDIndexPf1", IndexType.PRIMARY_KEY, "ID", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -320,7 +324,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       }
     });
 
-    String query = "select pf.shortID from /portfolios pf order by pf.shortID";
+    String query = "select pf.shortID from " + SEPARATOR + "portfolios pf order by pf.shortID";
     QueryService qs = CacheUtils.getQueryService();
 
     SelectResults sr = (SelectResults) qs.newQuery(query).execute();
@@ -333,12 +337,16 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
   public void testOrderedResultsReplicatedRegion() throws Exception {
     String queries[] = {
 
-        "select  status as st from /portfolio1 where ID > 0 order by status",
+        "select  status as st from " + SEPARATOR + "portfolio1 where ID > 0 order by status",
 
-        "select  p.status as st from /portfolio1 p where ID > 0 and status = 'inactive' order by p.status",
-        "select distinct p.position1.secId as st from /portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId",
-        "select distinct  key.status as st from /portfolio1 key where key.ID > 5 order by key.status",
-        "select distinct  key.status as st from /portfolio1 key where key.status = 'inactive' order by key.status desc, key.ID"
+        "select  p.status as st from " + SEPARATOR
+            + "portfolio1 p where ID > 0 and status = 'inactive' order by p.status",
+        "select distinct p.position1.secId as st from " + SEPARATOR
+            + "portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId",
+        "select distinct  key.status as st from " + SEPARATOR
+            + "portfolio1 key where key.ID > 5 order by key.status",
+        "select distinct  key.status as st from " + SEPARATOR
+            + "portfolio1 key where key.status = 'inactive' order by key.status desc, key.ID"
 
     };
     Object r[][] = new Object[queries.length][2];
@@ -366,9 +374,9 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       }
     }
     // Create Indexes
-    qs.createIndex("i1", IndexType.FUNCTIONAL, "p.status", "/portfolio1 p");
-    qs.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", "/portfolio1 p");
-    qs.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", "/portfolio1 p");
+    qs.createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
+    qs.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
+    qs.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {

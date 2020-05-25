@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 
 import java.io.DataInput;
@@ -32,7 +33,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -102,7 +102,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
             Map bucketIdToDispatchedKeys = (Map) this.regionToDispatchedKeysMap.get(regionName);
             for (Object bId : bucketIdToDispatchedKeys.keySet()) {
               final String bucketFullPath =
-                  Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR
+                  SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
                       + region.getBucketName((Integer) bId);
               AbstractBucketRegionQueue brq =
                   (AbstractBucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);

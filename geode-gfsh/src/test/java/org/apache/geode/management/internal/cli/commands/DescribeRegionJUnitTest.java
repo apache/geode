@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.cache.DataPolicy.NORMAL;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.Scope.DISTRIBUTED_ACK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -79,7 +80,7 @@ public class DescribeRegionJUnitTest {
   @Test
   public void regionPathConverted() throws Exception {
     GfshParseResult parseResult = gfsh.parse(COMMAND + " --name=test");
-    assertThat(parseResult.getParamValueAsString("name")).isEqualTo("/test");
+    assertThat(parseResult.getParamValueAsString("name")).isEqualTo(SEPARATOR + "test");
   }
 
   @Test

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -44,7 +45,7 @@ public class BucketPersistenceAdvisorTest {
 
     BucketPersistenceAdvisor bpa = new BucketPersistenceAdvisor(
         mock(CacheDistributionAdvisor.class), mock(DistributedLockService.class), mockStorage,
-        "/region", mock(DiskRegionStats.class), mock(PersistentMemberManager.class),
+        SEPARATOR + "region", mock(DiskRegionStats.class), mock(PersistentMemberManager.class),
         mock(BucketLock.class), mock(ProxyBucketRegion.class));
     bpa.setAtomicCreation(true);
     assertFalse(bpa.isAtomicCreation());

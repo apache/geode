@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -487,7 +488,7 @@ public class ProxyJUnitTest {
     checkCL(expre);
 
     assertEquals("r", r.getName());
-    assertEquals("/r", r.getFullPath());
+    assertEquals(SEPARATOR + "r", r.getFullPath());
     assertEquals(null, r.getParentRegion());
     assertEquals(DataPolicy.EMPTY, r.getAttributes().getDataPolicy());
     r.getAttributesMutator();
@@ -621,7 +622,7 @@ public class ProxyJUnitTest {
       checkNoCW();
       checkCL(expre);
       assertEquals("sr", sr.getName());
-      assertEquals("/r/sr", sr.getFullPath());
+      assertEquals(SEPARATOR + "r" + SEPARATOR + "sr", sr.getFullPath());
       assertEquals(r, sr.getParentRegion());
       assertEquals(sr, r.getSubregion("sr"));
       assertEquals(Collections.singleton(sr), r.subregions(false));

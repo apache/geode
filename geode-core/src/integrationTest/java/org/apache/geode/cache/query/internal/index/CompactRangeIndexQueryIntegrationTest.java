@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -49,7 +50,7 @@ public class CompactRangeIndexQueryIntegrationTest {
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("portfolios");
     int numMatching = 10;
     QueryService qs = cache.getQueryService();
-    qs.createIndex("statusIndex", "p.status", "/portfolios p");
+    qs.createIndex("statusIndex", "p.status", SEPARATOR + "portfolios p");
     for (int i = 0; i < numMatching * 2; i++) {
       PortfolioPdx p = new PortfolioPdx(i);
       if (i < numMatching) {
@@ -59,7 +60,8 @@ public class CompactRangeIndexQueryIntegrationTest {
     }
 
     Query q = qs.newQuery(
-        "select * from /portfolios p where p.pk <> '0' and p.status <> '0' and p.status <> '1' and p.status <> '2'");
+        "select * from " + SEPARATOR
+            + "portfolios p where p.pk <> '0' and p.status <> '0' and p.status <> '1' and p.status <> '2'");
     SelectResults rs = (SelectResults) q.execute();
     assertEquals(numMatching, rs.size());
   }
@@ -70,7 +72,8 @@ public class CompactRangeIndexQueryIntegrationTest {
     Cache cache = serverStarterRule.getCache();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("ExampleRegion");
     QueryService qs = cache.getQueryService();
-    qs.createIndex("ExampleRegionIndex", "er['codeNumber','origin']", "/ExampleRegion er");
+    qs.createIndex("ExampleRegionIndex", "er['codeNumber','origin']",
+        SEPARATOR + "ExampleRegion er");
 
     for (int i = 0; i < 10; i++) {
       Map<String, Object> data = new HashMap<String, Object>();
@@ -87,7 +90,8 @@ public class CompactRangeIndexQueryIntegrationTest {
     }
 
     Query q = qs.newQuery(
-        "select * from /ExampleRegion E where E['codeNumber']=1 and E['origin']='src_common' and (E['country']='JPY' or E['ccountrycy']='USD')");
+        "select * from " + SEPARATOR
+            + "ExampleRegion E where E['codeNumber']=1 and E['origin']='src_common' and (E['country']='JPY' or E['ccountrycy']='USD')");
     SelectResults rs = (SelectResults) q.execute();
     assertEquals(4, rs.size());
   }
@@ -108,11 +112,12 @@ public class CompactRangeIndexQueryIntegrationTest {
     region.put(2, p2);
 
     QueryService queryService = cache.getQueryService();
-    queryService.createIndex("statusIndex", "status", "/portfolio");
-    queryService.createIndex("idIndex", "ID", "/portfolio");
+    queryService.createIndex("statusIndex", "status", SEPARATOR + "portfolio");
+    queryService.createIndex("idIndex", "ID", SEPARATOR + "portfolio");
 
     SelectResults results = (SelectResults) queryService
-        .newQuery("select * from /portfolio where status = 4 AND ID = 'StringID'").execute();
+        .newQuery("select * from " + SEPARATOR + "portfolio where status = 4 AND ID = 'StringID'")
+        .execute();
 
     assertNotNull(results);
   }

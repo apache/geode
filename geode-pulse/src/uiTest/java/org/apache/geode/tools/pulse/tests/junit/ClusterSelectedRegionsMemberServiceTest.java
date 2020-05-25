@@ -16,6 +16,8 @@
  */
 package org.apache.geode.tools.pulse.tests.junit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -238,7 +240,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
             String szPath = jsonMemberObj.getString("regionFullPath");
             Assert.assertEquals(
                 "ClusterSelectedRegionsMemberServiceTest :: Server returned wrong region path for region on member",
-                szPath, "/GlobalVilage_2/GlobalVilage_9");
+                szPath, SEPARATOR + "GlobalVilage_2" + SEPARATOR + "GlobalVilage_9");
           }
         }
       } catch (Exception failed) {
@@ -264,7 +266,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
         "ClusterSelectedRegionsMemberServiceTest ::  ------TESTCASE BEGIN : NON-EXISTENT REGION CHECK FOR CLUSTER REGION MEMBERS------");
     if (httpclient != null) {
       try {
-        System.out.println("Test for non-existent region : /Rubbish");
+        System.out.println("Test for non-existent region : " + SEPARATOR + "Rubbish");
         HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
             .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_4_VALUE).build();
         try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
