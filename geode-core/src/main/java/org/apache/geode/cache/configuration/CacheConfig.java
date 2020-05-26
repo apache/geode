@@ -160,6 +160,7 @@ import org.apache.geode.lang.Identifiable;
  *                 &lt;attribute name="alert-threshold" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="dispatcher-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="group-transaction-events" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -2595,6 +2596,7 @@ public class CacheConfig {
    *       &lt;attribute name="alert-threshold" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="dispatcher-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
+   *       &lt;attribute name="group-transaction-events" type="{http://www.w3.org/2001/XMLSchema}boolean" />
    *     &lt;/restriction>
    *   &lt;/complexContent>
    * &lt;/complexType>
@@ -2647,6 +2649,8 @@ public class CacheConfig {
     protected String dispatcherThreads;
     @XmlAttribute(name = "order-policy")
     protected String orderPolicy;
+    @XmlAttribute(name = "group-transaction-events")
+    protected Boolean groupTransactionEvents;
 
     /**
      * Gets the value of the gatewayEventFilters property.
@@ -2772,6 +2776,15 @@ public class CacheConfig {
      */
     public void setRemoteDistributedSystemId(String value) {
       this.remoteDistributedSystemId = value;
+    }
+
+    public Boolean mustGroupTransactionEvents() {
+      return groupTransactionEvents;
+    }
+
+
+    public void setGroupTransactionEvents(Boolean value) {
+      this.groupTransactionEvents = value;
     }
 
     /**

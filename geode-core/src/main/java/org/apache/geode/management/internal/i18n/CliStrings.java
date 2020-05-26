@@ -2206,6 +2206,13 @@ public class CliStrings {
       "remote-distributed-system-id";
   public static final String CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP =
       "Id of the remote distributed system to which the sender will send events.";
+  public static final String CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS =
+      "group-transaction-events";
+  public static final String CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP =
+      "Ensure that all the events of a transaction are sent in the same batch, i.e., they are never spread across different batches.\n"
+          + "Only allowed on serial gateway senders with 1 dispatcher thread or on parallel ones.\n"
+          + "Note that in order to work for a transaction, the regions to which the transaction \n"
+          + "events belong must be replicated by the same set of senders with this flag enabled.";
   public static final String CREATE_GATEWAYSENDER__PARALLEL = "parallel";
   public static final String CREATE_GATEWAYSENDER__PARALLEL__HELP =
       "Whether this is Parallel GatewaySender.";
