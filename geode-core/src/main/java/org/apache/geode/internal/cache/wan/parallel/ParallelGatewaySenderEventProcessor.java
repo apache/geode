@@ -97,7 +97,8 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   }
 
   @Override
-  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction)
       throws IOException, CacheException {
     GatewaySenderEventImpl gatewayQueueEvent = null;
     Region region = event.getRegion();
@@ -121,7 +122,8 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     // while merging 42004, kept substituteValue as it is(it is barry's
     // change 42466). bucketID is merged with eventID.getBucketID
     gatewayQueueEvent =
-        new GatewaySenderEventImpl(operation, event, substituteValue, true, eventID.getBucketID());
+        new GatewaySenderEventImpl(operation, event, substituteValue, true, eventID.getBucketID(),
+            isLastEventInTransaction);
 
     enqueueEvent(gatewayQueueEvent);
   }
