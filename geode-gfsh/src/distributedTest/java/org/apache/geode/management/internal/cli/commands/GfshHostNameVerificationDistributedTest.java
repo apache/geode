@@ -32,6 +32,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -65,6 +66,8 @@ public class GfshHostNameVerificationDistributedTest {
         .issuedBy(ca)
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanDnsName(LocalHostUtil.getCanonicalLocalHostName())
+        .sanIpAddress(LocalHostUtil.getLocalHost())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
         .generate();
