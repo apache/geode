@@ -6105,6 +6105,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
+    notifyGatewaySender(operation, event, false);
+  }
+
+  protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event,
+      boolean isLastEventInTransaction) {
     if (isPdxTypesRegion()) {
       return;
     }
@@ -6136,7 +6141,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (logger.isDebugEnabled()) {
             logger.debug("Notifying the GatewaySender : {}", sender.getId());
           }
-          ((AbstractGatewaySender) sender).distribute(operation, event, allRemoteDSIds);
+          ((AbstractGatewaySender) sender).distribute(operation, event, allRemoteDSIds,
+              isLastEventInTransaction);
         }
       }
     }
@@ -6762,6 +6768,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void invokeTXCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
       final boolean callDispatchListenerEvent) {
+    invokeTXCallbacks(eventType, event, callDispatchListenerEvent, false);
+  }
+
+  @Override
+  public void invokeTXCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
+      final boolean callDispatchListenerEvent,
+      final boolean isLastEventInTransaction) {
 
     // The spec for ConcurrentMap support requires that operations be mapped
     // to non-CM counterparts
@@ -6781,7 +6794,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     event.setEventType(eventType);
     notifyBridgeClients(event);
-    notifyGatewaySender(eventType, event);
+    notifyGatewaySender(eventType, event, isLastEventInTransaction);
     if (callDispatchListenerEvent) {
       if (event.getInvokePRCallbacks() || !(event.getRegion() instanceof PartitionedRegion)
           && !event.getRegion().isUsedForPartitionedRegionBucket()) {

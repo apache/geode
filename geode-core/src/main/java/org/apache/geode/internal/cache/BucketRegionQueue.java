@@ -28,6 +28,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -442,6 +443,36 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
       return object; // OFFHEAP: ok since callers are careful to do destroys on
                      // region queue after finished with peeked object.
+    } finally {
+      getInitializationLock().readLock().unlock();
+    }
+  }
+
+  /**
+   * This method returns a list of objects that fulfill the matchingPredicate.
+   * If a matching object also fulfills the endPredicate then the method
+   * stops looking for more matching objects.
+   */
+  public List<Object> getElementsMatching(Predicate matchingPredicate, Predicate endPredicate) {
+    getInitializationLock().readLock().lock();
+    try {
+      if (this.getPartitionedRegion().isDestroyed()) {
+        throw new BucketRegionQueueUnavailableException();
+      }
+      List<Object> elementsMatching = new ArrayList<Object>();
+      Iterator<Object> it = this.eventSeqNumDeque.iterator();
+      while (it.hasNext()) {
+        Object key = it.next();
+        Object object = optimalGet(key);
+        if (matchingPredicate.test(object)) {
+          elementsMatching.add(object);
+          this.eventSeqNumDeque.remove(key);
+          if (endPredicate.test(object)) {
+            break;
+          }
+        }
+      }
+      return elementsMatching;
     } finally {
       getInitializationLock().readLock().unlock();
     }
