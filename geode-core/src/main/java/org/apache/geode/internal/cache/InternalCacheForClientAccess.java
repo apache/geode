@@ -16,7 +16,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.File;
 import java.io.IOException;
@@ -163,7 +163,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   public <K, V> Region<K, V> getRegion(String path, boolean returnDestroyedRegion) {
     Region result = delegate.getRegion(path, returnDestroyedRegion);
     checkForInternalRegion(result);
-    return cast(result);
+    return uncheckedCast(result);
   }
 
   @Override
@@ -177,7 +177,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   public <K, V> Region<K, V> getRegionByPath(String path) {
     InternalRegion result = delegate.getInternalRegionByPath(path);
     checkForInternalRegion(result);
-    return cast(result);
+    return uncheckedCast(result);
   }
 
   @Override
