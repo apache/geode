@@ -26,6 +26,7 @@ import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResourc
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
@@ -73,7 +74,7 @@ public class DualServerSNIAcceptanceTest {
   private ClientCache cache;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() throws IOException, InterruptedException {
     docker.get().exec(options("-T"), "geode",
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh"));
 

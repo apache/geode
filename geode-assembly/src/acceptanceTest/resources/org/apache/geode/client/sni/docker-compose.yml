@@ -19,7 +19,6 @@ services:
   geode:
     container_name: 'geode'
     image: 'geode:develop'
-    hostname: geode
     expose:
       - '10334'
       - '40404'
