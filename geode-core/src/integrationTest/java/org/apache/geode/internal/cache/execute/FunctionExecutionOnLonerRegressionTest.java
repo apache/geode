@@ -19,7 +19,7 @@ import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.internal.cache.execute.FunctionExecutionOnLonerRegressionTest.UncheckedUtils.cast;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
@@ -35,15 +35,14 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.util.TypedFunctionService;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
@@ -88,7 +87,7 @@ public class FunctionExecutionOnLonerRegressionTest {
 
     populateRegion(region);
 
-    ResultCollector<Collection<String>, Collection<String>> resultCollector = FunctionServiceCast
+    ResultCollector<Collection<String>, Collection<String>> resultCollector = TypedFunctionService
         .<Void, Collection<String>, Collection<String>>onRegion(region)
         .withFilter(keysForGet)
         .execute(new TestFunction(DataSetSupplier.PARTITIONED));
@@ -105,7 +104,7 @@ public class FunctionExecutionOnLonerRegressionTest {
 
     populateRegion(region);
 
-    ResultCollector<Collection<String>, Collection<String>> resultCollector = FunctionServiceCast
+    ResultCollector<Collection<String>, Collection<String>> resultCollector = TypedFunctionService
         .<Void, Collection<String>, Collection<String>>onRegion(region)
         .withFilter(keysForGet)
         .execute(new TestFunction(DataSetSupplier.REPLICATE));
@@ -167,7 +166,7 @@ public class FunctionExecutionOnLonerRegressionTest {
     @Override
     public void execute(FunctionContext<String> context) {
       RegionFunctionContext regionFunctionContext = (RegionFunctionContext) context;
-      Set<String> keys = cast(regionFunctionContext.getFilter());
+      Set<String> keys = uncheckedCast(regionFunctionContext.getFilter());
       String lastKey = keys.iterator().next();
       keys.remove(lastKey);
 
@@ -183,22 +182,6 @@ public class FunctionExecutionOnLonerRegressionTest {
     @Override
     public String getId() {
       return getClass().getName();
-    }
-  }
-
-  @SuppressWarnings({"unchecked", "WeakerAccess"})
-  private static class FunctionServiceCast {
-
-    static <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegion(Region<?, ?> region) {
-      return FunctionService.onRegion(region);
-    }
-  }
-
-  @SuppressWarnings({"unchecked", "unused"})
-  static class UncheckedUtils {
-
-    static <T> T cast(Object object) {
-      return (T) object;
     }
   }
 }
