@@ -32,6 +32,8 @@ import org.apache.geode.redis.internal.executor.set.RedisSetInRegion;
 import org.apache.geode.redis.internal.executor.set.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.set.StripedExecutor;
 import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
+import org.apache.geode.redis.internal.executor.string.RedisStringInRegion;
+import org.apache.geode.redis.internal.executor.string.SetOptions;
 
 @SuppressWarnings("unchecked")
 public class CommandFunction extends SingleResultRedisFunction {
@@ -49,15 +51,16 @@ public class CommandFunction extends SingleResultRedisFunction {
   public static <T> T execute(RedisCommandType command,
       ByteArrayWrapper key,
       Object commandArguments, Region<ByteArrayWrapper, RedisData> region) {
-    SingleResultCollector<T> rc = new SingleResultCollector<>();
+    SingleResultCollector<T> resultsCollector = new SingleResultCollector<>();
     FunctionService
         .onRegion(region)
         .withFilter(Collections.singleton(key))
         .setArguments(new Object[] {command, commandArguments})
-        .withCollector(rc)
+        .withCollector(resultsCollector)
         .execute(CommandFunction.ID)
         .getResult();
-    return rc.getResult();
+
+    return resultsCollector.getResult();
   }
 
 
@@ -78,6 +81,27 @@ public class CommandFunction extends SingleResultRedisFunction {
     Callable<Object> callable;
     boolean useStripedExecutor = true;
     switch (command) {
+      case APPEND: {
+        ByteArrayWrapper valueToAdd = (ByteArrayWrapper) args[1];
+        callable = () -> new RedisStringInRegion(localRegion).append(key, valueToAdd);
+        break;
+      }
+      case GET: {
+        callable = () -> new RedisStringInRegion(localRegion).get(key);
+        break;
+      }
+      case SET: {
+        Object[] argArgs = (Object[]) args[1];
+        ByteArrayWrapper value = (ByteArrayWrapper) argArgs[0];
+        SetOptions options = (SetOptions) argArgs[1];
+        callable = () -> new RedisStringInRegion(localRegion).set(key, value, options);
+        break;
+      }
+      case SETNX: {
+        ByteArrayWrapper value = (ByteArrayWrapper) args[1];
+        callable = () -> new RedisStringInRegion(localRegion).setnx(key, value);
+        break;
+      }
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
         callable = () -> new RedisSetInRegion(localRegion).sadd(key, membersToAdd);

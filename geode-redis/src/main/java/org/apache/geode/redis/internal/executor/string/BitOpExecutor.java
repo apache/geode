@@ -22,6 +22,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class BitOpExecutor extends StringExecutor {
@@ -32,7 +33,7 @@ public class BitOpExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
+    Region<ByteArrayWrapper, RedisData> r = context.getRegionProvider().getStringsRegion();
 
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.BITOP));
@@ -48,7 +49,8 @@ public class BitOpExecutor extends StringExecutor {
     for (int i = 3; i < commandElems.size(); i++) {
       ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
       checkDataType(key, RedisDataType.REDIS_STRING, context);
-      ByteArrayWrapper value = r.get(key);
+      RedisString redisString = (RedisString) r.get(key);
+      ByteArrayWrapper value = redisString.getValue();
       if (value == null) {
         values[i - 3] = null;
         continue;
@@ -83,7 +85,7 @@ public class BitOpExecutor extends StringExecutor {
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), maxLength));
   }
 
-  private void and(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r,
+  private void and(ExecutionHandlerContext context, Region<ByteArrayWrapper, RedisData> r,
       ByteArrayWrapper destKey, byte[][] values, int max) {
     byte[] dest = new byte[max];
     outer: for (int i = 0; i < max; i++) {
@@ -100,10 +102,10 @@ public class BitOpExecutor extends StringExecutor {
       dest[i] = b;
     }
     checkAndSetDataType(destKey, context);
-    r.put(destKey, new ByteArrayWrapper(dest));
+    r.put(destKey, (RedisData) new RedisString(new ByteArrayWrapper(dest)));
   }
 
-  private void or(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r,
+  private void or(ExecutionHandlerContext context, Region<ByteArrayWrapper, RedisData> r,
       ByteArrayWrapper destKey, byte[][] values, int max) {
     byte[] dest = new byte[max];
     for (int i = 0; i < max; i++) {
@@ -119,10 +121,10 @@ public class BitOpExecutor extends StringExecutor {
       dest[i] = b;
     }
     checkAndSetDataType(destKey, context);
-    r.put(destKey, new ByteArrayWrapper(dest));
+    r.put(destKey, (RedisData) new RedisString(new ByteArrayWrapper(dest)));
   }
 
-  private void xor(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r,
+  private void xor(ExecutionHandlerContext context, Region<ByteArrayWrapper, RedisData> r,
       ByteArrayWrapper destKey, byte[][] values, int max) {
     byte[] dest = new byte[max];
     for (int i = 0; i < max; i++) {
@@ -138,10 +140,10 @@ public class BitOpExecutor extends StringExecutor {
       dest[i] = b;
     }
     checkAndSetDataType(destKey, context);
-    r.put(destKey, new ByteArrayWrapper(dest));
+    r.put(destKey, (RedisData) new RedisString(new ByteArrayWrapper(dest)));
   }
 
-  private void not(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r,
+  private void not(ExecutionHandlerContext context, Region<ByteArrayWrapper, RedisData> r,
       ByteArrayWrapper destKey, byte[][] values, int max) {
     byte[] dest = new byte[max];
     byte[] cA = values[0];
@@ -153,7 +155,7 @@ public class BitOpExecutor extends StringExecutor {
       }
     }
     checkAndSetDataType(destKey, context);
-    r.put(destKey, new ByteArrayWrapper(dest));
+    r.put(destKey, (RedisData) new RedisString(new ByteArrayWrapper(dest)));
   }
 
 }
