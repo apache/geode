@@ -36,10 +36,10 @@ import static org.apache.geode.internal.cache.partitioned.fixed.FixedPartitionin
 import static org.apache.geode.internal.cache.partitioned.fixed.FixedPartitioningWithColocationAndPersistenceDUnitTest.Quarter.Q2;
 import static org.apache.geode.internal.cache.partitioned.fixed.FixedPartitioningWithColocationAndPersistenceDUnitTest.Quarter.Q3;
 import static org.apache.geode.internal.cache.partitioned.fixed.FixedPartitioningWithColocationAndPersistenceDUnitTest.Quarter.Q4;
-import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
@@ -1502,9 +1502,9 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
 
     if (dataStore != null) {
-      return cast(new LocalDataSet(partitionedRegion, dataStore.getAllLocalBucketIds()));
+      return uncheckedCast(new LocalDataSet(partitionedRegion, dataStore.getAllLocalBucketIds()));
     }
-    return cast(new LocalDataSet(partitionedRegion, emptySet()));
+    return uncheckedCast(new LocalDataSet(partitionedRegion, emptySet()));
   }
 
   private void validateQuartersData() throws ParseException {
@@ -1555,20 +1555,20 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
       InternalDistributedMember idmForShipment = shipments.getBucketPrimary(i);
 
       // take all the keys from the shipment for each bucket
-      Set<CustomerId> customerKey = cast(customers.getBucketKeys(i));
+      Set<CustomerId> customerKey = uncheckedCast(customers.getBucketKeys(i));
       assertThat(customerKey).isNotNull();
 
       for (CustomerId customerId : customerKey) {
         assertThat(customers.get(customerId)).isNotNull();
 
-        Set<OrderId> orderKey = cast(orders.getBucketKeys(i));
+        Set<OrderId> orderKey = uncheckedCast(orders.getBucketKeys(i));
         for (OrderId orderId : orderKey) {
           assertThat(orders.get(orderId)).isNotNull();
           if (orderId.getCustomerId().equals(customerId)) {
             assertThat(idmForOrder).isEqualTo(idmForCustomer);
           }
 
-          Set<ShipmentId> shipmentKey = cast(shipments.getBucketKeys(i));
+          Set<ShipmentId> shipmentKey = uncheckedCast(shipments.getBucketKeys(i));
           for (ShipmentId shipmentId : shipmentKey) {
             assertThat(shipments.get(shipmentId)).isNotNull();
             if (shipmentId.getOrderId().equals(orderId)) {
