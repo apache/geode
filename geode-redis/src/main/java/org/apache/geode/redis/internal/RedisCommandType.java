@@ -132,13 +132,13 @@ public enum RedisCommandType {
    ************** Strings ****************
    ***************************************/
 
-  APPEND(new AppendExecutor()),
+  APPEND(new AppendExecutor(), new ExactParameterRequirements(3)),
   BITCOUNT(new BitCountExecutor()),
   BITOP(new BitOpExecutor()),
   BITPOS(new BitPosExecutor()),
   DECR(new DecrExecutor()),
   DECRBY(new DecrByExecutor()),
-  GET(new GetExecutor()),
+  GET(new GetExecutor(), new ExactParameterRequirements(2)),
   GETBIT(new GetBitExecutor()),
   GETRANGE(new GetRangeExecutor()),
   GETSET(new GetSetExecutor()),
@@ -150,7 +150,7 @@ public enum RedisCommandType {
   MSETNX(new MSetNXExecutor()),
   PSETEX(new PSetEXExecutor()),
   SETEX(new SetEXExecutor()),
-  SET(new SetExecutor()),
+  SET(new SetExecutor(), new MinimumParameterRequirements(3)),
   SETBIT(new SetBitExecutor()),
   SETNX(new SetNXExecutor()),
   SETRANGE(new SetRangeExecutor()),

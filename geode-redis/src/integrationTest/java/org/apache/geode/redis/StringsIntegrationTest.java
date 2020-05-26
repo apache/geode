@@ -18,6 +18,7 @@ import static java.lang.Integer.parseInt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
@@ -117,6 +119,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8182")
   public void testSET_shouldSetNX_evenIfKeyContainsOtherDataType() {
     String key = "key";
     String stringValue = "value";
@@ -130,6 +133,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8182")
   public void testSET_shouldSetXX_evenIfKeyContainsOtherDataType() {
     String key = "key";
     String stringValue = "value";
@@ -142,6 +146,32 @@ public class StringsIntegrationTest {
     String result = jedis.get(key);
 
     assertThat(result).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void setNX_shouldNotConflictWithRegularSet() {
+    List<String> keys = new ArrayList<>();
+    List<String> values = new ArrayList<>();
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      keys.add("key-" + i);
+      values.add("value-" + i);
+    }
+
+    AtomicInteger counter = new AtomicInteger(0);
+    SetParams setParams = new SetParams();
+    setParams.nx();
+
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
+        (i) -> {
+          String ok = jedis.set(keys.get(i), values.get(i));
+          if ("OK".equals(ok)) {
+            counter.addAndGet(1);
+          }
+        },
+        (i) -> jedis2.set(keys.get(i), values.get(i), setParams))
+            .run();
+
+    assertThat(counter.get()).isEqualTo(ITERATION_COUNT);
   }
 
   @Test
@@ -873,7 +903,7 @@ public class StringsIntegrationTest {
   public void testIncr_whenWrongType_shouldReturnError() {
     String key = "key";
     String nonIntegerValue = "I am not a number! I am a free man!";
-    jedis.set(key, nonIntegerValue);
+    assertThat(jedis.set(key, nonIntegerValue)).isEqualTo("OK");
 
     try {
       jedis.incr(key);
@@ -898,7 +928,6 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  // @todo: not looked over for current release
   public void testDecrBy() {
     String key1 = randString();
     String key2 = randString();
@@ -928,7 +957,6 @@ public class StringsIntegrationTest {
 
   }
 
-  // @todo: not looked over for current release
   @Test
   public void testSetNX() {
     String key1 = randString();
@@ -946,7 +974,34 @@ public class StringsIntegrationTest {
     assertThat(response3).isEqualTo(0);
   }
 
-  // @todo: not looked over for current release
+  @Test
+  public void testIncrBy() {
+    String key1 = randString();
+    String key2 = randString();
+    String key3 = randString();
+    int incr1 = rand.nextInt(100);
+    int incr2 = rand.nextInt(100);
+    Long incr3 = Long.MAX_VALUE / 2;
+    int num1 = 100;
+    int num2 = -100;
+    jedis.set(key1, "" + num1);
+    jedis.set(key2, "" + num2);
+    jedis.set(key3, "" + Long.MAX_VALUE);
+
+    jedis.incrBy(key1, incr1);
+    jedis.incrBy(key2, incr2);
+    assertThat(jedis.get(key1)).isEqualTo("" + (num1 + incr1 * 1));
+    assertThat(jedis.get(key2)).isEqualTo("" + (num2 + incr2 * 1));
+
+    Exception ex = null;
+    try {
+      jedis.incrBy(key3, incr3);
+    } catch (Exception e) {
+      ex = e;
+    }
+    assertThat(ex).isNotNull();
+  }
+
   @Test
   public void testPAndSetex() {
     Random r = new Random();
@@ -980,35 +1035,6 @@ public class StringsIntegrationTest {
     result = jedis.get(key);
     assertThat(stop - start).isGreaterThanOrEqualTo(psetex);
     assertThat(result).isNull();
-  }
-
-  @Test
-  // @todo: not looked over for current release
-  public void testIncrBy() {
-    String key1 = randString();
-    String key2 = randString();
-    String key3 = randString();
-    int incr1 = rand.nextInt(100);
-    int incr2 = rand.nextInt(100);
-    Long incr3 = Long.MAX_VALUE / 2;
-    int num1 = 100;
-    int num2 = -100;
-    jedis.set(key1, "" + num1);
-    jedis.set(key2, "" + num2);
-    jedis.set(key3, "" + Long.MAX_VALUE);
-
-    jedis.incrBy(key1, incr1);
-    jedis.incrBy(key2, incr2);
-    assertThat(jedis.get(key1)).isEqualTo("" + (num1 + incr1 * 1));
-    assertThat(jedis.get(key2)).isEqualTo("" + (num2 + incr2 * 1));
-
-    Exception ex = null;
-    try {
-      jedis.incrBy(key3, incr3);
-    } catch (Exception e) {
-      ex = e;
-    }
-    assertThat(ex).isNotNull();
   }
 
   @Test
