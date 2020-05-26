@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
@@ -55,7 +55,7 @@ public class CacheClientProxyFactory {
     }
     try {
       Class<InternalCacheClientProxyFactory> proxyClass =
-          cast(ClassPathLoader.getLatest().forName(proxyClassName));
+          uncheckedCast(ClassPathLoader.getLatest().forName(proxyClassName));
       return proxyClass.getConstructor().newInstance();
     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException
         | IllegalAccessException | InvocationTargetException e) {
