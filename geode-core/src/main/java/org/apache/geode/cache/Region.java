@@ -1365,7 +1365,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * update performed on the region.
    * <p>
    *
-   * @see java.util.Map#putAll(Map map)
    * @param map the key/value pairs to put in this region
    * @throws ServerOperationException if called from a client, and the server throws an exception
    *         such as CacheWriterException, PartitionedRegionStorageException or LowMemoryException.
@@ -1405,7 +1404,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * update performed on the region.
    * <p>
    *
-   * @see java.util.Map#putAll(Map map)
    * @param map the key/value pairs to put in this region
    * @param aCallbackArgument a user-defined parameter to pass to callback events triggered by this
    *        method. May be null. Must be serializable if this operation is distributed
