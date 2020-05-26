@@ -23,6 +23,7 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SetEXExecutor extends StringExecutor implements Extendable {
@@ -40,7 +41,7 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
+    Region<ByteArrayWrapper, RedisData> r = context.getRegionProvider().getStringsRegion();
 
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
@@ -71,7 +72,7 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
     }
 
     checkAndSetDataType(key, context);
-    r.put(key, new ByteArrayWrapper(value));
+    r.put(key, new RedisString(new ByteArrayWrapper(value)));
 
     context.getRegionProvider().setExpiration(key, expiration);
 

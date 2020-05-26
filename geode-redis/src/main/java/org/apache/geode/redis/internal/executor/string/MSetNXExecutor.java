@@ -24,6 +24,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 
@@ -37,7 +38,7 @@ public class MSetNXExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> region =
+    Region<ByteArrayWrapper, RedisData> region =
         context.getRegionProvider().getStringsRegion();
 
     if (commandElems.size() < 3 || commandElems.size() % 2 == 0) {
@@ -47,7 +48,8 @@ public class MSetNXExecutor extends StringExecutor {
 
     boolean hasEntry = false;
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = new HashMap<ByteArrayWrapper, ByteArrayWrapper>();
+    Map<ByteArrayWrapper, RedisData> map = new HashMap<>();
+
     for (int i = 1; i < commandElems.size(); i += 2) {
       byte[] keyArray = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
@@ -58,7 +60,8 @@ public class MSetNXExecutor extends StringExecutor {
         break;
       }
       byte[] value = commandElems.get(i + 1);
-      map.put(key, new ByteArrayWrapper(value));
+      ByteArrayWrapper valueAsByteArray = new ByteArrayWrapper(value);
+      map.put(key, new RedisString(valueAsByteArray));
       if (region.containsKey(key)) {
         hasEntry = true;
         break;

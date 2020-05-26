@@ -333,13 +333,13 @@ public class GeodeRedisServer {
 
   private void initializeRedis() {
     synchronized (cache) {
-      Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
+      Region<ByteArrayWrapper, RedisData> stringsRegion;
 
       Region<ByteArrayWrapper, RedisData> redisData;
       InternalCache gemFireCache = (InternalCache) cache;
 
       if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, ByteArrayWrapper> regionFactory =
+        RegionFactory<ByteArrayWrapper, RedisData> regionFactory =
             gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
         stringsRegion = regionFactory.create(STRING_REGION);
       }

@@ -486,7 +486,7 @@ public class HashesIntegrationTest {
             .run();
 
     assertThat(jedis.hgetAll(key1)).isEqualTo(expectedMap);
-    assertThat(jedis.hgetAll(key2)).isEqualTo(expectedMap);
+    assertThat(jedis2.hgetAll(key2)).isEqualTo(expectedMap);
   }
 
   @Test
@@ -571,7 +571,7 @@ public class HashesIntegrationTest {
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hincrByFloat(key, field, 0.5),
-        (i) -> jedis.hincrByFloat(key, field, 1.0)).run();
+        (i) -> jedis2.hincrByFloat(key, field, 1.0)).run();
 
     String value = jedis.hget(key, field);
     assertThat(value).isEqualTo(String.format("%.0f", ITERATION_COUNT * 1.5));
@@ -600,7 +600,7 @@ public class HashesIntegrationTest {
         (i) -> {
           try {
             String fieldToDelete = blockingQueue.take();
-            jedis.hdel(key, fieldToDelete);
+            jedis2.hdel(key, fieldToDelete);
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
           }
@@ -627,7 +627,7 @@ public class HashesIntegrationTest {
           }
         },
         (i) -> {
-          if (jedis.hgetAll(key).size() == ITERATION_COUNT) {
+          if (jedis2.hgetAll(key).size() == ITERATION_COUNT) {
             successCount.incrementAndGet();
           }
         })

@@ -26,6 +26,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 
 public class MSetExecutor extends StringExecutor {
@@ -42,10 +43,10 @@ public class MSetExecutor extends StringExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> region =
+    Region<ByteArrayWrapper, RedisData> region =
         context.getRegionProvider().getStringsRegion();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = new HashMap<ByteArrayWrapper, ByteArrayWrapper>();
+    Map<ByteArrayWrapper, RedisString> map = new HashMap<>();
     for (int i = 1; i < commandElems.size(); i += 2) {
       byte[] keyArray = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
@@ -55,11 +56,14 @@ public class MSetExecutor extends StringExecutor {
         continue;
       }
       byte[] value = commandElems.get(i + 1);
-      map.put(key, new ByteArrayWrapper(value));
+      ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(value);
+      map.put(key, new RedisString(byteArrayWrapper));
+
     }
 
     ByteArrayWrapper key = command.getKey();
     checkAndSetDataType(key, context);
+
     try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
       region.putAll(map);
     } catch (InterruptedException e) {

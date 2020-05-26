@@ -37,14 +37,14 @@ public class RegionProvider implements Closeable {
    * This is the {@link RedisDataType#REDIS_STRING} {@link Region}. This is the Region that stores
    * all string contents
    */
-  private final Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
+  private final Region<ByteArrayWrapper, RedisData> stringsRegion;
 
   private final Region<ByteArrayWrapper, RedisData> dataRegion;
 
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap;
   private final ScheduledExecutorService expirationExecutor;
 
-  public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
+  public RegionProvider(Region<ByteArrayWrapper, RedisData> stringsRegion,
       KeyRegistrar redisMetaRegion,
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor,
@@ -121,7 +121,7 @@ public class RegionProvider implements Closeable {
     }
   }
 
-  public Region<ByteArrayWrapper, ByteArrayWrapper> getStringsRegion() {
+  public Region<ByteArrayWrapper, RedisData> getStringsRegion() {
     return stringsRegion;
   }
 

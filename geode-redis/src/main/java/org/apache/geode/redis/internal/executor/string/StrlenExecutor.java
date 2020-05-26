@@ -22,6 +22,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class StrlenExecutor extends StringExecutor {
@@ -37,16 +38,17 @@ public class StrlenExecutor extends StringExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
+    Region<ByteArrayWrapper, RedisData> region = context.getRegionProvider().getStringsRegion();
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_STRING, context);
-    ByteArrayWrapper valueWrapper = r.get(key);
+    RedisString redisString = (RedisString) region.get(key);
 
-    if (valueWrapper == null) {
+    if (redisString == null) {
       command
           .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), KEY_DOES_NOT_EXIST));
     } else {
+      ByteArrayWrapper valueWrapper = redisString.getValue();
       command.setResponse(
           Coder.getIntegerResponse(context.getByteBufAllocator(), valueWrapper.toBytes().length));
     }

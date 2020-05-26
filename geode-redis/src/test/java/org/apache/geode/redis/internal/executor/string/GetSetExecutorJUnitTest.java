@@ -37,13 +37,14 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.KeyRegistrar;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class GetSetExecutorJUnitTest {
   private ExecutionHandlerContext context;
   private GetSetExecutor executor;
-  private Region<ByteArrayWrapper, ByteArrayWrapper> region;
+  private Region<ByteArrayWrapper, RedisData> region;
 
   @SuppressWarnings("unchecked")
   @Before
