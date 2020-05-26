@@ -23,6 +23,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceConfigurationError;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
@@ -224,15 +225,30 @@ public class TXState implements TXStateInterface {
   }
 
   public void firePendingCallbacks() {
+    boolean isConfigError = false;
+    EntryEventImpl lastTransactionEvent = null;
+    try {
+      lastTransactionEvent =
+          TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
+    } catch (ServiceConfigurationError ex) {
+      logger.error(ex.getMessage());
+      isConfigError = true;
+    }
+
     for (EntryEventImpl ee : getPendingCallbacks()) {
+      boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
       if (ee.getOperation().isDestroy()) {
-        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true);
+        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
+            isLastTransactionEvent);
       } else if (ee.getOperation().isInvalidate()) {
-        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, ee, true);
+        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, ee, true,
+            isLastTransactionEvent);
       } else if (ee.getOperation().isCreate()) {
-        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true);
+        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true,
+            isLastTransactionEvent);
       } else {
-        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true);
+        ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true,
+            isLastTransactionEvent);
       }
     }
   }

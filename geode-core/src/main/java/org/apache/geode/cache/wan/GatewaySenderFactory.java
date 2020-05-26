@@ -36,6 +36,19 @@ public interface GatewaySenderFactory {
   GatewaySenderFactory setParallel(boolean isParallel);
 
   /**
+   * Indicates whether events belonging to the same transaction must be
+   * delivered inside the same batch, i.e. they cannot be spread across different
+   * batches.
+   * Can only be enabled on serial gateway senders with just one dispatcher
+   * thread or on parallel gateway senders.
+   *
+   * @param groupTransactionEvents boolean to indicate whether events from
+   *        the same transaction must be delivered inside
+   *        the same batch.
+   */
+  GatewaySenderFactory setGroupTransactionEvents(boolean groupTransactionEvents);
+
+  /**
    * Adds a <code>GatewayEventFilter</code>
    *
    * @param filter GatewayEventFilter

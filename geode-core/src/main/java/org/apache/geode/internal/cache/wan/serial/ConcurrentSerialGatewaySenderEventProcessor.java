@@ -111,11 +111,17 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   @Override
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
       throws IOException, CacheException {
+    enqueueEvent(operation, event, substituteValue, false);
+
+  }
+
+  @Override
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction) throws IOException, CacheException {
     // Get the appropriate index into the gateways
     int index = Math.abs(getHashCode(((EntryEventImpl) event)) % this.processors.size());
     // Distribute the event to the gateway
-    enqueueEvent(operation, event, substituteValue, index);
-
+    enqueueEvent(operation, event, substituteValue, index, isLastEventInTransaction);
   }
 
   public void setModifiedEventId(EntryEventImpl clonedEvent, int index) {
@@ -148,7 +154,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   }
 
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      int index) throws CacheException, IOException {
+      int index, boolean isLastEventInTransaction) throws CacheException, IOException {
     // Get the appropriate gateway
     SerialGatewaySenderEventProcessor serialProcessor = this.processors.get(index);
 
@@ -160,7 +166,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       EntryEventImpl clonedEvent = new EntryEventImpl((EntryEventImpl) event);
       try {
         setModifiedEventId(clonedEvent, index);
-        serialProcessor.enqueueEvent(operation, clonedEvent, substituteValue);
+        serialProcessor.enqueueEvent(operation, clonedEvent, substituteValue,
+            isLastEventInTransaction);
       } finally {
         clonedEvent.release();
       }

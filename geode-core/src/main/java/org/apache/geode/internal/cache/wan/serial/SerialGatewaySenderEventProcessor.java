@@ -392,8 +392,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * Add the input object to the event queue
    */
   @Override
-  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
-      throws IOException, CacheException {
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction) throws IOException, CacheException {
     // There is a case where the event is serialized for processing. The
     // region is not
     // serialized along with the event since it is a transient field. I
@@ -424,7 +424,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
               ((EntryEventImpl) event).isConcurrencyConflict() && !event.isOriginRemote();
           if (!(isUpdateVersionStamp || isCME_And_NotOriginRemote)) {
             senderEvent =
-                new GatewaySenderEventImpl(operation, event, substituteValue, false);
+                new GatewaySenderEventImpl(operation, event, substituteValue, false,
+                    isLastEventInTransaction);
             handleSecondaryEvent(senderEvent);
           }
         }
@@ -438,7 +439,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         waitForFailoverCompletion();
       }
       // If it is, create and enqueue an initialized GatewayEventImpl
-      senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue); // OFFHEAP ok
+      senderEvent =
+          new GatewaySenderEventImpl(operation, event, substituteValue, isLastEventInTransaction); // OFFHEAP
+                                                                                                   // ok
 
       boolean queuedEvent = false;
       try {
