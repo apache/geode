@@ -12,15 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.ra.spi;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
@@ -35,13 +34,14 @@ import javax.transaction.xa.XAResource;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.ra.GFConnectionImpl;
 
 public class JCAManagedConnection implements ManagedConnection {
 
-  private final List<ConnectionEventListener> listeners;
+  private final List<ConnectionEventListener> listeners = new CopyOnWriteArrayList<>();;
 
   private volatile TXManagerImpl transactionManager;
 
@@ -53,15 +53,12 @@ public class JCAManagedConnection implements ManagedConnection {
 
   private final JCAManagedConnectionFactory connectionFactory;
 
-  private final Set<GFConnectionImpl> connections;
+  private final Set<GFConnectionImpl> connections = new CopyOnWriteHashSet<>();;
 
-  private volatile JCALocalTransaction localTransaction;
+  private volatile JCALocalTransaction localTransaction = new JCALocalTransaction();;
 
   JCAManagedConnection(JCAManagedConnectionFactory connectionFactory) {
     this.connectionFactory = connectionFactory;
-    this.listeners = Collections.synchronizedList(new ArrayList<>());
-    this.localTransaction = new JCALocalTransaction();
-    this.connections = Collections.synchronizedSet(new HashSet<>());
   }
 
   @Override
@@ -90,12 +87,19 @@ public class JCAManagedConnection implements ManagedConnection {
       }
     }
     if (this.localTransaction == null || this.localTransaction.transactionInProgress()) {
-      if (this.initialized && !this.cache.isClosed()) {
+      if (this.initialized && !isCacheClosed()) {
         this.localTransaction = new JCALocalTransaction(this.cache, this.transactionManager);
       } else {
         this.localTransaction = new JCALocalTransaction();
       }
     }
+  }
+
+  private boolean isCacheClosed() {
+    if (this.cache != null) {
+      return this.cache.isClosed();
+    }
+    return true;
   }
 
   @Override
@@ -116,7 +120,7 @@ public class JCAManagedConnection implements ManagedConnection {
 
   @Override
   public Object getConnection(Subject arg0, ConnectionRequestInfo arg1) throws ResourceException {
-    if (!this.initialized || this.cache.isClosed()) {
+    if (!this.initialized || isCacheClosed()) {
       init();
     }
     LogWriter logger = this.cache.getLogger();
@@ -131,6 +135,9 @@ public class JCAManagedConnection implements ManagedConnection {
 
   private void init() {
     this.cache = (InternalCache) CacheFactory.getAnyInstance();
+    if (this.cache == null) {
+      throw new RuntimeException("Cache could not be found in JCAManagedConnection");
+    }
     LogWriter logger = this.cache.getLogger();
     if (logger.fineEnabled()) {
       logger.fine("JCAManagedConnection:init. Inside init");
@@ -151,7 +158,7 @@ public class JCAManagedConnection implements ManagedConnection {
 
   @Override
   public ManagedConnectionMetaData getMetaData() throws ResourceException {
-    if (this.initialized && !this.cache.isClosed()) {
+    if (this.initialized && !isCacheClosed()) {
       LogWriter logger = this.cache.getLogger();
       if (logger.fineEnabled()) {
         logger.fine("JCAManagedConnection:getMetaData");
@@ -215,7 +222,7 @@ public class JCAManagedConnection implements ManagedConnection {
 
     if (this.connections.isEmpty()) {
       // safe to dissociate this managed connection so that it can go to pool
-      if (this.initialized && !this.cache.isClosed()) {
+      if (this.initialized && !isCacheClosed()) {
         this.localTransaction = new JCALocalTransaction(this.cache, this.transactionManager);
       } else {
         this.localTransaction = new JCALocalTransaction();
