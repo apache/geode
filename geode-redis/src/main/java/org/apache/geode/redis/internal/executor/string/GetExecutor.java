@@ -33,7 +33,7 @@ public class GetExecutor extends StringExecutor {
     checkDataType(key, RedisDataType.REDIS_STRING, context);
 
     Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
+        context.getRegionProvider().getDataRegion();
 
     ByteArrayWrapper valueAsBytes = null;
 

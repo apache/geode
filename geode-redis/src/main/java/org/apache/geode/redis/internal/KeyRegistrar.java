@@ -83,8 +83,6 @@ public class KeyRegistrar {
     public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {}
   }
 
-  private static final RedisDataTransformer REDIS_STRING_DATA =
-      new RedisDataTransformer(RedisDataType.REDIS_STRING);
   private static final RedisDataTransformer REDIS_PUBSUB_DATA =
       new RedisDataTransformer(RedisDataType.REDIS_PUBSUB);
 
@@ -94,10 +92,9 @@ public class KeyRegistrar {
    */
   private RedisData transformType(RedisDataType type) {
     switch (type) {
-      case REDIS_STRING:
-        return REDIS_STRING_DATA;
       case REDIS_PUBSUB:
         return REDIS_PUBSUB_DATA;
+      case REDIS_STRING:
       case REDIS_HASH:
       case REDIS_SET:
         throw new IllegalStateException(

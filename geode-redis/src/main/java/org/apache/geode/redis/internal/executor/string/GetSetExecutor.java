@@ -42,7 +42,7 @@ public class GetSetExecutor extends StringExecutor {
     }
 
     Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
+        context.getRegionProvider().getDataRegion();
 
     ByteArrayWrapper key = command.getKey();
     checkAndSetDataType(key, context);

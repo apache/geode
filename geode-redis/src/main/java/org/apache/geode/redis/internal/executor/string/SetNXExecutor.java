@@ -37,7 +37,7 @@ public class SetNXExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
+        context.getRegionProvider().getDataRegion();
 
     if (commandElems.size() < 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETNX));

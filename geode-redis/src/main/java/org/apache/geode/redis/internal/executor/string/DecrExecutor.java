@@ -44,7 +44,7 @@ public class DecrExecutor extends StringExecutor {
     long value;
 
     RegionProvider regionProvider = context.getRegionProvider();
-    Region<ByteArrayWrapper, RedisData> region = regionProvider.getStringsRegion();
+    Region<ByteArrayWrapper, RedisData> region = regionProvider.getDataRegion();
 
     if (commandElems.size() < 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.DECR));

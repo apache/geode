@@ -35,7 +35,7 @@ public class SetRangeExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, RedisData> region = context.getRegionProvider().getStringsRegion();
+    Region<ByteArrayWrapper, RedisData> region = context.getRegionProvider().getDataRegion();
 
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETRANGE));

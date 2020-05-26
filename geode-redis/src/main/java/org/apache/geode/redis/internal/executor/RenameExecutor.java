@@ -32,6 +32,8 @@ import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
+import org.apache.geode.redis.internal.executor.string.RedisStringCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.StringExecutor;
 
 public class RenameExecutor extends StringExecutor {
@@ -60,14 +62,12 @@ public class RenameExecutor extends StringExecutor {
         }
         switch (redisDataType) {
           case REDIS_STRING:
-            @SuppressWarnings("unchecked")
-            Region<ByteArrayWrapper, Object> region =
-                (Region<ByteArrayWrapper, Object>) context.getRegionProvider()
-                    .getRegionForType(redisDataType);
-            Object value = region.get(key);
-            context.getKeyRegistrar().register(newKey, redisDataType);
-            region.put(newKey, value);
+            // TODO this all needs to be done atomically. Add RENAME support to RedisStringCommands
+            RedisStringCommands redisStringCommands =
+                new RedisStringCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+            ByteArrayWrapper value = redisStringCommands.get(key);
             removeEntry(key, context);
+            redisStringCommands.set(newKey, value, null);
             break;
           case REDIS_HASH:
             // TODO this all needs to be done atomically. Add RENAME support to RedisHashCommands

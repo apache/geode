@@ -38,21 +38,16 @@ public class RedisString implements DataSerializable, RedisData {
   }
 
   // for serialization
-  public RedisString() {}
+  public RedisString() {
+  }
 
-  public int append(ByteArrayWrapper appendValue, Region<ByteArrayWrapper, RedisString> region,
-      ByteArrayWrapper key) {
+  public int append(ByteArrayWrapper appendValue, Region<ByteArrayWrapper, RedisData> region,
+                    ByteArrayWrapper key) {
 
-    RedisString redisStringInRegion = region.get(key);
+    byte[] newValue = concatArrays(value.toBytes(), appendValue.toBytes());
+    value.setBytes(newValue);
 
-    if (redisStringInRegion == null) {
-      value = appendValue;
-    } else {
-      byte[] newValue = concatArrays(value.toBytes(), appendValue.toBytes());
-      value.setBytes(newValue);
-    }
-
-    delta = value;
+    delta = appendValue;
     try {
       region.put(key, this);
     } finally {
@@ -61,21 +56,15 @@ public class RedisString implements DataSerializable, RedisData {
     return value.length();
   }
 
-  public ByteArrayWrapper get(Region<ByteArrayWrapper, RedisString> region, ByteArrayWrapper key) {
-    return region.get(key).getValue();
+  public ByteArrayWrapper get() {
+    return value;
   }
 
-  public RedisString set(ByteArrayWrapper value, Region<ByteArrayWrapper, RedisString> region,
-      ByteArrayWrapper key) {
+  public Boolean set(ByteArrayWrapper value, Region<ByteArrayWrapper, RedisData> region,
+                         ByteArrayWrapper key) {
     this.value = value;
-    return region.put(key, this);
-  }
-
-  public Boolean setnx(ByteArrayWrapper key, Region<ByteArrayWrapper, RedisString> region,
-      ByteArrayWrapper value) {
-    this.value = value;
-    RedisString redisString = region.putIfAbsent(key, this);
-    return redisString == null;
+    region.put(key, this);
+    return true;
   }
 
   public ByteArrayWrapper getValue() {
@@ -120,13 +109,11 @@ public class RedisString implements DataSerializable, RedisData {
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     try {
       ByteArrayWrapper delta = new ByteArrayWrapper(DataSerializer.readByteArray(in));
-      if (delta != null) {
-        if (value == null) {
-          value = delta;
-        } else {
-          byte[] newValue = concatArrays(value.toBytes(), delta.toBytes());
-          value.setBytes(newValue);
-        }
+      if (value == null) {
+        value = delta;
+      } else {
+        byte[] newValue = concatArrays(value.toBytes(), delta.toBytes());
+        value.setBytes(newValue);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);

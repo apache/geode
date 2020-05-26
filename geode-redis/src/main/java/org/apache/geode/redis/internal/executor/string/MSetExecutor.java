@@ -44,7 +44,7 @@ public class MSetExecutor extends StringExecutor {
     }
 
     Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
+        context.getRegionProvider().getDataRegion();
 
     Map<ByteArrayWrapper, RedisString> map = new HashMap<>();
     for (int i = 1; i < commandElems.size(); i += 2) {

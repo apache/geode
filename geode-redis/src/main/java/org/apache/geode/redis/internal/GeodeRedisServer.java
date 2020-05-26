@@ -163,13 +163,6 @@ public class GeodeRedisServer {
    */
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationFutures;
 
-
-  /**
-   * The field that defines the name of the {@link Region} which holds all of the strings. The
-   * current value of this field is {@code STRING_REGION}.
-   */
-  public static final String STRING_REGION = "ReDiS_StRiNgS";
-
   /**
    * The name of the region that holds data stored in redis.
    * Currently this is the meta data but at some point the value for a particular
@@ -333,16 +326,9 @@ public class GeodeRedisServer {
 
   private void initializeRedis() {
     synchronized (cache) {
-      Region<ByteArrayWrapper, RedisData> stringsRegion;
 
       Region<ByteArrayWrapper, RedisData> redisData;
       InternalCache gemFireCache = (InternalCache) cache;
-
-      if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, RedisData> regionFactory =
-            gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
-        stringsRegion = regionFactory.create(STRING_REGION);
-      }
 
       if ((redisData = cache.getRegion(REDIS_DATA_REGION)) == null) {
         InternalRegionFactory<ByteArrayWrapper, RedisData> redisMetaDataFactory =
@@ -354,7 +340,7 @@ public class GeodeRedisServer {
       keyRegistrar = new KeyRegistrar(redisData);
       hashLockService = new RedisLockService();
       pubSub = new PubSubImpl(new Subscriptions());
-      regionProvider = new RegionProvider(stringsRegion, keyRegistrar,
+      regionProvider = new RegionProvider(keyRegistrar,
           expirationFutures, expirationExecutor, redisData);
 
       CommandFunction.register(regionProvider);

@@ -39,7 +39,7 @@ public class MSetNXExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
+        context.getRegionProvider().getDataRegion();
 
     if (commandElems.size() < 3 || commandElems.size() % 2 == 0) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.MSETNX));

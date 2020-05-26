@@ -41,7 +41,7 @@ public class SetExecutor extends StringExecutor {
     ByteArrayWrapper valueToSet = getValueToSet(commandElems);
 
     Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
+        context.getRegionProvider().getDataRegion();
 
     RedisStringCommands redisStringCommands = new RedisStringCommandsFunctionExecutor(region);
     SetOptions setOptions;
@@ -59,9 +59,9 @@ public class SetExecutor extends StringExecutor {
       ByteArrayWrapper value, RedisStringCommands redisStringCommands, SetOptions setOptions) {
 
     checkKeyRegistrarAndRemoveKeyIfNeeded(context, key);
-    RedisString result = redisStringCommands.set(key, value, setOptions);
+    Boolean result = redisStringCommands.set(key, value, setOptions);
 
-    if (result != null) {
+    if (result) {
       context.getKeyRegistrar().register(key, RedisDataType.REDIS_STRING);
       command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
       handleExpiration(context, key, setOptions);

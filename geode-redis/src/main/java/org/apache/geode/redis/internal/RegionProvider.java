@@ -33,28 +33,17 @@ public class RegionProvider implements Closeable {
    */
   private final KeyRegistrar keyRegistrar;
 
-  /**
-   * This is the {@link RedisDataType#REDIS_STRING} {@link Region}. This is the Region that stores
-   * all string contents
-   */
-  private final Region<ByteArrayWrapper, RedisData> stringsRegion;
-
   private final Region<ByteArrayWrapper, RedisData> dataRegion;
 
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap;
   private final ScheduledExecutorService expirationExecutor;
 
-  public RegionProvider(Region<ByteArrayWrapper, RedisData> stringsRegion,
-      KeyRegistrar redisMetaRegion,
+  public RegionProvider(KeyRegistrar keyRegistrar,
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor,
       Region<ByteArrayWrapper, RedisData> dataRegion) {
-    if (stringsRegion == null || redisMetaRegion == null) {
-      throw new NullPointerException();
-    }
     this.dataRegion = dataRegion;
-    this.stringsRegion = stringsRegion;
-    keyRegistrar = redisMetaRegion;
+    this.keyRegistrar = keyRegistrar;
     this.expirationsMap = expirationsMap;
     this.expirationExecutor = expirationExecutor;
   }
@@ -66,8 +55,6 @@ public class RegionProvider implements Closeable {
 
     switch (redisDataType) {
       case REDIS_STRING:
-        return stringsRegion;
-
       case REDIS_HASH:
       case REDIS_SET:
         return dataRegion;
@@ -94,6 +81,9 @@ public class RegionProvider implements Closeable {
     if (type == RedisDataType.REDIS_HASH) {
       return true;
     }
+    if (type == RedisDataType.REDIS_STRING) {
+      return true;
+    }
     return false;
   }
 
@@ -103,9 +93,8 @@ public class RegionProvider implements Closeable {
     }
     RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(dataRegion);
     try {
-      if (type == RedisDataType.REDIS_STRING) {
-        return stringsRegion.remove(key) != null;
-      } else if (type == RedisDataType.REDIS_SET || type == RedisDataType.REDIS_HASH) {
+      if (type == RedisDataType.REDIS_STRING || type == RedisDataType.REDIS_SET ||
+          type == RedisDataType.REDIS_HASH) {
         return redisKeyCommands.del(key);
       } else {
         return false;
@@ -119,10 +108,6 @@ public class RegionProvider implements Closeable {
         removeKeyExpiration(key);
       }
     }
-  }
-
-  public Region<ByteArrayWrapper, RedisData> getStringsRegion() {
-    return stringsRegion;
   }
 
   public Region<ByteArrayWrapper, RedisData> getDataRegion() {

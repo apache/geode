@@ -60,7 +60,7 @@ public class StringSetExecutorJUnitTest {
     when(context.getRegionProvider()).thenReturn(regionProvider);
 
     region = mock(Region.class);
-    when(regionProvider.getStringsRegion()).thenReturn(region);
+    when(regionProvider.getDataRegion()).thenReturn(region);
 
     ByteBufAllocator allocator = mock(ByteBufAllocator.class);
 

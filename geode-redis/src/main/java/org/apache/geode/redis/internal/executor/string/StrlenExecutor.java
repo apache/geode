@@ -38,7 +38,7 @@ public class StrlenExecutor extends StringExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, RedisData> region = context.getRegionProvider().getStringsRegion();
+    Region<ByteArrayWrapper, RedisData> region = context.getRegionProvider().getDataRegion();
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_STRING, context);

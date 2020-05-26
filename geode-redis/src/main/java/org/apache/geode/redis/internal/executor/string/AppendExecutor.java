@@ -35,7 +35,7 @@ public class AppendExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
+        context.getRegionProvider().getDataRegion();
 
     ByteArrayWrapper key = command.getKey();
     checkAndSetDataType(key, context);
