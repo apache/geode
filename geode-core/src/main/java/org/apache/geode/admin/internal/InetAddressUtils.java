@@ -17,6 +17,8 @@ package org.apache.geode.admin.internal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.commons.validator.routines.InetAddressValidator;
+
 import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**
@@ -28,6 +30,13 @@ public class InetAddressUtils {
 
   private InetAddressUtils() {
     // prevent construction
+  }
+
+  /**
+   * Returns true if the given hostname is an IPv4 or IPv6 numeric address
+   */
+  public static boolean isIPLiteral(String hostName) {
+    return InetAddressValidator.getInstance().isValid(hostName);
   }
 
   /**
