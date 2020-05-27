@@ -25,7 +25,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.KeyRegistrar;
-import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -72,9 +71,5 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
 
   public RegionProvider getRegionProvider() {
     return server.getRegionProvider();
-  }
-
-  public RedisLockService getLockService() {
-    return server.getLockService();
   }
 }

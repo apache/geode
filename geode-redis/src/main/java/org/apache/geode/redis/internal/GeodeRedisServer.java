@@ -15,16 +15,13 @@
 package org.apache.geode.redis.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.redis.internal.RedisLockServiceMBean.OBJECTNAME__REDISLOCKSERVICE_MBEAN;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -32,12 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
 import javax.net.ssl.KeyManagerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -58,7 +49,6 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -75,8 +65,6 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
 
@@ -185,7 +173,6 @@ public class GeodeRedisServer {
 
   private KeyRegistrar keyRegistrar;
   private PubSub pubSub;
-  private RedisLockService hashLockService;
 
   @VisibleForTesting
   public KeyRegistrar getKeyRegistrar() {
@@ -337,38 +324,11 @@ public class GeodeRedisServer {
       }
 
       keyRegistrar = new KeyRegistrar(redisData);
-      hashLockService = new RedisLockService();
       pubSub = new PubSubImpl(new Subscriptions());
       regionProvider = new RegionProvider(keyRegistrar,
           expirationFutures, expirationExecutor, redisData);
 
       CommandFunction.register(regionProvider);
-    }
-
-    registerLockServiceMBean();
-  }
-
-  @VisibleForTesting
-  public RedisLockService getLockService() {
-    return hashLockService;
-  }
-
-  private void registerLockServiceMBean() {
-    ManagementService sms = SystemManagementService.getManagementService(cache);
-
-    try {
-      ObjectName mbeanON = new ObjectName(OBJECTNAME__REDISLOCKSERVICE_MBEAN);
-      sms.registerMBean(hashLockService, mbeanON);
-      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
-
-      Set<ObjectName> names = platformMBeanServer.queryNames(mbeanON, null);
-      if (names.isEmpty()) {
-        platformMBeanServer.registerMBean(hashLockService, mbeanON);
-        logger.info("Registered RedisLockServiceMBean on " + mbeanON);
-      }
-    } catch (InstanceAlreadyExistsException | MBeanRegistrationException
-        | NotCompliantMBeanException | MalformedObjectNameException e) {
-      throw new GemFireConfigException("Error while configuring RedisLockServiceMBean", e);
     }
   }
 
@@ -462,7 +422,7 @@ public class GeodeRedisServer {
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, cache, regionProvider, GeodeRedisServer.this,
                 redisPasswordBytes,
-                keyRegistrar, pubSub, hashLockService, subscriberGroup));
+                keyRegistrar, pubSub, subscriberGroup));
       }
     };
   }

@@ -38,7 +38,6 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class GetSetExecutorJUnitTest {
@@ -64,9 +63,6 @@ public class GetSetExecutorJUnitTest {
 
     KeyRegistrar keyRegistrar = mock(KeyRegistrar.class);
     when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
-
-    RedisLockService lockService = mock(RedisLockService.class);
-    when(context.getLockService()).thenReturn(lockService);
 
     executor = spy(new GetSetExecutor());
   }
