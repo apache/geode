@@ -55,11 +55,11 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
   @Override
   public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
     if (options != null) {
-      if (options.getExists().equals(SetOptions.Exists.NX)) {
-        return setnx(key, value);
+      if (options.isNX()) {
+        return setnx(key, value, options);
       }
 
-      if (options.getExists().equals(SetOptions.Exists.XX) && getRedisData(key) == null) {
+      if (options.isXX() && getRedisData(key) == null) {
         return false;
       }
     }
@@ -67,20 +67,35 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisStringForSet(key);
 
     if (redisString == null) {
-      region.put(key, new RedisString(value));
+      redisString = new RedisString(value);
+      region.put(key, redisString);
     } else {
       redisString.set(value);
       region.put(key, redisString);
     }
+    handleExpiration(redisString, key, options);
     return true;
   }
 
-  private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value) {
+  private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
     if (getRedisData(key) != null) {
       return false;
     }
-    region.put(key, new RedisString(value));
+    RedisString redisString = new RedisString(value);
+    region.put(key, redisString);
+    handleExpiration(redisString, key, options);
     return true;
+  }
+
+  private void handleExpiration(RedisString redisString, ByteArrayWrapper key, SetOptions options) {
+    long setExpiration = options == null ? 0L : options.getExpiration();
+    if (setExpiration != 0) {
+      long now = System.currentTimeMillis();
+      long timestamp = now + setExpiration;
+      redisString.setExpirationTimestamp(region, key, timestamp);
+    } else if (options == null || !options.isKeepTTL()) {
+      redisString.persist(region, key);
+    }
   }
 
   private RedisString checkType(RedisData redisData) {

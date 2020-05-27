@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -80,7 +82,8 @@ public class DecrExecutor extends StringExecutor {
 
     stringValue = "" + value;
     ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.stringToBytes(stringValue));
-    getRedisStringCommands(context).set(key, newValue, null);
+    SetOptions setOptions = new SetOptions(NONE, 0L, true);
+    getRedisStringCommands(context).set(key, newValue, setOptions);
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
   }

@@ -24,45 +24,33 @@ import java.io.Serializable;
 public class SetOptions implements Serializable {
 
   private final Exists exists;
-  private final ExpireUnit expireUnit;
-  private final Long expiration;
+  private final long expirationMillis;
   private final boolean keepTTL;
 
-  public SetOptions(Exists exists, Long expiration, ExpireUnit expireUnit, boolean keepTTL) {
+  public SetOptions(Exists exists, long expiration, boolean keepTTL) {
     this.exists = exists;
-    this.expiration = expiration;
-    this.expireUnit = expireUnit;
+    this.expirationMillis = expiration;
     this.keepTTL = keepTTL;
+  }
+
+  public boolean isNX() {
+    return exists.equals(Exists.NX);
+  }
+
+  public boolean isXX() {
+    return exists.equals(Exists.XX);
   }
 
   public Exists getExists() {
     return exists;
   }
 
-  public ExpireUnit getExpireUnit() {
-    return expireUnit;
-  }
-
-  public Long getExpiration() {
-    return expiration;
+  public long getExpiration() {
+    return expirationMillis;
   }
 
   public boolean isKeepTTL() {
     return keepTTL;
-  }
-
-  public enum ExpireUnit {
-    NONE,
-
-    /**
-     * Milliseconds
-     */
-    PX,
-
-    /**
-     * Seconds
-     */
-    EX;
   }
 
   public enum Exists {

@@ -56,7 +56,6 @@ public class SetExecutor extends StringExecutor {
 
     if (result) {
       command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
-      handleExpiration(context, key, setOptions);
     } else {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
     }
@@ -71,8 +70,7 @@ public class SetExecutor extends StringExecutor {
   private SetOptions parseCommandElems(List<byte[]> commandElems) throws IllegalArgumentException {
     boolean keepTTL = false;
     SetOptions.Exists existsOption = SetOptions.Exists.NONE;
-    SetOptions.ExpireUnit expireUnitOption = SetOptions.ExpireUnit.NONE;
-    Long expiration = null;
+    long expiration = 0L;
 
     for (int i = 3; i < commandElems.size(); i++) {
       String current_arg = Coder.bytesToString(commandElems.get(i)).toUpperCase();
@@ -81,20 +79,19 @@ public class SetExecutor extends StringExecutor {
           keepTTL = true;
           break;
         case "EX":
-          if (expireUnitOption != SetOptions.ExpireUnit.NONE) {
+          if (expiration != 0) {
             throw new IllegalArgumentException(ERROR_SYNTAX);
           }
-          expireUnitOption = SetOptions.ExpireUnit.EX;
           i++;
-          expiration = parseExpirationTime(current_arg, i, commandElems);
+          expiration = parseExpirationTime(i, commandElems);
+          expiration = SECONDS.toMillis(expiration);
           break;
         case "PX":
-          if (expireUnitOption != SetOptions.ExpireUnit.NONE) {
+          if (expiration != 0) {
             throw new IllegalArgumentException(ERROR_SYNTAX);
           }
-          expireUnitOption = SetOptions.ExpireUnit.PX;
           i++;
-          expiration = parseExpirationTime(current_arg, i, commandElems);
+          expiration = parseExpirationTime(i, commandElems);
           break;
         case "NX":
           if (existsOption != SetOptions.Exists.NONE) {
@@ -113,10 +110,10 @@ public class SetExecutor extends StringExecutor {
       }
     }
 
-    return new SetOptions(existsOption, expiration, expireUnitOption, keepTTL);
+    return new SetOptions(existsOption, expiration, keepTTL);
   }
 
-  private long parseExpirationTime(String arg, int index, List<byte[]> commandElems)
+  private long parseExpirationTime(int index, List<byte[]> commandElems)
       throws IllegalArgumentException {
     String expirationString;
 
@@ -126,34 +123,15 @@ public class SetExecutor extends StringExecutor {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     }
 
-    long expiration = 0L;
     try {
-      expiration = Long.parseLong(expirationString);
+      long expiration = Long.parseLong(expirationString);
+      if (expiration <= 0) {
+        throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
+      }
+      return expiration;
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(ERROR_NOT_INTEGER);
     }
 
-    if (expiration <= 0) {
-      throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
-    }
-
-    if (arg.equalsIgnoreCase("EX")) {
-      return SECONDS.toMillis(expiration);
-    } else if (arg.equalsIgnoreCase("PX")) {
-      return expiration;
-    } else {
-      throw new IllegalArgumentException(ERROR_NOT_INTEGER);
-    }
-  }
-
-  private void handleExpiration(ExecutionHandlerContext context, ByteArrayWrapper key,
-      SetOptions setOptions) {
-    if (setOptions.getExpiration() != null) {
-      context.getRegionProvider().setExpiration(key, setOptions.getExpiration());
-    } else {
-      if (!setOptions.isKeepTTL()) {
-        context.getRegionProvider().cancelKeyExpiration(key);
-      }
-    }
   }
 }

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -117,7 +119,8 @@ public class IncrByFloatExecutor extends StringExecutor {
     value += increment;
 
     stringValue = "" + value;
-    stringCommands.set(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)), null);
+    SetOptions setOptions = new SetOptions(NONE, 0L, true);
+    stringCommands.set(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)), setOptions);
 
     respondBulkStrings(command, context, value);
   }

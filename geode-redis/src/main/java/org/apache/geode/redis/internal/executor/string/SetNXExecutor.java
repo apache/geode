@@ -45,7 +45,7 @@ public class SetNXExecutor extends StringExecutor {
     ByteArrayWrapper value = new ByteArrayWrapper(commandElems.get(VALUE_INDEX));
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
-    SetOptions setOptions = new SetOptions(NX, 0L, null, false);
+    SetOptions setOptions = new SetOptions(NX, 0L, false);
 
     boolean result = stringCommands.set(key, value, setOptions);
 

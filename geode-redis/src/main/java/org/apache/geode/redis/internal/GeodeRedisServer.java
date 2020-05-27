@@ -24,11 +24,8 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -147,13 +144,7 @@ public class GeodeRedisServer {
   private EventLoopGroup bossGroup;
   private EventLoopGroup workerGroup;
   private EventLoopGroup subscriberGroup;
-  private static final int numExpirationThreads = 1;
   private final ScheduledExecutorService expirationExecutor;
-
-  /**
-   * Map of futures to be executed for key expirations
-   */
-  private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationFutures;
 
   /**
    * The name of the region that holds data stored in redis.
@@ -250,9 +241,8 @@ public class GeodeRedisServer {
     numWorkerThreads = setNumWorkerThreads();
     singleThreadPerConnection = numWorkerThreads == 0;
     numSelectorThreads = 1;
-    expirationFutures = new ConcurrentHashMap<>();
     expirationExecutor = Executors.newSingleThreadScheduledExecutor(
-        new NamedThreadFactory("GemFireRedis-ScheduledExecutor-", true));
+        new NamedThreadFactory("GemFireRedis-ExpirationExecutor-", true));
     shutdown = false;
     started = false;
   }
@@ -320,7 +310,7 @@ public class GeodeRedisServer {
       }
 
       pubSub = new PubSubImpl(new Subscriptions());
-      regionProvider = new RegionProvider(expirationFutures, expirationExecutor, redisData);
+      regionProvider = new RegionProvider(redisData);
 
       CommandFunction.register();
       scheduleDataExpiration(redisData);
@@ -496,14 +486,9 @@ public class GeodeRedisServer {
       serverChannel.close();
       c.syncUninterruptibly();
       c2.syncUninterruptibly();
-      regionProvider.close();
       if (mainThread != null) {
         mainThread.interrupt();
       }
-      for (ScheduledFuture<?> f : expirationFutures.values()) {
-        f.cancel(true);
-      }
-      expirationFutures.clear();
       expirationExecutor.shutdownNow();
       closeFuture.syncUninterruptibly();
       shutdown = true;

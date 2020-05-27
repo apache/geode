@@ -143,7 +143,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void settingAnExistingKeyToANewValue_ShouldClearExpirationTime() {
 
     String key = "key";
@@ -161,7 +160,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void callingGETSETonExistingKey_ShouldClearExpirationTime() {
     String key = "key";
     String value = "value";
@@ -193,7 +191,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8143")
   public void callingSDIFFSTOREonExistingKey_ShouldClearExpirationTime() {
 
     String key1 = "key1";
@@ -218,7 +215,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8143")
   public void callingSINTERSTOREonExistingKey_ShouldClearExpirationTime() {
     String key1 = "key1";
     String key2 = "key2";
@@ -242,7 +238,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8143")
   public void callingSUNIONSTOREonExistingKey_ShouldClearExpirationTime() {
     String key1 = "key1";
     String key2 = "key2";

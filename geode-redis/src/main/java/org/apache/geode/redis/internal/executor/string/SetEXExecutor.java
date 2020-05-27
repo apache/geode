@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
 
 import java.util.List;
 
@@ -69,10 +70,9 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
     if (!timeUnitMillis()) {
       expiration = SECONDS.toMillis(expiration);
     }
+    SetOptions setOptions = new SetOptions(NONE, expiration, false);
 
-    stringCommands.set(key, new ByteArrayWrapper(value), null);
-
-    context.getRegionProvider().setExpiration(key, expiration);
+    stringCommands.set(key, new ByteArrayWrapper(value), setOptions);
 
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
 
