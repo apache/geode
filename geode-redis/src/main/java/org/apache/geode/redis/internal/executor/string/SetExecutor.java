@@ -19,7 +19,9 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIR
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -35,32 +37,38 @@ public class SetExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper keyToSet = command.getKey();
-    ByteArrayWrapper valueToSet = getValueToSet(commandElems);
-
+    List<byte[]> commandElementsBytes = command.getProcessedCommand();
+    List<byte[]> optionalParameterBytes = getOptionalParameters(commandElementsBytes);
+    ByteArrayWrapper valueToSet = getValueToSet(commandElementsBytes);
     RedisStringCommands redisStringCommands = getRedisStringCommands(context);
     SetOptions setOptions;
+
     try {
-      setOptions = parseCommandElems(commandElems);
+      setOptions = parseOptionalParameters(optionalParameterBytes);
     } catch (IllegalArgumentException ex) {
       return RedisResponse.error(ex.getMessage());
     }
 
-    return doSet(command, context, keyToSet, valueToSet, redisStringCommands, setOptions);
+    return doSet(keyToSet, valueToSet, redisStringCommands, setOptions);
   }
 
-  private RedisResponse doSet(Command command, ExecutionHandlerContext context,
-      ByteArrayWrapper key,
-      ByteArrayWrapper value, RedisStringCommands redisStringCommands, SetOptions setOptions) {
+  private List<byte[]> getOptionalParameters(List<byte[]> commandElementsBytes) {
+    return commandElementsBytes.subList(3, commandElementsBytes.size());
+  }
 
-    boolean result = redisStringCommands.set(key, value, setOptions);
+  private RedisResponse doSet(ByteArrayWrapper key,
+      ByteArrayWrapper value,
+      RedisStringCommands redisStringCommands,
+      SetOptions setOptions) {
 
-    if (result) {
+    boolean setCompletedSuccessfully = redisStringCommands.set(key, value, setOptions);
+
+    if (setCompletedSuccessfully) {
       return RedisResponse.string(SUCCESS);
+    } else {
+      return RedisResponse.nil();
     }
-
-    return RedisResponse.nil();
   }
 
   private ByteArrayWrapper getValueToSet(List<byte[]> commandElems) {
@@ -68,74 +76,143 @@ public class SetExecutor extends StringExecutor {
     return new ByteArrayWrapper(value);
   }
 
+  private SetOptions parseOptionalParameters(List<byte[]> optionalParameterBytes)
+      throws IllegalArgumentException {
 
-  private SetOptions parseCommandElems(List<byte[]> commandElems) throws IllegalArgumentException {
     boolean keepTTL = false;
     SetOptions.Exists existsOption = SetOptions.Exists.NONE;
     long expiration = 0L;
 
-    for (int i = 3; i < commandElems.size(); i++) {
-      String current_arg = Coder.bytesToString(commandElems.get(i)).toUpperCase();
-      switch (current_arg) {
-        case "KEEPTTL":
-          throw new IllegalArgumentException(ERROR_SYNTAX);
-          // KEEPTTL is part of Redis 6
-          // keepTTL = true;
-          // break;
-        case "EX":
-          if (expiration != 0) {
-            throw new IllegalArgumentException(ERROR_SYNTAX);
-          }
-          i++;
-          expiration = parseExpirationTime(i, commandElems);
-          expiration = SECONDS.toMillis(expiration);
-          break;
-        case "PX":
-          if (expiration != 0) {
-            throw new IllegalArgumentException(ERROR_SYNTAX);
-          }
-          i++;
-          expiration = parseExpirationTime(i, commandElems);
-          break;
-        case "NX":
-          if (existsOption != SetOptions.Exists.NONE) {
-            throw new IllegalArgumentException(ERROR_SYNTAX);
-          }
-          existsOption = SetOptions.Exists.NX;
-          break;
-        case "XX":
-          if (existsOption != SetOptions.Exists.NONE) {
-            throw new IllegalArgumentException(ERROR_SYNTAX);
-          }
-          existsOption = SetOptions.Exists.XX;
-          break;
-        default:
-          throw new IllegalArgumentException(ERROR_SYNTAX);
+    List<String> optionalParametersStrings =
+        optionalParameterBytes.stream()
+            .map(item -> Coder.bytesToString(item).toUpperCase())
+            .collect(Collectors.toList());
+
+    throwExceptionIfUnknownParameter(optionalParametersStrings);
+    throwExceptionIfIncompatableParamaterOptions(optionalParametersStrings);
+    keepTTL = optionalParametersStrings.contains("KEEPTL");
+
+    if (optionalParametersStrings.contains("PX")) {
+      String nextParameter =
+          getNextParameter("PX", optionalParametersStrings);
+
+      if (!isANumber(nextParameter)) {
+        throw new IllegalArgumentException(ERROR_SYNTAX);
       }
-    }
 
-    return new SetOptions(existsOption, expiration, keepTTL);
-  }
-
-  private long parseExpirationTime(int index, List<byte[]> commandElems)
-      throws IllegalArgumentException {
-    String expirationString;
-
-    try {
-      expirationString = Coder.bytesToString(commandElems.get(index));
-    } catch (IndexOutOfBoundsException e) {
-      throw new IllegalArgumentException(ERROR_SYNTAX);
-    }
-
-    try {
-      long expiration = Long.parseLong(expirationString);
+      expiration = parseExpirationTime("PX", nextParameter);
       if (expiration <= 0) {
         throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
       }
-      return expiration;
+
+    } else if (optionalParametersStrings.contains("EX")) {
+      String nextParameter =
+          getNextParameter("EX", optionalParametersStrings);
+      if (!isANumber(nextParameter)) {
+        throw new IllegalArgumentException(ERROR_SYNTAX);
+      }
+      expiration = parseExpirationTime("EX", nextParameter);
+      if (expiration <= 0) {
+        throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
+      }
+    }
+
+    if (optionalParametersStrings.contains("NX")) {
+      existsOption = SetOptions.Exists.NX;
+    } else if (optionalParametersStrings.contains("XX")) {
+      existsOption = SetOptions.Exists.XX;
+    }
+    return new SetOptions(existsOption, expiration, keepTTL);
+  }
+
+  private String getNextParameter(String currentParameter,
+      List<String> optionalParametersStrings) {
+    int index = optionalParametersStrings.indexOf(currentParameter);
+    if (optionalParametersStrings.size() <= index + 1) {
+      throw new IllegalArgumentException(ERROR_SYNTAX);
+    }
+    return optionalParametersStrings.get(index + 1);
+  }
+
+  private void throwExceptionIfUnknownParameter(List<String> optionalParameters) {
+    List<String> validOptionalParamaters = Arrays.asList("EX", "PX", "NX", "XX", "KEEPTL");
+
+    List<String> parametersInQuestion =
+        optionalParameters
+            .stream()
+            .filter(parameter -> (!validOptionalParamaters.contains(parameter)))
+            .collect(Collectors.toList());
+
+    parametersInQuestion.forEach(parameter -> throwErrorIfNotANumberInExpectedPosition(
+        parameter,
+        optionalParameters));
+  }
+
+  private void throwErrorIfNotANumberInExpectedPosition(
+      String parameter,
+      List<String> optionalParameters) {
+
+    if (previousOptionIsValidAndExpectsANumber(parameter, optionalParameters)) {
+      convertToLongOrThrowException(parameter);
+    } else {
+      throw new IllegalArgumentException(ERROR_SYNTAX);
+    }
+  }
+
+  private boolean isANumber(String parameter) {
+    try {
+      Long.parseLong(parameter);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+  }
+
+  private boolean previousOptionIsValidAndExpectsANumber(String paramter,
+      List<String> optionalParameters) {
+
+    List<String> validParamaters = Arrays.asList("EX", "PX");
+    if (optionalParameters.size() < 2) {
+      return false;
+    }
+
+    int indexOfParameter = optionalParameters.indexOf(paramter);
+    String previousParameter = optionalParameters.get(indexOfParameter - 1);
+
+    return validParamaters.contains(previousParameter);
+  }
+
+
+  private void throwExceptionIfIncompatableParamaterOptions(List<String> passedParametersStrings) {
+
+    if (passedParametersStrings.contains("PX")
+        && passedParametersStrings.contains("EX")) {
+      throw new IllegalArgumentException(ERROR_SYNTAX);
+    }
+
+    if (passedParametersStrings.contains("XX")
+        && passedParametersStrings.contains("NX")) {
+      throw new IllegalArgumentException(ERROR_SYNTAX);
+    }
+  }
+
+  private long parseExpirationTime(String expirationParameter, String timeUntilExpiration) {
+
+    long millisecondsUntilExpirationLong =
+        Long.parseLong(timeUntilExpiration);
+
+    if (expirationParameter.equals("EX")) {
+      millisecondsUntilExpirationLong = SECONDS.toMillis(millisecondsUntilExpirationLong);
+    }
+
+    return millisecondsUntilExpirationLong;
+  }
+
+  private long convertToLongOrThrowException(String expirationTime) {
+    try {
+      return Long.parseLong(expirationTime);
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(ERROR_NOT_INTEGER);
     }
-
   }
 }

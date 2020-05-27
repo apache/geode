@@ -52,13 +52,11 @@ public class StringSetExecutorJUnitTest {
   @Before
   public void setup() {
     context = mock(ExecutionHandlerContext.class);
-
     regionProvider = mock(RegionProvider.class);
-    when(context.getRegionProvider()).thenReturn(regionProvider);
 
+    when(context.getRegionProvider()).thenReturn(regionProvider);
     region = mock(Region.class);
     when(regionProvider.getDataRegion()).thenReturn(region);
-
     ByteBufAllocator allocator = mock(ByteBufAllocator.class);
 
     buffer = Unpooled.buffer();
@@ -211,6 +209,36 @@ public class StringSetExecutorJUnitTest {
     RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString()).contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
+  public void testSET_unknownOption_ReturnsError() {
+    List<byte[]> commandArgumentWithUnknownParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "blah".getBytes());
+
+    Command command = new Command(commandArgumentWithUnknownParameter);
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
+
+    assertThat(response.toString())
+        .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
+  public void testSET_numberInUnexpectedPosition_ReturnsError() {
+    List<byte[]> commandArgumentWithUnknownParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "30".getBytes());
+
+    Command command = new Command(commandArgumentWithUnknownParameter);
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
+
+    assertThat(response.toString())
+        .contains(RedisConstants.ERROR_SYNTAX);
   }
 
 }
