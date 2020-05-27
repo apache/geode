@@ -29,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.admin.internal.InetAddressUtils;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
@@ -61,16 +62,19 @@ public class GfshHostNameVerificationDistributedTest {
         .isCA()
         .generate();
 
-    CertificateMaterial locatorCertificate = new CertificateBuilder()
+    String hostname = LocalHostUtil.getCanonicalLocalHostName();
+    final CertificateBuilder builder = new CertificateBuilder()
         .commonName("locator")
         .issuedBy(ca)
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
-        .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanDnsName(LocalHostUtil.getCanonicalLocalHostName())
-        .sanIpAddress(LocalHostUtil.getLocalHost())
-        .sanIpAddress(InetAddress.getLocalHost())
-        .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
-        .generate();
+        .sanDnsName(hostname)
+        .sanIpAddress(InetAddress.getByName("0.0.0.0"));
+    if (InetAddressUtils.isIPLiteral(hostname)) {
+      // no valid hostname for this machine's IP address, so sanDnsName won't work
+      // and we need to use a sanIpAddress
+      builder.sanIpAddress(LocalHostUtil.getLocalHost());
+    }
+    CertificateMaterial locatorCertificate = builder.generate();
 
     CertificateMaterial gfshCertificate = new CertificateBuilder()
         .commonName("gfsh")
