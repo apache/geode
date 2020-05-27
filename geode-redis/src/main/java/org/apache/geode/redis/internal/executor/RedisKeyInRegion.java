@@ -34,7 +34,11 @@ class RedisKeyInRegion {
     if (redisData == null) {
       return false;
     }
-    return localRegion.remove(key) != null;
+    boolean result = localRegion.remove(key) != null;
+    if (result) {
+      regionProvider.cancelKeyExpiration(key);
+    }
+    return result;
   }
 
   public boolean exists(ByteArrayWrapper key) {
