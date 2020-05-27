@@ -119,7 +119,6 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8182")
   public void testSET_shouldSetNX_evenIfKeyContainsOtherDataType() {
     String key = "key";
     String stringValue = "value";
@@ -133,7 +132,6 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8182")
   public void testSET_shouldSetXX_evenIfKeyContainsOtherDataType() {
     String key = "key";
     String stringValue = "value";
@@ -610,6 +608,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8192")
   public void testGetSet_shouldBeAtomic()
       throws ExecutionException, InterruptedException, TimeoutException {
     jedis.set("contestedKey", "0");
@@ -720,6 +719,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8192")
   public void testMGet_concurrentInstances_mustBeAtomic()
       throws InterruptedException, ExecutionException {
     String keyBaseName = "MSETBASE";
@@ -853,6 +853,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8192")
   public void testDecr_shouldBeAtomic() throws ExecutionException, InterruptedException {
     jedis.set("contestedKey", "0");
 
@@ -914,6 +915,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8192")
   public void testIncr_shouldBeAtomic() throws ExecutionException, InterruptedException {
     jedis.set("contestedKey", "0");
 
@@ -922,7 +924,6 @@ public class StringsIntegrationTest {
         (i) -> jedis.incr("contestedKey"),
         (i) -> jedis2.incr("contestedKey"))
             .run();
-
 
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(2 * ITERATION_COUNT));
   }
