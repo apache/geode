@@ -32,16 +32,11 @@ import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.RedisKeyInRegion;
 
-/**
- * This class still uses "synchronized" to protect the underlying HashSet even though all writers do
- * so under the {@link SynchronizedStripedExecutor}. The synchronization on this class can be
- * removed once readers are changed to also use the {@link SynchronizedStripedExecutor}.
- */
 public class RedisSetInRegion extends RedisKeyInRegion implements RedisSetCommands {
 
   @SuppressWarnings("unchecked")
   public RedisSetInRegion(Region<ByteArrayWrapper, RedisData> region) {
-    super(region, null);
+    super(region);
   }
 
   @Override

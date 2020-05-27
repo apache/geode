@@ -322,7 +322,7 @@ public class GeodeRedisServer {
       pubSub = new PubSubImpl(new Subscriptions());
       regionProvider = new RegionProvider(expirationFutures, expirationExecutor, redisData);
 
-      CommandFunction.register(regionProvider);
+      CommandFunction.register();
       scheduleDataExpiration(redisData);
     }
   }

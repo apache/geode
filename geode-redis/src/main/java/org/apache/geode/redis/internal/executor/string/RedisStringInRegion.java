@@ -21,18 +21,17 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.executor.RedisKeyInRegion;
 
-public class RedisStringInRegion implements RedisStringCommands {
-  private final Region<ByteArrayWrapper, RedisData> region;
+public class RedisStringInRegion extends RedisKeyInRegion implements RedisStringCommands {
 
-  @SuppressWarnings("unchecked")
   public RedisStringInRegion(Region<ByteArrayWrapper, RedisData> region) {
-    this.region = region;
+    super(region);
   }
 
   @Override
   public long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend) {
-    RedisString redisString = checkType(region.get(key));
+    RedisString redisString = getRedisString(key);
 
     if (redisString != null) {
       return redisString.append(valueToAppend, region, key);
@@ -44,7 +43,7 @@ public class RedisStringInRegion implements RedisStringCommands {
 
   @Override
   public ByteArrayWrapper get(ByteArrayWrapper key) {
-    RedisString redisString = checkType(region.get(key));
+    RedisString redisString = getRedisString(key);
 
     if (redisString != null) {
       return redisString.get();
@@ -60,12 +59,12 @@ public class RedisStringInRegion implements RedisStringCommands {
         return setnx(key, value);
       }
 
-      if (options.getExists().equals(SetOptions.Exists.XX) && region.get(key) == null) {
+      if (options.getExists().equals(SetOptions.Exists.XX) && getRedisData(key) == null) {
         return false;
       }
     }
 
-    RedisString redisString = checkTypeIsString(region.get(key));
+    RedisString redisString = getRedisStringForSet(key);
 
     if (redisString == null) {
       region.put(key, new RedisString(value));
@@ -77,7 +76,7 @@ public class RedisStringInRegion implements RedisStringCommands {
   }
 
   private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value) {
-    if (region.get(key) != null) {
+    if (getRedisData(key) != null) {
       return false;
     }
     region.put(key, new RedisString(value));
@@ -94,15 +93,13 @@ public class RedisStringInRegion implements RedisStringCommands {
     return (RedisString) redisData;
   }
 
-  private RedisString checkTypeIsString(RedisData redisData) {
-    if (redisData == null || redisData.getType() != REDIS_STRING) {
-      return null;
-    }
-    return (RedisString) redisData;
+  private RedisString getRedisString(ByteArrayWrapper key) {
+    return checkType(getRedisData(key));
   }
 
-  private RedisString checkExists(RedisData redisData) {
-    if (redisData == null) {
+  private RedisString getRedisStringForSet(ByteArrayWrapper key) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null || redisData.getType() != REDIS_STRING) {
       return null;
     }
     return (RedisString) redisData;

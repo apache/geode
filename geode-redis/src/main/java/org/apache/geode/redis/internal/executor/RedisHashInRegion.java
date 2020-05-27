@@ -35,7 +35,7 @@ import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 public class RedisHashInRegion extends RedisKeyInRegion implements RedisHashCommands {
 
   public RedisHashInRegion(Region<ByteArrayWrapper, RedisData> region) {
-    super(region, null);
+    super(region);
   }
 
   @Override

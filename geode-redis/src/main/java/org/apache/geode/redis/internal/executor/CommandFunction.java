@@ -27,7 +27,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.set.RedisSetInRegion;
 import org.apache.geode.redis.internal.executor.set.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.set.StripedExecutor;
@@ -41,11 +40,10 @@ public class CommandFunction extends SingleResultRedisFunction {
   public static final String ID = "REDIS_COMMAND_FUNCTION";
 
   private final transient StripedExecutor stripedExecutor;
-  private RegionProvider regionProvider;
 
-  public static void register(RegionProvider regionProvider) {
+  public static void register() {
     SynchronizedStripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
-    FunctionService.registerFunction(new CommandFunction(stripedExecutor, regionProvider));
+    FunctionService.registerFunction(new CommandFunction(stripedExecutor));
   }
 
   public static <T> T execute(RedisCommandType command,
@@ -64,10 +62,8 @@ public class CommandFunction extends SingleResultRedisFunction {
   }
 
 
-  public CommandFunction(StripedExecutor stripedExecutor,
-      RegionProvider regionProvider) {
+  public CommandFunction(StripedExecutor stripedExecutor) {
     this.stripedExecutor = stripedExecutor;
-    this.regionProvider = regionProvider;
   }
 
   @Override
@@ -82,22 +78,22 @@ public class CommandFunction extends SingleResultRedisFunction {
     boolean useStripedExecutor = true;
     switch (command) {
       case DEL:
-        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).del(key);
+        callable = () -> new RedisKeyInRegion(localRegion).del(key);
         break;
       case EXISTS:
-        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).exists(key);
+        callable = () -> new RedisKeyInRegion(localRegion).exists(key);
         break;
       case PEXPIREAT: {
         long timestamp = (long) args[1];
         callable =
-            () -> new RedisKeyInRegion(localRegion, regionProvider).pexpireat(key, timestamp);
+            () -> new RedisKeyInRegion(localRegion).pexpireat(key, timestamp);
         break;
       }
       case PERSIST:
-        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).persist(key);
+        callable = () -> new RedisKeyInRegion(localRegion).persist(key);
         break;
       case PTTL:
-        callable = () -> new RedisKeyInRegion(localRegion, regionProvider).pttl(key);
+        callable = () -> new RedisKeyInRegion(localRegion).pttl(key);
         break;
       case APPEND: {
         ByteArrayWrapper valueToAdd = (ByteArrayWrapper) args[1];

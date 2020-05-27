@@ -18,16 +18,13 @@ package org.apache.geode.redis.internal.executor;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RegionProvider;
 
 public class RedisKeyInRegion implements RedisKeyCommands {
   protected final Region<ByteArrayWrapper, RedisData> region;
-  private final RegionProvider regionProvider;
 
   @SuppressWarnings("unchecked")
-  public RedisKeyInRegion(Region region, RegionProvider regionProvider) {
+  public RedisKeyInRegion(Region region) {
     this.region = region;
-    this.regionProvider = regionProvider;
   }
 
   @Override
@@ -36,11 +33,7 @@ public class RedisKeyInRegion implements RedisKeyCommands {
     if (redisData == null) {
       return false;
     }
-    boolean result = region.remove(key) != null;
-    if (result) {
-      regionProvider.cancelKeyExpiration(key);
-    }
-    return result;
+    return region.remove(key) != null;
   }
 
   @Override
@@ -54,14 +47,7 @@ public class RedisKeyInRegion implements RedisKeyCommands {
     if (redisData == null) {
       return -2;
     }
-    switch (redisData.getType()) {
-      case REDIS_SET:
-      case REDIS_HASH: {
-        return redisData.pttl(region, key);
-      }
-      default:
-        return regionProvider.getExpirationDelayMillis(key);
-    }
+    return redisData.pttl(region, key);
   }
 
   @Override
@@ -75,19 +61,7 @@ public class RedisKeyInRegion implements RedisKeyCommands {
       // already expired
       del(key);
     } else {
-      switch (redisData.getType()) {
-        case REDIS_SET:
-        case REDIS_HASH:
-          redisData.setExpirationTimestamp(region, key, timestamp);
-          break;
-        default:
-          if (regionProvider.hasExpiration(key)) {
-            regionProvider.modifyExpiration(key, timestamp - now);
-          } else {
-            regionProvider.setExpiration(key, timestamp - now);
-          }
-          break;
-      }
+      redisData.setExpirationTimestamp(region, key, timestamp);
     }
     return 1;
   }
@@ -98,17 +72,7 @@ public class RedisKeyInRegion implements RedisKeyCommands {
     if (redisData == null) {
       return 0;
     }
-    switch (redisData.getType()) {
-      case REDIS_SET:
-      case REDIS_HASH:
-        return redisData.persist(region, key);
-      default:
-        if (regionProvider.cancelKeyExpiration(key)) {
-          return 1;
-        } else {
-          return 0;
-        }
-    }
+    return redisData.persist(region, key);
   }
 
   protected RedisData getRedisData(ByteArrayWrapper key) {
