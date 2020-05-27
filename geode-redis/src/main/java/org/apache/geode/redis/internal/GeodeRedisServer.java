@@ -331,7 +331,7 @@ public class GeodeRedisServer {
         PartitionRegionHelper.getLocalPrimaryData(redisData);
     RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(redisData);
     for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
-      if (entry.getValue().hasExpired()) {
+      if (entry.getValue().hasExpired(now)) {
         // pttl will do its own check using active expiration and expire the key if needed
         redisKeyCommands.pttl(entry.getKey());
       }
