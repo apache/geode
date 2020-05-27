@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -60,13 +59,16 @@ public class RenameExecutor extends StringExecutor {
                   RedisConstants.ERROR_NO_SUCH_KEY));
           return;
         }
+        RedisKeyCommands redisKeyCommands =
+            new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
         switch (redisDataType) {
           case REDIS_STRING:
             // TODO this all needs to be done atomically. Add RENAME support to RedisStringCommands
             RedisStringCommands redisStringCommands =
-                new RedisStringCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+                new RedisStringCommandsFunctionExecutor(
+                    context.getRegionProvider().getDataRegion());
             ByteArrayWrapper value = redisStringCommands.get(key);
-            removeEntry(key, context);
+            redisKeyCommands.del(key);
             redisStringCommands.set(newKey, value, null);
             break;
           case REDIS_HASH:
@@ -74,8 +76,8 @@ public class RenameExecutor extends StringExecutor {
             RedisHashCommands redisHashCommands =
                 new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
             Collection<ByteArrayWrapper> fieldsAndValues = redisHashCommands.hgetall(key);
-            redisHashCommands.del(key);
-            redisHashCommands.del(newKey);
+            redisKeyCommands.del(key);
+            redisKeyCommands.del(newKey);
             redisHashCommands.hset(newKey, new ArrayList<>(fieldsAndValues), false);
             break;
           case REDIS_SET:
@@ -83,8 +85,8 @@ public class RenameExecutor extends StringExecutor {
             RedisSetCommands redisSetCommands =
                 new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
             Set<ByteArrayWrapper> members = redisSetCommands.smembers(key);
-            redisSetCommands.del(key);
-            redisSetCommands.del(newKey);
+            redisKeyCommands.del(key);
+            redisKeyCommands.del(newKey);
             redisSetCommands.sadd(newKey, new ArrayList<>(members));
             break;
           default:

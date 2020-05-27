@@ -18,9 +18,7 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -73,7 +71,6 @@ public class StringSetExecutorJUnitTest {
     when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
 
     executor = spy(new SetExecutor());
-    doAnswer(x -> null).when(executor).checkDataType(any(), any(), any());
   }
 
   @Test

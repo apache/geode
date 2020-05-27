@@ -23,7 +23,6 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class BitOpExecutor extends StringExecutor {
 
@@ -42,15 +41,12 @@ public class BitOpExecutor extends StringExecutor {
 
     String operation = command.getStringKey().toUpperCase();
     ByteArrayWrapper destKey = new ByteArrayWrapper(commandElems.get(2));
-    checkDataType(destKey, RedisDataType.REDIS_STRING, context);
 
     byte[][] values = new byte[commandElems.size() - 3][];
     int maxLength = 0;
     for (int i = 3; i < commandElems.size(); i++) {
       ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
-      checkDataType(key, RedisDataType.REDIS_STRING, context);
-      RedisString redisString = (RedisString) r.get(key);
-      ByteArrayWrapper value = redisString.getValue();
+      ByteArrayWrapper value = getRedisStringCommands(context).get(key);
       if (value == null) {
         values[i - 3] = null;
         continue;
@@ -101,8 +97,7 @@ public class BitOpExecutor extends StringExecutor {
       }
       dest[i] = b;
     }
-    checkAndSetDataType(destKey, context);
-    r.put(destKey, (RedisData) new RedisString(new ByteArrayWrapper(dest)));
+    getRedisStringCommands(context).set(destKey, new ByteArrayWrapper(dest), null);
   }
 
   private void or(ExecutionHandlerContext context, Region<ByteArrayWrapper, RedisData> r,
@@ -120,8 +115,7 @@ public class BitOpExecutor extends StringExecutor {
       }
       dest[i] = b;
     }
-    checkAndSetDataType(destKey, context);
-    r.put(destKey, (RedisData) new RedisString(new ByteArrayWrapper(dest)));
+    getRedisStringCommands(context).set(destKey, new ByteArrayWrapper(dest), null);
   }
 
   private void xor(ExecutionHandlerContext context, Region<ByteArrayWrapper, RedisData> r,
@@ -139,8 +133,7 @@ public class BitOpExecutor extends StringExecutor {
       }
       dest[i] = b;
     }
-    checkAndSetDataType(destKey, context);
-    r.put(destKey, (RedisData) new RedisString(new ByteArrayWrapper(dest)));
+    getRedisStringCommands(context).set(destKey, new ByteArrayWrapper(dest), null);
   }
 
   private void not(ExecutionHandlerContext context, Region<ByteArrayWrapper, RedisData> r,
@@ -154,8 +147,7 @@ public class BitOpExecutor extends StringExecutor {
         dest[i] = (byte) (~cA[i] & 0xFF);
       }
     }
-    checkAndSetDataType(destKey, context);
-    r.put(destKey, (RedisData) new RedisString(new ByteArrayWrapper(dest)));
+    getRedisStringCommands(context).set(destKey, new ByteArrayWrapper(dest), null);
   }
 
 }

@@ -34,7 +34,7 @@ public class ExpirationExecutor implements Runnable {
 
   @Override
   public void run() {
-    regionProvider.removeKey(key, dataType, false);
+    regionProvider.expireKey(key, dataType, false);
   }
 
 

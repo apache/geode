@@ -14,17 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.RedisCommandType.APPEND;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.executor.CommandFunction;
 
 public class AppendExecutor extends StringExecutor {
 
@@ -33,19 +29,12 @@ public class AppendExecutor extends StringExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getDataRegion();
-
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
     byte[] bytesToAppend = commandElems.get(VALUE_INDEX);
     ByteArrayWrapper valueToAppend = new ByteArrayWrapper(bytesToAppend);
-    // TODO: a RedisStringCommandsFunctionExecutor?
 
-    Long returnValue = CommandFunction.execute(APPEND, key, valueToAppend, region);
+    long returnValue = getRedisStringCommands(context).append(key, valueToAppend);
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), returnValue));
   }
-
 }

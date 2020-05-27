@@ -21,7 +21,9 @@ import java.util.List;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.RedisResponse;
 
 public class SMoveExecutor extends SetExecutor {
@@ -39,8 +41,11 @@ public class SMoveExecutor extends SetExecutor {
     ByteArrayWrapper destination = new ByteArrayWrapper(commandElems.get(2));
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(3));
 
-    // TODO: remove the need for this checkDataType call
-    checkDataType(destination, RedisDataType.REDIS_SET, context);
+    // TODO: remove the need for this type check
+    RedisDataType destinationType = context.getKeyRegistrar().getType(destination);
+    if (destinationType != RedisDataType.REDIS_SET) {
+      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+    }
 
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
 

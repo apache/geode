@@ -41,9 +41,8 @@ public class BitCountExecutor extends StringExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    RedisString redisString = (RedisString) r.get(key);
-    ByteArrayWrapper wrapper = redisString.getValue();
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    ByteArrayWrapper wrapper = stringCommands.get(key);
     if (wrapper == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
       return;

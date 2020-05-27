@@ -16,14 +16,12 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SetEXExecutor extends StringExecutor implements Extendable {
@@ -41,12 +39,12 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, RedisData> r = context.getRegionProvider().getDataRegion();
-
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
       return;
     }
+
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     ByteArrayWrapper key = command.getKey();
     byte[] value = commandElems.get(VALUE_INDEX);
@@ -71,8 +69,7 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
       expiration *= AbstractExecutor.millisInSecond;
     }
 
-    checkAndSetDataType(key, context);
-    r.put(key, new RedisString(new ByteArrayWrapper(value)));
+    stringCommands.set(key, new ByteArrayWrapper(value), null);
 
     context.getRegionProvider().setExpiration(key, expiration);
 

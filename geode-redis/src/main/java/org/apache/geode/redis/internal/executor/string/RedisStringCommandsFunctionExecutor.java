@@ -41,7 +41,7 @@ public class RedisStringCommandsFunctionExecutor implements RedisStringCommands 
   }
 
   @Override
-  public RedisString set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
+  public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
     return CommandFunction.execute(SET, key, new Object[] {value, options}, region);
   }
 }

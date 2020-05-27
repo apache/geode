@@ -30,7 +30,6 @@ import org.apache.geode.redis.internal.RedisDataType;
 public class RedisString implements DataSerializable, RedisData {
   private ByteArrayWrapper value;
 
-  // TODO: deltas
   private transient ByteArrayWrapper delta;
 
   public RedisString(ByteArrayWrapper value) {
@@ -38,46 +37,23 @@ public class RedisString implements DataSerializable, RedisData {
   }
 
   // for serialization
-  public RedisString() {
-  }
+  public RedisString() {}
 
-  public int append(ByteArrayWrapper appendValue, Region<ByteArrayWrapper, RedisData> region,
-                    ByteArrayWrapper key) {
-
-    byte[] newValue = concatArrays(value.toBytes(), appendValue.toBytes());
-    value.setBytes(newValue);
-
+  public int append(ByteArrayWrapper appendValue,
+      Region<ByteArrayWrapper, RedisData> region,
+      ByteArrayWrapper key) {
+    value.append(appendValue.toBytes());
     delta = appendValue;
-    try {
-      region.put(key, this);
-    } finally {
-      delta = null;
-    }
+    region.put(key, this);
     return value.length();
   }
 
   public ByteArrayWrapper get() {
-    return value;
+    return new ByteArrayWrapper(value.toBytes());
   }
 
-  public Boolean set(ByteArrayWrapper value, Region<ByteArrayWrapper, RedisData> region,
-                         ByteArrayWrapper key) {
+  public void set(ByteArrayWrapper value) {
     this.value = value;
-    region.put(key, this);
-    return true;
-  }
-
-  public ByteArrayWrapper getValue() {
-    return value;
-  }
-
-  private byte[] concatArrays(byte[] o, byte[] n) {
-    int oLen = o.length;
-    int nLen = n.length;
-    byte[] combined = new byte[oLen + nLen];
-    System.arraycopy(o, 0, combined, 0, oLen);
-    System.arraycopy(n, 0, combined, oLen, nLen);
-    return combined;
   }
 
   @Override
@@ -102,18 +78,21 @@ public class RedisString implements DataSerializable, RedisData {
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeByteArray(delta.toBytes(), out);
+    try {
+      DataSerializer.writeByteArray(delta.toBytes(), out);
+    } finally {
+      delta = null;
+    }
   }
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     try {
-      ByteArrayWrapper delta = new ByteArrayWrapper(DataSerializer.readByteArray(in));
+      byte[] deltaBytes = DataSerializer.readByteArray(in);
       if (value == null) {
-        value = delta;
+        value = new ByteArrayWrapper(deltaBytes);
       } else {
-        byte[] newValue = concatArrays(value.toBytes(), delta.toBytes());
-        value.setBytes(newValue);
+        value.append(deltaBytes);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);

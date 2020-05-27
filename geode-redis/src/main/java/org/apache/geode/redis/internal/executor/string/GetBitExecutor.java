@@ -16,13 +16,11 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisData;
 
 public class GetBitExecutor extends StringExecutor {
 
@@ -32,21 +30,18 @@ public class GetBitExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, RedisData> r = context.getRegionProvider().getDataRegion();
-
     if (commandElems.size() < 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.GETBIT));
       return;
     }
 
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    RedisString redisStringValue = (RedisString) r.get(key);
-    if (redisStringValue == null) {
+
+    ByteArrayWrapper wrapper = getRedisStringCommands(context).get(key);
+    if (wrapper == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
       return;
     }
-    ByteArrayWrapper wrapper = redisStringValue.getValue();
 
     int bit = 0;
     byte[] bytes = wrapper.toBytes();

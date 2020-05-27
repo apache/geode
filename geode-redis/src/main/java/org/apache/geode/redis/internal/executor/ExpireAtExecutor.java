@@ -24,7 +24,6 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
@@ -64,10 +63,9 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
 
     if (timestamp <= currentTimeMillis) {
       int result = NOT_SET;
-      RedisDataType redisDataType = context.getKeyRegistrar().getType(wKey);
-
-      if (redisDataType != null) {
-        regionProvider.getRegionForType(redisDataType).remove(wKey);
+      RedisKeyCommands redisKeyCommands =
+          new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+      if (redisKeyCommands.del(wKey)) {
         result = SET;
       }
 

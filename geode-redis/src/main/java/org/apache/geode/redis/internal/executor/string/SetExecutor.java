@@ -26,7 +26,6 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SetExecutor extends StringExecutor {
@@ -58,24 +57,13 @@ public class SetExecutor extends StringExecutor {
   private void doSet(Command command, ExecutionHandlerContext context, ByteArrayWrapper key,
       ByteArrayWrapper value, RedisStringCommands redisStringCommands, SetOptions setOptions) {
 
-    checkKeyRegistrarAndRemoveKeyIfNeeded(context, key);
     Boolean result = redisStringCommands.set(key, value, setOptions);
 
     if (result) {
-      context.getKeyRegistrar().register(key, RedisDataType.REDIS_STRING);
       command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
       handleExpiration(context, key, setOptions);
     } else {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-    }
-  }
-
-  private void checkKeyRegistrarAndRemoveKeyIfNeeded(ExecutionHandlerContext context,
-      ByteArrayWrapper key) {
-    RedisDataType existingKeyType = context.getKeyRegistrar().getType(key);
-    if (existingKeyType != null && existingKeyType != RedisDataType.REDIS_STRING) {
-      // It already exists. We need to kill it.
-      removeEntry(key, context);
     }
   }
 

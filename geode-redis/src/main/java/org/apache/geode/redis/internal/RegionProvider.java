@@ -48,57 +48,10 @@ public class RegionProvider implements Closeable {
     this.expirationExecutor = expirationExecutor;
   }
 
-  public Region<ByteArrayWrapper, ?> getRegionForType(RedisDataType redisDataType) {
-    if (redisDataType == null) {
-      return null;
-    }
-
-    switch (redisDataType) {
-      case REDIS_STRING:
-      case REDIS_HASH:
-      case REDIS_SET:
-        return dataRegion;
-
-      case REDIS_PUBSUB:
-      default:
-        return null;
-    }
-  }
-
-  public boolean removeKey(ByteArrayWrapper key) {
-    RedisDataType type = keyRegistrar.getType(key);
-    return removeKey(key, type);
-  }
-
-  public boolean removeKey(ByteArrayWrapper key, RedisDataType type) {
-    return removeKey(key, type, true);
-  }
-
-  private boolean typeStoresDataInKeyRegistrar(RedisDataType type) {
-    if (type == RedisDataType.REDIS_SET) {
-      return true;
-    }
-    if (type == RedisDataType.REDIS_HASH) {
-      return true;
-    }
-    if (type == RedisDataType.REDIS_STRING) {
-      return true;
-    }
-    return false;
-  }
-
-  public boolean removeKey(ByteArrayWrapper key, RedisDataType type, boolean cancelExpiration) {
-    if (!typeStoresDataInKeyRegistrar(type)) {
-      keyRegistrar.unregister(key);
-    }
+  public boolean expireKey(ByteArrayWrapper key, RedisDataType type, boolean cancelExpiration) {
     RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(dataRegion);
     try {
-      if (type == RedisDataType.REDIS_STRING || type == RedisDataType.REDIS_SET ||
-          type == RedisDataType.REDIS_HASH) {
-        return redisKeyCommands.del(key);
-      } else {
-        return false;
-      }
+      return redisKeyCommands.del(key);
     } catch (Exception exc) {
       return false;
     } finally {

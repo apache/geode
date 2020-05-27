@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor;
 
-import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -24,12 +23,10 @@ public class FlushAllExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
+    RedisKeyCommands redisKeyCommands =
+        new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
     for (ByteArrayWrapper skey : context.getKeyRegistrar().keys()) {
-      try {
-        removeEntry(skey, context);
-      } catch (EntryDestroyedException e1) {
-        continue;
-      }
+      redisKeyCommands.del(skey);
     }
 
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), "OK"));
