@@ -98,7 +98,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     }
 
     @SuppressWarnings("unchecked")
-    List<String> returnList = (List<String>) getIteration(context.getKeyRegistrar().keys(),
+    List<String> returnList = (List<String>) getIteration(getDataRegion(context).keySet(),
         matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));

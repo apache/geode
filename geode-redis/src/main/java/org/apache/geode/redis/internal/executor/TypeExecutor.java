@@ -21,6 +21,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
 public class TypeExecutor extends AbstractExecutor {
@@ -35,10 +36,12 @@ public class TypeExecutor extends AbstractExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisDataType type = context.getKeyRegistrar().getType(key);
-    if (type == null) {
+    // TODO: add a function for this
+    RedisData redisData = getDataRegion(context).get(key);
+    if (redisData == null) {
       respondBulkStrings(command, context, "none");
     } else {
+      RedisDataType type = redisData.getType();
       respondBulkStrings(command, context, type.toString());
     }
   }

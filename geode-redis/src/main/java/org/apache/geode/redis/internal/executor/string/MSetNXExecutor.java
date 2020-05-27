@@ -14,19 +14,15 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import org.apache.geode.cache.Region;
+import java.util.List;
+
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.executor.RedisKeyCommands;
 
 public class MSetNXExecutor extends StringExecutor {
 
@@ -38,54 +34,34 @@ public class MSetNXExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
-
     if (commandElems.size() < 3 || commandElems.size() % 2 == 0) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.MSETNX));
       return;
     }
 
-    boolean hasEntry = false;
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisKeyCommands keyCommands = getRedisKeyCommands(context);
+    boolean successful = false;
 
-    Map<ByteArrayWrapper, RedisData> map = new HashMap<>();
-
+    // TODO: make this atomic
     for (int i = 1; i < commandElems.size(); i += 2) {
       byte[] keyArray = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
-      try {
-        checkDataType(key, RedisDataType.REDIS_STRING, context);
-      } catch (RedisDataTypeMismatchException e) {
-        hasEntry = true;
-        break;
+      if (keyCommands.exists(key)) {
+        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
+        return;
       }
-      byte[] value = commandElems.get(i + 1);
-      ByteArrayWrapper valueAsByteArray = new ByteArrayWrapper(value);
-      map.put(key, new RedisString(valueAsByteArray));
-      if (region.containsKey(key)) {
-        hasEntry = true;
-        break;
-      }
-    }
-    boolean successful = false;
-    if (!hasEntry) {
-      successful = true;
-      for (ByteArrayWrapper k : map.keySet()) {
-        try {
-          checkAndSetDataType(k, context);
-        } catch (RedisDataTypeMismatchException e) {
-          successful = false;
-          break;
-        }
-      }
-      region.putAll(map);
-    }
-    if (successful) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
-    } else {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
     }
 
+    // none exist so now set them all
+    for (int i = 1; i < commandElems.size(); i += 2) {
+      byte[] keyArray = commandElems.get(i);
+      ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
+      byte[] valueArray = commandElems.get(i + 1);
+      ByteArrayWrapper value = new ByteArrayWrapper(valueArray);
+      stringCommands.set(key, value, null);
+    }
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
   }
 
 }

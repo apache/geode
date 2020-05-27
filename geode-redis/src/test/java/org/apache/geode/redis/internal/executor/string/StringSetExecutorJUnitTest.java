@@ -18,9 +18,7 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -38,7 +36,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RegionProvider;
@@ -60,7 +57,7 @@ public class StringSetExecutorJUnitTest {
     when(context.getRegionProvider()).thenReturn(regionProvider);
 
     region = mock(Region.class);
-    when(regionProvider.getStringsRegion()).thenReturn(region);
+    when(regionProvider.getDataRegion()).thenReturn(region);
 
     ByteBufAllocator allocator = mock(ByteBufAllocator.class);
 
@@ -69,11 +66,7 @@ public class StringSetExecutorJUnitTest {
     when(allocator.buffer(anyInt())).thenReturn(buffer);
     when(context.getByteBufAllocator()).thenReturn(allocator);
 
-    KeyRegistrar keyRegistrar = mock(KeyRegistrar.class);
-    when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
-
     executor = spy(new SetExecutor());
-    doAnswer(x -> null).when(executor).checkDataType(any(), any(), any());
   }
 
   @Test

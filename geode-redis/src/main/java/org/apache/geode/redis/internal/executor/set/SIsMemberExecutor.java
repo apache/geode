@@ -22,21 +22,14 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisResponse;
 
 public class SIsMemberExecutor extends SetExecutor {
-
-  private static final int NOT_EXISTS = 0;
-
   @Override
   public RedisResponse executeCommandWithResponse(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
     ByteArrayWrapper key = command.getKey();
-    if (!context.getKeyRegistrar().isRegistered(key)) {
-      return RedisResponse.integer(NOT_EXISTS);
-    }
-
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+
     boolean exists = redisSetCommands.sismember(key, member);
 
     return RedisResponse.integer(exists);

@@ -39,7 +39,7 @@ public class KeysExecutor extends AbstractExecutor {
     }
 
     String glob = Coder.bytesToString(commandElems.get(1));
-    Set<ByteArrayWrapper> allKeys = context.getKeyRegistrar().keys();
+    Set<ByteArrayWrapper> allKeys = getDataRegion(context).keySet();
     List<String> matchingKeys = new ArrayList<String>();
 
     Pattern pattern;

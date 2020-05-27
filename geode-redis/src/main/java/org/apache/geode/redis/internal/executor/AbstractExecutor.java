@@ -18,6 +18,7 @@ import java.util.Collection;
 
 import io.netty.buffer.ByteBuf;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
@@ -26,9 +27,8 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisResponse;
-import org.apache.geode.redis.internal.RegionProvider;
 
 /**
  * The AbstractExecutor is the base of all {@link Executor} types for the {@link GeodeRedisServer}.
@@ -49,27 +49,6 @@ public abstract class AbstractExecutor implements Executor {
    * Constant of number of milliseconds in a second
    */
   protected static final int millisInSecond = 1000;
-
-  /**
-   * Checks if the given key is associated with the passed expectedDataType. If there is a mismatch,
-   * a {@link RuntimeException} is thrown
-   *
-   * @param key Key to check
-   * @param expectedDataType Type to check to
-   * @param context context
-   */
-  public void checkDataType(ByteArrayWrapper key, RedisDataType expectedDataType,
-      ExecutionHandlerContext context) {
-    context.getKeyRegistrar().validate(key, expectedDataType);
-  }
-
-  protected boolean removeEntry(ByteArrayWrapper key,
-      ExecutionHandlerContext context) {
-
-    RegionProvider rC = context.getRegionProvider();
-    RedisDataType type = context.getKeyRegistrar().getType(key);
-    return rC.removeKey(key, type);
-  }
 
   protected long getBoundedStartIndex(long index, long size) {
     if (size < 0L) {
@@ -118,5 +97,13 @@ public abstract class AbstractExecutor implements Executor {
     } else {
       return RedisResponse.string((String) message);
     }
+  }
+
+  protected RedisKeyCommands getRedisKeyCommands(ExecutionHandlerContext context) {
+    return new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+  }
+
+  protected Region<ByteArrayWrapper, RedisData> getDataRegion(ExecutionHandlerContext context) {
+    return context.getRegionProvider().getDataRegion();
   }
 }
