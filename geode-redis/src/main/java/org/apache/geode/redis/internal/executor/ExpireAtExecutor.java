@@ -63,8 +63,7 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
 
     if (timestamp <= currentTimeMillis) {
       int result = NOT_SET;
-      RedisKeyCommands redisKeyCommands =
-          new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+      RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
       if (redisKeyCommands.del(wKey)) {
         result = SET;
       }

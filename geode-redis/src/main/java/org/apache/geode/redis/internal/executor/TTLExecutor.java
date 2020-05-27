@@ -22,7 +22,6 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class TTLExecutor extends AbstractExecutor implements Extendable {
@@ -42,18 +41,14 @@ public class TTLExecutor extends AbstractExecutor implements Extendable {
 
     ByteArrayWrapper key = command.getKey();
     RegionProvider rC = context.getRegionProvider();
-    boolean exists = false;
-    RedisDataType val = context.getKeyRegistrar().getType(key);
-    if (val != null) {
-      exists = true;
-    }
 
+    boolean exists = getDataRegion(context).containsKey(key);
     if (!exists) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
       return;
     }
-    long ttl = rC.getExpirationDelayMillis(key);
 
+    long ttl = rC.getExpirationDelayMillis(key);
     if (ttl == 0L) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NO_TIMEOUT));
       return;

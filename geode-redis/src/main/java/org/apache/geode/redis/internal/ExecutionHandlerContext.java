@@ -63,11 +63,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private boolean isAuthenticated;
 
-  public KeyRegistrar getKeyRegistrar() {
-    return keyRegistrar;
-  }
-
-  private final KeyRegistrar keyRegistrar;
   private final PubSub pubSub;
 
   public PubSub getPubSub() {
@@ -86,9 +81,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
       GeodeRedisServer server, byte[] password,
-      KeyRegistrar keyRegistrar, PubSub pubSub,
+      PubSub pubSub,
       EventLoopGroup subscriberEventLoopGroup) {
-    this.keyRegistrar = keyRegistrar;
     this.pubSub = pubSub;
     if (channel == null || cache == null || regionProvider == null || server == null) {
       throw new IllegalArgumentException("Only the authentication password may be null");

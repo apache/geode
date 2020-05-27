@@ -25,8 +25,7 @@ public class GetExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
 
     ByteArrayWrapper key = command.getKey();
-    RedisStringCommands redisStringCommands =
-        new RedisStringCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
     ByteArrayWrapper result = redisStringCommands.get(key);
     respondBulkStrings(command, context, result);
   }

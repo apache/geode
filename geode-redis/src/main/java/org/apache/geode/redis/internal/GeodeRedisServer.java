@@ -152,10 +152,8 @@ public class GeodeRedisServer {
 
   /**
    * The name of the region that holds data stored in redis.
-   * Currently this is the meta data but at some point the value for a particular
-   * type will be changed to an instance of {@link RedisData}
    */
-  public static final String REDIS_DATA_REGION = "ReDiS_DaTa";
+  public static final String REDIS_DATA_REGION = "REDIS_DATA";
 
   /**
    * System property name that can be used to set the number of threads to be used by the
@@ -171,13 +169,7 @@ public class GeodeRedisServer {
   private boolean shutdown;
   private boolean started;
 
-  private KeyRegistrar keyRegistrar;
   private PubSub pubSub;
-
-  @VisibleForTesting
-  public KeyRegistrar getKeyRegistrar() {
-    return keyRegistrar;
-  }
 
   /**
    * Helper method to set the number of worker threads
@@ -323,10 +315,8 @@ public class GeodeRedisServer {
         redisData = redisMetaDataFactory.create(REDIS_DATA_REGION);
       }
 
-      keyRegistrar = new KeyRegistrar(redisData);
       pubSub = new PubSubImpl(new Subscriptions());
-      regionProvider = new RegionProvider(keyRegistrar,
-          expirationFutures, expirationExecutor, redisData);
+      regionProvider = new RegionProvider(expirationFutures, expirationExecutor, redisData);
 
       CommandFunction.register(regionProvider);
     }
@@ -421,8 +411,7 @@ public class GeodeRedisServer {
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, cache, regionProvider, GeodeRedisServer.this,
-                redisPasswordBytes,
-                keyRegistrar, pubSub, subscriberGroup));
+                redisPasswordBytes, pubSub, subscriberGroup));
       }
     };
   }

@@ -17,16 +17,10 @@ package org.apache.geode.redis.internal.executor.string;
 
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.RedisKeyCommandsFunctionExecutor;
 
 public abstract class StringExecutor extends AbstractExecutor {
 
   protected RedisStringCommands getRedisStringCommands(ExecutionHandlerContext context) {
     return new RedisStringCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
-  }
-
-  protected RedisKeyCommands getRedisKeyCommands(ExecutionHandlerContext context) {
-    return new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
   }
 }

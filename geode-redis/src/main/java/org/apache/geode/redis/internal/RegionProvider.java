@@ -26,24 +26,17 @@ import org.apache.geode.redis.internal.executor.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.RedisKeyCommandsFunctionExecutor;
 
 public class RegionProvider implements Closeable {
-  /**
-   * This is the Redis meta data {@link Region} that holds the {@link RedisDataType} information for
-   * all Regions created. The mapping is a {@link String} key which is the name of the {@link
-   * Region} created to hold the data to the RedisDataType it contains.
-   */
-  private final KeyRegistrar keyRegistrar;
 
   private final Region<ByteArrayWrapper, RedisData> dataRegion;
 
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap;
   private final ScheduledExecutorService expirationExecutor;
 
-  public RegionProvider(KeyRegistrar keyRegistrar,
+  public RegionProvider(
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor,
       Region<ByteArrayWrapper, RedisData> dataRegion) {
     this.dataRegion = dataRegion;
-    this.keyRegistrar = keyRegistrar;
     this.expirationsMap = expirationsMap;
     this.expirationExecutor = expirationExecutor;
   }
@@ -78,12 +71,12 @@ public class RegionProvider implements Closeable {
    * @return True is expiration set, false otherwise
    */
   public boolean setExpiration(ByteArrayWrapper key, long delay) {
-    RedisDataType type = keyRegistrar.getType(key);
-    if (type == null) {
+
+    if (!getDataRegion().containsKey(key)) {
       return false;
     }
     ScheduledFuture<?> future = expirationExecutor
-        .schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
+        .schedule(new ExpirationExecutor(key, null, this), delay, TimeUnit.MILLISECONDS);
     expirationsMap.put(key, future);
     return true;
   }
@@ -105,13 +98,12 @@ public class RegionProvider implements Closeable {
       return false;
     }
 
-    RedisDataType type = keyRegistrar.getType(key);
-    if (type == null) {
+    if (!getDataRegion().containsKey(key)) {
       return false;
     }
 
     ScheduledFuture<?> future = expirationExecutor
-        .schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
+        .schedule(new ExpirationExecutor(key, null, this), delay, TimeUnit.MILLISECONDS);
     expirationsMap.put(key, future);
     return true;
   }

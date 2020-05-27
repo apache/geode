@@ -25,6 +25,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionExecutor;
@@ -47,15 +48,15 @@ public class RenameExecutor extends StringExecutor {
     ByteArrayWrapper key = command.getKey();
     ByteArrayWrapper newKey = new ByteArrayWrapper(commandElems.get(2));
 
-    RedisDataType redisDataType = context.getKeyRegistrar().getType(key);
-    if (redisDataType == null) {
+    RedisData redisData = getDataRegion(context).get(key);
+    if (redisData == null) {
       command.setResponse(
           Coder.getErrorResponse(context.getByteBufAllocator(),
               RedisConstants.ERROR_NO_SUCH_KEY));
       return;
     }
-    RedisKeyCommands redisKeyCommands =
-        new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    RedisDataType redisDataType = redisData.getType();
+    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
     switch (redisDataType) {
       case REDIS_STRING:
         // TODO this all needs to be done atomically. Add RENAME support to RedisStringCommands

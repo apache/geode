@@ -36,7 +36,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RegionProvider;
@@ -66,9 +65,6 @@ public class StringSetExecutorJUnitTest {
     when(allocator.buffer()).thenReturn(buffer);
     when(allocator.buffer(anyInt())).thenReturn(buffer);
     when(context.getByteBufAllocator()).thenReturn(allocator);
-
-    KeyRegistrar keyRegistrar = mock(KeyRegistrar.class);
-    when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
 
     executor = spy(new SetExecutor());
   }

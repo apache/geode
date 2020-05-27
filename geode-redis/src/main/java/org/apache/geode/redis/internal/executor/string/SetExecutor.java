@@ -20,12 +20,10 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SetExecutor extends StringExecutor {
@@ -39,10 +37,7 @@ public class SetExecutor extends StringExecutor {
     ByteArrayWrapper keyToSet = command.getKey();
     ByteArrayWrapper valueToSet = getValueToSet(commandElems);
 
-    Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getDataRegion();
-
-    RedisStringCommands redisStringCommands = new RedisStringCommandsFunctionExecutor(region);
+    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
     SetOptions setOptions;
     try {
       setOptions = parseCommandElems(commandElems);

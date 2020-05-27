@@ -18,6 +18,8 @@ import java.util.Collection;
 
 import io.netty.buffer.ByteBuf;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
@@ -25,6 +27,7 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisResponse;
 
 /**
@@ -94,5 +97,13 @@ public abstract class AbstractExecutor implements Executor {
     } else {
       return RedisResponse.string((String) message);
     }
+  }
+
+  protected RedisKeyCommands getRedisKeyCommands(ExecutionHandlerContext context) {
+    return new RedisKeyCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+  }
+
+  protected Region<ByteArrayWrapper, RedisData> getDataRegion(ExecutionHandlerContext context) {
+    return context.getRegionProvider().getDataRegion();
   }
 }
