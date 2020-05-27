@@ -27,6 +27,8 @@ import java.util.concurrent.locks.Lock;
 
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -1361,26 +1363,76 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * in the specified map. This operation will be distributed to other caches if the scope is not
    * <code>Scope.LOCAL</code>.
    *
-   * @param map the key/value pairs to put in this region.
+   * If an exception is thrown due to this call, it can imply that there may have been a partial
+   * update performed on the region.
+   * <p>
+   *
+   * @param map the key/value pairs to put in this region
+   * @throws ServerOperationException if called from a client, and the server throws an exception
+   *         such as CacheWriterException, PartitionedRegionStorageException or LowMemoryException.
+   *         These server exceptions become the ServerOperationException cause
+   * @throws ServerConnectivityException if called from a client, and the server throws
+   *         CancelException. CancelException will be the ServerConnectivityException cause
+   * @throws NullPointerException if the key is null, if the value is null (use invalidate instead),
+   *         or if the key or value do not meet serialization requirements
+   * @throws ClassCastException if key does not satisfy the keyConstraint
+   * @throws org.apache.geode.distributed.LeaseExpiredException if the lease expired on a
+   *         distributed lock, for regions with Scope.GLOBAL
+   * @throws TimeoutException if the call timed out waiting to acquire a distributed lock for
+   *         regions with Scope.GLOBAL
+   * @throws CacheWriterException if a CacheWriter aborts the operation
+   * @throws PartitionedRegionStorageException if the operation could not be completed on a
+   *         partitioned region
+   * @throws LowMemoryException if a low memory condition is detected
+   * @see #invalidate(Object)
+   * @see CacheLoader#load
+   * @see CacheListener#afterCreate
+   * @see CacheListener#afterUpdate
+   * @see CacheWriter#beforeCreate
+   * @see CacheWriter#beforeUpdate
    * @since GemFire 5.0
    * @see java.util.Map#putAll(Map map)
-   * @throws LowMemoryException if a low memory condition is detected.
    */
   @Override
   void putAll(Map<? extends K, ? extends V> map);
 
   /**
    * Copies all of the entries from the specified map to this region. The effect of this call is
-   * equivalent to that of calling {@link #put(Object, Object, Object)} on this region once for each
-   * entry in the specified map. This operation will be distributed to other caches if the scope is
-   * not <code>Scope.LOCAL</code>.
+   * equivalent to that of calling {@link #put(Object, Object)} on this region once for each entry
+   * in the specified map. This operation will be distributed to other caches if the scope is not
+   * <code>Scope.LOCAL</code>.
    *
-   * @param map the key/value pairs to put in this region.
+   * If an exception is thrown due to this call, it can imply that there may have been a partial
+   * update performed on the region.
+   * <p>
+   *
+   * @param map the key/value pairs to put in this region
    * @param aCallbackArgument a user-defined parameter to pass to callback events triggered by this
-   *        method. May be null. Must be serializable if this operation is distributed.
+   *        method. May be null. Must be serializable if this operation is distributed
+   * @throws ServerOperationException if called from a client, and the server throws an exception
+   *         such as CacheWriterException, PartitionedRegionStorageException or LowMemoryException.
+   *         These server exceptions become the ServerOperationException cause
+   * @throws ServerConnectivityException if called from a client, and the server throws
+   *         CancelException. CancelException will be the ServerConnectivityException cause
+   * @throws NullPointerException if the key is null, if the value is null (use invalidate instead),
+   *         or if the key or value do not meet serialization requirements
+   * @throws ClassCastException if key does not satisfy the keyConstraint
+   * @throws org.apache.geode.distributed.LeaseExpiredException if the lease expired on a
+   *         distributed lock, for regions with Scope.GLOBAL
+   * @throws TimeoutException if the call timed out waiting to acquire a distributed lock for
+   *         regions with Scope.GLOBAL
+   * @throws CacheWriterException if a CacheWriter aborts the operation
+   * @throws PartitionedRegionStorageException if the operation could not be completed on a
+   *         partitioned region
+   * @throws LowMemoryException if a low memory condition is detected
+   * @see #invalidate(Object)
+   * @see CacheLoader#load
+   * @see CacheListener#afterCreate
+   * @see CacheListener#afterUpdate
+   * @see CacheWriter#beforeCreate
+   * @see CacheWriter#beforeUpdate
    * @since GemFire 8.1
    * @see java.util.Map#putAll(Map map)
-   * @throws LowMemoryException if a low memory condition is detected.
    */
   void putAll(Map<? extends K, ? extends V> map, Object aCallbackArgument);
 
