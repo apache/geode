@@ -31,9 +31,9 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -67,7 +67,7 @@ public class GetRequestOperationHandlerJUnitTest
   @Test
   public void processReturnsTheEncodedValueFromTheRegion() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, false);
-    Result<RegionAPI.GetResponse> result =
+    ProtobufResult<RegionAPI.GetResponse> result =
         operationHandler.process(serializationService, getRequest,
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
@@ -91,7 +91,7 @@ public class GetRequestOperationHandlerJUnitTest
   @Test
   public void processReturnsKeyNotFoundWhenKeyIsNotFound() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, true, false);
-    Result<?> response = operationHandler.process(serializationService, getRequest,
+    ProtobufResult<?> response = operationHandler.process(serializationService, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertThat(response).isInstanceOf(Success.class);
@@ -100,7 +100,7 @@ public class GetRequestOperationHandlerJUnitTest
   @Test
   public void processReturnsLookupFailureWhenKeyFoundWithNoValue() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, true);
-    Result<RegionAPI.GetResponse> response = operationHandler.process(serializationService,
+    ProtobufResult<RegionAPI.GetResponse> response = operationHandler.process(serializationService,
         getRequest, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertThat(response).isInstanceOf(Success.class);

@@ -19,9 +19,9 @@ import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -31,7 +31,7 @@ public class PutIfAbsentRequestOperationHandler implements
     ProtobufOperationHandler<RegionAPI.PutIfAbsentRequest, RegionAPI.PutIfAbsentResponse> {
 
   @Override
-  public Result<RegionAPI.PutIfAbsentResponse> process(
+  public ProtobufResult<RegionAPI.PutIfAbsentResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.PutIfAbsentRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException,
       ConnectionStateException, EncodingException, DecodingException {

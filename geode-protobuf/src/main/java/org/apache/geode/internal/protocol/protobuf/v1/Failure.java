@@ -20,7 +20,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ExceptionWithErrorCode;
 
 @Experimental
-public class Failure<SuccessType> implements Result<SuccessType> {
+public class Failure<SuccessType> implements ProtobufResult<SuccessType> {
   private final ClientProtocol.ErrorResponse failureType;
 
   private Failure(ClientProtocol.ErrorResponse failureType) {

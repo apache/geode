@@ -33,8 +33,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -63,8 +63,9 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   public void newEntrySucceeds() throws Exception {
     when(regionMock.putIfAbsent(TEST_KEY, TEST_VALUE)).thenReturn(null);
 
-    Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
-        generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    ProtobufResult<RegionAPI.PutIfAbsentResponse> result1 =
+        operationHandler.process(serializationService,
+            generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertNull(serializationService.decode(result1.getMessage().getOldValue()));
 
@@ -76,8 +77,9 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   public void existingEntryFails() throws Exception {
     when(regionMock.putIfAbsent(TEST_KEY, TEST_VALUE)).thenReturn(1);
 
-    Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
-        generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    ProtobufResult<RegionAPI.PutIfAbsentResponse> result1 =
+        operationHandler.process(serializationService,
+            generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertNotNull(serializationService.decode(result1.getMessage().getOldValue()));
 
@@ -91,8 +93,9 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
         RegionAPI.PutIfAbsentRequest.newBuilder().setRegionName(TEST_REGION)
             .setEntry(ProtobufUtilities.createEntry(serializationService, TEST_KEY, null)).build();
 
-    Result<RegionAPI.PutIfAbsentResponse> response = operationHandler.process(serializationService,
-        request, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    ProtobufResult<RegionAPI.PutIfAbsentResponse> response =
+        operationHandler.process(serializationService,
+            request, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertNull(serializationService.decode(response.getMessage().getOldValue()));
 
@@ -105,8 +108,9 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
         .setRegionName(TEST_REGION)
         .setEntry(ProtobufUtilities.createEntry(serializationService, null, TEST_VALUE)).build();
 
-    Result<RegionAPI.PutIfAbsentResponse> response = operationHandler.process(serializationService,
-        request, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    ProtobufResult<RegionAPI.PutIfAbsentResponse> response =
+        operationHandler.process(serializationService,
+            request, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertNull(serializationService.decode(response.getMessage().getOldValue()));
 
@@ -115,7 +119,7 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
 
   @Test(expected = DecodingException.class)
   public void unsetEntrythrowsDecodingException() throws Exception {
-    Result<RegionAPI.PutIfAbsentResponse> result1 =
+    ProtobufResult<RegionAPI.PutIfAbsentResponse> result1 =
         operationHandler.process(serializationService, generateTestRequest(true, false),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
@@ -126,7 +130,7 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   @Test
   public void unsetRegionGetsServerError() throws Exception {
     expectedException.expect(RegionDestroyedException.class);
-    Result<RegionAPI.PutIfAbsentResponse> result1 =
+    ProtobufResult<RegionAPI.PutIfAbsentResponse> result1 =
         operationHandler.process(serializationService, generateTestRequest(false, true),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
   }
@@ -136,8 +140,9 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
 
     expectedException.expect(RegionDestroyedException.class);
-    Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
-        generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    ProtobufResult<RegionAPI.PutIfAbsentResponse> result1 =
+        operationHandler.process(serializationService,
+            generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
   }
 
   /**
@@ -147,8 +152,9 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   public void unsupportedOperation() throws Exception {
     when(regionMock.putIfAbsent(any(), any())).thenThrow(new UnsupportedOperationException());
 
-    Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
-        generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    ProtobufResult<RegionAPI.PutIfAbsentResponse> result1 =
+        operationHandler.process(serializationService,
+            generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
     assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST,
         result1.getErrorMessage().getError().getErrorCode());
   }

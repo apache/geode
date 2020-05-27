@@ -26,9 +26,9 @@ import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
@@ -41,7 +41,8 @@ public class GetAllRequestOperationHandler
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.GetAllResponse> process(ProtobufSerializationService serializationService,
+  public ProtobufResult<RegionAPI.GetAllResponse> process(
+      ProtobufSerializationService serializationService,
       RegionAPI.GetAllRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, DecodingException, ConnectionStateException {
     String regionName = request.getRegionName();

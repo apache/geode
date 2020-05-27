@@ -42,10 +42,10 @@ import org.apache.geode.internal.protocol.protobuf.security.SecureCacheImpl;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.EncodedValue;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -106,7 +106,7 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
       throws InvalidExecutionContextException, EncodingException,
       DecodingException {
     ProtobufSerializationService serializer = new ProtobufSerializationService();
-    final Result<OQLQueryResponse> results =
+    final ProtobufResult<OQLQueryResponse> results =
         invokeHandler(query, new EncodedValue[] {}, serializer);
 
     assertEquals(serializer.encode(value), results.getMessage().getSingleResult());
@@ -116,7 +116,7 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
       throws InvalidExecutionContextException, EncodingException,
       DecodingException {
     ProtobufSerializationService serializer = new ProtobufSerializationService();
-    final Result<OQLQueryResponse> results =
+    final ProtobufResult<OQLQueryResponse> results =
         invokeHandler(query, new EncodedValue[] {}, serializer);
 
     List<EncodedValue> expected =
@@ -128,7 +128,8 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
       final Object[]... rows) throws InvalidExecutionContextException,
       EncodingException, DecodingException {
     ProtobufSerializationService serializer = new ProtobufSerializationService();
-    final Result<OQLQueryResponse> results = invokeHandler(query, bindParameters, serializer);
+    final ProtobufResult<OQLQueryResponse> results =
+        invokeHandler(query, bindParameters, serializer);
 
     List<BasicTypes.EncodedValueList> expected = new ArrayList<>();
     for (Object[] row : rows) {
@@ -142,7 +143,8 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
         results.getMessage().getTableResult().getFieldNameList());
   }
 
-  private Result<OQLQueryResponse> invokeHandler(String query, EncodedValue[] bindParameters,
+  private ProtobufResult<OQLQueryResponse> invokeHandler(String query,
+      EncodedValue[] bindParameters,
       ProtobufSerializationService serializer) throws InvalidExecutionContextException,
       EncodingException, DecodingException {
     final MessageExecutionContext context = mock(MessageExecutionContext.class);

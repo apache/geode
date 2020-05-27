@@ -32,9 +32,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRegionNamesRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRegionNamesResponse;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -62,7 +62,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest
 
   @Test
   public void processReturnsCacheRegions() throws Exception {
-    Result<GetRegionNamesResponse> result = operationHandler.process(serializationService,
+    ProtobufResult<GetRegionNamesResponse> result = operationHandler.process(serializationService,
         ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(cacheStub));
     assertThat(result).isInstanceOf(Success.class);
@@ -78,7 +78,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest
     InternalCache emptyCache = mock(InternalCacheForClientAccess.class);
     doReturn(emptyCache).when(emptyCache).getCacheForProcessingClientRequests();
     when(emptyCache.rootRegions()).thenReturn(Collections.unmodifiableSet(Collections.emptySet()));
-    Result<GetRegionNamesResponse> result = operationHandler.process(serializationService,
+    ProtobufResult<GetRegionNamesResponse> result = operationHandler.process(serializationService,
         ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(emptyCache));
     assertThat(result).isInstanceOf(Success.class);

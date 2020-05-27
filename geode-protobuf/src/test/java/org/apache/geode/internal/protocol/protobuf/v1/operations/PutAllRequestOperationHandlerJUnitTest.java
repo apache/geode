@@ -34,9 +34,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -99,7 +99,7 @@ public class PutAllRequestOperationHandlerJUnitTest
 
   @Test
   public void processInsertsMultipleValidEntriesInCache() throws Exception {
-    Result<?> result =
+    ProtobufResult<?> result =
         operationHandler.process(serializationService, generateTestRequest(false, true),
             getNoAuthCacheExecutionContext(cacheStub));
 
@@ -112,7 +112,7 @@ public class PutAllRequestOperationHandlerJUnitTest
 
   @Test
   public void processWithInvalidEntrySucceedsAndReturnsFailedKey() throws Exception {
-    Result<RegionAPI.PutAllResponse> result =
+    ProtobufResult<RegionAPI.PutAllResponse> result =
         operationHandler.process(serializationService, generateTestRequest(true, true),
             getNoAuthCacheExecutionContext(cacheStub));
 
@@ -130,7 +130,7 @@ public class PutAllRequestOperationHandlerJUnitTest
 
   @Test
   public void processWithNoEntriesPasses() throws Exception {
-    Result<?> result = operationHandler.process(serializationService,
+    ProtobufResult<?> result = operationHandler.process(serializationService,
         generateTestRequest(false, false), getNoAuthCacheExecutionContext(cacheStub));
 
     assertThat(result).isInstanceOf(Success.class);

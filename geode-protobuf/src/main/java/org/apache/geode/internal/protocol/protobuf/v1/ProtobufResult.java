@@ -12,18 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import java.util.function.Function;
 
-import org.apache.geode.annotations.Experimental;
+import org.apache.geode.services.result.Result;
 
-@Experimental
-public interface Result<SuccessType> {
+public interface ProtobufResult<SuccessType>
+    extends Result<SuccessType, ClientProtocol.ErrorResponse> {
+  @Override
   <T> T map(Function<SuccessType, T> successFunction,
       Function<ClientProtocol.ErrorResponse, T> errorFunction);
 
+  @Override
   SuccessType getMessage();
 
+  @Override
   ClientProtocol.ErrorResponse getErrorMessage();
 }

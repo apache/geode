@@ -16,8 +16,8 @@ package org.apache.geode.internal.protocol.operations;
 
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
@@ -37,7 +37,7 @@ public interface ProtobufOperationHandler<Req, Resp> {
    * @throws ConnectionStateException if the connection is in an invalid state for the operation in
    *         question.
    */
-  Result<Resp> process(ProtobufSerializationService serializationService, Req request,
+  ProtobufResult<Resp> process(ProtobufSerializationService serializationService, Req request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException,
       ConnectionStateException, EncodingException, DecodingException;
 }

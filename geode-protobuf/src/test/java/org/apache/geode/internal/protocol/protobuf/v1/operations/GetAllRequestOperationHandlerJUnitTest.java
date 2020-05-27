@@ -39,10 +39,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetAllResponse;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -108,7 +108,7 @@ public class GetAllRequestOperationHandlerJUnitTest
 
   @Test
   public void processReturnsExpectedValuesForValidKeys() throws Exception {
-    Result<GetAllResponse> result =
+    ProtobufResult<GetAllResponse> result =
         operationHandler.process(serializationService, generateTestRequest(true, false),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
@@ -127,7 +127,7 @@ public class GetAllRequestOperationHandlerJUnitTest
 
   @Test
   public void processReturnsNoEntriesForNoKeysRequested() throws Exception {
-    Result<GetAllResponse> result =
+    ProtobufResult<GetAllResponse> result =
         operationHandler.process(serializationService, generateTestRequest(false, false),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
@@ -145,8 +145,9 @@ public class GetAllRequestOperationHandlerJUnitTest
     testKeys.add(serializationService.encode(NO_VALUE_PRESENT_FOR_THIS_KEY));
     RegionAPI.GetAllRequest getAllRequest =
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, testKeys);
-    Result<GetAllResponse> result = operationHandler.process(serializationService, getAllRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    ProtobufResult<GetAllResponse> result =
+        operationHandler.process(serializationService, getAllRequest,
+            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertThat(result).isInstanceOf(Success.class);
     GetAllResponse message = result.getMessage();
@@ -160,7 +161,7 @@ public class GetAllRequestOperationHandlerJUnitTest
 
   @Test
   public void multipleKeysWhereOneThrows() throws Exception {
-    Result<GetAllResponse> result =
+    ProtobufResult<GetAllResponse> result =
         operationHandler.process(serializationService, generateTestRequest(true, true),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 

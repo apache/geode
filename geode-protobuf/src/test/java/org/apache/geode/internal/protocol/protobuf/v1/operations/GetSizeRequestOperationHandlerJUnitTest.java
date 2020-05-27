@@ -37,8 +37,8 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -74,8 +74,10 @@ public class GetSizeRequestOperationHandlerJUnitTest
     when(regionAttributesStub.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
 
 
-    Result<RegionAPI.GetSizeResponse> result = operationHandler.process(serializationService,
-        MessageUtil.makeGetSizeRequest(TEST_REGION1), getNoAuthCacheExecutionContext(cacheStub));
+    ProtobufResult<RegionAPI.GetSizeResponse> result =
+        operationHandler.process(serializationService,
+            MessageUtil.makeGetSizeRequest(TEST_REGION1),
+            getNoAuthCacheExecutionContext(cacheStub));
     RegionAPI.GetSizeResponse response = result.getMessage();
     assertThat(response.getSize()).isEqualTo(10);
   }

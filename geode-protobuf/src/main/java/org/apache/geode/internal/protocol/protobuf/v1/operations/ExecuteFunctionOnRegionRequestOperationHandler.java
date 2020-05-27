@@ -27,8 +27,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -40,7 +40,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandler implements
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<ExecuteFunctionOnRegionResponse> process(
+  public ProtobufResult<ExecuteFunctionOnRegionResponse> process(
       ProtobufSerializationService serializationService, ExecuteFunctionOnRegionRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException,
       ConnectionStateException, EncodingException, DecodingException {

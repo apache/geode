@@ -20,9 +20,9 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -32,7 +32,7 @@ public class GetSizeRequestOperationHandler
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.GetSizeResponse> process(
+  public ProtobufResult<RegionAPI.GetSizeResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.GetSizeRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();

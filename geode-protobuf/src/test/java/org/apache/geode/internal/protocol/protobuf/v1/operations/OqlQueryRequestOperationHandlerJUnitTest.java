@@ -44,9 +44,9 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
@@ -77,8 +77,9 @@ public class OqlQueryRequestOperationHandlerJUnitTest
     when(query.execute((Object[]) any())).thenReturn(STRING_RESULT_1);
     final OQLQueryRequest request =
         OQLQueryRequest.newBuilder().setQuery(SELECT_STAR_QUERY).build();
-    final Result<OQLQueryResponse> result = operationHandler.process(serializationService, request,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    final ProtobufResult<OQLQueryResponse> result =
+        operationHandler.process(serializationService, request,
+            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertEquals(serializationService.encode(STRING_RESULT_1),
         result.getMessage().getSingleResult());
@@ -99,8 +100,9 @@ public class OqlQueryRequestOperationHandlerJUnitTest
     when(query.execute((Object[]) any())).thenReturn(results);
     final OQLQueryRequest request =
         OQLQueryRequest.newBuilder().setQuery(SELECT_STAR_QUERY).build();
-    final Result<OQLQueryResponse> result = operationHandler.process(serializationService, request,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    final ProtobufResult<OQLQueryResponse> result =
+        operationHandler.process(serializationService, request,
+            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertEquals(Arrays.asList(STRING_RESULT_1, STRING_RESULT_2),
         result.getMessage().getListResult().getElementList().stream()
@@ -126,8 +128,9 @@ public class OqlQueryRequestOperationHandlerJUnitTest
     final OQLQueryRequest request =
         OQLQueryRequest.newBuilder().setQuery(SELECT_STAR_QUERY).build();
 
-    final Result<OQLQueryResponse> result = operationHandler.process(serializationService, request,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    final ProtobufResult<OQLQueryResponse> result =
+        operationHandler.process(serializationService, request,
+            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertEquals(
         Arrays.asList(

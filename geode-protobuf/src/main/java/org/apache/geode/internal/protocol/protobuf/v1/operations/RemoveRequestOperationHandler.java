@@ -23,9 +23,9 @@ import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 
@@ -35,7 +35,8 @@ public class RemoveRequestOperationHandler
   private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<RegionAPI.RemoveResponse> process(ProtobufSerializationService serializationService,
+  public ProtobufResult<RegionAPI.RemoveResponse> process(
+      ProtobufSerializationService serializationService,
       RegionAPI.RemoveRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, DecodingException {
 

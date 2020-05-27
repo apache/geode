@@ -25,6 +25,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.services.result.Result;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -82,7 +83,7 @@ public class ProtobufOpsProcessor {
   }
 
   @SuppressWarnings("unchecked")
-  private Result<?> processOperation(ClientProtocol.Message request,
+  private ProtobufResult<?> processOperation(ClientProtocol.Message request,
       MessageExecutionContext context,
       ClientProtocol.Message.MessageTypeCase requestType,
       @SuppressWarnings("rawtypes") ProtobufOperationContext operationContext)

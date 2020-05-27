@@ -22,9 +22,9 @@ import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -34,7 +34,8 @@ public class GetRequestOperationHandler
     implements ProtobufOperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
 
   @Override
-  public Result<RegionAPI.GetResponse> process(ProtobufSerializationService serializationService,
+  public ProtobufResult<RegionAPI.GetResponse> process(
+      ProtobufSerializationService serializationService,
       RegionAPI.GetRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, EncodingException, DecodingException {
     String regionName = request.getRegionName();

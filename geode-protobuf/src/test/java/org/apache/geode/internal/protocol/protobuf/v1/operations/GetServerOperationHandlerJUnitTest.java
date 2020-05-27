@@ -36,7 +36,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI.GetServerRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI.GetServerResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -66,7 +66,7 @@ public class GetServerOperationHandlerJUnitTest
 
     GetServerRequest getServerRequest =
         ProtobufRequestUtilities.createGetServerRequest();
-    Result<?> result = getOperationHandlerResult(getServerRequest);
+    ProtobufResult<?> result = getOperationHandlerResult(getServerRequest);
     assertThat(result).isInstanceOf(Success.class);
     validateGetServerResponse((GetServerResponse) result.getMessage());
   }
@@ -77,7 +77,7 @@ public class GetServerOperationHandlerJUnitTest
 
     GetServerRequest getServerRequest =
         ProtobufRequestUtilities.createGetServerRequest();
-    Result<?> result = getOperationHandlerResult(getServerRequest);
+    ProtobufResult<?> result = getOperationHandlerResult(getServerRequest);
     assertThat(result).isInstanceOf(Failure.class);
     Failure<?> failure = (Failure<?>) result;
     ClientProtocol.ErrorResponse errorResponse = failure.getErrorMessage();
@@ -92,7 +92,7 @@ public class GetServerOperationHandlerJUnitTest
 
     GetServerRequest getServerRequest =
         ProtobufRequestUtilities.createGetServerRequest(EXISTENT_GROUP);
-    Result<?> result = getOperationHandlerResult(getServerRequest);
+    ProtobufResult<?> result = getOperationHandlerResult(getServerRequest);
     assertThat(result).isInstanceOf(Success.class);
     validateGetServerResponse((GetServerResponse) result.getMessage());
   }
@@ -105,7 +105,7 @@ public class GetServerOperationHandlerJUnitTest
 
     GetServerRequest getServerRequest =
         ProtobufRequestUtilities.createGetServerRequest(NONEXISTENT_GROUP);
-    Result<?> result = getOperationHandlerResult(getServerRequest);
+    ProtobufResult<?> result = (ProtobufResult<?>) getOperationHandlerResult(getServerRequest);
     assertThat(result).isInstanceOf(Failure.class);
     Failure<?> failure = (Failure<?>) result;
     ClientProtocol.ErrorResponse errorResponse = failure.getErrorMessage();
@@ -113,7 +113,8 @@ public class GetServerOperationHandlerJUnitTest
     assertThat(errorResponse.getError().getMessage()).contains(NONEXISTENT_GROUP);
   }
 
-  private Result<GetServerResponse> getOperationHandlerResult(GetServerRequest GetServerRequest)
+  private ProtobufResult<GetServerResponse> getOperationHandlerResult(
+      GetServerRequest GetServerRequest)
       throws Exception {
     return operationHandler.process(serializationService, GetServerRequest,
         TestExecutionContext.getLocatorExecutionContext(internalLocatorMock));

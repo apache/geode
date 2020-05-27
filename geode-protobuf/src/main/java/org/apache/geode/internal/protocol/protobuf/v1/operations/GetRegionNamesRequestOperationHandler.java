@@ -20,9 +20,9 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 
 @Experimental
@@ -30,7 +30,7 @@ public class GetRegionNamesRequestOperationHandler implements
     ProtobufOperationHandler<RegionAPI.GetRegionNamesRequest, RegionAPI.GetRegionNamesResponse> {
 
   @Override
-  public Result<RegionAPI.GetRegionNamesResponse> process(
+  public ProtobufResult<RegionAPI.GetRegionNamesResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.GetRegionNamesRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 

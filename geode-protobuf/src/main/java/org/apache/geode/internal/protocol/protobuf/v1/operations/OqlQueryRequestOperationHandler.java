@@ -29,11 +29,11 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.EncodedValue;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse.Builder;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -44,7 +44,8 @@ public class OqlQueryRequestOperationHandler
   Logger logger = LogService.getLogger();
 
   @Override
-  public Result<OQLQueryResponse> process(final ProtobufSerializationService serializationService,
+  public ProtobufResult<OQLQueryResponse> process(
+      final ProtobufSerializationService serializationService,
       final OQLQueryRequest request, final MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, EncodingException,
       DecodingException {

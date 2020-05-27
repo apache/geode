@@ -24,8 +24,8 @@ import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.state.AcceptMessages;
 import org.apache.geode.internal.protocol.protobuf.v1.state.RequireAuthentication;
@@ -40,7 +40,7 @@ public class HandshakeRequestOperationHandler implements
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<ConnectionAPI.HandshakeResponse> process(
+  public ProtobufResult<ConnectionAPI.HandshakeResponse> process(
       ProtobufSerializationService serializationService, ConnectionAPI.HandshakeRequest request,
       MessageExecutionContext messageExecutionContext) throws ConnectionStateException {
 

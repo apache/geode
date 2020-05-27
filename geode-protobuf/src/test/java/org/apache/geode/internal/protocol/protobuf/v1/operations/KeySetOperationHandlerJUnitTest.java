@@ -29,8 +29,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.TestExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -57,7 +57,7 @@ public class KeySetOperationHandlerJUnitTest
   public void verifyKeySetReturnsExpectedKeys() throws Exception {
     RegionAPI.KeySetRequest request =
         RegionAPI.KeySetRequest.newBuilder().setRegionName(TEST_REGION).build();
-    Result<?> result = operationHandler.process(serializationService, request,
+    ProtobufResult<?> result = operationHandler.process(serializationService, request,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertThat(result).isInstanceOf(Success.class);

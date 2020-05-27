@@ -30,8 +30,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 
@@ -40,7 +40,7 @@ public class GetServerOperationHandler
     implements ProtobufOperationHandler<LocatorAPI.GetServerRequest, LocatorAPI.GetServerResponse> {
 
   @Override
-  public Result<LocatorAPI.GetServerResponse> process(
+  public ProtobufResult<LocatorAPI.GetServerResponse> process(
       ProtobufSerializationService serializationService, LocatorAPI.GetServerRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 

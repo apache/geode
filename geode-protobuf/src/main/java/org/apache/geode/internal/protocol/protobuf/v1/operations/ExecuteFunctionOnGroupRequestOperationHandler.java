@@ -22,8 +22,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnGroupRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnGroupResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufResult;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -32,7 +32,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandler implements
     ProtobufOperationHandler<ExecuteFunctionOnGroupRequest, ExecuteFunctionOnGroupResponse> {
 
   @Override
-  public Result<FunctionAPI.ExecuteFunctionOnGroupResponse> process(
+  public ProtobufResult<FunctionAPI.ExecuteFunctionOnGroupResponse> process(
       ProtobufSerializationService serializationService,
       FunctionAPI.ExecuteFunctionOnGroupRequest request,
       MessageExecutionContext messageExecutionContext)
