@@ -31,8 +31,6 @@ public interface RedisSetCommands {
 
   Set<ByteArrayWrapper> smembers(ByteArrayWrapper key);
 
-  boolean del(ByteArrayWrapper key);
-
   int scard(ByteArrayWrapper key);
 
   boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member);

@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.apache.geode.redis.internal.RedisCommandType.DEL;
 import static org.apache.geode.redis.internal.RedisCommandType.SADD;
 import static org.apache.geode.redis.internal.RedisCommandType.SCARD;
 import static org.apache.geode.redis.internal.RedisCommandType.SDIFFSTORE;
@@ -37,7 +36,6 @@ import java.util.regex.Pattern;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
 public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
@@ -62,11 +60,6 @@ public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
   @Override
   public Set<ByteArrayWrapper> smembers(ByteArrayWrapper key) {
     return CommandFunction.execute(SMEMBERS, key, null, region);
-  }
-
-  @Override
-  public boolean del(ByteArrayWrapper key) {
-    return CommandFunction.execute(DEL, key, RedisDataType.REDIS_SET, region);
   }
 
   @Override

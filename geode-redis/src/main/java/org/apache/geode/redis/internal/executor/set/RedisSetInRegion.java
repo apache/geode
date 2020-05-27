@@ -244,11 +244,6 @@ public class RedisSetInRegion implements RedisSetCommands {
     return getRedisSet(key).sscan(matchPattern, count, cursor);
   }
 
-  @Override
-  public boolean del(ByteArrayWrapper key) {
-    return region.remove(key) != null;
-  }
-
   private RedisSet getRedisSet(ByteArrayWrapper key) {
     return checkType(region.getOrDefault(key, RedisSet.EMPTY));
   }
