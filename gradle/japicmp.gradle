@@ -1,0 +1,88 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import japicmp.model.JApiChangeStatus
+import org.apache.maven.artifact.versioning.ComparableVersion
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion
+
+import org.apache.geode.gradle.japicmp.AllowMajorBreakingChanges
+import org.apache.geode.gradle.japicmp.ParentIsExperimental
+
+
+def mostRecentReleaseProj = project(':geode-old-versions').subprojects.max(){ v -> new ComparableVersion(v.name)}
+def newest = mostRecentReleaseProj.name
+
+tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask) {
+  inputs.files { configurations.geodeArchives }
+  def ourUnpackTaskProvider = project(":geode-old-versions:${newest}").tasks.named('downloadAndUnzipFile')
+  inputs.files { ourUnpackTaskProvider }
+
+  def d = java.nio.file.Paths.get(project(":geode-old-versions:${newest}").buildDir.path.toString(), "apache-geode-${newest}", 'lib')
+  // Dirty hack, to set the value as requied in configuration, 
+  // but then reset to the acutal unpacked jars on runtime.
+  oldClasspath = files()
+  oldArchives = files()
+  doFirst {
+    oldClasspath = files(file(d).listFiles())
+    oldArchives = files(file(d).listFiles(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return name.toLowerCase().startsWith("geode-") && name.toLowerCase().endsWith(".jar");
+      };
+    }))
+  }
+
+  newClasspath = configurations.geodeArchives
+  newArchives = configurations.geodeArchives.filter { File f ->
+    f.toString().contains("geode-") && f.toString().endsWith(".jar")
+  }
+
+  ignoreMissingClasses = true
+  onlyModified = true
+  accessModifier = "protected"
+
+  def allowMajorBreaking = false
+  if (new DefaultArtifactVersion(version).majorVersion > new DefaultArtifactVersion(newest).majorVersion) {
+    logger.error("japicmp will always pass when comparing across major versions.")
+    allowMajorBreaking = true
+  }
+//  failOnModification = !allowMajorBreaking
+//  failOnSourceIncompatibility = !allowMajorBreaking
+
+//  onlyBinaryIncompatibleModified = true
+//  includeSynthetic = true
+
+  def reportFileName = "japi-v${newest}-${version}"
+  txtOutputFile = file("$buildDir/reports/${reportFileName}.txt")
+  htmlOutputFile = file("$buildDir/reports/${reportFileName}.html")
+  packageExcludes = ['*internal*']
+  packageIncludes = ['org.apache.geode.*']
+  annotationExcludes = ['@org.apache.geode.annotations.Experimental']
+
+ richReport {
+   title = "Geode API Compatibility Report"
+   description = "Comparing current ${version} against downloaded v${newest}."
+   reportName = "rich-report-${reportFileName}.html"
+
+   if (allowMajorBreaking) {
+     addRule(AllowMajorBreakingChanges)
+   } else {
+     addRule(JApiChangeStatus.REMOVED, ParentIsExperimental)
+     addRule(JApiChangeStatus.MODIFIED, ParentIsExperimental)
+   }
+   addDefaultRules = true
+ }
+}

@@ -23,6 +23,10 @@ apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 
 jar.enabled = false
 
+configurations {
+  war {}
+}
+
 dependencies {
   compile(platform(project(':boms:geode-all-bom'))){
     exclude module: "jackson-annotations"
@@ -120,3 +124,6 @@ war {
   classpath configurations.runtimeClasspath
 }
 
+artifacts {
+  war tasks.war
+}
