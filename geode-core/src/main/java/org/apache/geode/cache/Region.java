@@ -1371,11 +1371,11 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *         These server exceptions become the ServerOperationException cause
    * @throws ServerConnectivityException if called from a client, and the server throws
    *         CancelException. CancelException will be the ServerConnectivityException cause
-   * @throws NullPointerException if key is null or if value is null (use invalidate instead), or if
-   *         the key or value do not meet serializability requirements
+   * @throws NullPointerException if the key is null, if the value is null (use invalidate instead),
+   *         or if the key or value do not meet serialization requirements
    * @throws ClassCastException if key does not satisfy the keyConstraint
-   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed
-   *         lock for regions with Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if the lease expired on a
+   *         distributed lock, for regions with Scope.GLOBAL
    * @throws TimeoutException if the call timed out waiting to acquire a distributed lock for
    *         regions with Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
@@ -1412,11 +1412,11 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *         These server exceptions become the ServerOperationException cause
    * @throws ServerConnectivityException if called from a client, and the server throws
    *         CancelException. CancelException will be the ServerConnectivityException cause
-   * @throws NullPointerException if key is null or if value is null (use invalidate instead), or if
-   *         the key or value do not meet serializability requirements
+   * @throws NullPointerException if the key is null, if the value is null (use invalidate instead),
+   *         or if the key or value do not meet serialization requirements
    * @throws ClassCastException if key does not satisfy the keyConstraint
-   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed
-   *         lock for regions with Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if the lease expired on a
+   *         distributed lock, for regions with Scope.GLOBAL
    * @throws TimeoutException if the call timed out waiting to acquire a distributed lock for
    *         regions with Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
