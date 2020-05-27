@@ -16,14 +16,12 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisData;
 
 public class IncrByFloatExecutor extends StringExecutor {
 
@@ -41,7 +39,6 @@ public class IncrByFloatExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, RedisData> r = context.getRegionProvider().getStringsRegion();
     if (commandElems.size() < 3) {
       command
           .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.INCRBYFLOAT));
@@ -49,8 +46,8 @@ public class IncrByFloatExecutor extends StringExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    RedisString valueWrapper = (RedisString) r.get(key);
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    ByteArrayWrapper valueWrapper = stringCommands.get(key);
 
     /*
      * Try increment
@@ -83,8 +80,7 @@ public class IncrByFloatExecutor extends StringExecutor {
      */
 
     if (valueWrapper == null) {
-      // TODO: actually get working
-      // r.put(key, new ByteArrayWrapper(incrArray));
+      stringCommands.set(key, new ByteArrayWrapper(incrArray), null);
       respondBulkStrings(command, context, increment);
       return;
     }
@@ -93,7 +89,7 @@ public class IncrByFloatExecutor extends StringExecutor {
      * Value exists
      */
 
-    String stringValue = Coder.bytesToString(valueWrapper.getValue().toBytes());
+    String stringValue = Coder.bytesToString(valueWrapper.toBytes());
 
     double value;
     try {
@@ -121,8 +117,7 @@ public class IncrByFloatExecutor extends StringExecutor {
     value += increment;
 
     stringValue = "" + value;
-    // r.put(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)));
-    r.put(key, (RedisData) new RedisString(new ByteArrayWrapper(Coder.stringToBytes(stringValue))));
+    stringCommands.set(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)), null);
 
     respondBulkStrings(command, context, value);
   }

@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.redis.internal.RedisCommandType.DEL;
 import static org.apache.geode.redis.internal.RedisCommandType.HDEL;
 import static org.apache.geode.redis.internal.RedisCommandType.HEXISTS;
 import static org.apache.geode.redis.internal.RedisCommandType.HGET;
@@ -36,7 +35,6 @@ import java.util.regex.Pattern;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
 @SuppressWarnings("unchecked")
@@ -56,11 +54,6 @@ public class RedisHashCommandsFunctionExecutor implements RedisHashCommands {
   @Override
   public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
     return CommandFunction.execute(HDEL, key, fieldsToRemove, region);
-  }
-
-  @Override
-  public boolean del(ByteArrayWrapper key) {
-    return CommandFunction.execute(DEL, key, RedisDataType.REDIS_HASH, region);
   }
 
   @Override

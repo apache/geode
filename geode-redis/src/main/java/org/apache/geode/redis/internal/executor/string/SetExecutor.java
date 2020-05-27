@@ -20,13 +20,10 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SetExecutor extends StringExecutor {
@@ -40,10 +37,7 @@ public class SetExecutor extends StringExecutor {
     ByteArrayWrapper keyToSet = command.getKey();
     ByteArrayWrapper valueToSet = getValueToSet(commandElems);
 
-    Region<ByteArrayWrapper, RedisData> region =
-        context.getRegionProvider().getStringsRegion();
-
-    RedisStringCommands redisStringCommands = new RedisStringCommandsFunctionExecutor(region);
+    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
     SetOptions setOptions;
     try {
       setOptions = parseCommandElems(commandElems);
@@ -58,24 +52,13 @@ public class SetExecutor extends StringExecutor {
   private void doSet(Command command, ExecutionHandlerContext context, ByteArrayWrapper key,
       ByteArrayWrapper value, RedisStringCommands redisStringCommands, SetOptions setOptions) {
 
-    checkKeyRegistrarAndRemoveKeyIfNeeded(context, key);
-    RedisString result = redisStringCommands.set(key, value, setOptions);
+    boolean result = redisStringCommands.set(key, value, setOptions);
 
-    if (result != null) {
-      context.getKeyRegistrar().register(key, RedisDataType.REDIS_STRING);
+    if (result) {
       command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
       handleExpiration(context, key, setOptions);
     } else {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-    }
-  }
-
-  private void checkKeyRegistrarAndRemoveKeyIfNeeded(ExecutionHandlerContext context,
-      ByteArrayWrapper key) {
-    RedisDataType existingKeyType = context.getKeyRegistrar().getType(key);
-    if (existingKeyType != null && existingKeyType != RedisDataType.REDIS_STRING) {
-      // It already exists. We need to kill it.
-      removeEntry(key, context);
     }
   }
 

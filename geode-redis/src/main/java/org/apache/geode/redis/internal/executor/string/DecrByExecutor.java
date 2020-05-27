@@ -16,13 +16,11 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisData;
 
 public class DecrByExecutor extends StringExecutor {
 
@@ -40,15 +38,11 @@ public class DecrByExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, RedisData> r = context.getRegionProvider().getStringsRegion();
-
     if (commandElems.size() < 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.DECRBY));
       return;
     }
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    RedisString redisStringValue = (RedisString) r.get(key);
 
     /*
      * Try increment
@@ -70,11 +64,12 @@ public class DecrByExecutor extends StringExecutor {
      * Value does not exist
      */
 
-    if (redisStringValue == null) {
+    ByteArrayWrapper valueWrapper = getRedisStringCommands(context).get(key);
+    if (valueWrapper == null) {
       String negativeDecrString =
           decrString.charAt(0) == Coder.HYPHEN_ID ? decrString.substring(1) : "-" + decrString;
-      r.put(key, (RedisData) new RedisString(
-          new ByteArrayWrapper(Coder.stringToBytes(negativeDecrString))));
+      ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.stringToBytes(negativeDecrString));
+      getRedisStringCommands(context).set(key, newValue, null);
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), -decrement));
       return;
     }
@@ -82,7 +77,6 @@ public class DecrByExecutor extends StringExecutor {
     /*
      * Value exists
      */
-    ByteArrayWrapper valueWrapper = redisStringValue.getValue();
 
     String stringValue = Coder.bytesToString(valueWrapper.toBytes());
 
@@ -107,8 +101,8 @@ public class DecrByExecutor extends StringExecutor {
     value -= decrement;
 
     stringValue = "" + value;
-    r.put(key,
-        (RedisData) (new RedisString(new ByteArrayWrapper(Coder.stringToBytes(stringValue)))));
+    ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.stringToBytes(stringValue));
+    getRedisStringCommands(context).set(key, newValue, null);
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
 

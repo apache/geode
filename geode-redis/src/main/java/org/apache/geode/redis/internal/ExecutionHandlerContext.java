@@ -51,10 +51,6 @@ import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMism
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
-  private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
-  private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS;
-
-  private final RedisLockService lockService;
 
   private final Cache cache;
   private final GeodeRedisServer server;
@@ -67,11 +63,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private boolean isAuthenticated;
 
-  public KeyRegistrar getKeyRegistrar() {
-    return keyRegistrar;
-  }
-
-  private final KeyRegistrar keyRegistrar;
   private final PubSub pubSub;
 
   public PubSub getPubSub() {
@@ -90,10 +81,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
       GeodeRedisServer server, byte[] password,
-      KeyRegistrar keyRegistrar, PubSub pubSub,
-      RedisLockService lockService, EventLoopGroup subscriberEventLoopGroup) {
-    this.keyRegistrar = keyRegistrar;
-    this.lockService = lockService;
+      PubSub pubSub,
+      EventLoopGroup subscriberEventLoopGroup) {
     this.pubSub = pubSub;
     if (channel == null || cache == null || regionProvider == null || server == null) {
       throw new IllegalArgumentException("Only the authentication password may be null");
@@ -108,10 +97,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.authPassword = password;
     this.isAuthenticated = password != null ? false : true;
 
-  }
-
-  public RedisLockService getLockService() {
-    return this.lockService;
   }
 
   private void flushChannel() {

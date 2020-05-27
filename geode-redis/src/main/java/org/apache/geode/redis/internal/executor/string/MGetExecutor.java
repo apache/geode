@@ -17,15 +17,12 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisData;
 
 public class MGetExecutor extends StringExecutor {
 
@@ -33,40 +30,18 @@ public class MGetExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, RedisData> region = context.getRegionProvider().getStringsRegion();
-
     if (commandElems.size() < 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.MGET));
       return;
     }
 
-    Collection<ByteArrayWrapper> keys = new ArrayList<ByteArrayWrapper>();
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+
+    Collection<ByteArrayWrapper> values = new ArrayList<>();
     for (int i = 1; i < commandElems.size(); i++) {
       byte[] keyArray = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
-      /*
-       * try { checkDataType(key, RedisDataType.REDIS_STRING, context); } catch
-       * (RedisDataTypeMismatchException e) { keys.ad continue; }
-       */
-      keys.add(key);
-    }
-
-    Map<ByteArrayWrapper, RedisData> results = region.getAll(keys);
-
-    Collection<ByteArrayWrapper> values = new ArrayList<>();
-
-    /*
-     * This is done to preserve order in the output
-     */
-
-    for (ByteArrayWrapper key : keys) {
-
-      RedisString redisString = (RedisString) results.get(key);
-
-      ByteArrayWrapper valueToReturn =
-          redisString == null ? null : redisString.getValue();
-
-      values.add(valueToReturn);
+      values.add(stringCommands.get(key));
     }
 
     respondBulkStrings(command, context, values);
