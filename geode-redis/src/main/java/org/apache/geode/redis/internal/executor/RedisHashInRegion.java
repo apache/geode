@@ -120,11 +120,6 @@ public class RedisHashInRegion implements RedisHashCommands {
     }
   }
 
-  @Override
-  public boolean del(ByteArrayWrapper key) {
-    return region.remove(key) != null;
-  }
-
   private RedisHash getRedisHash(ByteArrayWrapper key) {
     return checkType(region.getOrDefault(key, RedisHash.EMPTY));
   }

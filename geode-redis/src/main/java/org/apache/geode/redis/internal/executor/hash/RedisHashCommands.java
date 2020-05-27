@@ -26,9 +26,6 @@ public interface RedisHashCommands {
 
   int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove);
 
-  // TODO: refactor this onto something like RedisKeyCommands
-  boolean del(ByteArrayWrapper key);
-
   Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key);
 
   int hexists(ByteArrayWrapper key, ByteArrayWrapper field);

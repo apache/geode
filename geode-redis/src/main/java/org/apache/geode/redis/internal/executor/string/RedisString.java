@@ -30,7 +30,6 @@ import org.apache.geode.redis.internal.RedisDataType;
 public class RedisString implements DataSerializable, RedisData {
   private ByteArrayWrapper value;
 
-  // TODO: deltas
   private transient ByteArrayWrapper delta;
 
   public RedisString(ByteArrayWrapper value) {
@@ -40,55 +39,21 @@ public class RedisString implements DataSerializable, RedisData {
   // for serialization
   public RedisString() {}
 
-  public int append(ByteArrayWrapper appendValue, Region<ByteArrayWrapper, RedisString> region,
+  public int append(ByteArrayWrapper appendValue,
+      Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
-
-    RedisString redisStringInRegion = region.get(key);
-
-    if (redisStringInRegion == null) {
-      value = appendValue;
-    } else {
-      byte[] newValue = concatArrays(value.toBytes(), appendValue.toBytes());
-      value.setBytes(newValue);
-    }
-
-    delta = value;
-    try {
-      region.put(key, this);
-    } finally {
-      delta = null;
-    }
+    value.append(appendValue.toBytes());
+    delta = appendValue;
+    region.put(key, this);
     return value.length();
   }
 
-  public ByteArrayWrapper get(Region<ByteArrayWrapper, RedisString> region, ByteArrayWrapper key) {
-    return region.get(key).getValue();
+  public ByteArrayWrapper get() {
+    return new ByteArrayWrapper(value.toBytes());
   }
 
-  public RedisString set(ByteArrayWrapper value, Region<ByteArrayWrapper, RedisString> region,
-      ByteArrayWrapper key) {
+  public void set(ByteArrayWrapper value) {
     this.value = value;
-    return region.put(key, this);
-  }
-
-  public Boolean setnx(ByteArrayWrapper key, Region<ByteArrayWrapper, RedisString> region,
-      ByteArrayWrapper value) {
-    this.value = value;
-    RedisString redisString = region.putIfAbsent(key, this);
-    return redisString == null;
-  }
-
-  public ByteArrayWrapper getValue() {
-    return value;
-  }
-
-  private byte[] concatArrays(byte[] o, byte[] n) {
-    int oLen = o.length;
-    int nLen = n.length;
-    byte[] combined = new byte[oLen + nLen];
-    System.arraycopy(o, 0, combined, 0, oLen);
-    System.arraycopy(n, 0, combined, oLen, nLen);
-    return combined;
   }
 
   @Override
@@ -113,20 +78,21 @@ public class RedisString implements DataSerializable, RedisData {
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeByteArray(delta.toBytes(), out);
+    try {
+      DataSerializer.writeByteArray(delta.toBytes(), out);
+    } finally {
+      delta = null;
+    }
   }
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     try {
-      ByteArrayWrapper delta = new ByteArrayWrapper(DataSerializer.readByteArray(in));
-      if (delta != null) {
-        if (value == null) {
-          value = delta;
-        } else {
-          byte[] newValue = concatArrays(value.toBytes(), delta.toBytes());
-          value.setBytes(newValue);
-        }
+      byte[] deltaBytes = DataSerializer.readByteArray(in);
+      if (value == null) {
+        value = new ByteArrayWrapper(deltaBytes);
+      } else {
+        value.append(deltaBytes);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);

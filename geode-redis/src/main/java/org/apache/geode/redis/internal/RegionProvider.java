@@ -26,90 +26,25 @@ import org.apache.geode.redis.internal.executor.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.RedisKeyCommandsFunctionExecutor;
 
 public class RegionProvider implements Closeable {
-  /**
-   * This is the Redis meta data {@link Region} that holds the {@link RedisDataType} information for
-   * all Regions created. The mapping is a {@link String} key which is the name of the {@link
-   * Region} created to hold the data to the RedisDataType it contains.
-   */
-  private final KeyRegistrar keyRegistrar;
-
-  /**
-   * This is the {@link RedisDataType#REDIS_STRING} {@link Region}. This is the Region that stores
-   * all string contents
-   */
-  private final Region<ByteArrayWrapper, RedisData> stringsRegion;
 
   private final Region<ByteArrayWrapper, RedisData> dataRegion;
 
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap;
   private final ScheduledExecutorService expirationExecutor;
 
-  public RegionProvider(Region<ByteArrayWrapper, RedisData> stringsRegion,
-      KeyRegistrar redisMetaRegion,
+  public RegionProvider(
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor,
       Region<ByteArrayWrapper, RedisData> dataRegion) {
-    if (stringsRegion == null || redisMetaRegion == null) {
-      throw new NullPointerException();
-    }
     this.dataRegion = dataRegion;
-    this.stringsRegion = stringsRegion;
-    keyRegistrar = redisMetaRegion;
     this.expirationsMap = expirationsMap;
     this.expirationExecutor = expirationExecutor;
   }
 
-  public Region<ByteArrayWrapper, ?> getRegionForType(RedisDataType redisDataType) {
-    if (redisDataType == null) {
-      return null;
-    }
-
-    switch (redisDataType) {
-      case REDIS_STRING:
-        return stringsRegion;
-
-      case REDIS_HASH:
-      case REDIS_SET:
-        return dataRegion;
-
-      case REDIS_PUBSUB:
-      default:
-        return null;
-    }
-  }
-
-  public boolean removeKey(ByteArrayWrapper key) {
-    RedisDataType type = keyRegistrar.getType(key);
-    return removeKey(key, type);
-  }
-
-  public boolean removeKey(ByteArrayWrapper key, RedisDataType type) {
-    return removeKey(key, type, true);
-  }
-
-  private boolean typeStoresDataInKeyRegistrar(RedisDataType type) {
-    if (type == RedisDataType.REDIS_SET) {
-      return true;
-    }
-    if (type == RedisDataType.REDIS_HASH) {
-      return true;
-    }
-    return false;
-  }
-
-  public boolean removeKey(ByteArrayWrapper key, RedisDataType type, boolean cancelExpiration) {
-    if (!typeStoresDataInKeyRegistrar(type)) {
-      keyRegistrar.unregister(key);
-    }
+  public boolean expireKey(ByteArrayWrapper key, RedisDataType type, boolean cancelExpiration) {
     RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(dataRegion);
     try {
-      if (type == RedisDataType.REDIS_STRING) {
-        return stringsRegion.remove(key) != null;
-      } else if (type == RedisDataType.REDIS_SET || type == RedisDataType.REDIS_HASH) {
-        return redisKeyCommands.del(key);
-      } else {
-        return false;
-      }
+      return redisKeyCommands.del(key);
     } catch (Exception exc) {
       return false;
     } finally {
@@ -119,10 +54,6 @@ public class RegionProvider implements Closeable {
         removeKeyExpiration(key);
       }
     }
-  }
-
-  public Region<ByteArrayWrapper, RedisData> getStringsRegion() {
-    return stringsRegion;
   }
 
   public Region<ByteArrayWrapper, RedisData> getDataRegion() {
@@ -140,12 +71,12 @@ public class RegionProvider implements Closeable {
    * @return True is expiration set, false otherwise
    */
   public boolean setExpiration(ByteArrayWrapper key, long delay) {
-    RedisDataType type = keyRegistrar.getType(key);
-    if (type == null) {
+
+    if (!getDataRegion().containsKey(key)) {
       return false;
     }
     ScheduledFuture<?> future = expirationExecutor
-        .schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
+        .schedule(new ExpirationExecutor(key, null, this), delay, TimeUnit.MILLISECONDS);
     expirationsMap.put(key, future);
     return true;
   }
@@ -167,13 +98,12 @@ public class RegionProvider implements Closeable {
       return false;
     }
 
-    RedisDataType type = keyRegistrar.getType(key);
-    if (type == null) {
+    if (!getDataRegion().containsKey(key)) {
       return false;
     }
 
     ScheduledFuture<?> future = expirationExecutor
-        .schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
+        .schedule(new ExpirationExecutor(key, null, this), delay, TimeUnit.MILLISECONDS);
     expirationsMap.put(key, future);
     return true;
   }

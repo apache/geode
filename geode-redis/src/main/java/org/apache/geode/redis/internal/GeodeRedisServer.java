@@ -15,16 +15,13 @@
 package org.apache.geode.redis.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.redis.internal.RedisLockServiceMBean.OBJECTNAME__REDISLOCKSERVICE_MBEAN;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -32,12 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
 import javax.net.ssl.KeyManagerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -58,14 +49,12 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -76,8 +65,6 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
 
@@ -163,19 +150,10 @@ public class GeodeRedisServer {
    */
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationFutures;
 
-
-  /**
-   * The field that defines the name of the {@link Region} which holds all of the strings. The
-   * current value of this field is {@code STRING_REGION}.
-   */
-  public static final String STRING_REGION = "ReDiS_StRiNgS";
-
   /**
    * The name of the region that holds data stored in redis.
-   * Currently this is the meta data but at some point the value for a particular
-   * type will be changed to an instance of {@link RedisData}
    */
-  public static final String REDIS_DATA_REGION = "ReDiS_DaTa";
+  public static final String REDIS_DATA_REGION = "REDIS_DATA";
 
   /**
    * System property name that can be used to set the number of threads to be used by the
@@ -191,14 +169,7 @@ public class GeodeRedisServer {
   private boolean shutdown;
   private boolean started;
 
-  private KeyRegistrar keyRegistrar;
   private PubSub pubSub;
-  private RedisLockService hashLockService;
-
-  @VisibleForTesting
-  public KeyRegistrar getKeyRegistrar() {
-    return keyRegistrar;
-  }
 
   /**
    * Helper method to set the number of worker threads
@@ -333,16 +304,9 @@ public class GeodeRedisServer {
 
   private void initializeRedis() {
     synchronized (cache) {
-      Region<ByteArrayWrapper, RedisData> stringsRegion;
 
       Region<ByteArrayWrapper, RedisData> redisData;
       InternalCache gemFireCache = (InternalCache) cache;
-
-      if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, RedisData> regionFactory =
-            gemFireCache.createRegionFactory(DEFAULT_REGION_TYPE);
-        stringsRegion = regionFactory.create(STRING_REGION);
-      }
 
       if ((redisData = cache.getRegion(REDIS_DATA_REGION)) == null) {
         InternalRegionFactory<ByteArrayWrapper, RedisData> redisMetaDataFactory =
@@ -351,39 +315,10 @@ public class GeodeRedisServer {
         redisData = redisMetaDataFactory.create(REDIS_DATA_REGION);
       }
 
-      keyRegistrar = new KeyRegistrar(redisData);
-      hashLockService = new RedisLockService();
       pubSub = new PubSubImpl(new Subscriptions());
-      regionProvider = new RegionProvider(stringsRegion, keyRegistrar,
-          expirationFutures, expirationExecutor, redisData);
+      regionProvider = new RegionProvider(expirationFutures, expirationExecutor, redisData);
 
       CommandFunction.register(regionProvider);
-    }
-
-    registerLockServiceMBean();
-  }
-
-  @VisibleForTesting
-  public RedisLockService getLockService() {
-    return hashLockService;
-  }
-
-  private void registerLockServiceMBean() {
-    ManagementService sms = SystemManagementService.getManagementService(cache);
-
-    try {
-      ObjectName mbeanON = new ObjectName(OBJECTNAME__REDISLOCKSERVICE_MBEAN);
-      sms.registerMBean(hashLockService, mbeanON);
-      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
-
-      Set<ObjectName> names = platformMBeanServer.queryNames(mbeanON, null);
-      if (names.isEmpty()) {
-        platformMBeanServer.registerMBean(hashLockService, mbeanON);
-        logger.info("Registered RedisLockServiceMBean on " + mbeanON);
-      }
-    } catch (InstanceAlreadyExistsException | MBeanRegistrationException
-        | NotCompliantMBeanException | MalformedObjectNameException e) {
-      throw new GemFireConfigException("Error while configuring RedisLockServiceMBean", e);
     }
   }
 
@@ -476,8 +411,7 @@ public class GeodeRedisServer {
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, cache, regionProvider, GeodeRedisServer.this,
-                redisPasswordBytes,
-                keyRegistrar, pubSub, hashLockService, subscriberGroup));
+                redisPasswordBytes, pubSub, subscriberGroup));
       }
     };
   }

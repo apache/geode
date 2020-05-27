@@ -34,13 +34,11 @@ class RedisKeyInRegion {
     if (redisData == null) {
       return false;
     }
-    switch (redisData.getType()) {
-      case REDIS_SET:
-      case REDIS_HASH:
-        return localRegion.remove(key) != null;
-      default:
-        return regionProvider.removeKey(key);
+    boolean result = localRegion.remove(key) != null;
+    if (result) {
+      regionProvider.cancelKeyExpiration(key);
     }
+    return result;
   }
 
   public boolean exists(ByteArrayWrapper key) {

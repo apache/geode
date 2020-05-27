@@ -16,13 +16,11 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisData;
 
 public class SetRangeExecutor extends StringExecutor {
 
@@ -35,16 +33,16 @@ public class SetRangeExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, RedisData> region = context.getRegionProvider().getStringsRegion();
-
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETRANGE));
       return;
     }
 
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    RedisString redisString = (RedisString) region.get(key);
+
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+
+    ByteArrayWrapper wrapper = stringCommands.get(key);
 
     int offset;
     byte[] value = commandElems.get(3);
@@ -63,11 +61,10 @@ public class SetRangeExecutor extends StringExecutor {
       return;
     } else if (value.length == 0) {
       int length;
-      if (redisString == null) {
+      if (wrapper == null) {
         length = 0;
-        context.getRegionProvider().removeKey(key);
+        // redisString will only be null if no key exists so no need to call removeKey here.
       } else {
-        ByteArrayWrapper wrapper = redisString.getValue();
         length = wrapper.length();
       }
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), length));
@@ -75,25 +72,24 @@ public class SetRangeExecutor extends StringExecutor {
       return;
     }
 
-    if (redisString == null) {
+    if (wrapper == null) {
       byte[] bytes = new byte[totalLength];
       System.arraycopy(value, 0, bytes, offset, value.length);
-      region.put(key, new RedisString(new ByteArrayWrapper(bytes)));
+      stringCommands.set(key, new ByteArrayWrapper(bytes), null);
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), bytes.length));
     } else {
-      ByteArrayWrapper wrapper = redisString.getValue();
       byte[] bytes = wrapper.toBytes();
       int returnLength;
       if (totalLength < bytes.length) {
         System.arraycopy(value, 0, bytes, offset, value.length);
-        region.put(key, new RedisString(new ByteArrayWrapper(bytes)));
+        stringCommands.set(key, new ByteArrayWrapper(bytes), null);
         returnLength = bytes.length;
       } else {
         byte[] newBytes = new byte[totalLength];
         System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
         System.arraycopy(value, 0, newBytes, offset, value.length);
         returnLength = newBytes.length;
-        region.put(key, new RedisString(new ByteArrayWrapper(bytes)));
+        stringCommands.set(key, new ByteArrayWrapper(bytes), null);
       }
 
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), returnLength));
