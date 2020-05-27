@@ -29,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.admin.internal.InetAddressUtils;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
@@ -69,11 +68,10 @@ public class GfshHostNameVerificationDistributedTest {
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(hostname)
         .sanIpAddress(InetAddress.getByName("0.0.0.0"));
-    if (InetAddressUtils.isIPLiteral(hostname)) {
-      // no valid hostname for this machine's IP address, so sanDnsName won't work
-      // and we need to use a sanIpAddress
-      builder.sanIpAddress(LocalHostUtil.getLocalHost());
-    }
+    // the rules used by this test use "localhost" as a hostname, which
+    // causes it to use a non-loopback IP literal address instead of the
+    // host's name on CI Windows runs
+    builder.sanIpAddress(LocalHostUtil.getLocalHost());
     CertificateMaterial locatorCertificate = builder.generate();
 
     CertificateMaterial gfshCertificate = new CertificateBuilder()
