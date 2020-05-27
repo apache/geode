@@ -33,6 +33,7 @@ import org.apache.geode.redis.internal.AbstractRedisData;
 import org.apache.geode.redis.internal.AddsDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.DeltaInfo;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RemsDeltaInfo;
@@ -66,20 +67,22 @@ public class RedisHash extends AbstractRedisData {
     hash = DataSerializer.readHashMap(in);
   }
 
-  @Override
-  protected void removeDeltas(ArrayList<ByteArrayWrapper> deltas) {
-    for (ByteArrayWrapper field : deltas) {
-      hash.remove(field);
-    }
-  }
 
   @Override
-  protected void addDeltas(ArrayList<ByteArrayWrapper> deltas) {
-    Iterator<ByteArrayWrapper> iterator = deltas.iterator();
-    while (iterator.hasNext()) {
-      ByteArrayWrapper field = iterator.next();
-      ByteArrayWrapper value = iterator.next();
-      hash.put(field, value);
+  protected void applyDelta(DeltaInfo deltaInfo) {
+    if (deltaInfo instanceof AddsDeltaInfo) {
+      AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
+      Iterator<ByteArrayWrapper> iterator = addsDeltaInfo.getAdds().iterator();
+      while (iterator.hasNext()) {
+        ByteArrayWrapper field = iterator.next();
+        ByteArrayWrapper value = iterator.next();
+        hash.put(field, value);
+      }
+    } else {
+      RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
+      for (ByteArrayWrapper field : remsDeltaInfo.getRemoves()) {
+        hash.remove(field);
+      }
     }
   }
 
@@ -275,10 +278,5 @@ public class RedisHash extends AbstractRedisData {
   @Override
   protected boolean removeFromRegion() {
     return hash.isEmpty();
-  }
-
-  @Override
-  protected void appendDelta(byte[] appendBytes) {
-    throw new IllegalStateException("should never be called on a hash");
   }
 }

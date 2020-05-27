@@ -18,13 +18,13 @@ package org.apache.geode.redis.internal.executor.string;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.AbstractRedisData;
 import org.apache.geode.redis.internal.AppendDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.DeltaInfo;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
@@ -56,21 +56,20 @@ public class RedisString extends AbstractRedisData {
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    super.toData(out);
     DataSerializer.writeByteArray(value.toBytes(), out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     value = new ByteArrayWrapper(DataSerializer.readByteArray(in));
   }
 
   @Override
-  public RedisDataType getType() {
-    return RedisDataType.REDIS_STRING;
-  }
-
-  @Override
-  protected void appendDelta(byte[] appendBytes) {
+  protected void applyDelta(DeltaInfo deltaInfo) {
+    AppendDeltaInfo appendDeltaInfo = (AppendDeltaInfo) deltaInfo;
+    byte[] appendBytes = appendDeltaInfo.getBytes();
     if (value == null) {
       value = new ByteArrayWrapper(appendBytes);
     } else {
@@ -79,14 +78,8 @@ public class RedisString extends AbstractRedisData {
   }
 
   @Override
-  protected void removeDeltas(ArrayList<ByteArrayWrapper> deltas) {
-    throw new IllegalStateException("should never be called on a string");
-
-  }
-
-  @Override
-  protected void addDeltas(ArrayList<ByteArrayWrapper> deltas) {
-    throw new IllegalStateException("should never be called on a string");
+  public RedisDataType getType() {
+    return RedisDataType.REDIS_STRING;
   }
 
   @Override

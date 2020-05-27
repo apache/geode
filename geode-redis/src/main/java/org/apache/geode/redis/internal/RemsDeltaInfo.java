@@ -41,4 +41,8 @@ public class RemsDeltaInfo implements DeltaInfo {
     DataSerializer.writeEnum(DeltaType.REMS, out);
     DataSerializer.writeArrayList(deltas, out);
   }
+
+  public ArrayList<ByteArrayWrapper> getRemoves() {
+    return deltas;
+  }
 }

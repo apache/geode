@@ -134,13 +134,14 @@ public abstract class AbstractRedisData implements RedisData {
         expirationTimestamp = DataSerializer.readLong(in);
         break;
       case ADDS:
-        addDeltas(readArrayList(in));
+        applyDelta(new AddsDeltaInfo(readArrayList(in)));
         break;
       case REMS:
-        removeDeltas(readArrayList(in));
+        applyDelta(new RemsDeltaInfo(readArrayList(in)));
         break;
       case APPEND:
-        appendDelta(DataSerializer.readByteArray(in));
+        applyDelta(new AppendDeltaInfo(DataSerializer.readByteArray(in)));
+        break;
     }
   }
 
@@ -164,11 +165,7 @@ public abstract class AbstractRedisData implements RedisData {
     }
   }
 
-  protected abstract void removeDeltas(ArrayList<ByteArrayWrapper> deltas);
-
-  protected abstract void addDeltas(ArrayList<ByteArrayWrapper> deltas);
-
-  protected abstract void appendDelta(byte[] appendBytes);
+  protected abstract void applyDelta(DeltaInfo deltaInfo);
 
   protected abstract boolean removeFromRegion();
 

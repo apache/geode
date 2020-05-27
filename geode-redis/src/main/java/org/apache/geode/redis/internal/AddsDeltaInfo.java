@@ -41,4 +41,8 @@ public class AddsDeltaInfo implements DeltaInfo {
     DataSerializer.writeEnum(DeltaType.ADDS, out);
     DataSerializer.writeArrayList(deltas, out);
   }
+
+  public ArrayList<ByteArrayWrapper> getAdds() {
+    return deltas;
+  }
 }

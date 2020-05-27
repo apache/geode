@@ -28,6 +28,10 @@ public class AppendDeltaInfo implements DeltaInfo {
     appendBytes = value;
   }
 
+  public byte[] getBytes() {
+    return appendBytes;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     DataSerializer.writeEnum(DeltaType.APPEND, out);
     DataSerializer.writeByteArray(appendBytes, out);

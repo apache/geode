@@ -19,6 +19,6 @@ package org.apache.geode.redis.internal;
 import java.io.DataOutput;
 import java.io.IOException;
 
-interface DeltaInfo {
+public interface DeltaInfo {
   void serializeTo(DataOutput out) throws IOException;
 }

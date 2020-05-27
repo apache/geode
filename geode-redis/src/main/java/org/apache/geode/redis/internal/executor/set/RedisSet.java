@@ -35,6 +35,7 @@ import org.apache.geode.redis.internal.AbstractRedisData;
 import org.apache.geode.redis.internal.AddsDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.DeltaInfo;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RemsDeltaInfo;
@@ -157,14 +158,16 @@ public class RedisSet extends AbstractRedisData {
     return members.size();
   }
 
-  @Override
-  protected void removeDeltas(ArrayList<ByteArrayWrapper> deltas) {
-    members.removeAll(deltas);
-  }
 
   @Override
-  protected void addDeltas(ArrayList<ByteArrayWrapper> deltas) {
-    members.addAll(deltas);
+  protected void applyDelta(DeltaInfo deltaInfo) {
+    if (deltaInfo instanceof AddsDeltaInfo) {
+      AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
+      members.addAll(addsDeltaInfo.getAdds());
+    } else {
+      RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
+      members.removeAll(remsDeltaInfo.getRemoves());
+    }
   }
 
   // DATA SERIALIZABLE
@@ -236,10 +239,5 @@ public class RedisSet extends AbstractRedisData {
   @Override
   protected boolean removeFromRegion() {
     return members.isEmpty();
-  }
-
-  @Override
-  protected void appendDelta(byte[] appendBytes) {
-    throw new IllegalStateException("should never be called on a set");
   }
 }
