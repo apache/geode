@@ -43,7 +43,7 @@ public class SMoveExecutor extends SetExecutor {
 
     // TODO: remove the need for this type check
     RedisDataType destinationType = context.getKeyRegistrar().getType(destination);
-    if (destinationType != RedisDataType.REDIS_SET) {
+    if (destinationType != null && destinationType != RedisDataType.REDIS_SET) {
       throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
     }
 
