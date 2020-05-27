@@ -75,6 +75,15 @@ public class RedisKeyInRegion implements RedisKeyCommands {
     return redisData.persist(region, key);
   }
 
+  @Override
+  public String type(ByteArrayWrapper key) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null) {
+      return "none";
+    }
+    return redisData.getType().toString();
+  }
+
   protected RedisData getRedisData(ByteArrayWrapper key) {
     return getRedisDataOrDefault(key, null);
   }

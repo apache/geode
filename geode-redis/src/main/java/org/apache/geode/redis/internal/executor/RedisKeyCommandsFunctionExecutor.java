@@ -19,6 +19,7 @@ import static org.apache.geode.redis.internal.RedisCommandType.EXISTS;
 import static org.apache.geode.redis.internal.RedisCommandType.PERSIST;
 import static org.apache.geode.redis.internal.RedisCommandType.PEXPIREAT;
 import static org.apache.geode.redis.internal.RedisCommandType.PTTL;
+import static org.apache.geode.redis.internal.RedisCommandType.TYPE;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -55,5 +56,10 @@ public class RedisKeyCommandsFunctionExecutor implements RedisKeyCommands {
   @Override
   public int persist(ByteArrayWrapper key) {
     return CommandFunction.execute(PERSIST, key, null, region);
+  }
+
+  @Override
+  public String type(ByteArrayWrapper key) {
+    return CommandFunction.execute(TYPE, key, null, region);
   }
 }

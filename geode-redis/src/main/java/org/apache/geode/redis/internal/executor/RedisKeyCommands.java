@@ -27,4 +27,6 @@ public interface RedisKeyCommands {
   int pexpireat(ByteArrayWrapper key, long timestamp);
 
   int persist(ByteArrayWrapper key);
+
+  String type(ByteArrayWrapper key);
 }

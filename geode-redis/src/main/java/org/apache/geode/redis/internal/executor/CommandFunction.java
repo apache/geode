@@ -83,6 +83,9 @@ public class CommandFunction extends SingleResultRedisFunction {
       case EXISTS:
         callable = () -> new RedisKeyInRegion(localRegion).exists(key);
         break;
+      case TYPE:
+        callable = () -> new RedisKeyInRegion(localRegion).type(key);
+        break;
       case PEXPIREAT: {
         long timestamp = (long) args[1];
         callable =
