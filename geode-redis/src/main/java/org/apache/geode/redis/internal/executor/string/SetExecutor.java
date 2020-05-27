@@ -57,7 +57,7 @@ public class SetExecutor extends StringExecutor {
   private void doSet(Command command, ExecutionHandlerContext context, ByteArrayWrapper key,
       ByteArrayWrapper value, RedisStringCommands redisStringCommands, SetOptions setOptions) {
 
-    Boolean result = redisStringCommands.set(key, value, setOptions);
+    boolean result = redisStringCommands.set(key, value, setOptions);
 
     if (result) {
       command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
