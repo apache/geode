@@ -237,4 +237,9 @@ public class RedisSet extends AbstractRedisData {
   protected boolean removeFromRegion() {
     return members.isEmpty();
   }
+
+  @Override
+  protected void appendDelta(byte[] appendBytes) {
+    throw new IllegalStateException("should never be called on a set");
+  }
 }

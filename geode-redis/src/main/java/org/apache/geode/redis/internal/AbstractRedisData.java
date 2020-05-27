@@ -139,6 +139,8 @@ public abstract class AbstractRedisData implements RedisData {
       case REMS:
         removeDeltas(readArrayList(in));
         break;
+      case APPEND:
+        appendDelta(DataSerializer.readByteArray(in));
     }
   }
 
@@ -165,6 +167,8 @@ public abstract class AbstractRedisData implements RedisData {
   protected abstract void removeDeltas(ArrayList<ByteArrayWrapper> deltas);
 
   protected abstract void addDeltas(ArrayList<ByteArrayWrapper> deltas);
+
+  protected abstract void appendDelta(byte[] appendBytes);
 
   protected abstract boolean removeFromRegion();
 

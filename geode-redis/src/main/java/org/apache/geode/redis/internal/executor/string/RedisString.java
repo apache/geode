@@ -18,19 +18,18 @@ package org.apache.geode.redis.internal.executor.string;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.AbstractRedisData;
+import org.apache.geode.redis.internal.AppendDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
-public class RedisString implements DataSerializable, RedisData {
+public class RedisString extends AbstractRedisData {
   private ByteArrayWrapper value;
-
-  private transient ByteArrayWrapper delta;
 
   public RedisString(ByteArrayWrapper value) {
     this.value = value;
@@ -43,8 +42,7 @@ public class RedisString implements DataSerializable, RedisData {
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
     value.append(appendValue.toBytes());
-    delta = appendValue;
-    region.put(key, this);
+    storeChanges(region, key, new AppendDeltaInfo(appendValue.toBytes()));
     return value.length();
   }
 
@@ -72,30 +70,27 @@ public class RedisString implements DataSerializable, RedisData {
   }
 
   @Override
-  public boolean hasDelta() {
-    return delta != null;
-  }
-
-  @Override
-  public void toDelta(DataOutput out) throws IOException {
-    try {
-      DataSerializer.writeByteArray(delta.toBytes(), out);
-    } finally {
-      delta = null;
+  protected void appendDelta(byte[] appendBytes) {
+    if (value == null) {
+      value = new ByteArrayWrapper(appendBytes);
+    } else {
+      value.append(appendBytes);
     }
   }
 
   @Override
-  public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    try {
-      byte[] deltaBytes = DataSerializer.readByteArray(in);
-      if (value == null) {
-        value = new ByteArrayWrapper(deltaBytes);
-      } else {
-        value.append(deltaBytes);
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  protected void removeDeltas(ArrayList<ByteArrayWrapper> deltas) {
+    throw new IllegalStateException("should never be called on a string");
+
+  }
+
+  @Override
+  protected void addDeltas(ArrayList<ByteArrayWrapper> deltas) {
+    throw new IllegalStateException("should never be called on a string");
+  }
+
+  @Override
+  protected boolean removeFromRegion() {
+    return false;
   }
 }

@@ -16,9 +16,20 @@
 
 package org.apache.geode.redis.internal;
 
-enum DeltaType {
-  ADDS,
-  REMS,
-  TIMESTAMP,
-  APPEND
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.geode.DataSerializer;
+
+public class AppendDeltaInfo implements DeltaInfo {
+  private final byte[] appendBytes;
+
+  public AppendDeltaInfo(byte[] value) {
+    appendBytes = value;
+  }
+
+  public void serializeTo(DataOutput out) throws IOException {
+    DataSerializer.writeEnum(DeltaType.APPEND, out);
+    DataSerializer.writeByteArray(appendBytes, out);
+  }
 }

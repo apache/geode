@@ -276,4 +276,9 @@ public class RedisHash extends AbstractRedisData {
   protected boolean removeFromRegion() {
     return hash.isEmpty();
   }
+
+  @Override
+  protected void appendDelta(byte[] appendBytes) {
+    throw new IllegalStateException("should never be called on a hash");
+  }
 }
