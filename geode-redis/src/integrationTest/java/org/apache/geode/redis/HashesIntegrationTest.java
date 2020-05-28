@@ -224,6 +224,17 @@ public class HashesIntegrationTest {
   }
 
   @Test
+  public void incrByFloatFailsWithNonFloatFieldValue() {
+    String key = randString();
+    String field = randString();
+    jedis.hset(key, field, "foobar");
+    assertThatThrownBy(() -> {
+      jedis.hincrByFloat(key, field, 1.5);
+    }).isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("ERR hash value is not a float");
+  }
+
+  @Test
   public void testHExists() {
     String key = Double.valueOf(rand.nextDouble()).toString();
     String field = Double.valueOf(rand.nextInt(50)).toString() + ".field";

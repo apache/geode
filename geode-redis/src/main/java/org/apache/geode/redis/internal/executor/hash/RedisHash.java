@@ -16,6 +16,9 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -223,10 +226,15 @@ public class RedisHash extends AbstractRedisData {
       return increment;
     }
 
-    long value = Long.parseLong(oldValue.toString());
+    long value;
+    try {
+      value = Long.parseLong(oldValue.toString());
+    } catch (NumberFormatException ex) {
+      throw new NumberFormatException(ERROR_NOT_INTEGER);
+    }
     if ((value >= 0 && increment > (Long.MAX_VALUE - value))
         || (value <= 0 && increment < (Long.MIN_VALUE - value))) {
-      throw new ArithmeticException("overflow");
+      throw new ArithmeticException(ERROR_OVERFLOW);
     }
 
     value += increment;
@@ -255,9 +263,14 @@ public class RedisHash extends AbstractRedisData {
 
     String valueS = oldValue.toString();
     if (valueS.contains(" ")) {
-      throw new NumberFormatException("could not convert " + valueS + " to a double");
+      throw new NumberFormatException("hash value is not a float");
     }
-    double value = Coder.stringToDouble(valueS);
+    double value;
+    try {
+      value = Coder.stringToDouble(valueS);
+    } catch (NumberFormatException ex) {
+      throw new NumberFormatException("hash value is not a float");
+    }
 
     value += increment;
 

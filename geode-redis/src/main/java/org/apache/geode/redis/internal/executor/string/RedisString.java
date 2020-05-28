@@ -26,6 +26,7 @@ import org.apache.geode.redis.internal.AppendDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.DeltaInfo;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
 
@@ -57,9 +58,9 @@ public class RedisString extends AbstractRedisData {
 
   public long incr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
       throws NumberFormatException, ArithmeticException {
-    long longValue = Long.parseLong(value.toString());
+    long longValue = parseValueAsLong();
     if (longValue == Long.MAX_VALUE) {
-      throw new ArithmeticException("overflow");
+      throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
     }
     longValue++;
     String stringValue = Long.toString(longValue);
@@ -71,9 +72,9 @@ public class RedisString extends AbstractRedisData {
 
   public long decr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
       throws NumberFormatException, ArithmeticException {
-    long longValue = Long.parseLong(value.toString());
+    long longValue = parseValueAsLong();
     if (longValue == Long.MIN_VALUE) {
-      throw new ArithmeticException("underflow");
+      throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
     }
     longValue--;
     String stringValue = Long.toString(longValue);
@@ -81,6 +82,14 @@ public class RedisString extends AbstractRedisData {
     // numeric strings are short so no need to use delta
     region.put(key, this);
     return longValue;
+  }
+
+  private long parseValueAsLong() {
+    try {
+      return Long.parseLong(value.toString());
+    } catch (NumberFormatException ex) {
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_INTEGER);
+    }
   }
 
   @Override

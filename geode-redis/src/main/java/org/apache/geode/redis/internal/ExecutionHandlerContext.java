@@ -161,9 +161,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
 
     if (cause instanceof NumberFormatException) {
-      response = RedisResponse.error(RedisConstants.ERROR_NOT_INTEGER);
+      response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof ArithmeticException) {
-      response = RedisResponse.error(RedisConstants.ERROR_OVERFLOW);
+      response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof RedisDataTypeMismatchException) {
       response = RedisResponse.wrongType(cause.getMessage());
     } else if (cause instanceof DecoderException
