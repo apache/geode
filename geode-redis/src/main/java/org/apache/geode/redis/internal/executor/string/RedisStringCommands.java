@@ -22,4 +22,14 @@ public interface RedisStringCommands {
   ByteArrayWrapper get(ByteArrayWrapper key);
 
   boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options);
+
+  long incr(ByteArrayWrapper key);
+
+  long decr(ByteArrayWrapper key);
+
+  ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value);
+
+  long incrby(ByteArrayWrapper key, long increment);
+
+  long decrby(ByteArrayWrapper key, long decrement);
 }

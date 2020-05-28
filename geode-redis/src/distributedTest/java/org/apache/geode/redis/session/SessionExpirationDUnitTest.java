@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -57,7 +56,6 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void sessionShouldNotTimeoutOnFirstServer_whenAccessedOnSecondaryServer() {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
     String sessionId = getSessionId(sessionCookie);
@@ -71,7 +69,6 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() {
     String sessionCookie = createNewSessionWithNote(APP2, "note1");
     String sessionId = getSessionId(sessionCookie);

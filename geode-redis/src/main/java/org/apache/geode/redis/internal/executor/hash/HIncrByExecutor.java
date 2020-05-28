@@ -44,13 +44,8 @@ import org.apache.geode.redis.internal.RedisResponse;
  */
 public class HIncrByExecutor extends HashExecutor {
 
-  private static final String ERROR_FIELD_NOT_USABLE = "The value at this field is not an integer";
-
   private static final String ERROR_INCREMENT_NOT_USABLE =
       "The increment on this key must be numeric";
-
-  private static final String ERROR_OVERFLOW =
-      "This incrementation cannot be performed due to overflow";
 
   private static final int INCREMENT_INDEX = FIELD_INDEX + 1;
 
@@ -72,14 +67,8 @@ public class HIncrByExecutor extends HashExecutor {
 
     RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
-    try {
-      long value = redisHashCommands.hincrby(key, field, increment);
-      return RedisResponse.integer(value);
-    } catch (NumberFormatException ex) {
-      return RedisResponse.error(ERROR_FIELD_NOT_USABLE);
-    } catch (ArithmeticException ex) {
-      return RedisResponse.error(ERROR_OVERFLOW);
-    }
+    long value = redisHashCommands.hincrby(key, field, increment);
+    return RedisResponse.integer(value);
   }
 
 }

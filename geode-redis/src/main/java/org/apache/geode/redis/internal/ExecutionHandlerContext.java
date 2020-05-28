@@ -160,7 +160,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       }
     }
 
-    if (cause instanceof RedisDataTypeMismatchException) {
+    if (cause instanceof NumberFormatException) {
+      response = RedisResponse.error(cause.getMessage());
+    } else if (cause instanceof ArithmeticException) {
+      response = RedisResponse.error(cause.getMessage());
+    } else if (cause instanceof RedisDataTypeMismatchException) {
       response = RedisResponse.wrongType(cause.getMessage());
     } else if (cause instanceof DecoderException
         && cause.getCause() instanceof RedisCommandParserException) {

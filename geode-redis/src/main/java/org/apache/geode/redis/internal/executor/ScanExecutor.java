@@ -131,7 +131,7 @@ public class ScanExecutor extends AbstractScanExecutor {
       }
     }
 
-    if (i == size - (NUM_DEFAULT_REGIONS + 1)) {
+    if (i >= size - 1) {
       returnList.add(0, String.valueOf(0));
     } else {
       returnList.add(0, String.valueOf(i));

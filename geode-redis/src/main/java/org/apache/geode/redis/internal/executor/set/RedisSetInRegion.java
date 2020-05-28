@@ -30,18 +30,13 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.executor.RedisKeyInRegion;
 
-/**
- * This class still uses "synchronized" to protect the underlying HashSet even though all writers do
- * so under the {@link SynchronizedStripedExecutor}. The synchronization on this class can be
- * removed once readers are changed to also use the {@link SynchronizedStripedExecutor}.
- */
-public class RedisSetInRegion implements RedisSetCommands {
-  private final Region<ByteArrayWrapper, RedisData> region;
+public class RedisSetInRegion extends RedisKeyInRegion implements RedisSetCommands {
 
   @SuppressWarnings("unchecked")
   public RedisSetInRegion(Region<ByteArrayWrapper, RedisData> region) {
-    this.region = region;
+    super(region);
   }
 
   @Override
@@ -49,7 +44,7 @@ public class RedisSetInRegion implements RedisSetCommands {
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
 
-    RedisSet redisSet = checkType(region.get(key));
+    RedisSet redisSet = checkType(getRedisData(key));
 
     if (redisSet != null) {
       return redisSet.sadd(membersToAdd, region, key);
@@ -245,7 +240,7 @@ public class RedisSetInRegion implements RedisSetCommands {
   }
 
   private RedisSet getRedisSet(ByteArrayWrapper key) {
-    return checkType(region.getOrDefault(key, RedisSet.EMPTY));
+    return checkType(getRedisDataOrDefault(key, RedisSet.EMPTY));
   }
 
   private RedisSet checkType(RedisData redisData) {

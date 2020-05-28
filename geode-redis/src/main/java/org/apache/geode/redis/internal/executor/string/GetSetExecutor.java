@@ -41,8 +41,7 @@ public class GetSetExecutor extends StringExecutor {
     ByteArrayWrapper newValueWrapper = new ByteArrayWrapper(newCharValue);
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
-    ByteArrayWrapper oldValueWrapper = stringCommands.get(key);
-    stringCommands.set(key, newValueWrapper, null);
+    ByteArrayWrapper oldValueWrapper = stringCommands.getset(key, newValueWrapper);
     respondBulkStrings(command, context, oldValueWrapper);
   }
 }

@@ -15,7 +15,12 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.internal.RedisCommandType.APPEND;
+import static org.apache.geode.redis.internal.RedisCommandType.DECR;
+import static org.apache.geode.redis.internal.RedisCommandType.DECRBY;
 import static org.apache.geode.redis.internal.RedisCommandType.GET;
+import static org.apache.geode.redis.internal.RedisCommandType.GETSET;
+import static org.apache.geode.redis.internal.RedisCommandType.INCR;
+import static org.apache.geode.redis.internal.RedisCommandType.INCRBY;
 import static org.apache.geode.redis.internal.RedisCommandType.SET;
 
 import org.apache.geode.cache.Region;
@@ -43,5 +48,30 @@ public class RedisStringCommandsFunctionExecutor implements RedisStringCommands 
   @Override
   public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
     return CommandFunction.execute(SET, key, new Object[] {value, options}, region);
+  }
+
+  @Override
+  public long incr(ByteArrayWrapper key) {
+    return CommandFunction.execute(INCR, key, null, region);
+  }
+
+  @Override
+  public long decr(ByteArrayWrapper key) {
+    return CommandFunction.execute(DECR, key, null, region);
+  }
+
+  @Override
+  public ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value) {
+    return CommandFunction.execute(GETSET, key, value, region);
+  }
+
+  @Override
+  public long incrby(ByteArrayWrapper key, long increment) {
+    return CommandFunction.execute(INCRBY, key, increment, region);
+  }
+
+  @Override
+  public long decrby(ByteArrayWrapper key, long decrement) {
+    return CommandFunction.execute(DECRBY, key, decrement, region);
   }
 }

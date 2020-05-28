@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -22,13 +24,8 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RegionProvider;
 
 public class TTLExecutor extends AbstractExecutor implements Extendable {
-
-  public static final int NOT_EXISTS = -2;
-
-  public static final int NO_TIMEOUT = -1;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -40,25 +37,16 @@ public class TTLExecutor extends AbstractExecutor implements Extendable {
     }
 
     ByteArrayWrapper key = command.getKey();
-    RegionProvider rC = context.getRegionProvider();
 
-    boolean exists = getDataRegion(context).containsKey(key);
-    if (!exists) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
+    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+    long result = redisKeyCommands.pttl(key);
+    if (result > 0 && !timeUnitMillis()) {
+      result = MILLISECONDS.toSeconds(result);
     }
-
-    long ttl = rC.getExpirationDelayMillis(key);
-    if (ttl == 0L) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NO_TIMEOUT));
-      return;
-    }
-
-    if (!timeUnitMillis()) {
-      ttl = ttl / millisInSecond;
-    }
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), ttl));
+    command.setResponse(
+        Coder.getIntegerResponse(
+            context.getByteBufAllocator(),
+            result));
   }
 
   protected boolean timeUnitMillis() {

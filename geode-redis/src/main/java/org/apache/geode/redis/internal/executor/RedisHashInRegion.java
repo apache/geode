@@ -32,16 +32,15 @@ import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.hash.RedisHash;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 
-public class RedisHashInRegion implements RedisHashCommands {
-  private final Region<ByteArrayWrapper, RedisData> region;
+public class RedisHashInRegion extends RedisKeyInRegion implements RedisHashCommands {
 
   public RedisHashInRegion(Region<ByteArrayWrapper, RedisData> region) {
-    this.region = region;
+    super(region);
   }
 
   @Override
   public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    RedisHash hash = checkType(region.get(key));
+    RedisHash hash = checkType(getRedisData(key));
     if (hash != null) {
       return hash.hset(region, key, fieldsToSet, NX);
     } else {
@@ -97,7 +96,7 @@ public class RedisHashInRegion implements RedisHashCommands {
 
   @Override
   public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
-    RedisHash hash = checkType(region.get(key));
+    RedisHash hash = checkType(getRedisData(key));
     if (hash != null) {
       return hash.hincrby(region, key, field, increment);
     } else {
@@ -109,7 +108,7 @@ public class RedisHashInRegion implements RedisHashCommands {
 
   @Override
   public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
-    RedisHash hash = checkType(region.get(key));
+    RedisHash hash = checkType(getRedisData(key));
     if (hash != null) {
       return hash.hincrbyfloat(region, key, field, increment);
     } else {
@@ -121,7 +120,7 @@ public class RedisHashInRegion implements RedisHashCommands {
   }
 
   private RedisHash getRedisHash(ByteArrayWrapper key) {
-    return checkType(region.getOrDefault(key, RedisHash.EMPTY));
+    return checkType(getRedisDataOrDefault(key, RedisHash.EMPTY));
   }
 
   public static RedisHash checkType(RedisData redisData) {

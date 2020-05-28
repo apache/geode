@@ -14,6 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -22,7 +25,6 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SetEXExecutor extends StringExecutor implements Extendable {
 
@@ -66,12 +68,11 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
     }
 
     if (!timeUnitMillis()) {
-      expiration *= AbstractExecutor.millisInSecond;
+      expiration = SECONDS.toMillis(expiration);
     }
+    SetOptions setOptions = new SetOptions(NONE, expiration, false);
 
-    stringCommands.set(key, new ByteArrayWrapper(value), null);
-
-    context.getRegionProvider().setExpiration(key, expiration);
+    stringCommands.set(key, new ByteArrayWrapper(value), setOptions);
 
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
 

@@ -46,9 +46,6 @@ import org.apache.geode.redis.internal.RedisResponse;
  */
 public class HIncrByFloatExecutor extends HashExecutor {
 
-  private static final String ERROR_FIELD_NOT_USABLE =
-      "The value at this field cannot be incremented numerically because it is not a float";
-
   private static final String ERROR_INCREMENT_NOT_USABLE =
       "The increment on this key must be floating point numeric";
 
@@ -72,12 +69,8 @@ public class HIncrByFloatExecutor extends HashExecutor {
     ByteArrayWrapper key = command.getKey();
     RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
-    try {
-      double value = redisHashCommands.hincrbyfloat(key, field, increment);
-      return RedisResponse.bulkString(value);
-    } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_FIELD_NOT_USABLE);
-    }
+    double value = redisHashCommands.hincrbyfloat(key, field, increment);
+    return RedisResponse.bulkString(value);
   }
 
 }

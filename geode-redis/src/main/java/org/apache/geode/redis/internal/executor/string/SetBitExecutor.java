@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -88,16 +90,17 @@ public class SetBitExecutor extends StringExecutor {
         returnBit = 0;
       }
 
+      SetOptions setOptions = new SetOptions(NONE, 0L, true);
       if (byteIndex < bytes.length) {
         bytes[byteIndex] = value == 1 ? (byte) (bytes[byteIndex] | (0x80 >> offset))
             : (byte) (bytes[byteIndex] & ~(0x80 >> offset));
-        stringCommands.set(key, new ByteArrayWrapper(bytes), null);
+        stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
       } else {
         byte[] newBytes = new byte[byteIndex + 1];
         System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
         newBytes[byteIndex] = value == 1 ? (byte) (newBytes[byteIndex] | (0x80 >> offset))
             : (byte) (newBytes[byteIndex] & ~(0x80 >> offset));
-        stringCommands.set(key, new ByteArrayWrapper(newBytes), null);
+        stringCommands.set(key, new ByteArrayWrapper(newBytes), setOptions);
       }
 
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), returnBit));
