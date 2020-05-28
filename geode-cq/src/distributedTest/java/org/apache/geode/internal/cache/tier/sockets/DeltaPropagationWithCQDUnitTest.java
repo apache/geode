@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.System.out;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
@@ -80,7 +81,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
 
   protected VM client2 = null;
 
-  private static final String CQ1 = "SELECT * FROM " + Region.SEPARATOR + regionName;
+  private static final String CQ1 = "SELECT * FROM " + SEPARATOR + regionName;
 
   private static long totalEvents = 0;
 

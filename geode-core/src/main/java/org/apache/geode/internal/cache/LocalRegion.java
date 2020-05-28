@@ -526,7 +526,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       buf = new StringBuilder(parentFull.length() + regionName.length() + 1);
       buf.append(parentFull);
     }
-    buf.append(SEPARATOR).append(regionName);
+    buf.append(Region.SEPARATOR).append(regionName);
     return buf.toString();
   }
 
@@ -4558,7 +4558,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       waitOnInitialization(); // some internal methods rely on this
       return this;
     }
-    if (path.charAt(0) == SEPARATOR_CHAR) {
+    if (path.charAt(0) == Region.SEPARATOR_CHAR) {
       throw new IllegalArgumentException(
           "path should not start with a slash");
     }
@@ -4579,7 +4579,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
       // the index of the next separator
-      int separatorIndex = name.indexOf(SEPARATOR_CHAR);
+      int separatorIndex = name.indexOf(Region.SEPARATOR_CHAR);
 
       // this is the last part if no separator
       last = separatorIndex < 0;
@@ -7143,7 +7143,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // CreateRegion message, it would have been in the subregions map.
 
     if (region == null && getThreadInitLevelRequirement() != ANY_INIT) {
-      String thePath = getFullPath() + SEPARATOR + name;
+      String thePath = getFullPath() + Region.SEPARATOR + name;
       if (logger.isDebugEnabled()) {
         logger.debug("Trying reinitializing region, fullPath={}", thePath);
       }
@@ -7513,7 +7513,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
       DiskStoreFactoryImpl diskStoreFactoryImpl = (DiskStoreFactoryImpl) diskStoreFactory;
-      return diskStoreFactoryImpl.createOwnedByRegion(getFullPath().replace(SEPARATOR_CHAR, '_'),
+      return diskStoreFactoryImpl.createOwnedByRegion(getFullPath().replace(
+          Region.SEPARATOR_CHAR, '_'),
           this instanceof PartitionedRegion, internalRegionArgs);
     }
 

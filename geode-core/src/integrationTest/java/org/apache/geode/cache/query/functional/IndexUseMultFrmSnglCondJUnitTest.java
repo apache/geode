@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -84,7 +85,8 @@ public class IndexUseMultFrmSnglCondJUnitTest {
     }
     QueryService qs = CacheUtils.getQueryService();
     String queries[] =
-        {"SELECT DISTINCT * from /portfolios pf, pf.positions.values pos where pos.secId = 'IBM'"};
+        {"SELECT DISTINCT * from " + SEPARATOR
+            + "portfolios pf, pf.positions.values pos where pos.secId = 'IBM'"};
     SelectResults r[][] = new SelectResults[queries.length][2];
 
     for (int i = 0; i < queries.length; i++) {
@@ -119,7 +121,7 @@ public class IndexUseMultFrmSnglCondJUnitTest {
     }
     // Create an Index and Run the Same Query as above.
     qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios pf, pf.positions.values b");
+        SEPARATOR + "portfolios pf, pf.positions.values b");
 
     for (int j = 0; j < queries.length; j++) {
       Query q2 = null;
@@ -197,12 +199,14 @@ public class IndexUseMultFrmSnglCondJUnitTest {
 
     QueryService qs = CacheUtils.getQueryService();
     // create and execute query
-    String queryString = "SELECT * from /portfolios1 P1, /portfolios2 P2 WHERE P1.ID = 5";
+    String queryString = "SELECT * from " + SEPARATOR + "portfolios1 P1, " + SEPARATOR
+        + "portfolios2 P2 WHERE P1.ID = 5";
     Query query = qs.newQuery(queryString);
     SelectResults sr1 = (SelectResults) query.execute();
 
     // create index
-    Index index = qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P1.ID", "/portfolios1 P1");
+    Index index =
+        qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P1.ID", SEPARATOR + "portfolios1 P1");
 
     // execute query
     SelectResults sr2 = (SelectResults) query.execute();
@@ -231,13 +235,14 @@ public class IndexUseMultFrmSnglCondJUnitTest {
 
     QueryService qs = CacheUtils.getQueryService();
     // create and execute query
-    String queryString = "SELECT * from /portfolios1 P1, P1.positions.values WHERE P1.ID = 5";
+    String queryString =
+        "SELECT * from " + SEPARATOR + "portfolios1 P1, P1.positions.values WHERE P1.ID = 5";
     Query query = qs.newQuery(queryString);
     SelectResults sr1 = (SelectResults) query.execute();
 
     // create index
     Index index = qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P1.ID",
-        "/portfolios1 P1, P1.positions.values");
+        SEPARATOR + "portfolios1 P1, P1.positions.values");
 
     // execute query
     SelectResults sr2 = (SelectResults) query.execute();

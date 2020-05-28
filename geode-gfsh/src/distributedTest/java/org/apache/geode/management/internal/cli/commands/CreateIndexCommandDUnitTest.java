@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
@@ -59,7 +60,7 @@ public class CreateIndexCommandDUnitTest {
     // create a region on server-2 in group 2
     gfsh.executeAndAssertThat("create region --name=regionB --group=group2 --type=REPLICATE")
         .statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionB", 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "regionB", 1);
 
     // cache config in cluster group is null
     locator.invoke(() -> {
@@ -71,13 +72,15 @@ public class CreateIndexCommandDUnitTest {
 
   @Test
   public void createIndexOnSubRegion() throws Exception {
-    gfsh.executeAndAssertThat("create region --name=regionB/child --group=group2 --type=REPLICATE")
+    gfsh.executeAndAssertThat(
+        "create region --name=regionB" + SEPARATOR + "child --group=group2 --type=REPLICATE")
         .statusIsSuccess();
 
     // make sure index on sub region can be created successfully
     CommandResultAssert commandResultAssert =
         gfsh.executeAndAssertThat(
-            "create index --name=childIndex --region='/regionB/child c' --expression=id")
+            "create index --name=childIndex --region='" + SEPARATOR + "regionB" + SEPARATOR
+                + "child c' --expression=id")
             .statusIsSuccess();
     commandResultAssert.hasTableSection()
         .hasColumn("Message")
@@ -113,7 +116,8 @@ public class CreateIndexCommandDUnitTest {
 
   @Test
   public void regionNotExistInClusterConfig() {
-    gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=/noExist")
+    gfsh.executeAndAssertThat(
+        "create index --name=myIndex --expression=id --region=" + SEPARATOR + "noExist")
         .statusIsError()
         .hasInfoSection()
         .hasOutput().contains("Region noExist does not exist");
@@ -122,12 +126,13 @@ public class CreateIndexCommandDUnitTest {
   @Test
   public void regionNotExistInThatMember() throws Exception {
     gfsh.executeAndAssertThat(
-        "create index --name=myIndex --expression=id --region=/regionB --member=server-1")
+        "create index --name=myIndex --expression=id --region=" + SEPARATOR
+            + "regionB --member=server-1")
         .statusIsError()
         .hasTableSection()
         .hasRowSize(1)
         .hasRow(0)
-        .contains("ERROR", "Region not found : \"/regionB\"");
+        .contains("ERROR", "Region not found : \"" + SEPARATOR + "regionB\"");
   }
 
   @Test
@@ -189,7 +194,7 @@ public class CreateIndexCommandDUnitTest {
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       assertThat(configurationService.getConfiguration("group2").getCacheXmlContent())
           .contains("<region name=\"regionB\"").contains("<index").contains("expression=\"id\" ")
-          .contains("from-clause=\"/regionB\"").contains("name=\"myIndex\"")
+          .contains("from-clause=\"" + SEPARATOR + "regionB\"").contains("name=\"myIndex\"")
           .contains("type=\"range\"");
     });
   }

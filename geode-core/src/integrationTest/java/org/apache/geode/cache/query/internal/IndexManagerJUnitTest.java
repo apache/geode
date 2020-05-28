@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -131,9 +132,10 @@ public class IndexManagerJUnitTest {
     QueryService qs;
 
     qs = CacheUtils.getQueryService();
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolios, positions");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
+        SEPARATOR + "portfolios, positions");
     QCompiler compiler = new QCompiler();
-    List list = compiler.compileFromClause("/portfolios pf");
+    List list = compiler.compileFromClause(SEPARATOR + "portfolios pf");
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
     context.newScope(context.associateScopeID());
 
@@ -148,20 +150,23 @@ public class IndexManagerJUnitTest {
     CompiledPath cp = new CompiledPath(new CompiledID("pf"), "status");
 
     // TASK ICM1
-    String[] defintions = {"/portfolios", "index_iter1.positions"};
-    IndexData id = IndexUtils.findIndex("/portfolios", defintions, cp, "*", CacheUtils.getCache(),
-        true, context);
+    String[] defintions = {SEPARATOR + "portfolios", "index_iter1.positions"};
+    IndexData id =
+        IndexUtils.findIndex(SEPARATOR + "portfolios", defintions, cp, "*", CacheUtils.getCache(),
+            true, context);
     Assert.assertEquals(id.getMatchLevel(), 0);
     Assert.assertEquals(id.getMapping()[0], 1);
     Assert.assertEquals(id.getMapping()[1], 2);
-    String[] defintions1 = {"/portfolios"};
-    IndexData id1 = IndexUtils.findIndex("/portfolios", defintions1, cp, "*", CacheUtils.getCache(),
-        true, context);
+    String[] defintions1 = {SEPARATOR + "portfolios"};
+    IndexData id1 =
+        IndexUtils.findIndex(SEPARATOR + "portfolios", defintions1, cp, "*", CacheUtils.getCache(),
+            true, context);
     Assert.assertEquals(id1.getMatchLevel(), -1);
     Assert.assertEquals(id1.getMapping()[0], 1);
-    String[] defintions2 = {"/portfolios", "index_iter1.positions", "index_iter1.coll1"};
-    IndexData id2 = IndexUtils.findIndex("/portfolios", defintions2, cp, "*", CacheUtils.getCache(),
-        true, context);
+    String[] defintions2 = {SEPARATOR + "portfolios", "index_iter1.positions", "index_iter1.coll1"};
+    IndexData id2 =
+        IndexUtils.findIndex(SEPARATOR + "portfolios", defintions2, cp, "*", CacheUtils.getCache(),
+            true, context);
     Assert.assertEquals(id2.getMatchLevel(), 1);
     Assert.assertEquals(id2.getMapping()[0], 1);
     Assert.assertEquals(id2.getMapping()[1], 2);

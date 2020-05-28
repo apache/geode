@@ -20,6 +20,7 @@
 
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.util.Properties;
@@ -86,7 +87,7 @@ public class NegativeNumberQueriesJUnitTest {
 
     QueryService qs;
     qs = cache.getQueryService();
-    String queryStr = "SELECT DISTINCT * FROM /numbers num WHERE num.id1 >= -200";
+    String queryStr = "SELECT DISTINCT * FROM " + SEPARATOR + "numbers num WHERE num.id1 >= -200";
     Query q = qs.newQuery(queryStr);
     SelectResults rs = (SelectResults) q.execute();
     CacheUtils
@@ -109,10 +110,10 @@ public class NegativeNumberQueriesJUnitTest {
     CacheUtils.log("--------------------- Creating Indices -------------------------");
     QueryService qs;
     qs = cache.getQueryService();
-    qs.createIndex("id", IndexType.FUNCTIONAL, "num.id", "/numbers num");
-    qs.createIndex("id1", IndexType.FUNCTIONAL, "num.id1", "/numbers num");
-    qs.createIndex("avg", IndexType.FUNCTIONAL, "num.max1", "/numbers num");
-    qs.createIndex("l", IndexType.FUNCTIONAL, "num.l", "/numbers num");
+    qs.createIndex("id", IndexType.FUNCTIONAL, "num.id", SEPARATOR + "numbers num");
+    qs.createIndex("id1", IndexType.FUNCTIONAL, "num.id1", SEPARATOR + "numbers num");
+    qs.createIndex("avg", IndexType.FUNCTIONAL, "num.max1", SEPARATOR + "numbers num");
+    qs.createIndex("l", IndexType.FUNCTIONAL, "num.l", SEPARATOR + "numbers num");
     CacheUtils.log("--------------------- Index Creation Done -------------------------");
   }// end of createIndex
 

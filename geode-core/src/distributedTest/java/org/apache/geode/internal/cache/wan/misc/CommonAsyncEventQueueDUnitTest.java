@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -120,7 +121,7 @@ public class CommonAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
         regionName, "ln", isOffHeap()));
     // do puts
     vm1.invoke(() -> {
-      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       for (long i = 0; i < numPuts; i++) {
         r.put(i, "Value_" + i);
       }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.client.PoolManager.find;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -272,7 +273,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private void acquireConnectionsAndDestroyEntriesK1andK2() {
     try {
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r1);
       String poolName = r1.getAttributes().getPoolName();
       assertNotNull(poolName);
@@ -287,7 +288,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
       }
       assertNotNull(conn1);
       assertEquals(PORT2, conn1.getServer().getPort());
-      ServerRegionProxy srp = new ServerRegionProxy(Region.SEPARATOR + REGION_NAME, pool);
+      ServerRegionProxy srp = new ServerRegionProxy(SEPARATOR + REGION_NAME, pool);
       srp.destroyOnForTestsOnly(conn1, "key1", null, Operation.DESTROY,
           new EventIDHolder(new EventID(new byte[] {1}, 100000, 1)), null);
       srp.destroyOnForTestsOnly(conn1, "key2", null, Operation.DESTROY,
@@ -331,7 +332,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
    */
   private static void createEntriesK1andK2() {
     try {
-      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r1);
       if (!r1.containsKey("key1")) {
         r1.create("key1", "key-1");
@@ -351,7 +352,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
    */
   private static void destroyEntriesK1andK2() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       r.destroy("key1");
       r.destroy("key2");
@@ -362,7 +363,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private static void verifyNoDestroyEntryInSender() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       assertNotNull(r.getEntry("key1"));
       assertNotNull(r.getEntry("key2"));
@@ -373,7 +374,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private static void verifyEntriesAreDestroyed() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       waitForDestroyEvent(r, "key1");
       assertNull(r.getEntry("key1"));
@@ -385,7 +386,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private static void verifyOnlyRegisteredEntriesAreDestroyed() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       waitForDestroyEvent(r, "key1");
       assertNull(r.getEntry("key1"));
@@ -462,7 +463,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private static void registerKey1() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      Region r = cache.getRegion(SEPARATOR + REGION_NAME);
       assertNotNull(r);
       List list = new ArrayList();
       list.add("key1");

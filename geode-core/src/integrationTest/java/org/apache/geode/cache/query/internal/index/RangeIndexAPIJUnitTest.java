@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -82,17 +83,19 @@ public class RangeIndexAPIJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     AbstractIndex i1 =
-        (AbstractIndex) qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolios");
+        (AbstractIndex) qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID",
+            SEPARATOR + "portfolios");
     AbstractIndex i2 = (AbstractIndex) qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
-        "/portfolios");
+        SEPARATOR + "portfolios");
     AbstractIndex i3 = (AbstractIndex) qs.createIndex("status.toString()", IndexType.FUNCTIONAL,
-        "status.toString", "/portfolios");
+        "status.toString", SEPARATOR + "portfolios");
 
     Set results = new HashSet();
-    DefaultQuery q = new DefaultQuery("select * from /portfolios", CacheUtils.getCache(), false);
+    DefaultQuery q =
+        new DefaultQuery("select * from " + SEPARATOR + "portfolios", CacheUtils.getCache(), false);
     q.setRemoteQuery(false);
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache(), q);
-    bindIterators(context, "/portfolios");
+    bindIterators(context, SEPARATOR + "portfolios");
     i1.query(new Integer(1), OQLLexerTokenTypes.TOK_EQ, results, context);
     assertEquals(1, results.size());
     assertTrue(results.iterator().next() == region.get(new Integer(1)));
@@ -133,17 +136,19 @@ public class RangeIndexAPIJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     AbstractIndex i1 =
-        (AbstractIndex) qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolios");
+        (AbstractIndex) qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID",
+            SEPARATOR + "portfolios");
     AbstractIndex i2 = (AbstractIndex) qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
-        "/portfolios");
+        SEPARATOR + "portfolios");
     AbstractIndex i3 = (AbstractIndex) qs.createIndex("status.toString()", IndexType.FUNCTIONAL,
-        "status.toString", "/portfolios");
+        "status.toString", SEPARATOR + "portfolios");
 
     Set results = new HashSet();
-    DefaultQuery q = new DefaultQuery("select * from /portfolios  ", CacheUtils.getCache(), false);
+    DefaultQuery q = new DefaultQuery("select * from " + SEPARATOR + "portfolios  ",
+        CacheUtils.getCache(), false);
     q.setRemoteQuery(false);
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache(), q);
-    bindIterators(context, "/portfolios");
+    bindIterators(context, SEPARATOR + "portfolios");
     Set keysToRemove = new HashSet();
     i1.query(new Integer(1), OQLLexerTokenTypes.TOK_EQ, results, context);
     assertEquals(1, results.size());
@@ -232,17 +237,19 @@ public class RangeIndexAPIJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     AbstractIndex i1 =
-        (AbstractIndex) qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolios");
+        (AbstractIndex) qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID",
+            SEPARATOR + "portfolios");
     AbstractIndex i2 = (AbstractIndex) qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
-        "/portfolios");
+        SEPARATOR + "portfolios");
     AbstractIndex i3 = (AbstractIndex) qs.createIndex("status.toString()", IndexType.FUNCTIONAL,
-        "status.toString", "/portfolios");
+        "status.toString", SEPARATOR + "portfolios");
 
     Set results = new HashSet();
-    DefaultQuery q = new DefaultQuery("select * from /portfolios", CacheUtils.getCache(), false);
+    DefaultQuery q =
+        new DefaultQuery("select * from " + SEPARATOR + "portfolios", CacheUtils.getCache(), false);
     q.setRemoteQuery(false);
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache(), q);
-    bindIterators(context, "/portfolios");
+    bindIterators(context, SEPARATOR + "portfolios");
     Set keysToRemove = new HashSet();
     i1.query(new Integer(5), OQLLexerTokenTypes.TOK_GT, new Integer(10), OQLLexerTokenTypes.TOK_LT,
         results, null, context);
@@ -327,16 +334,18 @@ public class RangeIndexAPIJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     AbstractIndex i1 =
-        (AbstractIndex) qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/portfolios");
+        (AbstractIndex) qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID",
+            SEPARATOR + "portfolios");
     AbstractIndex i2 = (AbstractIndex) qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
-        "/portfolios");
+        SEPARATOR + "portfolios");
     AbstractIndex i3 = (AbstractIndex) qs.createIndex("status.toString()", IndexType.FUNCTIONAL,
-        "status.toString", "/portfolios");
+        "status.toString", SEPARATOR + "portfolios");
     Set results = new HashSet();
-    DefaultQuery q = new DefaultQuery("select * from /portfolios", CacheUtils.getCache(), false);
+    DefaultQuery q =
+        new DefaultQuery("select * from " + SEPARATOR + "portfolios", CacheUtils.getCache(), false);
     q.setRemoteQuery(false);
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache(), q);
-    bindIterators(context, "/portfolios");
+    bindIterators(context, SEPARATOR + "portfolios");
 
     Set keysToRemove = new HashSet();
     keysToRemove.add(new Integer(5));
@@ -380,11 +389,13 @@ public class RangeIndexAPIJUnitTest {
     QueryService queryService = CacheUtils.getCache().getQueryService();
     CacheUtils.createRegion("TEST_REGION", null);
     queryService.createIndex("tr.nested.id.index", "nested.id",
-        "/TEST_REGION, nested IN nested_values");
+        SEPARATOR + "TEST_REGION, nested IN nested_values");
     Query queryInSet = queryService.newQuery(
-        "SELECT DISTINCT tr.id FROM /TEST_REGION tr, tr.nested_values nested WHERE nested.id IN SET ('1')");
+        "SELECT DISTINCT tr.id FROM " + SEPARATOR
+            + "TEST_REGION tr, tr.nested_values nested WHERE nested.id IN SET ('1')");
     Query queryEquals = queryService.newQuery(
-        "SELECT DISTINCT tr.id FROM /TEST_REGION tr, nested IN nested_values WHERE nested.id='1'");
+        "SELECT DISTINCT tr.id FROM " + SEPARATOR
+            + "TEST_REGION tr, nested IN nested_values WHERE nested.id='1'");
 
     Object[] nested =
         new Object[] {cache.createPdxInstanceFactory("nested_1").writeString("id", "1").create(),

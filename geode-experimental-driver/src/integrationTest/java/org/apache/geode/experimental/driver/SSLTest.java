@@ -14,6 +14,7 @@
  */
 package org.apache.geode.experimental.driver;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
@@ -144,7 +145,7 @@ public class SSLTest {
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(DEFAULT_KEY_STORE).setKeyStorePath(DEFAULT_KEY_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
-    assertEquals(Collections.singleton("/region"), regionsOnServer);
+    assertEquals(Collections.singleton(SEPARATOR + "region"), regionsOnServer);
     assertTrue(driver.isConnected());
   }
 
@@ -176,7 +177,7 @@ public class SSLTest {
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(DEFAULT_KEY_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
-    assertEquals(Collections.singleton("/region"), regionsOnServer);
+    assertEquals(Collections.singleton(SEPARATOR + "region"), regionsOnServer);
     assertTrue(driver.isConnected());
   }
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.security.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -104,7 +105,7 @@ public class CqSecurityForbiddenUsersDistributedTest extends AbstractQuerySecuri
   @Test
   public void cqQueryWithPublicFieldOnNonEmptyRegionShouldThrowExceptionDuringExecute() {
     putIntoRegion(superUserClient, keys, values, regionName);
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.id = 0";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.id = 0";
 
     specificUserClient.invoke(() -> {
       CqQuery cq = createCq(query);
@@ -114,7 +115,7 @@ public class CqSecurityForbiddenUsersDistributedTest extends AbstractQuerySecuri
 
   @Test
   public void cqQueryWithImplicitMethodInvocationOnNonEmptyRegionShouldThrowExceptionDuringExecute() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.name = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.name = 'Beth'";
 
     specificUserClient.invoke(() -> {
       CqQuery cq = createCq(query);
@@ -124,7 +125,7 @@ public class CqSecurityForbiddenUsersDistributedTest extends AbstractQuerySecuri
 
   @Test
   public void cqQueryWithExplicitMethodInvocationOnNonEmptyRegionShouldThrowExceptionDuringExecute() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.getName = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getName = 'Beth'";
 
     specificUserClient.invoke(() -> {
       CqQuery cq = createCq(query);
@@ -134,7 +135,7 @@ public class CqSecurityForbiddenUsersDistributedTest extends AbstractQuerySecuri
 
   @Test
   public void cqQueryWithImplicitMethodInvocationOnNonEmptyRegionShouldThrowExceptionDuringExecuteWithInitialResults() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.name = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.name = 'Beth'";
 
     specificUserClient.invoke(() -> {
       CqQuery cq = createCq(query);
@@ -144,7 +145,7 @@ public class CqSecurityForbiddenUsersDistributedTest extends AbstractQuerySecuri
 
   @Test
   public void cqQueryWithExplicitMethodInvocationOnNonEmptyRegionShouldThrowExceptionDuringExecuteWithInitialResults() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.getName = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getName = 'Beth'";
 
     specificUserClient.invoke(() -> {
       CqQuery cq = createCq(query);
@@ -155,7 +156,7 @@ public class CqSecurityForbiddenUsersDistributedTest extends AbstractQuerySecuri
   @Test
   public void cqCreatedByAllowedUserButPutDoneByForbiddenReaderShouldStillInvokeListener() {
     assumeTrue(user.equals("dataWriter"));
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.id = 1";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.id = 1";
 
     superUserClient.invoke(() -> {
       CqQuery cq = createCq(query);

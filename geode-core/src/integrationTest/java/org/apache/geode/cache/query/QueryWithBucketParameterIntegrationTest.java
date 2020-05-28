@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
 import static org.apache.geode.cache.query.data.TestData.populateRegion;
 import static org.junit.Assert.assertFalse;
@@ -68,7 +69,7 @@ public class QueryWithBucketParameterIntegrationTest {
     PartitionedRegion pr1 = (PartitionedRegion) rf.create(regionName);
     populateRegion(pr1, numValues);
     QueryService qs = pr1.getCache().getQueryService();
-    String query = "select distinct e1.value from /pr1 e1";
+    String query = "select distinct e1.value from " + SEPARATOR + "pr1 e1";
     queryExecutor = (DefaultQuery) CacheUtils.getQueryService().newQuery(query);
     Set<Integer> set = createAndPopulateSet(totalBuckets);
     lds = new LocalDataSet(pr1, set);

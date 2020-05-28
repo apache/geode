@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -94,27 +95,36 @@ public class NestedQueryJUnitTest {
     Object result;
     // Executes successfully
     queryString =
-        "SELECT DISTINCT * FROM /Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty";
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
     // Fails
     queryString =
-        "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status";
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = 0).status";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
     // Executes successfully
     queryString =
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where x.ID = p.ID).status";
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where x.ID = p.ID).status";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
     // Fails
     queryString =
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = x.ID).status";
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = x.ID).status";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
 
     queryString =
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status";
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = 0).status";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
   }
@@ -122,13 +132,25 @@ public class NestedQueryJUnitTest {
   @Test
   public void testQueries() throws Exception {
     String queries[] = {
-        "SELECT DISTINCT * FROM /Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty",
-        "SELECT DISTINCT * FROM /Portfolios where NOT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).isEmpty",
-        "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status",
-        "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status",
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where x.ID = p.ID).status",
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = x.ID).status",
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status"};
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty",
+        "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where NOT(SELECT DISTINCT * FROM "
+            + SEPARATOR + "Portfolios p where p.ID = 0).isEmpty",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = 0).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = 0).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where x.ID = p.ID).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = x.ID).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = 0).status"};
     for (int i = 0; i < queries.length; i++) {
       try {
         Query query = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -144,18 +166,26 @@ public class NestedQueryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT * FROM /Portfolios where NOT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).isEmpty",
+        "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where NOT(SELECT DISTINCT * FROM "
+            + SEPARATOR + "Portfolios p where p.ID = 0).isEmpty",
         // NQIU 1: PASS
         // "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM
         // /Portfolios p where ID = 0).status",
         // NQIU 2 : Failed: 16 May'05
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = x.ID).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = x.ID).status",
         // NQIU 3:PASS
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where p.ID = 0).status",
         // NQIU 4:PASS
-        "SELECT DISTINCT * FROM /Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty",
         // NQIU 5: PASS
-        "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where x.ID = p.ID).status",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios p where x.ID = p.ID).status",
         // NQIU 6: PASS
     };
     SelectResults r[][] = new SelectResults[queries.length][2];
@@ -184,11 +214,11 @@ public class NestedQueryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "ID", "/Portfolios pf");
+    qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "Portfolios pf");
     qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
-        "/Portfolios pf, pf.positions.values b");
+        SEPARATOR + "Portfolios pf, pf.positions.values b");
     qs.createIndex("r1Index", IndexType.FUNCTIONAL, "secId",
-        "/Portfolios.values['0'].positions.values");
+        SEPARATOR + "Portfolios.values['0'].positions.values");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -242,24 +272,32 @@ public class NestedQueryJUnitTest {
     qs = CacheUtils.getQueryService();
     String queries[] = {
 
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos)"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios AS ptf, positions AS pos)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios AS ptf, positions AS pos)"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM ptf IN /Portfolios, pos IN positions)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM ptf IN " + SEPARATOR
+            + "Portfolios, pos IN positions)"
             + " WHERE pos.value.secId = 'IBM'",
         "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT pos AS myPos FROM /Portfolios ptf, positions pos)"
+            + " (SELECT DISTINCT pos AS myPos FROM " + SEPARATOR + "Portfolios ptf, positions pos)"
             + " WHERE myPos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE p.pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios, positions) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios, positions) p"
             + " WHERE p.positions.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios, positions)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios, positions)"
             + " WHERE positions.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE p.get('pos').value.secId = 'IBM'",
         // NQIU 7: PASS
     };
@@ -288,7 +326,7 @@ public class NestedQueryJUnitTest {
 
     qs = CacheUtils.getQueryService();
     qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
-        "/Portfolios pf, pf.positions.values b");
+        SEPARATOR + "Portfolios pf, pf.positions.values b");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -353,14 +391,18 @@ public class NestedQueryJUnitTest {
       region2.put(i, p);
     }
 
-    Index p1IdIndex = qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P.ID", "/portfolios1 P");
-    Index p2IdIndex = qs.createIndex("P2IDIndex", IndexType.FUNCTIONAL, "P2.ID", "/portfolios2 P2");
+    Index p1IdIndex =
+        qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P.ID", SEPARATOR + "portfolios1 P");
+    Index p2IdIndex =
+        qs.createIndex("P2IDIndex", IndexType.FUNCTIONAL, "P2.ID", SEPARATOR + "portfolios2 P2");
     Index createTimeIndex =
-        qs.createIndex("createTimeIndex", IndexType.FUNCTIONAL, "P.createTime", "/portfolios1 P");
+        qs.createIndex("createTimeIndex", IndexType.FUNCTIONAL, "P.createTime",
+            SEPARATOR + "portfolios1 P");
 
     SelectResults results = (SelectResults) qs
         .newQuery(
-            "SELECT P2.ID FROM /portfolios2 P2 where P2.ID in (SELECT P.ID from /portfolios1 P where P.createTime >= 500L and P.createTime < 1000L)")
+            "SELECT P2.ID FROM " + SEPARATOR + "portfolios2 P2 where P2.ID in (SELECT P.ID from "
+                + SEPARATOR + "portfolios1 P where P.createTime >= 500L and P.createTime < 1000L)")
         .execute();
     for (Object o : results) {
       assertNotSame(o, QueryService.UNDEFINED);
@@ -379,16 +421,21 @@ public class NestedQueryJUnitTest {
       region2.put(i, p);
     }
 
-    Index p1IdIndex = qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P.ID", "/portfolios1 P");
-    Index p2IdIndex = qs.createIndex("P2IDIndex", IndexType.FUNCTIONAL, "P2.ID", "/portfolios2 P2");
+    Index p1IdIndex =
+        qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P.ID", SEPARATOR + "portfolios1 P");
+    Index p2IdIndex =
+        qs.createIndex("P2IDIndex", IndexType.FUNCTIONAL, "P2.ID", SEPARATOR + "portfolios2 P2");
     Index createTimeIndex =
-        qs.createIndex("createTimeIndex", IndexType.FUNCTIONAL, "P.createTime", "/portfolios1 P");
+        qs.createIndex("createTimeIndex", IndexType.FUNCTIONAL, "P.createTime",
+            SEPARATOR + "portfolios1 P");
 
     String rangeQueryString =
-        "SELECT P.ID FROM /portfolios1 P WHERE P.createTime >= 500L AND P.createTime < 1000L";
+        "SELECT P.ID FROM " + SEPARATOR
+            + "portfolios1 P WHERE P.createTime >= 500L AND P.createTime < 1000L";
     // Retrieve location ids that are within range
     String multiInnerQueryString =
-        "SELECT P FROM /portfolios1 P WHERE P.ID IN(SELECT P2.ID FROM /portfolios2 P2 where P2.ID in ($1)) and P.createTime >=500L and P.createTime < 1000L";
+        "SELECT P FROM " + SEPARATOR + "portfolios1 P WHERE P.ID IN(SELECT P2.ID FROM " + SEPARATOR
+            + "portfolios2 P2 where P2.ID in ($1)) and P.createTime >=500L and P.createTime < 1000L";
 
     Query rangeQuery = qs.newQuery(rangeQueryString);
     SelectResults rangeResults = (SelectResults) rangeQuery.execute();
@@ -421,8 +468,10 @@ public class NestedQueryJUnitTest {
     }
 
     helpTestIndexForQuery(
-        "<trace>SELECT * FROM /portfolios1 p where p.shortID in (SELECT p.shortID FROM /portfolios1 p WHERE p.shortID = 1)",
-        "p.shortID", "/portfolios1 p");
+        "<trace>SELECT * FROM " + SEPARATOR
+            + "portfolios1 p where p.shortID in (SELECT p.shortID FROM " + SEPARATOR
+            + "portfolios1 p WHERE p.shortID = 1)",
+        "p.shortID", SEPARATOR + "portfolios1 p");
   }
 
   /**
@@ -442,8 +491,9 @@ public class NestedQueryJUnitTest {
     }
 
     helpTestIndexForQuery(
-        "<trace>SELECT * FROM /portfolios1 p where p.ID in (SELECT p.ID FROM /portfolios1 p WHERE p.ID = 1)",
-        "p.ID", "/portfolios1 p");
+        "<trace>SELECT * FROM " + SEPARATOR + "portfolios1 p where p.ID in (SELECT p.ID FROM "
+            + SEPARATOR + "portfolios1 p WHERE p.ID = 1)",
+        "p.ID", SEPARATOR + "portfolios1 p");
   }
 
   /**

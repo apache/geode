@@ -20,6 +20,8 @@ import static java.lang.System.setProperty;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.cache.ExpirationAction.DESTROY;
 import static org.apache.geode.cache.ExpirationAction.INVALIDATE;
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.internal.cache.ExpiryTask.permitExpiration;
 import static org.apache.geode.internal.cache.ExpiryTask.suspendExpiration;
 import static org.apache.geode.internal.cache.LocalRegion.EXPIRY_MS_PROPERTY;
@@ -287,10 +289,10 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       // pass..
     }
 
-    assertEquals("/", Region.SEPARATOR);
-    assertEquals('/', Region.SEPARATOR_CHAR);
+    assertEquals("/", SEPARATOR);
+    assertEquals('/', SEPARATOR_CHAR);
     try {
-      region.createSubregion("BAD/TEST", region.getAttributes());
+      region.createSubregion("BAD" + SEPARATOR + "TEST", region.getAttributes());
       fail("Should have thrown an IllegalArgumentException");
 
     } catch (IllegalArgumentException ex) {
@@ -380,7 +382,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     long lastModified = stats.getLastModifiedTime();
 
     try {
-      region.createSubregion(name + "/BAD", attrs);
+      region.createSubregion(name + SEPARATOR + "BAD", attrs);
       fail("Should have thrown an IllegalArgumentException");
 
     } catch (IllegalArgumentException ex) {
@@ -667,7 +669,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     region.getParentRegion();
 
-    assertEquals("/root/" + name, region.getFullPath());
+    assertEquals(SEPARATOR + "root" + SEPARATOR + name, region.getFullPath());
     assertEquals(name, region.getName());
 
     try {
@@ -939,12 +941,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     String name = this.getUniqueName();
 
     Region<Object, Object> region = createRegion(name);
-    String fullPath = "/root/" + name;
+    String fullPath = SEPARATOR + "root" + SEPARATOR + name;
     assertEquals(fullPath, region.getFullPath());
-    assertEquals("/root", region.getParentRegion().getFullPath());
+    assertEquals(SEPARATOR + "root", region.getParentRegion().getFullPath());
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(region.getAttributes());
     Region sub = regionFactory.createSubregion(region, "SUB");
-    assertEquals(fullPath + "/SUB", sub.getFullPath());
+    assertEquals(fullPath + SEPARATOR + "SUB", sub.getFullPath());
   }
 
   /**
@@ -1357,7 +1359,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     region.getParentRegion();
 
-    assertEquals("/root/" + name, region.getFullPath());
+    assertEquals(SEPARATOR + "root" + SEPARATOR + name, region.getFullPath());
 
     try {
       region.getRegionDistributedLock();

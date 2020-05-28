@@ -102,7 +102,8 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     gfsh.executeAndAssertThat("get --key=key1 --region=AuthRegion").statusIsSuccess()
         .containsOutput(SimpleClass.class.getName());
 
-    gfsh.executeAndAssertThat("query --query=\"select * from /AuthRegion\"").statusIsSuccess();
+    gfsh.executeAndAssertThat("query --query=\"select * from " + SEPARATOR + "AuthRegion\"")
+        .statusIsSuccess();
 
     serverVM.invoke(() -> {
       PDXPostProcessor pp =

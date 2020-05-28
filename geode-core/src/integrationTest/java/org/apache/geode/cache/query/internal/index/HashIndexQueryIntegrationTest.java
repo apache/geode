@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -88,7 +89,7 @@ public class HashIndexQueryIntegrationTest {
    * Helper that tests that hash index is used and that it returns the correct result
    */
   private void helpTestHashIndexForQuery(String query) throws Exception {
-    helpTestHashIndexForQuery(query, "p.ID", "/portfolios p");
+    helpTestHashIndexForQuery(query, "p.ID", SEPARATOR + "portfolios p");
   }
 
   private void helpTestHashIndexForQuery(String query, String indexedExpression, String regionPath)
@@ -141,8 +142,9 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios p WHERE p.ID = 1 OR p.ID = 2", "p.ID",
-        "/portfolios p");
+    helpTestHashIndexForQuery(
+        "SELECT * FROM " + SEPARATOR + "portfolios p WHERE p.ID = 1 OR p.ID = 2", "p.ID",
+        SEPARATOR + "portfolios p");
   }
 
   @Test
@@ -159,23 +161,27 @@ public class HashIndexQueryIntegrationTest {
       region.put("" + i, p);
     }
 
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios p WHERE p.status = 'inactive'", "p.status",
-        "/portfolios p");
+    helpTestHashIndexForQuery(
+        "SELECT * FROM " + SEPARATOR + "portfolios p WHERE p.status = 'inactive'", "p.status",
+        SEPARATOR + "portfolios p");
     qs.removeIndexes();
     observer = new MyQueryObserverAdapter();
     QueryObserverHolder.setInstance(observer);
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios p WHERE p.status != 'inactive'",
-        "p.status", "/portfolios p");
+    helpTestHashIndexForQuery(
+        "SELECT * FROM " + SEPARATOR + "portfolios p WHERE p.status != 'inactive'",
+        "p.status", SEPARATOR + "portfolios p");
     qs.removeIndexes();
     observer = new MyQueryObserverAdapter();
     QueryObserverHolder.setInstance(observer);
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios p WHERE p.status = null", "p.status",
-        "/portfolios p");
+    helpTestHashIndexForQuery("SELECT * FROM " + SEPARATOR + "portfolios p WHERE p.status = null",
+        "p.status",
+        SEPARATOR + "portfolios p");
     qs.removeIndexes();
     observer = new MyQueryObserverAdapter();
     QueryObserverHolder.setInstance(observer);
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios p WHERE p.status != null", "p.status",
-        "/portfolios p");
+    helpTestHashIndexForQuery("SELECT * FROM " + SEPARATOR + "portfolios p WHERE p.status != null",
+        "p.status",
+        SEPARATOR + "portfolios p");
   }
 
   /**
@@ -191,8 +197,9 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestCRIndexForQuery("SELECT * FROM (SELECT * FROM /portfolios p WHERE p.shortID = 1)",
-        "p.shortID", "/portfolios p");
+    helpTestCRIndexForQuery(
+        "SELECT * FROM (SELECT * FROM " + SEPARATOR + "portfolios p WHERE p.shortID = 1)",
+        "p.shortID", SEPARATOR + "portfolios p");
   }
 
   /**
@@ -210,8 +217,9 @@ public class HashIndexQueryIntegrationTest {
       region.put("" + i, p);
     }
     helpTestHashIndexForQuery(
-        "SELECT * FROM /portfolios p WHERE p.shortID in (SELECT p2.ID FROM /portfolios p2 WHERE p2.shortID = 1)",
-        "p.shortID", "/portfolios p");
+        "SELECT * FROM " + SEPARATOR + "portfolios p WHERE p.shortID in (SELECT p2.ID FROM "
+            + SEPARATOR + "portfolios p2 WHERE p2.shortID = 1)",
+        "p.shortID", SEPARATOR + "portfolios p");
   }
 
   /**
@@ -227,8 +235,9 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios p WHERE p.ID = 1 AND p.shortID > 0",
-        "p.ID", "/portfolios p");
+    helpTestHashIndexForQuery(
+        "SELECT * FROM " + SEPARATOR + "portfolios p WHERE p.ID = 1 AND p.shortID > 0",
+        "p.ID", SEPARATOR + "portfolios p");
   }
 
   /**
@@ -244,8 +253,9 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios.entries p WHERE p.key = '1' limit 3",
-        "p.key", "/portfolios.entries p");
+    helpTestHashIndexForQuery(
+        "SELECT * FROM " + SEPARATOR + "portfolios.entries p WHERE p.key = '1' limit 3",
+        "p.key", SEPARATOR + "portfolios.entries p");
   }
 
   /**
@@ -255,8 +265,9 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexEntriesQueryForLocalRegion() throws Exception {
     createLocalRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios.entries p WHERE p.key = '1'", "p.key",
-        "/portfolios.entries p");
+    helpTestHashIndexForQuery(
+        "SELECT * FROM " + SEPARATOR + "portfolios.entries p WHERE p.key = '1'", "p.key",
+        SEPARATOR + "portfolios.entries p");
   }
 
   /**
@@ -266,8 +277,9 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexValueQueryForLocalRegion() throws Exception {
     createLocalRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios.values p WHERE p.ID = 1", "p.ID",
-        "/portfolios.values p");
+    helpTestHashIndexForQuery("SELECT * FROM " + SEPARATOR + "portfolios.values p WHERE p.ID = 1",
+        "p.ID",
+        SEPARATOR + "portfolios.values p");
   }
 
   /**
@@ -277,8 +289,9 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexKeySetQueryForLocalRegion() throws Exception {
     createLocalRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("SELECT * FROM /portfolios.keySet p WHERE p = '1'", "p",
-        "/portfolios.keySet p");
+    helpTestHashIndexForQuery("SELECT * FROM " + SEPARATOR + "portfolios.keySet p WHERE p = '1'",
+        "p",
+        SEPARATOR + "portfolios.keySet p");
   }
 
   /**
@@ -288,7 +301,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexEqualsForSingleResultOnLocalRegion() throws Exception {
     createLocalRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID = 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1");
   }
 
   /**
@@ -298,7 +311,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexEqualsForSingleResultOnReplicatedRegion() throws Exception {
     createReplicatedRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID = 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1");
   }
 
   /**
@@ -308,7 +321,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexEqualsForSingleResultOnPartitionedRegion() throws Exception {
     createPartitionedRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID = 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1");
   }
 
   /**
@@ -319,9 +332,10 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 200);
     createJoinTable(400);
-    Index index = qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
+    Index index = qs.createHashIndex("index2", "p2.ID", SEPARATOR + "portfolios2 p2");
     helpTestHashIndexForQuery(
-        "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
+        "Select * FROM " + SEPARATOR + "portfolios p, " + SEPARATOR
+            + "portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
@@ -332,9 +346,10 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 200);
     createJoinTable(400);
-    Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2");
+    Index index = qs.createIndex("index2", "p2.ID", SEPARATOR + "portfolios2 p2");
     helpTestHashIndexForQuery(
-        "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
+        "Select * FROM " + SEPARATOR + "portfolios p, " + SEPARATOR
+            + "portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
@@ -345,9 +360,11 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 200);
     createJoinTable(400);
-    Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2, p2.positions.values v");
+    Index index =
+        qs.createIndex("index2", "p2.ID", SEPARATOR + "portfolios2 p2, p2.positions.values v");
     helpTestHashIndexForQuery(
-        "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
+        "Select * FROM " + SEPARATOR + "portfolios p, " + SEPARATOR
+            + "portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
@@ -359,9 +376,10 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 400);
     createJoinTable(200);
-    Index index = qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
+    Index index = qs.createHashIndex("index2", "p2.ID", SEPARATOR + "portfolios2 p2");
     helpTestHashIndexForQuery(
-        "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
+        "Select * FROM " + SEPARATOR + "portfolios p, " + SEPARATOR
+            + "portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
@@ -373,9 +391,10 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 400);
     createJoinTable(200);
-    Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2");
+    Index index = qs.createIndex("index2", "p2.ID", SEPARATOR + "portfolios2 p2");
     helpTestHashIndexForQuery(
-        "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
+        "Select * FROM " + SEPARATOR + "portfolios p, " + SEPARATOR
+            + "portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
@@ -387,9 +406,11 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 400);
     createJoinTable(200);
-    Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2, p2.positions.values v");
+    Index index =
+        qs.createIndex("index2", "p2.ID", SEPARATOR + "portfolios2 p2, p2.positions.values v");
     helpTestHashIndexForQuery(
-        "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
+        "Select * FROM " + SEPARATOR + "portfolios p, " + SEPARATOR
+            + "portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
@@ -407,7 +428,7 @@ public class HashIndexQueryIntegrationTest {
       region.put("" + i, p);
     }
 
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID = 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1");
   }
 
   /**
@@ -426,7 +447,7 @@ public class HashIndexQueryIntegrationTest {
       region.put("" + i, p);
     }
 
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID = 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1");
   }
 
   /**
@@ -445,7 +466,7 @@ public class HashIndexQueryIntegrationTest {
       region.put("" + i, p);
     }
 
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID = 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1");
   }
 
   /**
@@ -455,8 +476,8 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexEquiJoinForMultipleResultQueryWithHashIndex() throws Exception {
     createReplicatedRegion("portfolios");
     createJoinTable(400);
-    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
-    Index index = qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
+    index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
+    Index index = qs.createHashIndex("index2", "p2.ID", SEPARATOR + "portfolios2 p2");
 
     int numEntries = 200;
     int numIds = 100;
@@ -466,7 +487,8 @@ public class HashIndexQueryIntegrationTest {
       region.put("" + i, p);
     }
     SelectResults results = (SelectResults) qs
-        .newQuery("Select * FROM /portfolios p, /portfolios2 p2 where p.ID = 1 and p.ID = p2.ID")
+        .newQuery("Select * FROM " + SEPARATOR + "portfolios p, " + SEPARATOR
+            + "portfolios2 p2 where p.ID = 1 and p.ID = p2.ID")
         .execute();
     assertEquals(numEntries / numIds, results.size());
     assertTrue(observer.indexUsed);
@@ -498,15 +520,17 @@ public class HashIndexQueryIntegrationTest {
     createData(region, 200);
     region.destroy("1");
     SelectResults noIndexResults =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 1").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1")
+            .execute();
 
     region.destroyRegion();
     createPartitionedRegion("portfolios");
     createData(region, 200);
     region.destroy("1");
-    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 1").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1")
+            .execute();
     assertEquals(noIndexResults.size(), results.size());
     assertTrue(observer.indexUsed);
   }
@@ -519,14 +543,16 @@ public class HashIndexQueryIntegrationTest {
     createData(region, 200);
     region.destroy("1");
     SelectResults noIndexResults =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 1").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1")
+            .execute();
 
     region.clear();
     createData(region, 200);
     region.destroy("1");
-    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 1").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1")
+            .execute();
     assertEquals(noIndexResults.size(), results.size());
     assertTrue(observer.indexUsed);
   }
@@ -574,10 +600,11 @@ public class HashIndexQueryIntegrationTest {
     p2.ID = 1000;
     region.put("2", p2);
     SelectResults noIndexResult =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 2").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 2")
+            .execute();
 
     region.clear();
-    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     for (int i = 0; i < numEntries; i++) {
       Portfolio p = new Portfolio(i % (numIds));
       p.shortID = (short) i;
@@ -589,7 +616,8 @@ public class HashIndexQueryIntegrationTest {
     region.put("2", p2);
 
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 2").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 2")
+            .execute();
     assertEquals(numEntries / numIds - 1, results.size());
     assertEquals(noIndexResult.size(), results.size());
     assertTrue(observer.indexUsed);
@@ -602,7 +630,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexNotEqualsQueryOnLocalRegion() throws Exception {
     createLocalRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   /**
@@ -612,7 +640,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexNotEqualsQueryOnReplicatedRegion() throws Exception {
     createReplicatedRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   /**
@@ -622,7 +650,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexNotEqualsQueryOnPartitionedRegion() throws Exception {
     createPartitionedRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   /**
@@ -639,7 +667,7 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   /**
@@ -656,7 +684,7 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   /**
@@ -673,7 +701,7 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   /**
@@ -683,7 +711,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexInQueryForLocalRegion() throws Exception {
     createLocalRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID in set (1)");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID in set (1)");
   }
 
   /**
@@ -693,7 +721,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexInQueryForReplicatedRegion() throws Exception {
     createReplicatedRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID in set (1)");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID in set (1)");
   }
 
   /**
@@ -703,7 +731,7 @@ public class HashIndexQueryIntegrationTest {
   public void testHashIndexInQueryForPartitionedRegion() throws Exception {
     createPartitionedRegion("portfolios");
     createData(region, 200);
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID in set (1)");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID in set (1)");
   }
 
   /**
@@ -741,7 +769,8 @@ public class HashIndexQueryIntegrationTest {
    */
   private void helpTestHashIndexNotUsedInRangeQuery() throws Exception {
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID < 2").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID < 2")
+            .execute();
     assertFalse(observer.indexUsed);
   }
 
@@ -776,9 +805,10 @@ public class HashIndexQueryIntegrationTest {
   }
 
   private void helpTestHashIndexOrderByAscQuery() throws Exception {
-    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     SelectResults results = (SelectResults) qs
-        .newQuery("Select * FROM /portfolios p where p.ID != 0 order by ID asc ").execute();
+        .newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 0 order by ID asc ")
+        .execute();
     assertEquals(199, results.size());
     assertTrue(observer.indexUsed);
     int countUp = 1;
@@ -841,7 +871,7 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   /**
@@ -867,7 +897,7 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   /**
@@ -893,13 +923,14 @@ public class HashIndexQueryIntegrationTest {
       p.shortID = (short) i;
       region.put("" + i, p);
     }
-    helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID != 1");
+    helpTestHashIndexForQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1");
   }
 
   private void helpTestHashIndexOrderByDescQuery() throws Exception {
-    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     SelectResults results = (SelectResults) qs
-        .newQuery("Select * FROM /portfolios p where p.ID != 0 order by ID desc ").execute();
+        .newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 0 order by ID desc ")
+        .execute();
     assertEquals(199, results.size());
     assertTrue(observer.indexUsed);
     int countDown = 199;
@@ -921,7 +952,7 @@ public class HashIndexQueryIntegrationTest {
   private void helpTestAsyncMaintenance() throws Exception {
     boolean expected = false;
     try {
-      index = qs.createHashIndex("idHash", "p.ID", "/portfolios_async p");
+      index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios_async p");
     } catch (UnsupportedOperationException e) {
       expected = true;
     } catch (IndexInvalidException e) {
@@ -962,7 +993,8 @@ public class HashIndexQueryIntegrationTest {
   private void helpTestMultipleIteratorsException() throws Exception {
     boolean expected = false;
     try {
-      index = qs.createHashIndex("idHash", "p.ID", "/portfolios p, p.positions.values p");
+      index =
+          qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p, p.positions.values p");
     } catch (UnsupportedOperationException e) {
       expected = true;
     }
@@ -980,7 +1012,7 @@ public class HashIndexQueryIntegrationTest {
 
   private void helpTestRemoveAndNotEqualsQuery() throws Exception {
     int numEntries = 200;
-    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     for (int i = 0; i < numEntries; i++) {
       Portfolio p = new Portfolio(i);
       p.shortID = (short) i;
@@ -990,7 +1022,8 @@ public class HashIndexQueryIntegrationTest {
     region.destroy("1");
 
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID != 1").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID != 1")
+            .execute();
     assertEquals(numEntries - 1, results.size());
     assertTrue(observer.indexUsed);
   }
@@ -1009,13 +1042,15 @@ public class HashIndexQueryIntegrationTest {
     Object[] params = new Object[2];
     params[0] = new Identifier("Customer" + 1);
     params[1] = new Identifier("Customer" + 1);
-    String query = "select * from /relationships.keySet k where k.leftKey = $1 OR k.rightKey = $2";
+    String query = "select * from " + SEPARATOR
+        + "relationships.keySet k where k.leftKey = $1 OR k.rightKey = $2";
     SelectResults nonIndexedResults = (SelectResults) qs.newQuery(query).execute(params);
     assertFalse(observer.indexUsed);
 
-    index = qs.createHashIndex("leftKey", "k.leftKey", "/relationships.keySet k");
-    Index index2 = qs.createHashIndex("rightKey", "k.rightKey", "/relationships.keySet k");
-    Index index3 = qs.createKeyIndex("keyIndex", "r.key", "/relationships r");
+    index = qs.createHashIndex("leftKey", "k.leftKey", SEPARATOR + "relationships.keySet k");
+    Index index2 =
+        qs.createHashIndex("rightKey", "k.rightKey", SEPARATOR + "relationships.keySet k");
+    Index index3 = qs.createKeyIndex("keyIndex", "r.key", SEPARATOR + "relationships r");
     SelectResults indexedResults = (SelectResults) qs.newQuery(query).execute(params);
     assertEquals(nonIndexedResults.size(), indexedResults.size());
     assertEquals(nonIndexedResults.size(), numEntries / numIds);
@@ -1035,11 +1070,12 @@ public class HashIndexQueryIntegrationTest {
   }
 
   private void helpTestHashIndexRecreate() throws Exception {
-    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     createData(region, 200);
 
     SelectResults noIndexResults =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 1").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1")
+            .execute();
 
     IndexStatistics ist = index.getStatistics();
     assertEquals(200, ist.getNumberOfValues());
@@ -1056,7 +1092,8 @@ public class HashIndexQueryIntegrationTest {
     createData(region, 200);
 
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 1").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 1")
+            .execute();
 
     ist = index.getStatistics();
     assertEquals(200, ist.getNumberOfValues());
@@ -1081,10 +1118,11 @@ public class HashIndexQueryIntegrationTest {
     }
     region.put("0", new SameHashObject(100, 100));
     SelectResults noIndexResults =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 5").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 5")
+            .execute();
     region.clear();
 
-    HashIndex index = (HashIndex) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    HashIndex index = (HashIndex) qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     for (int i = 0; i < numEntries; i++) {
       SameHashObject p = new SameHashObject(5, i);
       region.put("" + i, p);
@@ -1093,7 +1131,8 @@ public class HashIndexQueryIntegrationTest {
         new SameHashObject(index.entriesSet.hashIndexSetProperties.set.length + 5, 100));
 
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 5").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 5")
+            .execute();
 
     assertTrue(results.size() > 0);
     assertEquals(noIndexResults.size(), results.size());
@@ -1104,7 +1143,7 @@ public class HashIndexQueryIntegrationTest {
   public void testInPlaceModification() throws Exception {
     createReplicatedRegion("portfolios");
     int numEntries = 10;
-    HashIndex index = (HashIndex) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    HashIndex index = (HashIndex) qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     for (int i = 0; i < numEntries; i++) {
       SameHashObject p = new SameHashObject(5, i);
       region.put("" + i, p);
@@ -1114,7 +1153,8 @@ public class HashIndexQueryIntegrationTest {
     region.put("0", object);
 
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 5").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 5")
+            .execute();
     assertEquals(10, index.getStatistics().getNumberOfValues());
     assertEquals(9, results.size());
     assertTrue(observer.indexUsed);
@@ -1124,7 +1164,7 @@ public class HashIndexQueryIntegrationTest {
   public void testInPlaceModificationToSameKey() throws Exception {
     createReplicatedRegion("portfolios");
     int numEntries = 10;
-    HashIndex index = (HashIndex) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    HashIndex index = (HashIndex) qs.createHashIndex("idHash", "p.ID", SEPARATOR + "portfolios p");
     for (int i = 0; i < numEntries; i++) {
       SameHashObject p = new SameHashObject(5, i);
       region.put("" + i, p);
@@ -1134,7 +1174,8 @@ public class HashIndexQueryIntegrationTest {
     region.put("0", object);
 
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 5").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.ID = 5")
+            .execute();
     assertEquals(10, index.getStatistics().getNumberOfValues());
     assertEquals(10, results.size());
     assertTrue(observer.indexUsed);
@@ -1144,7 +1185,7 @@ public class HashIndexQueryIntegrationTest {
   public void testInPlaceModificationWithUndefinedKeys() throws Exception {
     createReplicatedRegion("portfolios");
     int numEntries = 10;
-    Index index = qs.createIndex("idHash", "p.IDS", "/portfolios p");
+    Index index = qs.createIndex("idHash", "p.IDS", SEPARATOR + "portfolios p");
     for (int i = 0; i < numEntries; i++) {
       SameHashObject p = new SameHashObject(5, i);
       region.put("" + i, p);
@@ -1154,7 +1195,8 @@ public class HashIndexQueryIntegrationTest {
     region.put("0", object);
 
     SelectResults results =
-        (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.IDS = 5").execute();
+        (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.IDS = 5")
+            .execute();
     assertEquals(10, index.getStatistics().getNumberOfValues());
     assertEquals(0, results.size());
     assertTrue(observer.indexUsed);
@@ -1164,7 +1206,7 @@ public class HashIndexQueryIntegrationTest {
   public void testInPlaceModificationWithNullKeys() throws Exception {
     createReplicatedRegion("portfolios");
     int numEntries = 10;
-    Index index = qs.createHashIndex("idHash", "p.stringValue", "/portfolios p");
+    Index index = qs.createHashIndex("idHash", "p.stringValue", SEPARATOR + "portfolios p");
     for (int i = 0; i < numEntries; i++) {
       SameHashObject p = new SameHashObject(5, i, null);
       region.put("" + i, p);
@@ -1174,7 +1216,8 @@ public class HashIndexQueryIntegrationTest {
     region.put("0", object);
 
     SelectResults results = (SelectResults) qs
-        .newQuery("Select * FROM /portfolios p where p.stringValue = 'wow'").execute();
+        .newQuery("Select * FROM " + SEPARATOR + "portfolios p where p.stringValue = 'wow'")
+        .execute();
     assertEquals(10, index.getStatistics().getNumberOfValues());
     assertEquals(1, results.size());
     assertTrue(observer.indexUsed);
@@ -1186,7 +1229,7 @@ public class HashIndexQueryIntegrationTest {
       final boolean[] threadCompleted = new boolean[3];
       createReplicatedRegionWithOverflow("portfolios");
       HashIndexSet.TEST_ALWAYS_REHASH = true;
-      Index index = qs.createHashIndex("idHash", "p", "/portfolios p");
+      Index index = qs.createHashIndex("idHash", "p", SEPARATOR + "portfolios p");
 
       Thread puts = new Thread(new Runnable() {
         @Override
@@ -1235,7 +1278,8 @@ public class HashIndexQueryIntegrationTest {
       assertTrue("Thread possibly deadlocked, thread did not complete", threadCompleted[1]);
       assertTrue("Thread possibly deadlocked, thread did not complete", threadCompleted[2]);
 
-      SelectResults results = (SelectResults) qs.newQuery("Select * FROM /portfolios p").execute();
+      SelectResults results =
+          (SelectResults) qs.newQuery("Select * FROM " + SEPARATOR + "portfolios p").execute();
       assertEquals(4, results.size());
     } finally {
       HashIndexSet.TEST_ALWAYS_REHASH = false;
@@ -1246,7 +1290,7 @@ public class HashIndexQueryIntegrationTest {
   public void testPdxWithStringIndexKeyValues() throws Exception {
     createPartitionedRegion("test_region");
     int numEntries = 10;
-    Index index = qs.createHashIndex("idHash", "p.id", "/test_region p");
+    Index index = qs.createHashIndex("idHash", "p.id", SEPARATOR + "test_region p");
     for (int i = 0; i < numEntries; i++) {
       PdxInstance record = CacheUtils.getCache().createPdxInstanceFactory("test_region")
           .writeString("id", "" + i).writeString("domain", "A").create();
@@ -1254,7 +1298,8 @@ public class HashIndexQueryIntegrationTest {
     }
 
     SelectResults results = (SelectResults) qs
-        .newQuery("SELECT DISTINCT tr.domain FROM /test_region tr WHERE tr.id='1'").execute();
+        .newQuery("SELECT DISTINCT tr.domain FROM " + SEPARATOR + "test_region tr WHERE tr.id='1'")
+        .execute();
     assertEquals(1, results.size());
     assertTrue(observer.indexUsed);
   }

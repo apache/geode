@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.junit.Assert.assertEquals;
 
@@ -64,7 +65,8 @@ public class LocalQueryServiceJUnitTest {
 
   @Test
   public void testLocalQueryService() throws Exception {
-    SelectResults sR = executeLocalQuery(this.clientCache, "SELECT * from /localRegion");
+    SelectResults sR =
+        executeLocalQuery(this.clientCache, "SELECT * from " + SEPARATOR + "localRegion");
 
     assertEquals(this.numEntries, sR.size());
   }
@@ -73,7 +75,8 @@ public class LocalQueryServiceJUnitTest {
   public void testLocalQueryServiceWithTransaction() throws Exception {
     CacheTransactionManager cacheTransactionManager = clientCache.getCacheTransactionManager();
     cacheTransactionManager.begin();
-    SelectResults selectResults = executeLocalQuery(this.clientCache, "SELECT * from /localRegion");
+    SelectResults selectResults =
+        executeLocalQuery(this.clientCache, "SELECT * from " + SEPARATOR + "localRegion");
 
     assertEquals(this.numEntries, selectResults.size());
 

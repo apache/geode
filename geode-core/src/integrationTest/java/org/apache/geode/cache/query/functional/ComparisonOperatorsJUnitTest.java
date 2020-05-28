@@ -21,6 +21,7 @@ package org.apache.geode.cache.query.functional;
 
 
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.Collection;
@@ -71,7 +72,8 @@ public class ComparisonOperatorsJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     for (int i = 0; i < operators.length; i++) {
       Query query =
-          qs.newQuery("SELECT DISTINCT * FROM /Portfolios where " + var + operators[i] + value);
+          qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where " + var
+              + operators[i] + value);
       Object result = query.execute();
       if (result instanceof Collection) {
         Iterator iter = ((Collection) result).iterator();
@@ -117,7 +119,8 @@ public class ComparisonOperatorsJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     for (int i = 0; i < operators.length; i++) {
       Query query = qs.newQuery(
-          "SELECT DISTINCT * FROM /Portfolios where " + var + operators[i] + "'" + value + "'");
+          "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where " + var + operators[i] + "'"
+              + value + "'");
       Object result = query.execute();
       if (result instanceof Collection) {
         Iterator iter = ((Collection) result).iterator();
@@ -163,7 +166,8 @@ public class ComparisonOperatorsJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     for (int i = 0; i < operators.length; i++) {
       Query query =
-          qs.newQuery("SELECT DISTINCT * FROM /Portfolios where " + var + operators[i] + value);
+          qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where " + var
+              + operators[i] + value);
       Object result = query.execute();
       if (result instanceof Collection) {
         Iterator iter = ((Collection) result).iterator();
@@ -198,7 +202,8 @@ public class ComparisonOperatorsJUnitTest {
       // comparison operators.
       if (!operators[i].equals("=") && !operators[i].equals("!=") && !operators[i].equals("<>")) {
         Query query = qs.newQuery(
-            "SELECT DISTINCT * FROM /Portfolios where " + var + operators[i] + " UNDEFINED");
+            "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where " + var + operators[i]
+                + " UNDEFINED");
         Object result = query.execute();
         if (result instanceof Collection) {
           if (((Collection) result).size() != 0)

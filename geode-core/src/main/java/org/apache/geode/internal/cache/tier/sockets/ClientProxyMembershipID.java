@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 
 import java.io.DataInput;
@@ -531,8 +532,8 @@ public class ClientProxyMembershipID
 
   private String getBaseRegionName() {
     String id = isDurable() ? getDurableId() : getDSMembership();
-    if (id.indexOf('/') >= 0) {
-      id = id.replace('/', ':');
+    if (id.indexOf(SEPARATOR_CHAR) >= 0) {
+      id = id.replace(SEPARATOR_CHAR, ':');
     }
     StringBuffer buffer = new StringBuffer().append("_gfe_").append(isDurable() ? "" : "non_")
         .append("durable_client_").append("with_id_" + id).append("_").append(this.uniqueId);

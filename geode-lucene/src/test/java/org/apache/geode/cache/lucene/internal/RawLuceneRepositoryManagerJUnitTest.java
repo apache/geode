@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -48,7 +49,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     userRegion = Mockito.mock(PartitionedRegion.class);
     userDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(userRegion.getDataStore()).thenReturn(userDataStore);
-    when(cache.getRegion("/testRegion")).thenReturn(userRegion);
+    when(cache.getRegion(SEPARATOR + "testRegion")).thenReturn(userRegion);
     serializer = new HeterogeneousLuceneSerializer();
     createIndexAndRepoManager();
   }
@@ -68,7 +69,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     when(indexForPR.getIndexStats()).thenReturn(indexStats);
     when(indexForPR.getAnalyzer()).thenReturn(new StandardAnalyzer());
     when(indexForPR.getCache()).thenReturn(cache);
-    when(indexForPR.getRegionPath()).thenReturn("/testRegion");
+    when(indexForPR.getRegionPath()).thenReturn(SEPARATOR + "testRegion");
     when(indexForPR.withPersistence()).thenReturn(true);
     repoManager =
         new RawLuceneRepositoryManager(indexForPR, serializer, Executors.newSingleThreadExecutor());

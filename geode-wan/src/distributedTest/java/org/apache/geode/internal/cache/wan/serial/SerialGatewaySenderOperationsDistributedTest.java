@@ -19,6 +19,7 @@ import static java.lang.System.lineSeparator;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_ORDER_POLICY;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE;
@@ -948,7 +949,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   private void doPuts(String regionName, int count) {
     try (IgnoredException ie1 = addIgnoredException(GatewaySenderException.class);
         IgnoredException ie2 = addIgnoredException(InterruptedException.class)) {
-      Region<Number, String> region = getCache().getRegion(Region.SEPARATOR + regionName);
+      Region<Number, String> region = getCache().getRegion(SEPARATOR + regionName);
       for (int i = 0; i < count; i++) {
         region.put(i, "Value_" + i);
       }
@@ -956,7 +957,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   }
 
   private void doPuts(String regionName, int from, int count) {
-    Region<Number, String> region = getCache().getRegion(Region.SEPARATOR + regionName);
+    Region<Number, String> region = getCache().getRegion(SEPARATOR + regionName);
     for (int i = from; i < count; i++) {
       region.put(i, "Value_" + i);
     }
@@ -1162,7 +1163,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   private void validateRegionSize(String regionName, int regionSize) {
     try (IgnoredException ie1 = addIgnoredException(CacheClosedException.class);
         IgnoredException ie2 = addIgnoredException(ForceReattemptException.class)) {
-      Region region = getCache().getRegion(Region.SEPARATOR + regionName);
+      Region region = getCache().getRegion(SEPARATOR + regionName);
 
       await()
           .untilAsserted(() -> {

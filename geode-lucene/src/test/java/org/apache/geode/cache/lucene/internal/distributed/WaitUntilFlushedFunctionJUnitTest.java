@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.lucene.internal.distributed;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 @Category({LuceneTest.class})
 public class WaitUntilFlushedFunctionJUnitTest {
 
-  String regionPath = "/region";
+  String regionPath = SEPARATOR + "region";
   String indexName = "index";
   final EntryScore<String> r1_1 = new EntryScore<String>("key-1-1", .5f);
   final EntryScore<String> r1_2 = new EntryScore<String>("key-1-2", .4f);

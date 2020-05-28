@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
@@ -47,7 +48,7 @@ public class IndexJUnitTest {
     CacheUtils.startCache();
     QueryService qs = CacheUtils.getQueryService();
     region = CacheUtils.createRegion("Portfolios", Portfolio.class);
-    index = qs.createIndex(indexName, IndexType.FUNCTIONAL, "p.status", "/Portfolios p");
+    index = qs.createIndex(indexName, IndexType.FUNCTIONAL, "p.status", SEPARATOR + "Portfolios p");
   }
 
   @AfterClass
@@ -76,7 +77,8 @@ public class IndexJUnitTest {
   @Test
   public void testGetFromClause() {
     CacheUtils.log("testGetCanonicalizedFromClause");
-    assertEquals("Index.getName does not return correct from clause", "/Portfolios index_iter1",
+    assertEquals("Index.getName does not return correct from clause",
+        SEPARATOR + "Portfolios index_iter1",
         index.getCanonicalizedFromClause());
   }
 

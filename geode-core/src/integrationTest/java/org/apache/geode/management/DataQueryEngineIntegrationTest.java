@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class DataQueryEngineIntegrationTest {
 
   private static final String REGION_NAME = "exampleRegion";
-  private static final String QUERY_1 = "SELECT * FROM /exampleRegion";
+  private static final String QUERY_1 = "SELECT * FROM " + SEPARATOR + "exampleRegion";
 
   /**
    * Number of rows queryData operation will return. By default it will be 1000
@@ -344,9 +345,11 @@ public class DataQueryEngineIntegrationTest {
 
   @Test
   public void testWithUnknownRegion() throws Exception {
-    String queryResult = queryEngine.queryForJsonResult("select * from /unknonwn", 1, 1, 1);
+    String queryResult =
+        queryEngine.queryForJsonResult("select * from " + SEPARATOR + "unknonwn", 1, 1, 1);
     assertThat(queryResult)
-        .isEqualTo("{\"message\":\"Cannot find regions /unknonwn in any of the members\"}");
+        .isEqualTo("{\"message\":\"Cannot find regions " + SEPARATOR
+            + "unknonwn in any of the members\"}");
   }
 
 

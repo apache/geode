@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -151,7 +152,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
 
     LocalRegion region = mock(LocalRegion.class);
     when(event.getRegion()).thenReturn(region);
-    when(region.getFullPath()).thenReturn("/testRegion");
+    when(region.getFullPath()).thenReturn(SEPARATOR + "testRegion");
 
     EventID id = mock(EventID.class);
     when(event.getEventId()).thenReturn(id);
@@ -171,7 +172,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
 
     LocalRegion region = mock(LocalRegion.class);
     when(event.getRegion()).thenReturn(region);
-    when(region.getFullPath()).thenReturn("/testRegion");
+    when(region.getFullPath()).thenReturn(SEPARATOR + "testRegion");
 
     EventID id = mock(EventID.class);
     when(event.getEventId()).thenReturn(id);
@@ -248,7 +249,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     // Create mock region
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
     LocalRegion lr = mock(LocalRegion.class);
-    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
     when(lr.getCache()).thenReturn(this.cache);
 
     // Configure conflation
@@ -306,7 +307,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
 
     // Create mock region
     LocalRegion lr = mock(LocalRegion.class);
-    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
     when(lr.getCache()).thenReturn(this.cache);
 
     // Configure conflation

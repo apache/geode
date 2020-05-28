@@ -34,6 +34,9 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
 public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
+  public static final String SEPARATOR = "/";
+  public static final char SEPARATOR_CHAR = '/';
+
   private String name;
   private RegionType type;
 
@@ -79,8 +82,8 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
       return;
     }
 
-    boolean regionPrefixedWithSlash = value.startsWith("/");
-    String[] regionSplit = value.split("/");
+    boolean regionPrefixedWithSlash = value.startsWith(SEPARATOR);
+    String[] regionSplit = value.split(SEPARATOR);
 
     boolean hasSubRegions =
         regionPrefixedWithSlash ? regionSplit.length > 2 : regionSplit.length > 1;

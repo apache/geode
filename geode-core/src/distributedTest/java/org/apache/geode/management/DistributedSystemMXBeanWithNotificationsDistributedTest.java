@@ -15,6 +15,7 @@
 package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -176,7 +177,8 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
       memberVM.invoke(() -> {
         Notification notification =
             new Notification(REGION_CREATED, getMemberNameOrUniqueId(distributedMember),
-                SequenceNumber.next(), System.currentTimeMillis(), REGION_CREATED_PREFIX + "/test");
+                SequenceNumber.next(), System.currentTimeMillis(),
+                REGION_CREATED_PREFIX + SEPARATOR + "test");
         NotificationBroadcasterSupport notifier = (MemberMBean) managementService.getMemberMXBean();
         notifier.sendNotification(notification);
       });

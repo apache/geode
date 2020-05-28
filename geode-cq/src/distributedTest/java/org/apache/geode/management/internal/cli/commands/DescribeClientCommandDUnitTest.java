@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -222,10 +223,12 @@ public class DescribeClientCommandDUnitTest {
       QueryService qs = cache.getQueryService();
       CqAttributesFactory cqAf = new CqAttributesFactory();
       try {
-        qs.newCq(cq1, "select * from /" + regionName, cqAf.create(), true).execute();
-        qs.newCq(cq2, "select * from /" + regionName + " where id = 1", cqAf.create(), true)
+        qs.newCq(cq1, "select * from " + SEPARATOR + regionName, cqAf.create(), true).execute();
+        qs.newCq(cq2, "select * from " + SEPARATOR + regionName + " where id = 1", cqAf.create(),
+            true)
             .execute();
-        qs.newCq(cq3, "select * from /" + regionName + " where id > 2", cqAf.create(), true)
+        qs.newCq(cq3, "select * from " + SEPARATOR + regionName + " where id > 2", cqAf.create(),
+            true)
             .execute();
         cache.getLogger()
             .info("setupCqs on vm created cqs = " + cache.getQueryService().getCqs().length);

@@ -79,38 +79,44 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
   public final String[] cqs = new String[] {
       // 0 - Test for ">"
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID > 0",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + " p where p.ID > 0",
 
       // 1 - Test for "=" and "and".
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID = 2 and p.status='active'",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0]
+          + " p where p.ID = 2 and p.status='active'",
 
       // 2 - Test for "<" and "and".
-      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID < 5 and p.status='active'",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[1]
+          + " p where p.ID < 5 and p.status='active'",
 
       // FOLLOWING CQS ARE NOT TESTED WITH VALUES; THEY ARE USED TO TEST PARSING LOGIC WITHIN CQ.
       // 3
-      "SELECT * FROM /root/" + regions[0] + " ;",
+      "SELECT * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + " ;",
       // 4
-      "SELECT ALL * FROM /root/" + regions[0],
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0],
       // 5
-      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM /root/"
+      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM " + SEPARATOR
+          + "root" + SEPARATOR
           + regions[0] + " TYPE Portfolio",
       // 6
-      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM /root/"
+      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM " + SEPARATOR
+          + "root" + SEPARATOR
           + regions[0] + " p TYPE Portfolio",
       // 7
-      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID < 5 and p.status='active';",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[1]
+          + " p where p.ID < 5 and p.status='active';",
       // 8
-      "SELECT ALL * FROM /root/" + regions[0] + "  ;",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + "  ;",
       // 9
-      "SELECT ALL * FROM /root/" + regions[0] + " p where p.description = NULL",
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0]
+          + " p where p.description = NULL",
 
       // 10
-      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID > 0",};
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[1] + " p where p.ID > 0",};
 
   public final String[] cqsWithoutRoot = new String[] {
       // 0 - Test for ">"
-      "SELECT ALL * FROM /" + regions[0] + " p where p.ID > 0"};
+      "SELECT ALL * FROM " + SEPARATOR + regions[0] + " p where p.ID > 0"};
 
   private static int bridgeServerPort;
 
@@ -922,7 +928,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(new CacheSerializableRunnable("Update Region") {
       @Override
       public void run2() throws CacheException {
-        Region region = getCache().getRegion("/root/" + regions[0]);
+        Region region = getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
         for (int i = 1; i <= numObjects; i++) {
           Portfolio p = new Portfolio(i);
           region.put("" + i, p);
@@ -934,7 +940,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invokeAsync(new CacheSerializableRunnable("Update Region") {
       @Override
       public void run2() throws CacheException {
-        Region region = getCache().getRegion("/root/" + regions[0]);
+        Region region = getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
         for (int i = numObjects + 1; i <= totalObjects; i++) {
           Portfolio p = new Portfolio(i);
           region.put("" + i, p);
@@ -1335,7 +1341,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static int getCqCountFromRegionProfile() {
-    LocalRegion region1 = (LocalRegion) CacheFactory.getAnyInstance().getRegion("/root/regionA");
+    LocalRegion region1 = (LocalRegion) CacheFactory.getAnyInstance()
+        .getRegion(SEPARATOR + "root" + SEPARATOR + "regionA");
     return region1.getFilterProfile().getCqCount();
   }
 

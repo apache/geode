@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.util.Properties;
 
 import org.junit.BeforeClass;
@@ -63,14 +65,17 @@ public class LocateEntryDUnitTest {
     gfsh.executeAndAssertThat("put --region=regionB --key=key --value=value").statusIsSuccess();
 
     // create a child replicate region
-    gfsh.executeAndAssertThat("create region --name=regionB/regionBB --type=REPLICATE")
+    gfsh.executeAndAssertThat(
+        "create region --name=regionB" + SEPARATOR + "regionBB --type=REPLICATE")
         .statusIsSuccess();
-    gfsh.executeAndAssertThat("put --region=regionB/regionBB --key=key --value=value")
+    gfsh.executeAndAssertThat(
+        "put --region=regionB" + SEPARATOR + "regionBB --key=key --value=value")
         .statusIsSuccess();
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 2);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionB", 2);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionB/regionBB", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "regionA", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "regionB", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(
+        SEPARATOR + "regionB" + SEPARATOR + "regionBB", 2);
   }
 
   @Test

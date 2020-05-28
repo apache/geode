@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned.fixed;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -431,7 +432,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putCustomerPartitionedRegion(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
 
     for (int i = 1; i <= 40; i++) {
@@ -450,7 +451,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putOrderPartitionedRegion(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
 
     for (int i = 1; i <= 40; i++) {
@@ -473,7 +474,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putShipmentPartitionedRegion(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     for (int i = 1; i <= 40; i++) {
       CustId custid = new CustId(i);
@@ -500,7 +501,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putCustomerPartitionedRegion_Persistence(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
 
     for (int i = 1; i <= 20; i++) {
@@ -519,7 +520,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putOrderPartitionedRegion_Persistence(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
 
     for (int i = 1; i <= 20; i++) {
@@ -542,7 +543,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putShipmentPartitionedRegion_Persistence(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     for (int i = 1; i <= 20; i++) {
       CustId custid = new CustId(i);
@@ -569,7 +570,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putCustomerPartitionedRegion_Persistence1(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
 
     for (int i = 1; i <= 20; i++) {
@@ -590,7 +591,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putOrderPartitionedRegion_Persistence1(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
 
     for (int i = 1; i <= 20; i++) {
@@ -615,7 +616,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putShipmentPartitionedRegion_Persistence1(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     for (int i = 1; i <= 20; i++) {
       if (i % 2 == 0) {
@@ -644,7 +645,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putCustomerPartitionedRegion_Persistence2(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
 
     for (int i = 1; i <= 20; i++) {
@@ -665,7 +666,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putOrderPartitionedRegion_Persistence2(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
 
     for (int i = 1; i <= 20; i++) {
@@ -690,7 +691,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
   public static void putShipmentPartitionedRegion_Persistence2(String partitionedRegionName) {
     assertNotNull(cache);
-    Region partitionedregion = cache.getRegion(Region.SEPARATOR + partitionedRegionName);
+    Region partitionedregion = cache.getRegion(SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
     for (int i = 1; i <= 20; i++) {
       if (i % 2 == 1) {
@@ -768,11 +769,11 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     PartitionedRegion shipmentPartitionedregion = null;
     try {
       customerPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + customerPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + customerPartitionedRegionName);
       orderPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + orderPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + orderPartitionedRegionName);
       shipmentPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + shipmentPartitionedRegionName);
     } catch (Exception e) {
       org.apache.geode.test.dunit.Assert
           .fail("validateAfterPutPartitionedRegion : failed while getting the region", e);
@@ -1050,7 +1051,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     PartitionedRegion customerPartitionedregion = null;
     try {
       customerPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + customerPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + customerPartitionedRegionName);
     } catch (Exception e) {
       org.apache.geode.test.dunit.Assert
           .fail("validateAfterPutPartitionedRegion : failed while getting the region", e);
@@ -1072,11 +1073,11 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     PartitionedRegion shipmentPartitionedregion = null;
     try {
       customerPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + customerPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + customerPartitionedRegionName);
       orderPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + orderPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + orderPartitionedRegionName);
       shipmentPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + shipmentPartitionedRegionName);
     } catch (Exception e) {
       org.apache.geode.test.dunit.Assert
           .fail("validateAfterPutPartitionedRegion : failed while getting the region", e);
@@ -1120,11 +1121,11 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     PartitionedRegion shipmentPartitionedregion = null;
     try {
       customerPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + customerPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + customerPartitionedRegionName);
       orderPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + orderPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + orderPartitionedRegionName);
       shipmentPartitionedregion =
-          (PartitionedRegion) cache.getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
+          (PartitionedRegion) cache.getRegion(SEPARATOR + shipmentPartitionedRegionName);
     } catch (Exception e) {
       org.apache.geode.test.dunit.Assert
           .fail("validateAfterPutPartitionedRegion : failed while getting the region", e);

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -128,7 +129,7 @@ public class DefaultQuerySecurityIntegrationTest {
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT object.name FROM /" + regionName + " object";
+    String queryString = "SELECT object.name FROM " + SEPARATOR + regionName + " object";
 
     executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1);
   }
@@ -140,7 +141,8 @@ public class DefaultQuerySecurityIntegrationTest {
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT object.privateID, object.name FROM /" + regionName + " object";
+    String queryString =
+        "SELECT object.privateID, object.name FROM " + SEPARATOR + regionName + " object";
 
     executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2);
   }
@@ -152,7 +154,7 @@ public class DefaultQuerySecurityIntegrationTest {
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT object.getName() FROM /" + regionName + " object";
+    String queryString = "SELECT object.getName() FROM " + SEPARATOR + regionName + " object";
 
     executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1);
   }
@@ -164,7 +166,8 @@ public class DefaultQuerySecurityIntegrationTest {
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT object.getId(), object.getName() FROM /" + regionName + " object";
+    String queryString =
+        "SELECT object.getId(), object.getName() FROM " + SEPARATOR + regionName + " object";
 
     executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2);
   }
@@ -176,7 +179,7 @@ public class DefaultQuerySecurityIntegrationTest {
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT object.name FROM /" + regionName + " object";
+    String queryString = "SELECT object.name FROM " + SEPARATOR + regionName + " object";
 
     executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString);
   }
@@ -188,7 +191,8 @@ public class DefaultQuerySecurityIntegrationTest {
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT object.privateID, object.name FROM /" + regionName + " object";
+    String queryString =
+        "SELECT object.privateID, object.name FROM " + SEPARATOR + regionName + " object";
 
     executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString);
   }
@@ -200,7 +204,7 @@ public class DefaultQuerySecurityIntegrationTest {
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT object.getName() FROM /" + regionName + " object";
+    String queryString = "SELECT object.getName() FROM " + SEPARATOR + regionName + " object";
 
     executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString);
   }
@@ -212,7 +216,8 @@ public class DefaultQuerySecurityIntegrationTest {
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT object.getId(), object.getName() FROM /" + regionName + " object";
+    String queryString =
+        "SELECT object.getId(), object.getName() FROM " + SEPARATOR + regionName + " object";
 
     executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString);
   }

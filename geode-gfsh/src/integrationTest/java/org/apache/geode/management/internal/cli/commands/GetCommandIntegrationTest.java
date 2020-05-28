@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -104,7 +105,8 @@ public class GetCommandIntegrationTest {
 
   @Test
   public void getWithSlashedRegionName() throws Exception {
-    gfsh.executeAndAssertThat("get --region=/Users --key=jonbloom").statusIsSuccess();
+    gfsh.executeAndAssertThat("get --region=" + SEPARATOR + "Users --key=jonbloom")
+        .statusIsSuccess();
   }
 
   @Test

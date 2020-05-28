@@ -21,6 +21,7 @@
 
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -101,7 +102,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
     SelectResults sr[][] = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -139,10 +141,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    Index index1 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
+    Index index1 =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     // Index index2 = (Index)qs.createIndex("secIdIndex", IndexType.FUNCTIONAL,"pos.secId","/pos pf,
     // pf.positions.values pos");
-    Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", "/pos pf");
+    Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "pos pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -215,7 +218,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.ID > 0 and pf.ID < 3  and pf.status='active' and  pos.secId != null "};
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos pf,  positions.values pos where pf.ID > 0 and pf.ID < 3  and pf.status='active' and  pos.secId != null "};
     SelectResults sr[][] = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -253,10 +257,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    Index index1 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
+    Index index1 =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     Index index2 = (Index) qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
-        "/pos pf, pf.positions.values pos");
-    Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", "/pos pf");
+        SEPARATOR + "pos pf, pf.positions.values pos");
+    Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "pos pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -332,7 +337,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.ID > 0 and pf.ID < 250  and pf.status='active' and  pos.secId != null "};
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos pf,  positions.values pos where pf.ID > 0 and pf.ID < 250  and pf.status='active' and  pos.secId != null "};
     SelectResults sr[][] = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -370,10 +376,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    Index index1 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
+    Index index1 =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     Index index2 = (Index) qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
-        "/pos pf, pf.positions.values pos");
-    Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", "/pos pf");
+        SEPARATOR + "pos pf, pf.positions.values pos");
+    Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "pos pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -488,7 +495,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT pf FROM /pos pf,  positions.values pos where pf.description = 'XXXX'  and pos.secId= 'IBM' "};
+        "SELECT DISTINCT pf FROM " + SEPARATOR
+            + "pos pf,  positions.values pos where pf.description = 'XXXX'  and pos.secId= 'IBM' "};
     SelectResults sr[][] = new SelectResults[queries.length][2];
 
     ObjectType resType1 = null, resType2 = null;
@@ -524,11 +532,13 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    Index index1 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
+    Index index1 =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     Index index2 = (Index) qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
-        "/pos pf, pf.positions.values pos");
+        SEPARATOR + "pos pf, pf.positions.values pos");
     Index index3 =
-        qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description", "/pos pf");
+        qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description",
+            SEPARATOR + "pos pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -641,7 +651,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] =
-        {"SELECT DISTINCT * FROM /pos pf where pf.description = 'XXXX'  and pf.status='active' "};
+        {"SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos pf where pf.description = 'XXXX'  and pf.status='active' "};
     SelectResults sr[][] = new SelectResults[queries.length][2];
 
     ObjectType resType1 = null, resType2 = null;
@@ -682,10 +693,13 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    Index index1 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
-    Index index2 = (Index) qs.createIndex("IdIndex", IndexType.FUNCTIONAL, "pf.iD", "/pos pf");
+    Index index1 =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
+    Index index2 =
+        (Index) qs.createIndex("IdIndex", IndexType.FUNCTIONAL, "pf.iD", SEPARATOR + "pos pf");
     Index index3 =
-        qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description", "/pos pf");
+        qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description",
+            SEPARATOR + "pos pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -864,7 +878,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT * FROM /pos pf where pf.description = 'XXXX'  and pf.status='active' and pf.createTime = 5 "};
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos pf where pf.description = 'XXXX'  and pf.status='active' and pf.createTime = 5 "};
     SelectResults sr[][] = new SelectResults[queries.length][2];
     ObjectType resType1 = null, resType2 = null;
     for (int i = 0; i < queries.length; i++) {
@@ -903,7 +918,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    Index index1 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
+    Index index1 =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     // Index index2 = (Index)qs.createIndex("IdIndex", IndexType.FUNCTIONAL,"pf.iD","/pos pf");
     // Index index3 = qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL,"pf.description","/pos
     // pf");
@@ -1076,7 +1092,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT * FROM /pos pf where pf.description = 'XXXX'  and pf.status='active' and pf.createTime = 5 "};
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "pos pf where pf.description = 'XXXX'  and pf.status='active' and pf.createTime = 5 "};
     ObjectType resType1 = null, resType2 = null;
     SelectResults sr[][] = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
@@ -1113,10 +1130,13 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    Index index1 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
-    Index index2 = (Index) qs.createIndex("IdIndex", IndexType.FUNCTIONAL, "pf.iD", "/pos pf");
+    Index index1 =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
+    Index index2 =
+        (Index) qs.createIndex("IdIndex", IndexType.FUNCTIONAL, "pf.iD", SEPARATOR + "pos pf");
     Index index3 =
-        qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description", "/pos pf");
+        qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description",
+            SEPARATOR + "pos pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -1205,10 +1225,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] =
-        {"SELECT * FROM /pos pf,  positions.values pos where pf.ID > 0 OR pf.status='active' OR  pos.secId != 'IBM'",
-            "SELECT * FROM /pos pf where pf.ID > 0 OR pf.status='active'",
-            "SELECT * FROM /pos pf where pf.ID > 0 OR pf.status LIKE 'act%'",
-            "SELECT * FROM /pos pf where pf.ID > 0 OR pf.status IN SET('active', 'inactive')",};
+        {"SELECT * FROM " + SEPARATOR
+            + "pos pf,  positions.values pos where pf.ID > 0 OR pf.status='active' OR  pos.secId != 'IBM'",
+            "SELECT * FROM " + SEPARATOR + "pos pf where pf.ID > 0 OR pf.status='active'",
+            "SELECT * FROM " + SEPARATOR + "pos pf where pf.ID > 0 OR pf.status LIKE 'act%'",
+            "SELECT * FROM " + SEPARATOR
+                + "pos pf where pf.ID > 0 OR pf.status IN SET('active', 'inactive')",};
 
     SelectResults sr[] = new SelectResults[queries.length];
     for (int i = 0; i < queries.length; i++) {
@@ -1294,11 +1316,14 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] =
-        {"SELECT * FROM /pos pf,  positions.values pos where pf.ID > 0 OR pf.status='active' OR  pos.secId != 'IBM'",
-            "SELECT * FROM /pos pf where pf.ID > 0 OR pf.status='active'",
-            "SELECT * FROM /pos pf where pf.ID > 0 OR pf.status LIKE 'act%'",
-            "SELECT DISTINCT * FROM /pos pf where pf.ID > 0 OR pf.status='active' ORDER BY pf.status desc LIMIT 10",
-            "SELECT * FROM /pos pf where pf.ID > 0 OR pf.status IN SET('active', 'inactive')",};
+        {"SELECT * FROM " + SEPARATOR
+            + "pos pf,  positions.values pos where pf.ID > 0 OR pf.status='active' OR  pos.secId != 'IBM'",
+            "SELECT * FROM " + SEPARATOR + "pos pf where pf.ID > 0 OR pf.status='active'",
+            "SELECT * FROM " + SEPARATOR + "pos pf where pf.ID > 0 OR pf.status LIKE 'act%'",
+            "SELECT DISTINCT * FROM " + SEPARATOR
+                + "pos pf where pf.ID > 0 OR pf.status='active' ORDER BY pf.status desc LIMIT 10",
+            "SELECT * FROM " + SEPARATOR
+                + "pos pf where pf.ID > 0 OR pf.status IN SET('active', 'inactive')",};
 
     SelectResults sr[][] = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
@@ -1320,10 +1345,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    Index index1 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/pos pf");
+    Index index1 =
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     Index index2 = qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
-        "/pos pf, pf.positions.values pos");
-    Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", "/pos pf");
+        SEPARATOR + "pos pf, pf.positions.values pos");
+    Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "pos pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;

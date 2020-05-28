@@ -16,6 +16,7 @@
 
 package org.apache.geode.management.internal.beans;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -32,7 +33,7 @@ public class QueryDataFunctionApplyLimitClauseTest {
 
   @Before
   public void setUp() throws Exception {
-    this.selectQuery = "SELECT * FROM /MyRegion";
+    this.selectQuery = "SELECT * FROM " + SEPARATOR + "MyRegion";
     this.limit_0 = 0;
     this.limit_10 = 10;
     this.queryResultSetLimit_100 = 100;
@@ -61,7 +62,7 @@ public class QueryDataFunctionApplyLimitClauseTest {
 
   @Test // GEODE-1907
   public void applyLimitClauseAddsQueryResultSetLimitIfMissingSpaceAfterFrom() {
-    String selectQueryMissingSpaceAfterFrom = "SELECT * FROM/MyRegion";
+    String selectQueryMissingSpaceAfterFrom = "SELECT * FROM" + SEPARATOR + "MyRegion";
     assertThat(QueryDataFunction.applyLimitClause(selectQueryMissingSpaceAfterFrom, limit_0,
         queryResultSetLimit_100))
             .isEqualTo(selectQueryMissingSpaceAfterFrom + " LIMIT " + queryResultSetLimit_100);
@@ -69,7 +70,8 @@ public class QueryDataFunctionApplyLimitClauseTest {
 
   @Test
   public void applyLimitClauseDoesNotAddQueryResultSetLimitIfMissingSpaceAfterFromButLimitIsPresent() {
-    String selectQueryMissingSpaceAfterFromWithLimit = "SELECT * FROM/MyRegion LIMIT " + limit_10;
+    String selectQueryMissingSpaceAfterFromWithLimit =
+        "SELECT * FROM" + SEPARATOR + "MyRegion LIMIT " + limit_10;
     assertThat(QueryDataFunction.applyLimitClause(selectQueryMissingSpaceAfterFromWithLimit,
         limit_0, queryResultSetLimit_100)).isEqualTo(selectQueryMissingSpaceAfterFromWithLimit);
   }
