@@ -92,6 +92,19 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     return redisString.incr(region, key);
   }
 
+  @Override
+  public long decr(ByteArrayWrapper key) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      redisString = new RedisString(new ByteArrayWrapper(Coder.stringToBytes("-1")));
+      region.put(key, redisString);
+      return -1;
+    }
+
+    return redisString.decr(region, key);
+  }
+
   private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
     if (getRedisData(key) != null) {
       return false;

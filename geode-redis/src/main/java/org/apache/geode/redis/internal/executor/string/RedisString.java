@@ -69,6 +69,20 @@ public class RedisString extends AbstractRedisData {
     return longValue;
   }
 
+  public long decr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
+      throws NumberFormatException, ArithmeticException {
+    long longValue = Long.parseLong(value.toString());
+    if (longValue == Long.MIN_VALUE) {
+      throw new ArithmeticException("underflow");
+    }
+    longValue--;
+    String stringValue = Long.toString(longValue);
+    value.setBytes(Coder.stringToBytes(stringValue));
+    // numeric strings are short so no need to use delta
+    region.put(key, this);
+    return longValue;
+  }
+
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);

@@ -117,6 +117,9 @@ public class CommandFunction extends SingleResultRedisFunction {
       case INCR:
         callable = () -> new RedisStringInRegion(localRegion).incr(key);
         break;
+      case DECR:
+        callable = () -> new RedisStringInRegion(localRegion).decr(key);
+        break;
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
         callable = () -> new RedisSetInRegion(localRegion).sadd(key, membersToAdd);

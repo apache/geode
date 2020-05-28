@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
 
 import java.util.List;
 
@@ -26,19 +25,9 @@ import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class DecrExecutor extends StringExecutor {
 
-  private final String ERROR_VALUE_NOT_USABLE =
-      "The value at this key cannot be decremented numerically";
-
-  private final String ERROR_OVERFLOW = "This decrementation cannot be performed due to overflow";
-
-  private final byte[] INIT_VALUE_BYTES = Coder.stringToBytes("-1");
-
-  private final int INIT_VALUE_INT = -1;
-
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    long value;
 
     if (commandElems.size() < 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.DECR));
@@ -46,45 +35,9 @@ public class DecrExecutor extends StringExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
 
-    /*
-     * Value does not exist
-     */
-    ByteArrayWrapper valueWrapper = getRedisStringCommands(context).get(key);
-
-    if (valueWrapper == null) {
-      byte[] newValue = INIT_VALUE_BYTES;
-      getRedisStringCommands(context).set(key, new ByteArrayWrapper(newValue), null);
-      command
-          .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), INIT_VALUE_INT));
-      return;
-    }
-
-    /*
-     * Value exists
-     */
-
-    String stringValue = valueWrapper.toString();
-    try {
-      value = Long.parseLong(stringValue);
-    } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_VALUE_NOT_USABLE));
-      return;
-    }
-
-    if (value == Long.MIN_VALUE) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
-      return;
-    }
-
-    value--;
-
-    stringValue = "" + value;
-    ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.stringToBytes(stringValue));
-    SetOptions setOptions = new SetOptions(NONE, 0L, true);
-    getRedisStringCommands(context).set(key, newValue, setOptions);
-
+    long value = stringCommands.decr(key);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
   }
 }

@@ -853,7 +853,6 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8192")
   public void testDecr_shouldBeAtomic() throws ExecutionException, InterruptedException {
     jedis.set("contestedKey", "0");
 
