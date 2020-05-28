@@ -65,8 +65,10 @@ public class GfshHostNameVerificationDistributedTest {
     final CertificateBuilder builder = new CertificateBuilder()
         .commonName("locator")
         .issuedBy(ca)
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(hostname)
+        .sanIpAddress(InetAddress.getByName("127.0.0.1"))
         .sanIpAddress(InetAddress.getByName("0.0.0.0"));
     // the rules used by this test use "localhost" as a hostname, which
     // causes it to use a non-loopback IP literal address instead of the
