@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.Serializable;
@@ -54,7 +55,8 @@ public class QueryCommandIntegrationTestBase {
       new ServerStarterRule().withJMXManager()
           .withHttpService()
           .withRegion(RegionShortcut.REPLICATE, "simpleRegion")
-          .withRegion(RegionShortcut.REPLICATE, "complexRegion");
+          .withRegion(RegionShortcut.REPLICATE, "complexRegion")
+          .withRegion(RegionShortcut.REPLICATE, "intRegion");
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -67,12 +69,14 @@ public class QueryCommandIntegrationTestBase {
     Cache cache = server.getCache();
     Region<String, String> simpleRegion = cache.getRegion("simpleRegion");
     Region<String, Customer> complexRegion = cache.getRegion("complexRegion");
+    Region<Integer, Integer> intRegion = cache.getRegion("intRegion");
 
     for (int i = 0; i < Gfsh.DEFAULT_APP_FETCH_SIZE + 1; i++) {
       String key = "key" + i;
 
       simpleRegion.put(key, "value" + i);
       complexRegion.put(key, new Customer("name" + i, "Main Street " + i, "Hometown"));
+      intRegion.put(new Integer(i), new Integer(i));
     }
   }
 
@@ -90,6 +94,15 @@ public class QueryCommandIntegrationTestBase {
     gfsh.executeAndAssertThat("query --query='select * from " + SEPARATOR + "simpleRegion'")
         .containsKeyValuePair("Rows", DEFAULT_FETCH_SIZE)
         .containsKeyValuePair("Limit", DEFAULT_FETCH_SIZE).hasResult();
+  }
+
+  @Test
+  public void queryWithAndWithoutEqualsReturnSameResult() throws Exception {
+    String resultWithEquals =
+        gfsh.execute("query --query='select * from " + SEPARATOR + "intRegion i where i <= 3'");
+    String resultWithoutEquals =
+        gfsh.execute("query --query 'select * from " + SEPARATOR + "intRegion i where i <= 3'");
+    assertEquals(resultWithEquals, resultWithoutEquals);
   }
 
   @Test
