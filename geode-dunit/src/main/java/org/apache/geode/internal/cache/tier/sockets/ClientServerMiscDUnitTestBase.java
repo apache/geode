@@ -528,11 +528,22 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     InternalDistributedMember server2ID = server2.invoke("get ID", () -> cache.getMyId());
     pool = (PoolImpl) createClientCache(NetworkUtils.getServerHostName(), PORT1);
     // send the ping to server1 but use server2's identifier so the ping will be forwarded
-    PingOp.execute(pool, new ServerLocation(NetworkUtils.getServerHostName(), PORT1), server2ID);
+
     ClientProxyMembershipID proxyID = server1.invoke(
         () -> CacheClientNotifier.getInstance().getClientProxies().iterator().next().getProxyID());
+    logger.info("ProxyID is : " + proxyID);
+    server2.invoke(() -> {
+      assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
+          .isFalse();
+      assertEquals(0, ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size());
+    });
+    PingOp.execute(pool, new ServerLocation(NetworkUtils.getServerHostName(), PORT1), server2ID);
     // if the ping made it to server2 it will have the client's ID in its health monitor
     server2.invoke(() -> {
+      assertEquals(1, ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size());
+      ClientProxyMembershipID proxyIDFound =
+          ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().iterator().next();
+      logger.info("ProxyID found in clientHealthMonitor: " + proxyIDFound);
       assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
           .isTrue();
     });
