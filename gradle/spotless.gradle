@@ -132,7 +132,7 @@ spotless {
     bumpThisNumberIfACustomStepChanges(project.ext.'spotless-file-hash')
 
     custom 'Use single-quote in project directives.', {
-      it.replaceAll(/project\(":([^"]*)"\)/, 'project(\':$1\')')
+      it.replaceAll(/project\(":([^"]*)"\)$/, 'project(\':$1\')')
     }
 
     custom 'Use parenthesis in single-line gradle dependency declarations.', {

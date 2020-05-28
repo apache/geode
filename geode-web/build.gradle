@@ -23,6 +23,9 @@ apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 
 jar.enabled = false
 
+configurations {
+  war {}
+}
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
@@ -72,4 +75,8 @@ integrationTest.dependsOn(war)
 war {
   enabled = true
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+artifacts {
+  war tasks.war
 }
