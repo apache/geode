@@ -148,6 +148,12 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
       outputStream.write(byteData);
       byteCount.incrementAndGet();
     }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+      outputStream.write(b, off, len);
+      byteCount.addAndGet(len);
+    }
   }
 
 }
