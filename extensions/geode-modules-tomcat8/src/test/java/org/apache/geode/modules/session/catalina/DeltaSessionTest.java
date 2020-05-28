@@ -27,17 +27,25 @@ import java.io.IOException;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.apache.catalina.Context;
 import org.apache.juli.logging.Log;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.internal.util.BlobHelper;
 
+@RunWith(JUnitParamsRunner.class)
 public class DeltaSessionTest extends AbstractDeltaSessionTest {
 
   @Test
-  public void serializedAttributesNotLeakedInAttributeReplaceEvent() throws IOException {
+  @Parameters({"true", "false"})
+  public void serializedAttributesNotLeakedInAttributeReplaceEvent(
+      final boolean preferDeserializedForm) throws IOException {
+    when(manager.getPreferDeserializedForm()).thenReturn(preferDeserializedForm);
+
     final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
 
     final Context context = mock(Context.class);
@@ -64,7 +72,11 @@ public class DeltaSessionTest extends AbstractDeltaSessionTest {
   }
 
   @Test
-  public void serializedAttributesNotLeakedInAttributeRemovedEvent() throws IOException {
+  @Parameters({"true", "false"})
+  public void serializedAttributesNotLeakedInAttributeRemovedEvent(
+      final boolean preferDeserializedForm) throws IOException {
+    when(manager.getPreferDeserializedForm()).thenReturn(preferDeserializedForm);
+
     final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
 
     final Context context = mock(Context.class);

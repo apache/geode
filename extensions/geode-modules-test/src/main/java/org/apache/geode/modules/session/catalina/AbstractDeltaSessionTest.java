@@ -63,6 +63,8 @@ public abstract class AbstractDeltaSessionTest {
     when(manager.getLogger()).thenReturn(logger);
     when(manager.getContextName()).thenReturn(contextName);
     when(manager.getStatistics()).thenReturn(stats);
+    when(manager.isBackingCacheAvailable()).thenReturn(true);
+    when(manager.getPreferDeserializedForm()).thenReturn(true);
     // For Client/Server behavior and some PeerToPeer use cases the session region and operating
     // regions
     // will be the same.
