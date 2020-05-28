@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -56,7 +57,7 @@ public class QueryUtilsJUnitTest {
   @Test
   public void testObtainTheBottomMostCompiledValue() throws Exception {
     QCompiler compiler = new QCompiler();
-    CompiledRegion cr = new CompiledRegion("/portfolio");
+    CompiledRegion cr = new CompiledRegion(SEPARATOR + "portfolio");
     CompiledID cid = new CompiledID("id");
     CompiledPath cp1 = new CompiledPath(new CompiledPath(cid, "path1"), "path2");
     CompiledPath cp2 = new CompiledPath(new CompiledPath(cr, "path1"), "path2");
@@ -77,7 +78,7 @@ public class QueryUtilsJUnitTest {
     region.put("3", new Portfolio(3));
     // compileFromClause returns a List<CompiledIteratorDef>
     QCompiler compiler = new QCompiler();
-    List list = compiler.compileFromClause("/portfolio p, p.positions");
+    List list = compiler.compileFromClause(SEPARATOR + "portfolio p, p.positions");
     ExecutionContext context = new ExecutionContext(null, CacheUtils.getCache());
     context.newScope(context.associateScopeID());
     RuntimeIterator[] indexToItrMappping = new RuntimeIterator[1];
@@ -138,7 +139,8 @@ public class QueryUtilsJUnitTest {
     }
     // compileFromClause returns a List<CompiledIteratorDef>
     QCompiler compiler = new QCompiler();
-    List list = compiler.compileFromClause("/portfolio p, p.positions, /employees e");
+    List list = compiler
+        .compileFromClause(SEPARATOR + "portfolio p, p.positions, " + SEPARATOR + "employees e");
     ExecutionContext context = new ExecutionContext(null, CacheUtils.getCache());
     context.newScope(context.associateScopeID());
     RuntimeIterator[] indexToItrMappping = new RuntimeIterator[1];

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.security;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.security.ResourcePermission.ALL;
 import static org.apache.geode.security.ResourcePermission.Operation.READ;
 import static org.apache.geode.security.ResourcePermission.Operation.WRITE;
@@ -360,7 +361,7 @@ public class SecureCacheImplTest {
   public void query() throws Exception {
     authorize(DATA, READ, REGION, ALL);
     mockQuery();
-    String queryString = "select * from /region";
+    String queryString = "select * from " + SEPARATOR + "region";
     Object[] bindParameters = {"a"};
     authorizingCache.query(queryString, bindParameters);
   }
@@ -370,7 +371,7 @@ public class SecureCacheImplTest {
     authorize(DATA, READ, REGION, ALL);
     when(security.postProcess(any(), any(), any())).thenReturn("spam");
     DefaultQuery query = mockQuery();
-    String queryString = "select * from /region";
+    String queryString = "select * from " + SEPARATOR + "region";
     Object[] bindParameters = {"a"};
     when(query.execute(bindParameters)).thenReturn("value");
     Object result = authorizingCache.query(queryString, bindParameters);
@@ -382,7 +383,7 @@ public class SecureCacheImplTest {
     authorize(DATA, READ, REGION, ALL);
     when(security.postProcess(any(), any(), any())).thenReturn("spam");
     DefaultQuery query = mockQuery();
-    String queryString = "select * from /region";
+    String queryString = "select * from " + SEPARATOR + "region";
     Object[] bindParameters = {"a"};
 
     @SuppressWarnings("unchecked")
@@ -404,7 +405,7 @@ public class SecureCacheImplTest {
 
     SelectResults<Struct> results = buildListOfStructs("value1", "value2");
     DefaultQuery query = mockQuery();
-    String queryString = "select * from /region";
+    String queryString = "select * from " + SEPARATOR + "region";
     Object[] bindParameters = {"a"};
     when(query.execute((Object[]) any())).thenReturn(results);
     @SuppressWarnings("unchecked")

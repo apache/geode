@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.Collection;
@@ -55,7 +56,8 @@ public class ConstantsJUnitTest {
   @Test
   public void testTRUE() throws Exception {
     Query query =
-        CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM /Portfolios where TRUE");
+        CacheUtils.getQueryService()
+            .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where TRUE");
     Object result = query.execute();
     if (!(result instanceof Collection) || ((Collection) result).size() != 4)
       fail(query.getQueryString());
@@ -64,7 +66,8 @@ public class ConstantsJUnitTest {
   @Test
   public void testFALSE() throws Exception {
     Query query =
-        CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM /Portfolios where FALSE");
+        CacheUtils.getQueryService()
+            .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where FALSE");
     Object result = query.execute();
     if (!(result instanceof Collection) || ((Collection) result).size() != 0)
       fail(query.getQueryString());
@@ -73,7 +76,8 @@ public class ConstantsJUnitTest {
   @Test
   public void testUNDEFINED() throws Exception {
     Query query =
-        CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM /Portfolios where UNDEFINED");
+        CacheUtils.getQueryService()
+            .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where UNDEFINED");
     Object result = query.execute();
     if (!(result instanceof Collection) || ((Collection) result).size() != 0)
       fail(query.getQueryString());
@@ -87,7 +91,8 @@ public class ConstantsJUnitTest {
   @Test
   public void testNULL() throws Exception {
     Query query =
-        CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM /Portfolios where NULL");
+        CacheUtils.getQueryService()
+            .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where NULL");
     Object result = query.execute();
     if (!(result instanceof Collection) || ((Collection) result).size() != 0)
       fail(query.getQueryString());

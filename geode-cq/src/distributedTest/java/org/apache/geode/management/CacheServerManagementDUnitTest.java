@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -366,7 +367,8 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
         ManagementService service = ManagementService.getManagementService(cache);
         QueryService qs = cache.getQueryService();
         try {
-          qs.createIndex(indexName, "p.ID", "/root/" + cqDUnitTest.regions[0]);
+          qs.createIndex(indexName, "p.ID",
+              SEPARATOR + "root" + SEPARATOR + cqDUnitTest.regions[0]);
         } catch (RegionNotFoundException e) {
           fail("Failed With Exception " + e);
         } catch (IndexInvalidException e) {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -56,7 +57,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class OqlQueryRequestOperationHandlerJUnitTest
     extends OperationHandlerJUnitTest<OQLQueryRequest, OQLQueryResponse> {
 
-  public static final String SELECT_STAR_QUERY = "select * from /region";
+  public static final String SELECT_STAR_QUERY = "select * from " + SEPARATOR + "region";
   public static final String STRING_RESULT_1 = "result1";
   public static final String STRING_RESULT_2 = "result2";
   private InternalQueryService queryService;

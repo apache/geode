@@ -14,6 +14,8 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
@@ -76,7 +78,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
         Region r = (Region) it.next();
         String name = r.getName();
         names.add(name);
-        paths.add(this.getFullPath() + Region.SEPARATOR_CHAR + name);
+        paths.add(this.getFullPath() + SEPARATOR_CHAR + name);
       }
       this.subregionNames = names;
       this.subregionFullPaths = paths;

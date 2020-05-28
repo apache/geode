@@ -14,6 +14,7 @@
  */
 package org.apache.geode.experimental.driver;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -35,7 +36,8 @@ public class QueryServiceIntegrationTest extends IntegrationTestBase {
 
     QueryService service = driver.getQueryService();
 
-    Query<String> query = service.newQuery("select value from /region value order by value");
+    Query<String> query =
+        service.newQuery("select value from " + SEPARATOR + "region value order by value");
     final List<String> results = query.execute();
 
     assertEquals(Arrays.asList("value1", "value2"), results);

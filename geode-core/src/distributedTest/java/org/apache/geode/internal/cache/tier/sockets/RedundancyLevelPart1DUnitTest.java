@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
@@ -392,7 +393,7 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   }
 
   private void createEntriesK1andK2() {
-    Region<String, String> r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<String, String> r1 = cache.getRegion(SEPARATOR + REGION_NAME);
 
     assertThat(r1).isNotNull();
 
@@ -417,7 +418,7 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   }
 
   private static void unregisterInterest() {
-    Region<String, String> r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<String, String> r = cache.getRegion(SEPARATOR + REGION_NAME);
     r.unregisterInterest("k1");
   }
 

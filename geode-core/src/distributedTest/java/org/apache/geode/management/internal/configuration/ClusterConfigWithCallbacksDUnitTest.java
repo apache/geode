@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.configuration;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -84,7 +85,7 @@ public class ClusterConfigWithCallbacksDUnitTest {
 
     // assert that the callbacks are properly hooked up with the region
     server.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion("/regionForCluster");
+      Region region = ClusterStartupRule.getCache().getRegion(SEPARATOR + "regionForCluster");
       MyCacheWriter writer = (MyCacheWriter) region.getAttributes().getCacheWriter();
       MyCacheListener listener = (MyCacheListener) region.getAttributes().getCacheListeners()[0];
       assertThat(writer.getProperties().getProperty("key")).isEqualTo("value");

@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
@@ -126,7 +128,7 @@ public class QueryCommand extends GfshCommand {
       } else {
         return DataCommandResult.createSelectInfoResult(null, null, -1, null,
             CliStrings.format(CliStrings.QUERY__MSG__INVALID_QUERY,
-                "Region mentioned in query probably missing /"),
+                "Region mentioned in query probably missing " + SEPARATOR),
             false);
       }
     } catch (QueryInvalidException qe) {

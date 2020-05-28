@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -50,17 +51,18 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 @Category({OQLQueryTest.class})
 public class ProjectionAttributeJUnitTest {
 
-  String queries[] = {"select distinct p from /pos p where p.ID > 0 ", // ResultSet
-      "select distinct p.status from /pos p where p.ID > 0 ", // ResultSet
-      "select distinct 'a' from /pos p ", // ResultSet
-      "select distinct 1 from /pos p ", // ResultSet
-      "select distinct p.status,p.ID from /pos p where p.ID > 0 ",
-      "select distinct p,p.P1 from /pos p where p.ID > 0 ",
-      "select distinct p,p.P1.SecId from /pos p where p.ID > 0 ",
-      "select distinct portfolio: p ,p.P1.SecId from /pos p where p.ID > 0 ",
-      "select distinct p.status as STATUS, SECID: p.P1.SecId, ID from /pos p where p.ID > 0 ",
-      "select distinct p.status as STATUS, SECID: p.P1.SecId, ID from /pos p ",
-      "select distinct 'a',1, p from /pos p ",};
+  String queries[] = {"select distinct p from " + SEPARATOR + "pos p where p.ID > 0 ", // ResultSet
+      "select distinct p.status from " + SEPARATOR + "pos p where p.ID > 0 ", // ResultSet
+      "select distinct 'a' from " + SEPARATOR + "pos p ", // ResultSet
+      "select distinct 1 from " + SEPARATOR + "pos p ", // ResultSet
+      "select distinct p.status,p.ID from " + SEPARATOR + "pos p where p.ID > 0 ",
+      "select distinct p,p.P1 from " + SEPARATOR + "pos p where p.ID > 0 ",
+      "select distinct p,p.P1.SecId from " + SEPARATOR + "pos p where p.ID > 0 ",
+      "select distinct portfolio: p ,p.P1.SecId from " + SEPARATOR + "pos p where p.ID > 0 ",
+      "select distinct p.status as STATUS, SECID: p.P1.SecId, ID from " + SEPARATOR
+          + "pos p where p.ID > 0 ",
+      "select distinct p.status as STATUS, SECID: p.P1.SecId, ID from " + SEPARATOR + "pos p ",
+      "select distinct 'a',1, p from " + SEPARATOR + "pos p ",};
 
   String miscQueries[] = {"select distinct * from null ", "select distinct 1 from null ",
       "select distinct 'a',1, p from null ", "select distinct * from UNDEFINED ",
@@ -97,7 +99,7 @@ public class ProjectionAttributeJUnitTest {
       }
     }
 
-    String qStr = "select distinct * from /pos p ";
+    String qStr = "select distinct * from " + SEPARATOR + "pos p ";
     Query q = qs.newQuery(qStr);
     Object r = q.execute();
     if (r instanceof StructSet)
@@ -147,76 +149,78 @@ public class ProjectionAttributeJUnitTest {
       QueryService qs = CacheUtils.getQueryService();
       ////////// creating indexes on region Quotes1
       qs.createIndex("Quotes1Region-quoteIdStrIndex", IndexType.PRIMARY_KEY, "q.quoteIdStr",
-          "/Quotes1 q");
+          SEPARATOR + "Quotes1 q");
 
       // qs.createIndex("Quotes1Region-cusipIndex1", IndexType.FUNCTIONAL, "q.cusip", "/Quotes1 q,
       // q.restrict r");
       qs.createIndex("Quotes1Region-quoteTypeIndex", IndexType.FUNCTIONAL, "q.quoteType",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Region-dealerPortfolioIndex", IndexType.FUNCTIONAL,
-          "q.dealerPortfolio", "/Quotes1 q, q.restrict r");
+          "q.dealerPortfolio", SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Region-channelNameIndex", IndexType.FUNCTIONAL, "q.channelName",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Region-priceTypeIndex", IndexType.FUNCTIONAL, "q.priceType",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Region-lowerQtyIndex", IndexType.FUNCTIONAL, "q.lowerQty",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
       qs.createIndex("Quotes1Region-upperQtyIndex", IndexType.FUNCTIONAL, "q.upperQty",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
       qs.createIndex("Quotes1Restricted-quoteTypeIndex", IndexType.FUNCTIONAL, "r.quoteType",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Restricted-minQtyIndex", IndexType.FUNCTIONAL, "r.minQty",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
       qs.createIndex("Quotes1Restricted-maxQtyIndex", IndexType.FUNCTIONAL, "r.maxQty",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       ////////// creating indexes on region Quotes2
       qs.createIndex("Quotes2Region-quoteIdStrIndex", IndexType.PRIMARY_KEY, "q.quoteIdStr",
-          "/Quotes2 q");
+          SEPARATOR + "Quotes2 q");
 
       // qs.createIndex("Quotes1Region-cusipIndex2", IndexType.FUNCTIONAL, "q.cusip", "/Quotes2 q,
       // q.restrict r");
       qs.createIndex("Quotes2Region-quoteTypeIndex", IndexType.FUNCTIONAL, "q.quoteType",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Region-dealerPortfolioIndex", IndexType.FUNCTIONAL,
-          "q.dealerPortfolio", "/Quotes2 q, q.restrict r");
+          "q.dealerPortfolio", SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Region-channelNameIndex", IndexType.FUNCTIONAL, "q.channelName",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Region-priceTypeIndex", IndexType.FUNCTIONAL, "q.priceType",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Region-lowerQtyIndex", IndexType.FUNCTIONAL, "q.lowerQty",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
       qs.createIndex("Quotes2Region-upperQtyIndex", IndexType.FUNCTIONAL, "q.upperQty",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
       qs.createIndex("Quotes2Restricted-quoteTypeIndex", IndexType.FUNCTIONAL, "r.quoteType",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Restricted-minQtyIndex", IndexType.FUNCTIONAL, "r.minQty",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
       qs.createIndex("Quotes2Restricted-maxQtyIndex", IndexType.FUNCTIONAL, "r.maxQty",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       ////////// creating indexes on region Restricted1
       // qs.createIndex("RestrictedRegion-cusip", IndexType.FUNCTIONAL, "r.cusip", "/Restricted1
       ////////// r");
 
       qs.createIndex("RestrictedRegion-quoteTypeIndex", IndexType.FUNCTIONAL, "r.quoteType",
-          "/Restricted1 r");
+          SEPARATOR + "Restricted1 r");
       qs.createIndex("RestrictedRegion-minQtyIndex", IndexType.FUNCTIONAL, "r.minQty",
-          "/Restricted1 r");
+          SEPARATOR + "Restricted1 r");
       qs.createIndex("RestrictedRegion-maxQtyIndex-1", IndexType.FUNCTIONAL, "r.maxQty",
-          "/Restricted1 r");
+          SEPARATOR + "Restricted1 r");
       Query q = qs.newQuery(
-          "SELECT DISTINCT * FROM /Quotes1 q1, q1.restrict r1, /Quotes2 q2, q2.restrict r2, /Restricted1 r3 WHERE r1.quoteType = r2.quoteType AND r2.quoteType = r3.quoteType AND r3.maxQty > 1050");
+          "SELECT DISTINCT * FROM " + SEPARATOR + "Quotes1 q1, q1.restrict r1, " + SEPARATOR
+              + "Quotes2 q2, q2.restrict r2, " + SEPARATOR
+              + "Restricted1 r3 WHERE r1.quoteType = r2.quoteType AND r2.quoteType = r3.quoteType AND r3.maxQty > 1050");
       q.execute();
     } catch (Exception e) {
       e.printStackTrace();
@@ -229,7 +233,7 @@ public class ProjectionAttributeJUnitTest {
   @Test
   public void testProjectionAttributesWithIndex() throws QueryException {
     QueryService qs = CacheUtils.getQueryService();
-    qs.createIndex("PortFolioID", IndexType.FUNCTIONAL, "ID", "/pos");
+    qs.createIndex("PortFolioID", IndexType.FUNCTIONAL, "ID", SEPARATOR + "pos");
     testProjectionAttributes();
   }
 

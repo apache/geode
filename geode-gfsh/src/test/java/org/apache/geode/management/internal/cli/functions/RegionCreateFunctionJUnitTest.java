@@ -16,6 +16,7 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -55,7 +56,7 @@ public class RegionCreateFunctionJUnitTest {
     when(internalCache.getCacheForProcessingClientRequests()).thenReturn(cache);
     when(context.getMemberName()).thenReturn("member");
 
-    CreateRegionFunctionArgs args = new CreateRegionFunctionArgs("/REGION",
+    CreateRegionFunctionArgs args = new CreateRegionFunctionArgs(SEPARATOR + "REGION",
         new RegionConfig(), true);
     when(context.getArguments()).thenReturn(args);
 
@@ -72,6 +73,6 @@ public class RegionCreateFunctionJUnitTest {
     verify(resultSender, times(1)).lastResult(captor.capture());
 
     assertThat(captor.getValue().getStatusMessage())
-        .isEqualTo("Skipping \"member\". Region \"/REGION\" already exists.");
+        .isEqualTo("Skipping \"member\". Region \"" + SEPARATOR + "REGION\" already exists.");
   }
 }

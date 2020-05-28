@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import org.junit.After;
@@ -55,13 +56,18 @@ public class IteratorTypeDefJUnitTest {
   public void testIteratorDefSyntax() throws Exception {
     String queries[] = {
         "IMPORT org.apache.geode.cache.\"query\".data.Position;"
-            + "SELECT DISTINCT secId FROM /portfolios,  positions.values pos TYPE Position WHERE iD > 0",
+            + "SELECT DISTINCT secId FROM " + SEPARATOR
+            + "portfolios,  positions.values pos TYPE Position WHERE iD > 0",
         "IMPORT org.apache.geode.cache.\"query\".data.Position;"
-            + "SELECT DISTINCT secId FROM /portfolios, positions.values AS pos TYPE Position WHERE iD > 0",
+            + "SELECT DISTINCT secId FROM " + SEPARATOR
+            + "portfolios, positions.values AS pos TYPE Position WHERE iD > 0",
         "IMPORT org.apache.geode.cache.\"query\".data.Position;"
-            + "SELECT DISTINCT pos.secId FROM /portfolios, pos IN positions.values TYPE Position WHERE iD > 0",
-        "SELECT DISTINCT pos.secId FROM /portfolios,  positions.values AS pos  WHERE iD > 0",
-        "SELECT DISTINCT pos.secId FROM /portfolios, pos IN positions.values  WHERE iD > 0",};
+            + "SELECT DISTINCT pos.secId FROM " + SEPARATOR
+            + "portfolios, pos IN positions.values TYPE Position WHERE iD > 0",
+        "SELECT DISTINCT pos.secId FROM " + SEPARATOR
+            + "portfolios,  positions.values AS pos  WHERE iD > 0",
+        "SELECT DISTINCT pos.secId FROM " + SEPARATOR
+            + "portfolios, pos IN positions.values  WHERE iD > 0",};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -78,7 +84,8 @@ public class IteratorTypeDefJUnitTest {
   @Test
   public void testIteratorDefSyntaxForObtainingResultBag() throws Exception {
     String queries[] = {"IMPORT org.apache.geode.cache.\"query\".data.Position;"
-        + "SELECT DISTINCT secId FROM /portfolios, (set<Position>)positions.values WHERE iD > 0",};
+        + "SELECT DISTINCT secId FROM " + SEPARATOR
+        + "portfolios, (set<Position>)positions.values WHERE iD > 0",};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -104,7 +111,7 @@ public class IteratorTypeDefJUnitTest {
   public void testNOValueconstraintInCreatRegion() throws Exception {
     CacheUtils.createRegion("pos", null);
     String queries[] = {"IMPORT org.apache.geode.cache.\"query\".data.Portfolio;"
-        + "SELECT DISTINCT * FROM (set<Portfolio>)/pos where iD > 0"};
+        + "SELECT DISTINCT * FROM (set<Portfolio>)" + SEPARATOR + "pos where iD > 0"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -127,7 +134,8 @@ public class IteratorTypeDefJUnitTest {
     CacheUtils.log(region);
     String queries[] = {"IMPORT org.apache.geode.cache.\"query\".data.Position;"
         + "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;"
-        + "SELECT DISTINCT secId FROM (set<Portfolio>)/portfl, (set<Position>)positions.values WHERE iD > 0",};
+        + "SELECT DISTINCT secId FROM (set<Portfolio>)" + SEPARATOR
+        + "portfl, (set<Position>)positions.values WHERE iD > 0",};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {

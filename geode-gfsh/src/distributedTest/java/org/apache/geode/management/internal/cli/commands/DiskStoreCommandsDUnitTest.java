@@ -500,7 +500,8 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         String.format(
             "alter disk-store --name=%s --region=INVALID --disk-dirs=%s --compressor=foo.Bar",
             DISKSTORE, diskDirs))
-        .statusIsError().containsOutput("The disk store does not contain a region named: /INVALID");
+        .statusIsError()
+        .containsOutput("The disk store does not contain a region named: " + SEPARATOR + "INVALID");
   }
 
   @Test

@@ -72,7 +72,8 @@ public class CreateRegionCommandWithNoClusterConfigDUnitTest {
     gfsh.executeAndAssertThat("create region --name=failed --template-region=" + regionName)
         .statusIsError()
         .hasInfoSection().hasOutput()
-        .contains("Multiple types of template region /multipleTemplateRegionTypes exist.");
+        .contains("Multiple types of template region " + SEPARATOR
+            + "multipleTemplateRegionTypes exist.");
   }
 
   @Test

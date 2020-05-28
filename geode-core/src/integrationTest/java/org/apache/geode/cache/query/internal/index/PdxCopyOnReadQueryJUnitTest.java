@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 
@@ -64,9 +65,11 @@ public class PdxCopyOnReadQueryJUnitTest {
     }
 
     QueryService qs = cache.getQueryService();
-    SelectResults rs = (SelectResults) qs.newQuery("select * from /SimpleObjects").execute();
+    SelectResults rs =
+        (SelectResults) qs.newQuery("select * from " + SEPARATOR + "SimpleObjects").execute();
     assertEquals(10, rs.size());
-    Query query = qs.newQuery("select * from /SimpleObjects_Duplicates s where s in ($1)");
+    Query query =
+        qs.newQuery("select * from " + SEPARATOR + "SimpleObjects_Duplicates s where s in ($1)");
     SelectResults finalResults = (SelectResults) query.execute(new Object[] {rs});
     assertEquals(10, finalResults.size());
   }

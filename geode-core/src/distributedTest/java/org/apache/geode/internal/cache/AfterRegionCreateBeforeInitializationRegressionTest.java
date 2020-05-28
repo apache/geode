@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -115,9 +116,9 @@ public class AfterRegionCreateBeforeInitializationRegressionTest extends Distrib
       Region region = event.getRegion();
       if (((LocalRegion) region).isInitialized()) {
         String regionPath = event.getRegion().getFullPath();
-        if (regionPath.contains("/testRegion/testSubRegion")) {
+        if (regionPath.contains(SEPARATOR + "testRegion" + SEPARATOR + "testSubRegion")) {
           flags[1] = true;
-        } else if (regionPath.contains("/testRegion")) {
+        } else if (regionPath.contains(SEPARATOR + "testRegion")) {
           flags[0] = true;
         }
 

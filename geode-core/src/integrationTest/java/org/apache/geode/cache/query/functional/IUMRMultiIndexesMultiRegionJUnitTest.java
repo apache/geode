@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -88,15 +89,16 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     }
     String queries[] = {
         // Test case No. IUMR021
-        "SELECT DISTINCT * FROM /portfolio1 pf1, /portfolio2 pf2, /employees e WHERE pf1.status = 'active'",};
+        "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR + "portfolio2 pf2, "
+            + SEPARATOR + "employees e WHERE pf1.status = 'active'",};
     // Execute Queries without Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       r[i][0] = q.execute();
     }
     // Create Indexes
-    qs.createIndex("statusIndexPf1", IndexType.FUNCTIONAL, "status", "/portfolio1");
-    qs.createIndex("statusIndexPf2", IndexType.FUNCTIONAL, "status", "/portfolio2");
+    qs.createIndex("statusIndexPf1", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio1");
+    qs.createIndex("statusIndexPf2", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio2");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -149,15 +151,17 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     String queries[] = {
         // Test case No. IUMR022
         // Both the Indexes Must get used. Presently only one Index is being used.
-        "SELECT DISTINCT * FROM /portfolio1 pf1, /portfolio2 pf2, /employees e1 WHERE pf1.status = 'active' AND e1.empId < 10"};
+        "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR + "portfolio2 pf2, "
+            + SEPARATOR + "employees e1 WHERE pf1.status = 'active' AND e1.empId < 10"};
     // Execute Queries without Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       r[i][0] = q.execute();
     }
     // Create Indexes & Execute the queries
-    qs.createIndex("statusIndexPf1", IndexType.FUNCTIONAL, "pf1.status", "/portfolio1 pf1");
-    qs.createIndex("empIdIndex", IndexType.FUNCTIONAL, "e.empId", "/employees e");
+    qs.createIndex("statusIndexPf1", IndexType.FUNCTIONAL, "pf1.status",
+        SEPARATOR + "portfolio1 pf1");
+    qs.createIndex("empIdIndex", IndexType.FUNCTIONAL, "e.empId", SEPARATOR + "employees e");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -209,21 +213,28 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     }
     String queries[] = {
         // Test Case No. IUMR004
-        "SELECT DISTINCT * FROM /portfolio1 pf1, /portfolio2 pf2, pf1.positions.values posit1,"
+        "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR
+            + "portfolio2 pf2, pf1.positions.values posit1,"
             + " pf2.positions.values posit2 WHERE posit1.secId='IBM' AND posit2.secId='IBM'",
         // Test Case No.IUMR023
-        "SELECT DISTINCT * FROM /portfolio1 pf1,/portfolio2 pf2, pf1.positions.values posit1,"
+        "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1," + SEPARATOR
+            + "portfolio2 pf2, pf1.positions.values posit1,"
             + " pf2.positions.values posit2 WHERE posit1.secId='IBM' OR posit2.secId='IBM'",
 
-        "SELECT DISTINCT * FROM /portfolio1 pf1, pf1.collectionHolderMap.values coll1,"
-            + " pf1.positions.values posit1, /portfolio2 pf2, pf2.collectionHolderMap.values coll2, pf2.positions.values posit2 "
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolio1 pf1, pf1.collectionHolderMap.values coll1,"
+            + " pf1.positions.values posit1, " + SEPARATOR
+            + "portfolio2 pf2, pf2.collectionHolderMap.values coll2, pf2.positions.values posit2 "
             + " WHERE posit1.secId='IBM' AND posit2.secId='IBM'",
         // Test Case No. IUMR005
-        "SELECT DISTINCT * FROM /portfolio1 pf1,/portfolio2 pf2, pf1.positions.values posit1, pf2.positions.values posit2,"
+        "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1," + SEPARATOR
+            + "portfolio2 pf2, pf1.positions.values posit1, pf2.positions.values posit2,"
             + " pf1.collectionHolderMap.values coll1,pf2.collectionHolderMap.values coll2 "
             + " WHERE posit1.secId='IBM' OR posit2.secId='IBM'",
         // Test Case No. IUMR006
-        "SELECT DISTINCT coll1 as collHldrMap1 , coll2 as CollHldrMap2 FROM /portfolio1 pf1, /portfolio2 pf2, pf1.positions.values posit1, pf2.positions.values posit2,"
+        "SELECT DISTINCT coll1 as collHldrMap1 , coll2 as CollHldrMap2 FROM " + SEPARATOR
+            + "portfolio1 pf1, " + SEPARATOR
+            + "portfolio2 pf2, pf1.positions.values posit1, pf2.positions.values posit2,"
             + " pf1.collectionHolderMap.values coll1,pf2.collectionHolderMap.values coll2 "
             + " WHERE posit1.secId='IBM' OR posit2.secId='IBM'",};
     // Execute Queries Without Indexes
@@ -233,9 +244,11 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     }
     // Create Indexes and Execute the Queries
     qs.createIndex("secIdIndexPf1", IndexType.FUNCTIONAL, "pos11.secId",
-        "/portfolio1 pf1, pf1.collectionHolderMap.values coll1, pf1.positions.values pos11");
+        SEPARATOR
+            + "portfolio1 pf1, pf1.collectionHolderMap.values coll1, pf1.positions.values pos11");
     qs.createIndex("secIdIndexPf2", IndexType.FUNCTIONAL, "pos22.secId",
-        "/portfolio2 pf2, pf2.collectionHolderMap.values coll2, pf2.positions.values pos22");
+        SEPARATOR
+            + "portfolio2 pf2, pf2.collectionHolderMap.values coll2, pf2.positions.values pos22");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -289,7 +302,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     String queries[] = {
         // Test case No. IUMR024
         // Both the Indexes Must get used. Presently only one Index is being used.
-        "SELECT DISTINCT * FROM /portfolio1 pf1, pf1.positions.values posit1, /portfolio2 pf2, pf2.positions.values posit2 WHERE pf2.status='active' AND posit1.secId='IBM'"};
+        "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, pf1.positions.values posit1, "
+            + SEPARATOR
+            + "portfolio2 pf2, pf2.positions.values posit2 WHERE pf2.status='active' AND posit1.secId='IBM'"};
     // Execute Queries without Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -298,8 +313,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
     // Create Indexes
     qs.createIndex("secIdIndexPf1", IndexType.FUNCTIONAL, "pos11.secId",
-        "/portfolio1 pf1, pf1.positions.values pos11");
-    qs.createIndex("statusIndexPf2", IndexType.FUNCTIONAL, "pf2.status", "/portfolio2 pf2");
+        SEPARATOR + "portfolio1 pf1, pf1.positions.values pos11");
+    qs.createIndex("statusIndexPf2", IndexType.FUNCTIONAL, "pf2.status",
+        SEPARATOR + "portfolio2 pf2");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -362,7 +378,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     String queries[] = {
         // Test case IUMR025
         // Three of the indexes must get used.. Presently only one Index is being used.
-        "SELECT DISTINCT * FROM /portfolio1 pf1, /portfolio2 pf2, /employees e1 WHERE pf1.status = 'active' AND pf2.status = 'active' AND e1.empId < 10"};
+        "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR + "portfolio2 pf2, "
+            + SEPARATOR
+            + "employees e1 WHERE pf1.status = 'active' AND pf2.status = 'active' AND e1.empId < 10"};
     // Execute Queries without Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -371,9 +389,11 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
       r[i][0] = q.execute();
     }
     // Create Indexes and Execute the Queries
-    qs.createIndex("statusIndexPf1", IndexType.FUNCTIONAL, "pf1.status", "/portfolio1 pf1");
-    qs.createIndex("statusIndexPf2", IndexType.FUNCTIONAL, "pf2.status", "/portfolio2 pf2");
-    qs.createIndex("empIdIndex", IndexType.FUNCTIONAL, "empId", "/employees");
+    qs.createIndex("statusIndexPf1", IndexType.FUNCTIONAL, "pf1.status",
+        SEPARATOR + "portfolio1 pf1");
+    qs.createIndex("statusIndexPf2", IndexType.FUNCTIONAL, "pf2.status",
+        SEPARATOR + "portfolio2 pf2");
+    qs.createIndex("empIdIndex", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employees");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -429,10 +449,13 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     }
     String queries[] = {
         // Both the Indexes Must get used. Presently only one Index is being used.
-        " SELECT DISTINCT * FROM /portfolio1 pf1, /portfolio2 pf2, pf1.positions.values posit1,"
+        " SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR
+            + "portfolio2 pf2, pf1.positions.values posit1,"
             + " pf2.positions.values posit2 WHERE posit1.secId='IBM' AND posit2.secId='IBM' ",
-        " SELECT DISTINCT * FROM /portfolio1 pf1, pf1.collectionHolderMap.values coll1,"
-            + " pf1.positions.values posit1, /portfolio2 pf2, pf2.collectionHolderMap.values coll2, pf2.positions.values posit2 "
+        " SELECT DISTINCT * FROM " + SEPARATOR
+            + "portfolio1 pf1, pf1.collectionHolderMap.values coll1,"
+            + " pf1.positions.values posit1, " + SEPARATOR
+            + "portfolio2 pf2, pf2.collectionHolderMap.values coll2, pf2.positions.values posit2 "
             + " WHERE posit1.secId='IBM' AND posit2.secId='IBM'",};
     // Execute Queries Without Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -441,9 +464,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     }
     // Create Indexes and Execute the Queries
     qs.createIndex("secIdIndexPf1", IndexType.FUNCTIONAL, "pos11.secId",
-        "/portfolio1 pf1, pf1.positions.values pos11");
+        SEPARATOR + "portfolio1 pf1, pf1.positions.values pos11");
     qs.createIndex("secIdIndexPf2", IndexType.FUNCTIONAL, "pos22.secId",
-        "/portfolio2 pf2, pf2.positions.values pos22");
+        SEPARATOR + "portfolio2 pf2, pf2.positions.values pos22");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -496,7 +519,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     }
     String queries[] = {
         // Task IUMR007
-        "SELECT DISTINCT coll1 as collHldrMap1 , coll2 as CollHldrMap2 FROM /portfolio1 pf1, /portfolio2 pf2, pf1.positions.values posit1,pf2.positions.values posit2,"
+        "SELECT DISTINCT coll1 as collHldrMap1 , coll2 as CollHldrMap2 FROM " + SEPARATOR
+            + "portfolio1 pf1, " + SEPARATOR
+            + "portfolio2 pf2, pf1.positions.values posit1,pf2.positions.values posit2,"
             + "pf1.collectionHolderMap.values coll1, pf2.collectionHolderMap.values coll2 "
             + "WHERE posit1.secId='IBM' OR posit2.secId='IBM'",};
     // Execute Queries Without Indexes
@@ -506,9 +531,10 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     }
     // Create Indexes and Execute the Queries
     qs.createIndex("secIdIndexPf1", IndexType.FUNCTIONAL, "pos11.secId",
-        "/portfolio1 pf1, pf1.positions.values pos11");
+        SEPARATOR + "portfolio1 pf1, pf1.positions.values pos11");
     qs.createIndex("secIdIndexPf2", IndexType.FUNCTIONAL, "pos22.secId",
-        "/portfolio2 pf2, pf2.collectionHolderMap.values coll2, pf2.positions.values pos22");
+        SEPARATOR
+            + "portfolio2 pf2, pf2.collectionHolderMap.values coll2, pf2.positions.values pos22");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -569,16 +595,17 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
       r3.put(i + "", new Employee("empName", (20 + i), i, "Mr.", (5000 + i), add1));
     }
     String queries[] = {
-        "SELECT DISTINCT * FROM /portfolio1 pf1, pf1.positions.values posit1, /portfolio2 pf2, /employees e WHERE posit1.secId='IBM'"};
+        "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, pf1.positions.values posit1, "
+            + SEPARATOR + "portfolio2 pf2, " + SEPARATOR + "employees e WHERE posit1.secId='IBM'"};
     // Execute Queries without Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       r[i][0] = q.execute();
     }
     // Create Indexes
-    qs.createIndex("statusIndexPf1", IndexType.FUNCTIONAL, "status", "/portfolio1");
+    qs.createIndex("statusIndexPf1", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio1");
     qs.createIndex("secIdIndexPf1", IndexType.FUNCTIONAL, "posit1.secId",
-        "/portfolio1 pf1, pf1.positions.values posit1");
+        SEPARATOR + "portfolio1 pf1, pf1.positions.values posit1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -622,10 +649,13 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
       String queriesWithResCount[][] = {
           // Test case No. IUMR021
-          {"SELECT DISTINCT * FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId",
+          {"SELECT DISTINCT * FROM " + SEPARATOR + "portfolio pf, " + SEPARATOR
+              + "employee emp WHERE pf.ID = emp.empId",
               1000 + ""},
-          {"SELECT * FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId", "" + 1000},
-          {"SELECT pf.status, emp.empId, pf.getType() FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId",
+          {"SELECT * FROM " + SEPARATOR + "portfolio pf, " + SEPARATOR
+              + "employee emp WHERE pf.ID = emp.empId", "" + 1000},
+          {"SELECT pf.status, emp.empId, pf.getType() FROM " + SEPARATOR + "portfolio pf, "
+              + SEPARATOR + "employee emp WHERE pf.ID = emp.empId",
               "" + 1000},
           /*
            * Following query returns more (999001) than expected (1000) results as pf.ID > 0
@@ -636,11 +666,16 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
            * For expected results correct parenthesis must be used as in next query.
            *
            */
-          {"SELECT pf.status, emp.empId, pf.getType() FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId AND pf.status='active' OR pf.ID > 0",
+          {"SELECT pf.status, emp.empId, pf.getType() FROM " + SEPARATOR + "portfolio pf, "
+              + SEPARATOR
+              + "employee emp WHERE pf.ID = emp.empId AND pf.status='active' OR pf.ID > 0",
               "" + 999001},
-          {"SELECT * FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId AND (pf.status='active' OR pf.ID > 499)",
+          {"SELECT * FROM " + SEPARATOR + "portfolio pf, " + SEPARATOR
+              + "employee emp WHERE pf.ID = emp.empId AND (pf.status='active' OR pf.ID > 499)",
               "" + 750},
-          {"SELECT pf.status, emp.empId, pf.getType() FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId AND (pf.status='active' OR pf.ID > 499)",
+          {"SELECT pf.status, emp.empId, pf.getType() FROM " + SEPARATOR + "portfolio pf, "
+              + SEPARATOR
+              + "employee emp WHERE pf.ID = emp.empId AND (pf.status='active' OR pf.ID > 499)",
               "" + 750},};
 
       String queries[] = new String[queriesWithResCount.length];
@@ -655,9 +690,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
         assertEquals(Integer.parseInt(queriesWithResCount[i][1]), ((SelectResults) r[i][0]).size());
       }
       // Create Indexes
-      qs.createIndex("idIndexPf", IndexType.FUNCTIONAL, "ID", "/portfolio");
-      qs.createIndex("statusIndexPf", IndexType.FUNCTIONAL, "status", "/portfolio");
-      qs.createIndex("empIdIndexPf2", IndexType.FUNCTIONAL, "empId", "/employee");
+      qs.createIndex("idIndexPf", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
+      qs.createIndex("statusIndexPf", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio");
+      qs.createIndex("empIdIndexPf2", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employee");
 
       // Execute Queries with Indexes
       for (int i = 0; i < queries.length; i++) {
@@ -716,7 +751,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
       String queries[] = {
           // Test case No. IUMR021
-          "SELECT DISTINCT * FROM /portfolio pf, pf.positions pos, /employee emp WHERE pf.iD = emp.empId",};
+          "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio pf, pf.positions pos, " + SEPARATOR
+              + "employee emp WHERE pf.iD = emp.empId",};
       // Execute Queries without Indexes
       for (int i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -724,8 +760,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
       }
       // Create Indexes
       qs.createIndex("idIndexPf", IndexType.FUNCTIONAL, "iD",
-          "/portfolio pf , pf.collectionHolderMap");
-      qs.createIndex("empIdIndexPf2", IndexType.FUNCTIONAL, "empId", "/employee");
+          SEPARATOR + "portfolio pf , pf.collectionHolderMap");
+      qs.createIndex("empIdIndexPf2", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employee");
 
       // Execute Queries with Indexes
       for (int i = 0; i < queries.length; i++) {
@@ -778,7 +814,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
       String queries[] = {
           // Test case No. IUMR021
-          "SELECT DISTINCT * FROM /portfolio pf, pf.positions pos, /employee emp WHERE pf.iD = emp.empId and pf.status='active' and emp.age > 900",};
+          "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio pf, pf.positions pos, " + SEPARATOR
+              + "employee emp WHERE pf.iD = emp.empId and pf.status='active' and emp.age > 900",};
       // Execute Queries without Indexes
       for (int i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -786,9 +823,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
       }
       // Create Indexes
       qs.createIndex("idIndexPf", IndexType.FUNCTIONAL, "iD",
-          "/portfolio pf , pf.collectionHolderMap");
-      qs.createIndex("empIdIndexPf2", IndexType.FUNCTIONAL, "empId", "/employee");
-      qs.createIndex("ageIndexemp", IndexType.FUNCTIONAL, "age", "/employee emp ");
+          SEPARATOR + "portfolio pf , pf.collectionHolderMap");
+      qs.createIndex("empIdIndexPf2", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employee");
+      qs.createIndex("ageIndexemp", IndexType.FUNCTIONAL, "age", SEPARATOR + "employee emp ");
       // Execute Queries with Indexes
       for (int i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -833,70 +870,72 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
       QueryService qs = CacheUtils.getQueryService();
       ////////// creating indexes on region Quotes1
       qs.createIndex("Quotes1Region-quoteIdStrIndex", IndexType.PRIMARY_KEY, "q.quoteIdStr",
-          "/Quotes1 q");
+          SEPARATOR + "Quotes1 q");
 
       qs.createIndex("Quotes1Region-quoteTypeIndex", IndexType.FUNCTIONAL, "q.quoteType",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Region-dealerPortfolioIndex", IndexType.FUNCTIONAL,
-          "q.dealerPortfolio", "/Quotes1 q, q.restrict r");
+          "q.dealerPortfolio", SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Region-channelNameIndex", IndexType.FUNCTIONAL, "q.channelName",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Region-priceTypeIndex", IndexType.FUNCTIONAL, "q.priceType",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Region-lowerQtyIndex", IndexType.FUNCTIONAL, "q.lowerQty",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
       qs.createIndex("Quotes1Region-upperQtyIndex", IndexType.FUNCTIONAL, "q.upperQty",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
       qs.createIndex("Quotes1Restricted-quoteTypeIndex", IndexType.FUNCTIONAL, "r.quoteType",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       qs.createIndex("Quotes1Restricted-minQtyIndex", IndexType.FUNCTIONAL, "r.minQty",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
       qs.createIndex("Quotes1Restricted-maxQtyIndex", IndexType.FUNCTIONAL, "r.maxQty",
-          "/Quotes1 q, q.restrict r");
+          SEPARATOR + "Quotes1 q, q.restrict r");
 
       ////////// creating indexes on region Quotes2
       qs.createIndex("Quotes2Region-quoteIdStrIndex", IndexType.PRIMARY_KEY, "q.quoteIdStr",
-          "/Quotes2 q");
+          SEPARATOR + "Quotes2 q");
 
       qs.createIndex("Quotes2Region-quoteTypeIndex", IndexType.FUNCTIONAL, "q.quoteType",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Region-dealerPortfolioIndex", IndexType.FUNCTIONAL,
-          "q.dealerPortfolio", "/Quotes2 q, q.restrict r");
+          "q.dealerPortfolio", SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Region-channelNameIndex", IndexType.FUNCTIONAL, "q.channelName",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Region-priceTypeIndex", IndexType.FUNCTIONAL, "q.priceType",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Region-lowerQtyIndex", IndexType.FUNCTIONAL, "q.lowerQty",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
       qs.createIndex("Quotes2Region-upperQtyIndex", IndexType.FUNCTIONAL, "q.upperQty",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
       qs.createIndex("Quotes2Restricted-quoteTypeIndex", IndexType.FUNCTIONAL, "r.quoteType",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       qs.createIndex("Quotes2Restricted-minQtyIndex", IndexType.FUNCTIONAL, "r.minQty",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
       qs.createIndex("Quotes2Restricted-maxQtyIndex", IndexType.FUNCTIONAL, "r.maxQty",
-          "/Quotes2 q, q.restrict r");
+          SEPARATOR + "Quotes2 q, q.restrict r");
 
       ////////// creating indexes on region Restricted1
 
       qs.createIndex("RestrictedRegion-quoteTypeIndex", IndexType.FUNCTIONAL, "r.quoteType",
-          "/Restricted1 r");
+          SEPARATOR + "Restricted1 r");
       qs.createIndex("RestrictedRegion-minQtyIndex", IndexType.FUNCTIONAL, "r.minQty",
-          "/Restricted1 r");
+          SEPARATOR + "Restricted1 r");
       qs.createIndex("RestrictedRegion-maxQtyIndex-1", IndexType.FUNCTIONAL, "r.maxQty",
-          "/Restricted1 r");
+          SEPARATOR + "Restricted1 r");
       Query q = qs.newQuery(
-          "SELECT DISTINCT  q.cusip, q.quoteType, q.dealerPortfolio, q.channelName, q.dealerCode, q.priceType, q.price, q.lowerQty, q.upperQty, q.ytm, r.minQty, r.maxQty, r.incQty FROM /Quotes1 q, /Restricted1 r WHERE q.cusip = r.cusip AND q.quoteType = r.quoteType");
+          "SELECT DISTINCT  q.cusip, q.quoteType, q.dealerPortfolio, q.channelName, q.dealerCode, q.priceType, q.price, q.lowerQty, q.upperQty, q.ytm, r.minQty, r.maxQty, r.incQty FROM "
+              + SEPARATOR + "Quotes1 q, " + SEPARATOR
+              + "Restricted1 r WHERE q.cusip = r.cusip AND q.quoteType = r.quoteType");
       q.execute();
     } finally {
       IndexManager.TEST_RANGEINDEX_ONLY = false;
@@ -932,7 +971,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
       String queries[] = {
           // Test case No. IUMR021
-          "SELECT DISTINCT * FROM /portfolio pf, pf.positions pos, /portfolio3 pf3, /employee emp WHERE pf.iD = emp.empId and pf.status='active' and emp.age > 50 and pf3.status='active'",};
+          "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio pf, pf.positions pos, " + SEPARATOR
+              + "portfolio3 pf3, " + SEPARATOR
+              + "employee emp WHERE pf.iD = emp.empId and pf.status='active' and emp.age > 50 and pf3.status='active'",};
       // Execute Queries without Indexes
       for (int i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -940,10 +981,11 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
       }
       // Create Indexes
       qs.createIndex("idIndexPf", IndexType.FUNCTIONAL, "iD",
-          "/portfolio pf , pf.collectionHolderMap");
-      qs.createIndex("empIdIndexPf2", IndexType.FUNCTIONAL, "empId", "/employee");
-      qs.createIndex("statusIndexPf3", IndexType.FUNCTIONAL, "status", "/portfolio3 pf3 ");
-      qs.createIndex("ageIndexemp", IndexType.FUNCTIONAL, "age", "/employee emp ");
+          SEPARATOR + "portfolio pf , pf.collectionHolderMap");
+      qs.createIndex("empIdIndexPf2", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employee");
+      qs.createIndex("statusIndexPf3", IndexType.FUNCTIONAL, "status",
+          SEPARATOR + "portfolio3 pf3 ");
+      qs.createIndex("ageIndexemp", IndexType.FUNCTIONAL, "age", SEPARATOR + "employee emp ");
       // Execute Queries with Indexes
       for (int i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);

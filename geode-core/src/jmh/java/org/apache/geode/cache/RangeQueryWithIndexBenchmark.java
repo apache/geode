@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.util.stream.IntStream;
@@ -51,10 +52,12 @@ public class RangeQueryWithIndexBenchmark {
       region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
       try {
         AbstractIndex index =
-            (AbstractIndex) cache.getQueryService().createIndex("Status", "id", "/region");
+            (AbstractIndex) cache.getQueryService().createIndex("Status", "id",
+                SEPARATOR + "region");
 
         IntStream.range(0, 10000).forEach(i -> region.put(i, new Value(i)));
-        query = cache.getQueryService().newQuery("select * from /region where id > 0");
+        query =
+            cache.getQueryService().newQuery("select * from " + SEPARATOR + "region where id > 0");
 
         // Do the query once to make sure it's actually returning results
         // And using the index

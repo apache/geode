@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.Assert.fail;
@@ -86,7 +87,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   private static final String LAST_KEY = "LAST_KEY";
   private static final String REGION_NAME = "PRDeltaPropagationDUnitTest_Region";
   private static final String CQ =
-      "SELECT * FROM " + Region.SEPARATOR + REGION_NAME + " p where p.intVar < 9";
+      "SELECT * FROM " + SEPARATOR + REGION_NAME + " p where p.intVar < 9";
 
   private static Cache cache = null;
   private static Region deltaPR = null;

@@ -64,47 +64,49 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
     }
 
     // Simple Queries
-    queries.put("SELECT MAX(ID) FROM /" + firstRegionName,
+    queries.put("SELECT MAX(ID) FROM " + SEPARATOR + firstRegionName,
         supplierOne.get().mapToInt(Portfolio::getID).max().orElse(-1));
-    queries.put("SELECT MAX(ID) FROM /" + firstRegionName + " WHERE ID > 0",
+    queries.put("SELECT MAX(ID) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0",
         supplierOne.get().filter(p -> p.getID() > 0).mapToInt(Portfolio::getID).max().orElse(-1));
-    queries.put("SELECT MAX(ID) FROM /" + firstRegionName + " WHERE ID > 0 LIMIT 50",
+    queries.put("SELECT MAX(ID) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0 LIMIT 50",
         supplierOne.get().filter(p -> p.getID() > 0).mapToInt(Portfolio::getID).max().orElse(-1));
-    queries.put("SELECT MAX(p.getType()) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.getType()) FROM " + SEPARATOR + firstRegionName
         + " p WHERE p.ID > 0 OR p.status='active'",
         supplierOne.get().filter(p -> p.getID() > 0 || p.isActive())
             .max(Comparator.comparing(Portfolio::getType)).map(Portfolio::getType).orElse(""));
-    queries.put("SELECT MAX(p.getType()) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.getType()) FROM " + SEPARATOR + firstRegionName
         + " p WHERE p.ID > 0 OR p.status LIKE 'ina%'",
         supplierOne.get().filter(p -> p.getID() > 0 || p.status.startsWith("ina"))
             .max(Comparator.comparing(Portfolio::getType)).map(Portfolio::getType).orElse(""));
     queries.put(
-        "SELECT MAX(p.shortID) FROM /" + firstRegionName + " p WHERE p.ID IN SET(1, 2, 3, 4, 5)",
+        "SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
+            + " p WHERE p.ID IN SET(1, 2, 3, 4, 5)",
         supplierOne.get().filter(p -> Arrays.asList(1, 2, 3, 4, 5).contains(p.getID()))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName + " p WHERE NOT (p.ID > 5)",
+    queries.put(
+        "SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName + " p WHERE NOT (p.ID > 5)",
         supplierOne.get().filter(p -> p.getID() <= 5).max(Comparator.comparing(p -> p.shortID))
             .map(p -> p.shortID).orElse((short) -1));
 
     // StructSet queries.
-    queries.put("SELECT MAX(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .mapToInt(Portfolio::getID).max().orElse(-1));
-    queries.put("SELECT MAX(p.getType()) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.getType()) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM' LIMIT 5",
         supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .max(Comparator.comparing(Portfolio::getType)).map(Portfolio::getType).orElse(""));
-    queries.put("SELECT MAX(p.status) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.status) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .max(Comparator.comparing(p -> p.status)).map(p -> p.status).orElse(""));
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
         supplierOne.get()
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 OR p.status IN SET ('active', 'inactive') OR pos.secId = 'IBM' LIMIT 50",
         supplierOne.get()
             .filter(p -> p.getID() > 0 || p.isActive() || !p.isActive()
@@ -112,36 +114,40 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
 
     // Aggregate used as as WHERE condition within inner query.
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
-        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         supplierOne.get()
             .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).min().orElse(-1))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
-        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         supplierOne.get()
             .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).max().orElse(-1))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
 
     // Equi Join Queries
-    equiJoinQueries.put("SELECT MAX(p.shortID) from /" + firstRegionName + " p, /"
-        + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0",
-        supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
-            .filter(p -> p.getID() > 0).max(Comparator.comparing(p -> p.shortID))
-            .map(p -> p.shortID).orElse((short) -1));
-    equiJoinQueries.put("SELECT MAX(p.shortID) from /" + firstRegionName + " p, /"
-        + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
-        supplierOne.get()
-            .filter(p -> supplierTwo.get().filter(e -> e.getID() > 40)
-                .collect(Collectors.toMap(Portfolio::getID, Function.identity()))
-                .containsKey(p.getID()))
-            .filter(p -> p.getID() > 20).max(Comparator.comparing(p -> p.shortID))
-            .map(p -> p.shortID).orElse((short) -1));
-    equiJoinQueries.put("SELECT MAX(p.shortID) from /" + firstRegionName + " p, /"
-        + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
-        supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
-            .filter(p -> p.getID() > 0 && p.isActive()).max(Comparator.comparing(p -> p.shortID))
-            .map(p -> p.shortID).orElse((short) -1));
+    equiJoinQueries
+        .put("SELECT MAX(p.shortID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+            + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0",
+            supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
+                .filter(p -> p.getID() > 0).max(Comparator.comparing(p -> p.shortID))
+                .map(p -> p.shortID).orElse((short) -1));
+    equiJoinQueries
+        .put("SELECT MAX(p.shortID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+            + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
+            supplierOne.get()
+                .filter(p -> supplierTwo.get().filter(e -> e.getID() > 40)
+                    .collect(Collectors.toMap(Portfolio::getID, Function.identity()))
+                    .containsKey(p.getID()))
+                .filter(p -> p.getID() > 20).max(Comparator.comparing(p -> p.shortID))
+                .map(p -> p.shortID).orElse((short) -1));
+    equiJoinQueries
+        .put("SELECT MAX(p.shortID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+            + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
+            supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
+                .filter(p -> p.getID() > 0 && p.isActive())
+                .max(Comparator.comparing(p -> p.shortID))
+                .map(p -> p.shortID).orElse((short) -1));
   }
 
   public void prepareStructuresWithPdx() {
@@ -163,52 +169,54 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
     }
 
     // Simple Queries
-    queries.put("SELECT MAX(ID) FROM /" + firstRegionName,
+    queries.put("SELECT MAX(ID) FROM " + SEPARATOR + firstRegionName,
         supplierOne.get().mapToInt(PortfolioPdx::getID).max().orElse(-1));
-    queries.put("SELECT MAX(ID) FROM /" + firstRegionName + " WHERE ID > 0",
+    queries.put("SELECT MAX(ID) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0",
         supplierOne.get().filter(p -> p.getID() > 0).mapToInt(PortfolioPdx::getID).max()
             .orElse(-1));
-    queries.put("SELECT MAX(ID) FROM /" + firstRegionName + " WHERE ID > 0 LIMIT 50",
+    queries.put("SELECT MAX(ID) FROM " + SEPARATOR + firstRegionName + " WHERE ID > 0 LIMIT 50",
         supplierOne.get().filter(p -> p.getID() > 0).mapToInt(PortfolioPdx::getID).max()
             .orElse(-1));
-    queries.put("SELECT MAX(p.getType()) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.getType()) FROM " + SEPARATOR + firstRegionName
         + " p WHERE p.ID > 0 OR p.status='active'",
         supplierOne.get().filter(p -> p.getID() > 0 || p.isActive())
             .max(Comparator.comparing(PortfolioPdx::getType)).map(PortfolioPdx::getType)
             .orElse(""));
-    queries.put("SELECT MAX(p.getType()) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.getType()) FROM " + SEPARATOR + firstRegionName
         + " p WHERE p.ID > 0 OR p.status LIKE 'ina%'",
         supplierOne.get().filter(p -> p.getID() > 0 || p.status.startsWith("ina"))
             .max(Comparator.comparing(PortfolioPdx::getType)).map(PortfolioPdx::getType)
             .orElse(""));
     queries.put(
-        "SELECT MAX(p.shortID) FROM /" + firstRegionName + " p WHERE p.ID IN SET(1, 2, 3, 4, 5)",
+        "SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
+            + " p WHERE p.ID IN SET(1, 2, 3, 4, 5)",
         supplierOne.get().filter(p -> Arrays.asList(1, 2, 3, 4, 5).contains(p.getID()))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName + " p WHERE NOT (p.ID > 5)",
+    queries.put(
+        "SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName + " p WHERE NOT (p.ID > 5)",
         supplierOne.get().filter(p -> p.getID() <= 5).max(Comparator.comparing(p -> p.shortID))
             .map(p -> p.shortID).orElse((short) -1));
 
     // StructSet queries.
-    queries.put("SELECT MAX(p.ID) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.ID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .mapToInt(PortfolioPdx::getID).max().orElse(-1));
-    queries.put("SELECT MAX(p.getType()) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.getType()) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM' LIMIT 5",
         supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .max(Comparator.comparing(PortfolioPdx::getType)).map(PortfolioPdx::getType)
             .orElse(""));
-    queries.put("SELECT MAX(p.status) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.status) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND pos.secId = 'IBM'",
         supplierOne.get().filter(p -> p.getID() > 0 && p.getPositions().containsKey("IBM"))
             .max(Comparator.comparing(p -> p.status)).map(p -> p.status).orElse(""));
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
         supplierOne.get()
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
+    queries.put("SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
         + " p, p.positions.values pos WHERE p.ID > 0 OR p.status IN SET ('active', 'inactive') OR pos.secId = 'IBM' LIMIT 50",
         supplierOne.get()
             .filter(p -> p.getID() > 0 || p.isActive() || !p.isActive()
@@ -216,38 +224,42 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
 
     // Aggregate used as as WHERE condition within inner query.
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
-        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         supplierOne.get()
             .filter(
                 p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).min().orElse(-1))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
-    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
-        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+    queries.put("SELECT MAX(p.shortID) FROM " + SEPARATOR + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM " + SEPARATOR + firstRegionName + " o)",
         supplierOne.get()
             .filter(
                 p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).max().orElse(-1))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
 
     // Equi Join Queries
-    equiJoinQueries.put("SELECT MAX(p.shortID) from /" + firstRegionName + " p, /"
-        + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0",
-        supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
-            .filter(p -> p.getID() > 0).max(Comparator.comparing(p -> p.shortID))
-            .map(p -> p.shortID).orElse((short) -1));
-    equiJoinQueries.put("SELECT MAX(p.shortID) from /" + firstRegionName + " p, /"
-        + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
-        supplierOne.get()
-            .filter(p -> supplierTwo.get().filter(e -> e.getID() > 40)
-                .collect(Collectors.toMap(PortfolioPdx::getID, Function.identity()))
-                .containsKey(p.getID()))
-            .filter(p -> p.getID() > 20).max(Comparator.comparing(p -> p.shortID))
-            .map(p -> p.shortID).orElse((short) -1));
-    equiJoinQueries.put("SELECT MAX(p.shortID) from /" + firstRegionName + " p, /"
-        + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
-        supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
-            .filter(p -> p.getID() > 0 && p.isActive()).max(Comparator.comparing(p -> p.shortID))
-            .map(p -> p.shortID).orElse((short) -1));
+    equiJoinQueries
+        .put("SELECT MAX(p.shortID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+            + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0",
+            supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
+                .filter(p -> p.getID() > 0).max(Comparator.comparing(p -> p.shortID))
+                .map(p -> p.shortID).orElse((short) -1));
+    equiJoinQueries
+        .put("SELECT MAX(p.shortID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+            + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 20 AND e.ID > 40",
+            supplierOne.get()
+                .filter(p -> supplierTwo.get().filter(e -> e.getID() > 40)
+                    .collect(Collectors.toMap(PortfolioPdx::getID, Function.identity()))
+                    .containsKey(p.getID()))
+                .filter(p -> p.getID() > 20).max(Comparator.comparing(p -> p.shortID))
+                .map(p -> p.shortID).orElse((short) -1));
+    equiJoinQueries
+        .put("SELECT MAX(p.shortID) from " + SEPARATOR + firstRegionName + " p, " + SEPARATOR
+            + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0 AND p.status = 'active'",
+            supplierOne.get().filter(p -> regionTwoLocalCopy.containsKey(p.getID()))
+                .filter(p -> p.getID() > 0 && p.isActive())
+                .max(Comparator.comparing(p -> p.shortID))
+                .map(p -> p.shortID).orElse((short) -1));
   }
 
   public void parameterizedSetUp(boolean usePdx) {

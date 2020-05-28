@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -120,7 +121,7 @@ public class LuceneListIndexFunctionJUnitTest {
     fieldAnalyzers.put("field1", new StandardAnalyzer());
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     when(index.getName()).thenReturn(indexName);
-    when(index.getRegionPath()).thenReturn("/region");
+    when(index.getRegionPath()).thenReturn(SEPARATOR + "region");
     when(index.getFieldNames()).thenReturn(searchableFields);
     when(index.getFieldAnalyzers()).thenReturn(fieldAnalyzers);
     return index;

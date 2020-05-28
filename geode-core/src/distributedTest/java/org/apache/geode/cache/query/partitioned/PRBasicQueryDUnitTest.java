@@ -383,7 +383,8 @@ public class PRBasicQueryDUnitTest extends CacheTestCase {
       qs.createIndex("index", IndexType.FUNCTIONAL, "ID", SEPARATOR + name);
       for (int i = 0; i < 100; i++) {
         Query query = qs.newQuery(
-            "SELECT DISTINCT * FROM /" + name + " WHERE ID >= " + i + " ORDER BY ID asc LIMIT 1");
+            "SELECT DISTINCT * FROM " + SEPARATOR + name + " WHERE ID >= " + i
+                + " ORDER BY ID asc LIMIT 1");
         SelectResults results = (SelectResults) query.execute();
         int expectedValue = i;
         for (Object o : results) {

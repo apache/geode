@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
@@ -84,7 +85,7 @@ public class CustomSSLProviderDistributedTest {
 
     // create region
     server.invoke(CustomSSLProviderDistributedTest::createServerRegion);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region", 1);
   }
 
   private static void createServerRegion() {

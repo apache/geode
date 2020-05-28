@@ -19,6 +19,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.InitialImageOperation.slowImageSleeps;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +56,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
   static volatile Region region;
 
   public static boolean checkImageStateFlag() throws Exception {
-    Region rgn = new MapClearGIIDUnitTest().getCache().getRegion("/map");
+    Region rgn = new MapClearGIIDUnitTest().getCache().getRegion(SEPARATOR + "map");
     if (rgn == null) {
       fail("Map region not yet created");
     }

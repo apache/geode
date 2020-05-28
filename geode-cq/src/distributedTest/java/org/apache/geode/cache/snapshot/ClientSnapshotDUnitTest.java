@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.snapshot;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -145,7 +146,8 @@ public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
 
         Region<Integer, MyObject> r = getCache().getRegion("clienttest");
         CqQuery cq =
-            r.getRegionService().getQueryService().newCq("SELECT * FROM /clienttest", af.create());
+            r.getRegionService().getQueryService()
+                .newCq("SELECT * FROM " + SEPARATOR + "clienttest", af.create());
         cq.execute();
 
         File f = new File(getDiskDirs()[0], "client-import.snapshot.gfd");
@@ -224,7 +226,8 @@ public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
         });
 
         CqQuery cq =
-            r.getRegionService().getQueryService().newCq("SELECT * FROM /clienttest", af.create());
+            r.getRegionService().getQueryService()
+                .newCq("SELECT * FROM " + SEPARATOR + "clienttest", af.create());
         cq.execute();
 
         return null;

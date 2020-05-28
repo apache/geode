@@ -1189,7 +1189,8 @@ public class CacheCreation implements InternalCache {
   @Override
   public Region getRegion(String path) {
     if (path.contains(SEPARATOR)) {
-      throw new UnsupportedOperationException("Region path '" + path + "' contains '/'");
+      throw new UnsupportedOperationException(
+          "Region path '" + path + "' contains '" + SEPARATOR + "'");
     }
     return roots.get(path);
   }

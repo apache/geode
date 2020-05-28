@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.lucene.internal.repository;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
@@ -174,7 +175,7 @@ public class IndexRepositoryImplPerformanceTest {
       public void init() throws Exception {
         cache = new CacheFactory().set(MCAST_PORT, "0").set(LOG_LEVEL, "warning").create();
         service = LuceneServiceProvider.get(cache);
-        service.createIndexFactory().addField("test").create("index", "/region");
+        service.createIndexFactory().addField("test").create("index", SEPARATOR + "region");
         region =
             cache.<String, TestObject>createRegionFactory(RegionShortcut.PARTITION)
                 .setPartitionAttributes(
@@ -190,7 +191,8 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public void waitForAsync() throws Exception {
         AsyncEventQueue aeq =
-            cache.getAsyncEventQueue(LuceneServiceImpl.getUniqueIndexName("index", "/region"));
+            cache.getAsyncEventQueue(
+                LuceneServiceImpl.getUniqueIndexName("index", SEPARATOR + "region"));
 
         // We will be at most 10 ms off
         while (aeq.size() > 0) {
@@ -201,7 +203,7 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public int query(final Query query) throws Exception {
         LuceneQuery<Object, Object> luceneQuery = service.createLuceneQueryFactory().create("index",
-            "/region", new LuceneQueryProvider() {
+            SEPARATOR + "region", new LuceneQueryProvider() {
 
               @Override
               public Query getQuery(LuceneIndex index) throws LuceneQueryException {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -34,7 +35,7 @@ public class ColocatedPRJUnitTest {
     List<PartitionedRegion> colocatedList = parent.getColocatedByList();
     assertEquals(0, colocatedList.size());
     PartitionAttributes PRatts =
-        new PartitionAttributesFactory().setColocatedWith("/PARENT").create();
+        new PartitionAttributesFactory().setColocatedWith(SEPARATOR + "PARENT").create();
     PartitionedRegion child =
         (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("CHILD", PRatts);
     assertTrue(colocatedList.contains(child));

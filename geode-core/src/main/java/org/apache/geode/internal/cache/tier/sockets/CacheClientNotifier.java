@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 
@@ -56,7 +57,6 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestRegistrationEvent;
 import org.apache.geode.cache.InterestRegistrationListener;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -2039,7 +2039,7 @@ public class CacheClientNotifier {
     // lazily initialize haContainer in case this CCN instance was created by a gateway receiver
     if (overflowAttributes != null
         && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributes.getEvictionPolicy())) {
-      haContainer = new HAContainerRegion(cache.getRegion(Region.SEPARATOR
+      haContainer = new HAContainerRegion(cache.getRegion(SEPARATOR
           + CacheServerImpl.clientMessagesRegion(
               cache,
               overflowAttributes.getEvictionPolicy(),

@@ -637,7 +637,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
 
   public static void closeRegion(String regionName) {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
     assertNotNull(r);
     r.close();
   }

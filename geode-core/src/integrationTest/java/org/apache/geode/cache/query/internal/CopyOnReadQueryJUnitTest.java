@@ -43,10 +43,12 @@ public class CopyOnReadQueryJUnitTest {
   private static final String indexName = "testIndex";
 
   private QueryTestUtils utils;
-  private String[] queries = {"select * from /" + regionName + " p where p.indexKey = 1",
-      "select distinct * from /" + regionName + " p where p.indexKey = 1 order by p.indexKey",
-      "select * from /" + regionName + " p, p.positions.values pv where pv.secId = '1'",
-      "select * from /" + regionName + " p where p in (select * from /" + regionName
+  private String[] queries = {"select * from " + SEPARATOR + regionName + " p where p.indexKey = 1",
+      "select distinct * from " + SEPARATOR + regionName
+          + " p where p.indexKey = 1 order by p.indexKey",
+      "select * from " + SEPARATOR + regionName + " p, p.positions.values pv where pv.secId = '1'",
+      "select * from " + SEPARATOR + regionName + " p where p in (select * from " + SEPARATOR
+          + regionName
           + " pi where pi.indexKey = 1)"};
 
   private int[] expectedResults = {1, 1, 1, 1};

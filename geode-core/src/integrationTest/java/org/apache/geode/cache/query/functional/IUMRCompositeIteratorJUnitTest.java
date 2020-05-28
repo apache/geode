@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -100,7 +101,8 @@ public class IUMRCompositeIteratorJUnitTest {
     qs = CacheUtils.getQueryService();
     String queries[] = {
         // Test Case No. IUMR
-        "Select distinct * from /employees e, /address a, e.getPhoneNo(a.zipCode) ea where e.name ='empName'",
+        "Select distinct * from " + SEPARATOR + "employees e, " + SEPARATOR
+            + "address a, e.getPhoneNo(a.zipCode) ea where e.name ='empName'",
         // "Select distinct * from /employees e, /address a, e.getPh(e.empId) where e.name
         // ='empName'",
     };
@@ -118,7 +120,7 @@ public class IUMRCompositeIteratorJUnitTest {
       }
     }
     // Create Indexes and Execute Queries
-    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", "/employees e");
+    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", SEPARATOR + "employees e");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -169,7 +171,8 @@ public class IUMRCompositeIteratorJUnitTest {
     qs = CacheUtils.getQueryService();
     String queries[] = {
         // Test Case No. IUMR
-        "Select distinct * from /countries c, /employees e, c.citizens[e.empId].arr where e.name='empName'",};
+        "Select distinct * from " + SEPARATOR + "countries c, " + SEPARATOR
+            + "employees e, c.citizens[e.empId].arr where e.name='empName'",};
     SelectResults r[][] = new SelectResults[queries.length][2];
 
     // Execute Query without Indexes
@@ -185,7 +188,7 @@ public class IUMRCompositeIteratorJUnitTest {
     }
 
     // Create Indexes and Execute Queries
-    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", "/employees e");
+    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", SEPARATOR + "employees e");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {

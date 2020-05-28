@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.Collection;
@@ -66,15 +67,20 @@ public class MultipleRegionsJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     String queries[] = {
         // Multiple Regions Available. Execute queries on any of the Region.
-        "select distinct * from /Portfolios",
-        "SELECT DISTINCT * FROM /Portfolios2,  positions.values where status='active'",
-        "SELECT DISTINCT * from /Portfolios pf , pf.positions.values pos where pos.getSecId = 'IBM' and status = 'inactive'",
-        "Select distinct * from /Portfolios3 pf, pf.positions",
+        "select distinct * from " + SEPARATOR + "Portfolios",
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios2,  positions.values where status='active'",
+        "SELECT DISTINCT * from " + SEPARATOR
+            + "Portfolios pf , pf.positions.values pos where pos.getSecId = 'IBM' and status = 'inactive'",
+        "Select distinct * from " + SEPARATOR + "Portfolios3 pf, pf.positions",
         // Multiple Regions in a Query
-        "Select distinct * from /Portfolios, /Portfolios2, /Portfolios3, /Data",
-        "Select distinct * from /Portfolios, /Portfolios2",
-        "Select distinct * from /Portfolios3, /Data", "Select distinct * from /Portfolios, /Data",
-        "Select distinct * from /Portfolios pf, /Portfolios2, /Portfolios3, /Data where pf.status='active'"};
+        "Select distinct * from " + SEPARATOR + "Portfolios, " + SEPARATOR + "Portfolios2, "
+            + SEPARATOR + "Portfolios3, " + SEPARATOR + "Data",
+        "Select distinct * from " + SEPARATOR + "Portfolios, " + SEPARATOR + "Portfolios2",
+        "Select distinct * from " + SEPARATOR + "Portfolios3, " + SEPARATOR + "Data",
+        "Select distinct * from " + SEPARATOR + "Portfolios, " + SEPARATOR + "Data",
+        "Select distinct * from " + SEPARATOR + "Portfolios pf, " + SEPARATOR + "Portfolios2, "
+            + SEPARATOR + "Portfolios3, " + SEPARATOR + "Data where pf.status='active'"};
 
     for (int i = 0; i < queries.length; i++) {
       Query query = qs.newQuery(queries[i]);

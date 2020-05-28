@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -88,7 +89,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
   public void testBug() throws Exception {
     // String queries[] =
     // {"SELECT DISTINCT * FROM /test WHERE id < $1 ORDER BY $2" };
-    String queries[] = {"SELECT DISTINCT * FROM /test WHERE id < $1 ORDER BY id"};
+    String queries[] = {"SELECT DISTINCT * FROM " + SEPARATOR + "test WHERE id < $1 ORDER BY id"};
     Object r[][] = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
@@ -122,36 +123,54 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
   public void testOrderedResultsPartitionedRegion_Bug43514_1() throws Exception {
     String queries[] = {
         // Test case No. IUMR021
-        "select distinct * from /portfolio1 p order by status, ID desc",
-        "select distinct * from /portfolio1 p, p.positions.values val order by p.ID, val.secId desc",
-        "select distinct p.status from /portfolio1 p order by p.status",
-        "select distinct status, ID from /portfolio1 order by status, ID",
-        "select distinct p.status, p.ID from /portfolio1 p order by p.status, p.ID",
-        "select distinct key.ID from /portfolio1.keys key order by key.ID",
-        "select distinct key.ID, key.status from /portfolio1.keys key order by key.status, key.ID",
-        "select distinct key.ID, key.status from /portfolio1.keys key order by key.status desc, key.ID",
-        "select distinct key.ID, key.status from /portfolio1.keys key order by key.status, key.ID desc",
-        "select distinct p.status, p.ID from /portfolio1 p order by p.status asc, p.ID",
-        "select distinct p.ID, p.status from /portfolio1 p order by p.ID desc, p.status asc",
-        "select distinct p.ID from /portfolio1 p, p.positions.values order by p.ID",
-        "select distinct p.ID, p.status from /portfolio1 p, p.positions.values order by p.status, p.ID",
-        "select distinct pos.secId from /portfolio1 p, p.positions.values pos order by pos.secId",
-        "select distinct p.ID, pos.secId from /portfolio1 p, p.positions.values pos order by pos.secId, p.ID",
-        "select distinct p.iD from /portfolio1 p order by p.iD",
-        "select distinct p.iD, p.status from /portfolio1 p order by p.iD",
-        "select distinct iD, status from /portfolio1 order by iD",
-        "select distinct p.getID() from /portfolio1 p order by p.getID()",
-        "select distinct p.names[1] from /portfolio1 p order by p.names[1]",
-        "select distinct p.position1.secId, p.ID from /portfolio1 p order by p.position1.secId desc, p.ID",
-        "select distinct p.ID, p.position1.secId from /portfolio1 p order by p.position1.secId, p.ID",
-        "select distinct e.key.ID from /portfolio1.entries e order by e.key.ID",
-        "select distinct e.key.ID, e.value.status from /portfolio1.entries e order by e.key.ID",
-        "select distinct e.key.ID, e.value.status from /portfolio1.entrySet e order by e.key.ID desc , e.value.status desc",
-        "select distinct e.key, e.value from /portfolio1.entrySet e order by e.key.ID, e.value.status desc",
-        "select distinct e.key from /portfolio1.entrySet e order by e.key.ID desc, e.key.pkid desc",
-        "select distinct p.ID, pos.secId from /portfolio1 p, p.positions.values pos order by p.ID, pos.secId",
-        "select distinct p.ID, pos.secId from /portfolio1 p, p.positions.values pos order by p.ID desc, pos.secId desc",
-        "select distinct p.ID, pos.secId from /portfolio1 p, p.positions.values pos order by p.ID desc, pos.secId",
+        "select distinct * from " + SEPARATOR + "portfolio1 p order by status, ID desc",
+        "select distinct * from " + SEPARATOR
+            + "portfolio1 p, p.positions.values val order by p.ID, val.secId desc",
+        "select distinct p.status from " + SEPARATOR + "portfolio1 p order by p.status",
+        "select distinct status, ID from " + SEPARATOR + "portfolio1 order by status, ID",
+        "select distinct p.status, p.ID from " + SEPARATOR + "portfolio1 p order by p.status, p.ID",
+        "select distinct key.ID from " + SEPARATOR + "portfolio1.keys key order by key.ID",
+        "select distinct key.ID, key.status from " + SEPARATOR
+            + "portfolio1.keys key order by key.status, key.ID",
+        "select distinct key.ID, key.status from " + SEPARATOR
+            + "portfolio1.keys key order by key.status desc, key.ID",
+        "select distinct key.ID, key.status from " + SEPARATOR
+            + "portfolio1.keys key order by key.status, key.ID desc",
+        "select distinct p.status, p.ID from " + SEPARATOR
+            + "portfolio1 p order by p.status asc, p.ID",
+        "select distinct p.ID, p.status from " + SEPARATOR
+            + "portfolio1 p order by p.ID desc, p.status asc",
+        "select distinct p.ID from " + SEPARATOR + "portfolio1 p, p.positions.values order by p.ID",
+        "select distinct p.ID, p.status from " + SEPARATOR
+            + "portfolio1 p, p.positions.values order by p.status, p.ID",
+        "select distinct pos.secId from " + SEPARATOR
+            + "portfolio1 p, p.positions.values pos order by pos.secId",
+        "select distinct p.ID, pos.secId from " + SEPARATOR
+            + "portfolio1 p, p.positions.values pos order by pos.secId, p.ID",
+        "select distinct p.iD from " + SEPARATOR + "portfolio1 p order by p.iD",
+        "select distinct p.iD, p.status from " + SEPARATOR + "portfolio1 p order by p.iD",
+        "select distinct iD, status from " + SEPARATOR + "portfolio1 order by iD",
+        "select distinct p.getID() from " + SEPARATOR + "portfolio1 p order by p.getID()",
+        "select distinct p.names[1] from " + SEPARATOR + "portfolio1 p order by p.names[1]",
+        "select distinct p.position1.secId, p.ID from " + SEPARATOR
+            + "portfolio1 p order by p.position1.secId desc, p.ID",
+        "select distinct p.ID, p.position1.secId from " + SEPARATOR
+            + "portfolio1 p order by p.position1.secId, p.ID",
+        "select distinct e.key.ID from " + SEPARATOR + "portfolio1.entries e order by e.key.ID",
+        "select distinct e.key.ID, e.value.status from " + SEPARATOR
+            + "portfolio1.entries e order by e.key.ID",
+        "select distinct e.key.ID, e.value.status from " + SEPARATOR
+            + "portfolio1.entrySet e order by e.key.ID desc , e.value.status desc",
+        "select distinct e.key, e.value from " + SEPARATOR
+            + "portfolio1.entrySet e order by e.key.ID, e.value.status desc",
+        "select distinct e.key from " + SEPARATOR
+            + "portfolio1.entrySet e order by e.key.ID desc, e.key.pkid desc",
+        "select distinct p.ID, pos.secId from " + SEPARATOR
+            + "portfolio1 p, p.positions.values pos order by p.ID, pos.secId",
+        "select distinct p.ID, pos.secId from " + SEPARATOR
+            + "portfolio1 p, p.positions.values pos order by p.ID desc, pos.secId desc",
+        "select distinct p.ID, pos.secId from " + SEPARATOR
+            + "portfolio1 p, p.positions.values pos order by p.ID desc, pos.secId",
 
     };
     Object r[][] = new Object[queries.length][2];
@@ -182,11 +201,11 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
       }
     }
     // Create Indexes
-    this.createIndex("i1", IndexType.FUNCTIONAL, "p.status", "/portfolio1 p");
-    this.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", "/portfolio1 p");
-    this.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", "/portfolio1 p");
-    this.createIndex("i4", IndexType.FUNCTIONAL, "key.ID", "/portfolio1.keys key");
-    this.createIndex("i5", IndexType.FUNCTIONAL, "key.status", "/portfolio1.keys key");
+    this.createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
+    this.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
+    this.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
+    this.createIndex("i4", IndexType.FUNCTIONAL, "key.ID", SEPARATOR + "portfolio1.keys key");
+    this.createIndex("i5", IndexType.FUNCTIONAL, "key.status", SEPARATOR + "portfolio1.keys key");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -210,30 +229,42 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
   public void testOrderedResultsPartitionedRegion_Bug43514_2() throws Exception {
     String queries[] = {
         // Test case No. IUMR021
-        "select distinct status as st from /portfolio1 where ID > 0 order by status",
-        "select distinct p.status as st from /portfolio1 p where ID > 0 and status = 'inactive' order by p.status",
-        "select distinct p.position1.secId as st from /portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId",
-        "select distinct  key.status as st from /portfolio1 key where key.ID > 5 order by key.status",
-        "select distinct key.ID,key.status as st from /portfolio1 key where key.status = 'inactive' order by key.status desc, key.ID",
-        "select distinct  status, ID from /portfolio1 order by status",
-        "select distinct  p.status, p.ID from /portfolio1 p order by p.status",
-        "select distinct p.position1.secId, p.ID from /portfolio1 p order by p.position1.secId",
-        "select distinct p.status, p.ID from /portfolio1 p order by p.status asc, p.ID",
+        "select distinct status as st from " + SEPARATOR
+            + "portfolio1 where ID > 0 order by status",
+        "select distinct p.status as st from " + SEPARATOR
+            + "portfolio1 p where ID > 0 and status = 'inactive' order by p.status",
+        "select distinct p.position1.secId as st from " + SEPARATOR
+            + "portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId",
+        "select distinct  key.status as st from " + SEPARATOR
+            + "portfolio1 key where key.ID > 5 order by key.status",
+        "select distinct key.ID,key.status as st from " + SEPARATOR
+            + "portfolio1 key where key.status = 'inactive' order by key.status desc, key.ID",
+        "select distinct  status, ID from " + SEPARATOR + "portfolio1 order by status",
+        "select distinct  p.status, p.ID from " + SEPARATOR + "portfolio1 p order by p.status",
+        "select distinct p.position1.secId, p.ID from " + SEPARATOR
+            + "portfolio1 p order by p.position1.secId",
+        "select distinct p.status, p.ID from " + SEPARATOR
+            + "portfolio1 p order by p.status asc, p.ID",
 
-        "select distinct p.ID from /portfolio1 p, p.positions.values order by p.ID",
+        "select distinct p.ID from " + SEPARATOR + "portfolio1 p, p.positions.values order by p.ID",
 
-        "select distinct * from /portfolio1 p, p.positions.values order by p.ID",
-        "select distinct p.iD, p.status from /portfolio1 p order by p.iD",
-        "select distinct iD, status from /portfolio1 order by iD",
-        "select distinct * from /portfolio1 p order by p.getID()",
-        "select distinct * from /portfolio1 p order by p.getP1().secId",
-        "select distinct  p.position1.secId  as st from /portfolio1 p order by p.position1.secId",
+        "select distinct * from " + SEPARATOR + "portfolio1 p, p.positions.values order by p.ID",
+        "select distinct p.iD, p.status from " + SEPARATOR + "portfolio1 p order by p.iD",
+        "select distinct iD, status from " + SEPARATOR + "portfolio1 order by iD",
+        "select distinct * from " + SEPARATOR + "portfolio1 p order by p.getID()",
+        "select distinct * from " + SEPARATOR + "portfolio1 p order by p.getP1().secId",
+        "select distinct  p.position1.secId  as st from " + SEPARATOR
+            + "portfolio1 p order by p.position1.secId",
 
-        "select distinct p, pos from /portfolio1 p, p.positions.values pos order by p.ID",
-        "select distinct p, pos from /portfolio1 p, p.positions.values pos order by pos.secId",
-        "select distinct status from /portfolio1 where ID > 0 order by status",
-        "select distinct p.status as st from /portfolio1 p where ID > 0 and status = 'inactive' order by p.status",
-        "select distinct p.position1.secId as st from /portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId"
+        "select distinct p, pos from " + SEPARATOR
+            + "portfolio1 p, p.positions.values pos order by p.ID",
+        "select distinct p, pos from " + SEPARATOR
+            + "portfolio1 p, p.positions.values pos order by pos.secId",
+        "select distinct status from " + SEPARATOR + "portfolio1 where ID > 0 order by status",
+        "select distinct p.status as st from " + SEPARATOR
+            + "portfolio1 p where ID > 0 and status = 'inactive' order by p.status",
+        "select distinct p.position1.secId as st from " + SEPARATOR
+            + "portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId"
 
     };
     Object r[][] = new Object[queries.length][2];
@@ -264,9 +295,9 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
       }
     }
     // Create Indexes
-    this.createIndex("i1", IndexType.FUNCTIONAL, "p.status", "/portfolio1 p");
-    this.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", "/portfolio1 p");
-    this.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", "/portfolio1 p");
+    this.createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
+    this.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
+    this.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -541,36 +572,42 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
     // order by field
     // its null values are reported first and then the values in ascending
     // order.
-    String queries[] = {"SELECT  distinct * FROM /portfolio1 pf1 order by pkid", // 0 null
-                                                                                 // values are
-                                                                                 // first in the
-                                                                                 // order.
-        "SELECT  distinct * FROM /portfolio1 pf1  order by pkid asc", // 1 same
-                                                                      // as
-                                                                      // above.
-        "SELECT  distinct * FROM /portfolio1 order by pkid desc", // 2 null
-                                                                  // values are
-                                                                  // last in the
-                                                                  // order.
-        "SELECT  distinct pkid FROM /portfolio1 pf1 order by pkid", // 3 null
-                                                                    // values
-                                                                    // are first
-                                                                    // in the
-                                                                    // order.
-        "SELECT  distinct pkid FROM /portfolio1 pf1 where pkid != 'XXXX' order by pkid asc", // 4
-        "SELECT  distinct pkid FROM /portfolio1 pf1 where pkid != 'XXXX' order by pkid desc", // 5
-                                                                                              // null
-                                                                                              // values
-                                                                                              // are
-                                                                                              // last
-                                                                                              // in
-                                                                                              // the
-                                                                                              // order.
+    String queries[] = {"SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 order by pkid", // 0
+                                                                                                 // null
+        // values are
+        // first in the
+        // order.
+        "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1  order by pkid asc", // 1 same
+        // as
+        // above.
+        "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 order by pkid desc", // 2 null
+        // values are
+        // last in the
+        // order.
+        "SELECT  distinct pkid FROM " + SEPARATOR + "portfolio1 pf1 order by pkid", // 3 null
+        // values
+        // are first
+        // in the
+        // order.
+        "SELECT  distinct pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid != 'XXXX' order by pkid asc", // 4
+        "SELECT  distinct pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid != 'XXXX' order by pkid desc", // 5
+        // null
+        // values
+        // are
+        // last
+        // in
+        // the
+        // order.
 
-        "SELECT  distinct ID, pkid FROM /portfolio1 pf1 where ID < 1000 order by pkid", // 6
-        "SELECT  distinct ID, pkid FROM /portfolio1 pf1 where ID > 0 order by pkid", // 7
-        "SELECT  distinct ID, pkid FROM /portfolio1 pf1 where ID > 0 order by pkid, ID asc", // 8
-        "SELECT  distinct ID, pkid FROM /portfolio1 pf1 where ID > 0 order by pkid, ID desc",// 9
+        "SELECT  distinct ID, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID < 1000 order by pkid", // 6
+        "SELECT  distinct ID, pkid FROM " + SEPARATOR + "portfolio1 pf1 where ID > 0 order by pkid", // 7
+        "SELECT  distinct ID, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 0 order by pkid, ID asc", // 8
+        "SELECT  distinct ID, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 0 order by pkid, ID desc",// 9
     };
     return queries;
   }
@@ -579,22 +616,38 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
   public String[] getQueriesForLimitNotAppliedIfOrderByNotUsingIndex() {
     String queries[] = {
         // Test case No. IUMR021
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID > 10 order by ID asc, pkid desc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '13'and  ID > 10 and ID < 20 order by ID asc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid <'9' and ID > 10 and ID < 20 order by ID desc , pkid desc",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '15' and ID >= 10 and ID <= 20 order by ID desc, pkid desc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and pkid <='9' and ID >= 10 and ID <= 20 order by ID asc, pkid asc",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID asc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '17' and ID > 10 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '17' and ID > 10 order by ID asc, pkid desc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid < '7' and ID > 10 and ID < 20 order by ID asc, pkid asc limit 5 ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '18' and ID > 10 and ID < 20 order by ID desc, pkid desc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID >= 10 and ID <= 20 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid != '17' and ID >= 10 and ID <= 20 order by ID asc, pkid desc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '0' and ID != 10 order by ID asc, pkid asc limit 10",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc limit 10",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID > 10 order by ID asc, pkid desc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '13'and  ID > 10 and ID < 20 order by ID asc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid <'9' and ID > 10 and ID < 20 order by ID desc , pkid desc",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '15' and ID >= 10 and ID <= 20 order by ID desc, pkid desc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and pkid <='9' and ID >= 10 and ID <= 20 order by ID asc, pkid asc",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID asc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '17' and ID > 10 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '17' and ID > 10 order by ID asc, pkid desc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid < '7' and ID > 10 and ID < 20 order by ID asc, pkid asc limit 5 ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '18' and ID > 10 and ID < 20 order by ID desc, pkid desc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID >= 10 and ID <= 20 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid != '17' and ID >= 10 and ID <= 20 order by ID asc, pkid desc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '0' and ID != 10 order by ID asc, pkid asc limit 10",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc limit 10",
 
 
     };
@@ -606,22 +659,38 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
   public String[] getQueriesForMultiColOrderByWithIndexResultWithProjection() {
     String queries[] = {
         // Test case No. IUMR021
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 10 order by ID desc, pkid desc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 10 order by ID asc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc , pkid desc",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc, pkid desc",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID != 10 order by ID asc , pkid desc",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID != 10 order by ID desc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 10 order by ID desc, pkid desc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 10 order by ID asc, pkid asc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc, pkid desc limit 5 ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc, pkid desc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc, pkid asc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID != 10 order by ID asc , pkid desc limit 10",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID != 10 order by ID desc, pkid desc limit 10",};
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID desc, pkid desc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID asc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc , pkid desc",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc, pkid desc",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID asc , pkid desc",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID desc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID desc, pkid desc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 order by ID asc, pkid asc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID asc, pkid desc limit 5 ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 10 and ID < 20 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID desc, pkid desc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID >= 10 and ID <= 20 order by ID asc, pkid asc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID asc , pkid desc limit 10",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID != 10 order by ID desc, pkid desc limit 10",};
     return queries;
   }
 
@@ -629,22 +698,38 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
   public String[] getQueriesForMultiColOrderByWithMultiIndexResultProjection() {
     String queries[] = {
         // Test case No. IUMR021
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID > 10 order by ID asc, pkid desc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '13'and  ID > 10 and ID < 20 order by ID asc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid <'9' and ID > 10 and ID < 20 order by ID desc , pkid desc",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '15' and ID >= 10 and ID <= 20 order by ID desc, pkid desc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and pkid <='9' and ID >= 10 and ID <= 20 order by ID asc, pkid asc",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID asc, pkid asc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '17' and ID > 10 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '17' and ID > 10 order by ID asc, pkid desc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid < '7' and ID > 10 and ID < 20 order by ID asc, pkid asc limit 5 ",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid = '18' and ID > 10 and ID < 20 order by ID desc, pkid desc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID >= 10 and ID <= 20 order by ID desc, pkid asc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid != '17' and ID >= 10 and ID <= 20 order by ID asc, pkid desc limit 5",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '0' and ID != 10 order by ID asc, pkid asc limit 10",
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc limit 10",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID > 10 order by ID asc, pkid desc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '13'and  ID > 10 and ID < 20 order by ID asc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid <'9' and ID > 10 and ID < 20 order by ID desc , pkid desc",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '15' and ID >= 10 and ID <= 20 order by ID desc, pkid desc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and pkid <='9' and ID >= 10 and ID <= 20 order by ID asc, pkid asc",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID asc, pkid asc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '17' and ID > 10 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '17' and ID > 10 order by ID asc, pkid desc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid < '7' and ID > 10 and ID < 20 order by ID asc, pkid asc limit 5 ",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid = '18' and ID > 10 and ID < 20 order by ID desc, pkid desc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID >= 10 and ID <= 20 order by ID desc, pkid asc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid != '17' and ID >= 10 and ID <= 20 order by ID asc, pkid desc limit 5",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '0' and ID != 10 order by ID asc, pkid asc limit 10",
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc limit 10",
 
 
     };

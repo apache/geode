@@ -18,6 +18,7 @@
 //
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -90,7 +91,8 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     Region rgn =
         CacheUtils.createRegion("testDistinctNonDistinctWithIndexes", String.class, Scope.LOCAL);
     QueryService qs = CacheUtils.getQueryService();
-    qs.createIndex("length", IndexType.FUNCTIONAL, "length", "/testDistinctNonDistinctWithIndexes");
+    qs.createIndex("length", IndexType.FUNCTIONAL, "length",
+        SEPARATOR + "testDistinctNonDistinctWithIndexes");
 
     List filtered = new ArrayList();
     int i = 0;
@@ -103,7 +105,8 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     }
 
     String queryString =
-        "select distinct * from /testDistinctNonDistinctWithIndexes s " + " where 3 >= s.length";
+        "select distinct * from " + SEPARATOR + "testDistinctNonDistinctWithIndexes s "
+            + " where 3 >= s.length";
     Query q = CacheUtils.getQueryService().newQuery(queryString);
     SelectResults results = (SelectResults) q.execute();
     assertEquals(2, results.size());
@@ -114,7 +117,8 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     }
 
     queryString =
-        "select distinct * from /testDistinctNonDistinctWithIndexes " + "where 3 >= length";
+        "select distinct * from " + SEPARATOR + "testDistinctNonDistinctWithIndexes "
+            + "where 3 >= length";
     q = CacheUtils.getQueryService().newQuery(queryString);
     results = (SelectResults) q.execute();
     assertEquals(2, results.size());
@@ -124,7 +128,8 @@ public class DistinctAndNonDistinctQueryJUnitTest {
       assertEquals(1, results.occurrences(element));
     }
 
-    queryString = "select * from /testDistinctNonDistinctWithIndexes " + "where 3 >= length";
+    queryString =
+        "select * from " + SEPARATOR + "testDistinctNonDistinctWithIndexes " + "where 3 >= length";
     q = CacheUtils.getQueryService().newQuery(queryString);
     results = (SelectResults) q.execute(new Object[] {data});
     assertEquals(4, results.size());
@@ -134,7 +139,8 @@ public class DistinctAndNonDistinctQueryJUnitTest {
       assertEquals(2, results.occurrences(element));
     }
 
-    queryString = "select ALL * from /testDistinctNonDistinctWithIndexes " + "where 3 >= length";
+    queryString = "select ALL * from " + SEPARATOR + "testDistinctNonDistinctWithIndexes "
+        + "where 3 >= length";
     q = CacheUtils.getQueryService().newQuery(queryString);
     results = (SelectResults) q.execute(new Object[] {data});
     assertEquals(4, results.size());
