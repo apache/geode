@@ -22,4 +22,6 @@ public interface RedisStringCommands {
   ByteArrayWrapper get(ByteArrayWrapper key);
 
   boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options);
+
+  long incr(ByteArrayWrapper key);
 }

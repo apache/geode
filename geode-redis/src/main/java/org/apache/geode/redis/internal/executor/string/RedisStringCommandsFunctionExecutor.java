@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.internal.RedisCommandType.APPEND;
 import static org.apache.geode.redis.internal.RedisCommandType.GET;
+import static org.apache.geode.redis.internal.RedisCommandType.INCR;
 import static org.apache.geode.redis.internal.RedisCommandType.SET;
 
 import org.apache.geode.cache.Region;
@@ -43,5 +44,10 @@ public class RedisStringCommandsFunctionExecutor implements RedisStringCommands 
   @Override
   public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
     return CommandFunction.execute(SET, key, new Object[] {value, options}, region);
+  }
+
+  @Override
+  public long incr(ByteArrayWrapper key) {
+    return CommandFunction.execute(INCR, key, null, region);
   }
 }

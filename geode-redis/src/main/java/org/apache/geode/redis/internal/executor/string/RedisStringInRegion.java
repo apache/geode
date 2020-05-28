@@ -18,6 +18,7 @@ import static org.apache.geode.redis.internal.RedisDataType.REDIS_STRING;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
@@ -75,6 +76,20 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     }
     handleExpiration(redisString, key, options);
     return true;
+  }
+
+  @Override
+  public long incr(ByteArrayWrapper key) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      byte[] newValue = {Coder.NUMBER_1_BYTE};
+      redisString = new RedisString(new ByteArrayWrapper(newValue));
+      region.put(key, redisString);
+      return 1;
+    }
+
+    return redisString.incr(region, key);
   }
 
   private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {

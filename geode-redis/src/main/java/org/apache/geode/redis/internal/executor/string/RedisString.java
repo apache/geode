@@ -24,6 +24,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.AbstractRedisData;
 import org.apache.geode.redis.internal.AppendDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.DeltaInfo;
 import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RedisDataType;
@@ -52,6 +53,20 @@ public class RedisString extends AbstractRedisData {
 
   public void set(ByteArrayWrapper value) {
     this.value = value;
+  }
+
+  public long incr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
+      throws NumberFormatException, ArithmeticException {
+    long longValue = Long.parseLong(value.toString());
+    if (longValue == Long.MAX_VALUE) {
+      throw new ArithmeticException("overflow");
+    }
+    longValue++;
+    String stringValue = Long.toString(longValue);
+    value.setBytes(Coder.stringToBytes(stringValue));
+    // numeric strings are short so no need to use delta
+    region.put(key, this);
+    return longValue;
   }
 
   @Override
