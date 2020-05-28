@@ -42,11 +42,36 @@ query --query=value [--file=path/to/results/file] [--member=member-name]
 
 <a id="concept_89A129F729DF4D3B9056C8D9016AA760__table_ocr_gcg_2w"></a>
 
-| Name                     | Description                                                    |
-|--------------------------|----------------------------------------------------------------|
-| <span class="keyword parmname">&#8209;&#8209;query </span>      | *Required.* The OQL string     |
-| <span class="keyword parmname">&#8209;&#8209;file</span> | When specified, all query results are written to the specified file. An error is issued if the file already exists. |
-| <span class="keyword parmname">&#8209;&#8209;member </span>     | Name/Id of the member on which to execute the query (as shown in the output of the gfsh `describe region` command, for example)     |
+<table>
+<colgroup>
+<col width="33%" />
+<col width="*" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="keyword parmname">\-\-query</span></td>
+<td><b>Required.</b> The OQL string.
+
+<div class="note note">
+<b>Note:</b> It is important not to forget the `=` sign and follow the pattern `\-\-query=value`. `gfsh` automatically removes the `=` so if it is not introduced, the first `=` in the query (if any) will be removed changing the query statement.
+</div></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-file</span></td>
+<td>When specified, all query results are written to the specified file. An error is issued if the file already exists.</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-member</span></td>
+<td>Name/Id of the member on which to execute the query (as shown in the output of the gfsh `describe region` command, for example)</td>
+</tr>
+</tbody>
+</table>
 
 **Sample Output:**
 
