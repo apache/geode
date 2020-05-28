@@ -186,15 +186,12 @@ public class HashesIntegrationTest {
         .isEqualTo(2 * incr);
 
     String field1 = randString();
-    Exception ex = null;
-    try {
+    long myincr = incr;
+    assertThatThrownBy(() -> {
       jedis.hincrBy(key, field1, Long.MAX_VALUE);
-      jedis.hincrBy(key, field1, incr);
-    } catch (Exception e) {
-      ex = e;
-    }
-
-    assertThat(ex).isNotNull();
+      jedis.hincrBy(key, field1, myincr);
+    }).isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("ERR increment or decrement would overflow");
   }
 
   @Test
