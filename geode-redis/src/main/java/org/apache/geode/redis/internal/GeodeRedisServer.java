@@ -149,7 +149,7 @@ public class GeodeRedisServer {
   /**
    * The name of the region that holds data stored in redis.
    */
-  public static final String REDIS_DATA_REGION = "REDIS_DATA";
+  public static final String REDIS_DATA_REGION = "__REDIS_DATA";
 
   /**
    * System property name that can be used to set the number of threads to be used by the
@@ -302,12 +302,10 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, RedisData> redisData;
       InternalCache gemFireCache = (InternalCache) cache;
 
-      if ((redisData = cache.getRegion(REDIS_DATA_REGION)) == null) {
-        InternalRegionFactory<ByteArrayWrapper, RedisData> redisMetaDataFactory =
-            gemFireCache.createInternalRegionFactory(DEFAULT_REGION_TYPE);
-        redisMetaDataFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
-        redisData = redisMetaDataFactory.create(REDIS_DATA_REGION);
-      }
+      InternalRegionFactory<ByteArrayWrapper, RedisData> redisMetaDataFactory =
+          gemFireCache.createInternalRegionFactory(DEFAULT_REGION_TYPE);
+      redisMetaDataFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+      redisData = redisMetaDataFactory.create(REDIS_DATA_REGION);
 
       pubSub = new PubSubImpl(new Subscriptions());
       regionProvider = new RegionProvider(redisData);
