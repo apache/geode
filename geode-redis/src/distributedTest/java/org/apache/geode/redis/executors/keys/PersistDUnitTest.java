@@ -25,7 +25,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -134,10 +133,8 @@ public class PersistDUnitTest implements Serializable {
 
   private void setKeysWithExpiration(Jedis jedis, Long iterationCount, String key) {
     for (int i = 0; i < iterationCount; i++) {
-      SetParams setParams = new SetParams();
-      setParams.ex(600);
-
-      jedis.set(key + i, "value" + i, setParams);
+      jedis.sadd(key + i, "value" + 9);
+      jedis.expire(key + i, 600);
     }
   }
 }

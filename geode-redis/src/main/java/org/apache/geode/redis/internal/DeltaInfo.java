@@ -16,25 +16,9 @@
 
 package org.apache.geode.redis.internal;
 
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.Delta;
-import org.apache.geode.cache.Region;
-
-public interface RedisData extends Delta, DataSerializable {
-  RedisDataType getType();
-
-  void setExpirationTimestamp(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, long value);
-
-  long getExpirationTimestamp();
-
-  int persist(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key);
-
-  boolean hasExpired();
-
-  boolean hasExpired(long now);
-
-  long pttl(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key);
+public interface DeltaInfo {
+  void serializeTo(DataOutput out) throws IOException;
 }

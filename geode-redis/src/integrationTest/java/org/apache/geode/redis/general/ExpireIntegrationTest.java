@@ -127,12 +127,22 @@ public class ExpireIntegrationTest {
     String value = "value";
     jedis.set(key, value);
 
-    jedis.expire(key, 1);
+    jedis.pexpire(key, 10);
+
     GeodeAwaitility.await().until(() -> jedis.get(key) == null);
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
+  public void should_removeSetKey_AfterExpirationPeriod() {
+    String key = "key";
+    String value = "value";
+    jedis.sadd(key, value);
+
+    jedis.pexpire(key, 10);
+    GeodeAwaitility.await().until(() -> !jedis.exists(key));
+  }
+
+  @Test
   public void settingAnExistingKeyToANewValue_ShouldClearExpirationTime() {
 
     String key = "key";
@@ -150,7 +160,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void callingGETSETonExistingKey_ShouldClearExpirationTime() {
     String key = "key";
     String value = "value";
@@ -182,7 +191,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8143")
   public void callingSDIFFSTOREonExistingKey_ShouldClearExpirationTime() {
 
     String key1 = "key1";
@@ -207,7 +215,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8143")
   public void callingSINTERSTOREonExistingKey_ShouldClearExpirationTime() {
     String key1 = "key1";
     String key2 = "key2";
@@ -231,7 +238,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8143")
   public void callingSUNIONSTOREonExistingKey_ShouldClearExpirationTime() {
     String key1 = "key1";
     String key2 = "key2";
@@ -339,8 +345,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
-  public void SettingExiprationToNegativeValue_ShouldDeleteKey() {
+  public void SettingExpirationToNegativeValue_ShouldDeleteKey() {
 
     String key = "key";
     String value = "value";
@@ -350,7 +355,7 @@ public class ExpireIntegrationTest {
     assertThat(expirationWasSet).isEqualTo(1);
 
     Boolean keyExists = jedis.exists(key);
-    assertThat(keyExists).isTrue();
+    assertThat(keyExists).isFalse();
   }
 
 
@@ -365,5 +370,13 @@ public class ExpireIntegrationTest {
 
     Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isGreaterThan(21);
+  }
+
+  @Test
+  public void should_passivelyExpireKeys() {
+    jedis.sadd("key", "value");
+    jedis.pexpire("key", 100);
+
+    GeodeAwaitility.await().until(() -> jedis.keys("key").isEmpty());
   }
 }

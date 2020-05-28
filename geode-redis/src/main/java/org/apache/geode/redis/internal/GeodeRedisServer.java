@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import java.io.FileInputStream;
@@ -22,11 +23,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -56,6 +55,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -66,6 +66,8 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.CommandFunction;
+import org.apache.geode.redis.internal.executor.RedisKeyCommands;
+import org.apache.geode.redis.internal.executor.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
 
 /**
@@ -142,13 +144,7 @@ public class GeodeRedisServer {
   private EventLoopGroup bossGroup;
   private EventLoopGroup workerGroup;
   private EventLoopGroup subscriberGroup;
-  private static final int numExpirationThreads = 1;
   private final ScheduledExecutorService expirationExecutor;
-
-  /**
-   * Map of futures to be executed for key expirations
-   */
-  private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationFutures;
 
   /**
    * The name of the region that holds data stored in redis.
@@ -245,10 +241,8 @@ public class GeodeRedisServer {
     numWorkerThreads = setNumWorkerThreads();
     singleThreadPerConnection = numWorkerThreads == 0;
     numSelectorThreads = 1;
-    expirationFutures = new ConcurrentHashMap<>();
-    expirationExecutor =
-        Executors.newScheduledThreadPool(numExpirationThreads,
-            new NamedThreadFactory("GemFireRedis-ScheduledExecutor-", true));
+    expirationExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("GemFireRedis-ExpirationExecutor-", true));
     shutdown = false;
     started = false;
   }
@@ -316,9 +310,31 @@ public class GeodeRedisServer {
       }
 
       pubSub = new PubSubImpl(new Subscriptions());
-      regionProvider = new RegionProvider(expirationFutures, expirationExecutor, redisData);
+      regionProvider = new RegionProvider(redisData);
 
-      CommandFunction.register(regionProvider);
+      CommandFunction.register();
+      scheduleDataExpiration(redisData);
+    }
+  }
+
+  private void scheduleDataExpiration(
+      Region<ByteArrayWrapper, RedisData> redisData) {
+    int INTERVAL = 1;
+    expirationExecutor.scheduleAtFixedRate(() -> doDataExpiration(redisData), INTERVAL, INTERVAL,
+        SECONDS);
+  }
+
+  private void doDataExpiration(
+      Region<ByteArrayWrapper, RedisData> redisData) {
+    final long now = System.currentTimeMillis();
+    Region<ByteArrayWrapper, RedisData> localPrimaryData =
+        PartitionRegionHelper.getLocalPrimaryData(redisData);
+    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(redisData);
+    for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
+      if (entry.getValue().hasExpired(now)) {
+        // pttl will do its own check using active expiration and expire the key if needed
+        redisKeyCommands.pttl(entry.getKey());
+      }
     }
   }
 
@@ -470,14 +486,9 @@ public class GeodeRedisServer {
       serverChannel.close();
       c.syncUninterruptibly();
       c2.syncUninterruptibly();
-      regionProvider.close();
       if (mainThread != null) {
         mainThread.interrupt();
       }
-      for (ScheduledFuture<?> f : expirationFutures.values()) {
-        f.cancel(true);
-      }
-      expirationFutures.clear();
       expirationExecutor.shutdownNow();
       closeFuture.syncUninterruptibly();
       shutdown = true;

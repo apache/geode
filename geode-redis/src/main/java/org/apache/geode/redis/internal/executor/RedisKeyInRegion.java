@@ -18,30 +18,88 @@ package org.apache.geode.redis.internal.executor;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.RegionProvider;
 
-class RedisKeyInRegion {
-  private Region localRegion;
-  private RegionProvider regionProvider;
+public class RedisKeyInRegion implements RedisKeyCommands {
+  protected final Region<ByteArrayWrapper, RedisData> region;
 
-  public RedisKeyInRegion(Region localRegion, RegionProvider regionProvider) {
-    this.localRegion = localRegion;
-    this.regionProvider = regionProvider;
+  @SuppressWarnings("unchecked")
+  public RedisKeyInRegion(Region region) {
+    this.region = region;
   }
 
+  @Override
   public boolean del(ByteArrayWrapper key) {
-    RedisData redisData = (RedisData) localRegion.get(key);
+    RedisData redisData = getRedisData(key);
     if (redisData == null) {
       return false;
     }
-    boolean result = localRegion.remove(key) != null;
-    if (result) {
-      regionProvider.cancelKeyExpiration(key);
-    }
-    return result;
+    return region.remove(key) != null;
   }
 
+  @Override
   public boolean exists(ByteArrayWrapper key) {
-    return localRegion.containsKey(key);
+    return getRedisData(key) != null;
+  }
+
+  @Override
+  public long pttl(ByteArrayWrapper key) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null) {
+      return -2;
+    }
+    return redisData.pttl(region, key);
+  }
+
+  @Override
+  public int pexpireat(ByteArrayWrapper key, long timestamp) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null) {
+      return 0;
+    }
+    long now = System.currentTimeMillis();
+    if (now >= timestamp) {
+      // already expired
+      del(key);
+    } else {
+      redisData.setExpirationTimestamp(region, key, timestamp);
+    }
+    return 1;
+  }
+
+  @Override
+  public int persist(ByteArrayWrapper key) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null) {
+      return 0;
+    }
+    return redisData.persist(region, key);
+  }
+
+  @Override
+  public String type(ByteArrayWrapper key) {
+    RedisData redisData = getRedisData(key);
+    if (redisData == null) {
+      return "none";
+    }
+    return redisData.getType().toString();
+  }
+
+  protected RedisData getRedisData(ByteArrayWrapper key) {
+    return getRedisDataOrDefault(key, null);
+  }
+
+  protected RedisData getRedisDataOrDefault(ByteArrayWrapper key, RedisData defaultValue) {
+    RedisData result = region.get(key);
+    if (result != null) {
+      if (result.hasExpired()) {
+        region.remove(key);
+        result = null;
+      }
+    }
+    if (result == null) {
+      return defaultValue;
+    } else {
+      return result;
+    }
   }
 }

@@ -186,15 +186,12 @@ public class HashesIntegrationTest {
         .isEqualTo(2 * incr);
 
     String field1 = randString();
-    Exception ex = null;
-    try {
+    long myincr = incr;
+    assertThatThrownBy(() -> {
       jedis.hincrBy(key, field1, Long.MAX_VALUE);
-      jedis.hincrBy(key, field1, incr);
-    } catch (Exception e) {
-      ex = e;
-    }
-
-    assertThat(ex).isNotNull();
+      jedis.hincrBy(key, field1, myincr);
+    }).isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("ERR increment or decrement would overflow");
   }
 
   @Test
@@ -224,6 +221,17 @@ public class HashesIntegrationTest {
 
     assertThat(response3).isEqualTo(Double.valueOf(jedis.hget(key, field)), offset(.00001));
 
+  }
+
+  @Test
+  public void incrByFloatFailsWithNonFloatFieldValue() {
+    String key = randString();
+    String field = randString();
+    jedis.hset(key, field, "foobar");
+    assertThatThrownBy(() -> {
+      jedis.hincrByFloat(key, field, 1.5);
+    }).isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("ERR hash value is not a float");
   }
 
   @Test

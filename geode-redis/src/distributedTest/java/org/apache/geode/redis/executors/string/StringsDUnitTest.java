@@ -32,7 +32,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
@@ -165,10 +164,8 @@ public class StringsDUnitTest {
     };
   }
 
-  @Ignore("Fix me please")
   @Test
-  public void setxxShould_onlySucceedOnceForAParticularKey_givenMultipleClientsSettingSameKey() {
-    Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
+  public void setxxShould_alwaysSucceedOnceForAParticularKey_givenMultipleClientsSettingSameKey() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
 
@@ -181,15 +178,9 @@ public class StringsDUnitTest {
 
     new ConcurrentLoopingThreads(LIST_SIZE,
         makeSetXXConsumer(keys, values, successes1, jedis1),
-        (i) -> successes2.addAndGet(jedis1B.del(keys.get(i))));
+        makeSetXXConsumer(keys, values, successes2, jedis2)).run();
 
-    assertThat(successes1.get())
-        .as("Apparently 'SET XX' ConcurrentLoopingThread did not run")
-        .isGreaterThan(0);
-    assertThat(successes2.get())
-        .as("Apparently 'DEL' ConcurrentLoopingThread did not run")
-        .isGreaterThan(0);
-    assertThat(successes1.get() + successes2.get()).isEqualTo(LIST_SIZE);
+    assertThat(successes2.get() + successes1.get()).isEqualTo(LIST_SIZE * 2);
   }
 
   private Consumer<Integer> makeSetXXConsumer(List<String> keys, List<String> values,

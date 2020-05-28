@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -79,17 +81,18 @@ public class SetRangeExecutor extends StringExecutor {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), bytes.length));
     } else {
       byte[] bytes = wrapper.toBytes();
+      SetOptions setOptions = new SetOptions(NONE, 0L, true);
       int returnLength;
       if (totalLength < bytes.length) {
         System.arraycopy(value, 0, bytes, offset, value.length);
-        stringCommands.set(key, new ByteArrayWrapper(bytes), null);
+        stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
         returnLength = bytes.length;
       } else {
         byte[] newBytes = new byte[totalLength];
         System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
         System.arraycopy(value, 0, newBytes, offset, value.length);
         returnLength = newBytes.length;
-        stringCommands.set(key, new ByteArrayWrapper(bytes), null);
+        stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
       }
 
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), returnLength));
