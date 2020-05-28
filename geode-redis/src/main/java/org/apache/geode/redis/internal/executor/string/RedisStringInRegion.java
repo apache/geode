@@ -119,6 +119,34 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     return result;
   }
 
+  @Override
+  public long incrby(ByteArrayWrapper key, long increment) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      byte[] newValue = Coder.stringToBytes(Long.toString(increment));
+      redisString = new RedisString(new ByteArrayWrapper(newValue));
+      region.put(key, redisString);
+      return increment;
+    }
+
+    return redisString.incrby(region, key, increment);
+  }
+
+  @Override
+  public long decrby(ByteArrayWrapper key, long decrement) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      byte[] newValue = Coder.stringToBytes(Long.toString(-decrement));
+      redisString = new RedisString(new ByteArrayWrapper(newValue));
+      region.put(key, redisString);
+      return -decrement;
+    }
+
+    return redisString.decrby(region, key, decrement);
+  }
+
   private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
     if (getRedisData(key) != null) {
       return false;

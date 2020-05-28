@@ -28,4 +28,8 @@ public interface RedisStringCommands {
   long decr(ByteArrayWrapper key);
 
   ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value);
+
+  long incrby(ByteArrayWrapper key, long increment);
+
+  long decrby(ByteArrayWrapper key, long decrement);
 }

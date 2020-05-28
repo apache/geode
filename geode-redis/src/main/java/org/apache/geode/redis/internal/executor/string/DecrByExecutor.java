@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
 
 import java.util.List;
 
@@ -26,13 +25,8 @@ import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class DecrByExecutor extends StringExecutor {
 
-  private final String ERROR_VALUE_NOT_USABLE =
-      "The value at this key cannot be decremented numerically";
-
   private final String ERROR_DECREMENT_NOT_USABLE =
       "The decrementation on this key must be numeric";
-
-  private final String ERROR_OVERFLOW = "This decrementation cannot be performed due to overflow";
 
   private final int DECREMENT_INDEX = 2;
 
@@ -46,10 +40,6 @@ public class DecrByExecutor extends StringExecutor {
     }
     ByteArrayWrapper key = command.getKey();
 
-    /*
-     * Try increment
-     */
-
     byte[] decrArray = commandElems.get(DECREMENT_INDEX);
     String decrString = Coder.bytesToString(decrArray);
     long decrement;
@@ -62,53 +52,7 @@ public class DecrByExecutor extends StringExecutor {
       return;
     }
 
-    /*
-     * Value does not exist
-     */
-
-    ByteArrayWrapper valueWrapper = getRedisStringCommands(context).get(key);
-    if (valueWrapper == null) {
-      String negativeDecrString =
-          decrString.charAt(0) == Coder.HYPHEN_ID ? decrString.substring(1) : "-" + decrString;
-      ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.stringToBytes(negativeDecrString));
-      getRedisStringCommands(context).set(key, newValue, null);
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), -decrement));
-      return;
-    }
-
-    /*
-     * Value exists
-     */
-
-    String stringValue = Coder.bytesToString(valueWrapper.toBytes());
-
-    long value;
-    try {
-      value = Long.parseLong(stringValue);
-    } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_VALUE_NOT_USABLE));
-      return;
-    }
-
-    /*
-     * Check for overflow Negative decrement is used because the decrement is stored as a positive
-     * long
-     */
-    if (value <= 0 && -decrement < (Long.MIN_VALUE - value)) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
-      return;
-    }
-
-    value -= decrement;
-
-    stringValue = "" + value;
-    ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.stringToBytes(stringValue));
-    SetOptions setOptions = new SetOptions(NONE, 0L, true);
-    getRedisStringCommands(context).set(key, newValue, setOptions);
-
+    long value = getRedisStringCommands(context).decrby(key, decrement);
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
-
   }
-
 }

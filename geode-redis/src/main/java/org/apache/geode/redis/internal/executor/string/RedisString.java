@@ -70,6 +70,35 @@ public class RedisString extends AbstractRedisData {
     return longValue;
   }
 
+  public long incrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      long increment)
+      throws NumberFormatException, ArithmeticException {
+    long longValue = parseValueAsLong();
+    if (longValue >= 0 && increment > (Long.MAX_VALUE - longValue)) {
+      throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
+    }
+    longValue += increment;
+    String stringValue = Long.toString(longValue);
+    value.setBytes(Coder.stringToBytes(stringValue));
+    // numeric strings are short so no need to use delta
+    region.put(key, this);
+    return longValue;
+  }
+
+  public long decrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      long decrement) {
+    long longValue = parseValueAsLong();
+    if (longValue <= 0 && -decrement < (Long.MIN_VALUE - longValue)) {
+      throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
+    }
+    longValue -= decrement;
+    String stringValue = Long.toString(longValue);
+    value.setBytes(Coder.stringToBytes(stringValue));
+    // numeric strings are short so no need to use delta
+    region.put(key, this);
+    return longValue;
+  }
+
   public long decr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
