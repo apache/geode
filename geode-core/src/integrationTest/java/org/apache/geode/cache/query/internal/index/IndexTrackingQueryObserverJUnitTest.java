@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -49,7 +50,7 @@ public class IndexTrackingQueryObserverJUnitTest {
   static Index keyIndex1;
   static IndexInfo regionMap;
 
-  private static final String queryStr = "select * from /portfolio where ID > 0";
+  private static final String queryStr = "select * from " + SEPARATOR + "portfolio where ID > 0";
   public static final int NUM_BKTS = 20;
   public static final String INDEX_NAME = "keyIndex1";
 
@@ -87,7 +88,8 @@ public class IndexTrackingQueryObserverJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID", "/portfolio ");
+        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+            SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof PartitionedIndex);
 
@@ -135,7 +137,8 @@ public class IndexTrackingQueryObserverJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID", "/portfolio ");
+        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+            SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof CompactRangeIndex);
 

@@ -16,6 +16,7 @@
 
 package org.apache.geode.management.internal.operation;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -79,7 +80,8 @@ public class RebalanceOperationPerformerTest {
     DistributedRegionMXBean regionMXBean = mock(DistributedRegionMXBean.class);
     when(regionMXBean.getRegionType()).thenReturn("PARTITION");
     when(regionMXBean.getMembers()).thenReturn(new String[] {"member1"});
-    when(managementService.getDistributedRegionMXBean("/region1")).thenReturn(regionMXBean);
+    when(managementService.getDistributedRegionMXBean(SEPARATOR + "region1"))
+        .thenReturn(regionMXBean);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
     when(distributedSystemMXBean.listRegions()).thenReturn(new String[] {"region1"});
     when(managementService.getDistributedSystemMXBean()).thenReturn(distributedSystemMXBean);
@@ -110,7 +112,8 @@ public class RebalanceOperationPerformerTest {
     DistributedRegionMXBean regionMXBean = mock(DistributedRegionMXBean.class);
     when(regionMXBean.getRegionType()).thenReturn("PARTITION");
     when(regionMXBean.getMembers()).thenReturn(new String[] {"member1", "member2"});
-    when(managementService.getDistributedRegionMXBean("/region1")).thenReturn(regionMXBean);
+    when(managementService.getDistributedRegionMXBean(SEPARATOR + "region1"))
+        .thenReturn(regionMXBean);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
     when(distributedSystemMXBean.listRegions()).thenReturn(new String[] {"region1"});
     when(managementService.getDistributedSystemMXBean()).thenReturn(distributedSystemMXBean);
@@ -132,7 +135,7 @@ public class RebalanceOperationPerformerTest {
     RebalanceOperationPerformer.FunctionExecutor functionExecutor =
         mock(RebalanceOperationPerformer.FunctionExecutor.class);
     List<Object> resultList = new ArrayList<>();
-    resultList.add("0,1,2,3,4,5,6,7,8,9,/region1");
+    resultList.add("0,1,2,3,4,5,6,7,8,9," + SEPARATOR + "region1");
     when(functionExecutor.execute(any(), any(), any())).thenReturn(resultList);
 
     RebalanceResult result =
@@ -169,7 +172,7 @@ public class RebalanceOperationPerformerTest {
 
     assertThat(result.getSuccess()).isFalse();
     assertThat(result.getStatusMessage())
-        .isEqualTo("For the region /region1, no member was found.");
+        .isEqualTo("For the region " + SEPARATOR + "region1, no member was found.");
   }
 
 }

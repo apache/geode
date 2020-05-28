@@ -14,6 +14,7 @@
  */
 package org.apache.geode.pdx;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -164,8 +165,8 @@ public class PdxSerializableJUnitTest {
       pw.close();
       byte[] bytes = baos.toByteArray();
       this.cache.loadCacheXml(new ByteArrayInputStream(bytes));
-      r1 = this.cache.getRegion("/r1");
-      r2 = this.cache.getRegion("/r2");
+      r1 = this.cache.getRegion(SEPARATOR + "r1");
+      r2 = this.cache.getRegion(SEPARATOR + "r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(true, r2.containsKey(new SimpleClass(1, (byte) 1)));
@@ -250,8 +251,8 @@ public class PdxSerializableJUnitTest {
       pw.close();
       byte[] bytes = baos.toByteArray();
       this.cache.loadCacheXml(new ByteArrayInputStream(bytes));
-      r1 = this.cache.getRegion("/r1");
-      r2 = this.cache.getRegion("/r2");
+      r1 = this.cache.getRegion(SEPARATOR + "r1");
+      r2 = this.cache.getRegion(SEPARATOR + "r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(true, r2.containsKey(new SimpleClass(1, (byte) 1)));

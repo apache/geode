@@ -16,6 +16,8 @@
  */
 package org.apache.geode.tools.pulse.tests;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 public class PulseTestData {
 
   public static class TopNavigation {
@@ -94,7 +96,7 @@ public class PulseTestData {
     public static final String notChkRgnClassName = "bttn chk checkbox_false_full";
 
     public static final String regName = "R1";
-    public static final String query1Text = "select * from /R1";
+    public static final String query1Text = "select * from " + SEPARATOR + "R1";
 
     public static final String datePattern = "EEE, MMM dd yyyy, HH:mm:ss z";
 

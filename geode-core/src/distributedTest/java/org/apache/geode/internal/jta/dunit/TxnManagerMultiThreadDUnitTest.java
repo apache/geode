@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.jta.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
@@ -305,7 +306,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
     // this is used to get the context for passing to the constructor of
     // JTAUtils
     cache = TxnManagerMultiThreadDUnitTest.getCache();
-    currRegion = cache.getRegion("/root");
+    currRegion = cache.getRegion(SEPARATOR + "root");
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
     // to delete all rows inserted in creatTable () of this class
     // deleteRows method of JTAUtils class is used.
@@ -363,7 +364,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
     cache = TxnManagerMultiThreadDUnitTest.getCache();
     // get the table name from CacheUtils
     String tblName = CacheUtils.getTableName();
-    currRegion = cache.getRegion("/root");
+    currRegion = cache.getRegion(SEPARATOR + "root");
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
     // get how many rows actually got committed
     try {

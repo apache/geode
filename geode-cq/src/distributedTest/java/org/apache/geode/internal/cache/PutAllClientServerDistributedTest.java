@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
@@ -266,7 +267,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       String cqName = "EOInfoTracker";
       String query = String.join(" ",
-          "SELECT ALL * FROM /" + regionName + " ii",
+          "SELECT ALL * FROM " + SEPARATOR + regionName + " ii",
           "WHERE ii.getTicker() >= '10' and ii.getTicker() < '20'");
 
       CqQuery cqQuery = getClientCache().getQueryService().newCq(cqName, query, cqAttributes);

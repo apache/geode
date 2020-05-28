@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -83,7 +84,7 @@ public class UserFunctionExecutionTest {
     resultCollector = mock(ResultCollector.class);
     filterCache = mock(InternalCacheForClientAccess.class);
     arguments = new Object[] {"TestFunction", "key1,key2", "TestResultCollector", "arg1,arg2",
-        "/TestRegion", new Properties()};
+        SEPARATOR + "TestRegion", new Properties()};
 
     when(userFunction.getId()).thenReturn("TestFunction");
 
@@ -251,7 +252,7 @@ public class UserFunctionExecutionTest {
     verify(resultSender, times(1)).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusMessage()).isEqualTo("/TestRegion does not exist");
+    assertThat(result.getStatusMessage()).isEqualTo(SEPARATOR + "TestRegion does not exist");
   }
 
   @Test
@@ -264,7 +265,8 @@ public class UserFunctionExecutionTest {
     CliFunctionResult result = resultCaptor.getValue();
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage()).isEqualTo(
-        "While executing function : TestFunction on member : MockMemberId one region : /TestRegion error occurred : Could not retrieve executor");
+        "While executing function : TestFunction on member : MockMemberId one region : " + SEPARATOR
+            + "TestRegion error occurred : Could not retrieve executor");
   }
 
   @Test
@@ -275,7 +277,7 @@ public class UserFunctionExecutionTest {
     filter.add("key2");
 
     arguments = new Object[] {"TestFunction", "key1,key2", "TestResultCollector", "arg1,arg2",
-        "/TestRegion", new Properties()};
+        SEPARATOR + "TestRegion", new Properties()};
     when(context.getArguments()).thenReturn(arguments);
     function.execute(context);
     verify(execution, times(1)).withFilter(filter);

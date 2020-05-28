@@ -770,7 +770,7 @@ public class PartitionedRegion extends LocalRegion
     this.node = initializeNode();
     this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath(),
         statisticsClock);
-    this.regionIdentifier = getFullPath().replace(SEPARATOR_CHAR, '#');
+    this.regionIdentifier = getFullPath().replace(Region.SEPARATOR_CHAR, '#');
 
     if (logger.isDebugEnabled()) {
       logger.debug("Constructing Partitioned Region {}", regionName);

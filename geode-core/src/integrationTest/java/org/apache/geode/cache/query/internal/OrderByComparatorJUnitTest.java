@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
@@ -55,7 +56,8 @@ public class OrderByComparatorJUnitTest {
   @Test
   public void testOrderByComparatorUnmapped() throws Exception {
     String queries[] = {
-        "SELECT  distinct ID, description, createTime FROM /portfolio1 pf1 where ID > 0 order by ID desc, pkid desc ",};
+        "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 0 order by ID desc, pkid desc ",};
     Object r[][] = new Object[queries.length][2];
     Position.resetCounter();
 
@@ -92,7 +94,8 @@ public class OrderByComparatorJUnitTest {
   @Test
   public void testOrderByComparatorMapped() throws Exception {
     String queries[] = {
-        "SELECT  distinct ID, description, createTime, pkid FROM /portfolio1 pf1 where ID > 0 order by ID desc, pkid desc ",};
+        "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
+            + "portfolio1 pf1 where ID > 0 order by ID desc, pkid desc ",};
     Object r[][] = new Object[queries.length][2];
     Position.resetCounter();
 
@@ -130,7 +133,7 @@ public class OrderByComparatorJUnitTest {
   @Test
   public void testUnsupportedOrderByForPR() throws Exception {
     String unsupportedQueries[] =
-        {"select distinct p.status from /portfolio1 p order by p.status, p.ID"};
+        {"select distinct p.status from " + SEPARATOR + "portfolio1 p order by p.status, p.ID"};
     Object r[][] = new Object[unsupportedQueries.length][2];
     Position.resetCounter();
     // Create Regions
@@ -159,7 +162,7 @@ public class OrderByComparatorJUnitTest {
   @Test
   public void testSupportedOrderByForRR() throws Exception {
     String unsupportedQueries[] =
-        {"select distinct p.status from /portfolio1 p order by p.status, p.ID"};
+        {"select distinct p.status from " + SEPARATOR + "portfolio1 p order by p.status, p.ID"};
     Object r[][] = new Object[unsupportedQueries.length][2];
     Position.resetCounter();
 

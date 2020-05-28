@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -46,11 +47,16 @@ public class QueryFromClauseCanonicalizationJUnitTest {
   QueryService qs = null;
 
   static String queries[] = {
-      "SELECT DISTINCT ID, value.secId FROM /pos, getPositions where status = 'active' and ID = 0",
-      "SELECT DISTINCT ID, value.secId FROM /pos, positions where status = 'active' and ID = 0",
-      "SELECT DISTINCT ID, value.secId FROM /pos, getPositions() where status = 'active' and ID = 0",
-      "SELECT DISTINCT ID, p.value.secId FROM /pos, getPositions('true') p where status = 'active' and ID = 0",
-      "SELECT DISTINCT * FROM /pos as a, a.collectionHolderMap['0'].arr as b where a.status = 'active' and a.ID = 0",
+      "SELECT DISTINCT ID, value.secId FROM " + SEPARATOR
+          + "pos, getPositions where status = 'active' and ID = 0",
+      "SELECT DISTINCT ID, value.secId FROM " + SEPARATOR
+          + "pos, positions where status = 'active' and ID = 0",
+      "SELECT DISTINCT ID, value.secId FROM " + SEPARATOR
+          + "pos, getPositions() where status = 'active' and ID = 0",
+      "SELECT DISTINCT ID, p.value.secId FROM " + SEPARATOR
+          + "pos, getPositions('true') p where status = 'active' and ID = 0",
+      "SELECT DISTINCT * FROM " + SEPARATOR
+          + "pos as a, a.collectionHolderMap['0'].arr as b where a.status = 'active' and a.ID = 0",
       /*
        * "SELECT DISTINCT * FROM /pos as a, a.positions[a.collectionHolderMap['0'][1]] as b where a.status = 'active' and a.ID = 0"
        * ,
@@ -101,7 +107,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
         case 0:
         case 1:
         case 2:
-          if (observer.clauses.get(0).toString().equals("/pos")
+          if (observer.clauses.get(0).toString().equals(SEPARATOR + "pos")
               && observer.clauses.get(1).toString().equals("iter1.positions")) {
             assertTrue(true);
           } else {
@@ -112,7 +118,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
           }
           break;
         case 3:
-          if (observer.clauses.get(0).toString().equals("/pos")
+          if (observer.clauses.get(0).toString().equals(SEPARATOR + "pos")
               && observer.clauses.get(1).toString().equals("iter1.getPositions('true')")) {
             assertTrue(true);
           } else {
@@ -123,8 +129,9 @@ public class QueryFromClauseCanonicalizationJUnitTest {
           }
           break;
         case 5:
-          if (observer.clauses.get(0).toString().equals("/pos") && observer.clauses.get(1)
-              .toString().equals("iter1.positions[iter1.collectionHolderMap[][]]")) {
+          if (observer.clauses.get(0).toString().equals(SEPARATOR + "pos")
+              && observer.clauses.get(1)
+                  .toString().equals("iter1.positions[iter1.collectionHolderMap[][]]")) {
             assertTrue(true);
           } else {
             overallTestFailed = true;
@@ -134,7 +141,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
           }
           break;
         case 4:
-          if (observer.clauses.get(0).toString().equals("/pos")
+          if (observer.clauses.get(0).toString().equals(SEPARATOR + "pos")
               && observer.clauses.get(1).toString().equals("iter1.collectionHolderMap['0'].arr")) {
             assertTrue(true);
           } else {
@@ -156,7 +163,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
   @Test
   public void testCanonicalizationOfMethod() throws Exception {
     QCompiler compiler = new QCompiler();
-    List list = compiler.compileFromClause("/pos pf");
+    List list = compiler.compileFromClause(SEPARATOR + "pos pf");
     ExecutionContext context =
         new ExecutionContext(new Object[] {"bindkey"}, CacheUtils.getCache());
     context.newScope(context.associateScopeID());

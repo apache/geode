@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.Collection;
@@ -51,7 +52,8 @@ public class ReservedKeywordsJUnitTest {
     Query query;
     Collection result;
     for (int i = 0; i < keywords.length; i++) {
-      String qStr = "SELECT DISTINCT * FROM /Keywords where \"" + keywords[i] + "\"";
+      String qStr =
+          "SELECT DISTINCT * FROM " + SEPARATOR + "Keywords where \"" + keywords[i] + "\"";
       CacheUtils.log(qStr);
       query = CacheUtils.getQueryService().newQuery(qStr);
       result = (Collection) query.execute();
@@ -61,7 +63,8 @@ public class ReservedKeywordsJUnitTest {
     }
     for (int i = 0; i < keywords.length; i++) {
       String qStr =
-          "SELECT DISTINCT * FROM /Keywords where \"" + keywords[i].toUpperCase() + "\"()";
+          "SELECT DISTINCT * FROM " + SEPARATOR + "Keywords where \"" + keywords[i].toUpperCase()
+              + "\"()";
       CacheUtils.log(qStr);
       query = CacheUtils.getQueryService().newQuery(qStr);
       result = (Collection) query.execute();

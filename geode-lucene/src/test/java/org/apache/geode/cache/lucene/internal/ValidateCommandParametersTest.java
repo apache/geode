@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateLuceneIndexName;
 import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateRegionName;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,23 +31,23 @@ public class ValidateCommandParametersTest {
 
   @Test
   public void validateVariousVariationsOfRegionName() throws Exception {
-    validateRegionName("/test");
+    validateRegionName(SEPARATOR + "test");
     validateRegionName("test");
-    validateRegionName("te/st");
+    validateRegionName("te" + SEPARATOR + "st");
     validateRegionName("te-st");
     validateRegionName("_test");
-    validateRegionName("/_test");
-    validateRegionName("/_tes/t");
-    assertThatThrownBy(() -> validateRegionName("/__test"))
+    validateRegionName(SEPARATOR + "_test");
+    validateRegionName(SEPARATOR + "_tes" + SEPARATOR + "t");
+    assertThatThrownBy(() -> validateRegionName(SEPARATOR + "__test"))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> validateRegionName("__#@T"))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> validateRegionName("__#@T"))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> validateRegionName("/__#@T"))
+    assertThatThrownBy(() -> validateRegionName(SEPARATOR + "__#@T"))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> validateRegionName("__")).isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> validateRegionName("/__"))
+    assertThatThrownBy(() -> validateRegionName(SEPARATOR + "__"))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> validateRegionName("")).isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> validateRegionName(null)).isInstanceOf(IllegalArgumentException.class);

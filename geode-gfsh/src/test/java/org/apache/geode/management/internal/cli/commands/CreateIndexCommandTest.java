@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -153,13 +154,13 @@ public class CreateIndexCommandTest {
   @Test
   public void getValidRegionName() {
     assertThat(command.getValidRegionName("regionB")).isEqualTo("regionB");
-    assertThat(command.getValidRegionName("/regionB")).isEqualTo("regionB");
-    assertThat(command.getValidRegionName("/regionB b")).isEqualTo("regionB");
-    assertThat(command.getValidRegionName("/regionB.entrySet()"))
+    assertThat(command.getValidRegionName(SEPARATOR + "regionB")).isEqualTo("regionB");
+    assertThat(command.getValidRegionName(SEPARATOR + "regionB b")).isEqualTo("regionB");
+    assertThat(command.getValidRegionName(SEPARATOR + "regionB.entrySet()"))
         .isEqualTo("regionB");
-    assertThat(command.getValidRegionName("/regionA.B.entrySet() A"))
+    assertThat(command.getValidRegionName(SEPARATOR + "regionA.B.entrySet() A"))
         .isEqualTo("regionA");
-    assertThat(command.getValidRegionName("/regionA.fieldName.entrySet() B"))
+    assertThat(command.getValidRegionName(SEPARATOR + "regionA.fieldName.entrySet() B"))
         .isEqualTo("regionA");
   }
 
@@ -177,7 +178,8 @@ public class CreateIndexCommandTest {
         any(), any());
 
     gfshParser.executeAndAssertThat(command,
-        "create index --name=index --expression=abc --region=/regionA --groups=group1,group2")
+        "create index --name=index --expression=abc --region=" + SEPARATOR
+            + "regionA --groups=group1,group2")
         .statusIsSuccess();
 
     verify(ccService).updateCacheConfig(eq("group1"), any());
@@ -194,7 +196,8 @@ public class CreateIndexCommandTest {
         any());
 
     gfshParser.executeAndAssertThat(command,
-        "create index --name=index --expression=abc --region=/regionA --groups=group1,group3")
+        "create index --name=index --expression=abc --region=" + SEPARATOR
+            + "regionA --groups=group1,group3")
         .statusIsError()
         .containsOutput("Region regionA does not exist in some of the groups");
 
@@ -212,7 +215,7 @@ public class CreateIndexCommandTest {
         any(), any());
 
     gfshParser.executeAndAssertThat(command,
-        "create index --name=index --expression=abc --region=/regionA")
+        "create index --name=index --expression=abc --region=" + SEPARATOR + "regionA")
         .statusIsSuccess()
         .containsOutput("result:xyz")
         .containsOutput(
@@ -231,7 +234,8 @@ public class CreateIndexCommandTest {
         any(), any());
 
     gfshParser.executeAndAssertThat(command,
-        "create index --name=index --expression=abc --region=/regionA --member=member")
+        "create index --name=index --expression=abc --region=" + SEPARATOR
+            + "regionA --member=member")
         .statusIsSuccess()
         .containsOutput("result:xyz")
         .containsOutput(
@@ -255,7 +259,7 @@ public class CreateIndexCommandTest {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
 
     gfshParser.executeAndAssertThat(command,
-        "create index --name=index --expression=abc --region=/regionA")
+        "create index --name=index --expression=abc --region=" + SEPARATOR + "regionA")
         .containsOutput("No Members Found");
 
     verify(command).findMembers(new String[] {}, null);
@@ -281,7 +285,7 @@ public class CreateIndexCommandTest {
         .containsExactly("group1");
     assertThat(command.getGroupsContainingRegion(ccService, "regionB"))
         .containsExactlyInAnyOrder("group1", "group2");
-    assertThat(command.getGroupsContainingRegion(ccService, "regionA/child"))
+    assertThat(command.getGroupsContainingRegion(ccService, "regionA" + SEPARATOR + "child"))
         .containsExactly("group1");
     assertThat(command.getGroupsContainingRegion(ccService, "notExist"))
         .isEmpty();

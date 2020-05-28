@@ -15,6 +15,7 @@
 package org.apache.geode.cache.persistence;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -139,7 +140,7 @@ public class MissingDiskStoreAcceptanceTest {
     await().untilAsserted(() -> {
       String waitingForMembersMessage = String.format(
           "Region %s has potentially stale data. It is waiting for another member to recover the latest data.",
-          Region.SEPARATOR + REGION_NAME);
+          SEPARATOR + REGION_NAME);
 
       LogFileAssert.assertThat(server1Folder.resolve(SERVER_1_NAME + ".log").toFile())
           .exists()

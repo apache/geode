@@ -119,7 +119,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         region.put("KEY1", "VALUE1");
       }
     });
@@ -148,7 +148,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         region.put("KEY1", "VALUE1");
       }
     });
@@ -267,7 +267,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
     public void afterCreate(EntryEvent event) {
       Cache cache = event.getRegion().getCache();
       HARegion regionForQueue = (HARegion) cache.getRegion(
-          Region.SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
+          SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
       HARegionQueue regionqueue = regionForQueue.getOwner();
       try {
         regionqueue.put(new ConflatableObject(event.getKey(), event.getNewValue(),

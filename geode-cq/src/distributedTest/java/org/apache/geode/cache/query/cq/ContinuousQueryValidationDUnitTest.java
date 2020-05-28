@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.cq;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -70,11 +71,11 @@ public class ContinuousQueryValidationDUnitTest {
   public void creationShouldSucceedForValidQueries() {
     CqAttributes attrs = new CqAttributesFactory().create();
     String[] validQueries = new String[] {
-        "SELECT * FROM /region WHERE id = 1",
-        "SELECT * FROM /region WHERE id <> 1",
-        "SELECT * FROM /region WHERE id < 100",
-        "SELECT * FROM /region WHERE status = 'active'",
-        "SELECT * FROM /region t WHERE t.price > 100.00"
+        "SELECT * FROM " + SEPARATOR + "region WHERE id = 1",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id <> 1",
+        "SELECT * FROM " + SEPARATOR + "region WHERE id < 100",
+        "SELECT * FROM " + SEPARATOR + "region WHERE status = 'active'",
+        "SELECT * FROM " + SEPARATOR + "region t WHERE t.price > 100.00"
     };
 
     for (String queryString : validQueries) {
@@ -89,11 +90,11 @@ public class ContinuousQueryValidationDUnitTest {
     CqAttributes attrs = new CqAttributesFactory().create();
     String[] invalidQueries = new String[] {
         "I AM NOT A QUERY",
-        "SELECT * FROM /region WHERE MIN(id) > 0",
-        "SELECT * FROM /region WHERE MAX(id) > 0",
-        "SELECT * FROM /region WHERE AVG(id) > 0",
-        "SELECT * FROM /region WHERE SUM(id) > 0",
-        "SELECT * FROM /region WHERE COUNT(id) > 0",
+        "SELECT * FROM " + SEPARATOR + "region WHERE MIN(id) > 0",
+        "SELECT * FROM " + SEPARATOR + "region WHERE MAX(id) > 0",
+        "SELECT * FROM " + SEPARATOR + "region WHERE AVG(id) > 0",
+        "SELECT * FROM " + SEPARATOR + "region WHERE SUM(id) > 0",
+        "SELECT * FROM " + SEPARATOR + "region WHERE COUNT(id) > 0",
     };
 
     for (String queryString : invalidQueries) {
@@ -108,35 +109,35 @@ public class ContinuousQueryValidationDUnitTest {
     CqAttributes attrs = new CqAttributesFactory().create();
     String[] unsupportedCQs = new String[] {
         // not "just" a select statement
-        "(SELECT * FROM /region WHERE status = 'active').isEmpty",
+        "(SELECT * FROM " + SEPARATOR + "region WHERE status = 'active').isEmpty",
 
         // cannot be DISTINCT
-        "SELECT DISTINCT * FROM /region WHERE status = 'active'",
+        "SELECT DISTINCT * FROM " + SEPARATOR + "region WHERE status = 'active'",
 
         // references more than one region
-        "SELECT * FROM /region1 r1, /region2 r2 WHERE r1 = r2",
+        "SELECT * FROM " + SEPARATOR + "region1 r1, " + SEPARATOR + "region2 r2 WHERE r1 = r2",
 
         // where clause refers to a region
-        "SELECT * FROM /region r WHERE r.val = /region.size",
+        "SELECT * FROM " + SEPARATOR + "region r WHERE r.val = " + SEPARATOR + "region.size",
 
         // more than one iterator in FROM clause
-        "SELECT * FROM /portfolios p1, p1.positions p2 WHERE p2.id = 'IBM'",
+        "SELECT * FROM " + SEPARATOR + "portfolios p1, p1.positions p2 WHERE p2.id = 'IBM'",
 
         // first iterator in FROM clause is not just a region path
-        "SELECT * FROM /region.entries e WHERE e.value.id = 23",
+        "SELECT * FROM " + SEPARATOR + "region.entries e WHERE e.value.id = 23",
 
         // has projections
-        "SELECT id FROM /region WHERE status = 'active'",
+        "SELECT id FROM " + SEPARATOR + "region WHERE status = 'active'",
 
         // has ORDER BY
-        "SELECT * FROM /region WHERE status = 'active' ORDER BY id",
+        "SELECT * FROM " + SEPARATOR + "region WHERE status = 'active' ORDER BY id",
 
         // has aggregates
-        "SELECT MIN(id) FROM /region WHERE status = 'active'",
-        "SELECT MAX(id) FROM /region WHERE status = 'active'",
-        "SELECT SUM(id) FROM /region WHERE status = 'active'",
-        "SELECT AVG(id) FROM /region WHERE status = 'active'",
-        "SELECT COUNT(id) FROM /region WHERE status = 'active'",
+        "SELECT MIN(id) FROM " + SEPARATOR + "region WHERE status = 'active'",
+        "SELECT MAX(id) FROM " + SEPARATOR + "region WHERE status = 'active'",
+        "SELECT SUM(id) FROM " + SEPARATOR + "region WHERE status = 'active'",
+        "SELECT AVG(id) FROM " + SEPARATOR + "region WHERE status = 'active'",
+        "SELECT COUNT(id) FROM " + SEPARATOR + "region WHERE status = 'active'",
     };
 
     for (String queryString : unsupportedCQs) {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -84,8 +85,10 @@ public class IUMRShuffleIteratorsJUnitTest {
   public void testQueryWithNOIndexes1() throws Exception {
     CacheUtils.getQueryService();
 
-    String queries[] = {"select distinct * from /portfolios p, /employees e",
-        "Select distinct * from /portfolios pf,/employees e  where pf.status='active'"};
+    String queries[] =
+        {"select distinct * from " + SEPARATOR + "portfolios p, " + SEPARATOR + "employees e",
+            "Select distinct * from " + SEPARATOR + "portfolios pf," + SEPARATOR
+                + "employees e  where pf.status='active'"};
 
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -104,7 +107,8 @@ public class IUMRShuffleIteratorsJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
 
     String queries[] =
-        {"Select distinct * from /portfolios pf,/employees e  where pf.status='active'"};
+        {"Select distinct * from " + SEPARATOR + "portfolios pf," + SEPARATOR
+            + "employees e  where pf.status='active'"};
 
     // Execute Queries without Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -112,7 +116,7 @@ public class IUMRShuffleIteratorsJUnitTest {
       r[i][0] = q.execute();
     }
     // Create Index and Execute the Queries
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/portfolios");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolios");
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       QueryObserverImpl observer = new QueryObserverImpl();
@@ -136,14 +140,15 @@ public class IUMRShuffleIteratorsJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     String queries[] = {
         // Test Case No. IUMR001
-        "Select distinct * from /portfolios pf, /employees e  where e.name ='empName'",};
+        "Select distinct * from " + SEPARATOR + "portfolios pf, " + SEPARATOR
+            + "employees e  where e.name ='empName'",};
     // Execute Queries without Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       r[i][0] = q.execute();
     }
     // Create Index andExecute the Queries
-    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", "/employees e");
+    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", SEPARATOR + "employees e");
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       QueryObserverImpl observer = new QueryObserverImpl();
@@ -169,7 +174,8 @@ public class IUMRShuffleIteratorsJUnitTest {
 
     String queries[] = {
         // Test Case No. IUMR002
-        "Select distinct * from /portfolios pf, /employees e  where e.name ='empName' and pf.status='active'",};
+        "Select distinct * from " + SEPARATOR + "portfolios pf, " + SEPARATOR
+            + "employees e  where e.name ='empName' and pf.status='active'",};
 
     // Execute Query without Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -178,8 +184,8 @@ public class IUMRShuffleIteratorsJUnitTest {
     }
 
     // Create Indexes and Execute Queries
-    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", "/employees e");
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", "/portfolios pf");
+    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", SEPARATOR + "employees e");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "portfolios pf");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -223,8 +229,10 @@ public class IUMRShuffleIteratorsJUnitTest {
 
     String queries[] = {
         // Scenario A: If the Order of the Regions in Query are changed Index is not being used.
-        "select distinct * from /portfolios p, /employees e, /address a, a.street s where s.street ='DPStreet1'",
-        "select distinct * from /address a, /portfolios p, /employees e, a.street s  where s.street ='DPStreet1'",};
+        "select distinct * from " + SEPARATOR + "portfolios p, " + SEPARATOR + "employees e, "
+            + SEPARATOR + "address a, a.street s where s.street ='DPStreet1'",
+        "select distinct * from " + SEPARATOR + "address a, " + SEPARATOR + "portfolios p, "
+            + SEPARATOR + "employees e, a.street s  where s.street ='DPStreet1'",};
 
     // Execute queries without Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -232,9 +240,10 @@ public class IUMRShuffleIteratorsJUnitTest {
       r[i][0] = q.execute();
     }
     // Create Indexes and Execute the queries
-    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", "/employees e");
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", "/portfolios p");
-    qs.createIndex("streetIndex", IndexType.FUNCTIONAL, "s.street", "/address a, a.street s");
+    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", SEPARATOR + "employees e");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolios p");
+    qs.createIndex("streetIndex", IndexType.FUNCTIONAL, "s.street",
+        SEPARATOR + "address a, a.street s");
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       QueryObserverImpl observer = new QueryObserverImpl();
@@ -257,8 +266,10 @@ public class IUMRShuffleIteratorsJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
 
     String queries[] = {
-        "select distinct * from /address itr1,itr1.phoneNo itr2,itr1.street itr3 where itr2.mobile>333",
-        "select distinct * from /address itr1,itr1.street itr2,itr1.phoneNo itr3 where itr3.mobile>333",};
+        "select distinct * from " + SEPARATOR
+            + "address itr1,itr1.phoneNo itr2,itr1.street itr3 where itr2.mobile>333",
+        "select distinct * from " + SEPARATOR
+            + "address itr1,itr1.street itr2,itr1.phoneNo itr3 where itr3.mobile>333",};
 
     // Execute the query without index
     for (int i = 0; i < queries.length; i++) {
@@ -267,7 +278,7 @@ public class IUMRShuffleIteratorsJUnitTest {
     }
     // Create index and Execute the query
     qs.createIndex("mobileIndex", IndexType.FUNCTIONAL, "itr2.mobile",
-        "/address itr1,itr1.phoneNo itr2,itr1.street itr3");
+        SEPARATOR + "address itr1,itr1.phoneNo itr2,itr1.street itr3");
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       QueryObserverImpl observer = new QueryObserverImpl();
@@ -292,16 +303,19 @@ public class IUMRShuffleIteratorsJUnitTest {
 
     String queries[] = {
         // Only Index on the first region in the Query is used
-        "select distinct * from /address a, /portfolios p, /employees e, a.street s where p.status='active' and s.street ='DPStreet1'",};
+        "select distinct * from " + SEPARATOR + "address a, " + SEPARATOR + "portfolios p, "
+            + SEPARATOR
+            + "employees e, a.street s where p.status='active' and s.street ='DPStreet1'",};
     // Execute queries without Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       r[i][0] = q.execute();
     }
     // Create Indexes and Execute the queries
-    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", "/employees e");
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", "/portfolios p");
-    qs.createIndex("streetIndex", IndexType.FUNCTIONAL, "s.street", "/address a, a.street s");
+    qs.createIndex("nameIndex", IndexType.FUNCTIONAL, "e.name", SEPARATOR + "employees e");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolios p");
+    qs.createIndex("streetIndex", IndexType.FUNCTIONAL, "s.street",
+        SEPARATOR + "address a, a.street s");
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       QueryObserverImpl observer = new QueryObserverImpl();

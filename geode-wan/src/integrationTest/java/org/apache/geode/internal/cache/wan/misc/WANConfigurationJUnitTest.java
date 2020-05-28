@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -175,7 +176,8 @@ public class WANConfigurationJUnitTest {
 
     assertThatThrownBy(() -> regionFactory.create("test_GatewaySender_Parallel_DistributedRegion"))
         .isInstanceOf(GatewaySenderConfigurationException.class).hasMessage(
-            "Parallel Gateway Sender NYSender can not be used with replicated region /test_GatewaySender_Parallel_DistributedRegion");
+            "Parallel Gateway Sender NYSender can not be used with replicated region " + SEPARATOR
+                + "test_GatewaySender_Parallel_DistributedRegion");
   }
 
   @Test

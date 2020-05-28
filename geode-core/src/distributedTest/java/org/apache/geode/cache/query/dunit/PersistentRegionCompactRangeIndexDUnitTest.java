@@ -103,7 +103,7 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
   public void testGIIUpdateWithIndexDoesNotDuplicateEntryInIndexWhenAlreadyRecoveredFromPersistence() {
     // this region is created via cache.xml
     String regionName = "testRegion";
-    String idQuery = "select * from /" + regionName + " p where p.ID = 1";
+    String idQuery = "select * from " + SEPARATOR + regionName + " p where p.ID = 1";
     int idQueryExpectedSize = 1;
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
@@ -157,15 +157,15 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
     server3.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
     server2.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
     server1.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
   }
@@ -201,15 +201,15 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
     server1.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries).filter(i -> i % 2 != 0), 8, 1);
     });
     server2.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries).filter(i -> i % 2 != 0), 8, 1);
     });
     server1.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries).filter(i -> i % 2 != 0), 8, 1);
     });
   }
@@ -246,15 +246,15 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
     server3.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
     server2.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
     server1.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
   }
@@ -292,15 +292,18 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
     server3.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
+      verifyAllEntries(
+          "select key, value from " + SEPARATOR + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
     server2.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
+      verifyAllEntries(
+          "select key, value from " + SEPARATOR + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
     server1.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
+      verifyAllEntries(
+          "select key, value from " + SEPARATOR + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
   }
@@ -334,15 +337,18 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
     server3.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
+      verifyAllEntries(
+          "select key, value from " + SEPARATOR + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
     server2.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
+      verifyAllEntries(
+          "select key, value from " + SEPARATOR + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
     server1.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + ".entrySet where value.ID = ",
+      verifyAllEntries(
+          "select key, value from " + SEPARATOR + regionName + ".entrySet where value.ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
   }
@@ -414,15 +420,15 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
     server3.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
     server2.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
     server1.invoke(() -> {
-      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+      verifyAllEntries("select key, value from " + SEPARATOR + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 0);
     });
   }

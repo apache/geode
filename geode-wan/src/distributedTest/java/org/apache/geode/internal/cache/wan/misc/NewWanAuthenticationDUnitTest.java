@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
@@ -131,7 +132,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> doPuts(regionName, 1));
     receiver.invoke(() -> {
-      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       await().untilAsserted(() -> assertTrue(r.size() > 0));
     });
   }
@@ -159,7 +160,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     sender.invoke(() -> doPuts(regionName, 1));
 
     receiver.invoke(() -> {
-      Region r = cache.getRegion(Region.SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
       await().untilAsserted(() -> assertTrue(r.size() > 0));
     });
   }

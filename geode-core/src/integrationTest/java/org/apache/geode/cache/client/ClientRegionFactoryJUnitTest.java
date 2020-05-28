@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY_HEAP_LRU;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY_OVERFLOW;
@@ -432,7 +433,7 @@ public class ClientRegionFactoryJUnitTest {
     QueryService qs = c.getLocalQueryService();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL);
     r1 = factory.create("localRegion");
-    Query q = qs.newQuery("SELECT * from /localRegion");
+    Query q = qs.newQuery("SELECT * from " + SEPARATOR + "localRegion");
     assertThatCode(q::execute).doesNotThrowAnyException();
   }
 

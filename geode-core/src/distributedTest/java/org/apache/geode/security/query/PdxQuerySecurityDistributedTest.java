@@ -14,6 +14,7 @@
  */
 package org.apache.geode.security.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 
@@ -71,36 +72,36 @@ public class PdxQuerySecurityDistributedTest extends AbstractQuerySecurityDistri
 
   @Test
   public void queryWithPublicFieldAccessOnWhereClauseShouldNotThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.id = 3";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.id = 3";
     List<Object> expectedResults = Collections.singletonList(values[1]);
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
   }
 
   @Test
   public void queryWithPdxNamedFieldAccessOnWhereClauseShouldNotThrowSecurityException() {
-    String query = "SELECT * FROM /" + regionName + " r WHERE r.getName = 'Beth'";
+    String query = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getName = 'Beth'";
     List<Object> expectedResults = Collections.singletonList(values[1]);
     executeQueryAndAssertExpectedResults(specificUserClient, query, expectedResults);
   }
 
   @Test
   public void queryWithMethodInvocationShouldThrowSecurityExceptionForPdxObjects() {
-    String query1 = "SELECT r.getAge FROM /" + regionName + " r";
+    String query1 = "SELECT r.getAge FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query1,
         regexForExpectedExceptions);
 
-    String query2 = "SELECT * FROM /" + regionName + " r WHERE r.name = 'Beth'";
+    String query2 = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.name = 'Beth'";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query2,
         regexForExpectedExceptions);
   }
 
   @Test
   public void queryWithPermanentlyForbiddenMethodShouldThrowSecurityExceptionForPdxObjects() {
-    String query1 = "SELECT r.getClass FROM /" + regionName + " r";
+    String query1 = "SELECT r.getClass FROM " + SEPARATOR + regionName + " r";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query1,
         regexForExpectedExceptions);
 
-    String query2 = "SELECT * FROM /" + regionName + " r WHERE r.getClass() != 3";
+    String query2 = "SELECT * FROM " + SEPARATOR + regionName + " r WHERE r.getClass() != 3";
     executeQueryAndAssertThatNoAuthorizedExceptionWasThrown(specificUserClient, query2,
         regexForExpectedExceptions);
   }

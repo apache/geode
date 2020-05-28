@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -194,7 +195,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   private void runTXFunctions() {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        .getRegion(SEPARATOR + CustomerPartitionedRegionName);
     CacheTransactionManager mgr = pr.getCache().getCacheTransactionManager();
     mgr.begin();
     runFunction(pr, 1, true);
@@ -225,9 +226,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       @Override
       public Object call() {
         PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-            .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+            .getRegion(SEPARATOR + CustomerPartitionedRegionName);
         PartitionedRegion orderpr = (PartitionedRegion) basicGetCache()
-            .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+            .getRegion(SEPARATOR + OrderPartitionedRegionName);
         CustId custId = new CustId(2);
         Customer newCus = new Customer("foo", "bar");
         Order order = new Order("fooOrder");
@@ -457,7 +458,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void containsKeyLocally() throws PRLocallyDestroyedException, ForceReattemptException {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        .getRegion(SEPARATOR + CustomerPartitionedRegionName);
 
     CustId cust1 = new CustId(1);
     CustId cust2 = new CustId(2);
@@ -489,7 +490,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   private void performGetTx() {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        .getRegion(SEPARATOR + CustomerPartitionedRegionName);
     CacheTransactionManager mgr = pr.getCache().getCacheTransactionManager();
     CustId cust1 = new CustId(1);
     CustId cust2 = new CustId(2);
@@ -563,7 +564,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   private TransactionId beginTx(boolean doPut) {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        .getRegion(SEPARATOR + CustomerPartitionedRegionName);
     CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
     CustId cust1 = new CustId(1);
     mgr.begin();
@@ -582,7 +583,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       @Override
       public void run() {
         PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-            .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+            .getRegion(SEPARATOR + OrderPartitionedRegionName);
         CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
 
         moveBucket(op, dm1, dm2);
@@ -637,14 +638,14 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   @SuppressWarnings("unchecked")
   private void moveBucket(Op op, DistributedMember dm1, DistributedMember dm2) {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        .getRegion(SEPARATOR + CustomerPartitionedRegionName);
     CustId cust1 = new CustId(1);
     OrderId order1 = new OrderId(11, cust1);
     boolean isCust1Local = isCust1LocalSingleBucket(pr, cust1);
     DistributedMember source = isCust1Local ? dm1 : dm2;
     DistributedMember destination = isCust1Local ? dm2 : dm1;
     PartitionedRegion prOrder = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+        .getRegion(SEPARATOR + OrderPartitionedRegionName);
 
     LogService.getLogger().info("source ={}, destination ={}", source, destination);
 
@@ -759,9 +760,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   private void doOp(Op op, CacheTransactionManager mgr) {
     PartitionedRegion cust = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        .getRegion(SEPARATOR + CustomerPartitionedRegionName);
     PartitionedRegion order = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+        .getRegion(SEPARATOR + OrderPartitionedRegionName);
 
     CustId cust1 = new CustId(1);
     CustId cust2 = new CustId(2);
@@ -878,7 +879,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       @Override
       public Object call() {
         Region custRegion =
-            basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+            basicGetCache().getRegion(SEPARATOR + CustomerPartitionedRegionName);
         custRegion.getAttributesMutator().addCacheListener(new TransactionListener());
         return null;
       }
@@ -907,9 +908,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     PartitionedRegion orderPartitionedregion = null;
     try {
       customerPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+          .getRegion(SEPARATOR + CustomerPartitionedRegionName);
       orderPartitionedregion = (PartitionedRegion) basicGetCache()
-          .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+          .getRegion(SEPARATOR + OrderPartitionedRegionName);
     } catch (Exception e) {
       Assert.fail("validateAfterPutPartitionedRegion : failed while getting the region", e);
     }
@@ -954,7 +955,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       @Override
       public Object call() {
         Region custRegion =
-            basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+            basicGetCache().getRegion(SEPARATOR + CustomerPartitionedRegionName);
         custRegion.getAttributesMutator().addCacheListener(new TransactionListener2());
         return null;
       }
@@ -969,9 +970,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       @Override
       public Object call() {
         PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-            .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+            .getRegion(SEPARATOR + CustomerPartitionedRegionName);
         PartitionedRegion orderpr = (PartitionedRegion) basicGetCache()
-            .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+            .getRegion(SEPARATOR + OrderPartitionedRegionName);
         CustId custId = new CustId(2);
         Customer newCus = new Customer("foo", "bar");
         Order order = new Order("fooOrder");
@@ -1012,9 +1013,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       @Override
       public Object call() {
         PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-            .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+            .getRegion(SEPARATOR + CustomerPartitionedRegionName);
         PartitionedRegion orderpr = (PartitionedRegion) basicGetCache()
-            .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+            .getRegion(SEPARATOR + OrderPartitionedRegionName);
         CustId custId = new CustId(2);
         Customer newCus = new Customer("foo", "bar");
         Order order = new Order("fooOrder");
@@ -1178,7 +1179,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   private void movePrimaryBucket(InternalDistributedMember dm1, InternalDistributedMember dm2) {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        .getRegion(SEPARATOR + CustomerPartitionedRegionName);
     CustId cust1 = new CustId(1);
     int bucketId = pr.getKeyInfo(cust1).getBucketId();
     boolean isCust1LocalPrimary = pr.getBucketRegion(cust1).getBucketAdvisor().isPrimary();
@@ -1198,7 +1199,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   private void resumeTxAfterPrimaryMoved(TransactionId txId) {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        .getRegion(SEPARATOR + CustomerPartitionedRegionName);
     CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
 
     mgr.resume(txId);
@@ -1276,7 +1277,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     public void afterCreate(EntryEvent event) {
       // for each customer, put 10 orders in a tx.
       Region custPR = event.getRegion();
-      Region orderPR = custPR.getCache().getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+      Region orderPR = custPR.getCache().getRegion(SEPARATOR + OrderPartitionedRegionName);
       CacheTransactionManager mgr = custPR.getCache().getCacheTransactionManager();
       mgr.begin();
       CustId custId = (CustId) event.getKey();

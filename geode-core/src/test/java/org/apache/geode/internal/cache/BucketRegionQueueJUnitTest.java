@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
@@ -31,7 +32,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -89,7 +89,7 @@ public class BucketRegionQueueJUnitTest {
     // Mock root region
     this.rootRegion = mock(PartitionedRegion.class);
     when(this.rootRegion.getFullPath())
-        .thenReturn(Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+        .thenReturn(SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
   }
 
   private void createBucketRegionQueue() {

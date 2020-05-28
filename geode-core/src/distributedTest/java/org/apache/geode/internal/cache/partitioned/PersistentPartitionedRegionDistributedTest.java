@@ -1528,7 +1528,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
         .isInstanceOf(PartitionOfflineException.class);
 
     assertThatThrownBy(() -> getCache().getQueryService()
-        .newQuery("select * from /" + partitionedRegionName).execute())
+        .newQuery("select * from " + SEPARATOR + partitionedRegionName).execute())
             .isInstanceOf(PartitionOfflineException.class);
 
     Set<?> keys = region.keySet();

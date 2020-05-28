@@ -260,7 +260,7 @@ public class RebalanceCommandDUnitTest {
 
   @Test
   public void testWithExcludedBadRegion() {
-    String command = "rebalance --exclude-region=/asdf";
+    String command = "rebalance --exclude-region=" + SEPARATOR + "asdf";
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
     assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))

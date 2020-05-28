@@ -14,6 +14,8 @@
  */
 package org.apache.geode.security.templates;
 
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
@@ -164,7 +166,7 @@ public class XmlAuthorization implements AccessControl {
     boolean isPrevCharSlash = false;
     int startIndex;
 
-    if (regionName.charAt(0) != '/') {
+    if (regionName.charAt(0) != SEPARATOR_CHAR) {
       changed = true;
       startIndex = 0;
     } else {
@@ -172,13 +174,13 @@ public class XmlAuthorization implements AccessControl {
       startIndex = 1;
     }
 
-    resultName[0] = '/';
+    resultName[0] = SEPARATOR_CHAR;
     int resultLength = 1;
 
     // Replace all more than one '/'s with a single '/'
     for (int index = startIndex; index < regionName.length(); ++index) {
       char currChar = regionName.charAt(index);
-      if (currChar == '/') {
+      if (currChar == SEPARATOR_CHAR) {
         if (isPrevCharSlash) {
           changed = true;
           continue;
@@ -191,7 +193,7 @@ public class XmlAuthorization implements AccessControl {
     }
 
     // Remove any trailing slash
-    if (resultName[resultLength - 1] == '/') {
+    if (resultName[resultLength - 1] == SEPARATOR_CHAR) {
       --resultLength;
       changed = true;
     }

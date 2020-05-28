@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -101,9 +102,10 @@ public class IUMJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {"SELECT DISTINCT * FROM /pos,  positions.values where status='active'"
+    String queries[] =
+        {"SELECT DISTINCT * FROM " + SEPARATOR + "pos,  positions.values where status='active'"
         // TASK IUM4
-    };
+        };
     SelectResults r[][] = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -125,7 +127,7 @@ public class IUMJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/pos");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "pos");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -174,7 +176,8 @@ public class IUMJUnitTest {
     CacheUtils.getQueryService();
 
     String queries[] = {
-        "SELECT DISTINCT * from /portfolios pf , pf.positions.values pos where pos.getSecId = 'IBM' and status = 'inactive'"
+        "SELECT DISTINCT * from " + SEPARATOR
+            + "portfolios pf , pf.positions.values pos where pos.getSecId = 'IBM' and status = 'inactive'"
         // TASK IUM3
     };
     for (int i = 0; i < queries.length; i++) {

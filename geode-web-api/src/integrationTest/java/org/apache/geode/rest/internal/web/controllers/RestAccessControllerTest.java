@@ -14,6 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.matchers.JsonEquivalence.jsonEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -1064,20 +1065,24 @@ public class RestAccessControllerTest {
     deleteAllQueries();
 
     mockMvc.perform(post(
-        "/v1/queries?id=selectOrder&q=SELECT DISTINCT o FROM /orders o, o.items item WHERE item.quantity > $1 AND item.totalPrice > $2")
-            .with(POST_PROCESSOR))
+        "/v1/queries?id=selectOrder&q=SELECT DISTINCT o FROM " + SEPARATOR
+            + "orders o, o.items item WHERE item.quantity > $1 AND item.totalPrice > $2")
+                .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/selectOrder"));
 
     mockMvc.perform(
-        post("/v1/queries?id=selectCustomer&q=SELECT c FROM /customers c WHERE c.customerId = $1")
-            .with(POST_PROCESSOR))
+        post("/v1/queries?id=selectCustomer&q=SELECT c FROM " + SEPARATOR
+            + "customers c WHERE c.customerId = $1")
+                .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/selectCustomer"));
 
     mockMvc.perform(post(
-        "/v1/queries?id=selectHighRoller&q=SELECT DISTINCT c FROM /customers c, /orders o, o.items item WHERE item.totalprice > $1 AND c.customerId = o.customerId")
-            .with(POST_PROCESSOR))
+        "/v1/queries?id=selectHighRoller&q=SELECT DISTINCT c FROM " + SEPARATOR + "customers c, "
+            + SEPARATOR
+            + "orders o, o.items item WHERE item.totalprice > $1 AND c.customerId = o.customerId")
+                .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/selectHighRoller"));
 
@@ -1110,7 +1115,7 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void executeAdhocQuery() throws Exception {
     putAll();
-    mockMvc.perform(get("/v1/queries/adhoc?q=SELECT * FROM /customers LIMIT 100")
+    mockMvc.perform(get("/v1/queries/adhoc?q=SELECT * FROM " + SEPARATOR + "customers LIMIT 100")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(content().json(jsonResources.get(CUSTOMER_LIST_NO_TYPE_JSON)));
@@ -1126,14 +1131,16 @@ public class RestAccessControllerTest {
     deleteAllQueries();
     putAll(); // Create customers
     mockMvc.perform(
-        post("/v1/queries?id=testQuery&q=SELECT DISTINCT c from /customers c where lastName=$1")
-            .with(POST_PROCESSOR))
+        post("/v1/queries?id=testQuery&q=SELECT DISTINCT c from " + SEPARATOR
+            + "customers c where lastName=$1")
+                .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/testQuery"));
 
     mockMvc.perform(
-        put("/v1/queries/testQuery?q=SELECT DISTINCT c from /customers c where customerId IN SET ($1, $2, $3)")
-            .with(POST_PROCESSOR))
+        put("/v1/queries/testQuery?q=SELECT DISTINCT c from " + SEPARATOR
+            + "customers c where customerId IN SET ($1, $2, $3)")
+                .with(POST_PROCESSOR))
         .andExpect(status().isOk());
 
     mockMvc.perform(post("/v1/queries/testQuery")
@@ -1149,8 +1156,9 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void deleteQuery() throws Exception {
     mockMvc.perform(
-        post("/v1/queries?id=myQuery&q=SELECT DISTINCT c from /customers c where lastName=$1")
-            .with(POST_PROCESSOR))
+        post("/v1/queries?id=myQuery&q=SELECT DISTINCT c from " + SEPARATOR
+            + "customers c where lastName=$1")
+                .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/myQuery"));
 
@@ -1171,8 +1179,9 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void putUnknownQuery() throws Exception {
     mockMvc.perform(
-        put("/v1/queries/unknown?q=SELECT DISTINCT c from /customers c where customerId IN SET ($1, $2, $3)")
-            .with(POST_PROCESSOR))
+        put("/v1/queries/unknown?q=SELECT DISTINCT c from " + SEPARATOR
+            + "customers c where customerId IN SET ($1, $2, $3)")
+                .with(POST_PROCESSOR))
         .andExpect(status().isNotFound());
   }
 
@@ -1182,7 +1191,7 @@ public class RestAccessControllerTest {
     deleteAllQueries();
 
     mockMvc.perform(post("/v1/queries?id=testQuery")
-        .content("SELECT * from /customers")
+        .content("SELECT * from " + SEPARATOR + "customers")
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/testQuery"));
@@ -1191,10 +1200,11 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.queries[*].id", containsInAnyOrder("testQuery")))
-        .andExpect(jsonPath("$.queries[*].oql", containsInAnyOrder("SELECT * from /customers")));
+        .andExpect(jsonPath("$.queries[*].oql",
+            containsInAnyOrder("SELECT * from " + SEPARATOR + "customers")));
 
     mockMvc.perform(put("/v1/queries/testQuery")
-        .content("SELECT * from /orders")
+        .content("SELECT * from " + SEPARATOR + "orders")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk());
 
@@ -1202,7 +1212,8 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.queries[*].id", containsInAnyOrder("testQuery")))
-        .andExpect(jsonPath("$.queries[*].oql", containsInAnyOrder("SELECT * from /orders")));
+        .andExpect(jsonPath("$.queries[*].oql",
+            containsInAnyOrder("SELECT * from " + SEPARATOR + "orders")));
   }
 
   @Test

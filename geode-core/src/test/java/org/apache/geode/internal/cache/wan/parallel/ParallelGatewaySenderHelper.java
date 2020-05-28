@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -32,7 +33,6 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.BucketAdvisor;
@@ -156,7 +156,7 @@ public class ParallelGatewaySenderHelper {
   }
 
   public static String getRegionQueueName(String gatewaySenderId) {
-    return Region.SEPARATOR + gatewaySenderId + ParallelGatewaySenderQueue.QSTRING;
+    return SEPARATOR + gatewaySenderId + ParallelGatewaySenderQueue.QSTRING;
   }
 
   private static EnumListenerEvent getEnumListenerEvent(Operation operation) {
