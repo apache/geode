@@ -114,6 +114,11 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> new RedisStringInRegion(localRegion).set(key, value, options);
         break;
       }
+      case GETSET: {
+        ByteArrayWrapper value = (ByteArrayWrapper) args[1];
+        callable = () -> new RedisStringInRegion(localRegion).getset(key, value);
+        break;
+      }
       case INCR:
         callable = () -> new RedisStringInRegion(localRegion).incr(key);
         break;

@@ -66,15 +66,13 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     }
 
     RedisString redisString = getRedisStringForSet(key);
-
     if (redisString == null) {
       redisString = new RedisString(value);
-      region.put(key, redisString);
     } else {
       redisString.set(value);
-      region.put(key, redisString);
     }
-    handleExpiration(redisString, key, options);
+    handleSetExpiration(redisString, options);
+    region.put(key, redisString);
     return true;
   }
 
@@ -105,24 +103,40 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     return redisString.decr(region, key);
   }
 
+  @Override
+  public ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value) {
+    ByteArrayWrapper result = null;
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      region.put(key, new RedisString(value));
+    } else {
+      result = redisString.get();
+      redisString.set(value);
+      redisString.persistNoDelta();
+      region.put(key, redisString);
+    }
+    return result;
+  }
+
   private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
     if (getRedisData(key) != null) {
       return false;
     }
     RedisString redisString = new RedisString(value);
+    handleSetExpiration(redisString, options);
     region.put(key, redisString);
-    handleExpiration(redisString, key, options);
     return true;
   }
 
-  private void handleExpiration(RedisString redisString, ByteArrayWrapper key, SetOptions options) {
+  private void handleSetExpiration(RedisString redisString, SetOptions options) {
     long setExpiration = options == null ? 0L : options.getExpiration();
     if (setExpiration != 0) {
       long now = System.currentTimeMillis();
       long timestamp = now + setExpiration;
-      redisString.setExpirationTimestamp(region, key, timestamp);
+      redisString.setExpirationTimestampNoDelta(timestamp);
     } else if (options == null || !options.isKeepTTL()) {
-      redisString.persist(region, key);
+      redisString.persistNoDelta();
     }
   }
 

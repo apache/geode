@@ -608,7 +608,6 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8192")
   public void testGetSet_shouldBeAtomic()
       throws ExecutionException, InterruptedException, TimeoutException {
     jedis.set("contestedKey", "0");

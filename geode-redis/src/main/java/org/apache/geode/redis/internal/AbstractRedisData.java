@@ -44,6 +44,10 @@ public abstract class AbstractRedisData implements RedisData {
     storeChanges(region, key, new TimestampDeltaInfo(value));
   }
 
+  public void setExpirationTimestampNoDelta(long value) {
+    expirationTimestamp = value;
+  }
+
   @Override
   public long getExpirationTimestamp() {
     return expirationTimestamp;
@@ -71,6 +75,10 @@ public abstract class AbstractRedisData implements RedisData {
     }
     setExpirationTimestamp(region, key, NO_EXPIRATION);
     return 1;
+  }
+
+  public void persistNoDelta() {
+    setExpirationTimestampNoDelta(NO_EXPIRATION);
   }
 
   @Override
