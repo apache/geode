@@ -50,17 +50,29 @@ class DiskStoreCommandsUtils {
   static String validatedDirectoriesAndFile(String[] diskDirs, String name) {
     String invalidDirectories = null;
     StringBuilder builder = null;
-    File diskDirAndFile;
+    File diskDir;
+    boolean diskStoreFileExist = false;
     for (String diskDirPath : diskDirs) {
-      diskDirAndFile = new File(diskDirPath, "BACKUP" + name + IF_FILE_EXT);
-      if (!diskDirAndFile.exists()) {
+      diskDir = new File(diskDirPath);
+      File diskStoreFile = new File(diskDirPath, "BACKUP" + name + IF_FILE_EXT);
+      if (!diskDir.exists()) {
         if (builder == null) {
           builder = new StringBuilder();
         } else if (builder.length() != 0) {
           builder.append(", ");
         }
-        builder.append(diskDirAndFile);
+        builder.append(diskDir);
+      } else if (diskStoreFile.exists()) {
+        diskStoreFileExist = true;
       }
+
+      if (!diskStoreFileExist) {
+        if (builder == null) {
+          builder = new StringBuilder();
+        }
+        builder.append(name);
+      }
+
       if (builder != null) {
         invalidDirectories = builder.toString();
       }
