@@ -101,4 +101,8 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   public int getPort() {
     return redisServer.getPort();
   }
+
+  public void setEnableUnsupported(boolean unsupported) {
+    redisServer.setAllowUnsupportedCommands(unsupported);
+  }
 }

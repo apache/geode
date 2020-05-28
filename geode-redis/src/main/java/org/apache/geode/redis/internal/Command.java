@@ -55,7 +55,10 @@ public class Command {
       type = RedisCommandType.UNKNOWN;
     }
     this.commandType = type;
+  }
 
+  public boolean isSupported() {
+    return commandType.isSupported();
   }
 
   /**

@@ -3,7 +3,7 @@ org/apache/geode/redis/internal/DeltaType,false
 org/apache/geode/redis/internal/ParameterRequirements/RedisParametersMismatchException,true,-643700717871858072
 org/apache/geode/redis/internal/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/PubSubImpl
 org/apache/geode/redis/internal/RedisCommandParserException,true,4707944288714910949
-org/apache/geode/redis/internal/RedisCommandType,false,executor:org/apache/geode/redis/internal/Executor,parameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements
+org/apache/geode/redis/internal/RedisCommandType,false,executor:org/apache/geode/redis/internal/Executor,parameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements,supported:boolean
 org/apache/geode/redis/internal/RedisDataType,false,toStringValue:java/lang/String
 org/apache/geode/redis/internal/RedisDataTypeMismatchException,true,-2451663685348513870
 org/apache/geode/redis/internal/executor/CommandFunction,false

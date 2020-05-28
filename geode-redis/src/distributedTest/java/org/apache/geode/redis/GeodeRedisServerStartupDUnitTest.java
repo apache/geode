@@ -20,19 +20,23 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_AD
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import org.junit.Rule;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public class GeodeRedisServerStartupDUnitTest {
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public RedisClusterStartupRule cluster = new RedisClusterStartupRule();
 
   @Test
   public void startupOnDefaultPort() {

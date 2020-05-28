@@ -45,12 +45,13 @@ import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMism
  * by this class.
  * <p>
  * Besides being part of Netty's pipeline, this class also serves as a context to the execution of a
- * command. It provides access to the {@link RegionProvider} and anything
- * else an executing {@link Command} may need.
+ * command. It provides access to the {@link RegionProvider} and anything else an executing {@link
+ * Command} may need.
  */
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
+  private static final boolean RUN_UNSUPPORTED_COMMANDS = true;
 
   private final Cache cache;
   private final GeodeRedisServer server;
@@ -196,22 +197,26 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
     RedisResponse response;
-    if (isAuthenticated) {
-      if (command.isOfType(RedisCommandType.SHUTDOWN)) {
-        this.server.shutdown();
-        return;
-      }
 
-      response = command.execute(this);
-
-    } else if (command.isOfType(RedisCommandType.AUTH)) {
-      response = command.execute(this);
-    } else {
-      response = RedisResponse.error(RedisConstants.ERROR_NOT_AUTH);
+    if (command.isOfType(RedisCommandType.SHUTDOWN)) {
+      this.server.shutdown();
+      return;
     }
 
-    logResponse(response);
+    if (!isAuthenticated) {
+      response = handleUnAuthenticatedCommand(command);
+      writeToChannel(response);
+      return;
+    }
 
+    if (!(command.isSupported() || allowUnsupportedCommands())) {
+      writeToChannel(RedisResponse.error(RedisConstants.ERROR_UNSUPPORTED_COMMAND));
+      return;
+    }
+
+    response = command.execute(this);
+
+    logResponse(response);
     moveSubscribeToNewEventLoopGroup(ctx, command);
 
     // TODO: Clean this up once all Executors are using RedisResponse
@@ -225,6 +230,22 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       channelInactive(ctx);
     }
   }
+
+  private boolean allowUnsupportedCommands() {
+    return this.server.allowUnsupportedCommands();
+  }
+
+
+  private RedisResponse handleUnAuthenticatedCommand(Command command) {
+    RedisResponse response;
+    if (command.isOfType(RedisCommandType.AUTH)) {
+      response = command.execute(this);
+    } else {
+      response = RedisResponse.error(RedisConstants.ERROR_NOT_AUTH);
+    }
+    return response;
+  }
+
 
   /**
    * SUBSCRIBE commands run in their own {@link EventLoopGroup}
