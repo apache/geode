@@ -336,7 +336,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte PR_INDEX_CREATION_REPLY_MSG = 68;
   byte PR_MANAGE_BUCKET_REPLY_MESSAGE = 69;
 
-  // 70 unused
+  byte REDIS_BYTE_ARRAY_WRAPPER = 70;
 
   byte UPDATE_MESSAGE = 71;
   byte REPLY_MESSAGE = 72;
