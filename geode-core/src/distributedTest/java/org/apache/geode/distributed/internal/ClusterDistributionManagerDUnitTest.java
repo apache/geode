@@ -35,6 +35,7 @@ import java.net.InetAddress;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
@@ -365,6 +366,33 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     vm1.invoke("create another member to initiate a new view", () -> {
       getSystem();
     });
+
+    await()
+        .untilAsserted(() -> assertThat(waitForViewInstallationDone.get()).isTrue());
+  }
+
+  /**
+   * show that waitForViewInstallation works as expected when distribution manager is closed
+   * while waiting for the latest membership view to install
+   */
+  @Test
+  public void testWaitForViewInstallationDisconnectDS() {
+    InternalDistributedSystem system = getSystem();
+    ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
+    MembershipView<InternalDistributedMember> view = dm.getDistribution().getView();
+
+    AtomicBoolean waitForViewInstallationDone = new AtomicBoolean();
+    executorService.submit(() -> {
+      try {
+        dm.waitForViewInstallation(view.getViewId() + 1);
+        waitForViewInstallationDone.set(true);
+      } catch (InterruptedException e) {
+        errorCollector.addError(e);
+      }
+    });
+
+    await().timeout(2000, TimeUnit.MILLISECONDS);
+    system.disconnect();
 
     await()
         .untilAsserted(() -> assertThat(waitForViewInstallationDone.get()).isTrue());
