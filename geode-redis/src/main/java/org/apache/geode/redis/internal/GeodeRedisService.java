@@ -21,8 +21,10 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
@@ -35,8 +37,16 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   public boolean init(Cache cache) {
     this.cache = (InternalCache) cache;
     this.cache.getInternalDistributedSystem().addResourceListener(this);
+    registerDataSerializables();
 
     return this.cache.getInternalDistributedSystem().getConfig().getRedisEnabled();
+  }
+
+  private void registerDataSerializables() {
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER,
+        ByteArrayWrapper.class);
+
   }
 
   @Override

@@ -19,31 +19,22 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This class is a wrapper for the any Regions that need to store a byte[]. The only data this an
  * instance will store is a byte[] for the data but it is also serializable and comparable so it is
  * able to be used in querying
  */
-public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayWrapper> {
-  /**
-   * Generated serialVerionUID
-   */
-  private static final long serialVersionUID = 9066391742266642992L;
-
+public class ByteArrayWrapper implements DataSerializableFixedID, Comparable<ByteArrayWrapper> {
   /**
    * The data portion of ValueWrapper
    */
   protected byte[] value;
-
-  /**
-   * Hash of {@link #value}, this value is cached for performance
-   */
-  private transient int hashCode;
-
-  private transient String toString;
 
   /**
    * Empty constructor for serialization
@@ -55,26 +46,11 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
    */
   public ByteArrayWrapper(byte[] value) {
     this.value = value;
-    this.hashCode = Arrays.hashCode(value);
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeByteArray(value, out);
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.value = DataSerializer.readByteArray(in);
-    this.hashCode = Arrays.hashCode(this.value);
   }
 
   @Override
   public String toString() {
-    if (toString == null) {
-      toString = Coder.bytesToString(this.value);
-    }
-    return toString;
+    return Coder.bytesToString(value);
   }
 
   public byte[] toBytes() {
@@ -83,8 +59,6 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
   public void setBytes(byte[] bytes) {
     this.value = bytes;
-    this.toString = null;
-    this.hashCode = Arrays.hashCode(bytes);
   }
 
   /**
@@ -97,12 +71,11 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   }
 
   /**
-   * Hash code for byte[] wrapped by this object, the actual hashcode is determined by
-   * Arrays.hashCode(byte[])
+   * Hash code for byte[] wrapped by this object
    */
   @Override
   public int hashCode() {
-    return this.hashCode;
+    return Arrays.hashCode(value);
   }
 
 
@@ -182,5 +155,26 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
   public void append(byte[] appendBytes) {
     setBytes(concatArrays(value, appendBytes));
+  }
+
+  @Override
+  public int getDSFID() {
+    return DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER;
+  }
+
+  @Override
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    DataSerializer.writeByteArray(value, out);
+  }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    value = DataSerializer.readByteArray(in);
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
   }
 }
