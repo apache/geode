@@ -131,7 +131,7 @@ public class DescribeDiskStoreCommandIntegrationTest {
 
     gfsh.executeAndAssertThat(commandString).statusIsError()
         .containsOutput(
-            "Could not find: \"" + tempDir.getRoot().toString() + File.separator + "BACKUP"
+            "Could not find: \"" + File.separator + "BACKUP"
                 + WRONG_DISK_STORE_NAME + IF_FILE_EXT);
   }
 }

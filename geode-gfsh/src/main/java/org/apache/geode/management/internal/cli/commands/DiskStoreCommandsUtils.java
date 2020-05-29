@@ -70,7 +70,7 @@ class DiskStoreCommandsUtils {
         if (builder == null) {
           builder = new StringBuilder();
         }
-        builder.append(name);
+        builder.append(File.separator + "BACKUP" + name + IF_FILE_EXT);
       }
 
       if (builder != null) {

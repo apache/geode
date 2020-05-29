@@ -87,7 +87,7 @@ public class AlterDiskStoreCommandIntegrationTest {
 
     gfsh.executeAndAssertThat(command, commandString).statusIsError()
         .containsOutput(
-            "Could not find: \"" + tempDir.getRoot().toString() + File.separator + "BACKUP"
+            "Could not find: \"" + File.separator + "BACKUP"
                 + diskStoreName + IF_FILE_EXT);
   }
 
