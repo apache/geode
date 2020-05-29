@@ -17,9 +17,14 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
+import org.apache.geode.redis.internal.executor.string.RedisStringCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
@@ -50,6 +55,17 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     } else {
       return null;
     }
+  }
+
+  @Override
+  public ByteArrayWrapper mget(ByteArrayWrapper key) {
+    // like get but does not do a type check
+    RedisData redisData = getRedisData(key);
+    if (redisData instanceof RedisString) {
+      RedisString redisString = (RedisString) redisData;
+      return redisString.get();
+    }
+    return null;
   }
 
   @Override
@@ -123,7 +139,7 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
-      byte[] newValue = Coder.stringToBytes(Long.toString(increment));
+      byte[] newValue = Coder.longToBytes(increment);
       redisString = new RedisString(new ByteArrayWrapper(newValue));
       region.put(key, redisString);
       return increment;
@@ -133,17 +149,272 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
   }
 
   @Override
+  public double incrbyfloat(ByteArrayWrapper key, double increment) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      byte[] newValue = Coder.doubleToBytes(increment);
+      redisString = new RedisString(new ByteArrayWrapper(newValue));
+      region.put(key, redisString);
+      return increment;
+    }
+
+    return redisString.incrbyfloat(region, key, increment);
+  }
+
+  public int bitop(StripedExecutor stripedExecutor, String operation, ByteArrayWrapper key,
+      List<ByteArrayWrapper> sources) {
+    List<ByteArrayWrapper> sourceValues = new ArrayList<>();
+    int selfIndex = -1;
+    // Read all the source values, except for self, before locking the stripe.
+    RedisStringCommands commander = new RedisStringCommandsFunctionExecutor(region);
+    for (ByteArrayWrapper sourceKey : sources) {
+      if (sourceKey.equals(key)) {
+        // get self later after the stripe is locked
+        selfIndex = sourceValues.size();
+        sourceValues.add(null);
+      } else {
+        sourceValues.add(commander.get(sourceKey));
+      }
+    }
+    int indexOfSelf = selfIndex;
+    return stripedExecutor.execute(key, () -> doBitOp(operation, key, indexOfSelf, sourceValues));
+  }
+
+  private int doBitOp(String operation, ByteArrayWrapper key, int selfIndex,
+      List<ByteArrayWrapper> sourceValues) {
+    RedisString redisString = getRedisString(key);
+    if (selfIndex != -1 && redisString != null) {
+      sourceValues.set(selfIndex, redisString.getValue());
+    }
+    int maxLength = 0;
+    for (ByteArrayWrapper sourceValue : sourceValues) {
+      if (sourceValue != null && maxLength < sourceValue.length()) {
+        maxLength = sourceValue.length();
+      }
+    }
+    ByteArrayWrapper newValue;
+    switch (operation) {
+      case "AND":
+        newValue = and(sourceValues, maxLength);
+        break;
+      case "OR":
+        newValue = or(sourceValues, maxLength);
+        break;
+      case "XOR":
+        newValue = xor(sourceValues, maxLength);
+        break;
+      default: // NOT
+        newValue = not(sourceValues.get(0), maxLength);
+        break;
+    }
+    if (redisString == null) {
+      redisString = new RedisString(newValue);
+    } else {
+      redisString.set(newValue);
+    }
+    region.put(key, redisString);
+    return newValue.length();
+  }
+
+  private ByteArrayWrapper and(List<ByteArrayWrapper> sourceValues, int max) {
+    byte[] dest = new byte[max];
+    for (int i = 0; i < max; i++) {
+      byte b = 0;
+      boolean firstByte = true;
+      for (ByteArrayWrapper sourceValue : sourceValues) {
+        byte sourceByte = 0;
+        if (sourceValue != null && i < sourceValue.length()) {
+          sourceByte = sourceValue.toBytes()[i];
+        }
+        if (firstByte) {
+          b = sourceByte;
+          firstByte = false;
+        } else {
+          b &= sourceByte;
+        }
+      }
+      dest[i] = b;
+    }
+    return new ByteArrayWrapper(dest);
+  }
+
+  private ByteArrayWrapper or(List<ByteArrayWrapper> sourceValues, int max) {
+    byte[] dest = new byte[max];
+    for (int i = 0; i < max; i++) {
+      byte b = 0;
+      boolean firstByte = true;
+      for (ByteArrayWrapper sourceValue : sourceValues) {
+        byte sourceByte = 0;
+        if (sourceValue != null && i < sourceValue.length()) {
+          sourceByte = sourceValue.toBytes()[i];
+        }
+        if (firstByte) {
+          b = sourceByte;
+          firstByte = false;
+        } else {
+          b |= sourceByte;
+        }
+      }
+      dest[i] = b;
+    }
+    return new ByteArrayWrapper(dest);
+  }
+
+  private ByteArrayWrapper xor(List<ByteArrayWrapper> sourceValues, int max) {
+    byte[] dest = new byte[max];
+    for (int i = 0; i < max; i++) {
+      byte b = 0;
+      boolean firstByte = true;
+      for (ByteArrayWrapper sourceValue : sourceValues) {
+        byte sourceByte = 0;
+        if (sourceValue != null && i < sourceValue.length()) {
+          sourceByte = sourceValue.toBytes()[i];
+        }
+        if (firstByte) {
+          b = sourceByte;
+          firstByte = false;
+        } else {
+          b ^= sourceByte;
+        }
+      }
+      dest[i] = b;
+    }
+    return new ByteArrayWrapper(dest);
+  }
+
+  private ByteArrayWrapper not(ByteArrayWrapper sourceValue, int max) {
+    byte[] dest = new byte[max];
+    if (sourceValue == null) {
+      for (int i = 0; i < max; i++) {
+        dest[i] = ~0;
+      }
+    } else {
+      byte[] cA = sourceValue.toBytes();
+      for (int i = 0; i < max; i++) {
+        dest[i] = (byte) (~cA[i] & 0xFF);
+      }
+    }
+    return new ByteArrayWrapper(dest);
+  }
+
+  @Override
+  public int bitop(String operation, ByteArrayWrapper destKey, List<ByteArrayWrapper> sources) {
+    throw new IllegalStateException("should never be called");
+  }
+
+  @Override
   public long decrby(ByteArrayWrapper key, long decrement) {
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
-      byte[] newValue = Coder.stringToBytes(Long.toString(-decrement));
+      byte[] newValue = Coder.longToBytes(-decrement);
       redisString = new RedisString(new ByteArrayWrapper(newValue));
       region.put(key, redisString);
       return -decrement;
     }
 
     return redisString.decrby(region, key, decrement);
+  }
+
+  @Override
+  public ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      return new ByteArrayWrapper(new byte[0]);
+    }
+    return redisString.getrange(start, end);
+  }
+
+  @Override
+  public int setrange(ByteArrayWrapper key, int offset, byte[] value) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      if (value.length != 0) {
+        redisString = new RedisString(new ByteArrayWrapper(value));
+        region.put(key, redisString);
+      }
+      return value.length;
+    }
+    return redisString.setrange(region, key, offset, value);
+  }
+
+  @Override
+  public int bitpos(ByteArrayWrapper key, int bit, int start, Integer end) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      if (bit == 0) {
+        return 0;
+      } else {
+        return -1;
+      }
+    }
+    return redisString.bitpos(region, key, bit, start, end);
+  }
+
+  @Override
+  public long bitcount(ByteArrayWrapper key, int start, int end) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      return 0;
+    }
+    return redisString.bitcount(start, end);
+  }
+
+  @Override
+  public long bitcount(ByteArrayWrapper key) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      return 0;
+    }
+    return redisString.bitcount();
+  }
+
+  @Override
+  public int strlen(ByteArrayWrapper key) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      return 0;
+    }
+    return redisString.strlen();
+  }
+
+  @Override
+  public int getbit(ByteArrayWrapper key, int offset) {
+    RedisString redisString = getRedisString(key);
+
+    if (redisString == null) {
+      return 0;
+    }
+    return redisString.getbit(offset);
+  }
+
+  @Override
+  public int setbit(ByteArrayWrapper key, long offset, int value) {
+    RedisString redisString = getRedisString(key);
+    int byteIndex = (int) (offset / 8);
+    byte bitIndex = (byte) (offset % 8);
+
+    if (redisString == null) {
+      RedisString newValue;
+      if (value == 1) {
+        byte[] bytes = new byte[byteIndex + 1];
+        bytes[byteIndex] = (byte) (0x80 >> bitIndex);
+        newValue = new RedisString(new ByteArrayWrapper(bytes));
+      } else {
+        // all bits are 0 so use an empty byte array
+        newValue = new RedisString(new ByteArrayWrapper(new byte[0]));
+      }
+      region.put(key, newValue);
+      return 0;
+    }
+    return redisString.setbit(region, key, value, byteIndex, bitIndex);
   }
 
   private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {

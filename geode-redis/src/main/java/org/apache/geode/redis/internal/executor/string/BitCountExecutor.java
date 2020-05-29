@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class BitCountExecutor extends StringExecutor {
 
-  private final String ERROR_NOT_INT = "The indexes provided must be numeric values";
+  private static final String ERROR_NOT_INT = "The indexes provided must be numeric values";
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -39,58 +39,23 @@ public class BitCountExecutor extends StringExecutor {
 
     ByteArrayWrapper key = command.getKey();
     RedisStringCommands stringCommands = getRedisStringCommands(context);
-    ByteArrayWrapper wrapper = stringCommands.get(key);
-    if (wrapper == null) {
-      return RedisResponse.integer(0);
-    }
-    byte[] value = wrapper.toBytes();
-
-    long startL = 0;
-    long endL = value.length - 1;
+    long result;
 
     if (commandElems.size() == 4) {
+      int start;
+      int end;
       try {
-        startL = Coder.bytesToLong(commandElems.get(2));
-        endL = Coder.bytesToLong(commandElems.get(3));
+        start = Math.toIntExact(Coder.bytesToLong(commandElems.get(2)));
+        end = Math.toIntExact(Coder.bytesToLong(commandElems.get(3)));
       } catch (NumberFormatException e) {
         return RedisResponse.error(ERROR_NOT_INT);
+      } catch (ArithmeticException ex) {
+        return RedisResponse.error(RedisConstants.ERROR_OUT_OF_RANGE);
       }
+      result = stringCommands.bitcount(key, start, end);
+    } else {
+      result = stringCommands.bitcount(key);
     }
-    if (startL > Integer.MAX_VALUE || endL > Integer.MAX_VALUE) {
-      return RedisResponse.error(RedisConstants.ERROR_OUT_OF_RANGE);
-    }
-
-    int start = (int) startL;
-    int end = (int) endL;
-    if (start < 0) {
-      start += value.length;
-    }
-    if (end < 0) {
-      end += value.length;
-    }
-
-    if (start < 0) {
-      start = 0;
-    }
-    if (end < 0) {
-      end = 0;
-    }
-
-    if (end > value.length - 1) {
-      end = value.length - 1;
-    }
-
-    if (end < start || start >= value.length) {
-      return RedisResponse.integer(0);
-    }
-
-    long setBits = 0;
-    for (int j = start; j <= end; j++) {
-      setBits += Integer.bitCount(0xFF & value[j]); // 0xFF keeps same bit sequence as the byte as
-    }
-    // opposed to keeping the same value
-
-    return RedisResponse.integer(setBits);
+    return RedisResponse.integer(result);
   }
-
 }

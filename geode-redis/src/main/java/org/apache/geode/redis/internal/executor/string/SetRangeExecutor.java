@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
 
 import java.util.List;
 
@@ -27,9 +26,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SetRangeExecutor extends StringExecutor {
 
-  private final String ERROR_NOT_INT = "The number provided must be numeric";
+  private static final String ERROR_NOT_INT = "The number provided must be numeric";
 
-  private final String ERROR_ILLEGAL_OFFSET =
+  private static final String ERROR_ILLEGAL_OFFSET =
       "The offset is out of range, must be greater than or equal to 0 and the offset added to the length of the value must be less than 536870911 (512MB), the maximum allowed size";
 
   @Override
@@ -43,12 +42,7 @@ public class SetRangeExecutor extends StringExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
-
-    ByteArrayWrapper wrapper = stringCommands.get(key);
-
     int offset;
-    byte[] value = commandElems.get(3);
     try {
       byte[] offAr = commandElems.get(2);
       offset = Coder.bytesToInt(offAr);
@@ -56,44 +50,17 @@ public class SetRangeExecutor extends StringExecutor {
       return RedisResponse.error(ERROR_NOT_INT);
     }
 
-    int totalLength = offset + value.length;
-    if (offset < 0 || totalLength > 536870911) {
+    byte[] value = commandElems.get(3);
+
+    if (offset < 0 || (offset + value.length) > 536870911) {
       return RedisResponse.error(ERROR_ILLEGAL_OFFSET);
-    } else if (value.length == 0) {
-      int length;
-      if (wrapper == null) {
-        length = 0;
-        // redisString will only be null if no key exists so no need to call removeKey here.
-      } else {
-        length = wrapper.length();
-      }
-
-      return RedisResponse.integer(length);
     }
 
-    if (wrapper == null) {
-      byte[] bytes = new byte[totalLength];
-      System.arraycopy(value, 0, bytes, offset, value.length);
-      stringCommands.set(key, new ByteArrayWrapper(bytes), null);
-      return RedisResponse.integer(bytes.length);
-    }
 
-    byte[] bytes = wrapper.toBytes();
-    SetOptions setOptions = new SetOptions(NONE, 0L, true);
-    int returnLength;
-    if (totalLength < bytes.length) {
-      System.arraycopy(value, 0, bytes, offset, value.length);
-      stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
-      returnLength = bytes.length;
-    } else {
-      byte[] newBytes = new byte[totalLength];
-      System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
-      System.arraycopy(value, 0, newBytes, offset, value.length);
-      returnLength = newBytes.length;
-      stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
-    }
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    int result = stringCommands.setrange(key, offset, value);
 
-    return RedisResponse.integer(returnLength);
+    return RedisResponse.integer(result);
   }
 
 }

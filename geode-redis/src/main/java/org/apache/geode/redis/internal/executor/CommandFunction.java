@@ -105,6 +105,14 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> new RedisStringInRegion(localRegion).get(key);
         break;
       }
+      case MGET: {
+        callable = () -> new RedisStringInRegion(localRegion).mget(key);
+        break;
+      }
+      case STRLEN: {
+        callable = () -> new RedisStringInRegion(localRegion).strlen(key);
+        break;
+      }
       case SET: {
         Object[] argArgs = (Object[]) args[1];
         ByteArrayWrapper value = (ByteArrayWrapper) argArgs[0];
@@ -117,6 +125,60 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> new RedisStringInRegion(localRegion).getset(key, value);
         break;
       }
+      case GETRANGE: {
+        Object[] argArgs = (Object[]) args[1];
+        long start = (long) argArgs[0];
+        long end = (long) argArgs[1];
+        callable = () -> new RedisStringInRegion(localRegion).getrange(key, start, end);
+        break;
+      }
+      case SETRANGE: {
+        Object[] argArgs = (Object[]) args[1];
+        int offset = (int) argArgs[0];
+        byte[] value = (byte[]) argArgs[1];
+        callable = () -> new RedisStringInRegion(localRegion).setrange(key, offset, value);
+        break;
+      }
+      case BITCOUNT: {
+        Object[] argArgs = (Object[]) args[1];
+        if (argArgs == null) {
+          callable = () -> new RedisStringInRegion(localRegion).bitcount(key);
+        } else {
+          int start = (int) argArgs[0];
+          int end = (int) argArgs[1];
+          callable = () -> new RedisStringInRegion(localRegion).bitcount(key, start, end);
+        }
+        break;
+      }
+      case BITPOS: {
+        Object[] argArgs = (Object[]) args[1];
+        int bit = (int) argArgs[0];
+        int start = (int) argArgs[1];
+        Integer end = (Integer) argArgs[2];
+        callable = () -> new RedisStringInRegion(localRegion).bitpos(key, bit, start, end);
+        break;
+      }
+      case GETBIT: {
+        int offset = (int) args[1];
+        callable = () -> new RedisStringInRegion(localRegion).getbit(key, offset);
+        break;
+      }
+      case SETBIT: {
+        Object[] argArgs = (Object[]) args[1];
+        long offset = (long) argArgs[0];
+        int value = (int) argArgs[1];
+        callable = () -> new RedisStringInRegion(localRegion).setbit(key, offset, value);
+        break;
+      }
+      case BITOP: {
+        Object[] argArgs = (Object[]) args[1];
+        String operation = (String) argArgs[0];
+        List<ByteArrayWrapper> sources = (List<ByteArrayWrapper>) argArgs[1];
+        callable = () -> new RedisStringInRegion(localRegion).bitop(stripedExecutor, operation, key,
+            sources);
+        useStripedExecutor = false;
+        break;
+      }
       case INCR:
         callable = () -> new RedisStringInRegion(localRegion).incr(key);
         break;
@@ -126,6 +188,11 @@ public class CommandFunction extends SingleResultRedisFunction {
       case INCRBY: {
         long increment = (long) args[1];
         callable = () -> new RedisStringInRegion(localRegion).incrby(key, increment);
+        break;
+      }
+      case INCRBYFLOAT: {
+        double increment = (double) args[1];
+        callable = () -> new RedisStringInRegion(localRegion).incrbyfloat(key, increment);
         break;
       }
       case DECRBY: {

@@ -25,7 +25,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class GetSetExecutor extends StringExecutor {
 
-  private final int VALUE_INDEX = 2;
+  private static final int VALUE_INDEX = 2;
 
   @Override
   public RedisResponse executeCommand(Command command,

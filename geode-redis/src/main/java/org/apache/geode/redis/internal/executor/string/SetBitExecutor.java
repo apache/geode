@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
 
 import java.util.List;
 
@@ -27,11 +26,11 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SetBitExecutor extends StringExecutor {
 
-  private final String ERROR_NOT_INT = "The number provided must be numeric";
+  private static final String ERROR_NOT_INT = "The number provided must be numeric";
 
-  private final String ERROR_VALUE = "The value is out of range, must be 0 or 1";
+  private static final String ERROR_VALUE = "The value is out of range, must be 0 or 1";
 
-  private final String ERROR_ILLEGAL_OFFSET =
+  private static final String ERROR_ILLEGAL_OFFSET =
       "The offset is out of range, must be greater than or equal to 0  and at most 4294967295 (512MB)";
 
   @Override
@@ -49,7 +48,6 @@ public class SetBitExecutor extends StringExecutor {
 
     long offset;
     int value;
-    int returnBit = 0;
     try {
       byte[] offAr = commandElems.get(2);
       byte[] valAr = commandElems.get(3);
@@ -67,40 +65,8 @@ public class SetBitExecutor extends StringExecutor {
       return RedisResponse.error(ERROR_ILLEGAL_OFFSET);
     }
 
-    int byteIndex = (int) (offset / 8);
-    offset %= 8;
-
-    ByteArrayWrapper wrapper = stringCommands.get(key);
-    if (wrapper == null) {
-      byte[] bytes = new byte[byteIndex + 1];
-      if (value == 1) {
-        bytes[byteIndex] = (byte) (0x80 >> offset);
-      }
-      stringCommands.set(key, new ByteArrayWrapper(bytes), null);
-      return RedisResponse.integer(0);
-    }
-
-    byte[] bytes = wrapper.toBytes();
-    if (byteIndex < bytes.length) {
-      returnBit = (bytes[byteIndex] & (0x80 >> offset)) >> (7 - offset);
-    } else {
-      returnBit = 0;
-    }
-
-    SetOptions setOptions = new SetOptions(NONE, 0L, true);
-    if (byteIndex < bytes.length) {
-      bytes[byteIndex] = value == 1 ? (byte) (bytes[byteIndex] | (0x80 >> offset))
-          : (byte) (bytes[byteIndex] & ~(0x80 >> offset));
-      stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
-    } else {
-      byte[] newBytes = new byte[byteIndex + 1];
-      System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
-      newBytes[byteIndex] = value == 1 ? (byte) (newBytes[byteIndex] | (0x80 >> offset))
-          : (byte) (newBytes[byteIndex] & ~(0x80 >> offset));
-      stringCommands.set(key, new ByteArrayWrapper(newBytes), setOptions);
-    }
+    int returnBit = stringCommands.setbit(key, offset, value);
 
     return RedisResponse.integer(returnBit);
   }
-
 }
