@@ -2663,6 +2663,18 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
   // External API methods
   // -------------------------------------------------------------------------
+  public static DistributedLockService getOrCreateService(String serviceName,
+      InternalDistributedSystem ds) {
+    DistributedLockService cmsLockService = DLockService.getServiceNamed(serviceName);
+    try {
+      if (cmsLockService == null) {
+        cmsLockService = DLockService.create(serviceName, ds, true, true);
+      }
+    } catch (IllegalArgumentException ignore) {
+      return DLockService.getServiceNamed(serviceName);
+    }
+    return cmsLockService;
+  }
 
   /**
    * @see org.apache.geode.distributed.DistributedLockService#getServiceNamed(String)

@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -101,6 +102,7 @@ public class LocatorClusterManagementServiceTest {
   private CacheConfigurationManager<Region> regionManager;
   private MemberValidator memberValidator;
   private RebalanceOperation rebalanceOperation;
+  private DistributedLockService dLockService;
 
   @Before
   public void before() throws Exception {
@@ -125,9 +127,12 @@ public class LocatorClusterManagementServiceTest {
     doReturn(true).when(persistenceService).lockSharedConfiguration();
     doNothing().when(persistenceService).unlockSharedConfiguration();
     operationManager = mock(OperationManager.class);
+    dLockService = mock(DistributedLockService.class);
+
     service =
         spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators,
             memberValidator, cacheElementValidator, operationManager));
+    doReturn(dLockService).when(service).getCmsDlockService();
 
     regionConfig = new Region();
     regionConfig.setName("region1");
@@ -136,11 +141,34 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
+  public void lockAndUnlockCalledAtCreate() {
+    try {
+      service.create(regionConfig);
+    } catch (Exception ignore) {
+    }
+
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_NAME);
+  }
+
+  @Test
+  public void lockAndUnlockCalledAtDelete() {
+    try {
+      service.delete(regionConfig);
+    } catch (Exception ignore) {
+    }
+
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_NAME);
+  }
+
+  @Test
   public void create_persistenceIsNull() {
     org.apache.geode.cache.Region<Object, Object> region =
         mock(org.apache.geode.cache.Region.class);
     when(cache.getRegion(any())).thenReturn(region);
-    service = new LocatorClusterManagementService(cache, null);
+    service = new LocatorClusterManagementService(cache, null, managers, validators,
+        memberValidator, cacheElementValidator, operationManager);
     assertThatThrownBy(() -> service.create(regionConfig))
         .hasMessageContaining("Cluster configuration service needs to be enabled");
   }
