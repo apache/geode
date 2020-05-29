@@ -3,7 +3,7 @@ fromData,12
 toData,12
 
 org/apache/geode/redis/internal/ByteArrayWrapper,2
-fromData,20
+fromData,9
 toData,9
 
 org/apache/geode/redis/internal/DoubleWrapper,2

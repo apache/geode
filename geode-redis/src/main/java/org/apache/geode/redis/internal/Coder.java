@@ -301,7 +301,7 @@ public class Coder {
       return null;
     }
     try {
-      return new String(bytes, CHARSET).intern();
+      return new String(bytes, CHARSET);
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
