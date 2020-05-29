@@ -16,9 +16,6 @@
 package org.apache.geode.redis.executors.hash;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
@@ -33,68 +30,52 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public class HMsetDUnitTest {
 
   @ClassRule
-  public static ClusterStartupRule clusterStartUp = new ClusterStartupRule(4);
+  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
-  static final String LOCAL_HOST = "127.0.0.1";
-  static final int HASH_SIZE = 1000;
-  static int[] availablePorts;
+  private static final String LOCAL_HOST = "127.0.0.1";
+  private static final int HASH_SIZE = 1000;
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  static Jedis jedis1;
-  static Jedis jedis2;
-  static Jedis jedis3;
+  private static Jedis jedis1;
+  private static Jedis jedis2;
+  private static Jedis jedis3;
 
-  static Properties locatorProperties;
-  static Properties serverProperties1;
-  static Properties serverProperties2;
-  static Properties serverProperties3;
+  private static Properties locatorProperties;
 
-  static MemberVM locator;
-  static MemberVM server1;
-  static MemberVM server2;
-  static MemberVM server3;
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  private static MemberVM server3;
+
+  private static int redisServerPort1;
+  private static int redisServerPort2;
+  private static int redisServerPort3;
 
   @BeforeClass
   public static void classSetup() {
-
-    availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-
     locatorProperties = new Properties();
-    serverProperties1 = new Properties();
-    serverProperties2 = new Properties();
-    serverProperties3 = new Properties();
-
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    serverProperties1.setProperty(REDIS_PORT, Integer.toString(availablePorts[0]));
-    serverProperties1.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
-    serverProperties1.setProperty(REDIS_ENABLED, "true");
-
-    serverProperties2.setProperty(REDIS_PORT, Integer.toString(availablePorts[1]));
-    serverProperties2.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
-    serverProperties2.setProperty(REDIS_ENABLED, "true");
-
-    serverProperties3.setProperty(REDIS_PORT, Integer.toString(availablePorts[2]));
-    serverProperties3.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
-    serverProperties3.setProperty(REDIS_ENABLED, "true");
-
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
-    server1 = clusterStartUp.startServerVM(1, serverProperties1, locator.getPort());
-    server2 = clusterStartUp.startServerVM(2, serverProperties2, locator.getPort());
-    server3 = clusterStartUp.startServerVM(3, serverProperties3, locator.getPort());
+    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    jedis1 = new Jedis(LOCAL_HOST, availablePorts[0], JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, availablePorts[1], JEDIS_TIMEOUT);
-    jedis3 = new Jedis(LOCAL_HOST, availablePorts[2], JEDIS_TIMEOUT);
+    redisServerPort1 = clusterStartUp.getRedisPort(1);
+    redisServerPort2 = clusterStartUp.getRedisPort(2);
+    redisServerPort3 = clusterStartUp.getRedisPort(3);
+
+    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
+    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
+    jedis3 = new Jedis(LOCAL_HOST, redisServerPort3, JEDIS_TIMEOUT);
   }
 
   @Before
@@ -204,8 +185,8 @@ public class HMsetDUnitTest {
   @Test
   public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_addingSameDataToSameSetConcurrently() {
 
-    Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
-    Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
+    Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
+    Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
 
     String key = "key";
 
@@ -232,8 +213,8 @@ public class HMsetDUnitTest {
   @Test
   public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_addingDifferentDataToSameSetConcurrently() {
 
-    Jedis jedis1B = new Jedis(LOCAL_HOST, availablePorts[0]);
-    Jedis jedis2B = new Jedis(LOCAL_HOST, availablePorts[1]);
+    Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
+    Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
 
     String key = "key1";
 

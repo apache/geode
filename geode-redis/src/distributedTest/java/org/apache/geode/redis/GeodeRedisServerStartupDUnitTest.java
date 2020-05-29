@@ -45,10 +45,7 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_ENABLED, "true"));
 
-    server.invoke(() -> {
-      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      assertThat(service.getPort()).isEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
-    });
+    assertThat(cluster.getRedisPort(server)).isEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
   }
 
   @Test
@@ -58,10 +55,8 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_ENABLED, "true"));
 
-    server.invoke(() -> {
-      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      assertThat(service.getPort()).isNotEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
-    });
+    assertThat(cluster.getRedisPort(server))
+        .isNotEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
   }
 
   @Test
@@ -75,6 +70,38 @@ public class GeodeRedisServerStartupDUnitTest {
           .as("GeodeRedisService should not exist")
           .isNull();
     });
+  }
+
+  @Test
+  public void whenStartedWithDefaults_unsupportedCommandsAreNotAvailable() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "0")
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
+
+    Jedis jedis = new Jedis("localhost", cluster.getRedisPort(server));
+
+    assertThatExceptionOfType(JedisDataException.class)
+        .isThrownBy(() -> jedis.echo("unsupported"))
+        .withMessageContaining("This command is unsupported");
+  }
+
+  @Test
+  public void whenStartedWithDefaults_unsupportedCommandsCanBeEnabledDynamically() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "0")
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
+
+    Jedis jedis = new Jedis("localhost", cluster.getRedisPort(server));
+
+    assertThatExceptionOfType(JedisDataException.class)
+        .isThrownBy(() -> jedis.echo("unsupported"))
+        .withMessageContaining("This command is unsupported");
+
+    cluster.setEnableUnsupported(server, true);
+
+    assertThat(jedis.echo("supported")).isEqualTo("supported");
   }
 
 }
