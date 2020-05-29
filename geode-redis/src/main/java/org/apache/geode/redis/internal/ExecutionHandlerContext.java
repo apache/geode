@@ -198,11 +198,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
     RedisResponse response;
 
-    if (command.isOfType(RedisCommandType.SHUTDOWN)) {
-      this.server.shutdown();
-      return;
-    }
-
     if (!isAuthenticated) {
       response = handleUnAuthenticatedCommand(command);
       writeToChannel(response);
@@ -211,6 +206,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
     if (!(command.isSupported() || allowUnsupportedCommands())) {
       writeToChannel(RedisResponse.error(RedisConstants.ERROR_UNSUPPORTED_COMMAND));
+      return;
+    }
+
+    if (command.isOfType(RedisCommandType.SHUTDOWN)) {
+      this.server.shutdown();
       return;
     }
 

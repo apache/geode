@@ -502,11 +502,10 @@ public class GeodeRedisServer {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
       ChannelFuture closeFuture = serverChannel.closeFuture();
-      Future<?> c = workerGroup.shutdownGracefully();
-      Future<?> c2 = bossGroup.shutdownGracefully();
+      workerGroup.shutdownGracefully();
+      Future<?> bossFuture = bossGroup.shutdownGracefully();
       serverChannel.close();
-      c.syncUninterruptibly();
-      c2.syncUninterruptibly();
+      bossFuture.syncUninterruptibly();
       if (mainThread != null) {
         mainThread.interrupt();
       }

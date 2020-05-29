@@ -119,10 +119,15 @@ public enum RedisCommandType {
   EXPIRE(new ExpireExecutor(), true),
   EXPIREAT(new ExpireAtExecutor(), true),
   FLUSHALL(new FlushAllExecutor(), true),
+  FLUSHDB(new FlushAllExecutor(), true),
   KEYS(new KeysExecutor(), true),
+  PERSIST(new PersistExecutor(), true),
   PEXPIRE(new PExpireExecutor(), true),
   PEXPIREAT(new PExpireAtExecutor(), true),
+  PTTL(new PTTLExecutor(), true),
   RENAME(new RenameExecutor(), true),
+  TTL(new TTLExecutor(), true),
+  TYPE(new TypeExecutor(), true),
 
   /************* Strings *****************/
 
@@ -167,12 +172,7 @@ public enum RedisCommandType {
    *************** Keys ******************
    ***************************************/
 
-  FLUSHDB(new FlushAllExecutor(), false),
-  PERSIST(new PersistExecutor(), false),
-  PTTL(new PTTLExecutor(), false),
   SCAN(new ScanExecutor(), false),
-  TTL(new TTLExecutor(), false),
-  TYPE(new TypeExecutor(), false),
 
   /***************************************
    ************** Strings ****************
