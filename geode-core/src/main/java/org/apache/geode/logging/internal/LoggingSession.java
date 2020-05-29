@@ -18,6 +18,7 @@ import static org.apache.geode.logging.internal.Configuration.STARTUP_CONFIGURAT
 import static org.apache.geode.logging.internal.InternalSessionContext.State.CREATED;
 import static org.apache.geode.logging.internal.InternalSessionContext.State.STARTED;
 import static org.apache.geode.logging.internal.InternalSessionContext.State.STOPPED;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.util.Optional;
 
@@ -34,6 +35,9 @@ import org.apache.geode.logging.internal.spi.LogFile;
  */
 public class LoggingSession implements InternalSessionContext {
 
+  static final boolean STANDARD_OUTPUT_ALWAYS_ON =
+      Boolean.valueOf(System.getProperty(GEMFIRE_PREFIX + "StandardOutputAlwaysOn", "false"));
+
   private static final Logger logger = LogService.getLogger();
 
   private final Configuration configuration;
@@ -41,6 +45,7 @@ public class LoggingSession implements InternalSessionContext {
 
   private volatile boolean logBanner;
   private volatile boolean logConfiguration;
+  private volatile boolean standardOutputAlwaysOn;
 
   private State state = STOPPED;
 
@@ -66,12 +71,19 @@ public class LoggingSession implements InternalSessionContext {
 
   public synchronized void createSession(final LogConfigSupplier logConfigSupplier,
       final boolean logBanner, final boolean logConfiguration) {
+    createSession(logConfigSupplier, logBanner, logConfiguration, STANDARD_OUTPUT_ALWAYS_ON);
+  }
+
+  public synchronized void createSession(final LogConfigSupplier logConfigSupplier,
+      final boolean logBanner, final boolean logConfiguration,
+      final boolean standardOutputAlwaysOn) {
     configuration.initialize(logConfigSupplier);
     state = state.changeTo(CREATED);
     loggingSessionNotifier.createSession(this);
 
     this.logBanner = logBanner;
     this.logConfiguration = logConfiguration;
+    this.standardOutputAlwaysOn = standardOutputAlwaysOn;
   }
 
   /**
@@ -80,7 +92,9 @@ public class LoggingSession implements InternalSessionContext {
   public synchronized void startSession() {
     state = state.changeTo(STARTED);
     loggingSessionNotifier.startSession();
-    configuration.disableLoggingToStandardOutputIfLoggingToFile();
+    if (!standardOutputAlwaysOn) {
+      configuration.disableLoggingToStandardOutputIfLoggingToFile();
+    }
 
     if (logBanner) {
       logger.info(new Banner(configuration.getConfigurationInfo()).getString());
