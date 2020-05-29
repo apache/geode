@@ -97,8 +97,7 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
-      byte[] newValue = {Coder.NUMBER_1_BYTE};
-      redisString = new RedisString(new ByteArrayWrapper(newValue));
+      redisString = new RedisString(1);
       region.put(key, redisString);
       return 1;
     }
@@ -111,7 +110,7 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
-      redisString = new RedisString(new ByteArrayWrapper(Coder.stringToBytes("-1")));
+      redisString = new RedisString(-1);
       region.put(key, redisString);
       return -1;
     }
@@ -140,8 +139,7 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
-      byte[] newValue = Coder.longToBytes(increment);
-      redisString = new RedisString(new ByteArrayWrapper(newValue));
+      redisString = new RedisString(increment);
       region.put(key, redisString);
       return increment;
     }
@@ -154,8 +152,7 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
-      byte[] newValue = Coder.doubleToBytes(increment);
-      redisString = new RedisString(new ByteArrayWrapper(newValue));
+      redisString = new RedisString(new ByteArrayWrapper(Coder.doubleToBytes(increment)));
       region.put(key, redisString);
       return increment;
     }
@@ -322,8 +319,7 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
-      byte[] newValue = Coder.longToBytes(-decrement);
-      redisString = new RedisString(new ByteArrayWrapper(newValue));
+      redisString = new RedisString(-decrement);
       region.put(key, redisString);
       return -decrement;
     }
