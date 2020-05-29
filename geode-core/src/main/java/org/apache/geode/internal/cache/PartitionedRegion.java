@@ -170,6 +170,7 @@ import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.FunctionExecutionNodePruner;
 import org.apache.geode.internal.cache.execute.FunctionRemoteContext;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -608,6 +609,29 @@ public class PartitionedRegion extends LocalRegion
 
   PartitionedRegionRedundancyTracker getRedundancyTracker() {
     return redundancyTracker;
+  }
+
+  public void computeWithPrimaryLocked(Object key, Runnable r) {
+    int bucketId = PartitionedRegionHelper.getHashKey(this, null, key, null, null);
+
+    BucketRegion br;
+    try {
+      br = this.dataStore.getInitializedBucketForId(key, bucketId);
+    } catch (ForceReattemptException e) {
+      throw new BucketMovedException(e);
+    }
+
+    try {
+      br.doLockForPrimary(false);
+    } catch (PrimaryBucketException e) {
+      throw new BucketMovedException(e);
+    }
+
+    try {
+      r.run();
+    } finally {
+      br.doUnlockForPrimary();
+    }
   }
 
 
