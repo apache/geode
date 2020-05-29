@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.VM.toArray;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -49,10 +51,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-
-@Category({GfshTest.class})
-public class ShutdownCommandOverHttpDUnitTest implements
-    Serializable {
+@Category(GfshTest.class)
+public class ShutdownCommandOverHttpDUnitTest implements Serializable {
 
   private static final String LOCATOR_NAME = "locator";
   private static final String SERVER1_NAME = "server1";
@@ -71,16 +71,13 @@ public class ShutdownCommandOverHttpDUnitTest implements
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
-
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
-
   @Before
-  public void setup() throws Exception {
+  public void setUp() throws Exception {
     locator = getVM(0);
     server1 = getVM(1);
     server2 = getVM(2);
@@ -96,25 +93,30 @@ public class ShutdownCommandOverHttpDUnitTest implements
 
     locatorString = "localhost[" + locatorPort + "]";
 
-    locator.invoke(
-        () -> startLocator(locatorDir, locatorPort, locatorJmxPort, locatorHttpPort));
+    locator.invoke(() -> startLocator(locatorDir, locatorPort, locatorJmxPort, locatorHttpPort));
     server1.invoke(() -> startServer(SERVER1_NAME, server1Dir, locatorString));
     server2.invoke(() -> startServer(SERVER2_NAME, server2Dir, locatorString));
 
     gfsh.connectAndVerify(locatorHttpPort, PortType.http);
+
+    addIgnoredException(DistributedSystemDisconnectedException.class);
   }
 
   @Test
   public void testShutdownServers() {
     String command = "shutdown";
 
-    gfsh.executeAndAssertThat(command).statusIsSuccess().containsOutput("Shutdown is triggered");
+    gfsh.executeAndAssertThat(command)
+        .statusIsSuccess()
+        .containsOutput("Shutdown is triggered");
 
     for (VM vm : toArray(server1, server2)) {
       vm.invoke(() -> verifyNotConnected(SERVER_LAUNCHER.get().getCache()));
     }
 
-    gfsh.executeAndAssertThat("list members").statusIsSuccess();
+    gfsh.executeAndAssertThat("list members")
+        .statusIsSuccess();
+
     assertThat(gfsh.getGfshOutput()).contains("locator");
   }
 
@@ -122,22 +124,30 @@ public class ShutdownCommandOverHttpDUnitTest implements
   public void testShutdownAll() {
     String command = "shutdown --include-locators=true";
 
-    gfsh.executeAndAssertThat(command).statusIsSuccess().containsOutput("Shutdown is triggered");
+    gfsh.executeAndAssertThat(command)
+        .statusIsSuccess()
+        .containsOutput("Shutdown is triggered");
+
     server1.invoke(() -> verifyNotConnected(SERVER_LAUNCHER.get().getCache()));
     server2.invoke(() -> verifyNotConnected(SERVER_LAUNCHER.get().getCache()));
     locator.invoke(() -> verifyNotConnected(LOCATOR_LAUNCHER.get().getCache()));
   }
 
   private void verifyNotConnected(Cache cache) {
-    await().untilAsserted(() -> assertThat(cache.getDistributedSystem().isConnected()).isFalse());
+    await().untilAsserted(() -> {
+      assertThat(cache.getDistributedSystem().isConnected())
+          .as("cache.getDistributedSystem().isConnected()")
+          .isFalse();
+    });
   }
 
   private void startLocator(File directory, int port, int jmxPort, int httpPort) {
     LOCATOR_LAUNCHER.set(new LocatorLauncher.Builder()
+        .setDeletePidFileOnStop(true)
         .setMemberName(LOCATOR_NAME)
         .setPort(port)
         .setWorkingDirectory(directory.getAbsolutePath())
-        .set(HTTP_SERVICE_PORT, httpPort + "")
+        .set(HTTP_SERVICE_PORT, String.valueOf(httpPort))
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
@@ -148,8 +158,9 @@ public class ShutdownCommandOverHttpDUnitTest implements
 
     LOCATOR_LAUNCHER.get().start();
 
+    InternalLocator locator = (InternalLocator) LOCATOR_LAUNCHER.get().getLocator();
+
     await().untilAsserted(() -> {
-      InternalLocator locator = (InternalLocator) LOCATOR_LAUNCHER.get().getLocator();
       assertThat(locator.isSharedConfigurationRunning())
           .as("Locator shared configuration is running on locator" + getVMId())
           .isTrue();
@@ -158,6 +169,7 @@ public class ShutdownCommandOverHttpDUnitTest implements
 
   private void startServer(String name, File workingDirectory, String locator) {
     SERVER_LAUNCHER.set(new ServerLauncher.Builder()
+        .setDeletePidFileOnStop(true)
         .setDisableDefaultServer(true)
         .setMemberName(name)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
