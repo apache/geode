@@ -318,9 +318,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
             Set<LocatorJoinMessage> joinMessages = entry.getValue();
 
             for (LocatorJoinMessage locatorJoinMessage : joinMessages) {
-              if (retryMessage(targetLocator, locatorJoinMessage, attempt)) {
-                joinMessages.remove(locatorJoinMessage);
-              } else {
+              if (!retryMessage(targetLocator, locatorJoinMessage, attempt)) {
                 // Sleep between retries.
                 try {
                   Thread.sleep(memberTimeout);
