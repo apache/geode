@@ -47,7 +47,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @RunWith(JUnitParamsRunner.class)
-public class OfflineDiskStoreCommands implements Serializable {
+public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
   private static final String REGION_NAME = "testRegion";
   private static final String DISK_STORE_ID = "testDisk";
 
