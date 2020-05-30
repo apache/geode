@@ -14,28 +14,51 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMId;
+import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
 
@@ -43,97 +66,280 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
   public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public CacheRule cacheRule = new CacheRule();
-
-  @Rule
-  public ClientCacheRule clientCacheRule = new ClientCacheRule();
-
-  @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
-  VM server1;
+  @Rule
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
-  VM server2;
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
 
-  VM accessor;
+  private VM server1;
+  private VM server2;
+  private VM accessor;
+  private VM client;
 
-  File disk1;
+  private static final String LOCATOR_NAME = "locator";
+  private static final String SERVER1_NAME = "server1";
+  private static final String SERVER2_NAME = "server2";
+  private static final String SERVER3_NAME = "server3";
 
-  File disk2;
+  private File locatorDir;
+  private File server1Dir;
+  private File server2Dir;
+  private File server3Dir;
+
+  private String locatorString;
+
+  private int locatorPort;
+  private int locatorJmxPort;
+  private int locatorHttpPort;
+  private int serverPort1;
+  private int serverPort2;
+  private int serverPort3;
+
+  private static final AtomicReference<LocatorLauncher> LOCATOR_LAUNCHER = new AtomicReference<>();
+
+  private static final AtomicReference<ServerLauncher> SERVER_LAUNCHER = new AtomicReference<>();
 
   private static final String OVERFLOW_REGION_NAME = "testOverflowRegion";
 
-  private static final String DISK_STORE_NAME = "testDiskStore";
-
   public static final int NUM_ENTRIES = 1000;
 
-  protected RegionShortcut getRegionShortCut() {
-    return RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
-  }
-
   @Before
-  public void setUp() throws Exception {
+  public void setup() throws Exception {
+    VM locator = getVM(0);
     server1 = getVM(1);
     server2 = getVM(2);
     accessor = getVM(3);
-    disk1 = temporaryFolder.newFolder();
-    disk2 = temporaryFolder.newFolder();
+    client = getVM(4);
+
+    locatorDir = temporaryFolder.newFolder(LOCATOR_NAME);
+    server1Dir = temporaryFolder.newFolder(SERVER1_NAME);
+    server2Dir = temporaryFolder.newFolder(SERVER2_NAME);
+    server3Dir = temporaryFolder.newFolder(SERVER3_NAME);
+
+    int[] ports = getRandomAvailableTCPPorts(6);
+    locatorPort = ports[0];
+    locatorJmxPort = ports[1];
+    locatorHttpPort = ports[2];
+    serverPort1 = ports[3];
+    serverPort2 = ports[4];
+    serverPort3 = ports[5];
+
+    locator.invoke(
+        () -> startLocator(locatorDir, locatorPort, locatorJmxPort, locatorHttpPort));
+    gfsh.connectAndVerify(locatorJmxPort, GfshCommandRule.PortType.jmxManager);
+
+    locatorString = "localhost[" + locatorPort + "]";
+    server1.invoke(() -> startServer(SERVER1_NAME, server1Dir, locatorString, serverPort1));
+    server2.invoke(() -> startServer(SERVER2_NAME, server2Dir, locatorString, serverPort2));
   }
 
   @Test
-  public void testClearWithOverflow() {
-    initializeDataStores();
-    accessor.invoke(this::populateRegion);
+  public void testGfshClearRegionWithOverflow() throws InterruptedException {
+    createDiskStore(testName.getMethodName());
+    createRegion();
+
+    populateRegion();
+    assertRegionSize(NUM_ENTRIES);
+
+    gfsh.executeAndAssertThat("clear region --name=" + OVERFLOW_REGION_NAME).statusIsSuccess();
+    assertRegionSize(0);
+
+    restartServers();
+    assertRegionSize(0);
+  }
+
+  @Test
+  public void testClientRegionClearWithOverflow() throws InterruptedException {
+    createDiskStore(testName.getMethodName());
+    createRegion();
+
+    populateRegion();
+    assertRegionSize(NUM_ENTRIES);
+
+    client.invoke(() -> {
+      ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
+      ClientCache clientCache =
+          clientCacheFactory.addPoolLocator("localhost", locatorPort).create();
+
+      clientCache
+          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+          .create(OVERFLOW_REGION_NAME).clear();
+    });
+    assertRegionSize(0);
+
+    restartServers();
+    assertRegionSize(0);
+  }
+
+  @Test
+  public void testAccessorRegionClearWithOverflow() throws InterruptedException {
+
+    for (VM vm : toArray(server1, server2)) {
+      vm.invoke(this::createRegionWithDefaultDiskStore);
+    }
+
     accessor.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(OVERFLOW_REGION_NAME);
-      region.clear();
+      startServer(SERVER3_NAME, server3Dir, locatorString, serverPort3);
+      SERVER_LAUNCHER.get().getCache()
+          .createRegionFactory(RegionShortcut.PARTITION_REDUNDANT_OVERFLOW)
+          .setPartitionAttributes(
+              new PartitionAttributesFactory().setLocalMaxMemory(0).create())
+          .create(OVERFLOW_REGION_NAME);
     });
-    server1.bounce();
-//    server2.bounce();
-    server1.invoke(() -> {
-      Region region = createOverflowRegion(1);
-      assertThat(region.size()).isEqualTo(0);
+
+    populateRegion();
+    assertRegionSize(NUM_ENTRIES);
+
+    accessor.invoke(() -> {
+      assertThat(SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME).size())
+          .isEqualTo(NUM_ENTRIES);
+      SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME).clear();
+      assertThat(SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME).size())
+          .isEqualTo(0);
     });
-//    server2.invoke(() -> {
-//      Region region = createOverflowRegion(2);
-//      assertThat(region.size()).isEqualTo(0);
-//    });
+    assertRegionSize(0);
+
+    for (VM vm : toArray(server1, server2)) {
+      vm.invoke(PartitionedRegionOverflowClearDUnitTest::stopServer);
+    }
+
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
+    assertThat(gfsh.getGfshOutput()).contains("locator");
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      startServer(SERVER1_NAME, server1Dir, locatorString, serverPort1);
+      createRegionWithDefaultDiskStore();
+    });
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      startServer(SERVER2_NAME, server2Dir, locatorString, serverPort2);
+      createRegionWithDefaultDiskStore();
+    });
+    asyncInvocation1.get();
+    asyncInvocation2.get();
+    assertRegionSize(0);
   }
 
-  private void initializeDataStores() {
-    server1.invoke(() -> {
-      createOverflowRegion(1);
-    });
-//    server2.invoke(() -> {
-//      createOverflowRegion(2);
-//    });
+  private void restartServers() throws InterruptedException {
+    for (VM vm : toArray(server1, server2)) {
+      vm.invoke(PartitionedRegionOverflowClearDUnitTest::stopServer);
+    }
+
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
+    assertThat(gfsh.getGfshOutput()).contains("locator");
+    AsyncInvocation asyncInvocation1 =
+        server1
+            .invokeAsync(() -> startServer(SERVER1_NAME, server1Dir, locatorString, serverPort1));
+    AsyncInvocation asyncInvocation2 =
+        server2
+            .invokeAsync(() -> startServer(SERVER2_NAME, server2Dir, locatorString, serverPort2));
+    asyncInvocation1.get();
+    asyncInvocation2.get();
   }
 
-  private Region createOverflowRegion(int server) {
-    File disk;
-    if (server == 1) {
-      disk = new File(temporaryFolder.getRoot(), "disk1");
-    }
-    else {
-      disk = new File(temporaryFolder.getRoot(), "disk2");
-    }
-    cacheRule.createCache();
-    cacheRule.getCache().createDiskStoreFactory(new DiskStoreAttributes()).setDiskDirs(new File[] {disk}).create(DISK_STORE_NAME);
-    return cacheRule.getCache().createRegionFactory(getRegionShortCut())
+  private void createRegion() {
+    String command = new CommandStringBuilder("create region")
+        .addOption("name", OVERFLOW_REGION_NAME)
+        .addOption("disk-store", testName.getMethodName())
+        .addOption("type", "PARTITION_REDUNDANT_PERSISTENT_OVERFLOW")
+        .addOption("redundant-copies", "1")
+        .addOption("eviction-entry-count", "1")
+        .addOption("eviction-action", "overflow-to-disk")
+        .getCommandString();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+  }
+
+  private void createDiskStore(String diskStoreName) {
+    String command = new CommandStringBuilder("create disk-store")
+        .addOption("name", diskStoreName)
+        .addOption("dir", diskStoreName)
+        .addOption("max-oplog-size", "1")
+        .getCommandString();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+  }
+
+  private void createRegionWithDefaultDiskStore() {
+    SERVER_LAUNCHER.get().getCache().createDiskStoreFactory()
+        .create(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
+    SERVER_LAUNCHER.get().getCache()
+        .createRegionFactory(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW)
         .setPartitionAttributes(
             new PartitionAttributesFactory().setRedundantCopies(1).create())
-        .setDiskStoreName(DISK_STORE_NAME)
+        .setDiskStoreName(DiskStoreFactory.DEFAULT_DISK_STORE_NAME)
         .setEvictionAttributes(
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK))
+            EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK))
         .create(OVERFLOW_REGION_NAME);
   }
 
   private void populateRegion() {
-    cacheRule.createCache();
-    cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-        new PartitionAttributesFactory().setLocalMaxMemory(0).setRedundantCopies(1).create()).create(OVERFLOW_REGION_NAME);
-    Region region = cacheRule.getCache().getRegion(OVERFLOW_REGION_NAME);
-    IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put("key" + i, "value" + i));
+    ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
+    ClientCache clientCache =
+        clientCacheFactory.addPoolLocator("localhost", locatorPort).create();
+
+    Region<Object, Object> clientRegion = clientCache
+        .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(OVERFLOW_REGION_NAME);
+
+    IntStream.range(0, NUM_ENTRIES).forEach(i -> clientRegion.put("key-" + i, "value-" + i));
   }
 
+  private void assertRegionSize(int size) {
+    server1.invoke(() -> {
+      assertThat(SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME)).isNotNull();
+      assertThat(SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME).size())
+          .isEqualTo(size);
+    });
+    server2.invoke(() -> {
+      assertThat(SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME).size())
+          .isEqualTo(size);
+    });
+  }
+
+  private void startLocator(File directory, int port, int jmxPort, int httpPort) {
+    LOCATOR_LAUNCHER.set(new LocatorLauncher.Builder()
+        .setMemberName(LOCATOR_NAME)
+        .setPort(port)
+        .setWorkingDirectory(directory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, httpPort + "")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(LOG_FILE, new File(directory, LOCATOR_NAME + ".log").getAbsolutePath())
+        .set(MAX_WAIT_TIME_RECONNECT, "1000")
+        .set(MEMBER_TIMEOUT, "2000")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true")
+        .set(USE_CLUSTER_CONFIGURATION, "true")
+        .build());
+
+    LOCATOR_LAUNCHER.get().start();
+
+    await().untilAsserted(() -> {
+      InternalLocator locator = (InternalLocator) LOCATOR_LAUNCHER.get().getLocator();
+      assertThat(locator.isSharedConfigurationRunning())
+          .as("Locator shared configuration is running on locator" + getVMId())
+          .isTrue();
+    });
+  }
+
+  private void startServer(String name, File workingDirectory, String locator, int serverPort) {
+    SERVER_LAUNCHER.set(new ServerLauncher.Builder()
+        .setDeletePidFileOnStop(true)
+        .setMemberName(name)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(LOCATORS, locator)
+        .set(LOG_FILE, new File(workingDirectory, name + ".log").getAbsolutePath())
+        .set(MAX_WAIT_TIME_RECONNECT, "1000")
+        .set(MEMBER_TIMEOUT, "2000")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true")
+        .set(USE_CLUSTER_CONFIGURATION, "true")
+        .build());
+
+    SERVER_LAUNCHER.get().start();
+  }
+
+  private static void stopServer() {
+    SERVER_LAUNCHER.get().stop();
+  }
 }
