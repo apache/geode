@@ -92,6 +92,12 @@ public class GeodeRedisServer {
 
   private static final int RANDOM_PORT_INDICATOR = 0;
 
+  public static final String ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM =
+      "enable-redis-unsupported-commands";
+
+  private static final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
+      Boolean.getBoolean(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM);
+
   /**
    * The number of threads that will work on handling requests
    */
@@ -122,6 +128,7 @@ public class GeodeRedisServer {
    */
   private boolean singleThreadPerConnection;
 
+  private boolean allowUnsupportedCommands = false;
   /**
    * Logging level
    */
@@ -142,10 +149,10 @@ public class GeodeRedisServer {
   private RegionProvider regionProvider;
 
   private EventLoopGroup bossGroup;
+
   private EventLoopGroup workerGroup;
   private EventLoopGroup subscriberGroup;
   private final ScheduledExecutorService expirationExecutor;
-
   /**
    * The name of the region that holds data stored in redis.
    */
@@ -163,9 +170,10 @@ public class GeodeRedisServer {
   public final RegionShortcut DEFAULT_REGION_TYPE = RegionShortcut.PARTITION_REDUNDANT;
 
   private boolean shutdown;
-  private boolean started;
 
+  private boolean started;
   private PubSub pubSub;
+
 
   /**
    * Helper method to set the number of worker threads
@@ -245,6 +253,21 @@ public class GeodeRedisServer {
         new NamedThreadFactory("GemFireRedis-ExpirationExecutor-", true));
     shutdown = false;
     started = false;
+  }
+
+  public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
+    this.allowUnsupportedCommands = allowUnsupportedCommands;
+  }
+
+  /**
+   * Precedence of the internal property overrides the global system property.
+   */
+  public boolean allowUnsupportedCommands() {
+    if (allowUnsupportedCommands) {
+      return true;
+    }
+
+    return ENABLE_REDIS_UNSUPPORTED_COMMANDS;
   }
 
   /**
@@ -479,11 +502,10 @@ public class GeodeRedisServer {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
       ChannelFuture closeFuture = serverChannel.closeFuture();
-      Future<?> c = workerGroup.shutdownGracefully();
-      Future<?> c2 = bossGroup.shutdownGracefully();
+      workerGroup.shutdownGracefully();
+      Future<?> bossFuture = bossGroup.shutdownGracefully();
       serverChannel.close();
-      c.syncUninterruptibly();
-      c2.syncUninterruptibly();
+      bossFuture.syncUninterruptibly();
       if (mainThread != null) {
         mainThread.interrupt();
       }

@@ -45,6 +45,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   protected void before() throws Throwable {
     cache = cacheFactory.create();
     server = new GeodeRedisServer("localhost", 0);
+    server.setAllowUnsupportedCommands(true);
     server.start();
   }
 
@@ -52,6 +53,10 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   protected void after() {
     cache.close();
     server.shutdown();
+  }
+
+  public GeodeRedisServer getServer() {
+    return server;
   }
 
   public GeodeRedisServerRule withPassword(String password) {

@@ -11,6 +11,7 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 package org.apache.geode.redis.internal.executor;
 
@@ -21,7 +22,7 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
 
-public class UnkownExecutor extends AbstractExecutor {
+public class UnknownExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -42,6 +43,6 @@ public class UnkownExecutor extends AbstractExecutor {
     }
 
     command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-        RedisConstants.ERROR_UNKOWN_COMMAND + " " + commandProcessedText));
+        RedisConstants.ERROR_UNKNOWN_COMMAND + " " + commandProcessedText));
   }
 }

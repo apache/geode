@@ -16,12 +16,7 @@
 
 package org.apache.geode.redis;
 
-import static java.lang.String.valueOf;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,10 +37,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -54,7 +48,7 @@ public class PubSubDUnitTest {
   public static final String CHANNEL_NAME = "salutations";
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(5);
+  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(5);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -62,70 +56,46 @@ public class PubSubDUnitTest {
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
-  private static int[] ports;
+  private static final String LOCAL_HOST = "127.0.0.1";
+  private static Jedis subscriber1;
+  private static Jedis subscriber2;
+  private static Jedis publisher1;
+  private static Jedis publisher2;
 
-  static final String LOCAL_HOST = "127.0.0.1";
-  static Jedis subscriber1;
-  static Jedis subscriber2;
-  static Jedis publisher1;
-  static Jedis publisher2;
+  private static Properties locatorProperties;
 
-  static Properties locatorProperties;
-  static Properties serverProperties1;
-  static Properties serverProperties2;
-  static Properties serverProperties3;
-  static Properties serverProperties4;
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  private static MemberVM server3;
+  private static MemberVM server4;
 
-  static MemberVM locator;
-  static MemberVM server1;
-  static MemberVM server2;
-  static MemberVM server3;
-  static MemberVM server4;
+  private static int redisServerPort1;
+  private static int redisServerPort2;
+  private static int redisServerPort3;
+  private static int redisServerPort4;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
 
     locatorProperties = new Properties();
-    serverProperties1 = new Properties();
-    serverProperties2 = new Properties();
-    serverProperties3 = new Properties();
-    serverProperties4 = new Properties();
-
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    serverProperties1.setProperty(REDIS_PORT, valueOf(ports[0]));
-    serverProperties1.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
-    serverProperties1.setProperty(LOG_LEVEL, "warn");
-    serverProperties1.setProperty(REDIS_ENABLED, "true");
-
-    serverProperties2.setProperty(REDIS_PORT, valueOf(ports[1]));
-    serverProperties2.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
-    serverProperties2.setProperty(LOG_LEVEL, "warn");
-    serverProperties2.setProperty(REDIS_ENABLED, "true");
-
-    serverProperties3.setProperty(REDIS_PORT, valueOf(ports[2]));
-    serverProperties3.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
-    serverProperties3.setProperty(LOG_LEVEL, "warn");
-    serverProperties3.setProperty(REDIS_ENABLED, "true");
-
-    serverProperties4.setProperty(REDIS_PORT, valueOf(ports[3]));
-    serverProperties4.setProperty(REDIS_BIND_ADDRESS, LOCAL_HOST);
-    serverProperties4.setProperty(LOG_LEVEL, "warn");
-    serverProperties4.setProperty(REDIS_ENABLED, "true");
-
     locator = cluster.startLocatorVM(0, locatorProperties);
-    server1 = cluster.startServerVM(1, serverProperties1, locator.getPort());
-    server2 = cluster.startServerVM(2, serverProperties2, locator.getPort());
-    server3 = cluster.startServerVM(3, serverProperties3, locator.getPort());
-    server4 = cluster.startServerVM(4, serverProperties4, locator.getPort());
+    server1 = cluster.startRedisVM(1, locator.getPort());
+    server2 = cluster.startRedisVM(2, locator.getPort());
+    server3 = cluster.startRedisVM(3, locator.getPort());
+    server4 = cluster.startRedisVM(4, locator.getPort());
 
-    subscriber1 = new Jedis(LOCAL_HOST, ports[0], 120000);
-    subscriber2 = new Jedis(LOCAL_HOST, ports[1], 120000);
-    publisher1 = new Jedis(LOCAL_HOST, ports[2], 120000);
-    publisher2 = new Jedis(LOCAL_HOST, ports[3], 120000);
+    redisServerPort1 = cluster.getRedisPort(1);
+    redisServerPort2 = cluster.getRedisPort(2);
+    redisServerPort3 = cluster.getRedisPort(3);
+    redisServerPort4 = cluster.getRedisPort(4);
 
-
+    subscriber1 = new Jedis(LOCAL_HOST, redisServerPort1, 120000);
+    subscriber2 = new Jedis(LOCAL_HOST, redisServerPort2, 120000);
+    publisher1 = new Jedis(LOCAL_HOST, redisServerPort3, 120000);
+    publisher2 = new Jedis(LOCAL_HOST, redisServerPort4, 120000);
 
     gfsh.connectAndVerify(locator);
   }
@@ -216,31 +186,33 @@ public class PubSubDUnitTest {
   }
 
   private void restartServerVM1() {
-    cluster.startServerVM(1, serverProperties1, locator.getPort());
+    cluster.startRedisVM(1, locator.getPort());
     await()
         .untilAsserted(() -> gfsh.executeAndAssertThat("list members")
             .statusIsSuccess()
             .hasTableSection()
             .hasColumn("Name")
             .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4"));
+    redisServerPort1 = cluster.getRedisPort(1);
   }
 
   private void restartServerVM2() {
-    cluster.startServerVM(2, serverProperties2, locator.getPort());
+    cluster.startRedisVM(2, locator.getPort());
     await()
         .untilAsserted(() -> gfsh.executeAndAssertThat("list members")
             .statusIsSuccess()
             .hasTableSection()
             .hasColumn("Name")
             .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4"));
+    redisServerPort2 = cluster.getRedisPort(2);
   }
 
   private void reconnectSubscriber1() {
-    subscriber1 = new Jedis(LOCAL_HOST, ports[0]);
+    subscriber1 = new Jedis(LOCAL_HOST, redisServerPort1);
   }
 
   private void reconnectSubscriber2() {
-    subscriber2 = new Jedis(LOCAL_HOST, ports[1]);
+    subscriber2 = new Jedis(LOCAL_HOST, redisServerPort2);
   }
 
   @Test
@@ -322,6 +294,7 @@ public class PubSubDUnitTest {
         .isTrue();
 
     List<Future<Void>> futures = new LinkedList<>();
+    int[] ports = new int[] {redisServerPort1, redisServerPort2};
     for (int i = 0; i < CLIENT_COUNT; i++) {
       Jedis publisher = new Jedis("localhost", ports[i % 2]);
 
@@ -359,7 +332,7 @@ public class PubSubDUnitTest {
 
     // Build up an initial set of subscribers
     for (int i = 0; i < CLIENT_COUNT; i++) {
-      Jedis client = new Jedis("localhost", ports[0]);
+      Jedis client = new Jedis("localhost", redisServerPort1);
       clients.add(client);
 
       CountDownLatch latch = new CountDownLatch(1);
@@ -370,7 +343,7 @@ public class PubSubDUnitTest {
       clients.add(client);
     }
 
-    Jedis publishingClient = new Jedis("localhost", ports[0]);
+    Jedis publishingClient = new Jedis("localhost", redisServerPort1);
     long result = 0;
 
     for (int i = 0; i < 10; i++) {
@@ -392,7 +365,7 @@ public class PubSubDUnitTest {
 
     // Build up an initial set of subscribers
     for (int i = 0; i < CLIENT_COUNT; i++) {
-      Jedis client = new Jedis("localhost", ports[0]);
+      Jedis client = new Jedis("localhost", redisServerPort1);
       clients.add(client);
 
       CountDownLatch latch = new CountDownLatch(1);
@@ -402,7 +375,7 @@ public class PubSubDUnitTest {
     }
 
     // Start actively publishing in the background
-    Jedis publishingClient = new Jedis("localhost", ports[0]);
+    Jedis publishingClient = new Jedis("localhost", redisServerPort1);
     Callable<Void> callable = () -> {
       for (int j = 0; j < ITERATIONS; j++) {
         publishingClient.publish(CHANNEL_NAME, "hello - " + j);
@@ -417,7 +390,7 @@ public class PubSubDUnitTest {
       int candy = random.nextInt(CLIENT_COUNT);
       clients.get(candy).close();
 
-      Jedis client = new Jedis("localhost", ports[0]);
+      Jedis client = new Jedis("localhost", redisServerPort1);
       CountDownLatch latch = new CountDownLatch(1);
       MockSubscriber mockSubscriber = new MockSubscriber(latch);
       executor.submit(() -> client.subscribe(mockSubscriber, CHANNEL_NAME));

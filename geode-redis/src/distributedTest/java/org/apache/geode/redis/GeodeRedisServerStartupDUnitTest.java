@@ -20,19 +20,23 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_AD
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import org.junit.Rule;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public class GeodeRedisServerStartupDUnitTest {
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public RedisClusterStartupRule cluster = new RedisClusterStartupRule();
 
   @Test
   public void startupOnDefaultPort() {
@@ -41,10 +45,7 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_ENABLED, "true"));
 
-    server.invoke(() -> {
-      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      assertThat(service.getPort()).isEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
-    });
+    assertThat(cluster.getRedisPort(server)).isEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
   }
 
   @Test
@@ -54,10 +55,8 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_ENABLED, "true"));
 
-    server.invoke(() -> {
-      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      assertThat(service.getPort()).isNotEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
-    });
+    assertThat(cluster.getRedisPort(server))
+        .isNotEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
   }
 
   @Test
@@ -71,6 +70,38 @@ public class GeodeRedisServerStartupDUnitTest {
           .as("GeodeRedisService should not exist")
           .isNull();
     });
+  }
+
+  @Test
+  public void whenStartedWithDefaults_unsupportedCommandsAreNotAvailable() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "0")
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
+
+    Jedis jedis = new Jedis("localhost", cluster.getRedisPort(server));
+
+    assertThatExceptionOfType(JedisDataException.class)
+        .isThrownBy(() -> jedis.echo("unsupported"))
+        .withMessageContaining("This command is unsupported");
+  }
+
+  @Test
+  public void whenStartedWithDefaults_unsupportedCommandsCanBeEnabledDynamically() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "0")
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
+
+    Jedis jedis = new Jedis("localhost", cluster.getRedisPort(server));
+
+    assertThatExceptionOfType(JedisDataException.class)
+        .isThrownBy(() -> jedis.echo("unsupported"))
+        .withMessageContaining("This command is unsupported");
+
+    cluster.setEnableUnsupported(server, true);
+
+    assertThat(jedis.echo("supported")).isEqualTo("supported");
   }
 
 }

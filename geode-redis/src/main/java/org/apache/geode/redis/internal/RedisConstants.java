@@ -30,7 +30,10 @@ public class RedisConstants {
   public static final String SERVER_ERROR_MESSAGE =
       "The server had an internal error please try again";
   static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
-  public static final String ERROR_UNKOWN_COMMAND = "Unable to process unknown command";
+  public static final String ERROR_UNKNOWN_COMMAND = "Unable to process unknown command";
+  public static final String ERROR_UNSUPPORTED_COMMAND =
+      "This command is unsupported. To enable it please start your system with the java system property '"
+          + GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM + "=true'";
   public static final String ERROR_ILLEGAL_GLOB = "Incorrect syntax for given glob regex";
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
   public static final String ERROR_NAN_INF_INCR = "increment would produce NaN or Infinity";

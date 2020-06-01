@@ -20,7 +20,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -44,18 +43,17 @@ import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public abstract class SessionDUnitTest {
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
-
 
   // 30 minutes
   protected static final int DEFAULT_SESSION_TIMEOUT = 60 * 30;
@@ -66,7 +64,6 @@ public abstract class SessionDUnitTest {
   protected static final int APP1 = 3;
   protected static final int APP2 = 4;
 
-
   private static final Map<Integer, Integer> ports = new HashMap<>();
   public static ConfigurableApplicationContext springApplicationContext;
 
@@ -75,15 +72,16 @@ public abstract class SessionDUnitTest {
 
   @BeforeClass
   public static void setup() {
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(4);
-    ports.put(SERVER1, availablePorts[0]);
-    ports.put(SERVER2, availablePorts[1]);
-    ports.put(APP1, availablePorts[2]);
-    ports.put(APP2, availablePorts[3]);
+    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    ports.put(APP1, availablePorts[0]);
+    ports.put(APP2, availablePorts[1]);
 
     cluster.startLocatorVM(LOCATOR);
     startRedisServer(SERVER1);
     startRedisServer(SERVER2);
+
+    ports.put(SERVER1, cluster.getRedisPort(SERVER1));
+    ports.put(SERVER2, cluster.getRedisPort(SERVER2));
 
     jedisConnetedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
   }
@@ -101,23 +99,13 @@ public abstract class SessionDUnitTest {
   }
 
   protected static void startRedisServer(int server) {
-    cluster.startServerVM(server, redisProperties(server),
-        cluster.getMember(LOCATOR).getPort());
+    cluster.startRedisVM(server, cluster.getMember(LOCATOR).getPort());
 
     cluster.getVM(server).invoke("Set logging level to DEBUG", () -> {
       Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
       Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
       FastLogger.setDelegating(true);
     });
-  }
-
-  private static Properties redisProperties(int server) {
-    Properties redisPropsForServer = new Properties();
-    redisPropsForServer.setProperty("redis-bind-address", "localHost");
-    redisPropsForServer.setProperty("redis-port", "" + ports.get(server));
-    redisPropsForServer.setProperty("redis-enabled", "true");
-    redisPropsForServer.setProperty("log-level", "info");
-    return redisPropsForServer;
   }
 
   static void startSpringApp(int sessionApp, int primaryServer, int secondaryServer,
