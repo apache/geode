@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -59,7 +58,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
 
@@ -71,9 +69,6 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
-
-  @Rule
-  public SerializableTestName testName = new SerializableTestName();
 
   private VM server1;
   private VM server2;
@@ -138,10 +133,8 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
   }
 
   @Test
-  @Ignore
   public void testGfshClearRegionWithOverflow() throws InterruptedException {
-    createDiskStore(testName.getMethodName());
-    createRegion();
+    createPartitionRedundantPersistentOverflowRegion();
 
     populateRegion();
     assertRegionSize(NUM_ENTRIES);
@@ -150,14 +143,16 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     assertRegionSize(0);
 
     restartServers();
+
     assertRegionSize(0);
+
+    destroyRegion();
+    destroyDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
   }
 
   @Test
-  @Ignore
   public void testClientRegionClearWithOverflow() throws InterruptedException {
-    createDiskStore(testName.getMethodName());
-    createRegion();
+    createPartitionRedundantPersistentOverflowRegion();
 
     populateRegion();
     assertRegionSize(NUM_ENTRIES);
@@ -174,11 +169,14 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     assertRegionSize(0);
 
     restartServers();
+
     assertRegionSize(0);
+
+    destroyRegion();
+    destroyDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
   }
 
   @Test
-  @Ignore
   public void testAccessorRegionClearWithOverflow() throws InterruptedException {
 
     for (VM vm : toArray(server1, server2)) {
@@ -223,6 +221,9 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     asyncInvocation1.get();
     asyncInvocation2.get();
     assertRegionSize(0);
+
+    destroyRegion();
+    destroyDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
   }
 
   private void restartServers() throws InterruptedException {
@@ -242,10 +243,9 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     asyncInvocation2.get();
   }
 
-  private void createRegion() {
+  private void createPartitionRedundantPersistentOverflowRegion() {
     String command = new CommandStringBuilder("create region")
         .addOption("name", OVERFLOW_REGION_NAME)
-        .addOption("disk-store", testName.getMethodName())
         .addOption("type", "PARTITION_REDUNDANT_PERSISTENT_OVERFLOW")
         .addOption("redundant-copies", "1")
         .addOption("eviction-entry-count", "1")
@@ -254,11 +254,17 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 
-  private void createDiskStore(String diskStoreName) {
-    String command = new CommandStringBuilder("create disk-store")
+  private void destroyRegion() {
+    server1.invoke(() -> {
+      assertThat(SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME)).isNotNull();
+      SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME).destroyRegion();
+
+    });
+  }
+
+  private void destroyDiskStore(String diskStoreName) {
+    String command = new CommandStringBuilder("destroy disk-store")
         .addOption("name", diskStoreName)
-        .addOption("dir", diskStoreName)
-        .addOption("max-oplog-size", "1")
         .getCommandString();
     gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
@@ -294,6 +300,7 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
           .isEqualTo(size);
     });
     server2.invoke(() -> {
+      assertThat(SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME)).isNotNull();
       assertThat(SERVER_LAUNCHER.get().getCache().getRegion(OVERFLOW_REGION_NAME).size())
           .isEqualTo(size);
     });
