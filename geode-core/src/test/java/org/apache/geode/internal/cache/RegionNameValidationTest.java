@@ -137,6 +137,46 @@ public class RegionNameValidationTest {
   }
 
   @Test
+  public void startingAndEndingWithSquareBracketsIsOk() {
+    validate("[validRegionName]");
+  }
+
+  @Test
+  public void containingSquareBracketsIsOk() {
+    validate("validRegion[EMPTY]Name");
+  }
+
+  @Test
+  public void startingWithCaretIsOk() {
+    validate("^validRegionName");
+  }
+
+  @Test
+  public void containingCaretIsOk() {
+    validate("validRegion^Name");
+  }
+
+  @Test
+  public void endingWithCaretIsOk() {
+    validate("validRegionName^");
+  }
+
+  @Test
+  public void startingWithBackquoteIsOk() {
+    validate("`validRegionName");
+  }
+
+  @Test
+  public void containingBackquoteIsOk() {
+    validate("validRegion`Name");
+  }
+
+  @Test
+  public void endingWithBackquoteIsOk() {
+    validate("validRegionName`");
+  }
+
+  @Test
   public void nameWithDot() throws Exception {
     validate("valid.valid");
   }
