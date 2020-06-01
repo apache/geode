@@ -113,13 +113,10 @@ public enum RedisCommandType {
 
   /*************** Keys ******************/
 
-  AUTH(new AuthExecutor(), true),
   DEL(new DelExecutor(), true, new MinimumParameterRequirements(2)),
   EXISTS(new ExistsExecutor(), true, new MinimumParameterRequirements(2)),
   EXPIRE(new ExpireExecutor(), true),
   EXPIREAT(new ExpireAtExecutor(), true),
-  FLUSHALL(new FlushAllExecutor(), true),
-  FLUSHDB(new FlushAllExecutor(), true),
   KEYS(new KeysExecutor(), true),
   PERSIST(new PersistExecutor(), true),
   PEXPIRE(new PExpireExecutor(), true),
@@ -159,6 +156,7 @@ public enum RedisCommandType {
 
   /*************** Server ****************/
 
+  AUTH(new AuthExecutor(), true),
   PING(new PingExecutor(), true),
   QUIT(new QuitExecutor(), true),
   UNKNOWN(new UnknownExecutor(), true),
@@ -172,6 +170,8 @@ public enum RedisCommandType {
    *************** Keys ******************
    ***************************************/
 
+  FLUSHALL(new FlushAllExecutor(), false),
+  FLUSHDB(new FlushAllExecutor(), false),
   SCAN(new ScanExecutor(), false),
 
   /***************************************
