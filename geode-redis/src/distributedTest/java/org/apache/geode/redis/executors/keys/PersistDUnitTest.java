@@ -12,12 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.executors.general;
+package org.apache.geode.redis.executors.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.BeforeClass;
@@ -26,20 +25,19 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class PersistDUnitTest implements Serializable {
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(5);
+  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(5);
 
   private static String LOCALHOST = "localhost";
 
@@ -63,21 +61,13 @@ public class PersistDUnitTest implements Serializable {
 
   @BeforeClass
   public static void setup() {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    server1Port = ports[0];
-    server2Port = ports[1];
-
     MemberVM locator = cluster.startLocatorVM(0);
 
-    Properties redisProps = new Properties();
-    redisProps.setProperty("redis-bind-address", LOCALHOST);
-    redisProps.setProperty("redis-port", Integer.toString(ports[0]));
-    redisProps.setProperty("redis-enabled", "true");
-    redisProps.setProperty("log-level", "warn");
-    cluster.startServerVM(1, redisProps, locator.getPort());
+    cluster.startRedisVM(1, locator.getPort());
+    cluster.startRedisVM(2, locator.getPort());
 
-    redisProps.setProperty("redis-port", Integer.toString(ports[1]));
-    cluster.startServerVM(2, redisProps, locator.getPort());
+    server1Port = cluster.getRedisPort(1);
+    server2Port = cluster.getRedisPort(2);
 
     client1 = cluster.getVM(3);
     client2 = cluster.getVM(4);

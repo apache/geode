@@ -27,13 +27,13 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
  *
  *
  */
-public class UnkownExecutorJUnitTest {
+public class UnknownExecutorJUnitTest {
   /**
    * Test the execution method
    */
   @Test
   public void testExecuteCommand() {
-    UnkownExecutor exe = new UnkownExecutor();
+    UnknownExecutor exe = new UnknownExecutor();
 
     Command command = Mockito.mock(Command.class);
     ExecutionHandlerContext context = Mockito.mock(ExecutionHandlerContext.class);

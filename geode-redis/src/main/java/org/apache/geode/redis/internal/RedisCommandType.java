@@ -43,7 +43,7 @@ import org.apache.geode.redis.internal.executor.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.TTLExecutor;
 import org.apache.geode.redis.internal.executor.TimeExecutor;
 import org.apache.geode.redis.internal.executor.TypeExecutor;
-import org.apache.geode.redis.internal.executor.UnkownExecutor;
+import org.apache.geode.redis.internal.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.executor.hash.HDelExecutor;
 import org.apache.geode.redis.internal.executor.hash.HExistsExecutor;
 import org.apache.geode.redis.internal.executor.hash.HGetAllExecutor;
@@ -108,129 +108,158 @@ import org.apache.geode.redis.internal.executor.string.StrlenExecutor;
 public enum RedisCommandType {
 
   /***************************************
+   *** Supported Commands ***
+   ***************************************/
+
+  /*************** Keys ******************/
+
+  DEL(new DelExecutor(), true, new MinimumParameterRequirements(2)),
+  EXISTS(new ExistsExecutor(), true, new MinimumParameterRequirements(2)),
+  EXPIRE(new ExpireExecutor(), true),
+  EXPIREAT(new ExpireAtExecutor(), true),
+  KEYS(new KeysExecutor(), true),
+  PERSIST(new PersistExecutor(), true),
+  PEXPIRE(new PExpireExecutor(), true),
+  PEXPIREAT(new PExpireAtExecutor(), true),
+  PTTL(new PTTLExecutor(), true),
+  RENAME(new RenameExecutor(), true),
+  TTL(new TTLExecutor(), true),
+  TYPE(new TypeExecutor(), true),
+
+  /************* Strings *****************/
+
+  APPEND(new AppendExecutor(), true, new ExactParameterRequirements(3)),
+  GET(new GetExecutor(), true, new ExactParameterRequirements(2)),
+  SET(new SetExecutor(), true, new MinimumParameterRequirements(3)),
+
+  /************* Hashes *****************/
+
+  HGETALL(new HGetAllExecutor(), true, new ExactParameterRequirements(2)),
+  HMSET(new HMSetExecutor(), true,
+      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
+  HSET(new HSetExecutor(), true,
+      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
+
+  /************* Sets *****************/
+
+  SADD(new SAddExecutor(), true, new MinimumParameterRequirements(3)),
+  SMEMBERS(new SMembersExecutor(), true, new ExactParameterRequirements(2)),
+  SREM(new SRemExecutor(), true, new MinimumParameterRequirements(3)),
+
+  /********** Publish Subscribe **********/
+
+  SUBSCRIBE(new SubscribeExecutor(), true),
+  PUBLISH(new PublishExecutor(), true),
+  UNSUBSCRIBE(new UnsubscribeExecutor(), true),
+  PSUBSCRIBE(new PsubscribeExecutor(), true),
+  PUNSUBSCRIBE(new PunsubscribeExecutor(), true),
+
+  /*************** Server ****************/
+
+  AUTH(new AuthExecutor(), true),
+  PING(new PingExecutor(), true),
+  QUIT(new QuitExecutor(), true),
+  UNKNOWN(new UnknownExecutor(), true),
+
+
+  /***************************************
+   *** Unsupported Commands ***
+   ***************************************/
+
+  /***************************************
    *************** Keys ******************
    ***************************************/
 
-  AUTH(new AuthExecutor()),
-  DEL(new DelExecutor(), new MinimumParameterRequirements(2)),
-  EXISTS(new ExistsExecutor(), new MinimumParameterRequirements(2)),
-  EXPIRE(new ExpireExecutor()),
-  EXPIREAT(new ExpireAtExecutor()),
-  FLUSHALL(new FlushAllExecutor()),
-  FLUSHDB(new FlushAllExecutor()),
-  KEYS(new KeysExecutor()),
-  PERSIST(new PersistExecutor()),
-  PEXPIRE(new PExpireExecutor()),
-  PEXPIREAT(new PExpireAtExecutor()),
-  PTTL(new PTTLExecutor()),
-  RENAME(new RenameExecutor()),
-  SCAN(new ScanExecutor()),
-  TTL(new TTLExecutor()),
-  TYPE(new TypeExecutor()),
+  FLUSHALL(new FlushAllExecutor(), false),
+  FLUSHDB(new FlushAllExecutor(), false),
+  SCAN(new ScanExecutor(), false),
 
   /***************************************
    ************** Strings ****************
    ***************************************/
 
-  APPEND(new AppendExecutor(), new ExactParameterRequirements(3)),
-  BITCOUNT(new BitCountExecutor()),
-  BITOP(new BitOpExecutor()),
-  BITPOS(new BitPosExecutor()),
-  DECR(new DecrExecutor()),
-  DECRBY(new DecrByExecutor()),
-  GET(new GetExecutor(), new ExactParameterRequirements(2)),
-  GETBIT(new GetBitExecutor()),
-  GETRANGE(new GetRangeExecutor()),
-  GETSET(new GetSetExecutor()),
-  INCR(new IncrExecutor()),
-  INCRBY(new IncrByExecutor()),
-  INCRBYFLOAT(new IncrByFloatExecutor()),
-  MGET(new MGetExecutor()),
-  MSET(new MSetExecutor()),
-  MSETNX(new MSetNXExecutor()),
-  PSETEX(new PSetEXExecutor()),
-  SETEX(new SetEXExecutor()),
-  SET(new SetExecutor(), new MinimumParameterRequirements(3)),
-  SETBIT(new SetBitExecutor()),
-  SETNX(new SetNXExecutor()),
-  SETRANGE(new SetRangeExecutor()),
-  STRLEN(new StrlenExecutor()),
+  BITCOUNT(new BitCountExecutor(), false),
+  BITOP(new BitOpExecutor(), false),
+  BITPOS(new BitPosExecutor(), false),
+  DECR(new DecrExecutor(), false),
+  DECRBY(new DecrByExecutor(), false),
+  GETBIT(new GetBitExecutor(), false),
+  GETRANGE(new GetRangeExecutor(), false),
+  GETSET(new GetSetExecutor(), false),
+  INCR(new IncrExecutor(), false),
+  INCRBY(new IncrByExecutor(), false),
+  INCRBYFLOAT(new IncrByFloatExecutor(), false),
+  MGET(new MGetExecutor(), false),
+  MSET(new MSetExecutor(), false),
+  MSETNX(new MSetNXExecutor(), false),
+  PSETEX(new PSetEXExecutor(), false),
+  SETEX(new SetEXExecutor(), false),
+  SETBIT(new SetBitExecutor(), false),
+  SETNX(new SetNXExecutor(), false),
+  SETRANGE(new SetRangeExecutor(), false),
+  STRLEN(new StrlenExecutor(), false),
 
   /***************************************
    **************** Hashes ***************
    ***************************************/
 
-  HDEL(new HDelExecutor(), new MinimumParameterRequirements(3)),
-  HEXISTS(new HExistsExecutor(), new ExactParameterRequirements(3)),
-  HGET(new HGetExecutor(), new ExactParameterRequirements(3)),
-  HGETALL(new HGetAllExecutor(), new ExactParameterRequirements(2)),
-  HINCRBY(new HIncrByExecutor(), new ExactParameterRequirements(4)),
-  HINCRBYFLOAT(new HIncrByFloatExecutor(), new ExactParameterRequirements(4)),
-  HKEYS(new HKeysExecutor(), new ExactParameterRequirements(2)),
-  HLEN(new HLenExecutor(), new ExactParameterRequirements(2)),
-  HMGET(new HMGetExecutor(), new MinimumParameterRequirements(3)),
-  HMSET(new HMSetExecutor(),
-      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
-  HSCAN(new HScanExecutor(), new MinimumParameterRequirements(3)),
-  HSET(new HSetExecutor(),
-      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
-  HSETNX(new HSetNXExecutor(), new ExactParameterRequirements(4)),
-  HVALS(new HValsExecutor(), new ExactParameterRequirements(2)),
+  HDEL(new HDelExecutor(), false, new MinimumParameterRequirements(3)),
+  HEXISTS(new HExistsExecutor(), false, new ExactParameterRequirements(3)),
+  HGET(new HGetExecutor(), false, new ExactParameterRequirements(3)),
+  HINCRBY(new HIncrByExecutor(), false, new ExactParameterRequirements(4)),
+  HINCRBYFLOAT(new HIncrByFloatExecutor(), false, new ExactParameterRequirements(4)),
+  HKEYS(new HKeysExecutor(), false, new ExactParameterRequirements(2)),
+  HLEN(new HLenExecutor(), false, new ExactParameterRequirements(2)),
+  HMGET(new HMGetExecutor(), false, new MinimumParameterRequirements(3)),
+  HSCAN(new HScanExecutor(), false, new MinimumParameterRequirements(3)),
+  HSETNX(new HSetNXExecutor(), false, new ExactParameterRequirements(4)),
+  HVALS(new HValsExecutor(), false, new ExactParameterRequirements(2)),
 
   /***************************************
    **************** Sets *****************
    ***************************************/
 
-  SADD(new SAddExecutor(), new MinimumParameterRequirements(3)),
-  SCARD(new SCardExecutor(), new ExactParameterRequirements(2)),
-  SDIFF(new SDiffExecutor(), new MinimumParameterRequirements(2)),
-  SDIFFSTORE(new SDiffStoreExecutor(), new MinimumParameterRequirements(3)),
-  SISMEMBER(new SIsMemberExecutor(), new ExactParameterRequirements(3)),
-  SINTER(new SInterExecutor(), new MinimumParameterRequirements(2)),
-  SINTERSTORE(new SInterStoreExecutor(), new MinimumParameterRequirements(3)),
-  SMEMBERS(new SMembersExecutor(), new ExactParameterRequirements(2)),
-  SMOVE(new SMoveExecutor(), new ExactParameterRequirements(4)),
-  SPOP(new SPopExecutor(),
+  SCARD(new SCardExecutor(), false, new ExactParameterRequirements(2)),
+  SDIFF(new SDiffExecutor(), false, new MinimumParameterRequirements(2)),
+  SDIFFSTORE(new SDiffStoreExecutor(), false, new MinimumParameterRequirements(3)),
+  SISMEMBER(new SIsMemberExecutor(), false, new ExactParameterRequirements(3)),
+  SINTER(new SInterExecutor(), false, new MinimumParameterRequirements(2)),
+  SINTERSTORE(new SInterStoreExecutor(), false, new MinimumParameterRequirements(3)),
+  SMOVE(new SMoveExecutor(), false, new ExactParameterRequirements(4)),
+  SPOP(new SPopExecutor(), false,
       new MinimumParameterRequirements(2).and(new MaximumParameterRequirements(3))
           .and(new SpopParameterRequirements())),
-  SRANDMEMBER(new SRandMemberExecutor(), new MinimumParameterRequirements(2)),
-  SUNION(new SUnionExecutor(), new MinimumParameterRequirements(2)),
-  SUNIONSTORE(new SUnionStoreExecutor(), new MinimumParameterRequirements(3)),
-  SSCAN(new SScanExecutor(), new MinimumParameterRequirements(3)),
-  SREM(new SRemExecutor(), new MinimumParameterRequirements(3)),
-
-  /***************************************
-   ********** Publish Subscribe **********
-   ***************************************/
-
-  SUBSCRIBE(new SubscribeExecutor()),
-  PUBLISH(new PublishExecutor()),
-  UNSUBSCRIBE(new UnsubscribeExecutor()),
-  PSUBSCRIBE(new PsubscribeExecutor()),
-  PUNSUBSCRIBE(new PunsubscribeExecutor()),
+  SRANDMEMBER(new SRandMemberExecutor(), false, new MinimumParameterRequirements(2)),
+  SUNION(new SUnionExecutor(), false, new MinimumParameterRequirements(2)),
+  SUNIONSTORE(new SUnionStoreExecutor(), false, new MinimumParameterRequirements(3)),
+  SSCAN(new SScanExecutor(), false, new MinimumParameterRequirements(3)),
 
   /***************************************
    *************** Server ****************
    ***************************************/
 
-  DBSIZE(new DBSizeExecutor()),
-  ECHO(new EchoExecutor()),
-  TIME(new TimeExecutor()),
-  PING(new PingExecutor()),
-  QUIT(new QuitExecutor()),
-  SHUTDOWN(new ShutDownExecutor()),
-  UNKNOWN(new UnkownExecutor());
+  DBSIZE(new DBSizeExecutor(), false),
+  ECHO(new EchoExecutor(), false),
+  TIME(new TimeExecutor(), false),
+  SHUTDOWN(new ShutDownExecutor(), false);
 
   private final Executor executor;
   private final ParameterRequirements parameterRequirements;
+  private final boolean supported;
 
-  RedisCommandType(Executor executor) {
-    this(executor, new UnspecifiedParameterRequirements());
+  RedisCommandType(Executor executor, boolean supported) {
+    this(executor, supported, new UnspecifiedParameterRequirements());
   }
 
-  RedisCommandType(Executor executor, ParameterRequirements parameterRequirements) {
+  RedisCommandType(Executor executor, boolean supported,
+      ParameterRequirements parameterRequirements) {
     this.executor = executor;
+    this.supported = supported;
     this.parameterRequirements = parameterRequirements;
+  }
+
+  public boolean isSupported() {
+    return supported;
   }
 
   public RedisResponse executeCommand(Command command,
