@@ -104,4 +104,18 @@ public class GeodeRedisServerStartupDUnitTest {
     assertThat(jedis.echo("supported")).isEqualTo("supported");
   }
 
+  @Test
+  public void startupFailsGivenIllegalPort() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "-1")
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
+
+    server.invoke(() -> {
+      assertThat(ClusterStartupRule.getCache().getService(GeodeRedisService.class))
+          .as("GeodeRedisService should not exist")
+          .isNull();
+    });
+  }
+
 }
