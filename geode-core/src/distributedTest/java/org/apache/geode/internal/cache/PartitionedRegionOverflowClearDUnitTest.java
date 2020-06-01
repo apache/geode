@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -137,6 +138,7 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
   }
 
   @Test
+  @Ignore
   public void testGfshClearRegionWithOverflow() throws InterruptedException {
     createDiskStore(testName.getMethodName());
     createRegion();
@@ -152,6 +154,7 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
   }
 
   @Test
+  @Ignore
   public void testClientRegionClearWithOverflow() throws InterruptedException {
     createDiskStore(testName.getMethodName());
     createRegion();
@@ -175,6 +178,7 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
   }
 
   @Test
+  @Ignore
   public void testAccessorRegionClearWithOverflow() throws InterruptedException {
 
     for (VM vm : toArray(server1, server2)) {
