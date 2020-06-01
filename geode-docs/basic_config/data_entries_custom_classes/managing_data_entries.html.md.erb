@@ -45,7 +45,7 @@ Therefore, the return value for a `hashCode()` call can be different
 on each server, violating the restriction that it must return
 the same value on every server that hosts the region. 
 
-## <a id="managing_data_entries__section_B095A4073EFB4A3C91AF7C03632EEBFB" class="no-quick-link"></a>Basic Create and Update
+## <a id="managing_data_entries__section_B095A4073EFB4A3C91AF7C03632EEBFB" class="no-quick-link"></a>Create and Update Entries
 
 To create or update an entry in the cache, use `Region.put`. For example:
 
@@ -60,36 +60,90 @@ You can also use the `gfsh put` command to add entries to a region, and the `get
 
 If you want only to create the entry (with a null value and with method failure if the entry already exists), use `Region.create` instead.
 
-## <a id="managing_data_entries__section_7578349EA26A4621B732FE851D71A84F" class="no-quick-link"></a>Batch Operations (getAll, putAll, removeAll)
+## <a id="getAll_method" class="no-quick-link"></a>The getAll Operation
 
-<%=vars.product_name%> provides three APIs to perform batch operations on multiple region entries:
+The batch operation `Region.getAll`
+takes a collection of keys and returns a `Map` of key-value pairs for
+the provided keys. If a given key does not exist in the region, then that key's value in the returned map will be null.
 
--   `Region.getAll`
--   `Region.putAll`
--   `Region.removeAll`
+## <a id="putAll_method" class="no-quick-link"></a>The putAll Operation
 
-The `getAll` method takes a collection of keys and returns a `Map` of values for the provided keys. If a given key does not exist in the region, then that key's value in the returned map will be null.
+The batch operation `Region.putAll`
+takes a `Map` of key-value pairs, puts them into the cache,
+and distributes them in a single operation.
 
-The `putAll` method takes a `Map` of key-value pairs and puts them into the cache and distributes them in a single operation.
 
-**Example:**
+The updates to the cache are done individually in the order in which
+they were placed in the `Map`.
+For partitioned regions,
+multiple events are sent as a single message to the primary buckets
+and then distributed to the secondary buckets.
+
+The design of a client application within a client-server design pattern
+faces the possibility that a partial operation can occur.
+Some, all, or none of the specified entries may be completed with `putAll`.
+If either `ServerOperationException` or `ServerConnectivityException` are
+thrown,
+it can indicate an incomplete operation.
 
 ``` pre
-void putAll(String command) throws CacheException 
-{ 
-// Get Entry keys and values into Strings key1, ... keyN and value1, ... valueN 
-  Map map = new LinkedHashMap(); 
-  map.put(key1, value1)); 
-  ...
-  map.put(keyN, valueN));
-  this.currRegion.putAll(map); 
+int retry = 0;
+RuntimeException rte = null;
+while (retry < 3) {
+  try {
+    region.putAll(map);
+  } catch (ServerOperationException e) {
+    if (e.getCause() instanceof TimeoutException
+        || e.getCause() instanceof LowMemoryException) {
+      // Retry due to transient error.
+      retry++;
+    } else {
+      rte = e;
+      break;
+    }
+  } catch (ServerConnectivityException e) {
+    // Retry due to transient error.
+    retry++;
+  }
+}
+
+if (retry == 3) {
+  System.out.println("3 putAll operations tried, and all failed.");
+} else if (rte != null) {
+  System.out.println("putAll failed due to " + rte);
+  throw rte;
 }
 ```
+
+A thrown exception of `ServerConnectivityException` with a cause of
+`TimeoutException` or `LowMemoryException` can be a transient error.
+A limited quantity of retries of the `putAll` may result in a completed
+operation.
+A repeated timeout may imply that the `read-timeout` value is not
+long enough to complete the bulk operation;
+use the `org.apache.geode.cache.client.PoolFactory.setReadTimeout`
+method to set the `read-timeout` value.
+
+Client applications that cannot tolerate partial completion of a `putAll`
+operation may embed the operation into a transaction.
+See [Transactions](../../developing/transactions/chapter_overview.html)
+for details.
+
+**Note:**
+The processing of a map with many entries and/or extra-large data values
+may affect system performance and cause cache update timeouts,
+especially if the region uses overflow or persistence to disk.
+
+## <a id="removeAll_method" class="no-quick-link"></a>The removeAll Operation
+
+The batch operation `Region.removeAll`
 
 The updates to the cache are done individually in the order in which they were placed in the `Map`. For partitioned regions, multiple events are sent as a single message to the primary buckets and then distributed to the secondary buckets.
 
 **Note:**
-The processing of maps with very many entries and/or very large data may affect system performance and cause cache update timeouts, especially if the region uses overflow or persistence to disk.
+The processing of a map with many entries and/or extra-large data values
+may affect system performance and cause cache update timeouts,
+especially if the region uses overflow or persistence to disk.
 
 The `removeAll` method takes a collection of keys and removes all of the entries for the specified keys from this region. This call performs the equivalent of calling`destroy(Object)` on this region once for each key in the specified collection. If an entry does not exist, then that key is skipped. An `EntryNotFoundException` is not thrown. This operation will be distributed to other caches if the region's scope is not set to `Scope.LOCAL`.
 
