@@ -31,6 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -39,16 +41,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -68,10 +71,14 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
   static Properties dsProperties;
 
   @Rule
-  public DistributedRule distributedRule = DistributedRule.builder().withVMCount(NUM_VMS).build();
+  public transient DistributedRule distributedRule =
+      DistributedRule.builder().withVMCount(NUM_VMS).build();
+
+  @Rule
+  public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     List<AvailablePort.Keeper> randomAvailableTCPPortKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(NUM_LOCATORS);
     for (int i = 0; i < NUM_LOCATORS; i++) {
@@ -81,6 +88,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
     final int[] locPorts = locatorPorts;
     Invoke.invokeInEveryVM("set locator ports", () -> locatorPorts = locPorts);
     for (int i = 0; i < NUM_LOCATORS; i++) {
+      final String workingDir = temporaryFolder.newFolder().getAbsolutePath();
       final int locatorNumber = i;
       randomAvailableTCPPortKeepers.get(locatorNumber).release();
       VM.getVM(i).invoke("start locator", () -> {
@@ -88,7 +96,9 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
           Disconnect.disconnectFromDS();
           dsProperties = null;
           Properties props = getDistributedSystemProperties();
-          locator = Locator.startLocatorAndDS(locatorPorts[locatorNumber], new File(""), props);
+          locator = InternalLocator.startLocator(locatorPorts[locatorNumber], new File(""),
+              null, null, LocalHostUtil.getLocalHost(), true,
+              props, null, Paths.get(workingDir));
           system = locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
           IgnoredException.addIgnoredException(
@@ -106,10 +116,8 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
       VM.getVM(i).invoke(() -> {
         InternalLocator locator = InternalLocator.getLocator();
         if (locator != null) {
-          InternalConfigurationPersistenceService sharedConfig =
-              locator.getConfigurationPersistenceService();
-          if (sharedConfig != null) {
-            sharedConfig.destroySharedConfiguration();
+          if (cache != null && cache.isReconnecting()) {
+            cache.stopReconnecting();
           }
           locator.stop();
         }
@@ -124,7 +132,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
     });
   }
 
-  public Properties getDistributedSystemProperties() {
+  public Properties getDistributedSystemProperties() throws UnknownHostException {
     dsProperties = new Properties();
     dsProperties.put(MAX_WAIT_TIME_RECONNECT, "" + (5000 * NUM_VMS));
     dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
@@ -133,12 +141,13 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
     dsProperties.put(USE_CLUSTER_CONFIGURATION, "true");
     dsProperties.put(HTTP_SERVICE_PORT, "0");
     StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append("localHost[")
+    final String localHostName = LocalHostUtil.getLocalHostName();
+    stringBuilder.append(localHostName + "[")
         .append(locatorPorts[0])
         .append(']');
     for (int i = 1; i < NUM_LOCATORS; i++) {
-      stringBuilder.append(",localHost[")
-          .append(locatorPorts[0])
+      stringBuilder.append("," + localHostName + "[")
+          .append(locatorPorts[i])
           .append(']');
     }
     dsProperties.put(LOCATORS, stringBuilder.toString());
