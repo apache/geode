@@ -26,7 +26,6 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
 /**
  * Concrete class that manages publish and subscribe functionality. Since Redis subscriptions

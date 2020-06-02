@@ -22,8 +22,6 @@ import static org.mockito.Mockito.mock;
 import io.netty.channel.Channel;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
-
 public class SubscriptionsJUnitTest {
 
   @Test
