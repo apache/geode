@@ -73,7 +73,7 @@ takes a `Map` of key-value pairs, puts them into the cache,
 and distributes them in a single operation.
 
 For partitioned regions,
-multiple events are sent as a single message to the primary buckets
+multiple events are sent as a single message to each primary bucket
 and then distributed to the secondary buckets.
 For replicated regions, a single event is sent to one server.
 After applying all entry updates to that server,
@@ -115,8 +115,9 @@ if (retry == 3) {
 }
 ```
 
-A thrown exception of `ServerOperationException` with a cause of
-`TimeoutException` or `LowMemoryException` can be a transient error.
+Either a `ServerConnectivityException` or a `ServerOperationException`
+with a cause of
+`TimeoutException` or `LowMemoryException` can indicate a transient error.
 A limited quantity of retries of `putAll` may result in a completed
 operation.
 A repeated timeout may imply that the `read-timeout` value is not
