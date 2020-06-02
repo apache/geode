@@ -83,7 +83,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     return properties;
   }
 
-  private Region getRegion(boolean isClient) {
+  protected Region getRegion(boolean isClient) {
     if (isClient) {
       return getClientCache().getRegion(REGION_NAME);
     } else {
@@ -95,7 +95,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     assertThat(getRegion(isClient).size()).isEqualTo(expectedNum);
   }
 
-  private void initClientCache() {
+  protected void initClientCache() {
     Region region = getClientCache().createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
         .create(REGION_NAME);
     region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
@@ -140,15 +140,21 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     destroysByRegion = new HashMap<>();
   }
 
-  private void feed(boolean isClient) {
+  protected void feed(boolean isClient) {
     Region region = getRegion(isClient);
     IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
   }
 
-  private void verifyServerRegionSize(int expectedNum) {
+  protected void verifyServerRegionSize(int expectedNum) {
+    verifyServerRegionSize(expectedNum, false);
+  }
+
+  protected void verifyServerRegionSize(int expectedNum, boolean excludedDatastore2) {
     accessor.invoke(() -> verifyRegionSize(false, expectedNum));
     dataStore1.invoke(() -> verifyRegionSize(false, expectedNum));
-    dataStore2.invoke(() -> verifyRegionSize(false, expectedNum));
+    if(!excludedDatastore2) {
+      dataStore2.invoke(() -> verifyRegionSize(false, expectedNum));
+    }
     dataStore3.invoke(() -> verifyRegionSize(false, expectedNum));
   }
 

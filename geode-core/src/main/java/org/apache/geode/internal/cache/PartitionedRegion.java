@@ -2188,6 +2188,15 @@ public class PartitionedRegion extends LocalRegion
     throw new UnsupportedOperationException();
   }
 
+  String getPRClearLockName() {
+    return partitionedRegionClear.getPRClearLockName();
+  }
+
+  @VisibleForTesting
+  public boolean isRegionClearInProgress() {
+    return getPartitionedRegionLockService().lock(getPRClearLockName(), 10, 10);
+  }
+
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,

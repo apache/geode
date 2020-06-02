@@ -59,6 +59,10 @@ public class PartitionedRegionClear {
         .addMembershipListener(partitionedRegionClearListener);
   }
 
+  public String getPRClearLockName() {
+    return CLEAR_OPERATION + partitionedRegion.getDisplayName();
+  }
+
   public boolean isLockedForListenerAndClientNotification() {
     return lockForListenerAndClientNotification.isLocked();
   }
@@ -330,9 +334,9 @@ public class PartitionedRegionClear {
     }
     return bucketsOperated;
   }
-
+  
   void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
-    String lockName = CLEAR_OPERATION + partitionedRegion.getName();
+    String lockName = getPRClearLockName();
 
     try {
       // distributed lock to make sure only one clear op is in progress in the cluster.
