@@ -347,7 +347,7 @@ public class PartitionedRegionClear {
       // locks needs to be taken on all local and remote primary buckets in order to
       // preserve the ordering of client events (for concurrent operations on the region).
       boolean acquireClearLockForNotification =
-          (partitionedRegion.hasAnyClientsInterested() && partitionedRegion.hasListener());
+          (partitionedRegion.hasAnyClientsInterested() || partitionedRegion.hasListener());
       if (acquireClearLockForNotification) {
         obtainLockForClear(regionEvent);
       }
