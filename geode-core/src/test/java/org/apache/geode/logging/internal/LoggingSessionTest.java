@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
@@ -92,6 +93,27 @@ public class LoggingSessionTest {
     verify(configuration).initialize(eq(logConfigSupplier));
     verify(configuration).configChanged();
   }
+
+  @Test
+  public void createSessionInvokesDisableLoggingToStandardOutputIfLoggingToFileByDefault() {
+    loggingSession.createSession(logConfigSupplier);
+    loggingSession.startSession();
+
+    verify(configuration).initialize(eq(logConfigSupplier));
+    verify(configuration).configChanged();
+    verify(configuration).disableLoggingToStandardOutputIfLoggingToFile();
+  }
+
+  @Test
+  public void createSessionDoesNotDisableLoggingToStandardOutputIfSystemPropertySet() {
+    loggingSession.createSession(logConfigSupplier, true, true, true);
+    loggingSession.startSession();
+
+    verify(configuration).initialize(eq(logConfigSupplier));
+    verify(configuration).configChanged();
+    verify(configuration, Mockito.times(0)).disableLoggingToStandardOutputIfLoggingToFile();
+  }
+
 
   @Test
   public void createSessionPublishesConfigBeforeCreatingLoggingSession() {
