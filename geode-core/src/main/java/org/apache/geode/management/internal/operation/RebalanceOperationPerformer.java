@@ -106,7 +106,7 @@ public class RebalanceOperationPerformer
       throws InterruptedException {
     // To be removed after region Name specification with "/" is fixed
     regionName = regionName.startsWith(SEPARATOR) ? regionName : (SEPARATOR + regionName);
-    Region<?,?> region = cache.getRegion(regionName);
+    Region<?, ?> region = cache.getRegion(regionName);
 
     if (region == null) {
       DistributedMember member = getAssociatedMembers(regionName, (InternalCache) cache);

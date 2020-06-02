@@ -44,13 +44,11 @@ public class RestoreRedundancyOperationPerformerTest {
     when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
     when(internalDistributedSystem.getDistributionManager())
         .thenReturn(mock(DistributionManager.class));
-    RestoreRedundancyOperationPerformer.FunctionExecutor
-        functionExecutor =
+    RestoreRedundancyOperationPerformer.FunctionExecutor functionExecutor =
         mock(RestoreRedundancyOperationPerformer.FunctionExecutor.class);
     RestoreRedundancyRequest restoreRedundancyRequest = new RestoreRedundancyRequest();
     restoreRedundancyRequest.setReassignPrimaries(true);
-    RestoreRedundancyResponse
-        restoreRedundancyResponse =
+    RestoreRedundancyResponse restoreRedundancyResponse =
         RestoreRedundancyOperationPerformer
             .executeRestoreRedundancyOnDS(managementService, cache, restoreRedundancyRequest,
                 functionExecutor);

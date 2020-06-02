@@ -51,7 +51,7 @@ public class RestoreRedundancyFunction implements InternalFunction<RestoreRedund
 
     Cache cache = context.getCache();
     ResourceManager manager = cache.getResourceManager();
-    RestoreRedundancyRequest arg =  context.getArguments();
+    RestoreRedundancyRequest arg = context.getArguments();
 
     RestoreRedundancyOperation operation = manager.createRestoreRedundancyOperation();
     operation.excludeRegions(new HashSet<>(arg.getExcludeRegions()));
@@ -65,38 +65,45 @@ public class RestoreRedundancyFunction implements InternalFunction<RestoreRedund
 
       RestoreRedundancyResponseImpl restoreRedundancyResponse = new RestoreRedundancyResponseImpl();
 
-      buildList(results.getSatisfiedRedundancyRegionResults().entrySet(), restoreRedundancyResponse.getSatisfiedRedundancyRegionResults());
-      buildList(results.getUnderRedundancyRegionResults().entrySet(), restoreRedundancyResponse.getUnderRedundancyRegionResults());
-      buildList(results.getZeroRedundancyRegionResults().entrySet(), restoreRedundancyResponse.getZeroRedundancyRegionResults());
+      buildList(results.getSatisfiedRedundancyRegionResults().entrySet(),
+          restoreRedundancyResponse.getSatisfiedRedundancyRegionResults());
+      buildList(results.getUnderRedundancyRegionResults().entrySet(),
+          restoreRedundancyResponse.getUnderRedundancyRegionResults());
+      buildList(results.getZeroRedundancyRegionResults().entrySet(),
+          restoreRedundancyResponse.getZeroRedundancyRegionResults());
 
       restoreRedundancyResponse.setStatusMessage(results.getMessage());
-      restoreRedundancyResponse.setSuccess(results.getStatus() == RestoreRedundancyResults.Status.SUCCESS);
-      restoreRedundancyResponse.setTotalPrimaryTransferTime(results.getTotalPrimaryTransferTime().toMillis());
-      restoreRedundancyResponse.setTotalPrimaryTransfersCompleted(results.getTotalPrimaryTransfersCompleted());
+      restoreRedundancyResponse
+          .setSuccess(results.getStatus() == RestoreRedundancyResults.Status.SUCCESS);
+      restoreRedundancyResponse
+          .setTotalPrimaryTransferTime(results.getTotalPrimaryTransferTime().toMillis());
+      restoreRedundancyResponse
+          .setTotalPrimaryTransfersCompleted(results.getTotalPrimaryTransfersCompleted());
 
       context.getResultSender().lastResult(restoreRedundancyResponse);
 
     } catch (CancellationException e) {
-      logger.info("Starting RestoreRedundancyFunction CancellationException: {}", e.getMessage(), e);
+      logger.info("Starting RestoreRedundancyFunction CancellationException: {}", e.getMessage(),
+          e);
       context.getResultSender().lastResult("CancellationException1 " + e.getMessage());
     }
   }
+
   private void buildList(Set<Map.Entry<String, RegionRedundancyStatus>> entrySet,
-                         List<RegionRedundancyStatusSerializable> listOfResults) {
-    logger.info("MLH buildList entered");
+      List<RegionRedundancyStatusSerializable> listOfResults) {
     for (Map.Entry<String, RegionRedundancyStatus> entry : entrySet) {
       RegionRedundancyStatus value = entry.getValue();
-      logger.info("MLH buildList value = " + value);
       RegionRedundancyStatusSerializableImpl regionRedundancyStatusSerializable =
           new RegionRedundancyStatusSerializableImpl();
 
       regionRedundancyStatusSerializable.setRegionName(value.getRegionName());
       regionRedundancyStatusSerializable.setConfiguredRedundancy(value.getConfiguredRedundancy());
       regionRedundancyStatusSerializable.setActualRedundancy(value.getActualRedundancy());
-      regionRedundancyStatusSerializable.setStatus(RegionRedundancyStatusSerializable.RedundancyStatus.values()[value.getStatus().ordinal()]);
+      regionRedundancyStatusSerializable
+          .setStatus(RegionRedundancyStatusSerializable.RedundancyStatus.values()[value.getStatus()
+              .ordinal()]);
       listOfResults.add(regionRedundancyStatusSerializable);
     }
-    logger.info("MLH buildList finished");
   }
 
   @Override

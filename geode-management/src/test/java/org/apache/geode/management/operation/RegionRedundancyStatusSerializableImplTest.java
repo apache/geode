@@ -46,7 +46,8 @@ public class RegionRedundancyStatusSerializableImplTest {
   @Test
   public void serializeRegionRedundancyStatusSerializableWorks() throws JsonProcessingException {
     // Construct a RegionRedundancyStatusSerializableImpl
-    RegionRedundancyStatusSerializableImpl regionRedundancyStatusSerializable = new RegionRedundancyStatusSerializableImpl();
+    RegionRedundancyStatusSerializableImpl regionRedundancyStatusSerializable =
+        new RegionRedundancyStatusSerializableImpl();
 
     // Set the data
     regionRedundancyStatusSerializable.setActualRedundancy(ACTUAL_REDUNDANCY);
@@ -66,6 +67,7 @@ public class RegionRedundancyStatusSerializableImplTest {
     assertThat(value.getActualRedundancy()).isEqualTo(ACTUAL_REDUNDANCY);
     assertThat(value.getConfiguredRedundancy()).isEqualTo(CONFIGURED_REDUNDANCY);
     assertThat(value.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(value.getStatus()).isEqualTo(RegionRedundancyStatusSerializable.RedundancyStatus.SATISFIED);
+    assertThat(value.getStatus())
+        .isEqualTo(RegionRedundancyStatusSerializable.RedundancyStatus.SATISFIED);
   }
 }

@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.management.internal.i18n.CliStrings.REDUNDANCY_INCLUDE_REGION;
-import static org.apache.geode.management.internal.i18n.CliStrings.RESTORE_REDUNDANCY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -46,13 +44,11 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
 import org.apache.geode.management.runtime.RegionRedundancyStatusSerializable;
 import org.apache.geode.management.runtime.RestoreRedundancyResponse;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 /**
@@ -257,62 +253,71 @@ public class RestoreRedundancyManagementDUnitTest {
 
   // Helper methods
 
-  private void verifyClusterManagementOperationRequestAndResponse(RestoreRedundancyRequest restoreRedundancyRequest)
+  private void verifyClusterManagementOperationRequestAndResponse(
+      RestoreRedundancyRequest restoreRedundancyRequest)
       throws InterruptedException, ExecutionException {
-    ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResponse>
-        startResult = client1.start(restoreRedundancyRequest);
+    ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResponse> startResult =
+        client1.start(restoreRedundancyRequest);
 
     assertThat(startResult.isSuccessful()).isTrue();
 
-    ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResponse>
-        endResult = client1.getFuture(restoreRedundancyRequest, startResult.getOperationId()).get();
-    RestoreRedundancyResponse restoreRedundancyResponse =  endResult.getOperationResult();
+    ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResponse> endResult =
+        client1.getFuture(restoreRedundancyRequest, startResult.getOperationId()).get();
+    RestoreRedundancyResponse restoreRedundancyResponse = endResult.getOperationResult();
 
     assertThat(restoreRedundancyResponse.getSuccess()).isTrue();
 
     boolean found;
-    for(String regionName : restoreRedundancyRequest.getIncludeRegions()) {
+    for (String regionName : restoreRedundancyRequest.getIncludeRegions()) {
       found = false;
-      for(RegionRedundancyStatusSerializable region: restoreRedundancyResponse.getSatisfiedRedundancyRegionResults())
-      {
-        if(region.getRegionName().compareTo(regionName) == 0) {
+      for (RegionRedundancyStatusSerializable region : restoreRedundancyResponse
+          .getSatisfiedRedundancyRegionResults()) {
+        if (region.getRegionName().compareTo(regionName) == 0) {
           found = true;
           break;
         }
       }
-      assertThat(found).describedAs("Satisfied Redundancy List contains region name is true for included").isTrue();
+      assertThat(found)
+          .describedAs("Satisfied Redundancy List contains region name is true for included")
+          .isTrue();
     }
 
-    for(String regionName : restoreRedundancyRequest.getIncludeRegions()) {
-      for(RegionRedundancyStatusSerializable region: restoreRedundancyResponse.getUnderRedundancyRegionResults())
-      {
-        assertThat(regionName).describedAs("One of regions we expect to be satisfied is marked as Under Redundancy").isNotEqualTo(region.getRegionName());
+    for (String regionName : restoreRedundancyRequest.getIncludeRegions()) {
+      for (RegionRedundancyStatusSerializable region : restoreRedundancyResponse
+          .getUnderRedundancyRegionResults()) {
+        assertThat(regionName)
+            .describedAs("One of regions we expect to be satisfied is marked as Under Redundancy")
+            .isNotEqualTo(region.getRegionName());
       }
     }
 
-    for(String regionName : restoreRedundancyRequest.getIncludeRegions()) {
-      for(RegionRedundancyStatusSerializable region: restoreRedundancyResponse.getZeroRedundancyRegionResults())
-      {
-        assertThat(regionName).describedAs("One of regions we expect to be satisfied is marked as Zero Redundancy").isNotEqualTo(region.getRegionName());
+    for (String regionName : restoreRedundancyRequest.getIncludeRegions()) {
+      for (RegionRedundancyStatusSerializable region : restoreRedundancyResponse
+          .getZeroRedundancyRegionResults()) {
+        assertThat(regionName)
+            .describedAs("One of regions we expect to be satisfied is marked as Zero Redundancy")
+            .isNotEqualTo(region.getRegionName());
       }
     }
 
     List<String> filteredExclude = new ArrayList<>(restoreRedundancyRequest.getExcludeRegions());
-    for(String regionName : restoreRedundancyRequest.getIncludeRegions()) {
+    for (String regionName : restoreRedundancyRequest.getIncludeRegions()) {
       filteredExclude.remove(regionName);
     }
 
-    //Testing for the absence of the region name...
-    for(String regionName : filteredExclude) {
+    // Testing for the absence of the region name...
+    for (String regionName : filteredExclude) {
       found = false;
-      for(RegionRedundancyStatusSerializable region: restoreRedundancyResponse.getSatisfiedRedundancyRegionResults())
-      {
-        if(region.getRegionName().compareTo(regionName) == 0) {
+      for (RegionRedundancyStatusSerializable region : restoreRedundancyResponse
+          .getSatisfiedRedundancyRegionResults()) {
+        if (region.getRegionName().compareTo(regionName) == 0) {
           found = true;
           break;
         }
       }
-      assertThat(found).describedAs("Satisfied Redundancy List contains region name is false for excluded").isFalse();
+      assertThat(found)
+          .describedAs("Satisfied Redundancy List contains region name is false for excluded")
+          .isFalse();
     }
   }
 

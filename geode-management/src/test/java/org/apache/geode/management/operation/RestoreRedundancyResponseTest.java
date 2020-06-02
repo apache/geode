@@ -16,7 +16,6 @@ package org.apache.geode.management.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,7 +49,7 @@ public class RestoreRedundancyResponseTest {
    * Test that when we serialize a RestoreRedundancyResponseImpl message that
    * it deserializes properly because this is a key message for REST's RestoreRedundancy API
    *
-   * @throws Exception  - exceptions can be thrown by read and write calls
+   * @throws Exception - exceptions can be thrown by read and write calls
    */
   @Test
   public void serializeRestoreRedundancyResponse() throws Exception {
@@ -82,7 +81,8 @@ public class RestoreRedundancyResponseTest {
     // check the basic data
     assertThat(value.getSuccess()).isTrue();
     assertThat(value.getStatusMessage()).isEqualTo(HELLO_TEST);
-    assertThat(value.getTotalPrimaryTransfersCompleted()).isEqualTo(TOTAL_PRIMARY_TRANSFERS_COMPLETED);
+    assertThat(value.getTotalPrimaryTransfersCompleted())
+        .isEqualTo(TOTAL_PRIMARY_TRANSFERS_COMPLETED);
     assertThat(value.getTotalPrimaryTransferTime()).isEqualTo(
         TOTAL_PRIMARY_TRANSFER_TIME);
 
@@ -93,10 +93,12 @@ public class RestoreRedundancyResponseTest {
   /**
    * getRegionRedundancyStatusSerializableList
    * This function builds a list of RegionRedundancyStatusSerializable classes for testing
+   *
    * @return List<RegionRedundancyStatusSerializable>
    */
   private List<RegionRedundancyStatusSerializable> getRegionRedundancyStatusSerializableList() {
-    RegionRedundancyStatusSerializableImpl regionRedundancyStatusSerializable = new RegionRedundancyStatusSerializableImpl();
+    RegionRedundancyStatusSerializableImpl regionRedundancyStatusSerializable =
+        new RegionRedundancyStatusSerializableImpl();
     regionRedundancyStatusSerializable.setActualRedundancy(ACTUAL_REDUNDANCY);
     regionRedundancyStatusSerializable.setConfiguredRedundancy(CONFIGURED_REDUNDANCY);
     regionRedundancyStatusSerializable.setRegionName(REGION_NAME);
@@ -109,16 +111,19 @@ public class RestoreRedundancyResponseTest {
    * verifyRegionRedundancyStatusSerializableList
    *
    * @param workingList - the list of RegionRedundancyStatusSerializable that we want to verify.
-   *                    it should only be one entry.
-   * @return void
+   *        it should only be one entry.
    */
-  private void verifyRegionRedundancyStatusSerializableList(List<RegionRedundancyStatusSerializable> workingList) {
+  private void verifyRegionRedundancyStatusSerializableList(
+      List<RegionRedundancyStatusSerializable> workingList) {
     assertThat(workingList).hasSize(1);
     RegionRedundancyStatusSerializable regionRedundancyStatusSerializable = workingList.get(0);
-    assertThat(regionRedundancyStatusSerializable.getActualRedundancy()).isEqualTo(ACTUAL_REDUNDANCY);
-    assertThat(regionRedundancyStatusSerializable.getConfiguredRedundancy()).isEqualTo(CONFIGURED_REDUNDANCY);
+    assertThat(regionRedundancyStatusSerializable.getActualRedundancy())
+        .isEqualTo(ACTUAL_REDUNDANCY);
+    assertThat(regionRedundancyStatusSerializable.getConfiguredRedundancy())
+        .isEqualTo(CONFIGURED_REDUNDANCY);
     assertThat(regionRedundancyStatusSerializable.getRegionName()).isEqualTo(REGION_NAME);
-    assertThat(regionRedundancyStatusSerializable.getStatus()).isEqualTo(RegionRedundancyStatusSerializable.RedundancyStatus.SATISFIED);
+    assertThat(regionRedundancyStatusSerializable.getStatus())
+        .isEqualTo(RegionRedundancyStatusSerializable.RedundancyStatus.SATISFIED);
   }
 
 }

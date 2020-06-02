@@ -16,7 +16,6 @@
 package org.apache.geode.management.runtime;
 
 
-import java.time.Duration;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;

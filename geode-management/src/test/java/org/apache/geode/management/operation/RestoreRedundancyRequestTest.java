@@ -45,7 +45,6 @@ public class RestoreRedundancyRequestTest {
    * as this is the main message to request the restoration of redundancy via the
    * REST API.
    *
-   * @throws Exception
    */
   @Test
   public void serializeRestoreRedundancyRequest() throws Exception {
@@ -73,7 +72,7 @@ public class RestoreRedundancyRequestTest {
     assertThat(value.getOperator()).isEqualTo(RestoreRedundancyRequest.RESTORE_REDUNDANCY_OPERATOR);
 
     // This value is defaulted in the class, that is why we don't set it.
-    assertThat(value.getEndpoint()).isEqualTo(RestoreRedundancyRequest.RESTORE_REDUNDANCY_REBALANCE_ENDPOINT);
+    assertThat(value.getEndpoint())
+        .isEqualTo(RestoreRedundancyRequest.RESTORE_REDUNDANCY_REBALANCE_ENDPOINT);
   }
 }
-

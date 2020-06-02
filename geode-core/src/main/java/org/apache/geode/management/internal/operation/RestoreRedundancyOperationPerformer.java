@@ -42,11 +42,14 @@ import org.apache.geode.management.operation.RestoreRedundancyRequest;
 import org.apache.geode.management.runtime.RestoreRedundancyResponse;
 
 @Experimental
-public class RestoreRedundancyOperationPerformer {
+public class RestoreRedundancyOperationPerformer
+    implements OperationPerformer<RestoreRedundancyRequest, RestoreRedundancyResponse> {
   private static final Logger logger = LogService.getLogger();
 
-  public static RestoreRedundancyResponse perform(Cache cache,
-                                                  RestoreRedundancyRequest parameters) {
+
+  @Override
+  public RestoreRedundancyResponse perform(Cache cache,
+      RestoreRedundancyRequest parameters) {
     RestoreRedundancyResponse result;
 
     result = executeRestoreRedundancyOnDS(
@@ -110,15 +113,14 @@ public class RestoreRedundancyOperationPerformer {
           for (DistributedMember dsmember : dsMembers) {
             for (String memberName : memberNames) {
               if (MBeanJMXAdapter.getMemberNameOrUniqueId(dsmember).equals(memberName)) {
-                RestoreRedundancyOperationPerformer.MemberPRInfo
-                    memberAndItsPRRegions = new RestoreRedundancyOperationPerformer.MemberPRInfo();
+                RestoreRedundancyOperationPerformer.MemberPRInfo memberAndItsPRRegions =
+                    new RestoreRedundancyOperationPerformer.MemberPRInfo();
                 memberAndItsPRRegions.region = regionName;
                 memberAndItsPRRegions.dsMemberList.add(dsmember);
                 if (listMemberPRInfo.contains(memberAndItsPRRegions)) {
                   // add member for appropriate region
                   int index = listMemberPRInfo.indexOf(memberAndItsPRRegions);
-                  RestoreRedundancyOperationPerformer.MemberPRInfo
-                      listMember =
+                  RestoreRedundancyOperationPerformer.MemberPRInfo listMember =
                       listMemberPRInfo.get(index);
                   listMember.dsMemberList.add(dsmember);
                 } else {
@@ -142,6 +144,7 @@ public class RestoreRedundancyOperationPerformer {
     return dsMemberList.contains(dsMember);
   }
 
+
   /**
    * This class was introduced so that it can be mocked to all executeRebalanceOnDS to be unit
    * tested
@@ -154,37 +157,33 @@ public class RestoreRedundancyOperationPerformer {
         DistributedMember dsMember) {
       return (List<RestoreRedundancyResponse>) ManagementUtils
           .executeFunction(restoreRedundancyFunction,
-              functionArgs, Collections.singleton(dsMember)).getResult();
+              functionArgs, Collections.singleton(dsMember))
+          .getResult();
     }
   }
 
   @VisibleForTesting
   static RestoreRedundancyResponse executeRestoreRedundancyOnDS(ManagementService managementService,
-                                                                InternalCache cache,
-                                                                RestoreRedundancyRequest restoreRedundancyRequest,
-                                                                FunctionExecutor functionExecutor) {
+      InternalCache cache,
+      RestoreRedundancyRequest restoreRedundancyRequest,
+      FunctionExecutor functionExecutor) {
 
-    logger.info("MLH executeRestoreRedundancyOnDS entered");
-
-    RestoreRedundancyResponseImpl restoreRedundancyResponseImpl = new RestoreRedundancyResponseImpl();
+    RestoreRedundancyResponseImpl restoreRedundancyResponseImpl =
+        new RestoreRedundancyResponseImpl();
     RestoreRedundancyResponse restoreRedundancyResponse = restoreRedundancyResponseImpl;
 
     List<RestoreRedundancyOperationPerformer.MemberPRInfo> listMemberRegion =
         getMemberRegionList(managementService, cache, restoreRedundancyRequest.getExcludeRegions());
 
-    logger.info(
-        "MLH executeRestoreRedundancyOnDS 1 listMemberRegion.size()= " + listMemberRegion.size());
-
     if (listMemberRegion.size() == 0) {
-      restoreRedundancyResponseImpl.setStatusMessage(CliStrings.REDUNDANCY__MSG__NO_RESTORE_REDUNDANCY_REGIONS_ON_DS);
+      restoreRedundancyResponseImpl
+          .setStatusMessage(CliStrings.REDUNDANCY__MSG__NO_RESTORE_REDUNDANCY_REGIONS_ON_DS);
       restoreRedundancyResponseImpl.setSuccess(true);
       return restoreRedundancyResponse;
     }
 
-    logger.info("MLH executeRestoreRedundancyOnDS 4");
     RestoreRedundancyOperationPerformer.MemberPRInfo memberPR = listMemberRegion.get(0);
     try {
-      logger.info("MLH executeRestoreRedundancyOnDS 5 looking at PR " + memberPR.region);
       // check if there are more than one members associated with region for rebalancing
       if (memberPR.dsMemberList.size() >= 1) {
         DistributedMember dsMember = memberPR.dsMemberList.get(0);
@@ -194,28 +193,20 @@ public class RestoreRedundancyOperationPerformer {
 
         try {
           if (checkMemberPresence(cache, dsMember)) {
-            logger.info("MLH executeRestoreRedundancyOnDS 7");
             resultList =
                 functionExecutor
                     .execute(restoreRedundancyFunction, restoreRedundancyRequest, dsMember);
             restoreRedundancyResponse = resultList.get(0);
-            logger.info("MLH executeRestoreRedundancyOnDS 8 restoreRedundancyResponse = "
-                + restoreRedundancyResponse);
-
           }
-          logger.info("MLH executeRestoreRedundancyOnDS 10");
         } catch (Exception ex) {
-          logger.info("MLH executeRestoreRedundancyOnDS 11 Exception ", ex);
           return restoreRedundancyResponse;
         }
 
       }
     } catch (NoMembersException e) {
-      logger.info("MLH executeRestoreRedundancyOnDS 13 NoMembersException ", e);
       return restoreRedundancyResponse;
     }
 
-    logger.info("MLH executeRestoreRedundancyOnDS 15 results = " + restoreRedundancyResponse);
     return restoreRedundancyResponse;
   }
 
