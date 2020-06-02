@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.Configuration;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -33,8 +34,6 @@ import org.apache.geode.management.internal.util.ManagementUtils;
 
 class DiskStoreCommandsUtils {
   private static final Logger logger = LogService.getLogger();
-
-  public static final String IF_FILE_EXT = ".if";
 
   private static final String LOG4J_CONFIGURATION_FILE_PROPERTY = "log4j.configurationFile";
 
@@ -54,7 +53,7 @@ class DiskStoreCommandsUtils {
     boolean diskStoreFileExist = false;
     for (String diskDirPath : diskDirs) {
       diskDir = new File(diskDirPath);
-      File diskStoreFile = new File(diskDirPath, "BACKUP" + name + IF_FILE_EXT);
+      File diskStoreFile = new File(diskDirPath, "BACKUP" + name + DiskInitFile.IF_FILE_EXT);
       if (!diskDir.exists()) {
         if (builder == null) {
           builder = new StringBuilder();
@@ -65,17 +64,18 @@ class DiskStoreCommandsUtils {
       } else if (diskStoreFile.exists()) {
         diskStoreFileExist = true;
       }
+    }
 
-      if (!diskStoreFileExist) {
-        if (builder == null) {
-          builder = new StringBuilder();
-        }
-        builder.append(File.separator + "BACKUP" + name + IF_FILE_EXT);
+    if (!diskStoreFileExist) {
+      if (builder == null) {
+        builder = new StringBuilder();
       }
+      logger.info("emakevo: append");
+      builder.append(File.separator + "BACKUP" + name + DiskInitFile.IF_FILE_EXT);
+    }
 
-      if (builder != null) {
-        invalidDirectories = builder.toString();
-      }
+    if (builder != null) {
+      invalidDirectories = builder.toString();
     }
     return invalidDirectories;
   }

@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -38,7 +39,6 @@ public class AlterDiskStoreCommandIntegrationTest {
   @Rule
   public GfshParserRule gfsh = new GfshParserRule();
   private GfshCommand command;
-  private static final String IF_FILE_EXT = ".if";
 
 
   @Before
@@ -70,7 +70,7 @@ public class AlterDiskStoreCommandIntegrationTest {
     csb.addOption(CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL, "5");
     String commandString = csb.toString();
 
-    File tempFile = tempDir.newFile("BACKUPdiskStoreName" + IF_FILE_EXT);
+    File tempFile = tempDir.newFile("BACKUPdiskStoreName" + DiskInitFile.IF_FILE_EXT);
     gfsh.executeAndAssertThat(command, commandString).statusIsError()
         .containsOutput("Could not find: \"wrongDiskDir" + File.separator + tempFile.getName());
   }
@@ -88,7 +88,7 @@ public class AlterDiskStoreCommandIntegrationTest {
     gfsh.executeAndAssertThat(command, commandString).statusIsError()
         .containsOutput(
             "Could not find: \"" + File.separator + "BACKUP"
-                + diskStoreName + IF_FILE_EXT);
+                + diskStoreName + DiskInitFile.IF_FILE_EXT);
   }
 
 }

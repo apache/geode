@@ -48,6 +48,7 @@ import org.apache.geode.cache.configuration.DiskStoreType;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -66,7 +67,6 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
   private static final String GROUP2 = "GROUP2";
   private static final String REGION_1 = "REGION1";
   private static final String DISKSTORE = "DISKSTORE";
-  private static final String IF_FILE_EXT = ".if";
 
   @Rule
   public ClusterStartupRule rule = new ClusterStartupRule();
@@ -529,10 +529,11 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         Paths.get(tempDir.getRoot().getAbsolutePath());
     assertThat(Files.exists(diskStorePath)).isTrue();
     Path diskStoreFilePath =
-        Paths.get(diskStorePath + File.separator + "BACKUPnonExistingDiskStore" + IF_FILE_EXT);
+        Paths.get(diskStorePath + File.separator + "BACKUPnonExistingDiskStore"
+            + DiskInitFile.IF_FILE_EXT);
     assertThat(Files.exists(diskStoreFilePath)).isFalse();
     gfsh.executeAndAssertThat(baseCommand + " --name=nonExistingDiskStore --disk-dirs="
-        + diskStoreFilePath.toAbsolutePath().toString()).statusIsError()
+        + diskStorePath.toAbsolutePath().toString()).statusIsError()
         .containsOutput("Could not find:");
     assertThat(Files.exists(diskStoreFilePath)).isFalse();
   }

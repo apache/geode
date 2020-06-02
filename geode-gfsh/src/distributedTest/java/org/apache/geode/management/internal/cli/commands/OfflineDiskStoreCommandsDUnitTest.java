@@ -40,6 +40,7 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -50,6 +51,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
   private static final String REGION_NAME = "testRegion";
   private static final String DISK_STORE_ID = "testDisk";
+  private static final String WRONG_DISK_STORE_ID = "wrongTestDisk";
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -142,5 +144,39 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(
         baseCommand + " --name=" + DISK_STORE_ID + " --disk-dirs=" + diskDirs)
         .statusIsSuccess();
+  }
+
+  @Test
+  @Parameters({"compact offline-disk-store", "describe offline-disk-store",
+      "validate offline-disk-store",
+      "alter disk-store --region=testRegion --enable-statistics=true"})
+  public void testOfflineCommandsWithMultipleDirsAndWrongName(String baseCommand)
+      throws IOException {
+    VM locator = getVM(0);
+    VM server = getVM(1);
+    final int ENTRIES = 100000;
+    int site1Port = getRandomAvailableTCPPortsForDUnitSite(1)[0];
+
+    File diskStoreDirectory1 = temporaryFolder.newFolder("diskDir1");
+    File diskStoreDirectory2 = temporaryFolder.newFolder("diskDir2");
+    File diskStoreDirectory3 = temporaryFolder.newFolder("diskDir3");
+    File[] diskStoreDirectories =
+        new File[] {diskStoreDirectory1, diskStoreDirectory2, diskStoreDirectory3};
+    String diskDirs = Arrays.stream(diskStoreDirectories).map(File::getAbsolutePath)
+        .collect(Collectors.joining(","));
+
+    locator.invoke(() -> cacheRule.createCache(createLocatorConfiguration(site1Port)));
+    server.invoke(() -> cacheRule.createCache(createServerConfiguration(site1Port)));
+    server.invoke(() -> {
+      createServerWithRegionAndPersistentRegion(diskStoreDirectories);
+      Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
+      IntStream.range(0, ENTRIES).forEach(i -> region.put("Key_" + i, "Value_" + i));
+    });
+    locator.invoke(this::gracefullyDisconnect);
+    server.invoke(this::gracefullyDisconnect);
+    gfsh.executeAndAssertThat(
+        baseCommand + " --name=" + WRONG_DISK_STORE_ID + " --disk-dirs=" + diskDirs)
+        .statusIsError().containsOutput("Could not find: \"" + File.separator + "BACKUP"
+        + WRONG_DISK_STORE_ID + DiskInitFile.IF_FILE_EXT);
   }
 }

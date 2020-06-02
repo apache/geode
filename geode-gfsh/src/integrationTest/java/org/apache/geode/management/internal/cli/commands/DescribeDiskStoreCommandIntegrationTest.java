@@ -27,6 +27,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.PersistenceTest;
@@ -40,7 +41,6 @@ public class DescribeDiskStoreCommandIntegrationTest {
   private static final String MEMBER_NAME = "testServer";
   private static final String DISK_STORE_NAME = "testDiskStore";
   private static final String WRONG_DISK_STORE_NAME = "wrongTestDiskStore";
-  private static final String IF_FILE_EXT = ".if";
 
   private static final List<String> expectedData = Arrays.asList("Disk Store ID", "Disk Store Name",
       "Member ID", "Member Name", "Allow Force Compaction", "Auto Compaction",
@@ -118,7 +118,7 @@ public class DescribeDiskStoreCommandIntegrationTest {
 
     gfsh.executeAndAssertThat(commandString).statusIsError()
         .containsOutput("Could not find: \"wrongDiskDir" + File.separator + "BACKUP"
-            + DISK_STORE_NAME + IF_FILE_EXT);
+            + DISK_STORE_NAME + DiskInitFile.IF_FILE_EXT);
   }
 
   @Test
@@ -132,6 +132,6 @@ public class DescribeDiskStoreCommandIntegrationTest {
     gfsh.executeAndAssertThat(commandString).statusIsError()
         .containsOutput(
             "Could not find: \"" + File.separator + "BACKUP"
-                + WRONG_DISK_STORE_NAME + IF_FILE_EXT);
+                + WRONG_DISK_STORE_NAME + DiskInitFile.IF_FILE_EXT);
   }
 }
