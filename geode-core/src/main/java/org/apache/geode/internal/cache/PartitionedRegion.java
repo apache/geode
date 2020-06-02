@@ -10231,7 +10231,7 @@ public class PartitionedRegion extends LocalRegion
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     // Synchronized to avoid other threads invoking clear on this vm/node.
     synchronized (clearLock) {
-      partitionedRegionClear.doClear(regionEvent, cacheWrite, this);
+      partitionedRegionClear.doClear(regionEvent, cacheWrite);
     }
   }
 
@@ -10244,5 +10244,9 @@ public class PartitionedRegion extends LocalRegion
     // check peer server filters
     return (getRegionAdvisor().hasPRServerWithInterest()
         || getRegionAdvisor().hasPRServerWithCQs());
+  }
+
+  boolean isTransactionDistributed() {
+    return getCache().getTxManager().isDistributed();
   }
 }

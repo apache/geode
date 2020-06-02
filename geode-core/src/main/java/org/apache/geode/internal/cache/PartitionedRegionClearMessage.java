@@ -82,7 +82,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
 
   public void send() {
     Assert.assertTrue(getRecipients() != null, "ClearMessage NULL recipients set");
-    setTransactionDistributed(partitionedRegion.getCache().getTxManager().isDistributed());
+    setTransactionDistributed(partitionedRegion.isTransactionDistributed());
     partitionedRegion.getDistributionManager().putOutgoing(this);
   }
 
