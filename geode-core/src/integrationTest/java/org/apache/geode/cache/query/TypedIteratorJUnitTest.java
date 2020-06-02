@@ -20,6 +20,7 @@
 
 package org.apache.geode.cache.query;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import org.junit.After;
@@ -43,11 +44,12 @@ public class TypedIteratorJUnitTest {
   @Test
   public void testUntyped() throws QueryException {
     // one untyped iterator is now resolved fine
-    Query q = this.qs.newQuery("SELECT DISTINCT * " + "FROM /pos " + "WHERE ID = 3 ");
+    Query q =
+        this.qs.newQuery("SELECT DISTINCT * " + "FROM " + SEPARATOR + "pos " + "WHERE ID = 3 ");
     q.execute();
 
     // if there are two untyped iterators, then it's a problem, see bug 32251 and BugTest
-    q = this.qs.newQuery("SELECT DISTINCT * FROM /pos, positions WHERE ID = 3");
+    q = this.qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "pos, positions WHERE ID = 3");
     try {
       q.execute();
       fail("Expected a TypeMismatchException");
@@ -60,13 +62,13 @@ public class TypedIteratorJUnitTest {
   public void testTyped() throws QueryException {
     Query q = this.qs.newQuery( // must quote "query" because it is a reserved word
         "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;\n" + "SELECT DISTINCT *\n"
-            + "FROM /pos TYPE Portfolio\n" + "WHERE ID = 3  ");
+            + "FROM " + SEPARATOR + "pos TYPE Portfolio\n" + "WHERE ID = 3  ");
     Object r = q.execute();
 
 
     q = this.qs.newQuery( // must quote "query" because it is a reserved word
         "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;\n" + "SELECT DISTINCT *\n"
-            + "FROM /pos ptfo TYPE Portfolio\n" + "WHERE ID = 3  ");
+            + "FROM " + SEPARATOR + "pos ptfo TYPE Portfolio\n" + "WHERE ID = 3  ");
     r = q.execute();
   }
 
@@ -75,12 +77,13 @@ public class TypedIteratorJUnitTest {
   public void testTypeCasted() throws QueryException {
     Query q = this.qs.newQuery( // must quote "query" because it is a reserved word
         "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;\n" + "SELECT DISTINCT *\n"
-            + "FROM (collection<Portfolio>)/pos\n" + "WHERE ID = 3  ");
+            + "FROM (collection<Portfolio>)" + SEPARATOR + "pos\n" + "WHERE ID = 3  ");
     Object r = q.execute();
 
     q = this.qs.newQuery( // must quote "query" because it is a reserved word
         "IMPORT org.apache.geode.cache.\"query\".data.Position;\n" + "SELECT DISTINCT *\n"
-            + "FROM /pos p, (collection<Position>)p.positions.values\n" + "WHERE secId = 'IBM'");
+            + "FROM " + SEPARATOR + "pos p, (collection<Position>)p.positions.values\n"
+            + "WHERE secId = 'IBM'");
     r = q.execute();
   }
 

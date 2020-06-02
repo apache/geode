@@ -82,6 +82,12 @@ public class SystemPropertyHelper {
   public static final String PACKAGES_TO_SCAN = "packagesToScan";
 
   /**
+   * This property turns on/off parallel disk store recovery during cluster restart.
+   * By default, the value is True, which allows parallel disk store recovery by multiple threads.
+   */
+  public static final String PARALLEL_DISK_STORE_RECOVERY = "parallelDiskStoreRecovery";
+
+  /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
    *

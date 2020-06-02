@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -99,7 +98,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     }
 
     @SuppressWarnings("unchecked")
-    List<String> returnList = (List<String>) getIteration(context.getKeyRegistrar().keys(),
+    List<String> returnList = (List<String>) getIteration(getDataRegion(context).keySet(),
         matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
@@ -113,11 +112,6 @@ public class ScanExecutor extends AbstractScanExecutor {
     int numElements = 0;
     int i = -1;
     for (String key : (Collection<String>) list) {
-      if (key.equals(GeodeRedisServer.REDIS_META_DATA_REGION)
-          || key.equals(GeodeRedisServer.STRING_REGION) || key
-              .equals(GeodeRedisServer.HLL_REGION)) {
-        continue;
-      }
       i++;
       if (beforeCursor < cursor) {
         beforeCursor++;
@@ -137,7 +131,7 @@ public class ScanExecutor extends AbstractScanExecutor {
       }
     }
 
-    if (i == size - (NUM_DEFAULT_REGIONS + 1)) {
+    if (i >= size - 1) {
       returnList.add(0, String.valueOf(0));
     } else {
       returnList.add(0, String.valueOf(i));

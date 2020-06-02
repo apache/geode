@@ -14,9 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NX;
+
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -35,26 +36,23 @@ public class SetNXExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> region =
-        context.getRegionProvider().getStringsRegion();
-
     if (commandElems.size() < 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETNX));
       return;
     }
 
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    byte[] value = commandElems.get(VALUE_INDEX);
+    ByteArrayWrapper value = new ByteArrayWrapper(commandElems.get(VALUE_INDEX));
 
-    Object oldValue = region.putIfAbsent(key, new ByteArrayWrapper(value));
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    SetOptions setOptions = new SetOptions(NX, 0L, false);
 
-    if (oldValue != null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
-    } else {
+    boolean result = stringCommands.set(key, value, setOptions);
+
+    if (result) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
+    } else {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
     }
-
   }
-
 }

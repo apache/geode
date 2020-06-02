@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,7 +77,7 @@ public class NewDeclarativeIndexCreationJUnitTest {
 
   @Test
   public void testAsynchronousIndexCreatedOnRoot_PortfoliosRegion() {
-    Region root = this.cache.getRegion("/root/portfolios");
+    Region root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "portfolios");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
@@ -86,21 +87,21 @@ public class NewDeclarativeIndexCreationJUnitTest {
 
   @Test
   public void testSynchronousIndexCreatedOnRoot_StringRegion() {
-    Region root = this.cache.getRegion("/root/string");
+    Region root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
     RegionAttributes ra = root.getAttributes();
     assertThat(ra.getIndexMaintenanceSynchronous()).isTrue();
 
-    root = this.cache.getRegion("/root/string1");
+    root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string1");
     im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.isIndexMaintenanceTypeSynchronous()).isTrue();
   }
 
   @Test
   public void testSynchronousIndexCreatedOnRootRegion() {
-    Region root = this.cache.getRegion("/root");
+    Region root = this.cache.getRegion(SEPARATOR + "root");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
@@ -115,7 +116,7 @@ public class NewDeclarativeIndexCreationJUnitTest {
    */
   @Test
   public void testAsynchronousIndexCreatedOnPortfoliosRegionWithNewDTD() {
-    Region root = this.cache.getRegion("/root/portfolios2");
+    Region root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "portfolios2");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
@@ -125,14 +126,14 @@ public class NewDeclarativeIndexCreationJUnitTest {
 
   @Test
   public void testSynchronousIndexCreatedOnStringRegionWithNewDTD() {
-    Region root = this.cache.getRegion("/root/string2");
+    Region root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string2");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);;
     assertThat(im.getIndexes()).isNotEmpty();
 
     RegionAttributes ra = root.getAttributes();
     assertThat(ra.getIndexMaintenanceSynchronous()).isTrue();
 
-    root = this.cache.getRegion("/root/string1");
+    root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string1");
     im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.isIndexMaintenanceTypeSynchronous()).isTrue();
   }

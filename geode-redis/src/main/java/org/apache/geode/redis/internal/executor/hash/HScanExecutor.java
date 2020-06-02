@@ -14,12 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_ILLEGAL_GLOB;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -27,7 +24,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.executor.AbstractScanExecutor;
 
 /**
@@ -36,18 +33,12 @@ import org.apache.geode.redis.internal.executor.AbstractScanExecutor;
 public class HScanExecutor extends AbstractScanExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map =
-        context.getRegionProvider().getHashRegion().get(key);
-
-    if (map == null || map.isEmpty()) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
-      return;
-    }
     byte[] cAr = commandElems.get(2);
     String cursorString = Coder.bytesToString(cAr);
 
@@ -58,12 +49,11 @@ public class HScanExecutor extends AbstractScanExecutor {
     try {
       cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
-      return;
+      return RedisResponse.error(ERROR_CURSOR);
     }
+
     if (cursor < 0) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
-      return;
+      return RedisResponse.error(ERROR_CURSOR);
     }
 
     if (commandElems.size() > 4) {
@@ -78,8 +68,7 @@ public class HScanExecutor extends AbstractScanExecutor {
           count = Coder.bytesToInt(bytes);
         }
       } catch (NumberFormatException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_COUNT));
-        return;
+        return RedisResponse.error(ERROR_COUNT);
       }
     }
 
@@ -95,68 +84,28 @@ public class HScanExecutor extends AbstractScanExecutor {
           count = Coder.bytesToInt(bytes);
         }
       } catch (NumberFormatException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_COUNT));
-        return;
+        return RedisResponse.error(ERROR_COUNT);
       }
     }
 
     if (count < 0) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_COUNT));
-      return;
+      return RedisResponse.error(ERROR_COUNT);
     }
 
     try {
       matchPattern = convertGlobToRegex(globMatchPattern);
     } catch (PatternSyntaxException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_ILLEGAL_GLOB));
-      return;
+      return RedisResponse.error(ERROR_ILLEGAL_GLOB);
     }
 
-    List<Object> returnList =
-        getIteration(new HashSet<Object>(map.entrySet()), matchPattern, count, cursor);
+    RedisHashCommands redisHashCommands =
+        new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    List<Object> returnList = redisHashCommands.hscan(key, matchPattern, count, cursor);
 
-    command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
-  }
-
-  @SuppressWarnings("unchecked")
-  protected List<Object> getIteration(Collection<?> list, Pattern matchPattern, int count,
-      int cursor) {
-    List<Object> returnList = new ArrayList<Object>();
-    int size = list.size();
-    int beforeCursor = 0;
-    int numElements = 0;
-    int i = -1;
-    for (Entry<ByteArrayWrapper, ByteArrayWrapper> entry : (Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>>) list) {
-      ByteArrayWrapper key = entry.getKey();
-      ByteArrayWrapper value = entry.getValue();
-      i++;
-      if (beforeCursor < cursor) {
-        beforeCursor++;
-        continue;
-      } else if (numElements < count) {
-        if (matchPattern != null) {
-          if (matchPattern.matcher(key.toString()).matches()) {
-            returnList.add(key);
-            returnList.add(value);
-            numElements++;
-          }
-        } else {
-          returnList.add(key);
-          returnList.add(value);
-          numElements++;
-        }
-      } else {
-        break;
-      }
-    }
-
-    if (i == size - 1) {
-      returnList.add(0, String.valueOf(0));
+    if (returnList.isEmpty()) {
+      return RedisResponse.error(ERROR_CURSOR);
     } else {
-      returnList.add(0, String.valueOf(i));
+      return RedisResponse.scan(returnList);
     }
-    return returnList;
   }
-
 }

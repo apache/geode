@@ -95,6 +95,8 @@ public class Fakes {
 
     when(config.getCacheXmlFile()).thenReturn(new File(""));
     when(config.getDeployWorkingDir()).thenReturn(new File("."));
+    when(config.getJmxManagerUpdateRate()).thenReturn(100);
+
 
     when(cache.getDistributedSystem()).thenReturn(system);
     when(cache.getInternalDistributedSystem()).thenReturn(system);
@@ -125,6 +127,7 @@ public class Fakes {
     when(system.createAtomicStatistics(any(), any(), anyLong())).thenReturn(stats);
     when(system.createAtomicStatistics(any(), any())).thenReturn(stats);
     when(system.getProperties()).thenReturn(mock(Properties.class));
+    when(system.isConnected()).thenReturn(true);
 
     when(distributionManager.getId()).thenReturn(member);
     when(distributionManager.getDistributionManagerId()).thenReturn(member);

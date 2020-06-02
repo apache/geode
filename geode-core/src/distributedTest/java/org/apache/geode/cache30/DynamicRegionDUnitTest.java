@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -241,7 +242,7 @@ public class DynamicRegionDUnitTest extends JUnit4CacheTestCase {
     checkForRegionOtherVm(drFullPath, true);
 
     // spot check the subregions
-    checkForSubregionOtherVm(drFullPath + "/subregion7", true);
+    checkForSubregionOtherVm(drFullPath + SEPARATOR + "subregion7", true);
 
     // now see if OTHER can recreate which should fetch meta-info from controller
     recreateOtherVm();
@@ -257,7 +258,7 @@ public class DynamicRegionDUnitTest extends JUnit4CacheTestCase {
         .info("testPeerRegion - check #3 make sure dynamic region can be recovered from disk");
     checkForRegionOtherVm(drFullPath, true);
     for (int i = 0; i < 10; i++) {
-      checkForSubregionOtherVm(drFullPath + "/subregion" + i, true);
+      checkForSubregionOtherVm(drFullPath + SEPARATOR + "subregion" + i, true);
     }
 
     // now start our cache back up and see if we still have the dynamic regions
@@ -278,7 +279,7 @@ public class DynamicRegionDUnitTest extends JUnit4CacheTestCase {
 
       // now make sure we can destroy dynamic regions
       for (int i = 0; i < 10; i++) {
-        String regName = drFullPath + "/subregion" + i;
+        String regName = drFullPath + SEPARATOR + "subregion" + i;
         assertEquals(true, c.getRegion(regName) != null);
         DynamicRegionFactory.get().destroyDynamicRegion(regName);
         assertEquals(null, c.getRegion(regName));

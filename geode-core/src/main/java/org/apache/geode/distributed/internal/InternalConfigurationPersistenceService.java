@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import static java.util.Arrays.asList;
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 
@@ -85,6 +86,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.security.AuthenticationRequiredException;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
   private static final Logger logger = LogService.getLogger();
@@ -693,7 +695,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         status.compareAndSet(SharedConfigurationStatus.STARTED,
             SharedConfigurationStatus.WAITING);
         Set<PersistentMemberID> persMemIds =
-            waitingRegions.get(Region.SEPARATOR_CHAR + CONFIG_REGION_NAME);
+            waitingRegions.get(SEPARATOR_CHAR + CONFIG_REGION_NAME);
         for (PersistentMemberID persMemId : persMemIds) {
           newerSharedConfigurationLocatorInfo.add(new PersistentMemberPattern(persMemId));
         }
@@ -841,8 +843,16 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return configuration;
   }
 
-  private String getDeployedBy() {
-    Subject subject = cache.getSecurityService().getSubject();
+  String getDeployedBy() {
+    Subject subject = null;
+    try {
+      subject = cache.getSecurityService().getSubject();
+    } catch (AuthenticationRequiredException e) {
+      // ignored. No user logged in for the deployment
+      // this would happen for offline commands like "start locator" and loading the cluster config
+      // from a directory
+      logger.debug("getDeployedBy: no user information is found.", e);
+    }
     return subject == null ? null : subject.getPrincipal().toString();
   }
 

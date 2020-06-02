@@ -1,11 +1,23 @@
+org/apache/geode/redis/internal/AbstractRedisData,2
+fromData,12
+toData,12
+
 org/apache/geode/redis/internal/ByteArrayWrapper,2
-fromData,20
+fromData,9
 toData,9
 
 org/apache/geode/redis/internal/DoubleWrapper,2
 fromData,9
 toData,9
 
+org/apache/geode/redis/internal/executor/hash/RedisHash,2
+fromData,14
+toData,14
+
 org/apache/geode/redis/internal/executor/set/RedisSet,2
-toData,9
-fromData,9
+toData,14
+fromData,14
+
+org/apache/geode/redis/internal/executor/string/RedisString,2
+fromData,21
+toData,17

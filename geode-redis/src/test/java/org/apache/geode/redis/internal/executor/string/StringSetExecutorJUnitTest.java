@@ -18,13 +18,9 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -35,14 +31,13 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class StringSetExecutorJUnitTest {
@@ -50,7 +45,7 @@ public class StringSetExecutorJUnitTest {
   private ExecutionHandlerContext context;
   private SetExecutor executor;
   private ByteBuf buffer;
-  private Region<ByteArrayWrapper, ByteArrayWrapper> region;
+  private Region<ByteArrayWrapper, RedisData> region;
   private RegionProvider regionProvider;
 
   @SuppressWarnings("unchecked")
@@ -62,7 +57,7 @@ public class StringSetExecutorJUnitTest {
     when(context.getRegionProvider()).thenReturn(regionProvider);
 
     region = mock(Region.class);
-    when(regionProvider.getStringsRegion()).thenReturn(region);
+    when(regionProvider.getDataRegion()).thenReturn(region);
 
     ByteBufAllocator allocator = mock(ByteBufAllocator.class);
 
@@ -71,41 +66,7 @@ public class StringSetExecutorJUnitTest {
     when(allocator.buffer(anyInt())).thenReturn(buffer);
     when(context.getByteBufAllocator()).thenReturn(allocator);
 
-    KeyRegistrar keyRegistrar = mock(KeyRegistrar.class);
-    when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
-
     executor = spy(new SetExecutor());
-    doAnswer(x -> null).when(executor).checkDataType(any(), any(), any());
-  }
-
-
-  @Test
-  public void testBasicSet() {
-    List<byte[]> args = Arrays.asList("SET".getBytes(), "key".getBytes(), "value".getBytes());
-    Command command = new Command(args);
-
-    executor.executeCommand(command, context);
-
-    ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    ArgumentCaptor<ByteArrayWrapper> valueCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    verify(region).put(keyCaptor.capture(), valueCaptor.capture());
-
-    assertThat(keyCaptor.getValue()).isEqualTo("key");
-    assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
-  }
-
-  @Test
-  public void testSET_TooFewArgumentsReturnsError() {
-    List<byte[]> commandArgumentWithTooFewArgs = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes());
-    Command command = new Command(commandArgumentWithTooFewArgs);
-
-    executor.executeCommand(command, context);
-
-    assertThat(command.getResponse().toString(defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
   @Test
@@ -205,133 +166,4 @@ public class StringSetExecutorJUnitTest {
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 
-  @Test
-  public void testSetNX_WhenKeyDoesNotExist() {
-    List<byte[]> args = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes(),
-        "value".getBytes(),
-        "NX".getBytes());
-
-    when(region.putIfAbsent(any(), any())).thenReturn(null);
-    Command command = new Command(args);
-
-    executor.executeCommand(command, context);
-
-    ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    ArgumentCaptor<ByteArrayWrapper> valueCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    verify(region).putIfAbsent(keyCaptor.capture(), valueCaptor.capture());
-
-    assertThat(keyCaptor.getValue()).isEqualTo("key");
-    assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
-  }
-
-  @Test
-  public void testSetNX_WhenKeyAlreadyExists() {
-    List<byte[]> args = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes(),
-        "value".getBytes(),
-        "NX".getBytes());
-    when(region.putIfAbsent(any(), any())).thenReturn(new ByteArrayWrapper("old-value".getBytes()));
-    Command command = new Command(args);
-
-    executor.executeCommand(command, context);
-
-    ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    ArgumentCaptor<ByteArrayWrapper> valueCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    verify(region).putIfAbsent(keyCaptor.capture(), valueCaptor.capture());
-
-    assertThat(keyCaptor.getValue()).isEqualTo("key");
-    assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(command.getResponse().toString(defaultCharset())).startsWith("$-1");
-  }
-
-  @Test
-  public void testSetXX_WhenKeyDoesNotExist() {
-    List<byte[]> args = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes(),
-        "value".getBytes(),
-        "XX".getBytes());
-    when(region.containsKey(any())).thenReturn(false);
-    Command command = new Command(args);
-
-    executor.executeCommand(command, context);
-    verify(region, never()).put(any(), any());
-
-    assertThat(command.getResponse().toString(defaultCharset())).startsWith("$-1");
-  }
-
-  @Test
-  public void testSetXX_WhenKeyAlreadyExists() {
-    List<byte[]> args = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes(),
-        "value".getBytes(),
-        "XX".getBytes());
-    when(region.containsKey(any())).thenReturn(true);
-    Command command = new Command(args);
-
-    executor.executeCommand(command, context);
-
-    ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    ArgumentCaptor<ByteArrayWrapper> valueCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    verify(region).put(keyCaptor.capture(), valueCaptor.capture());
-
-    assertThat(keyCaptor.getValue()).isEqualTo("key");
-    assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
-  }
-
-  @Test
-  public void testSetEX() {
-    List<byte[]> args = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes(),
-        "value".getBytes(),
-        "EX".getBytes(),
-        "5".getBytes());
-    Command command = new Command(args);
-
-    executor.executeCommand(command, context);
-
-    ArgumentCaptor<ByteArrayWrapper> expireKey = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    ArgumentCaptor<Long> expireValue = ArgumentCaptor.forClass(Long.class);
-    ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    ArgumentCaptor<ByteArrayWrapper> valueCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-
-    verify(region).put(keyCaptor.capture(), valueCaptor.capture());
-    verify(regionProvider).setExpiration(expireKey.capture(), expireValue.capture());
-
-    assertThat(keyCaptor.getValue()).isEqualTo("key");
-    assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(expireKey.getValue()).isEqualTo("key");
-    assertThat(expireValue.getValue()).isEqualTo(5000);
-    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
-  }
-
-  @Test
-  public void testSet_withKEEPTTL() {
-    List<byte[]> args = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes(),
-        "value".getBytes(),
-        "KEEPTTL".getBytes());
-    Command command = new Command(args);
-
-    executor.executeCommand(command, context);
-
-    ArgumentCaptor<ByteArrayWrapper> keyCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    ArgumentCaptor<ByteArrayWrapper> valueCaptor = ArgumentCaptor.forClass(ByteArrayWrapper.class);
-    verify(region).put(keyCaptor.capture(), valueCaptor.capture());
-
-    assertThat(keyCaptor.getValue()).isEqualTo("key");
-    assertThat(valueCaptor.getValue()).isEqualTo("value");
-    assertThat(command.getResponse().toString(defaultCharset())).startsWith("+OK");
-
-    ByteArrayWrapper keyWrapper = new ByteArrayWrapper("key".getBytes());
-    verify(regionProvider, never()).cancelKeyExpiration(keyWrapper);
-  }
 }

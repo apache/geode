@@ -20,6 +20,7 @@ package org.apache.geode.internal.cache;
  *
  */
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -99,7 +100,7 @@ public class PartitionedRegionSerializableObjectJUnitTest {
 
     @Override
     public void run() {
-      Region pr = PartitionedRegionTestHelper.getExistingRegion(Region.SEPARATOR + regionName);
+      Region pr = PartitionedRegionTestHelper.getExistingRegion(SEPARATOR + regionName);
       assertNotNull(pr);
       List list = new ArrayList();
       list = (ArrayList) thread2List.get(this.getName());
@@ -134,7 +135,7 @@ public class PartitionedRegionSerializableObjectJUnitTest {
 
     @Override
     public void run() {
-      Region pr = PartitionedRegionTestHelper.getExistingRegion(Region.SEPARATOR + regionName);
+      Region pr = PartitionedRegionTestHelper.getExistingRegion(SEPARATOR + regionName);
       assertNotNull(pr);
       int key = 0;
       Object obj = null;

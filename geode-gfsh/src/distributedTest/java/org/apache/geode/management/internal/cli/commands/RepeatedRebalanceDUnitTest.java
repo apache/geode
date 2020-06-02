@@ -28,6 +28,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -90,24 +91,40 @@ public class RepeatedRebalanceDUnitTest {
 
   @Test
   public void testSecondRebalanceIsNotNecessaryWithAddedMembers() {
-
     addDataToRegion(NUMBER_OF_ENTRIES);
 
     addOrRestartServers(2, 0);
 
-    // Because we have 2 redundant copies and begin with 4 servers, redundancy is already satisfied
-    // before this rebalance. As such we expect to see no redundant copies created.
-    TabularResultModelAssert firstRebalance =
-        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection("Table2");
-    assertRedundancyNotChanged(firstRebalance);
-    assertBucketsMoved(firstRebalance);
-    assertPrimariesTransfered(firstRebalance);
+    CommandResultAssert firstRebalance = gfsh.executeAndAssertThat("rebalance").statusIsSuccess();
 
-    TabularResultModelAssert secondRebalance =
-        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection("Table2");
-    assertRedundancyNotChanged(secondRebalance);
-    assertBucketsNotMoved(secondRebalance);
-    assertPrimariesNotTransfered(secondRebalance);
+    String parentRegionTableSection = "";
+    for (int i = 0; i < 3; i++) {
+      if (firstRebalance.hasTableSection("Table" + i).getActual().getHeader()
+          .contains(PARENT_REGION)) {
+        parentRegionTableSection = "Table" + i;
+      }
+    }
+
+    TabularResultModelAssert parentRegionTable =
+        firstRebalance.hasTableSection(parentRegionTableSection);
+    assertRedundancyNotChanged(parentRegionTable);
+    assertBucketsMoved(parentRegionTable);
+    assertPrimariesTransfered(parentRegionTable);
+
+    CommandResultAssert secondRebalance =
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess();
+
+    for (int i = 0; i < 3; i++) {
+      if (secondRebalance.hasTableSection("Table" + i).getActual().getHeader()
+          .contains(PARENT_REGION)) {
+        parentRegionTableSection = "Table" + i;
+      }
+    }
+
+    parentRegionTable = secondRebalance.hasTableSection(parentRegionTableSection);
+    assertRedundancyNotChanged(parentRegionTable);
+    assertBucketsNotMoved(parentRegionTable);
+    assertPrimariesNotTransfered(parentRegionTable);
   }
 
   @Test
@@ -117,17 +134,36 @@ public class RepeatedRebalanceDUnitTest {
 
     addOrRestartServers(2, 1);
 
-    TabularResultModelAssert firstRebalance =
-        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection("Table2");
-    assertRedundancyChanged(firstRebalance);
-    assertBucketsMoved(firstRebalance);
-    assertPrimariesTransfered(firstRebalance);
+    CommandResultAssert firstRebalance = gfsh.executeAndAssertThat("rebalance").statusIsSuccess();
 
-    TabularResultModelAssert secondRebalance =
-        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection("Table2");
-    assertRedundancyNotChanged(secondRebalance);
-    assertBucketsNotMoved(secondRebalance);
-    assertPrimariesNotTransfered(secondRebalance);
+    String parentRegionTableSection = "";
+    for (int i = 0; i < 3; i++) {
+      if (firstRebalance.hasTableSection("Table" + i).getActual().getHeader()
+          .contains(PARENT_REGION)) {
+        parentRegionTableSection = "Table" + i;
+      }
+    }
+
+    TabularResultModelAssert parentRegionTable =
+        firstRebalance.hasTableSection(parentRegionTableSection);
+    assertRedundancyChanged(parentRegionTable);
+    assertBucketsMoved(parentRegionTable);
+    assertPrimariesTransfered(parentRegionTable);
+
+    CommandResultAssert secondRebalance =
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess();
+
+    for (int i = 0; i < 3; i++) {
+      if (secondRebalance.hasTableSection("Table" + i).getActual().getHeader()
+          .contains(PARENT_REGION)) {
+        parentRegionTableSection = "Table" + i;
+      }
+    }
+
+    parentRegionTable = secondRebalance.hasTableSection(parentRegionTableSection);
+    assertRedundancyNotChanged(parentRegionTable);
+    assertBucketsNotMoved(parentRegionTable);
+    assertPrimariesNotTransfered(parentRegionTable);
   }
 
   public void addDataToRegion(int entriesToAdd) {

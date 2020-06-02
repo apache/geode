@@ -238,7 +238,7 @@ public class RebalanceCommand extends GfshCommand {
       operation.setSimulate(simulate);
 
       // do rebalance
-      RebalanceResult rebalanceResult = RebalanceOperationPerformer.perform(cache, operation);
+      RebalanceResult rebalanceResult = new RebalanceOperationPerformer().perform(cache, operation);
 
       // check for error
       if (!rebalanceResult.getSuccess()) {

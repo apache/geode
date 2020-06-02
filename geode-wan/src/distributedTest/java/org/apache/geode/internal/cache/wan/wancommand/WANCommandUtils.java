@@ -149,7 +149,8 @@ public class WANCommandUtils implements Serializable {
       boolean enableBatchConflation, int batchSize, int batchTimeInterval,
       boolean enablePersistence, boolean diskSynchronous, int maxQueueMemory, int alertThreshold,
       int dispatcherThreads, GatewaySender.OrderPolicy orderPolicy,
-      List<String> expectedGatewayEventFilters, List<String> expectedGatewayTransportFilters) {
+      List<String> expectedGatewayEventFilters, List<String> expectedGatewayTransportFilters,
+      boolean groupTransactionEvents) {
 
     GatewaySender sender = ClusterStartupRule.getCache().getGatewaySenders().stream()
         .filter(x -> senderId.equals(x.getId())).findFirst().orElse(null);
@@ -168,6 +169,9 @@ public class WANCommandUtils implements Serializable {
     assertEquals("alertThreshold", alertThreshold, sender.getAlertThreshold());
     assertEquals("dispatcherThreads", dispatcherThreads, sender.getDispatcherThreads());
     assertEquals("orderPolicy", orderPolicy, sender.getOrderPolicy());
+    assertEquals("groupTransactionEvents", groupTransactionEvents,
+        sender.mustGroupTransactionEvents());
+
 
     // verify GatewayEventFilters
     if (expectedGatewayEventFilters != null) {

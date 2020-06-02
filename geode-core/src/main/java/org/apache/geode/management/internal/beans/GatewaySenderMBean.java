@@ -174,6 +174,11 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
+  public void startWithCleanQueue() {
+    bridge.startWithCleanQueue();
+  }
+
+  @Override
   public void stop() {
     bridge.stop();
 
@@ -207,6 +212,11 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   @Override
   public boolean isParallel() {
     return bridge.isParallel();
+  }
+
+  @Override
+  public boolean mustGroupTransactionEvents() {
+    return bridge.mustGroupTransactionEvents();
   }
 
   @Override

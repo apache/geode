@@ -209,6 +209,11 @@ public class GatewaySenderMBeanBridge {
     sender.start();
   }
 
+  public void startWithCleanQueue() {
+    sender.startWithCleanQueue();
+  }
+
+
   public void stop() {
     sender.stop();
   }
@@ -235,6 +240,10 @@ public class GatewaySenderMBeanBridge {
 
   public boolean isParallel() {
     return sender.isParallel();
+  }
+
+  public boolean mustGroupTransactionEvents() {
+    return sender.mustGroupTransactionEvents();
   }
 
   /** Statistics Related Attributes **/

@@ -20,7 +20,7 @@ set -e
 usage() {
     echo "Usage: set_versions.sh -v version_number [-s]"
     echo "  -v   The #.#.# version number for the next release"
-    echo "  -s   append -SNAPSHOT to version number"
+    echo "  -s   append -build.0 to version number"
     exit 1
 }
 
@@ -32,7 +32,7 @@ while getopts ":v:snw:" opt; do
       VERSION=$OPTARG
       ;;
     s )
-      SNAPSHOT="-SNAPSHOT"
+      BUILDSUFFIX="-build.0"
       ;;
     n )
       NOPUSH=true
@@ -57,6 +57,12 @@ if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 VERSION_MM=${VERSION%.*}
+
+if [ -n "${BUILDSUFFIX}" ] ; then
+  GEODEFOREXAMPLES="${VERSION_MM}.+"
+else
+  GEODEFOREXAMPLES="${VERSION}"
+fi
 
 set -x
 [ -n "${WORKSPACE}" ] || WORKSPACE=$PWD/release-${VERSION}-workspace
@@ -108,23 +114,17 @@ echo "Setting Geode versions and updating expected pom"
 echo "============================================================"
 set -x
 cd ${GEODE}
-git pull
 set +x
 
-#version = 1.13.0-SNAPSHOT
-sed -e "s/^version =.*/version = ${VERSION}${SNAPSHOT}/" -i.bak gradle.properties
+#version = 1.13.0-build.0
+sed -e "s/^version =.*/version = ${VERSION}${BUILDSUFFIX}/" -i.bak gradle.properties
 
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-git diff --staged
-
-./gradlew updateExpectedPom
-git add .
-echo "$(git diff --staged | wc -l)-line diff of expected-pom changes will also be committed (not shown)"
-
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
-  git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
+  git diff --staged --color | cat
+  git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -139,18 +139,18 @@ cd ${GEODE_EXAMPLES}
 git pull
 set +x
 
-#version = 1.12.0-SNAPSHOT
-#geodeVersion = 1.12.0-SNAPSHOT
-sed -e "s/^version = .*/version = ${VERSION}${SNAPSHOT}/" \
-    -e "s/^geodeVersion = .*/geodeVersion = ${VERSION}${SNAPSHOT}/" \
+#version = 1.12.0-build.0
+#geodeVersion = 1.12.+
+sed -e "s/^version = .*/version = ${VERSION}${BUILDSUFFIX}/" \
+    -e "s/^geodeVersion = .*/geodeVersion = ${GEODEFOREXAMPLES}/" \
     -i.bak gradle.properties
 
 rm gradle.properties.bak
 set -x
 git add .
-git diff --staged
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
-  git commit -m "Bumping version to ${VERSION}${SNAPSHOT}"
+  git diff --staged --color | cat
+  git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x

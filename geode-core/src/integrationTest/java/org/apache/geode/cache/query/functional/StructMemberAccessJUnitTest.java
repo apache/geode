@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -66,13 +67,17 @@ public class StructMemberAccessJUnitTest {
   @Test
   public void testUnsupportedQueries() throws Exception {
     String queries[] = {
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos)"
             + " WHERE value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE p.get(1).value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE p[1].value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE p.value.secId = 'IBM'"};
     for (int i = 0; i < queries.length; i++) {
       try {
@@ -88,26 +93,35 @@ public class StructMemberAccessJUnitTest {
   @Test
   public void testSupportedQueries() throws Exception {
     String queries[] = {
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos)"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios AS ptf, positions AS pos)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios AS ptf, positions AS pos)"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM ptf IN /Portfolios, pos IN positions)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM ptf IN " + SEPARATOR
+            + "Portfolios, pos IN positions)"
             + " WHERE pos.value.secId = 'IBM'",
         "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT pos AS myPos FROM /Portfolios ptf, positions pos)"
+            + " (SELECT DISTINCT pos AS myPos FROM " + SEPARATOR + "Portfolios ptf, positions pos)"
             + " WHERE myPos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE p.pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios, positions) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios, positions) p"
             + " WHERE p.positions.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios, positions)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios, positions)"
             + " WHERE positions.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
+            + "Portfolios ptf, positions pos) p"
             + " WHERE p.get('pos').value.secId = 'IBM'",
-        "SELECT DISTINCT name FROM" + " /Portfolios , secIds name where length > 0 ",};
+        "SELECT DISTINCT name FROM" + " " + SEPARATOR
+            + "Portfolios , secIds name where length > 0 ",};
     for (int i = 0; i < queries.length; i++) {
       try {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
@@ -121,9 +135,9 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testResultComposition() throws Exception {
-    String queries[] = {"select distinct p from /Portfolios p where p.ID > 0",
-        "select distinct p.getID from /Portfolios p where p.ID > 0 ",
-        "select distinct p.getID as secID from /Portfolios p where p.ID > 0 "};
+    String queries[] = {"select distinct p from " + SEPARATOR + "Portfolios p where p.ID > 0",
+        "select distinct p.getID from " + SEPARATOR + "Portfolios p where p.ID > 0 ",
+        "select distinct p.getID as secID from " + SEPARATOR + "Portfolios p where p.ID > 0 "};
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       Object o = q.execute();
@@ -183,7 +197,7 @@ public class StructMemberAccessJUnitTest {
     Region region = CacheUtils.createRegion("employees", Employee.class);
     region.put("1", new Manager("aaa", 27, 270, "QA", 1800, add1, 2701));
     region.put("2", new Manager("bbb", 28, 280, "QA", 1900, add2, 2801));
-    String queries[] = {"SELECT DISTINCT e.manager_id FROM /employees e"};
+    String queries[] = {"SELECT DISTINCT e.manager_id FROM " + SEPARATOR + "employees e"};
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       Object r = q.execute();
@@ -199,7 +213,8 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testBugNumber_32354() {
-    String queries[] = {"select distinct * from /root/portfolios.values, positions.values ",};
+    String queries[] = {"select distinct * from " + SEPARATOR + "root" + SEPARATOR
+        + "portfolios.values, positions.values ",};
     int i = 0;
     try {
       tearDown();
@@ -219,7 +234,8 @@ public class StructMemberAccessJUnitTest {
         String fieldNames[] = type.getFieldNames();
         for (i = 0; i < fieldNames.length; ++i) {
           String name = fieldNames[i];
-          if (name.equals("/root/portfolios") || name.equals("positions.values")) {
+          if (name.equals(SEPARATOR + "root" + SEPARATOR + "portfolios")
+              || name.equals("positions.values")) {
             fail("The field name in struct = " + name);
           }
         }
@@ -233,7 +249,8 @@ public class StructMemberAccessJUnitTest {
   @Test
   public void testBugNumber_32355() {
     String queries[] = {
-        "select distinct positions.values.toArray[0], positions.values.toArray[0],status from /Portfolios",};
+        "select distinct positions.values.toArray[0], positions.values.toArray[0],status from "
+            + SEPARATOR + "Portfolios",};
     int i = 0;
     try {
       for (i = 0; i < queries.length; i++) {

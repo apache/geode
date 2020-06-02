@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -80,7 +81,7 @@ public class LuceneDescribeIndexFunctionJUnitTest {
   private LuceneIndexInfo getMockLuceneInfo(final String index1) {
     LuceneIndexInfo mockInfo = mock(LuceneIndexInfo.class);
     doReturn(index1).when(mockInfo).getIndexName();
-    doReturn("/region").when(mockInfo).getRegionPath();
+    doReturn(SEPARATOR + "region").when(mockInfo).getRegionPath();
     return mockInfo;
   }
 
@@ -92,7 +93,7 @@ public class LuceneDescribeIndexFunctionJUnitTest {
 
     LuceneIndexImpl index = mock(LuceneIndexImpl.class);
     when(index.getName()).thenReturn(indexName);
-    when(index.getRegionPath()).thenReturn("/region");
+    when(index.getRegionPath()).thenReturn(SEPARATOR + "region");
     when(index.getFieldNames()).thenReturn(searchableFields);
     when(index.getFieldAnalyzers()).thenReturn(fieldAnalyzers);
     return index;

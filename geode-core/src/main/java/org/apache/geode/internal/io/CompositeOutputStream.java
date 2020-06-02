@@ -125,6 +125,14 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
     }
   }
 
+  @Override
+  public void write(byte[] b, int off, int len) throws IOException {
+    Set<OutputStream> outputStreams = this.streams;
+    for (OutputStream out : outputStreams) {
+      out.write(b, off, len);
+    }
+  }
+
   /**
    * Flushes this output stream and forces any buffered output bytes to be written out to the
    * stream.

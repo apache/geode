@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +56,7 @@ public class LuceneIndexXmlParserJUnitTest {
     CacheCreation cache = Mockito.mock(CacheCreation.class);
     RegionCreation regionCreation = Mockito.mock(RegionCreation.class);
     RegionAttributesCreation rac = Mockito.mock(RegionAttributesCreation.class);
-    Mockito.when(regionCreation.getFullPath()).thenReturn("/region");
+    Mockito.when(regionCreation.getFullPath()).thenReturn(SEPARATOR + "region");
     Mockito.when(regionCreation.getAttributes()).thenReturn(rac);
     Mockito.when(regionCreation.getExtensionPoint())
         .thenReturn(new SimpleExtensionPoint(this.rc, this.rc));

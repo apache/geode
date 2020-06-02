@@ -17,13 +17,11 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class GetRangeExecutor extends StringExecutor {
 
@@ -53,10 +51,9 @@ public class GetRangeExecutor extends StringExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_STRING, context);
-    ByteArrayWrapper valueWrapper = r.get(key);
+    ByteArrayWrapper valueWrapper = stringCommands.get(key);
 
     if (valueWrapper == null) {
       command.setResponse(Coder.getEmptyStringResponse(context.getByteBufAllocator()));

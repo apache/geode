@@ -307,6 +307,9 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void invokeTXCallbacks(EnumListenerEvent afterDestroy, EntryEventImpl ee, boolean b);
 
+  void invokeTXCallbacks(EnumListenerEvent afterDestroy, EntryEventImpl ee, boolean b,
+      boolean isLastEventInTransaction);
+
   LocalRegion getPartitionedRegion();
 
   void checkIfAboveThreshold(EntryEventImpl event);

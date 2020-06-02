@@ -28,5 +28,10 @@ Optimize availability and performance by following the guidelines in this sectio
 5.  Decide on a file compaction policy and, if needed, develop procedures to monitor your files and execute regular compaction.
 6.  Decide on a backup strategy for your disk stores and follow it. You can back up a running sytem by using the `backup                     disk-store` command.
 7.  If you remove any persistent region or change its configuration while your disk store is offline, consider synchronizing the regions in your disk stores.
+8.  By default, the disk stores are recovered in parallel when the cluster restarts. Parallel disk store recovery is usually faster than sequential disk store recovery. If you require sequential disk store recovery, start your servers by setting the system property: `geode.parallelDiskStoreRecovery=false`. For example, using gfsh to start your servers:
+
+    ```
+    start server --name=server1 --J=-Dgeode.parallelDiskStoreRecovery=false
+    ```
 
 

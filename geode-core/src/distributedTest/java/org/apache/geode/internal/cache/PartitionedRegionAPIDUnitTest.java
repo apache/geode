@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -840,7 +841,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
         assertThat(region).isNull();
 
         Region rootRegion =
-            cache.getRegion(Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+            cache.getRegion(SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
 
         Object configObject = rootRegion.get(regionName.substring(1));
         assertThat(configObject).isNull();

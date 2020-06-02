@@ -146,16 +146,17 @@ svn update --set-depth infinity --parents dist/dev/geode
 set +x
 
 
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_copyright.sh ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
-
 set +x
 
 
 echo ""
 echo "============================================================"
-echo "Removing -SNAPSHOT"
+echo "Removing -build suffix from version"
 echo "============================================================"
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_versions.sh -v ${VERSION} -n -w ${WORKSPACE}
 set +x
@@ -185,8 +186,10 @@ if [ "${FULL_VERSION##*.RC}" -gt 1 ] ; then
     rm gradle.properties.bak
     set -x
     git add gradle.properties
-    git diff --staged
-    git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+    if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+        git diff --staged --color | cat
+        git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+    fi
     set +x
 fi
 
@@ -248,7 +251,8 @@ set +x
 function failMsg2 {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 116-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 120-$(( errln - 1 ))) and try again"
+  echo "For this script only (prepare_rc.sh), it's also safe to just try again from the top"
 }
 trap 'failMsg2 $LINENO' ERR
 

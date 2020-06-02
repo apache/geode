@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -87,41 +88,55 @@ public class MultiRegionIndexUsageJUnitTest {
   // ////////////// queries ////////////////
   private static final String queries[] = {
       // Query 1
-      "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d,"
+      "SELECT DISTINCT * FROM " + SEPARATOR + "Countries c, c.states s, s.districts d,"
           + " d.villages v, d.cities ct WHERE v.name = 'MAHARASHTRA_VILLAGE1'",
       // Query 2
-      "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d, d.villages v,"
+      "SELECT DISTINCT * FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d, d.villages v,"
           + " d.cities ct WHERE v.name='MAHARASHTRA_VILLAGE1' AND ct.name = 'PUNE'",
       // Query 3
-      "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d, d.villages v, "
+      "SELECT DISTINCT * FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d, d.villages v, "
           + "d.cities ct WHERE ct.name = 'PUNE' AND s.name = 'MAHARASHTRA'",
       // Query 4a & 4b
-      "SELECT DISTINCT * FROM /Countries c WHERE c.name = 'INDIA'",
-      "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d, d.cities ct, d.villages v WHERE c.name = 'INDIA'",
+      "SELECT DISTINCT * FROM " + SEPARATOR + "Countries c WHERE c.name = 'INDIA'",
+      "SELECT DISTINCT * FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d, d.cities ct, d.villages v WHERE c.name = 'INDIA'",
       // Query 5
-      "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d WHERE d.name = 'PUNEDIST' AND s.name = 'GUJARAT'",
+      "SELECT DISTINCT * FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d WHERE d.name = 'PUNEDIST' AND s.name = 'GUJARAT'",
       // Query 6
-      "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI'",
+      "SELECT DISTINCT * FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI'",
       // Query 7
-      "SELECT DISTINCT c.name, s.name, d.name, ct.name FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI' OR ct.name = 'CHENNAI'",
+      "SELECT DISTINCT c.name, s.name, d.name, ct.name FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI' OR ct.name = 'CHENNAI'",
       // Query 8
-      "SELECT DISTINCT c.name, s.name FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI' OR s.name = 'GUJARAT'",
+      "SELECT DISTINCT c.name, s.name FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI' OR s.name = 'GUJARAT'",
       // Query 9a & 9b
-      "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, (SELECT DISTINCT * FROM "
-          + "/Countries c, c.states s, s.districts d, d.cities ct WHERE s.name = 'PUNJAB') itr1, "
+      "SELECT DISTINCT c.name, s.name, ct.name FROM " + SEPARATOR
+          + "Countries c, c.states s, (SELECT DISTINCT * FROM "
+          + SEPARATOR
+          + "Countries c, c.states s, s.districts d, d.cities ct WHERE s.name = 'PUNJAB') itr1, "
           + "s.districts d, d.cities ct WHERE ct.name = 'CHANDIGARH'",
-      "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, s.districts d,"
-          + " d.cities ct WHERE ct.name = (SELECT DISTINCT ct.name FROM /Countries c, c.states s, "
+      "SELECT DISTINCT c.name, s.name, ct.name FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d,"
+          + " d.cities ct WHERE ct.name = (SELECT DISTINCT ct.name FROM " + SEPARATOR
+          + "Countries c, c.states s, "
           + "s.districts d, d.cities ct WHERE s.name = 'MAHARASHTRA' AND ct.name = 'PUNE')",
       // Query 10
-      "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, s.districts d, "
+      "SELECT DISTINCT c.name, s.name, ct.name FROM " + SEPARATOR
+          + "Countries c, c.states s, s.districts d, "
           + "d.cities ct, d.getVillages() v WHERE v.getName() = 'PUNJAB_VILLAGE1'",
       // Query 11
-      "SELECT DISTINCT s.name, s.getDistricts(), ct.getName() FROM /Countries c, c.getStates() s, "
+      "SELECT DISTINCT s.name, s.getDistricts(), ct.getName() FROM " + SEPARATOR
+          + "Countries c, c.getStates() s, "
           + "s.getDistricts() d, d.getCities() ct WHERE ct.getName() = 'PUNE' OR ct.name = 'CHANDIGARH' "
           + "OR s.getName() = 'GUJARAT'",
       // Query 12
-      "SELECT DISTINCT d.getName(), d.getCities(), d.getVillages() FROM /Countries c, "
+      "SELECT DISTINCT d.getName(), d.getCities(), d.getVillages() FROM " + SEPARATOR
+          + "Countries c, "
           + "c.states s, s.districts d WHERE d.name = 'MUMBAIDIST'",
 
   };
@@ -157,8 +172,9 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR003
     String sqlStr = "SELECT DISTINCT * FROM "
-        + "/Countries1 c1, c1.states s1, s1.districts d1, d1.villages v1, d1.cities ct1, "
-        + "/Countries2 c2, c2.states s2, s2.districts d2, d2.villages v2, d2.cities ct2 "
+        + SEPARATOR
+        + "Countries1 c1, c1.states s1, s1.districts d1, d1.villages v1, d1.cities ct1, "
+        + SEPARATOR + "Countries2 c2, c2.states s2, s2.districts d2, d2.villages v2, d2.cities ct2 "
         + "WHERE v1.name = 'MAHARASHTRA_VILLAGE1' AND ct2.name = 'MUMBAI' ";
 
     // query execution without Index.
@@ -221,9 +237,12 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR008
     String sqlStr =
-        "SELECT DISTINCT * FROM /Countries1 c1, c1.states s1, s1.districts d1, d1.villages v1, d1.cities ct1, "
-            + "/Countries2 c2, c2.states s2, s2.districts d2, d2.villages v2, d2.cities ct2, "
-            + "/Countries3 c3, c3.states s3, s3.districts d3, d3.villages v3, d3.cities ct3 "
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Countries1 c1, c1.states s1, s1.districts d1, d1.villages v1, d1.cities ct1, "
+            + SEPARATOR
+            + "Countries2 c2, c2.states s2, s2.districts d2, d2.villages v2, d2.cities ct2, "
+            + SEPARATOR
+            + "Countries3 c3, c3.states s3, s3.districts d3, d3.villages v3, d3.cities ct3 "
             + " WHERE v1.name='MAHARASHTRA_VILLAGE1' AND ct3.name = 'PUNE'";
 
     // query execution without Index.
@@ -278,7 +297,8 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR010
     String sqlStr =
-        "SELECT DISTINCT * FROM /Countries1 c1, /Countries2 c2 WHERE c1.name = 'INDIA' AND c2.name = 'ISRAEL'";
+        "SELECT DISTINCT * FROM " + SEPARATOR + "Countries1 c1, " + SEPARATOR
+            + "Countries2 c2 WHERE c1.name = 'INDIA' AND c2.name = 'ISRAEL'";
 
     // query execution without Index.
     Query q = null;
@@ -316,8 +336,10 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR011
     String sqlStr =
-        "SELECT DISTINCT * FROM /Countries1 c1, c1.states s1, s1.districts d1, d1.cities ct1, d1.villages v1, "
-            + "/Countries2 c2, c2.states s2, s2.districts d2, d2.cities ct2, d2.villages v2 "
+        "SELECT DISTINCT * FROM " + SEPARATOR
+            + "Countries1 c1, c1.states s1, s1.districts d1, d1.cities ct1, d1.villages v1, "
+            + SEPARATOR
+            + "Countries2 c2, c2.states s2, s2.districts d2, d2.cities ct2, d2.villages v2 "
             + "WHERE c1.name = 'INDIA' AND c2.name = 'ISRAEL'";
 
     // query execution without Index.
@@ -354,10 +376,11 @@ public class MultiRegionIndexUsageJUnitTest {
     CacheUtils.log("------------- testProjectionAttr1 start------------- ");
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR012
-    String sqlStr = "SELECT DISTINCT * FROM /Countries1 c1, c1.states s1, s1.districts d1, "
-        + "/Countries2 c2, c2.states s2, s2.districts d2, "
-        + "/Countries3 c3, c3.states s3, s3.districts d3 "
-        + "WHERE d3.name = 'PUNEDIST' AND s2.name = 'GUJARAT'";
+    String sqlStr =
+        "SELECT DISTINCT * FROM " + SEPARATOR + "Countries1 c1, c1.states s1, s1.districts d1, "
+            + SEPARATOR + "Countries2 c2, c2.states s2, s2.districts d2, "
+            + SEPARATOR + "Countries3 c3, c3.states s3, s3.districts d3 "
+            + "WHERE d3.name = 'PUNEDIST' AND s2.name = 'GUJARAT'";
 
     // query execution without Index.
     Query q = null;
@@ -410,8 +433,8 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR014
     String sqlStr = "SELECT DISTINCT c1.name, s1.name, d2.name, ct2.name "
-        + "FROM /Countries1 c1, c1.states s1, s1.districts d1, d1.cities ct1,"
-        + "/Countries2 c2, c2.states s2, s2.districts d2, d2.cities ct2"
+        + "FROM " + SEPARATOR + "Countries1 c1, c1.states s1, s1.districts d1, d1.cities ct1,"
+        + SEPARATOR + "Countries2 c2, c2.states s2, s2.districts d2, d2.cities ct2"
         + " WHERE ct1.name = 'MUMBAI' OR ct2.name = 'CHENNAI'";
 
     // query execution without Index.
@@ -464,8 +487,10 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR016
     String sqlStr =
-        "SELECT DISTINCT c1.name, s1.name, ct1.name FROM /Countries1 c1, c1.states s1, (SELECT DISTINCT * FROM "
-            + "/Countries2 c2, c2.states s2, s2.districts d2, d2.cities ct2 WHERE s2.name = 'PUNJAB') itr1, "
+        "SELECT DISTINCT c1.name, s1.name, ct1.name FROM " + SEPARATOR
+            + "Countries1 c1, c1.states s1, (SELECT DISTINCT * FROM "
+            + SEPARATOR
+            + "Countries2 c2, c2.states s2, s2.districts d2, d2.cities ct2 WHERE s2.name = 'PUNJAB') itr1, "
             + "s1.districts d1, d1.cities ct1 WHERE ct1.name = 'CHANDIGARH'";
 
     // query execution without Index.
@@ -518,8 +543,10 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR017
     String sqlStr =
-        "SELECT DISTINCT c1.name, s1.name, ct1.name FROM /Countries1 c1, c1.states s1, s1.districts d1,"
-            + " d1.cities ct1 WHERE ct1.name = element (SELECT DISTINCT ct3.name FROM /Countries3 c3, c3.states s3, "
+        "SELECT DISTINCT c1.name, s1.name, ct1.name FROM " + SEPARATOR
+            + "Countries1 c1, c1.states s1, s1.districts d1,"
+            + " d1.cities ct1 WHERE ct1.name = element (SELECT DISTINCT ct3.name FROM " + SEPARATOR
+            + "Countries3 c3, c3.states s3, "
             + "s3.districts d3, d3.cities ct3 WHERE s3.name = 'MAHARASHTRA' AND ct3.name = 'PUNE')";
 
     // query execution without Index.
@@ -573,7 +600,8 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR018
     String sqlStr =
-        "SELECT DISTINCT c1.name, s1.name, ct1.name FROM /Countries1 c1, c1.states s1, s1.districts d1, "
+        "SELECT DISTINCT c1.name, s1.name, ct1.name FROM " + SEPARATOR
+            + "Countries1 c1, c1.states s1, s1.districts d1, "
             + "d1.cities ct1, d1.getVillages() v1 WHERE v1.getName() = 'PUNJAB_VILLAGE1'";
 
     // query execution without Index.
@@ -612,7 +640,8 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR019
     String sqlStr =
-        "SELECT DISTINCT s.name, s.getDistricts(), ct.getName() FROM /Countries1 c, c.states s, "
+        "SELECT DISTINCT s.name, s.getDistricts(), ct.getName() FROM " + SEPARATOR
+            + "Countries1 c, c.states s, "
             + "s.getDistricts() d, d.getCities() ct WHERE ct.name = 'PUNE' OR ct.name = 'CHANDIGARH' "
             + "OR s.name = 'GUJARAT'";
 
@@ -667,7 +696,8 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR020
     String sqlStr =
-        "SELECT DISTINCT d.getName(), d.getCities(), d.getVillages() FROM /Countries3 c, "
+        "SELECT DISTINCT d.getName(), d.getCities(), d.getVillages() FROM " + SEPARATOR
+            + "Countries3 c, "
             + "c.states s, s.districts d WHERE d.name = 'MUMBAIDIST'";
 
     // query execution without Index.
@@ -705,7 +735,8 @@ public class MultiRegionIndexUsageJUnitTest {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR020
     String sqlStr =
-        "SELECT DISTINCT * FROM /Countries1 c1, /Countries3 c3, c1.states s1, c3.states s3, "
+        "SELECT DISTINCT * FROM " + SEPARATOR + "Countries1 c1, " + SEPARATOR
+            + "Countries3 c3, c1.states s1, c3.states s3, "
             + "s1.districts d1, s3.getDistrictsWithSameName(d1) d3 WHERE c1.name = 'INDIA' OR c3.name = 'ISRAEL' "
             + "OR d3.name = 'MUMBAIDIST' OR d3.name = 'PUNEDIST'";
     // s3.getDistrictsWithSameName(d1) d3
@@ -842,26 +873,26 @@ public class MultiRegionIndexUsageJUnitTest {
     qs = cache.getQueryService();
     /* Indices on region1 */
     qs.createIndex("villageName1", IndexType.FUNCTIONAL, "v.name",
-        "/Countries1 c, c.states s, s.districts d, d.cities ct, d.villages v");
+        SEPARATOR + "Countries1 c, c.states s, s.districts d, d.cities ct, d.villages v");
     qs.createIndex("cityName1", IndexType.FUNCTIONAL, "ct.name",
-        "/Countries1 c, c.states s, s.districts d, d.cities ct, d.villages v");
+        SEPARATOR + "Countries1 c, c.states s, s.districts d, d.cities ct, d.villages v");
     qs.createIndex("countryNameA", IndexType.FUNCTIONAL, "c.name",
-        "/Countries1 c, c.states s, s.districts d, d.cities ct, d.villages v");
-    qs.createIndex("countryNameB", IndexType.FUNCTIONAL, "c.name", "/Countries1 c");
+        SEPARATOR + "Countries1 c, c.states s, s.districts d, d.cities ct, d.villages v");
+    qs.createIndex("countryNameB", IndexType.FUNCTIONAL, "c.name", SEPARATOR + "Countries1 c");
 
     /* Indices on region2 */
     qs.createIndex("stateName2", IndexType.FUNCTIONAL, "s.name",
-        "/Countries2 c, c.states s, s.districts d, d.cities ct, d.villages v");
+        SEPARATOR + "Countries2 c, c.states s, s.districts d, d.cities ct, d.villages v");
     qs.createIndex("cityName2", IndexType.FUNCTIONAL, "ct.name",
-        "/Countries2 c, c.states s, s.districts d, d.cities ct, d.villages v");
+        SEPARATOR + "Countries2 c, c.states s, s.districts d, d.cities ct, d.villages v");
 
     /* Indices on region3 */
     qs.createIndex("districtName3", IndexType.FUNCTIONAL, "d.name",
-        "/Countries3 c, c.states s, s.districts d, d.cities ct, d.villages v");
+        SEPARATOR + "Countries3 c, c.states s, s.districts d, d.cities ct, d.villages v");
     qs.createIndex("villageName3", IndexType.FUNCTIONAL, "v.name",
-        "/Countries3 c, c.states s, s.districts d, d.cities ct, d.villages v");
+        SEPARATOR + "Countries3 c, c.states s, s.districts d, d.cities ct, d.villages v");
     qs.createIndex("cityName3", IndexType.FUNCTIONAL, "ct.name",
-        "/Countries3 c, c.states s, s.districts d, d.cities ct, d.villages v");
+        SEPARATOR + "Countries3 c, c.states s, s.districts d, d.cities ct, d.villages v");
 
   }// end of createIndex
 

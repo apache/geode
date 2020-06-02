@@ -14,9 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -40,7 +41,6 @@ public class IncrByFloatExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
     if (commandElems.size() < 3) {
       command
           .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.INCRBYFLOAT));
@@ -48,8 +48,8 @@ public class IncrByFloatExecutor extends StringExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    ByteArrayWrapper valueWrapper = r.get(key);
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    ByteArrayWrapper valueWrapper = stringCommands.get(key);
 
     /*
      * Try increment
@@ -82,7 +82,7 @@ public class IncrByFloatExecutor extends StringExecutor {
      */
 
     if (valueWrapper == null) {
-      r.put(key, new ByteArrayWrapper(incrArray));
+      stringCommands.set(key, new ByteArrayWrapper(incrArray), null);
       respondBulkStrings(command, context, increment);
       return;
     }
@@ -119,7 +119,8 @@ public class IncrByFloatExecutor extends StringExecutor {
     value += increment;
 
     stringValue = "" + value;
-    r.put(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)));
+    SetOptions setOptions = new SetOptions(NONE, 0L, true);
+    stringCommands.set(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)), setOptions);
 
     respondBulkStrings(command, context, value);
   }

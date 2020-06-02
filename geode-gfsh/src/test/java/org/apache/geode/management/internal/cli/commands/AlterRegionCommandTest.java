@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -77,7 +78,7 @@ public class AlterRegionCommandTest {
 
     cacheConfig = new CacheConfig();
     existingRegionConfig = new RegionConfig();
-    existingRegionConfig.setName("/regionA");
+    existingRegionConfig.setName(SEPARATOR + "regionA");
     existingRegionConfig.setType(RegionShortcut.REPLICATE.name());
     cacheConfig.getRegions().add(existingRegionConfig);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
@@ -129,14 +130,15 @@ public class AlterRegionCommandTest {
 
   @Test
   public void alterWithInvalidCacheWriter() {
-    String command = "alter region --name=/Person --cache-writer='1abc'";
+    String command = "alter region --name=" + SEPARATOR + "Person --cache-writer='1abc'";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNull();
   }
 
   @Test
   public void emptyCustomExpiryAndNoCloning() {
-    String command = "alter region --name=/Person --entry-idle-time-custom-expiry=''";
+    String command =
+        "alter region --name=" + SEPARATOR + "Person --entry-idle-time-custom-expiry=''";
     GfshParseResult result = parser.parse(command);
     ClassName paramValue = (ClassName) result.getParamValue("entry-idle-time-custom-expiry");
     assertThat(paramValue).isEqualTo(ClassName.EMPTY);
@@ -151,7 +153,7 @@ public class AlterRegionCommandTest {
   public void regionNameIsConverted() {
     String command = "alter region --name=Person";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("name")).isEqualTo("/Person");
+    assertThat(result.getParamValue("name")).isEqualTo(SEPARATOR + "Person");
   }
 
   @Test
@@ -168,12 +170,13 @@ public class AlterRegionCommandTest {
     parser.executeAndAssertThat(command,
         "alter region --name=regionB --cache-loader=abc")
         .statusIsError()
-        .hasInfoSection().hasLines().contains("/regionB does not exist in group cluster");
+        .hasInfoSection().hasLines()
+        .contains(SEPARATOR + "regionB does not exist in group cluster");
 
     parser.executeAndAssertThat(command,
         "alter region --group=group1 --name=regionA --cache-loader=abc")
         .statusIsError()
-        .hasInfoSection().hasLines().contains("/regionA does not exist in group group1");
+        .hasInfoSection().hasLines().contains(SEPARATOR + "regionA does not exist in group group1");
   }
 
   @Test

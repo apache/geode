@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.management.internal.cli.shell.MultiCommandHelper.getMultipleCommands;
 import static org.junit.Assert.assertEquals;
 
@@ -71,45 +72,54 @@ public class CommandSeparatorEscapeJUnitTest {
   @Test
   public void testMultiCommandWithCmdSep() {
     String input =
-        "put --region=/region1 --key='key1\\;part' --value='value1\\;part2';put --region=/region1 --key='key2\\;part' --value='value2\\;part2'";
+        "put --region=" + SEPARATOR
+            + "region1 --key='key1\\;part' --value='value1\\;part2';put --region=" + SEPARATOR
+            + "region1 --key='key2\\;part' --value='value2\\;part2'";
     // System.out.println("I >> " + input);
     List<String> split = getMultipleCommands(input);
     /*
      * for(String s : split){ System.out.println("O >> " + s); }
      */
     assertEquals(2, split.size());
-    assertEquals("put --region=/region1 --key='key1;part' --value='value1;part2'", split.get(0));
-    assertEquals("put --region=/region1 --key='key2;part' --value='value2;part2'", split.get(1));
+    assertEquals("put --region=" + SEPARATOR + "region1 --key='key1;part' --value='value1;part2'",
+        split.get(0));
+    assertEquals("put --region=" + SEPARATOR + "region1 --key='key2;part' --value='value2;part2'",
+        split.get(1));
   }
 
   @Test
   public void testSingleCommandWithComma() {
-    String input = "put --region=/region1 --key='key\\;part' --value='value\\;part2'";
+    String input =
+        "put --region=" + SEPARATOR + "region1 --key='key\\;part' --value='value\\;part2'";
     // System.out.println("I >> " + input);
     List<String> split = getMultipleCommands(input);
     /*
      * for(String s : split){ System.out.println("O >> " + s); }
      */
     assertEquals(1, split.size());
-    assertEquals("put --region=/region1 --key='key;part' --value='value;part2'", split.get(0));
+    assertEquals("put --region=" + SEPARATOR + "region1 --key='key;part' --value='value;part2'",
+        split.get(0));
   }
 
   @Test
   public void testMultiCmdCommaValueFirst() {
-    String input = "put --region=/region1 --key='key\\;part' --value='value\\;part2';stop server";
+    String input = "put --region=" + SEPARATOR
+        + "region1 --key='key\\;part' --value='value\\;part2';stop server";
     // System.out.println("I >> " + input);
     List<String> split = getMultipleCommands(input);
     /*
      * for(String s : split){ System.out.println("O >> " + s); }
      */
     assertEquals(2, split.size());
-    assertEquals("put --region=/region1 --key='key;part' --value='value;part2'", split.get(0));
+    assertEquals("put --region=" + SEPARATOR + "region1 --key='key;part' --value='value;part2'",
+        split.get(0));
     assertEquals("stop server", split.get(1));
   }
 
   @Test
   public void testMultiCmdCommaValueLast() {
-    String input = "stop server;put --region=/region1 --key='key\\;part' --value='value\\;part2'";
+    String input = "stop server;put --region=" + SEPARATOR
+        + "region1 --key='key\\;part' --value='value\\;part2'";
     // System.out.println("I >> " + input);
     List<String> split = getMultipleCommands(input);
     /*
@@ -117,13 +127,15 @@ public class CommandSeparatorEscapeJUnitTest {
      */
     assertEquals(2, split.size());
     assertEquals("stop server", split.get(0));
-    assertEquals("put --region=/region1 --key='key;part' --value='value;part2'", split.get(1));
+    assertEquals("put --region=" + SEPARATOR + "region1 --key='key;part' --value='value;part2'",
+        split.get(1));
   }
 
   @Test
   public void testMultiCmdCommaValueMiddle() {
     String input =
-        "stop server1;put --region=/region1 --key='key\\;part' --value='value\\;part2';stop server2;stop server3";
+        "stop server1;put --region=" + SEPARATOR
+            + "region1 --key='key\\;part' --value='value\\;part2';stop server2;stop server3";
     // System.out.println("I >> " + input);
     List<String> split = getMultipleCommands(input);
     /*
@@ -131,7 +143,8 @@ public class CommandSeparatorEscapeJUnitTest {
      */
     assertEquals(4, split.size());
     assertEquals("stop server1", split.get(0));
-    assertEquals("put --region=/region1 --key='key;part' --value='value;part2'", split.get(1));
+    assertEquals("put --region=" + SEPARATOR + "region1 --key='key;part' --value='value;part2'",
+        split.get(1));
     assertEquals("stop server2", split.get(2));
     assertEquals("stop server3", split.get(3));
   }

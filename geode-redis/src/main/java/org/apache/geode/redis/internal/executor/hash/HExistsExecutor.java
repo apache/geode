@@ -15,14 +15,11 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -42,43 +39,17 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
  */
 public class HExistsExecutor extends HashExecutor {
 
-  private static final int NOT_EXISTS = 0;
-
-  private static final int EXISTS = 1;
-
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    boolean hasField;
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
     ByteArrayWrapper key = command.getKey();
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
-      if (map == null || map.isEmpty()) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-        return;
-      }
-      hasField = map.containsKey(field);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
-
-    if (hasField) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
-    } else {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-    }
-
+    return RedisResponse.integer(redisHashCommands.hexists(key, field));
   }
 
 }

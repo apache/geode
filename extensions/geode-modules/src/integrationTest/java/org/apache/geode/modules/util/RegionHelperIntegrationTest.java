@@ -14,6 +14,7 @@
  */
 package org.apache.geode.modules.util;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
@@ -30,7 +31,7 @@ public class RegionHelperIntegrationTest {
 
   @Test
   public void generateXml() throws Exception {
-    Region region = server.getCache().getRegion("/test");
+    Region region = server.getCache().getRegion(SEPARATOR + "test");
     region.put("key", "value");
     String cacheXml = RegionHelper.generateCacheXml(server.getCache());
 

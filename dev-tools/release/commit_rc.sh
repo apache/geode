@@ -101,7 +101,7 @@ sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl = https://repository.apach
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-git diff --staged
+git diff --staged --color | cat
 git commit -m "temporarily point to staging repo for CI purposes"
 git push
 set +x
@@ -109,8 +109,9 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Re-adding -SNAPSHOT in case this is not the final RC"
+echo "Restoring -build suffix to version"
 echo "============================================================"
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_versions.sh -v ${VERSION} -s -n -w "${WORKSPACE}"
 set +x

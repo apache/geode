@@ -14,16 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
+import java.util.Collection;
+
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -46,34 +43,15 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 public class HKeysExecutor extends HashExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    Set<ByteArrayWrapper> keys;
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = getMap(context, key);
-
-      if (keyMap == null || keyMap.isEmpty()) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-        return;
-      }
-
-      keys = new HashSet<>(keyMap.keySet());
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
-
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    Collection<ByteArrayWrapper> keys = redisHashCommands.hkeys(key);
     if (keys.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
+      return RedisResponse.emptyArray();
     }
 
-    respondBulkStrings(command, context, keys);
+    return RedisResponse.array(keys);
   }
 }

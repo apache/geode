@@ -19,17 +19,17 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class SRandMemberExecutor extends SetExecutor {
 
   private static final String ERROR_NOT_NUMERIC = "The count provided must be numeric";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     ByteArrayWrapper key = command.getKey();
@@ -40,35 +40,27 @@ public class SRandMemberExecutor extends SetExecutor {
       try {
         count = Coder.bytesToInt(commandElems.get(2));
       } catch (NumberFormatException e) {
-        command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
-        return;
+        return RedisResponse.error(ERROR_NOT_NUMERIC);
       }
     }
+
     if (count == 0) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
+      return RedisResponse.nil();
     }
+
     if (count < 0) {
       count = -count;
     }
 
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     Collection<ByteArrayWrapper> results = redisSetCommands.srandmember(key, count);
-    try {
-      if (results.isEmpty()) {
-        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      } else if (count == 1) {
-        command.setResponse(
-            Coder.getBulkStringResponse(context.getByteBufAllocator(),
-                results.iterator().next().toBytes()));
-      } else {
-        command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), results));
-      }
-    } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          RedisConstants.SERVER_ERROR_MESSAGE));
+
+    if (results.isEmpty()) {
+      return RedisResponse.nil();
+    } else if (count == 1) {
+      return RedisResponse.bulkString(results.iterator().next());
+    } else {
+      return RedisResponse.array(results);
     }
   }
 }

@@ -19,6 +19,7 @@ import static java.lang.System.lineSeparator;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_ORDER_POLICY;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE;
@@ -303,8 +304,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm4.invoke(() -> validateSenderStoppedState("ln"));
     vm5.invoke(() -> validateSenderStoppedState("ln"));
 
-    vm4.invoke(() -> validateQueueSizeStat("ln", 0));
-    vm5.invoke(() -> validateQueueSizeStat("ln", 0));
+    vm4.invoke(() -> validateQueueSizeStat("ln", 20));
+    vm5.invoke(() -> validateQueueSizeStat("ln", 20));
     /*
      * Should have no effect on GatewaySenderState
      */
@@ -618,12 +619,12 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
 
     vm5.invoke(() -> doPuts(className + "_RR", 10, 110));
 
-    vm5.invoke(() -> validateQueueContents("ln", 100));
+    vm5.invoke(() -> validateQueueContents("ln", 110));
     vm5.invoke(() -> stopSender("ln"));
     vm5.invoke(() -> validateSenderStoppedState("ln"));
 
     vm4.invoke(() -> startSender("ln"));
-    vm4.invoke(() -> validateQueueContents("ln", 10));
+    vm4.invoke(() -> validateQueueContents("ln", 110));
     vm4.invoke(() -> stopSender("ln"));
 
     vm5.invoke(() -> startSender("ln"));
@@ -631,7 +632,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm2.invoke(() -> createReceiver());
 
-    vm2.invoke(() -> validateRegionSize(className + "_RR", 100));
+    vm2.invoke(() -> validateRegionSize(className + "_RR", 110));
     vm5.invoke(() -> stopSender("ln"));
 
     vm4.invoke(() -> startSender("ln"));
@@ -948,7 +949,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   private void doPuts(String regionName, int count) {
     try (IgnoredException ie1 = addIgnoredException(GatewaySenderException.class);
         IgnoredException ie2 = addIgnoredException(InterruptedException.class)) {
-      Region<Number, String> region = getCache().getRegion(Region.SEPARATOR + regionName);
+      Region<Number, String> region = getCache().getRegion(SEPARATOR + regionName);
       for (int i = 0; i < count; i++) {
         region.put(i, "Value_" + i);
       }
@@ -956,7 +957,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   }
 
   private void doPuts(String regionName, int from, int count) {
-    Region<Number, String> region = getCache().getRegion(Region.SEPARATOR + regionName);
+    Region<Number, String> region = getCache().getRegion(SEPARATOR + regionName);
     for (int i = from; i < count; i++) {
       region.put(i, "Value_" + i);
     }
@@ -1162,7 +1163,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
   private void validateRegionSize(String regionName, int regionSize) {
     try (IgnoredException ie1 = addIgnoredException(CacheClosedException.class);
         IgnoredException ie2 = addIgnoredException(ForceReattemptException.class)) {
-      Region region = getCache().getRegion(Region.SEPARATOR + regionName);
+      Region region = getCache().getRegion(SEPARATOR + regionName);
 
       await()
           .untilAsserted(() -> {

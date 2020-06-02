@@ -14,31 +14,28 @@
  */
 package org.apache.geode.redis.internal;
 
+import static org.apache.geode.redis.internal.RedisCommandType.SUBSCRIBE;
+
 import java.io.IOException;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheTransactionManager;
-import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.TransactionException;
-import org.apache.geode.cache.TransactionId;
-import org.apache.geode.cache.UnsupportedOperationInTransactionException;
-import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 
 /**
@@ -48,41 +45,25 @@ import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMism
  * by this class.
  * <p>
  * Besides being part of Netty's pipeline, this class also serves as a context to the execution of a
- * command. It abstracts transactions, provides access to the {@link RegionProvider} and anything
- * else an executing {@link Command} may need.
+ * command. It provides access to the {@link RegionProvider} and anything else an executing {@link
+ * Command} may need.
  */
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
-  private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
-  private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS; // 60
-                                                                                          // seconds
-  private final RedisLockService lockService;
+  private static final boolean RUN_UNSUPPORTED_COMMANDS = true;
 
   private final Cache cache;
   private final GeodeRedisServer server;
   private final Channel channel;
+  private final EventLoopGroup subscriberEventLoopGroup;
   private final AtomicBoolean needChannelFlush;
   private final ByteBufAllocator byteBufAllocator;
-  /**
-   * TransactionId for any transactions started by this client
-   */
-  private TransactionId transactionID;
-
-  /**
-   * Queue of commands for a given transaction
-   */
-  private Queue<Command> transactionQueue;
   private final RegionProvider regionProvider;
   private final byte[] authPassword;
 
   private boolean isAuthenticated;
 
-  public KeyRegistrar getKeyRegistrar() {
-    return keyRegistrar;
-  }
-
-  private final KeyRegistrar keyRegistrar;
   private final PubSub pubSub;
 
   public PubSub getPubSub() {
@@ -100,10 +81,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param password Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
-      GeodeRedisServer server, byte[] password, KeyRegistrar keyRegistrar, PubSub pubSub,
-      RedisLockService lockService) {
-    this.keyRegistrar = keyRegistrar;
-    this.lockService = lockService;
+      GeodeRedisServer server, byte[] password,
+      PubSub pubSub,
+      EventLoopGroup subscriberEventLoopGroup) {
     this.pubSub = pubSub;
     if (channel == null || cache == null || regionProvider == null || server == null) {
       throw new IllegalArgumentException("Only the authentication password may be null");
@@ -111,18 +91,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.cache = cache;
     this.server = server;
     this.channel = channel;
+    this.subscriberEventLoopGroup = subscriberEventLoopGroup;
     this.needChannelFlush = new AtomicBoolean(false);
     this.byteBufAllocator = this.channel.alloc();
-    this.transactionID = null;
-    this.transactionQueue = null; // Lazy
     this.regionProvider = regionProvider;
     this.authPassword = password;
     this.isAuthenticated = password != null ? false : true;
 
-  }
-
-  public RedisLockService getLockService() {
-    return this.lockService;
   }
 
   private void flushChannel() {
@@ -135,6 +110,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return channel.writeAndFlush(message, channel.newPromise());
   }
 
+  public ChannelFuture writeToChannel(RedisResponse response) {
+    return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise());
+  }
+
   /**
    * This will handle the execution of received commands
    */
@@ -145,6 +124,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Redis command: {}", command);
       }
+
       executeCommand(ctx, command);
     } catch (Exception e) {
       logger.warn("Execution of Redis command {} failed: {}", command, e);
@@ -162,35 +142,47 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       channelInactive(ctx);
       return;
     }
-    ByteBuf response = getExceptionResponse(ctx, cause);
-    writeToChannel(response);
+    writeToChannel(getExceptionResponse(ctx, cause));
   }
 
-  private ByteBuf getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
-    ByteBuf response;
-    if (cause instanceof RedisDataTypeMismatchException) {
-      response = Coder.getWrongTypeResponse(this.byteBufAllocator, cause.getMessage());
+  private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
+    RedisResponse response;
+
+    if (cause instanceof FunctionException) {
+      Throwable th = cause.getCause();
+      if (th == null) {
+        FunctionException functionException = (FunctionException) cause;
+        if (functionException.getExceptions() != null) {
+          th = functionException.getExceptions().get(0);
+        }
+      }
+      if (th != null) {
+        cause = th;
+      }
+    }
+
+    if (cause instanceof NumberFormatException) {
+      response = RedisResponse.error(cause.getMessage());
+    } else if (cause instanceof ArithmeticException) {
+      response = RedisResponse.error(cause.getMessage());
+    } else if (cause instanceof RedisDataTypeMismatchException) {
+      response = RedisResponse.wrongType(cause.getMessage());
     } else if (cause instanceof DecoderException
         && cause.getCause() instanceof RedisCommandParserException) {
-      response =
-          Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.PARSING_EXCEPTION_MESSAGE);
+      response = RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE);
 
-    } else if (cause instanceof RegionCreationException) {
-      this.logger.error(cause);
-      response =
-          Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.ERROR_REGION_CREATION);
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
-      response =
-          Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_SHUTDOWN);
+      response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
     } else if (cause instanceof IllegalStateException
         || cause instanceof RedisParametersMismatchException) {
-      response = Coder.getErrorResponse(this.byteBufAllocator, cause.getMessage());
+      response = RedisResponse.error(cause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
       }
-      response = Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_MESSAGE);
+      response = RedisResponse.error(RedisConstants.SERVER_ERROR_MESSAGE);
     }
+
     return response;
   }
 
@@ -204,145 +196,78 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
-    if (isAuthenticated) {
-      if (command.isOfType(RedisCommandType.SHUTDOWN)) {
-        this.server.shutdown();
-        return;
-      }
+    RedisResponse response;
 
-      if (hasTransaction() && !command.isTransactional()) {
-        executeWithTransaction(ctx, command);
-      } else {
-        executeWithoutTransaction(command);
-      }
-
-      if (hasTransaction() && command.isOfType(RedisCommandType.MULTI)) {
-        writeToChannel(
-            Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
-      } else {
-        // PUBLISH responses are always deferred
-        if (command.getCommandType() != RedisCommandType.PUBLISH) {
-          ByteBuf response = command.getResponse();
-          writeToChannel(response);
-        }
-      }
-    } else if (command.isOfType(RedisCommandType.QUIT)) {
-      command.execute(this);
-      ByteBuf response = command.getResponse();
+    if (!isAuthenticated) {
+      response = handleUnAuthenticatedCommand(command);
       writeToChannel(response);
+      return;
+    }
+
+    if (!(command.isSupported() || allowUnsupportedCommands())) {
+      writeToChannel(RedisResponse.error(RedisConstants.ERROR_UNSUPPORTED_COMMAND));
+      return;
+    }
+
+    if (command.isOfType(RedisCommandType.SHUTDOWN)) {
+      this.server.shutdown();
+      return;
+    }
+
+    response = command.execute(this);
+
+    logResponse(response);
+    moveSubscribeToNewEventLoopGroup(ctx, command);
+
+    // TODO: Clean this up once all Executors are using RedisResponse
+    if (response == null) {
+      writeToChannel(command.getResponse());
+    } else if (response != null) {
+      writeToChannel(response);
+    }
+
+    if (command.isOfType(RedisCommandType.QUIT)) {
       channelInactive(ctx);
-    } else if (command.isOfType(RedisCommandType.AUTH)) {
-      command.execute(this);
-      ByteBuf response = command.getResponse();
-      writeToChannel(response);
+    }
+  }
+
+  private boolean allowUnsupportedCommands() {
+    return this.server.allowUnsupportedCommands();
+  }
+
+
+  private RedisResponse handleUnAuthenticatedCommand(Command command) {
+    RedisResponse response;
+    if (command.isOfType(RedisCommandType.AUTH)) {
+      response = command.execute(this);
     } else {
-      ByteBuf r = Coder.getNoAuthResponse(this.byteBufAllocator, RedisConstants.ERROR_NOT_AUTH);
-      writeToChannel(r);
+      response = RedisResponse.error(RedisConstants.ERROR_NOT_AUTH);
+    }
+    return response;
+  }
+
+
+  /**
+   * SUBSCRIBE commands run in their own {@link EventLoopGroup}
+   */
+  private void moveSubscribeToNewEventLoopGroup(ChannelHandlerContext ctx, Command command)
+      throws InterruptedException {
+    if (command.isOfType(SUBSCRIBE)) {
+      CountDownLatch latch = new CountDownLatch(0);
+      ctx.channel().deregister().addListener((ChannelFutureListener) future -> {
+        subscriberEventLoopGroup.register(ctx.channel()).sync();
+        latch.countDown();
+      });
+      latch.await();
     }
   }
 
-
-  /**
-   * Private helper method to execute a command without a transaction, done for special exception
-   * handling neatness
-   *
-   * @param command Command to execute
-   * @throws Exception Throws exception if exception is from within execution and not to be handled
-   */
-  private void executeWithoutTransaction(Command command) throws Exception {
-    Exception cause = null;
-    for (int i = 0; i < MAXIMUM_NUM_RETRIES; i++) {
-      try {
-        command.execute(this);
-        return;
-      } catch (Exception e) {
-        logger.error(e);
-
-        cause = e;
-        if (e instanceof RegionDestroyedException || e instanceof RegionNotFoundException
-            || e.getCause() instanceof QueryInvocationTargetException) {
-          Thread.sleep(WAIT_REGION_DSTRYD_MILLIS);
-        }
-      }
+  private void logResponse(RedisResponse response) {
+    if (logger.isDebugEnabled() && response != null) {
+      ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
+      logger.debug("Redis command returned: {}",
+          Command.getHexEncodedString(buf.array(), buf.readableBytes()));
     }
-    throw cause;
-  }
-
-  private void executeWithTransaction(ChannelHandlerContext ctx,
-      Command command) throws Exception {
-    CacheTransactionManager txm = cache.getCacheTransactionManager();
-    TransactionId transactionId = getTransactionID();
-    txm.resume(transactionId);
-    try {
-      command.execute(this);
-    } catch (UnsupportedOperationInTransactionException e) {
-      command.setResponse(Coder.getErrorResponse(this.byteBufAllocator,
-          RedisConstants.ERROR_UNSUPPORTED_OPERATION_IN_TRANSACTION));
-    } catch (TransactionException e) {
-      command.setResponse(Coder.getErrorResponse(this.byteBufAllocator,
-          RedisConstants.ERROR_TRANSACTION_EXCEPTION));
-    } catch (Exception e) {
-      ByteBuf response = getExceptionResponse(ctx, e);
-      command.setResponse(response);
-    }
-    getTransactionQueue().add(command);
-    transactionId = txm.suspend();
-    setTransactionID(transactionId);
-  }
-
-  /**
-   * Get the current transacationId
-   *
-   * @return The current transactionId, null if one doesn't exist
-   */
-  public TransactionId getTransactionID() {
-    return this.transactionID;
-  }
-
-  /**
-   * Check if client has transaction
-   *
-   * @return True if client has transaction, false otherwise
-   */
-  public boolean hasTransaction() {
-    return transactionID != null;
-  }
-
-  /**
-   * Setter method for transaction
-   *
-   * @param id TransactionId of current transaction for client
-   */
-  public void setTransactionID(TransactionId id) {
-    this.transactionID = id;
-  }
-
-  /**
-   * Reset the transaction of client
-   */
-  public void clearTransaction() {
-    this.transactionID = null;
-    if (this.transactionQueue != null) {
-      for (Command c : this.transactionQueue) {
-        ByteBuf r = c.getResponse();
-        if (r != null) {
-          r.release();
-        }
-      }
-      this.transactionQueue.clear();
-    }
-  }
-
-  /**
-   * Getter for transaction command queue
-   *
-   * @return Command queue
-   */
-  public Queue<Command> getTransactionQueue() {
-    if (this.transactionQueue == null) {
-      this.transactionQueue = new ConcurrentLinkedQueue<Command>();
-    }
-    return this.transactionQueue;
   }
 
   /**
@@ -360,13 +285,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   public RegionProvider getRegionProvider() {
     return this.regionProvider;
-  }
-
-  /**
-   * Getter for manager to allow pausing and resuming transactions
-   */
-  public CacheTransactionManager getCacheTransactionManager() {
-    return this.cache.getCacheTransactionManager();
   }
 
   /**

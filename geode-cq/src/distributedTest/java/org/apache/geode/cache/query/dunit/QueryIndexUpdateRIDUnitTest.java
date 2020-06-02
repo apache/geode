@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -71,10 +72,11 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   private final int KEYS = 1;
   private final int REGEX = 2;
 
-  private String rootQ = "SELECT ALL * FROM /root p where p.ID > 0";
-  private String incompleteQ = "SELECT ALL * FROM /root/" + region + " p where "; // User needs to
-                                                                                  // append where
-                                                                                  // cond.
+  private String rootQ = "SELECT ALL * FROM " + SEPARATOR + "root p where p.ID > 0";
+  private String incompleteQ =
+      "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + region + " p where "; // User needs to
+  // append where
+  // cond.
 
   public static final String KEY = "key-";
   public static final String REGULAR_EXPRESSION = ".*1+?.*";
@@ -115,7 +117,8 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // Create client.
     cqDUnitTest.createClient(client, port, host0);
     // Create Index on client
-    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", "/root/regionA p");
+    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID",
+        SEPARATOR + "root" + SEPARATOR + "regionA p");
 
     // Register Interest in all Keys on server
     this.registerInterestList(client, cqDUnitTest.regions[0], 4, KEYS);
@@ -158,7 +161,8 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // Create client.
     cqDUnitTest.createClient(client, port, host0);
     // Create Index on client
-    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", "/root/regionA p");
+    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID",
+        SEPARATOR + "root" + SEPARATOR + "regionA p");
 
     final int size = 10;
     // Init values at client
@@ -214,7 +218,8 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // Create client.
     cqDUnitTest.createClient(client, port, host0);
     // Create Index on client
-    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", "/root/regionA p");
+    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID",
+        SEPARATOR + "root" + SEPARATOR + "regionA p");
 
     // Register Interest in all Keys on server
     cqDUnitTest.registerInterestListCQ(client, cqDUnitTest.regions[0], size, true);
@@ -256,7 +261,8 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // Create client.
     cqDUnitTest.createClient(client, port, host0);
     // Create Index on client
-    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", "/root/regionA p");
+    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID",
+        SEPARATOR + "root" + SEPARATOR + "regionA p");
 
     // Register Interest in all Keys on server
     this.registerInterestList(client, cqDUnitTest.regions[0], 2, REGEX);
@@ -303,7 +309,8 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // Create client.
     cqDUnitTest.createClient(client, port, host0);
     // Create Index on client
-    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", "/root/regionA p");
+    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID",
+        SEPARATOR + "root" + SEPARATOR + "regionA p");
 
     // Create entries on client to clear region later
     this.createValues(client, cqDUnitTest.regions[0], size);
@@ -362,7 +369,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // Create client.
     this.createClient(client, port, host0);
     // Create Index on client
-    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", "/root p");
+    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", SEPARATOR + "root p");
 
     // Register Interest in all Keys on server
     this.registerInterestList(client, ROOT, size, 0);
@@ -404,7 +411,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // Create client.
     this.createClient(client, port, host0);
     // Create Index on client
-    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", "/root p");
+    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", SEPARATOR + "root p");
 
     // Register Interest in all Keys on server
     this.registerInterestList(client, ROOT, 4, KEYS);
@@ -446,7 +453,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // Create client.
     this.createClient(client, port, host0);
     // Create Index on client
-    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", "/root p");
+    cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", SEPARATOR + "root p");
 
     // Register Interest in all Keys on server
     this.registerInterestList(client, "root", 2, REGEX);
@@ -724,7 +731,8 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
               assertEquals(resultSize, rSize);
             } else {
               Region reg;
-              if (region != null && (reg = getCache().getRegion("/root/" + region)) != null) {
+              if (region != null && (reg =
+                  getCache().getRegion(SEPARATOR + "root" + SEPARATOR + region)) != null) {
                 assertEquals(rSize, reg.size());
                 for (Object value : reg.values()) {
                   if (!((SelectResults) r).asSet().contains((Portfolio) value)) {

@@ -91,7 +91,7 @@ public class RebalanceMembersColocationTest {
     gfsh.connectAndVerify(locator);
 
     Map<String, List<String>> rebalanceResult =
-        gfsh.executeAndAssertThat("rebalance --include-region=/" + PARENT_REGION_NAME)
+        gfsh.executeAndAssertThat("rebalance --include-region=" + SEPARATOR + PARENT_REGION_NAME)
             .statusIsSuccess().hasTableSection().getActual().getContent();
 
     assertThat(rebalanceResult.get("Value").get(9)).isEqualTo("2");

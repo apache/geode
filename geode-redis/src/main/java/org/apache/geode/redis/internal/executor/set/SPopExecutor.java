@@ -18,16 +18,15 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class SPopExecutor extends SetExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int popCount = 1;
     if (commandElems.size() == 3) {
@@ -35,23 +34,16 @@ public class SPopExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
     if (popped.isEmpty()) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
+      return RedisResponse.nil();
     }
-    try {
-      if (popCount == 1) {
-        command.setResponse(
-            Coder.getBulkStringResponse(context.getByteBufAllocator(), popped.iterator().next()));
-      } else {
-        command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), popped));
-      }
-    } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          RedisConstants.SERVER_ERROR_MESSAGE));
+
+    if (popCount == 1) {
+      return RedisResponse.bulkString(popped.iterator().next());
+    } else {
+      return RedisResponse.array(popped);
     }
   }
 }

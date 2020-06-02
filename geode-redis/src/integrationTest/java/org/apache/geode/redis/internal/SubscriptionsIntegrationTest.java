@@ -26,7 +26,6 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import io.netty.channel.Channel;
-import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -47,11 +46,6 @@ public class SubscriptionsIntegrationTest {
       }
       return null;
     };
-  }
-
-  @AfterClass
-  public static void after() {
-    System.out.println("done");
   }
 
   @Test

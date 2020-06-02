@@ -72,7 +72,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   final int nDispatcher;
 
   public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
     super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     // initializeMessageQueue(sender.getId());
     logger.info("ConcurrentParallelGatewaySenderEventProcessor: dispatcher threads {}",
@@ -102,25 +102,26 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       logger.debug("The target PRs are {} Dispatchers: {}", targetRs, nDispatcher);
     }
 
-    createProcessors(sender.getDispatcherThreads(), targetRs);
+    createProcessors(sender.getDispatcherThreads(), targetRs, cleanQueues);
 
     // this.queue = parallelQueue;
     this.queue = new ConcurrentParallelGatewaySenderQueue(sender, this.processors);
   }
 
-  protected void createProcessors(int dispatcherThreads, Set<Region> targetRs) {
+  protected void createProcessors(int dispatcherThreads, Set<Region> targetRs,
+      boolean cleanQueues) {
     processors = new ParallelGatewaySenderEventProcessor[sender.getDispatcherThreads()];
     if (logger.isDebugEnabled()) {
       logger.debug("Creating AsyncEventProcessor");
     }
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors[i] = new ParallelGatewaySenderEventProcessor(sender, targetRs, i,
-          sender.getDispatcherThreads(), getThreadMonitorObj());
+          sender.getDispatcherThreads(), getThreadMonitorObj(), cleanQueues);
     }
   }
 
   @Override
-  protected void initializeMessageQueue(String id) {
+  protected void initializeMessageQueue(String id, boolean cleanQueues) {
     // nothing
   }
 
@@ -133,6 +134,12 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   @Override
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
       throws IOException, CacheException {
+    enqueueEvent(operation, event, substituteValue, false);
+  }
+
+  @Override
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction) throws IOException, CacheException {
     Region region = event.getRegion();
     // int bucketId = PartitionedRegionHelper.getHashKey((EntryOperation)event);
     int bucketId = ((EntryEventImpl) event).getEventId().getBucketID();
@@ -140,7 +147,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       return;
     }
     int pId = bucketId % this.nDispatcher;
-    this.processors[pId].enqueueEvent(operation, event, substituteValue);
+    this.processors[pId].enqueueEvent(operation, event, substituteValue, isLastEventInTransaction);
   }
 
   @Override

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
@@ -56,7 +57,7 @@ public class ClientQueryAuthDUnitTest extends JUnit4DistributedTestCase {
       ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
       final Region region = createProxyRegion(cache, REGION_NAME);
 
-      String query = "select * from /AuthRegion";
+      String query = "select * from " + SEPARATOR + "AuthRegion";
       assertNotAuthorized(() -> region.query(query), "DATA:READ:AuthRegion");
 
       Pool pool = PoolManager.find(region);

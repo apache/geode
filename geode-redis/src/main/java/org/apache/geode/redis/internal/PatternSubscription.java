@@ -19,8 +19,6 @@ package org.apache.geode.redis.internal;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
-
 /**
  * This class represents a pattern subscription as created by the PSUBSCRIBE command
  */

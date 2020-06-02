@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -76,26 +77,27 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
   private static final String ID_INDEX = "idIndex";
 
   private static final String[][] QUERY_STR = new String[][] {
-      {"Select * from /" + NAME + " where ID > 10",
-          "Select * from /" + REP_REG_NAME + " where ID > 10",
-          "Select * from /" + PERSISTENT_REG_NAME + " where ID > 10",},
-      {"Select * from /" + NAME + " where ID = 5",
-          "Select * from /" + REP_REG_NAME + " where ID = 5",
-          "Select * from /" + PERSISTENT_REG_NAME + " where ID = 5",
-          "Select * from /" + NAME_WITH_HASH + " where ID = 5",
-          "Select * from /" + REP_REG_NAME_WITH_HASH + " where ID = 5",
-          "Select * from /" + PERSISTENT_REG_NAME_WITH_HASH + " where ID = 5"},
-      {"Select * from /" + NAME + " where status = 'active'",
-          "Select * from /" + REP_REG_NAME + " where status = 'active'",
-          "Select * from /" + PERSISTENT_REG_NAME + " where status = 'active'",
-          "Select * from /" + NAME_WITH_HASH + " where status = 'active'",
-          "Select * from /" + REP_REG_NAME_WITH_HASH + " where status = 'active'",
-          "Select * from /" + PERSISTENT_REG_NAME_WITH_HASH + " where status = 'active'"}};
+      {"Select * from " + SEPARATOR + NAME + " where ID > 10",
+          "Select * from " + SEPARATOR + REP_REG_NAME + " where ID > 10",
+          "Select * from " + SEPARATOR + PERSISTENT_REG_NAME + " where ID > 10",},
+      {"Select * from " + SEPARATOR + NAME + " where ID = 5",
+          "Select * from " + SEPARATOR + REP_REG_NAME + " where ID = 5",
+          "Select * from " + SEPARATOR + PERSISTENT_REG_NAME + " where ID = 5",
+          "Select * from " + SEPARATOR + NAME_WITH_HASH + " where ID = 5",
+          "Select * from " + SEPARATOR + REP_REG_NAME_WITH_HASH + " where ID = 5",
+          "Select * from " + SEPARATOR + PERSISTENT_REG_NAME_WITH_HASH + " where ID = 5"},
+      {"Select * from " + SEPARATOR + NAME + " where status = 'active'",
+          "Select * from " + SEPARATOR + REP_REG_NAME + " where status = 'active'",
+          "Select * from " + SEPARATOR + PERSISTENT_REG_NAME + " where status = 'active'",
+          "Select * from " + SEPARATOR + NAME_WITH_HASH + " where status = 'active'",
+          "Select * from " + SEPARATOR + REP_REG_NAME_WITH_HASH + " where status = 'active'",
+          "Select * from " + SEPARATOR + PERSISTENT_REG_NAME_WITH_HASH
+              + " where status = 'active'"}};
 
   private static final String[] QUERY_STR_NO_INDEX =
-      new String[] {"Select * from /" + NO_INDEX_REP_REG + " where ID > 10",
-          "Select * from /" + NO_INDEX_REP_REG + " where ID = 5",
-          "Select * from /" + NO_INDEX_REP_REG + " where status = 'active'"};
+      new String[] {"Select * from " + SEPARATOR + NO_INDEX_REP_REG + " where ID > 10",
+          "Select * from " + SEPARATOR + NO_INDEX_REP_REG + " where ID = 5",
+          "Select * from " + SEPARATOR + NO_INDEX_REP_REG + " where status = 'active'"};
 
   private static final String PERSISTENT_OVER_FLOW_REG_NAME = "PersistentOverflowPortfolios";
 
@@ -668,7 +670,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
         QueryService qs = getCache().getQueryService();
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        String queryString = "Select * from /" + regionName + " where ID > 10";
+        String queryString = "Select * from " + SEPARATOR + regionName + " where ID > 10";
         Query query = qs.newQuery(queryString);
         try {
           query.execute();

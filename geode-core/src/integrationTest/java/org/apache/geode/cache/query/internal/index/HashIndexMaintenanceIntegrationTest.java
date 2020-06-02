@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Iterator;
@@ -47,17 +48,19 @@ public class HashIndexMaintenanceIntegrationTest extends AbstractIndexMaintenanc
   public void testInvalidTokensForHash() throws Exception {
     CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("exampleRegion");
     QueryService qs = CacheUtils.getCache().getQueryService();
-    Region region = CacheUtils.getCache().getRegion("/exampleRegion");
+    Region region = CacheUtils.getCache().getRegion(SEPARATOR + "exampleRegion");
     region.put("0", new Portfolio(0));
     region.invalidate("0");
-    Index index = qs.createHashIndex("hash index index", "p.status", "/exampleRegion p");
+    Index index = qs.createHashIndex("hash index index", "p.status", SEPARATOR + "exampleRegion p");
     SelectResults results = (SelectResults) qs
-        .newQuery("Select * from /exampleRegion r where r.status='active'").execute();
+        .newQuery("Select * from " + SEPARATOR + "exampleRegion r where r.status='active'")
+        .execute();
     // the remove should have happened
     assertEquals(0, results.size());
 
     results = (SelectResults) qs
-        .newQuery("Select * from /exampleRegion r where r.status!='inactive'").execute();
+        .newQuery("Select * from " + SEPARATOR + "exampleRegion r where r.status!='inactive'")
+        .execute();
     assertEquals(0, results.size());
 
     HashIndex cindex = (HashIndex) index;

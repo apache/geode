@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -99,7 +100,7 @@ public class FunctionJUnitTest {
   @Test
   public void testIS_DEFINED() throws Exception {
     Query query = CacheUtils.getQueryService()
-        .newQuery("SELECT DISTINCT * FROM /Portfolios where IS_DEFINED(P2.secId)");
+        .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where IS_DEFINED(P2.secId)");
     Object result = query.execute();
     if (result instanceof Collection) {
       Iterator iter = ((Collection) result).iterator();
@@ -123,7 +124,8 @@ public class FunctionJUnitTest {
   @Test
   public void testIS_UNDEFINED() throws Exception {
     Query query = CacheUtils.getQueryService()
-        .newQuery("SELECT DISTINCT * FROM /Portfolios where IS_UNDEFINED(P2.secId)");
+        .newQuery(
+            "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where IS_UNDEFINED(P2.secId)");
     Object result = query.execute();
     if (result instanceof Collection) {
       Iterator iter = ((Collection) result).iterator();
@@ -147,13 +149,14 @@ public class FunctionJUnitTest {
   @Test
   public void testELEMENT() throws Exception {
     Query query = CacheUtils.getQueryService()
-        .newQuery("ELEMENT(SELECT DISTINCT * FROM /Portfolios where ID =1).status");
+        .newQuery("ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where ID =1).status");
     Object result = query.execute();
     if (!result.equals("inactive"))
       fail(query.getQueryString());
     try {
       query = CacheUtils.getQueryService()
-          .newQuery("ELEMENT(SELECT DISTINCT * FROM /Portfolios where ID <= 1).status");
+          .newQuery(
+              "ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where ID <= 1).status");
       result = query.execute();
       fail(query.getQueryString());
     } catch (FunctionDomainException e) {
@@ -174,7 +177,8 @@ public class FunctionJUnitTest {
       fail(query.getQueryString());
 
     query = CacheUtils.getQueryService().newQuery(
-        "select distinct * from /Portfolios pf where nvl(pf.position2,'foundNull') = 'foundNull'");
+        "select distinct * from " + SEPARATOR
+            + "Portfolios pf where nvl(pf.position2,'foundNull') = 'foundNull'");
     result = query.execute();
 
     if (((Collection) result).size() != 2) {
@@ -182,7 +186,8 @@ public class FunctionJUnitTest {
     }
 
     query = CacheUtils.getQueryService().newQuery(
-        "select distinct nvl(pf.position2, 'inProjection') from /Portfolios pf where nvl(pf.position2,'foundNull') = 'foundNull'");
+        "select distinct nvl(pf.position2, 'inProjection') from " + SEPARATOR
+            + "Portfolios pf where nvl(pf.position2,'foundNull') = 'foundNull'");
     result = query.execute();
     // CacheUtils.log("Size of result :" + ((Collection)result).size());
     if (((Collection) result).size() != 1) {

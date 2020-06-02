@@ -20,13 +20,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.GlobPattern;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
 public class KeysExecutor extends AbstractExecutor {
 
@@ -39,7 +39,7 @@ public class KeysExecutor extends AbstractExecutor {
     }
 
     String glob = Coder.bytesToString(commandElems.get(1));
-    Set<String> allKeys = context.getKeyRegistrar().keys();
+    Set<ByteArrayWrapper> allKeys = getDataRegion(context).keySet();
     List<String> matchingKeys = new ArrayList<String>();
 
     Pattern pattern;
@@ -51,10 +51,9 @@ public class KeysExecutor extends AbstractExecutor {
       return;
     }
 
-    for (String key : allKeys) {
-      if (!(key.equals(GeodeRedisServer.REDIS_META_DATA_REGION)
-          || key.equals(GeodeRedisServer.STRING_REGION) || key.equals(GeodeRedisServer.HLL_REGION))
-          && pattern.matcher(key).matches()) {
+    for (ByteArrayWrapper bytesKey : allKeys) {
+      String key = bytesKey.toString();
+      if (pattern.matcher(key).matches()) {
         matchingKeys.add(key);
       }
     }

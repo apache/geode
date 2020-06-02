@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertTrue;
@@ -146,7 +147,7 @@ public class ResourcePermissionTest {
 
   @Test
   public void regionNameIsStripped() {
-    ResourcePermission permission = new ResourcePermission("DATA", "READ", "/regionA");
+    ResourcePermission permission = new ResourcePermission("DATA", "READ", SEPARATOR + "regionA");
     assertThat(permission.getResource()).isEqualTo(Resource.DATA);
     assertThat(permission.getOperation()).isEqualTo(Operation.READ);
     assertThat(permission.getTarget()).isEqualTo("regionA");
@@ -191,7 +192,7 @@ public class ResourcePermissionTest {
     context = new ResourcePermission("data", "read", "regionA");
     assertThat("DATA:READ:regionA").isEqualTo(context.toString());
 
-    context = new ResourcePermission("DATA", "READ", "/regionA", "key");
+    context = new ResourcePermission("DATA", "READ", SEPARATOR + "regionA", "key");
     assertThat("DATA:READ:regionA:key").isEqualTo(context.toString());
 
     context = new ResourcePermission(Resource.DATA, Operation.MANAGE, "REGIONA");

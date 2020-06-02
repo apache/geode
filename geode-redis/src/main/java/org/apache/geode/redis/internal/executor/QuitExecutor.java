@@ -14,17 +14,17 @@
  */
 package org.apache.geode.redis.internal.executor;
 
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class QuitExecutor extends AbstractExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    command.setResponse(
-        Coder.getSimpleStringResponse(context.getByteBufAllocator(), RedisConstants.QUIT_RESPONSE));
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
+    return RedisResponse.string(RedisConstants.QUIT_RESPONSE);
   }
 
 }

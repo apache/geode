@@ -82,7 +82,7 @@ public class CacheJUnitTest {
     assertNotNull(this.cache);
 
     this.currRegion = this.cache.getRegion("root");
-    assertTrue(this.currRegion.getFullPath().equals("/root"));
+    assertTrue(this.currRegion.getFullPath().equals(SEPARATOR + "root"));
   }
 
   @After

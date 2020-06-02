@@ -115,7 +115,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-logging', name: 'commons-logging', version: '1.2')
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
-        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.68')
+        // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
+        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.52')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.netty', name: 'netty-all', version: '4.1.48.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.5.23')
@@ -237,7 +238,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('selenium-support')
     }
 
-    dependencySet(group: 'org.springframework.security', version: '5.3.1.RELEASE') {
+    dependencySet(group: 'org.springframework.security', version: '5.3.2.RELEASE') {
       entry('spring-security-config')
       entry('spring-security-core')
       entry('spring-security-ldap')
@@ -263,6 +264,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     dependencySet(group: 'org.springframework.boot', version: '2.2.1.RELEASE') {
       entry('spring-boot-starter')
+      entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')
       entry('spring-boot-starter-data-redis')
     }

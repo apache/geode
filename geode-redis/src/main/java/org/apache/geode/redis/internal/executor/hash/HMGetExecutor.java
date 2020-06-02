@@ -16,13 +16,11 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -45,37 +43,17 @@ import org.apache.geode.redis.internal.RedisDataType;
 public class HMGetExecutor extends HashExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
 
     ByteArrayWrapper key = command.getKey();
+    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
+    ArrayList<ByteArrayWrapper> fields =
+        new ArrayList<>(commandElements.subList(2, commandElements.size()));
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+    List<ByteArrayWrapper> values = redisHashCommands.hmget(key, fields);
 
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
-
-    if (map == null) {
-      command.setResponse(
-          Coder.getArrayOfNils(context.getByteBufAllocator(), commandElems.size() - 2));
-      return;
-    }
-
-    ArrayList<ByteArrayWrapper> fields = new ArrayList<ByteArrayWrapper>();
-    for (int i = 2; i < commandElems.size(); i++) {
-      byte[] fieldArray = commandElems.get(i);
-      ByteArrayWrapper field = new ByteArrayWrapper(fieldArray);
-      fields.add(field);
-    }
-
-    ArrayList<ByteArrayWrapper> values = new ArrayList<ByteArrayWrapper>();
-
-    /*
-     * This is done to preserve order in the output
-     */
-    for (ByteArrayWrapper field : fields) {
-      values.add(map.get(field));
-    }
-
-    respondBulkStrings(command, context, values);
+    return RedisResponse.array(values);
   }
 }

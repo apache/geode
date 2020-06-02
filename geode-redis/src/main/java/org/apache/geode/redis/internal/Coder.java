@@ -18,15 +18,11 @@ import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
-import org.apache.geode.cache.EntryDestroyedException;
-import org.apache.geode.cache.query.Struct;
 
 /**
  * This is a safe encoder and decoder for all redis matching needs
@@ -93,8 +89,6 @@ public class Coder {
 
   @MakeImmutable
   public static final byte[] err = stringToBytes("ERR ");
-  @MakeImmutable
-  public static final byte[] noAuth = stringToBytes("NOAUTH ");
   @MakeImmutable
   public static final byte[] wrongType = stringToBytes("WRONGTYPE ");
 
@@ -199,44 +193,6 @@ public class Coder {
     return response;
   }
 
-  public static ByteBuf getKeyValArrayResponse(ByteBufAllocator alloc,
-      Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> items) {
-    ByteBuf response = alloc.buffer();
-    response.writeByte(ARRAY_ID);
-
-    int size = 0;
-    ByteBuf tmp = alloc.buffer();
-    for (Map.Entry<ByteArrayWrapper, ByteArrayWrapper> next : items) {
-      byte[] key;
-      byte[] nextByteArray;
-      try {
-        key = next.getKey().toBytes();
-        nextByteArray = next.getValue().toBytes();
-      } catch (EntryDestroyedException e) {
-        continue;
-      }
-      tmp.writeByte(BULK_STRING_ID); // Add key
-      tmp.writeBytes(intToBytes(key.length));
-      tmp.writeBytes(CRLFar);
-      tmp.writeBytes(key);
-      tmp.writeBytes(CRLFar);
-      tmp.writeByte(BULK_STRING_ID); // Add value
-      tmp.writeBytes(intToBytes(nextByteArray.length));
-      tmp.writeBytes(CRLFar);
-      tmp.writeBytes(nextByteArray);
-      tmp.writeBytes(CRLFar);
-      size++;
-    }
-
-    response.writeBytes(intToBytes(size * 2));
-    response.writeBytes(CRLFar);
-    response.writeBytes(tmp);
-
-    tmp.release();
-
-    return response;
-  }
-
   public static ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {
     if (items == null || items.isEmpty()) {
       return null;
@@ -308,16 +264,6 @@ public class Coder {
     return response;
   }
 
-  public static ByteBuf getNoAuthResponse(ByteBufAllocator alloc, String error) {
-    byte[] errorAr = stringToBytes(error);
-    ByteBuf response = alloc.buffer(errorAr.length + 25);
-    response.writeByte(ERROR_ID);
-    response.writeBytes(noAuth);
-    response.writeBytes(errorAr);
-    response.writeBytes(CRLFar);
-    return response;
-  }
-
   public static ByteBuf getWrongTypeResponse(ByteBufAllocator alloc, String error) {
     byte[] errorAr = stringToBytes(error);
     ByteBuf response = alloc.buffer(errorAr.length + 31);
@@ -349,119 +295,13 @@ public class Coder {
     return buf;
   }
 
-  public static ByteBuf getBulkStringArrayResponseOfValues(ByteBufAllocator alloc,
-      Collection<?> items) {
-    ByteBuf response = alloc.buffer();
-    response.writeByte(Coder.ARRAY_ID);
-    ByteBuf tmp = alloc.buffer();
-    int size = 0;
-    try {
-      for (Object next : items) {
-        ByteArrayWrapper nextWrapper = null;
-        if (next instanceof Entry) {
-          try {
-            nextWrapper = (ByteArrayWrapper) ((Entry<?, ?>) next).getValue();
-          } catch (EntryDestroyedException e) {
-            continue;
-          }
-        } else if (next instanceof Struct) {
-          nextWrapper = (ByteArrayWrapper) ((Struct) next).getFieldValues()[1];
-        }
-        if (nextWrapper != null) {
-          tmp.writeByte(Coder.BULK_STRING_ID);
-          tmp.writeBytes(intToBytes(nextWrapper.length()));
-          tmp.writeBytes(Coder.CRLFar);
-          tmp.writeBytes(nextWrapper.toBytes());
-          tmp.writeBytes(Coder.CRLFar);
-        } else {
-          tmp.writeBytes(Coder.bNIL);
-        }
-        size++;
-      }
-
-      response.writeBytes(intToBytes(size));
-      response.writeBytes(Coder.CRLFar);
-      response.writeBytes(tmp);
-    } finally {
-      tmp.release();
-    }
-
-    return response;
-  }
-
-  public static ByteBuf zRangeResponse(ByteBufAllocator alloc, Collection<?> list,
-      boolean withScores) {
-    if (list.isEmpty()) {
-      return Coder.getEmptyArrayResponse(alloc);
-    }
-
-    ByteBuf buffer = alloc.buffer();
-    buffer.writeByte(Coder.ARRAY_ID);
-    ByteBuf tmp = alloc.buffer();
-    int size = 0;
-
-    for (Object entry : list) {
-      ByteArrayWrapper key;
-      DoubleWrapper score;
-      if (entry instanceof Entry) {
-        try {
-          key = (ByteArrayWrapper) ((Entry<?, ?>) entry).getKey();
-          score = (DoubleWrapper) ((Entry<?, ?>) entry).getValue();
-        } catch (EntryDestroyedException e) {
-          continue;
-        }
-      } else {
-        Object[] fieldVals = ((Struct) entry).getFieldValues();
-        key = (ByteArrayWrapper) fieldVals[0];
-        score = (DoubleWrapper) fieldVals[1];
-      }
-      byte[] byteAr = key.toBytes();
-      tmp.writeByte(Coder.BULK_STRING_ID);
-      tmp.writeBytes(intToBytes(byteAr.length));
-      tmp.writeBytes(Coder.CRLFar);
-      tmp.writeBytes(byteAr);
-      tmp.writeBytes(Coder.CRLFar);
-      size++;
-      if (withScores) {
-        String scoreString = score.toString();
-        byte[] scoreAr = stringToBytes(scoreString);
-        tmp.writeByte(Coder.BULK_STRING_ID);
-        tmp.writeBytes(intToBytes(scoreString.length()));
-        tmp.writeBytes(Coder.CRLFar);
-        tmp.writeBytes(scoreAr);
-        tmp.writeBytes(Coder.CRLFar);
-        size++;
-      }
-    }
-
-    buffer.writeBytes(intToBytes(size));
-    buffer.writeBytes(Coder.CRLFar);
-    buffer.writeBytes(tmp);
-
-    tmp.release();
-
-    return buffer;
-  }
-
-  public static ByteBuf getArrayOfNils(ByteBufAllocator alloc, int length) {
-    ByteBuf response = alloc.buffer();
-    response.writeByte(Coder.ARRAY_ID);
-    response.writeBytes(intToBytes(length));
-    response.writeBytes(Coder.CRLFar);
-
-    for (int i = 0; i < length; i++) {
-      response.writeBytes(bNIL);
-    }
-
-    return response;
-  }
 
   public static String bytesToString(byte[] bytes) {
     if (bytes == null) {
       return null;
     }
     try {
-      return new String(bytes, CHARSET).intern();
+      return new String(bytes, CHARSET);
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
@@ -550,9 +390,4 @@ public class Coder {
       return Double.parseDouble(d);
     }
   }
-
-  public static ByteArrayWrapper stringToByteWrapper(String s) {
-    return new ByteArrayWrapper(stringToBytes(s));
-  }
-
 }

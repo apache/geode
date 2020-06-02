@@ -14,13 +14,14 @@
  */
 package org.apache.geode.cache.lucene.internal.management;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
@@ -55,8 +56,8 @@ public class LuceneServiceBridge {
   }
 
   public LuceneIndexMetrics[] listIndexMetrics(String regionPath) {
-    if (!regionPath.startsWith(Region.SEPARATOR)) {
-      regionPath = Region.SEPARATOR + regionPath;
+    if (!regionPath.startsWith(SEPARATOR)) {
+      regionPath = SEPARATOR + regionPath;
     }
     List<LuceneIndexMetrics> indexMetrics = new ArrayList();
     for (LuceneIndex index : this.service.getAllIndexes()) {

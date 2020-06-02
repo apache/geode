@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.functional;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -94,7 +95,7 @@ public class INOperatorJUnitTest {
     Object[] keys;
     Set expectedResults;
 
-    q = qs.newQuery("SELECT e.value FROM /pos.entrySet e WHERE e.key IN $1");
+    q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
@@ -102,7 +103,7 @@ public class INOperatorJUnitTest {
     expectedResults.add(new Integer(10));
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
-    q = qs.newQuery("SELECT e.value FROM /pos.entrySet e WHERE e.key IN $1");
+    q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"42"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
@@ -111,7 +112,7 @@ public class INOperatorJUnitTest {
     for (int i = 0; i < 1000; i++) {
       region.put(String.valueOf(i), new Integer(i));
     }
-    q = qs.newQuery("SELECT e.value FROM /pos.entrySet e WHERE e.key IN $1");
+    q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
@@ -121,7 +122,7 @@ public class INOperatorJUnitTest {
     expectedResults.add(new Integer(45));
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
-    q = qs.newQuery("SELECT e.key, e.value FROM /pos.entrySet e WHERE e.key IN $1");
+    q = qs.newQuery("SELECT e.key, e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     assertThat(results).hasSize(4);
@@ -256,13 +257,13 @@ public class INOperatorJUnitTest {
     region.put("12", new Integer(10));
 
     QueryService qs = cache.getQueryService();
-    qs.createIndex("In Index", IndexType.FUNCTIONAL, "e.key", "/pos.entrySet e");
+    qs.createIndex("In Index", IndexType.FUNCTIONAL, "e.key", SEPARATOR + "pos.entrySet e");
     Query q;
     SelectResults results;
     Object[] keys;
     Set expectedResults;
 
-    q = qs.newQuery("SELECT e.value FROM /pos.entrySet e WHERE e.key IN $1");
+    q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
@@ -270,7 +271,7 @@ public class INOperatorJUnitTest {
     expectedResults.add(new Integer(10));
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
-    q = qs.newQuery("SELECT e.value FROM /pos.entrySet e WHERE e.key IN $1");
+    q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"42"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
@@ -279,7 +280,7 @@ public class INOperatorJUnitTest {
     for (int i = 0; i < 1000; i++) {
       region.put(String.valueOf(i), new Integer(i));
     }
-    q = qs.newQuery("SELECT e.value FROM /pos.entrySet e WHERE e.key IN $1");
+    q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
@@ -289,7 +290,7 @@ public class INOperatorJUnitTest {
     expectedResults.add(new Integer(45));
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
-    q = qs.newQuery("SELECT e.key, e.value FROM /pos.entrySet e WHERE e.key IN $1");
+    q = qs.newQuery("SELECT e.key, e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     assertThat(results).hasSize(4);
@@ -308,9 +309,9 @@ public class INOperatorJUnitTest {
     Region customersRegion = cache.createRegionFactory(regionAttributes).create("customers");
     Region receiptsRegion = cache.createRegionFactory(regionAttributes).create("receipts");
 
-    qs.createIndex("receiptsByProduct", "i.productId", "/receipts r, r.items i");
-    qs.createIndex("receiptsByCustomer", "r.productId", "/receipts r");
-    qs.createIndex("customersByProfile", "c.profile", "/customers c");
+    qs.createIndex("receiptsByProduct", "i.productId", SEPARATOR + "receipts r, r.items i");
+    qs.createIndex("receiptsByCustomer", "r.productId", SEPARATOR + "receipts r");
+    qs.createIndex("customersByProfile", "c.profile", SEPARATOR + "customers c");
 
     int numReceiptsPerCustomer = 10;
     for (int i = 0; i < 1000; i++) {
@@ -322,7 +323,9 @@ public class INOperatorJUnitTest {
     }
 
     Query q = qs.newQuery(
-        "<trace>select r from /receipts r, r.items i where i.productId = 8 and r.customerId in (select c.id from /customers c where c.profile = 'PremiumIndividual')");
+        "<trace>select r from " + SEPARATOR
+            + "receipts r, r.items i where i.productId = 8 and r.customerId in (select c.id from "
+            + SEPARATOR + "customers c where c.profile = 'PremiumIndividual')");
     SelectResults results = (SelectResults) q.execute();
     assertThat(results).hasSize(500);
 
@@ -350,9 +353,9 @@ public class INOperatorJUnitTest {
     Region customersRegion = cache.createRegionFactory(regionAttributes).create("customers");
     Region receiptsRegion = cache.createRegionFactory(regionAttributes).create("receipts");
 
-    qs.createIndex("receiptsByProduct", "i.productId", "/receipts r, r.items i");
-    qs.createIndex("receiptsByCustomer", "r.productId", "/receipts r");
-    qs.createIndex("customersByProfile", "c.profile", "/customers c");
+    qs.createIndex("receiptsByProduct", "i.productId", SEPARATOR + "receipts r, r.items i");
+    qs.createIndex("receiptsByCustomer", "r.productId", SEPARATOR + "receipts r");
+    qs.createIndex("customersByProfile", "c.profile", SEPARATOR + "customers c");
 
     int numReceiptsPerCustomer = 10;
     for (int i = 0; i < 1000; i++) {
@@ -364,7 +367,10 @@ public class INOperatorJUnitTest {
     }
 
     Query q = qs.newQuery(
-        "<trace>select r from /receipts r, r.items i where i.productId = 8 and r.customerId in (select c.id from /customers c where c.id in (select d.id from /customers d where d.profile='PremiumIndividual'))");
+        "<trace>select r from " + SEPARATOR
+            + "receipts r, r.items i where i.productId = 8 and r.customerId in (select c.id from "
+            + SEPARATOR + "customers c where c.id in (select d.id from " + SEPARATOR
+            + "customers d where d.profile='PremiumIndividual'))");
     SelectResults results = (SelectResults) q.execute();
     assertThat(results).hasSize(500);
 

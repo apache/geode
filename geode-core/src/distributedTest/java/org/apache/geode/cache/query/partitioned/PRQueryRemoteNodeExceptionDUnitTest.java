@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -140,7 +141,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
 
     vm0.invoke(() -> {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
-          .newQuery("Select * from /" + PARTITIONED_REGION_NAME);
+          .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME);
       QueryObserverHolder.setInstance(new RuntimeExceptionQueryObserver("vm0"));
       assertThatThrownBy(() -> query.execute()).isInstanceOf(RuntimeException.class)
           .hasMessageContaining("vm0");
@@ -177,7 +178,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
 
     vm0.invoke(() -> {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
-          .newQuery("Select * from /" + PARTITIONED_REGION_NAME);
+          .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME);
       assertThatThrownBy(() -> query.execute()).isInstanceOf(RuntimeException.class)
           .hasMessageContaining("vm1");
     });
@@ -213,7 +214,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
 
     vm0.invoke(() -> {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
-          .newQuery("Select * from /" + PARTITIONED_REGION_NAME + " p where p.ID > 0");
+          .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME + " p where p.ID > 0");
       QueryObserverHolder.setInstance(new CacheCloseQueryObserver());
       assertThatThrownBy(() -> query.execute()).isInstanceOfAny(CacheClosedException.class,
           QueryInvocationTargetException.class);
@@ -250,7 +251,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
 
     vm0.invoke(() -> {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
-          .newQuery("Select * from /" + PARTITIONED_REGION_NAME + " p where p.ID > 0");
+          .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME + " p where p.ID > 0");
       QueryObserverHolder.setInstance(new SleepingQueryObserver());
       assertThatThrownBy(() -> query.execute()).isInstanceOf(QueryInvocationTargetException.class);
     });
@@ -289,7 +290,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
 
     vm0.invoke(() -> {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
-          .newQuery("Select * from /" + PARTITIONED_REGION_NAME);
+          .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME);
       QueryObserverHolder.setInstance(new CountingBucketDestroyQueryObserver(2));
       query.execute();
     });

@@ -124,6 +124,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean isParallel;
 
+  protected boolean groupTransactionEvents;
+
   protected boolean isForInternalUse;
 
   protected boolean isDiskSynchronous;
@@ -254,6 +256,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.alertThreshold = attrs.getAlertThreshold();
     this.manualStart = attrs.isManualStart();
     this.isParallel = attrs.isParallel();
+    this.groupTransactionEvents = attrs.mustGroupTransactionEvents();
     this.isForInternalUse = attrs.isForInternalUse();
     this.diskStoreName = attrs.getDiskStoreName();
     this.remoteDSId = attrs.getRemoteDSId();
@@ -545,12 +548,20 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return this.isParallel;
   }
 
+  @Override
+  public boolean mustGroupTransactionEvents() {
+    return this.groupTransactionEvents;
+  }
+
   public boolean isForInternalUse() {
     return this.isForInternalUse;
   }
 
   @Override
   public abstract void start();
+
+  @Override
+  public abstract void startWithCleanQueue();
 
   @Override
   public abstract void stop();
@@ -927,6 +938,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   public void distribute(EnumListenerEvent operation, EntryEventImpl event,
       List<Integer> allRemoteDSIds) {
+    distribute(operation, event, allRemoteDSIds, false);
+  }
+
+  public void distribute(EnumListenerEvent operation, EntryEventImpl event,
+      List<Integer> allRemoteDSIds, boolean isLastEventInTransaction) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -1077,7 +1093,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // Get substitution value to enqueue if necessary
           Object substituteValue = getSubstituteValue(clonedEvent, operation);
 
-          ev.enqueueEvent(operation, clonedEvent, substituteValue);
+          ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction);
         } catch (CancelException e) {
           logger.debug("caught cancel exception", e);
           throw e;

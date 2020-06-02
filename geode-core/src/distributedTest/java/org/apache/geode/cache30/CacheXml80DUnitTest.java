@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -91,9 +92,9 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     attrs.setDataPolicy(DataPolicy.REPLICATE);
     cache.createRegion("replicated", attrs);
 
-    cache.getQueryService().createIndex("crIndex", "CR_ID", "/replicated");
-    cache.getQueryService().createHashIndex("hashIndex", "HASH_ID", "/replicated");
-    cache.getQueryService().createKeyIndex("primaryKeyIndex", "ID", "/replicated");
+    cache.getQueryService().createIndex("crIndex", "CR_ID", SEPARATOR + "replicated");
+    cache.getQueryService().createHashIndex("hashIndex", "HASH_ID", SEPARATOR + "replicated");
+    cache.getQueryService().createKeyIndex("primaryKeyIndex", "ID", SEPARATOR + "replicated");
 
     testXml(cache);
 
@@ -102,8 +103,9 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     QueryService qs = c.getQueryService();
     Collection<Index> indexes = qs.getIndexes();
     assertEquals(3, indexes.size());
-    c.getQueryService().createIndex("crIndex2", "r.CR_ID_2", "/replicated r");
-    c.getQueryService().createIndex("rIndex", "r.R_ID", "/replicated r, r.positions.values rv");
+    c.getQueryService().createIndex("crIndex2", "r.CR_ID_2", SEPARATOR + "replicated r");
+    c.getQueryService().createIndex("rIndex", "r.R_ID",
+        SEPARATOR + "replicated r, r.positions.values rv");
 
     File dir = new File(this.temporaryFolder.getRoot(), "XML_" + this.getGemFireVersion());
     dir.mkdirs();
@@ -125,7 +127,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     Collection<Index> newIndexes = qs.getIndexes();
     assertEquals(5, newIndexes.size());
 
-    Region r = c.getRegion("/replicated");
+    Region r = c.getRegion(SEPARATOR + "replicated");
     for (int i = 0; i < 5; i++) {
       r.put(i, new TestObject(i));
     }
@@ -142,31 +144,37 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
     SelectResults results =
-        (SelectResults) qs.newQuery("select * from /replicated r where r.ID = 1").execute();
+        (SelectResults) qs.newQuery("select * from " + SEPARATOR + "replicated r where r.ID = 1")
+            .execute();
     assertEquals(1, results.size());
     assertTrue(checkIndexUsed(observer, "primaryKeyIndex"));
     observer.reset();
 
     results =
-        (SelectResults) qs.newQuery("select * from /replicated r where r.CR_ID = 1").execute();
+        (SelectResults) qs.newQuery("select * from " + SEPARATOR + "replicated r where r.CR_ID = 1")
+            .execute();
     assertEquals(2, results.size());
     assertTrue(checkIndexUsed(observer, "crIndex"));
     observer.reset();
 
     results =
-        (SelectResults) qs.newQuery("select * from /replicated r where r.CR_ID_2 = 1").execute();
+        (SelectResults) qs
+            .newQuery("select * from " + SEPARATOR + "replicated r where r.CR_ID_2 = 1").execute();
     assertEquals(2, results.size());
     assertTrue(checkIndexUsed(observer, "crIndex2"));
     observer.reset();
 
     results = (SelectResults) qs
-        .newQuery("select * from /replicated r, r.positions.values rv where r.R_ID > 1").execute();
+        .newQuery(
+            "select * from " + SEPARATOR + "replicated r, r.positions.values rv where r.R_ID > 1")
+        .execute();
     assertEquals(3, results.size());
     assertTrue(checkIndexUsed(observer, "rIndex"));
     observer.reset();
 
     results =
-        (SelectResults) qs.newQuery("select * from /replicated r where r.HASH_ID = 1").execute();
+        (SelectResults) qs
+            .newQuery("select * from " + SEPARATOR + "replicated r where r.HASH_ID = 1").execute();
     assertEquals(1, results.size());
     assertTrue(checkIndexUsed(observer, "hashIndex"));
     observer.reset();
