@@ -334,7 +334,7 @@ public class PartitionedRegionClear {
     }
     return bucketsOperated;
   }
-  
+
   void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     String lockName = getPRClearLockName();
 

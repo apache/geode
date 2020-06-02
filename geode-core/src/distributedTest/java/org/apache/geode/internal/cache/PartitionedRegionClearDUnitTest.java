@@ -152,7 +152,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   protected void verifyServerRegionSize(int expectedNum, boolean excludedDatastore2) {
     accessor.invoke(() -> verifyRegionSize(false, expectedNum));
     dataStore1.invoke(() -> verifyRegionSize(false, expectedNum));
-    if(!excludedDatastore2) {
+    if (!excludedDatastore2) {
       dataStore2.invoke(() -> verifyRegionSize(false, expectedNum));
     }
     dataStore3.invoke(() -> verifyRegionSize(false, expectedNum));

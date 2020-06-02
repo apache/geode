@@ -40,7 +40,10 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
 
     dataStore3.invokeAsync(() -> getRegion(false).clear());
     dataStore3.invoke(() -> {
-      while(((PartitionedRegion)getRegion(false)).isRegionClearInProgress() && getRegion(false).size() != 0) {Thread.sleep(100);}
+      while (((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
+          && getRegion(false).size() != 0) {
+        Thread.sleep(100);
+      }
     });
     dataStore2.stop();
 
@@ -63,6 +66,7 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
         .isEqualTo(dataStore3.invoke(getBucketRegionWriterClears))
         .isEqualTo(0);
   }
+
   @Test
   public void clearFromDataStoreWithWriterOnDataStoreAndMemberRestart() {
     configureServers(true, true);
@@ -74,7 +78,10 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
 
     dataStore3.invokeAsync(() -> getRegion(false).clear());
     dataStore3.invoke(() -> {
-      while(((PartitionedRegion)getRegion(false)).isRegionClearInProgress() && getRegion(false).size() != 0) {Thread.sleep(100);}
+      while (((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
+          && getRegion(false).size() != 0) {
+        Thread.sleep(100);
+      }
     });
 
     dataStore2.stop();
