@@ -788,6 +788,7 @@ javadoc/org/apache/geode/management/operation/RebalanceOperation.html
 javadoc/org/apache/geode/management/operation/package-frame.html
 javadoc/org/apache/geode/management/operation/package-summary.html
 javadoc/org/apache/geode/management/operation/package-tree.html
+javadoc/org/apache/geode/management/operation/RestoreRedundancyRequest.html
 javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html
@@ -805,6 +806,9 @@ javadoc/org/apache/geode/management/runtime/RuntimeRegionInfo.html
 javadoc/org/apache/geode/management/runtime/package-frame.html
 javadoc/org/apache/geode/management/runtime/package-summary.html
 javadoc/org/apache/geode/management/runtime/package-tree.html
+javadoc/org/apache/geode/management/runtime/RegionRedundancyStatusSerializable.RedundancyStatus.html
+javadoc/org/apache/geode/management/runtime/RegionRedundancyStatusSerializable.html
+javadoc/org/apache/geode/management/runtime/RestoreRedundancyResponse.html
 javadoc/org/apache/geode/memcached/GemFireMemcachedServer.Protocol.html
 javadoc/org/apache/geode/memcached/GemFireMemcachedServer.html
 javadoc/org/apache/geode/memcached/package-frame.html
