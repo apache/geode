@@ -14,15 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.ArrayList;
+
 import java.util.Collection;
-import java.util.Map;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -51,25 +49,18 @@ public class HValsExecutor extends HashExecutor {
    * @param context the context (ex: region provider)
    */
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map =
-        context.getRegionProvider().getHashRegion().get(key);
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    Collection<ByteArrayWrapper> values = redisHashCommands.hvals(key);
 
-    if (map == null) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
+    if (values.isEmpty()) {
+      return RedisResponse.emptyArray();
     }
 
-    Collection<ByteArrayWrapper> vals = new ArrayList<ByteArrayWrapper>(map.values());
-    if (vals.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
-    }
-
-    respondBulkStrings(command, context, vals);
+    return RedisResponse.array(values);
   }
 
 }

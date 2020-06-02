@@ -22,7 +22,6 @@ import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
 import static org.apache.geode.management.ManagementService.getExistingManagementService;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -32,6 +31,7 @@ import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.rules.DistributedRule.getDistributedSystemProperties;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -76,7 +76,6 @@ import org.apache.geode.cache.client.internal.ClientPartitionAdvisor;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.LocatorLauncher;
@@ -84,6 +83,7 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
+import org.apache.geode.internal.cache.execute.util.TypedFunctionService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.membership.MembershipEvent;
 import org.apache.geode.management.membership.UniversalMembershipListenerAdapter;
@@ -1336,22 +1336,22 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
   }
 
   private void executeFunctions(Region<Object, Object> region) {
-    cast(FunctionService.onRegion(region))
+    TypedFunctionService.onRegion(region)
         .withFilter(filter(0))
         .execute(new PutFunction())
         .getResult();
 
-    cast(FunctionService.onRegion(region))
+    TypedFunctionService.onRegion(region)
         .withFilter(filter(0, 1))
         .execute(new PutFunction())
         .getResult();
 
-    cast(FunctionService.onRegion(region))
+    TypedFunctionService.onRegion(region)
         .withFilter(filter(0, 1, 2, 3))
         .execute(new PutFunction())
         .getResult();
 
-    cast(FunctionService.onRegion(region))
+    TypedFunctionService.onRegion(region)
         .execute(new PutFunction())
         .getResult();
   }
@@ -1389,7 +1389,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
   }
 
   private InternalCache getInternalCache(ServerLauncher serverLauncher) {
-    return cast(serverLauncher.getCache());
+    return uncheckedCast(serverLauncher.getCache());
   }
 
   private void waitForLocalBucketsCreation() {

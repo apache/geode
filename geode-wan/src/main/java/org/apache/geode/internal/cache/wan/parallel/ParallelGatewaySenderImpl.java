@@ -52,6 +52,15 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public void start() {
+    this.start(false);
+  }
+
+  @Override
+  public void startWithCleanQueue() {
+    this.start(true);
+  }
+
+  private void start(boolean cleanQueues) {
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
@@ -73,7 +82,8 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        * of Concurrent version of processor and queue.
        */
       eventProcessor =
-          new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
+          new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
+              cleanQueues);
       if (isStartEventProcessorInPausedState()) {
         this.pauseEvenIfProcessorStopped();
       }

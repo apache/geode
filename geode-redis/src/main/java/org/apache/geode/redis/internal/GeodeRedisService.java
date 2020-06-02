@@ -21,11 +21,12 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
-import org.apache.geode.redis.GeodeRedisServer;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();
@@ -36,8 +37,16 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   public boolean init(Cache cache) {
     this.cache = (InternalCache) cache;
     this.cache.getInternalDistributedSystem().addResourceListener(this);
+    registerDataSerializables();
 
-    return true;
+    return this.cache.getInternalDistributedSystem().getConfig().getRedisEnabled();
+  }
+
+  private void registerDataSerializables() {
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER,
+        ByteArrayWrapper.class);
+
   }
 
   @Override
@@ -54,8 +63,9 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
 
   private void startRedisServer(InternalCache cache) {
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
-    int port = system.getConfig().getRedisPort();
-    if (port != 0) {
+
+    if (system.getConfig().getRedisEnabled()) {
+      int port = system.getConfig().getRedisPort();
       String bindAddress = system.getConfig().getRedisBindAddress();
       assert bindAddress != null;
       if (bindAddress.equals(DistributionConfig.DEFAULT_REDIS_BIND_ADDRESS)) {
@@ -86,5 +96,13 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   @Override
   public CacheServiceMBeanBase getMBean() {
     return null;
+  }
+
+  public int getPort() {
+    return redisServer.getPort();
+  }
+
+  public void setEnableUnsupported(boolean unsupported) {
+    redisServer.setAllowUnsupportedCommands(unsupported);
   }
 }

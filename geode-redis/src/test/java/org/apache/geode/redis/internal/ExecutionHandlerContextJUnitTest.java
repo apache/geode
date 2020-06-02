@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.redis.GeodeRedisServer;
 
 /**
  * Test cases for ExecutionHandlerContext
@@ -50,9 +49,7 @@ public class ExecutionHandlerContextJUnitTest {
     Command msg = Mockito.mock(Command.class);
     RegionProvider regionProvider = Mockito.mock(RegionProvider.class);
     GeodeRedisServer server = Mockito.mock(GeodeRedisServer.class);
-    KeyRegistrar keyRegistrar = Mockito.mock(KeyRegistrar.class);
     PubSub pubSub = Mockito.mock(PubSub.class);
-    RedisLockService lockService = Mockito.mock(RedisLockService.class);
 
     Mockito.when(cache.getLogger()).thenReturn(logWriter);
     Mockito.when(ch.alloc()).thenReturn(alloc);
@@ -64,8 +61,7 @@ public class ExecutionHandlerContextJUnitTest {
 
     byte[] pwd = null;
     ExecutionHandlerContext handler =
-        new ExecutionHandlerContext(ch, cache, regionProvider, server, pwd, keyRegistrar, pubSub,
-            lockService);
+        new ExecutionHandlerContext(ch, cache, regionProvider, server, pwd, pubSub, null);
 
     ChannelHandlerContext ctx = null;
     handler.channelRead(ctx, msg);

@@ -16,36 +16,34 @@
 
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Executor;
-import org.apache.geode.redis.internal.executor.DelExecutor;
+import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 
 
 public class DelExecutorJUnitTest {
 
   @Test
   public void calledWithTooFewOptions_returnsError() {
-    Executor delExecutor = new DelExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
     commandsAsBytes.add("DEL".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    delExecutor.executeCommand(command, mockContext());
+    Throwable thrown = catchThrowable(() -> command.execute(mockContext()));
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+    AssertionsForClassTypes.assertThat(thrown).hasMessageContaining("wrong number of arguments");
+    AssertionsForClassTypes.assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
   }
 
   public ExecutionHandlerContext mockContext() {

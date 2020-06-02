@@ -16,6 +16,7 @@ package org.apache.geode.client.sni;
 
 import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
 import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
@@ -211,7 +212,7 @@ public class ClientSNICQAcceptanceTest {
 
     String cqName = "jellyTracker";
 
-    String queryStr = "SELECT * FROM /jellyfish i where i > 37";
+    String queryStr = "SELECT * FROM " + SEPARATOR + "jellyfish i where i > 37";
 
     QueryService queryService = region.getRegionService().getQueryService();
     cqTracker = queryService.newCq(cqName, queryStr, cqa);

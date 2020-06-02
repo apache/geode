@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -73,13 +74,13 @@ public class RebalanceManagementDunitTest {
     regionConfig.setName("customers1");
     regionConfig.setType(RegionType.PARTITION);
     client1.create(regionConfig);
-    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 2);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "customers1", 2);
 
     regionConfig = new Region();
     regionConfig.setName("customers2");
     regionConfig.setType(RegionType.PARTITION);
     client1.create(regionConfig);
-    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 2);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "customers2", 2);
   }
 
   @Test
@@ -164,7 +165,7 @@ public class RebalanceManagementDunitTest {
 
     assertThat(resultArrayList.get(0).isSuccessful()).isFalse();
     assertThat(resultArrayList.get(0).getStatusMessage())
-        .contains("For the region /nonexisting_region, no member was found");
+        .contains("For the region " + SEPARATOR + "nonexisting_region, no member was found");
 
   }
 

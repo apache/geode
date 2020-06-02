@@ -15,9 +15,6 @@
 
 package org.apache.geode.redis.general;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -25,14 +22,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class ExistsIntegrationTest {
@@ -41,24 +36,16 @@ public class ExistsIntegrationTest {
   public static Jedis jedis2;
   public static Jedis jedis3;
   public static int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @BeforeClass
   public static void setUp() {
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-
-    server.start();
-    jedis = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
-    jedis3 = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis3 = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -71,8 +58,6 @@ public class ExistsIntegrationTest {
     jedis.close();
     jedis2.close();
     jedis3.close();
-    cache.close();
-    server.shutdown();
   }
 
   @Test
@@ -121,29 +106,6 @@ public class ExistsIntegrationTest {
   }
 
   @Test
-  public void shouldReturn1_givenSortedSetExists() {
-    String sortedSetKey = "sortedSetKey";
-    double score = 2.0;
-    String sortedSetMember = "sortedSetMember";
-
-    jedis.zadd(sortedSetKey, score, sortedSetMember);
-
-    assertThat(jedis.exists(toArray(sortedSetKey))).isEqualTo(1L);
-  }
-
-  @Test
-  public void shouldReturn0_givenSortedSetDoesNotExist() {
-    String sortedSetKey = "sortedSetKey";
-    double score = 2.0;
-    String sortedSetMember = "sortedSetMember";
-
-    jedis.zadd(sortedSetKey, score, sortedSetMember);
-    jedis.del(sortedSetKey);
-
-    assertThat(jedis.exists(toArray(sortedSetKey))).isEqualTo(0L);
-  }
-
-  @Test
   public void shouldReturn1_givenHashExists() {
     String hashKey = "hashKey";
     String hashField = "hashField";
@@ -164,73 +126,6 @@ public class ExistsIntegrationTest {
     jedis.del(hashKey);
 
     assertThat(jedis.exists(toArray(hashKey))).isEqualTo(0L);
-  }
-
-  @Test
-  public void shouldReturn1_givenGeoExists() {
-    String geoKey = "sicily";
-    double latitude = 13.361389;
-    double longitude = 38.115556;
-    String geoMember = "Palermo Catania";
-
-    jedis.geoadd(geoKey, latitude, longitude, geoMember);
-
-    assertThat(jedis.exists(toArray(geoKey))).isEqualTo(1L);
-  }
-
-  @Test
-  public void shouldReturn0_givenGeoDoesNotExist() {
-    String geoKey = "sicily";
-    double latitude = 13.361389;
-    double longitude = 38.115556;
-    String geoMember = "Palermo Catania";
-
-    jedis.geoadd(geoKey, latitude, longitude, geoMember);
-    jedis.del(geoKey);
-
-    assertThat(jedis.exists(toArray(geoKey))).isEqualTo(0L);
-  }
-
-  @Test
-  public void shouldReturn1_givenHyperLogLogExists() {
-    String hyperLogLogKey = "crawled:127.0.0.2";
-    String hyperLogLogValue = "www.insideTheHouse.com";
-
-    jedis.pfadd(hyperLogLogKey, hyperLogLogValue);
-
-    assertThat(jedis.exists(toArray(hyperLogLogKey))).isEqualTo(1L);
-  }
-
-  @Test
-  public void shouldReturn0_givenHyperLogLogDoesNotExist() {
-    String hyperLogLogKey = "crawled:127.0.0.2";
-    String hyperLogLogValue = "www.insideTheHouse.com";
-
-    jedis.pfadd(hyperLogLogKey, hyperLogLogValue);
-    jedis.del(hyperLogLogKey);
-
-    assertThat(jedis.exists(toArray(hyperLogLogKey))).isEqualTo(0L);
-  }
-
-  @Test
-  public void shouldReturn1_givenListExists() {
-    String listKey = "listKey";
-    String listValue = "listValue";
-
-    jedis.lpush(listKey, listValue);
-
-    assertThat(jedis.exists(toArray(listKey))).isEqualTo(1L);
-  }
-
-  @Test
-  public void shouldReturn0_givenListDoesNotExist() {
-    String listKey = "listKey";
-    String listValue = "listValue";
-
-    jedis.lpush(listKey, listValue);
-    jedis.del(listKey);
-
-    assertThat(jedis.exists(toArray(listKey))).isEqualTo(0L);
   }
 
   @Test

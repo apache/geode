@@ -27,6 +27,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceConfigurationError;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -727,24 +728,38 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   private void firePendingCallbacks(List<EntryEventImpl> callbacks) {
-    Iterator<EntryEventImpl> ci = callbacks.iterator();
-    while (ci.hasNext()) {
-      EntryEventImpl ee = ci.next();
+    boolean isConfigError = false;
+    EntryEventImpl lastTransactionEvent = null;
+    try {
+      lastTransactionEvent =
+          TXLastEventInTransactionUtils.getLastTransactionEvent(callbacks, dm.getCache());
+    } catch (ServiceConfigurationError ex) {
+      logger.error(ex.getMessage());
+      isConfigError = true;
+    }
+
+    for (EntryEventImpl ee : callbacks) {
+      boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
       try {
         if (ee.getOperation().isDestroy()) {
-          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true);
+          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
+              isLastTransactionEvent);
         } else if (ee.getOperation().isInvalidate()) {
-          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, ee, true);
+          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, ee, true,
+              isLastTransactionEvent);
         } else if (ee.getOperation().isCreate()) {
-          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true);
+          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true,
+              isLastTransactionEvent);
         } else {
-          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true);
+          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true,
+              isLastTransactionEvent);
         }
       } finally {
         ee.release();
       }
     }
   }
+
 
   protected void processCacheRuntimeException(CacheRuntimeException problem) {
     if (problem instanceof RegionDestroyedException) { // catch RegionDestroyedException

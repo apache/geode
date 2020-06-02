@@ -1023,9 +1023,12 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
   @Test
   public void testClientServerQueryMixedTypes() throws CacheException {
 
-    final String[] testQueries = new String[] {"select ticker from /root/" + regionName,
-        "select ticker from /root/" + regionName + " p where IS_DEFINED(p.ticker)",
-        "select ticker from /root/" + regionName + " where ticker = 'vmware'",};
+    final String[] testQueries =
+        new String[] {"select ticker from " + SEPARATOR + "root" + SEPARATOR + regionName,
+            "select ticker from " + SEPARATOR + "root" + SEPARATOR + regionName
+                + " p where IS_DEFINED(p.ticker)",
+            "select ticker from " + SEPARATOR + "root" + SEPARATOR + regionName
+                + " where ticker = 'vmware'",};
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -2680,7 +2683,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             PortfolioPdx v = new PortfolioPdx(x, x);
             region.put(k, v);
           }
-          Query q = queryService.newQuery("SELECT DISTINCT * from /" + name + " WHERE ID = 2");
+          Query q =
+              queryService.newQuery("SELECT DISTINCT * from " + SEPARATOR + name + " WHERE ID = 2");
           SelectResults qResult = (SelectResults) q.execute();
           for (Object o : qResult.asList()) {
             System.out.println("o = " + o);
@@ -3640,7 +3644,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         try {
           SelectResults results = (SelectResults) qs
               .newQuery(
-                  "select r from /testJson r, r.Address a, a.phones pn where pn.number = '412'")
+                  "select r from " + SEPARATOR
+                      + "testJson r, r.Address a, a.phones pn where pn.number = '412'")
               .execute();
           assertEquals(results.size(), 1);
         } catch (Exception e) {
@@ -3690,10 +3695,14 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         QueryService qs = getCache().getQueryService();
         try {
           SelectResults result = (SelectResults) qs
-              .newQuery("select r from /testJson r, r.Address a where a.Line1 = 'NYC'").execute();
+              .newQuery(
+                  "select r from " + SEPARATOR + "testJson r, r.Address a where a.Line1 = 'NYC'")
+              .execute();
           assertEquals(1, result.size());
           result = (SelectResults) qs
-              .newQuery("select r from /testJson r, r.Address a where a = 'my address'").execute();
+              .newQuery(
+                  "select r from " + SEPARATOR + "testJson r, r.Address a where a = 'my address'")
+              .execute();
           assertEquals(1, result.size());
         } catch (Exception e) {
           e.printStackTrace();

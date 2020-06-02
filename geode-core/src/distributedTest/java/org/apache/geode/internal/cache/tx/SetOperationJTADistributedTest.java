@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache.tx;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -133,14 +134,14 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
   }
 
   private void loadRegion() {
-    Region<Long, String> region = basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
     testData.forEach((k, v) -> region.put(k, v));
   }
 
   private void verifyRegionValuesWhenSetOperationStartsJTA() throws Exception {
     Context ctx = getCache().getJNDIContext();
     UserTransaction userTX = startUserTransaction(ctx);
-    Region<Long, String> region = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = getCache().getRegion(SEPARATOR + REGION_NAME);
     try {
       userTX.begin();
       Collection<String> set = region.values();
@@ -172,7 +173,7 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
   private void verifyRegionValuesWhenSetOperationDoesNotStartJTA() throws Exception {
     Context ctx = getCache().getJNDIContext();
     UserTransaction userTX = startUserTransaction(ctx);
-    Region<Long, String> region = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    Region<Long, String> region = getCache().getRegion(SEPARATOR + REGION_NAME);
     try {
       userTX.begin();
       Collection<String> set = region.values();

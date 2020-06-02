@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
@@ -60,12 +62,17 @@ public class QueryCommand extends GfshCommand {
       @CliOption(key = "file", help = "File in which to output the results.",
           optionContext = ConverterHint.FILE) final File outputFile,
       @CliOption(key = CliStrings.QUERY__INTERACTIVE, unspecifiedDefaultValue = "false",
-          help = CliStrings.QUERY__INTERACTIVE__HELP) final boolean interactive) {
-    DataCommandResult dataResult = select(query);
+          help = CliStrings.QUERY__INTERACTIVE__HELP) final boolean interactive,
+      @CliOption(key = CliStrings.MEMBER,
+          optionContext = ConverterHint.MEMBERIDNAME,
+          help = CliStrings.QUERY__MEMBER__HELP) final String memberNameOrId) {
+
+    DistributedMember targetMember = memberNameOrId == null ? null : getMember(memberNameOrId);
+    DataCommandResult dataResult = select(query, targetMember);
     return dataResult.toSelectCommandResult();
   }
 
-  private DataCommandResult select(String query) {
+  DataCommandResult select(String query, DistributedMember targetMember) {
     Cache cache = getCache();
     DataCommandResult dataResult;
 
@@ -97,9 +104,8 @@ public class QueryCommand extends GfshCommand {
 
       regionsInQuery = Collections.unmodifiableSet(regions);
       if (regionsInQuery.size() > 0) {
-        Set<DistributedMember> members =
-            ManagementUtils
-                .getQueryRegionsAssociatedMembers(regionsInQuery, (InternalCache) cache, false);
+        Set<DistributedMember> members = getMembers(targetMember, (InternalCache) cache,
+            regionsInQuery);
         if (members != null && members.size() > 0) {
           DataCommandFunction function = new DataCommandFunction();
           DataCommandRequest request = new DataCommandRequest();
@@ -122,7 +128,7 @@ public class QueryCommand extends GfshCommand {
       } else {
         return DataCommandResult.createSelectInfoResult(null, null, -1, null,
             CliStrings.format(CliStrings.QUERY__MSG__INVALID_QUERY,
-                "Region mentioned in query probably missing /"),
+                "Region mentioned in query probably missing " + SEPARATOR),
             false);
       }
     } catch (QueryInvalidException qe) {
@@ -130,6 +136,19 @@ public class QueryCommand extends GfshCommand {
       return DataCommandResult.createSelectInfoResult(null, null, -1, null,
           CliStrings.format(CliStrings.QUERY__MSG__INVALID_QUERY, qe.getMessage()), false);
     }
+  }
+
+  Set<DistributedMember> getMembers(DistributedMember targetMember, InternalCache cache,
+      Set<String> regionsInQuery) {
+    return targetMember == null
+        ? getQueryRegionsAssociatedMembers(cache, regionsInQuery)
+        : Collections.singleton(targetMember);
+  }
+
+  Set<DistributedMember> getQueryRegionsAssociatedMembers(InternalCache cache,
+      Set<String> regionsInQuery) {
+    return ManagementUtils
+        .getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);
   }
 
   public static DataCommandResult callFunctionForRegion(DataCommandRequest request,

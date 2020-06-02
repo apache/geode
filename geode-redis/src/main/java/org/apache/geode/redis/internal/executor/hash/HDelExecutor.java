@@ -14,13 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -41,18 +41,18 @@ import org.apache.geode.redis.internal.RedisDataType;
  */
 public class HDelExecutor extends HashExecutor {
 
-  private final int START_FIELDS_INDEX = 2;
-
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     ByteArrayWrapper key = command.getKey();
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    ArrayList<ByteArrayWrapper> fieldsToDelete =
+        new ArrayList<>(commandElems.subList(2, commandElems.size()));
+    int numDeleted = redisHashCommands.hdel(key, fieldsToDelete);
 
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
-    RedisHash hash = new GeodeRedisHashSynchronized(key, context);
-    int numDeleted = hash.hdel(commandElems.subList(2, commandElems.size()));
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
+    return RedisResponse.integer(numDeleted);
   }
 
 }

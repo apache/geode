@@ -39,13 +39,14 @@ public class ParallelGatewaySenderEventProcessorTest {
   public void setup() {
     when(sender.getCache()).thenReturn(mock(InternalCache.class));
     when(sender.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(sender.getId()).thenReturn("");
   }
 
   @Test
   public void eventQueueSizeReturnsQueueLocalSize() {
     ParallelGatewaySenderEventProcessor processor =
         spy(new ParallelGatewaySenderEventProcessor(sender, mock(
-            ThreadsMonitoring.class)));
+            ThreadsMonitoring.class), false));
     doReturn(queue).when(processor).getQueue();
 
     processor.eventQueueSize();
@@ -57,7 +58,7 @@ public class ParallelGatewaySenderEventProcessorTest {
   public void eventQueueSizeReturnsZeroIfQueueIsNull() {
     ParallelGatewaySenderEventProcessor processor =
         spy(new ParallelGatewaySenderEventProcessor(sender, mock(
-            ThreadsMonitoring.class)));
+            ThreadsMonitoring.class), false));
     doReturn(null).when(processor).getQueue();
 
     assertThat(processor.eventQueueSize()).isEqualTo(0);

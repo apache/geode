@@ -27,6 +27,6 @@ public class ProxySocketFactories {
    * @param port the port of the sni proxy
    */
   public static SocketFactory sni(String hostname, int port) {
-    return new SniSocketFactory(hostname, port);
+    return new SniProxySocketFactory(hostname, port);
   }
 }

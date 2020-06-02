@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -91,7 +92,7 @@ public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
         @Override
         public void run() {
           Cache cache = getCache();
-          Region region = cache.getRegion("/region");
+          Region region = cache.getRegion(SEPARATOR + "region");
           region.destroyRegion();
         }
       };
@@ -104,7 +105,7 @@ public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
           Assert.fail("Wrong exception", e);
         }
         RegionDestroyedException rde = (RegionDestroyedException) e.getCause();
-        assertEquals("Error on loop " + i, "/region", rde.getRegionFullPath());
+        assertEquals("Error on loop " + i, SEPARATOR + "region", rde.getRegionFullPath());
       }
       future.getResult(60 * 1000);
     }
@@ -154,7 +155,7 @@ public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
         @Override
         public void run() {
           Cache cache = getCache();
-          Region region = cache.getRegion("/region");
+          Region region = cache.getRegion(SEPARATOR + "region");
           region.destroyRegion();
         }
       };
@@ -167,7 +168,7 @@ public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
           Assert.fail("Wrong exception", e);
         }
         RegionDestroyedException rde = (RegionDestroyedException) e.getCause();
-        assertEquals("Error on loop " + i, "/region", rde.getRegionFullPath());
+        assertEquals("Error on loop " + i, SEPARATOR + "region", rde.getRegionFullPath());
       }
       future.getResult(60 * 1000);
     }

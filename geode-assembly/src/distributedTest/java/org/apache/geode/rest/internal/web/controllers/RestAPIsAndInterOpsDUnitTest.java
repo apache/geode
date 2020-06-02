@@ -14,6 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
@@ -86,11 +87,13 @@ public class RestAPIsAndInterOpsDUnitTest
   private static final String PEOPLE_REGION_NAME = "People";
 
   private static final String findAllPeopleQuery =
-      "/queries?id=findAllPeople&q=SELECT%20*%20FROM%20/People";
+      "/queries?id=findAllPeople&q=SELECT%20*%20FROM%20" + SEPARATOR + "People";
   private static final String findPeopleByGenderQuery =
-      "/queries?id=filterByGender&q=SELECT%20*%20from%20/People%20where%20gender=$1";
+      "/queries?id=filterByGender&q=SELECT%20*%20from%20" + SEPARATOR
+          + "People%20where%20gender=$1";
   private static final String findPeopleByLastNameQuery =
-      "/queries?id=filterByLastName&q=SELECT%20*%20from%20/People%20where%20lastName=$1";
+      "/queries?id=filterByLastName&q=SELECT%20*%20from%20" + SEPARATOR
+          + "People%20where%20lastName=$1";
 
   private static final String[] PARAM_QUERY_IDS_ARRAY =
       {"findAllPeople", "filterByGender", "filterByLastName"};

@@ -16,40 +16,23 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.List;
 
-import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class DelExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    if (context.hasTransaction()) {
-      throw new UnsupportedOperationInTransactionException();
-    }
+    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
-    List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.DEL));
-      return;
-    }
-
-    int numRemoved = 0;
-
-    for (int i = 1; i < commandElems.size(); i++) {
-      byte[] byteKey = commandElems.get(i);
-      ByteArrayWrapper key = new ByteArrayWrapper(byteKey);
-      RedisDataType type = context.getKeyRegistrar().getType(key);
-      if (removeEntry(key, type, context)) {
-        numRemoved++;
-      }
-    }
+    long numRemoved = commandElems
+        .subList(1, commandElems.size())
+        .stream()
+        .filter((key) -> getRedisKeyCommands(context).del(key))
+        .count();
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }
-
 }

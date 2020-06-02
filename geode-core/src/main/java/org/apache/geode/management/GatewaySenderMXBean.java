@@ -186,6 +186,15 @@ public interface GatewaySenderMXBean {
   void start();
 
   /**
+   * Starts this GatewaySender and cleans previous queue content.
+   * Once the GatewaySender is running its configuration cannot be changed.
+   *
+   */
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
+  void startWithCleanQueue();
+
+  /**
    * Stops this GatewaySender.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
@@ -245,6 +254,8 @@ public interface GatewaySenderMXBean {
    * @return True if the property is set, false otherwise.
    */
   boolean isParallel();
+
+  boolean mustGroupTransactionEvents();
 
   /**
    * Returns the host and port information of GatewayReceiver to which this gateway sender is

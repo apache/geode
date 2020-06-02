@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -58,7 +59,7 @@ public class QRegionInterfaceJUnitTest {
   @Test
   public void testGetKeys() throws Exception {
     Query query = CacheUtils.getQueryService()
-        .newQuery("select distinct * from /Portfolios.keys where toString = '1'");
+        .newQuery("select distinct * from " + SEPARATOR + "Portfolios.keys where toString = '1'");
     Collection result = (Collection) query.execute();
     if (!result.iterator().next().equals("1"))
       fail(query.getQueryString());
@@ -67,7 +68,7 @@ public class QRegionInterfaceJUnitTest {
   @Test
   public void testGetValues() throws Exception {
     Query query = CacheUtils.getQueryService()
-        .newQuery("select distinct * from /Portfolios.values where ID = 1");
+        .newQuery("select distinct * from " + SEPARATOR + "Portfolios.values where ID = 1");
     Collection result = (Collection) query.execute();
     Portfolio p = (Portfolio) result.iterator().next();
     if (p.getID() != 1)
@@ -77,7 +78,8 @@ public class QRegionInterfaceJUnitTest {
   @Test
   public void testGetEntries() throws Exception {
     Query query = CacheUtils.getQueryService()
-        .newQuery("select distinct * from /Portfolios.entries where value.ID = 1 and key = '1'");
+        .newQuery("select distinct * from " + SEPARATOR
+            + "Portfolios.entries where value.ID = 1 and key = '1'");
     Collection result = (Collection) query.execute();
     Region.Entry entry = (Region.Entry) result.iterator().next();
     if (!entry.getKey().equals("1") || ((Portfolio) entry.getValue()).getID() != 1)
@@ -86,8 +88,9 @@ public class QRegionInterfaceJUnitTest {
 
   @Test
   public void testMiscQueries() throws Exception {
-    String testData[][] = {{"/Portfolios.fullPath", "/Portfolios"}, {"/Portfolios.size", "4"},
-        {"/Portfolios.size > 0", "true"},};
+    String testData[][] = {{SEPARATOR + "Portfolios.fullPath", SEPARATOR + "Portfolios"},
+        {SEPARATOR + "Portfolios.size", "4"},
+        {SEPARATOR + "Portfolios.size > 0", "true"},};
     for (int i = 0; i < testData.length; i++) {
       Query query = CacheUtils.getQueryService().newQuery(testData[i][0]);
       String result = query.execute().toString();
@@ -99,7 +102,7 @@ public class QRegionInterfaceJUnitTest {
   @Test
   public void testBug35905KeySet() throws Exception {
     Query query = CacheUtils.getQueryService()
-        .newQuery("select distinct * from /Portfolios.keySet where toString = '1'");
+        .newQuery("select distinct * from " + SEPARATOR + "Portfolios.keySet where toString = '1'");
     Collection result = (Collection) query.execute();
     if (!result.iterator().next().equals("1"))
       fail(query.getQueryString());
@@ -108,7 +111,8 @@ public class QRegionInterfaceJUnitTest {
   @Test
   public void testBug35905EntrySet() throws Exception {
     Query query = CacheUtils.getQueryService().newQuery(
-        "select distinct key from /Portfolios.entrySet , value.positions.values   where value.ID = 1 and key = '1'");
+        "select distinct key from " + SEPARATOR
+            + "Portfolios.entrySet , value.positions.values   where value.ID = 1 and key = '1'");
     Collection result = (Collection) query.execute();
     if (!result.iterator().next().equals("1"))
       fail(query.getQueryString());
@@ -116,11 +120,12 @@ public class QRegionInterfaceJUnitTest {
 
   @Test
   public void testBug35905ContainsValue() throws Exception {
-    String testData[][] = {{"/Portfolios.containsValue($1)", "true"},};
+    String testData[][] = {{SEPARATOR + "Portfolios.containsValue($1)", "true"},};
     for (int i = 0; i < testData.length; i++) {
       Query query = CacheUtils.getQueryService().newQuery(testData[i][0]);
       String result =
-          query.execute(new Object[] {CacheUtils.getRegion("/Portfolios").get("1")}).toString();
+          query.execute(new Object[] {CacheUtils.getRegion(SEPARATOR + "Portfolios").get("1")})
+              .toString();
       if (!result.equals(testData[i][1]))
         fail(query.getQueryString());
     }
@@ -131,10 +136,10 @@ public class QRegionInterfaceJUnitTest {
     Region region1 = null;
     Region region2 = null;
     try {
-      region1 = CacheUtils.getRegion("/Portfolios").createSubregion("region1",
-          CacheUtils.getRegion("/Portfolios").getAttributes());
-      region2 = CacheUtils.getRegion("/Portfolios").createSubregion("region2",
-          CacheUtils.getRegion("/Portfolios").getAttributes());
+      region1 = CacheUtils.getRegion(SEPARATOR + "Portfolios").createSubregion("region1",
+          CacheUtils.getRegion(SEPARATOR + "Portfolios").getAttributes());
+      region2 = CacheUtils.getRegion(SEPARATOR + "Portfolios").createSubregion("region2",
+          CacheUtils.getRegion(SEPARATOR + "Portfolios").getAttributes());
     } catch (RegionExistsException ree) {
       fail("Test failed because of Exception= " + ree);
     }
@@ -143,7 +148,8 @@ public class QRegionInterfaceJUnitTest {
     region2.put("6", new Portfolio(2));
     region2.put("6", new Portfolio(3));
     Query query = CacheUtils.getQueryService()
-        .newQuery("select distinct * from /Portfolios.subregions(false) where remove('5')!= null");
+        .newQuery("select distinct * from " + SEPARATOR
+            + "Portfolios.subregions(false) where remove('5')!= null");
     try {
       query.execute();
       assertTrue(!region1.containsKey("5"));

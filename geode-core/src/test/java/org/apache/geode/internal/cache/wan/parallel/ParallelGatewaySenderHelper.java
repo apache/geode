@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -32,7 +33,6 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.BucketAdvisor;
@@ -62,7 +62,7 @@ public class ParallelGatewaySenderHelper {
   public static ParallelGatewaySenderEventProcessor createParallelGatewaySenderEventProcessor(
       AbstractGatewaySender sender) {
     ParallelGatewaySenderEventProcessor processor =
-        new ParallelGatewaySenderEventProcessor(sender, null);
+        new ParallelGatewaySenderEventProcessor(sender, null, false);
     ConcurrentParallelGatewaySenderQueue queue = new ConcurrentParallelGatewaySenderQueue(sender,
         new ParallelGatewaySenderEventProcessor[] {processor});
     Set<RegionQueue> queues = new HashSet<>();
@@ -77,6 +77,7 @@ public class ParallelGatewaySenderHelper {
     when(sender.getCache()).thenReturn(cache);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(sender.getCancelCriterion()).thenReturn(cancelCriterion);
+    when(sender.getId()).thenReturn("");
     return sender;
   }
 
@@ -92,7 +93,8 @@ public class ParallelGatewaySenderHelper {
     EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
     eei.setEventId(new EventID(new byte[16], threadId, sequenceId, bucketId));
     GatewaySenderEventImpl gsei =
-        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, bucketId);
+        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, bucketId,
+            false);
     gsei.setShadowKey(shadowKey);
     return gsei;
   }
@@ -154,7 +156,7 @@ public class ParallelGatewaySenderHelper {
   }
 
   public static String getRegionQueueName(String gatewaySenderId) {
-    return Region.SEPARATOR + gatewaySenderId + ParallelGatewaySenderQueue.QSTRING;
+    return SEPARATOR + gatewaySenderId + ParallelGatewaySenderQueue.QSTRING;
   }
 
   private static EnumListenerEvent getEnumListenerEvent(Operation operation) {

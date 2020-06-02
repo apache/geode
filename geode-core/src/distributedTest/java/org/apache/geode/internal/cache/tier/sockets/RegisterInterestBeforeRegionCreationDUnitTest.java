@@ -123,7 +123,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
     CacheSerializableRunnable putFromServer = new CacheSerializableRunnable("putFromServer") {
       @Override
       public void run2() throws CacheException {
-        Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+        Region region = cache.getRegion(SEPARATOR + REGION_NAME);
         assertNotNull(region);
         for (int i = 0; i < 1000; i++) {
           region.put("key" + i, "value" + i);
@@ -240,7 +240,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
     factory.setPoolName(p.getName());
     RegionAttributes attrs = factory.createRegionAttributes();
     cache.createVMRegion(REGION_NAME, attrs);
-    Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+    Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     region.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
   }

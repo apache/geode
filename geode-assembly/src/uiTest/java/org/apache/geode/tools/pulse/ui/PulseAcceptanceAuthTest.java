@@ -15,6 +15,8 @@
  */
 package org.apache.geode.tools.pulse.ui;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.util.Properties;
 
 import org.junit.AfterClass;
@@ -70,7 +72,7 @@ public class PulseAcceptanceAuthTest extends PulseAcceptanceTestBase {
 
     gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfsh.executeAndAssertThat("create region --name=FOO --type=REPLICATE").statusIsSuccess();
-    gfsh.executeAndAssertThat("put --key=A --value=APPLE --region=/FOO");
+    gfsh.executeAndAssertThat("put --key=A --value=APPLE --region=" + SEPARATOR + "FOO");
   }
 
   @AfterClass

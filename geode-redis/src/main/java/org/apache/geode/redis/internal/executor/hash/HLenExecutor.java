@@ -14,14 +14,11 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.Map;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -38,34 +35,14 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
  */
 public class HLenExecutor extends HashExecutor {
 
-  private final int NOT_EXISTS = 0;
-
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
-    final int size;
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    int len = redisHashCommands.hlen(key);
 
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
-
-      if (map == null) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-        return;
-      }
-
-      size = map.size();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
+    return RedisResponse.integer(len);
   }
 
 }

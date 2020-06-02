@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -167,7 +168,8 @@ public class ClientClusterManagementServiceTest {
         service.getFuture(opType, opId);
 
     await().untilAsserted(
-        () -> verify(serviceTransport).submitMessageForGetOperation(same(opType), same(opId)));
+        () -> verify(serviceTransport, atLeastOnce()).submitMessageForGetOperation(same(opType),
+            same(opId)));
     assertThat(future.isDone()).isFalse();
 
     future.cancel(true);

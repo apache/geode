@@ -320,9 +320,10 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
 
     if (!useAlias) {
       queryString =
-          "SELECT p.shortID FROM /" + regionName + " p WHERE p.ID >= 0 GROUP BY p.shortID ";
+          "SELECT p.shortID FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID >= 0 GROUP BY p.shortID ";
     } else {
-      queryString = "SELECT p.shortID AS short_id FROM /" + regionName
+      queryString = "SELECT p.shortID AS short_id FROM " + SEPARATOR + regionName
           + " p WHERE p.ID >= 0 GROUP BY short_id ";
     }
 
@@ -365,7 +366,7 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     createRegion(regionType);
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 150), server1, server2, server3,
         server4);
-    String queryString = "SELECT p.status AS status, p.ID FROM /" + regionName
+    String queryString = "SELECT p.status AS status, p.ID FROM " + SEPARATOR + regionName
         + " p WHERE p.ID > 0 GROUP BY status, p.ID ";
 
     VMProvider.invokeInEveryMember(() -> {
@@ -396,15 +397,16 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 200), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT * FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "*";
+        ? "ELEMENT(SELECT * FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)" : "*";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, COUNT(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, COUNT(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY p.status";
     } else {
-      queryString = "SELECT p.status AS st, COUNT(" + expression + ") AS ct FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, COUNT(" + expression + ") AS ct FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -440,15 +442,16 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 200), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT * FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "*";
+        ? "ELEMENT(SELECT * FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)" : "*";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, COUNT(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, COUNT(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY p.status";
     } else {
-      queryString = "SELECT p.status AS st, COUNT(" + expression + ") AS ct FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, COUNT(" + expression + ") AS ct FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -483,16 +486,19 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 200), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.shortID FROM /" + regionName + " iter WHERE iter.ID = p.ID)"
+        ? "ELEMENT(SELECT iter.shortID FROM " + SEPARATOR + regionName
+            + " iter WHERE iter.ID = p.ID)"
         : "p.shortID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, COUNT(DISTINCT " + expression + ") FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY status";
+      queryString =
+          "SELECT p.status, COUNT(DISTINCT " + expression + ") FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, COUNT(DISTINCT " + expression + ") AS ct FROM /"
-          + regionName + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, COUNT(DISTINCT " + expression + ") AS ct FROM " + SEPARATOR
+              + regionName + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -528,16 +534,19 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 200), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.shortID FROM /" + regionName + " iter WHERE iter.ID = p.ID)"
+        ? "ELEMENT(SELECT iter.shortID FROM " + SEPARATOR + regionName
+            + " iter WHERE iter.ID = p.ID)"
         : "p.shortID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, COUNT(DISTINCT " + expression + ") FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY status";
+      queryString =
+          "SELECT p.status, COUNT(DISTINCT " + expression + ") FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, COUNT(DISTINCT " + expression + ") AS ct FROM /"
-          + regionName + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, COUNT(DISTINCT " + expression + ") AS ct FROM " + SEPARATOR
+              + regionName + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -574,10 +583,10 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.shortID, COUNT(*) FROM /" + regionName
+      queryString = "SELECT p.shortID, COUNT(*) FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY p.shortID ORDER BY COUNT(*) DESC";
     } else {
-      queryString = "SELECT p.shortID AS shid, COUNT(*) AS ct FROM /" + regionName
+      queryString = "SELECT p.shortID AS shid, COUNT(*) AS ct FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY shid ORDER BY ct DESC";
     }
 
@@ -626,10 +635,10 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.shortID, COUNT(*) FROM /" + regionName
+      queryString = "SELECT p.shortID, COUNT(*) FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY p.shortID ORDER BY COUNT(*) DESC";
     } else {
-      queryString = "SELECT p.shortID AS shid, COUNT(*) AS ct FROM /" + regionName
+      queryString = "SELECT p.shortID AS shid, COUNT(*) AS ct FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY shid ORDER BY ct DESC";
     }
 
@@ -675,15 +684,17 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 600), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, SUM(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, SUM(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, SUM(" + expression + ") AS sm FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, SUM(" + expression + ") AS sm FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -719,15 +730,17 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 600), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, SUM(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, SUM(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, SUM(" + expression + ") AS sm FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, SUM(" + expression + ") AS sm FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -762,16 +775,19 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 600), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.shortID FROM /" + regionName + " iter WHERE iter.ID = p.ID)"
+        ? "ELEMENT(SELECT iter.shortID FROM " + SEPARATOR + regionName
+            + " iter WHERE iter.ID = p.ID)"
         : "p.shortID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, SUM(DISTINCT " + expression + ") FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY status";
+      queryString =
+          "SELECT p.status, SUM(DISTINCT " + expression + ") FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, SUM(DISTINCT " + expression + ") AS sm FROM /"
-          + regionName + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, SUM(DISTINCT " + expression + ") AS sm FROM " + SEPARATOR
+              + regionName + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -809,16 +825,19 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 600), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.shortID FROM /" + regionName + " iter WHERE iter.ID = p.ID)"
+        ? "ELEMENT(SELECT iter.shortID FROM " + SEPARATOR + regionName
+            + " iter WHERE iter.ID = p.ID)"
         : "p.shortID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, SUM(DISTINCT " + expression + ") FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY status";
+      queryString =
+          "SELECT p.status, SUM(DISTINCT " + expression + ") FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, SUM(DISTINCT " + expression + ") AS sm FROM /"
-          + regionName + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, SUM(DISTINCT " + expression + ") AS sm FROM " + SEPARATOR
+              + regionName + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -857,10 +876,10 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.shortID, SUM(p.ID) FROM /" + regionName
+      queryString = "SELECT p.shortID, SUM(p.ID) FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY p.shortID ORDER BY SUM(p.ID) ASC";
     } else {
-      queryString = "SELECT p.shortID AS shid, SUM(p.ID) AS sm FROM /" + regionName
+      queryString = "SELECT p.shortID AS shid, SUM(p.ID) AS sm FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY shid ORDER BY sm ASC";
     }
 
@@ -908,10 +927,10 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.shortID, SUM(p.ID) FROM /" + regionName
+      queryString = "SELECT p.shortID, SUM(p.ID) FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY p.shortID ORDER BY SUM(p.ID) ASC";
     } else {
-      queryString = "SELECT p.shortID AS shid, SUM(p.ID) AS sm FROM /" + regionName
+      queryString = "SELECT p.shortID AS shid, SUM(p.ID) AS sm FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY shid ORDER BY sm ASC";
     }
 
@@ -956,15 +975,17 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, AVG(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, AVG(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, AVG(" + expression + ") AS av FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, AVG(" + expression + ") AS av FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1000,15 +1021,17 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, AVG(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, AVG(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, AVG(" + expression + ") AS av FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, AVG(" + expression + ") AS av FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1043,16 +1066,19 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.shortID FROM /" + regionName + " iter WHERE iter.ID = p.ID)"
+        ? "ELEMENT(SELECT iter.shortID FROM " + SEPARATOR + regionName
+            + " iter WHERE iter.ID = p.ID)"
         : "p.shortID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, AVG(DISTINCT " + expression + ") FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY status";
+      queryString =
+          "SELECT p.status, AVG(DISTINCT " + expression + ") FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, AVG(DISTINCT p.shortID) AS av FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, AVG(DISTINCT p.shortID) AS av FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1092,16 +1118,19 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.shortID FROM /" + regionName + " iter WHERE iter.ID = p.ID)"
+        ? "ELEMENT(SELECT iter.shortID FROM " + SEPARATOR + regionName
+            + " iter WHERE iter.ID = p.ID)"
         : "p.shortID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, AVG(DISTINCT " + expression + ") FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY status";
+      queryString =
+          "SELECT p.status, AVG(DISTINCT " + expression + ") FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, AVG(DISTINCT p.shortID) AS av FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, AVG(DISTINCT p.shortID) AS av FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1142,10 +1171,10 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.shortID, AVG(p.ID) FROM /" + regionName
+      queryString = "SELECT p.shortID, AVG(p.ID) FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY p.shortID ORDER BY AVG(p.ID) DESC";
     } else {
-      queryString = "SELECT p.shortID AS shid, AVG(p.ID) AS ag FROM /" + regionName
+      queryString = "SELECT p.shortID AS shid, AVG(p.ID) AS ag FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY shid ORDER BY ag DESC";
     }
 
@@ -1194,10 +1223,10 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.shortID, AVG(p.ID) FROM /" + regionName
+      queryString = "SELECT p.shortID, AVG(p.ID) FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY p.shortID ORDER BY AVG(p.ID) DESC";
     } else {
-      queryString = "SELECT p.shortID AS shid, AVG(p.ID) AS ag FROM /" + regionName
+      queryString = "SELECT p.shortID AS shid, AVG(p.ID) AS ag FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY shid ORDER BY ag DESC";
     }
 
@@ -1243,15 +1272,17 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, MAX(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, MAX(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, MAX(" + expression + ") as mx FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, MAX(" + expression + ") as mx FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1287,15 +1318,17 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, MAX(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, MAX(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, MAX(" + expression + ") as mx FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, MAX(" + expression + ") as mx FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1330,15 +1363,17 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, MIN(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, MIN(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, MIN(" + expression + ") as mx FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, MIN(" + expression + ") as mx FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1374,15 +1409,17 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
-      queryString = "SELECT p.status, MIN(" + expression + ") FROM /" + regionName
+      queryString = "SELECT p.status, MIN(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status";
     } else {
-      queryString = "SELECT p.status AS st, MIN(" + expression + ") as mx FROM /" + regionName
-          + " p WHERE p.ID > 0 GROUP BY st";
+      queryString =
+          "SELECT p.status AS st, MIN(" + expression + ") as mx FROM " + SEPARATOR + regionName
+              + " p WHERE p.ID > 0 GROUP BY st";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1417,16 +1454,18 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
       queryString = "SELECT p.status, p.description, SUM(" + expression + "), COUNT(" + expression
-          + "), AVG(" + expression + ") FROM /" + regionName
+          + "), AVG(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status, description";
     } else {
       queryString = "SELECT p.status AS st, p.description as ds, SUM(" + expression
-          + ") as sm, COUNT(" + expression + ") as ag, AVG(" + expression + ") as ct FROM /"
+          + ") as sm, COUNT(" + expression + ") as ag, AVG(" + expression + ") as ct FROM "
+          + SEPARATOR
           + regionName + " p WHERE p.ID > 0 GROUP BY st, ds";
     }
 
@@ -1474,16 +1513,18 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
       queryString = "SELECT p.status, p.description, SUM(" + expression + "), COUNT(" + expression
-          + "), AVG(" + expression + ") FROM /" + regionName
+          + "), AVG(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 GROUP BY status, description";
     } else {
       queryString = "SELECT p.status AS st, p.description as ds, SUM(" + expression
-          + ") as sm, COUNT(" + expression + ") as ag, AVG(" + expression + ") as ct FROM /"
+          + ") as sm, COUNT(" + expression + ") as ag, AVG(" + expression + ") as ct FROM "
+          + SEPARATOR
           + regionName + " p WHERE p.ID > 0 GROUP BY st, ds";
     }
 
@@ -1534,11 +1575,13 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
 
     if (!useAlias) {
       queryString =
-          "SELECT pos.secId, COUNT(pos.mktValue), MAX(pos.mktValue), MIN(pos.mktValue), SUM(pos.mktValue), AVG(pos.mktValue) FROM /"
+          "SELECT pos.secId, COUNT(pos.mktValue), MAX(pos.mktValue), MIN(pos.mktValue), SUM(pos.mktValue), AVG(pos.mktValue) FROM "
+              + SEPARATOR
               + regionName + " p, p.positions.values pos GROUP BY pos.secId LIMIT 7";
     } else {
       queryString =
-          "SELECT pos.secId AS posSec, COUNT(pos.mktValue) as ct, MAX(pos.mktValue) as mx, MIN(pos.mktValue) as mn, SUM(pos.mktValue) as sm, AVG(pos.mktValue) as ag FROM /"
+          "SELECT pos.secId AS posSec, COUNT(pos.mktValue) as ct, MAX(pos.mktValue) as mx, MIN(pos.mktValue) as mn, SUM(pos.mktValue) as sm, AVG(pos.mktValue) as ag FROM "
+              + SEPARATOR
               + regionName + " p, p.positions.values pos GROUP BY posSec LIMIT 7";
     }
 
@@ -1600,11 +1643,13 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
 
     if (!useAlias) {
       queryString =
-          "SELECT pos.secId, COUNT(pos.mktValue), MAX(pos.mktValue), MIN(pos.mktValue), SUM(pos.mktValue), AVG(pos.mktValue) FROM /"
+          "SELECT pos.secId, COUNT(pos.mktValue), MAX(pos.mktValue), MIN(pos.mktValue), SUM(pos.mktValue), AVG(pos.mktValue) FROM "
+              + SEPARATOR
               + regionName + " p, p.positions.values pos GROUP BY pos.secId LIMIT 7";
     } else {
       queryString =
-          "SELECT pos.secId AS posSec, COUNT(pos.mktValue) as ct, MAX(pos.mktValue) as mx, MIN(pos.mktValue) as mn, SUM(pos.mktValue) as sm, AVG(pos.mktValue) as ag FROM /"
+          "SELECT pos.secId AS posSec, COUNT(pos.mktValue) as ct, MAX(pos.mktValue) as mx, MIN(pos.mktValue) as mn, SUM(pos.mktValue) as sm, AVG(pos.mktValue) as ag FROM "
+              + SEPARATOR
               + regionName + " p, p.positions.values pos GROUP BY posSec LIMIT 7";
     }
 
@@ -1661,17 +1706,18 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
       queryString = "SELECT AVG(" + expression + "), SUM(" + expression + "), MIN(" + expression
-          + "), MAX(" + expression + "), COUNT(" + expression + ") FROM /" + regionName
+          + "), MAX(" + expression + "), COUNT(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0";
     } else {
       queryString = "SELECT AVG(" + expression + ") as ag, SUM(" + expression + ") as sm, MIN("
           + expression + ") as mn, MAX(" + expression + ") as mx, COUNT(" + expression
-          + ") as ct FROM /" + regionName + " p WHERE p.ID > 0";
+          + ") as ct FROM " + SEPARATOR + regionName + " p WHERE p.ID > 0";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1709,17 +1755,18 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.ID FROM /" + regionName + " iter WHERE iter.ID = p.ID)" : "p.ID";
+        ? "ELEMENT(SELECT iter.ID FROM " + SEPARATOR + regionName + " iter WHERE iter.ID = p.ID)"
+        : "p.ID";
     String queryString;
 
     if (!useAlias) {
       queryString = "SELECT AVG(" + expression + "), SUM(" + expression + "), MIN(" + expression
-          + "), MAX(" + expression + "), COUNT(" + expression + ") FROM /" + regionName
+          + "), MAX(" + expression + "), COUNT(" + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0";
     } else {
       queryString = "SELECT AVG(" + expression + ") as ag, SUM(" + expression + ") as sm, MIN("
           + expression + ") as mn, MAX(" + expression + ") as mx, COUNT(" + expression
-          + ") as ct FROM /" + regionName + " p WHERE p.ID > 0";
+          + ") as ct FROM " + SEPARATOR + regionName + " p WHERE p.ID > 0";
     }
 
     VMProvider.invokeInEveryMember(() -> {
@@ -1756,17 +1803,18 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.shortID FROM /" + regionName + " iter WHERE iter.ID = p.ID)"
+        ? "ELEMENT(SELECT iter.shortID FROM " + SEPARATOR + regionName
+            + " iter WHERE iter.ID = p.ID)"
         : "p.shortID";
     String queryString;
 
     if (!useAlias) {
       queryString = "SELECT AVG(DISTINCT " + expression + "), SUM(DISTINCT " + expression
-          + "), COUNT(DISTINCT " + expression + ") FROM /" + regionName
+          + "), COUNT(DISTINCT " + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 AND p.isActive() = true";
     } else {
       queryString = "SELECT AVG(DISTINCT " + expression + ") as ag, SUM(DISTINCT " + expression
-          + ") as sm, COUNT(DISTINCT " + expression + ") as ct FROM /" + regionName
+          + ") as sm, COUNT(DISTINCT " + expression + ") as ct FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 AND p.isActive() = true";
     }
 
@@ -1802,17 +1850,18 @@ public class AggregateFunctionsQueryDUnitTest implements Serializable {
     VMProvider.invokeInRandomMember(() -> populateRegion(usePdx, 300), server1, server2, server3,
         server4);
     String expression = useNestedQuery
-        ? "ELEMENT(SELECT iter.shortID FROM /" + regionName + " iter WHERE iter.ID = p.ID)"
+        ? "ELEMENT(SELECT iter.shortID FROM " + SEPARATOR + regionName
+            + " iter WHERE iter.ID = p.ID)"
         : "p.shortID";
     String queryString;
 
     if (!useAlias) {
       queryString = "SELECT AVG(DISTINCT " + expression + "), SUM(DISTINCT " + expression
-          + "), COUNT(DISTINCT " + expression + ") FROM /" + regionName
+          + "), COUNT(DISTINCT " + expression + ") FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 AND p.isActive() = true";
     } else {
       queryString = "SELECT AVG(DISTINCT " + expression + ") as ag, SUM(DISTINCT " + expression
-          + ") as sm, COUNT(DISTINCT " + expression + ") as ct FROM /" + regionName
+          + ") as sm, COUNT(DISTINCT " + expression + ") as ct FROM " + SEPARATOR + regionName
           + " p WHERE p.ID > 0 AND p.isActive() = true";
     }
 

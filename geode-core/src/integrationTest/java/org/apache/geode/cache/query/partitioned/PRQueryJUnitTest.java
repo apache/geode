@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
@@ -93,13 +94,13 @@ public class PRQueryJUnitTest {
       region.put("" + j, value);
     }
 
-    String queryString = "Select p.get('account') from /" + region.getName() + " p ";
+    String queryString = "Select p.get('account') from " + SEPARATOR + region.getName() + " p ";
     Query query = region.getCache().getQueryService().newQuery(queryString);
     SelectResults sr = (SelectResults) query.execute();
     Assert.assertTrue(sr.size() == size);
 
     try {
-      queryString = "Select p.get('acc') from /" + region.getName() + " p ";
+      queryString = "Select p.get('acc') from " + SEPARATOR + region.getName() + " p ";
       query = region.getCache().getQueryService().newQuery(queryString);
       sr = (SelectResults) query.execute();
       Assert.assertTrue(sr.size() == 10);
@@ -124,7 +125,8 @@ public class PRQueryJUnitTest {
     try {
       populateData(region, values);
 
-      String queryString = "Select distinct p from /" + region.getName() + " p order by p";
+      String queryString =
+          "Select distinct p from " + SEPARATOR + region.getName() + " p order by p";
       Query query = region.getCache().getQueryService().newQuery(queryString);
       SelectResults sr = (SelectResults) query.execute();
 
@@ -140,7 +142,8 @@ public class PRQueryJUnitTest {
     QueryService queryService = CacheUtils.getCache().getQueryService();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("TEST_REGION");
     Query query = queryService.newQuery(
-        "SELECT distinct COUNT(*) FROM (SELECT DISTINCT tr.id, tr.domain FROM /TEST_REGION tr)");
+        "SELECT distinct COUNT(*) FROM (SELECT DISTINCT tr.id, tr.domain FROM " + SEPARATOR
+            + "TEST_REGION tr)");
     region.put("1", cache.createPdxInstanceFactory("obj1").writeString("id", "1")
         .writeString("domain", "domain1").create());
     region.put("2", cache.createPdxInstanceFactory("obj2").writeString("id", "1")

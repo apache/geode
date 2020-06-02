@@ -59,8 +59,9 @@ MINOR=${VERSION_MM#*.}
 NEWMAJOR=${MAJOR}
 NEWMINOR=$((MINOR + 1))
 
-NEWVERSION=${NEWMAJOR}.${NEWMINOR}
-NEWVERSION_NODOT=${NEWVERSION//./}
+NEWVERSION_MM=${NEWMAJOR}.${NEWMINOR}
+NEWVERSION_MM_NODOT=${NEWVERSION_MM//./}
+NEWVERSION=${NEWVERSION_MM}.0
 
 set -x
 WORKSPACE=$PWD/support-${VERSION_MM}-workspace
@@ -112,6 +113,7 @@ function failMsg2 {
 trap 'failMsg2 $LINENO' ERR
 
 
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_copyright.sh ${GEODE} ${GEODE_DEVELOP} ${GEODE_EXAMPLES} ${GEODE_EXAMPLES_DEVELOP} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
 set +x
@@ -141,7 +143,7 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git checkout -b support/${VERSION_MM}
-    git push -u origin
+    git push -u origin support/${VERSION_MM}
     set +x
 done
 
@@ -157,11 +159,11 @@ git remote add myfork git@github.com:${GITHUB_USER}/geode.git || true
 git checkout -b roll-develop-to-${NEWVERSION}
 set +x
 
-#version = 1.13.0-SNAPSHOT
-sed -e "s/^version =.*/version = ${NEWVERSION}-SNAPSHOT/" -i.bak gradle.properties
+#version = 1.13.0-build.0
+sed -e "s/^version =.*/version = ${NEWVERSION}-build.0/" -i.bak gradle.properties
 
-#  initial_version: 1.13.0-SNAPSHOT
-sed -e "s/^  initial_version:.*/  initial_version: ${NEWVERSION}-SNAPSHOT/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
+#  initial_version: 1.13.0-((stuff)).0
+sed -e "s/^  initial_version:[^-]*\(-[^.0-9]*\)[.0-9]*/  initial_version: ${NEWVERSION}\1.0/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
 
 VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
 #add the new ordinal and Version constants and set them as current&highest
@@ -189,20 +191,20 @@ sed -e "s#return Collections.unmodifiableMap(allCommands#allCommands.put(Version
 #  product_version_nodot: '113'
 #  product_version_geode: '1.13'
 sed -E \
-    -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_NODOT}#" \
-    -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION}'#" \
-    -e "s#version_nodot: '[0-9]+'#version_nodot: '${NEWVERSION_NODOT}'#" \
-    -e "s#product_version_geode: '[0-9.]+'#product_version_geode: '${NEWVERSION}'#" \
+    -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" \
+    -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION_MM}'#" \
+    -e "s#version_nodot: '[0-9]+'#version_nodot: '${NEWVERSION_MM_NODOT}'#" \
+    -e "s#product_version_geode: '[0-9.]+'#product_version_geode: '${NEWVERSION_MM}'#" \
     -i.bak geode-book/config.yml
 
 #rewrite '/', '/docs/guide/113/about_geode.html'
 #rewrite '/index.html', '/docs/guide/113/about_geode.html'
-sed -E -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_NODOT}#" -i.bak geode-book/redirects.rb
+sed -E -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" -i.bak geode-book/redirects.rb
 
 rm gradle.properties.bak ci/pipelines/shared/jinja.variables.yml.bak geode-book/config.yml.bak geode-book/redirects.rb.bak $VER.bak* $COM.bak*
 set -x
 git add .
-git diff --staged
+git diff --staged --color | cat
 
 ./gradlew updateExpectedPom
 
@@ -220,17 +222,17 @@ cd ${GEODE_EXAMPLES_DEVELOP}
 git pull -r
 set +x
 
-#version = 1.13.0-SNAPSHOT
-#geodeVersion = 1.13.0-SNAPSHOT
+#version = 1.13.0-build.0
+#geodeVersion = 1.13.0-build+
 sed \
-  -e "s/^version =.*/version = ${NEWVERSION}-SNAPSHOT/" \
-  -e "s/^geodeVersion =.*/geodeVersion = ${NEWVERSION}-SNAPSHOT/" \
+  -e "s/^version =.*/version = ${NEWVERSION}-build.0/" \
+  -e "s/^geodeVersion =.*/geodeVersion = ${NEWVERSION_MM}.+/" \
   -i.bak gradle.properties
 rm gradle.properties.bak
 set -x
 git add gradle.properties
-git diff --staged
-git commit -m "point develop examples to ${NEWVERSION}-SNAPSHOT now that support/${VERSION_MM} has been created"
+git diff --staged --color | cat
+git commit -m "pair develop examples with ${NEWVERSION} now that support/${VERSION_MM} has been created"
 git push -u origin
 set +x
 
@@ -239,6 +241,7 @@ echo ""
 echo "============================================================"
 echo "Setting version on support/${VERSION_MM}"
 echo "============================================================"
+cd ${GEODE}/../..
 set -x
 ${0%/*}/set_versions.sh -v ${VERSION_MM}.0 -s -w "${WORKSPACE}"
 set +x
@@ -261,6 +264,6 @@ cd ${GEODE}/../..
 echo "Next steps:"
 echo "1. Go to https://github.com/${GITHUB_USER}/geode/pull/new/roll-develop-to-${NEWVERSION} and create the pull request"
 echo "2. Plus the BumpMinor job at https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-develop-main?group=Semver%20Management"
-echo "3. Add the new version to Jira at https://issues.apache.org/jira/projects/GEODE?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page"
+echo "3. Add ${NEWVERSION} to Jira at https://issues.apache.org/jira/projects/GEODE?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page"
 echo "4. (cd ${GEODE}/ci/pipelines/meta && ./deploy_meta.sh) #takes about 2 hours. keep re-running until successful."
 echo "5. That's it for now.  Once all needed fixes have been proposed and cherry-picked to support/${VERSION_MM} and https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM/./-}-main is green, come back and run ${0%/*}/prepare_rc.sh -v ${VERSION}.RC1"

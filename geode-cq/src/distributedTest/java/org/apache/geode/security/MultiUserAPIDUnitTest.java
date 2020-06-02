@@ -14,6 +14,7 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -134,12 +135,12 @@ public class MultiUserAPIDUnitTest {
 
 
     assertThatThrownBy(() -> {
-      Query query = pool.getQueryService().newQuery("SELECT * FROM /region");
+      Query query = pool.getQueryService().newQuery("SELECT * FROM " + SEPARATOR + "region");
       query.execute();
     }).isInstanceOf(UnsupportedOperationException.class);
 
     CqQuery cqQuery =
-        pool.getQueryService().newCq("SELECT * FROM /region",
+        pool.getQueryService().newCq("SELECT * FROM " + SEPARATOR + "region",
             new CqAttributesFactory().create());
     assertThatThrownBy(() -> cqQuery.execute())
         .hasCauseInstanceOf(UnsupportedOperationException.class);

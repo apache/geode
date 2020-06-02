@@ -37,17 +37,16 @@ This command should not be executed from `gfsh` if the objects being queried con
 **Syntax:**
 
 ``` pre
-query --query=value [--step-name=value] [--file=path/to/results/file]
+query --query=value [--file=path/to/results/file] [--member=member-name]
 ```
 
 <a id="concept_89A129F729DF4D3B9056C8D9016AA760__table_ocr_gcg_2w"></a>
 
-| Name                                                | Description                                                                                               |
-|-----------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-query </span>      | *Required.* The OQL string.                                                                               |
-| <span class="keyword parmname">\\-\\-file</span> | When specified, all query results are written to the specified file. An error is issued if the file already exists. |
-
-<span class="tablecap">Table 1. Query Parameters</span>
+| Name                     | Description                                                    |
+|--------------------------|----------------------------------------------------------------|
+| <span class="keyword parmname">&#8209;&#8209;query </span>      | *Required.* The OQL string     |
+| <span class="keyword parmname">&#8209;&#8209;file</span> | When specified, all query results are written to the specified file. An error is issued if the file already exists. |
+| <span class="keyword parmname">&#8209;&#8209;member </span>     | Name/Id of the member on which to execute the query (as shown in the output of the gfsh `describe region` command, for example)     |
 
 **Sample Output:**
 

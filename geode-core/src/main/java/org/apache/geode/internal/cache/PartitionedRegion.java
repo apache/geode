@@ -170,6 +170,7 @@ import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.FunctionExecutionNodePruner;
 import org.apache.geode.internal.cache.execute.FunctionRemoteContext;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -613,6 +614,29 @@ public class PartitionedRegion extends LocalRegion
     return redundancyTracker;
   }
 
+  public void computeWithPrimaryLocked(Object key, Runnable r) {
+    int bucketId = PartitionedRegionHelper.getHashKey(this, null, key, null, null);
+
+    BucketRegion br;
+    try {
+      br = this.dataStore.getInitializedBucketForId(key, bucketId);
+    } catch (ForceReattemptException e) {
+      throw new BucketMovedException(e);
+    }
+
+    try {
+      br.doLockForPrimary(false);
+    } catch (PrimaryBucketException e) {
+      throw new BucketMovedException(e);
+    }
+
+    try {
+      r.run();
+    } finally {
+      br.doUnlockForPrimary();
+    }
+  }
+
 
   public static class PRIdMap extends HashMap {
     private static final long serialVersionUID = 3667357372967498179L;
@@ -770,7 +794,7 @@ public class PartitionedRegion extends LocalRegion
     this.node = initializeNode();
     this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath(),
         statisticsClock);
-    this.regionIdentifier = getFullPath().replace(SEPARATOR_CHAR, '#');
+    this.regionIdentifier = getFullPath().replace(Region.SEPARATOR_CHAR, '#');
 
     if (logger.isDebugEnabled()) {
       logger.debug("Constructing Partitioned Region {}", regionName);

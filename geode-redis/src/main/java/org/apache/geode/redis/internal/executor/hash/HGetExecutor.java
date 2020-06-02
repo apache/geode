@@ -15,14 +15,11 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -40,32 +37,20 @@ import org.apache.geode.redis.internal.RedisConstants;
 public class HGetExecutor extends HashExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
-
     ByteArrayWrapper key = command.getKey();
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    ByteArrayWrapper valueWrapper = redisHashCommands.hget(key, field);
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> entry = getMap(context, key);
-
-    if (entry == null) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
-    }
-
-    ByteArrayWrapper valueWrapper = entry.get(field);
-    try {
-      if (valueWrapper != null) {
-        command.setResponse(
-            Coder.getBulkStringResponse(context.getByteBufAllocator(), valueWrapper.toBytes()));
-      } else {
-        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      }
-    } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          RedisConstants.SERVER_ERROR_MESSAGE));
+    if (valueWrapper != null) {
+      return RedisResponse.bulkString(valueWrapper);
+    } else {
+      return RedisResponse.nil();
     }
   }
 }

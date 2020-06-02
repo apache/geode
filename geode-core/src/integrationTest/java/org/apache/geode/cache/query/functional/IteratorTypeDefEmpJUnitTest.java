@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.HashSet;
@@ -62,7 +63,8 @@ public class IteratorTypeDefEmpJUnitTest {
   @Test
   public void testIteratorDef() throws Exception {
     String queries[] = {"IMPORT org.apache.geode.cache.\"query\".data.Manager;"
-        + "SELECT DISTINCT manager_id FROM (set<Manager>)/employees where empId > 0"};
+        + "SELECT DISTINCT manager_id FROM (set<Manager>)" + SEPARATOR
+        + "employees where empId > 0"};
     Query q = null;
     for (int i = 0; i < queries.length; i++) {
       try {

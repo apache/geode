@@ -232,7 +232,7 @@
       <dependency>
         <groupId>io.github.classgraph</groupId>
         <artifactId>classgraph</artifactId>
-        <version>4.8.68</version>
+        <version>4.8.52</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -748,49 +748,49 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-config</artifactId>
-        <version>5.3.1.RELEASE</version>
+        <version>5.3.2.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-core</artifactId>
-        <version>5.3.1.RELEASE</version>
+        <version>5.3.2.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-ldap</artifactId>
-        <version>5.3.1.RELEASE</version>
+        <version>5.3.2.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-test</artifactId>
-        <version>5.3.1.RELEASE</version>
+        <version>5.3.2.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-web</artifactId>
-        <version>5.3.1.RELEASE</version>
+        <version>5.3.2.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-core</artifactId>
-        <version>5.3.1.RELEASE</version>
+        <version>5.3.2.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-client</artifactId>
-        <version>5.3.1.RELEASE</version>
+        <version>5.3.2.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-jose</artifactId>
-        <version>5.3.1.RELEASE</version>
+        <version>5.3.2.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -856,6 +856,12 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
+        <version>2.2.1.RELEASE</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-jetty</artifactId>
         <version>2.2.1.RELEASE</version>
         <scope>compile</scope>
       </dependency>

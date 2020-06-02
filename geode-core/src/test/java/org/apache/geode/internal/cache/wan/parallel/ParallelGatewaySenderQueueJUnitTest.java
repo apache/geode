@@ -22,6 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -67,8 +69,10 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(sender.getCache()).thenReturn(cache);
     when(sender.getMaximumQueueMemory()).thenReturn(100);
     when(sender.getLifeCycleLock()).thenReturn(new ReentrantReadWriteLock());
+    when(sender.getId()).thenReturn("");
     metaRegionFactory = mock(MetaRegionFactory.class);
-    queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory,
+        false);
   }
 
   @Test
@@ -86,7 +90,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
         Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
-    List peeked = queue.peek(1, 1000);
+    List peeked = queue.peek(1, 100);
     assertEquals(1, peeked.size());
     queue.remove();
   }
@@ -110,7 +114,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
         Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
-    List peeked = queue.peek(1, 1000);
+    List peeked = queue.peek(1, 100);
     assertEquals(1, peeked.size());
     verify(stats, times(1)).incEventsNotQueuedConflated();
   }
@@ -138,7 +142,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
         Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
-    List peeked = queue.peek(1, 1000);
+    List peeked = queue.peek(1, 100);
     assertEquals(1, peeked.size());
     verify(stats, times(1)).incEventsNotQueuedConflated();
   }
@@ -186,6 +190,142 @@ public class ParallelGatewaySenderQueueJUnitTest {
     assertThat(queue.isDREvent(cache, event)).isFalse();
   }
 
+  @Test
+  public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInMaxSizeBatch()
+      throws Exception {
+
+    GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
+    GatewaySenderEventImpl event2 = createGatewaySenderEventImpl(2, false);
+    GatewaySenderEventImpl event3 = createGatewaySenderEventImpl(1, true);
+    GatewaySenderEventImpl event4 = createGatewaySenderEventImpl(2, true);
+    GatewaySenderEventImpl event5 = createGatewaySenderEventImpl(3, false);
+    GatewaySenderEventImpl event6 = createGatewaySenderEventImpl(3, true);
+
+    Queue backingList = new LinkedList();
+    backingList.add(event1);
+    backingList.add(event2);
+    backingList.add(event3);
+    backingList.add(event4);
+    backingList.add(event5);
+    backingList.add(event6);
+
+    BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
+
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue.setGroupTransactionEvents(true);
+    queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
+
+    List peeked = queue.peek(3, 100);
+    assertEquals(4, peeked.size());
+    List peekedAfter = queue.peek(3, 100);
+    assertEquals(2, peekedAfter.size());
+  }
+
+  @Test
+  public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchByTime()
+      throws Exception {
+
+    GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
+    GatewaySenderEventImpl event2 = createGatewaySenderEventImpl(2, false);
+    GatewaySenderEventImpl event3 = createGatewaySenderEventImpl(1, true);
+    GatewaySenderEventImpl event4 = createGatewaySenderEventImpl(2, true);
+    GatewaySenderEventImpl event5 = createGatewaySenderEventImpl(3, false);
+    GatewaySenderEventImpl event6 = createGatewaySenderEventImpl(3, true);
+
+    Queue backingList = new LinkedList();
+    backingList.add(event1);
+    backingList.add(event2);
+    backingList.add(event3);
+    backingList.add(null);
+    backingList.add(event4);
+    backingList.add(event5);
+    backingList.add(event6);
+
+    BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
+
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue.setGroupTransactionEvents(true);
+    queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
+
+    List peeked = queue.peek(-1, 1);
+    assertEquals(4, peeked.size());
+    List peekedAfter = queue.peek(-1, 100);
+    assertEquals(2, peekedAfter.size());
+  }
+
+  @Test
+  public void peekDoesNotGetExtraEventsWhenNotMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchMaxSize()
+      throws Exception {
+
+    GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
+    GatewaySenderEventImpl event2 = createGatewaySenderEventImpl(1, false);
+    GatewaySenderEventImpl event3 = createGatewaySenderEventImpl(2, false);
+    GatewaySenderEventImpl event4 = createGatewaySenderEventImpl(1, true);
+    GatewaySenderEventImpl event5 = createGatewaySenderEventImpl(2, true);
+
+    Queue backingList = new LinkedList();
+    backingList.add(event1);
+    backingList.add(event2);
+    backingList.add(event3);
+    backingList.add(event4);
+    backingList.add(event5);
+
+    BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
+
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
+
+    List peeked = queue.peek(3, 100);
+    assertEquals(3, peeked.size());
+    List peekedAfter = queue.peek(3, 100);
+    assertEquals(2, peekedAfter.size());
+  }
+
+  @Test
+  public void peekDoesNotGetExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchByTime()
+      throws Exception {
+
+    GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
+    GatewaySenderEventImpl event2 = createGatewaySenderEventImpl(2, false);
+    GatewaySenderEventImpl event3 = createGatewaySenderEventImpl(1, true);
+    GatewaySenderEventImpl event4 = createGatewaySenderEventImpl(2, true);
+    GatewaySenderEventImpl event5 = createGatewaySenderEventImpl(3, false);
+    GatewaySenderEventImpl event6 = createGatewaySenderEventImpl(3, true);
+
+    Queue backingList = new LinkedList();
+    backingList.add(event1);
+    backingList.add(event2);
+    backingList.add(event3);
+    backingList.add(null);
+    backingList.add(event4);
+    backingList.add(event5);
+    backingList.add(event6);
+
+    BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
+
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue.setGroupTransactionEvents(false);
+    queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
+
+    List peeked = queue.peek(-1, 1);
+    assertEquals(3, peeked.size());
+    List peekedAfter = queue.peek(-1, 100);
+    assertEquals(3, peekedAfter.size());
+  }
+
+  private GatewaySenderEventImpl createGatewaySenderEventImpl(int transactionId,
+      boolean isLastEventInTransaction) {
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    when(event.getTransactionId()).thenReturn(new TXId(null, transactionId));
+    when(event.makeHeapCopyIfOffHeap()).thenReturn(event);
+    when(event.isLastEventInTransaction()).thenReturn(isLastEventInTransaction);
+    return event;
+  }
+
   private PartitionedRegion mockPR(String name) {
     PartitionedRegion region = mock(PartitionedRegion.class);
     when(region.getFullPath()).thenReturn(name);
@@ -201,33 +341,64 @@ public class ParallelGatewaySenderQueueJUnitTest {
     // mocked pr region
     when(mockBucketRegion.getLocalMaxMemory()).thenReturn(100);
     when(mockBucketRegion.size()).thenReturn(backingList.size());
-
     BucketRegionQueue bucketRegionQueue = mock(BucketRegionQueue.class);
     when(bucketRegionQueue.getPartitionedRegion()).thenReturn(mockBucketRegion);
-    when(bucketRegionQueue.peek()).thenAnswer((Answer) invocation -> backingList.poll());
+    when(bucketRegionQueue.peek())
+        .thenAnswer((Answer) invocation -> pollAndWaitIfNull(backingList));
+    when(bucketRegionQueue.getElementsMatching(any(), any()))
+        .thenAnswer((Answer) invocation -> Arrays
+            .asList(new Object[] {getFirstNotNull(backingList)}));
     return bucketRegionQueue;
   }
 
+  private Object pollAndWaitIfNull(Queue queue) {
+    Object object = queue.poll();
+    if (object == null) {
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    return object;
+  }
 
+  private Object getFirstNotNull(Queue queue) {
+    Object object = queue.poll();
+    while (object == null) {
+      object = queue.poll();
+    }
+    return object;
+  }
 
   private class TestableParallelGatewaySenderQueue extends ParallelGatewaySenderQueue {
 
     private BucketRegionQueue mockedAbstractBucketRegionQueue;
+    private boolean groupTransactionEvents = false;
 
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
         final Set<Region> userRegions, final int idx, final int nDispatcher) {
-      super(sender, userRegions, idx, nDispatcher);
+      super(sender, userRegions, idx, nDispatcher, false);
     }
 
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
         final Set<Region> userRegions, final int idx, final int nDispatcher,
         final MetaRegionFactory metaRegionFactory) {
-      super(sender, userRegions, idx, nDispatcher, metaRegionFactory);
+      super(sender, userRegions, idx, nDispatcher, metaRegionFactory, false);
     }
 
 
     public void setMockedAbstractBucketRegionQueue(BucketRegionQueue mocked) {
       this.mockedAbstractBucketRegionQueue = mocked;
+    }
+
+    public void setGroupTransactionEvents(boolean groupTransactionEvents) {
+      this.groupTransactionEvents = groupTransactionEvents;
+    }
+
+    @Override
+    public boolean mustGroupTransactionEvents() {
+      return groupTransactionEvents;
     }
 
     public AbstractBucketRegionQueue getBucketRegion(final PartitionedRegion prQ,
@@ -255,11 +426,6 @@ public class ParallelGatewaySenderQueueJUnitTest {
         int bucketId) {
       return mockedAbstractBucketRegionQueue;
     }
-
-    // @Override
-    // public int localSizeForProcessor() {
-    // return 1;
-    // }
   }
 
 }

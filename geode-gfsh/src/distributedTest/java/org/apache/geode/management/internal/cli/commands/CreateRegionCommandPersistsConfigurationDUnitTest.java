@@ -445,9 +445,11 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .contains(getInstance(
-                "GemFire:service=Region,name=/createRegionWithColocation,type=Distributed"))
+                "GemFire:service=Region,name=" + SEPARATOR
+                    + "createRegionWithColocation,type=Distributed"))
             .contains(getInstance(
-                "GemFire:service=Region,name=/createRegionWithColocation,type=Member,member=server-1"));
+                "GemFire:service=Region,name=" + SEPARATOR
+                    + "createRegionWithColocation,type=Member,member=server-1"));
       });
     });
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.security.SecurableCommunicationChannels.ALL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -220,7 +221,7 @@ public class ClientServerHostNameVerificationDistributedTest {
     // create region
     server.invoke(ClientServerHostNameVerificationDistributedTest::createServerRegion);
     server2.invoke(ClientServerHostNameVerificationDistributedTest::createServerRegion);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + "region", 2);
 
     // create client and connect
     final int locatorPort = locator.getPort();

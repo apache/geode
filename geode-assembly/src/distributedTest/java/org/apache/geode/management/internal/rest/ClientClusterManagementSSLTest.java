@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
@@ -245,7 +246,7 @@ public class ClientClusterManagementSSLTest {
       cmsClient.create(region);
 
       // verify that the region is created on the server
-      assertThat(ClusterStartupRule.getCache().getRegion("/orders")).isNotNull();
+      assertThat(ClusterStartupRule.getCache().getRegion(SEPARATOR + "orders")).isNotNull();
     });
 
     // verify that the configuration is persisted on the locator

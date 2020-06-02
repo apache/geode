@@ -19,10 +19,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
@@ -31,7 +29,7 @@ import org.apache.geode.management.runtime.OperationResult;
 
 @Experimental
 public class OperationManager implements AutoCloseable {
-  private final Map<Class<? extends ClusterManagementOperation>, BiFunction> performers;
+  private final Map<Class<? extends ClusterManagementOperation>, OperationPerformer> performers;
   private final OperationHistoryManager historyManager;
   private final Executor executor;
   private final InternalCache cache;
@@ -43,20 +41,21 @@ public class OperationManager implements AutoCloseable {
 
     // initialize the list of operation performers
     performers = new ConcurrentHashMap<>();
-    registerOperation(RebalanceOperation.class, RebalanceOperationPerformer::perform);
+    registerOperation(RebalanceOperation.class, new RebalanceOperationPerformer());
   }
 
   /**
    * for use by modules/extensions to install custom cluster management operations
    */
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> void registerOperation(
-      Class<A> operationClass, BiFunction<Cache, A, V> operationPerformer) {
-    performers.put(operationClass, operationPerformer);
+      Class<A> operationClass,
+      OperationPerformer<A, V> performer) {
+    performers.put(operationClass, performer);
   }
 
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> submit(
       A op) {
-    BiFunction<Cache, A, V> performer = getPerformer(op);
+    OperationPerformer<A, V> performer = getPerformer(op);
     if (performer == null) {
       throw new IllegalArgumentException(String.format("%s is not supported.",
           op.getClass().getSimpleName()));
@@ -68,7 +67,7 @@ public class OperationManager implements AutoCloseable {
     // by how far the async thread gets in its execution.
     OperationState<A, V> operationState = historyManager.get(opId);
 
-    CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
+    CompletableFuture.supplyAsync(() -> performer.perform(cache, op), executor)
         .whenComplete((result, exception) -> {
           Throwable cause = exception == null ? null : exception.getCause();
           historyManager.recordEnd(opId, result, cause);
@@ -78,7 +77,7 @@ public class OperationManager implements AutoCloseable {
   }
 
   @SuppressWarnings("unchecked")
-  private <C extends Cache, A extends ClusterManagementOperation<V>, V extends OperationResult> BiFunction<C, A, V> getPerformer(
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationPerformer<A, V> getPerformer(
       A op) {
     return performers.get(op.getClass());
   }

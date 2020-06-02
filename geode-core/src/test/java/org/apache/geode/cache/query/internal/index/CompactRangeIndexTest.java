@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -71,10 +72,11 @@ public class CompactRangeIndexTest {
     when(img.putCanonicalizedIteratorNameIfAbsent(any())).thenReturn("index_iter");
     when(cache.getService(QueryConfigurationService.class)).thenReturn(mockService);
 
-    IndexCreationHelper helper = new FunctionalIndexCreationHelper("/exampleRegion", "status",
-        "*", null, cache, null, img);
+    IndexCreationHelper helper =
+        new FunctionalIndexCreationHelper(SEPARATOR + "exampleRegion", "status",
+            "*", null, cache, null, img);
 
-    index = new CompactRangeIndex(cache, "Index1", region, "/exampleRegion",
+    index = new CompactRangeIndex(cache, "Index1", region, SEPARATOR + "exampleRegion",
         "status", "*", null, null,
         null, indstats);
 

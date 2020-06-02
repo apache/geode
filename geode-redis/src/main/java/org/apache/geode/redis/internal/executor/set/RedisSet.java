@@ -16,7 +16,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
+import static org.apache.geode.redis.internal.RedisDataType.REDIS_SET;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -27,30 +27,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.Delta;
-import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.AbstractRedisData;
+import org.apache.geode.redis.internal.AddsDeltaInfo;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.DeltaInfo;
+import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RemsDeltaInfo;
 
-/**
- * This class still uses "synchronized" to protect the
- * underlying HashSet even though all writers do so under
- * the {@link SynchronizedStripedExecutor}. The synchronization on this
- * class can be removed once readers are changed to
- * also use the {@link SynchronizedStripedExecutor}.
- */
-public class RedisSet implements Delta, DataSerializable {
+public class RedisSet extends AbstractRedisData {
 
+  public static final RedisSet EMPTY = new EmptyRedisSet();
   private HashSet<ByteArrayWrapper> members;
-  private transient ArrayList<ByteArrayWrapper> deltas;
-  // true if deltas contains adds; false if removes
-  private transient boolean deltasAreAdds;
 
   @SuppressWarnings("unchecked")
   RedisSet(Collection<ByteArrayWrapper> members) {
@@ -64,97 +57,8 @@ public class RedisSet implements Delta, DataSerializable {
   // for serialization
   public RedisSet() {}
 
-  public static long sadd(Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToAdd) {
+  List<Object> sscan(Pattern matchPattern, int count, int cursor) {
 
-    RedisSet redisSet = region.get(key);
-
-    if (redisSet != null) {
-      // update existing value
-      return redisSet.doSadd(membersToAdd, region, key);
-    } else {
-      region.create(key, new RedisSet(membersToAdd));
-      return membersToAdd.size();
-    }
-  }
-
-  public static long srem(Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToRemove, AtomicBoolean setWasDeleted) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet == null) {
-      return 0L;
-    }
-    return redisSet.doSrem(membersToRemove, region, key, setWasDeleted);
-  }
-
-  public static boolean del(Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key) {
-    return region.remove(key) != null;
-  }
-
-  public static Set<ByteArrayWrapper> smembers(Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.members();
-    } else {
-      return emptySet();
-    }
-  }
-
-  public static int scard(Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.size();
-    } else {
-      return 0;
-    }
-  }
-
-  public static boolean sismember(Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key, ByteArrayWrapper member) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.contains(member);
-    } else {
-      return false;
-    }
-  }
-
-  public static Collection<ByteArrayWrapper> srandmember(Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key, int count) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.srandmember(count);
-    } else {
-      return emptyList();
-    }
-  }
-
-  public static Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key, int popCount) {
-    RedisSet redisSet = region.get(key);
-    if (redisSet != null) {
-      return redisSet.doSpop(region, key, popCount);
-    } else {
-      return emptyList();
-    }
-  }
-
-  public static List<Object> sscan(Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
-    RedisSet RedisSet = region.get(key);
-    if (RedisSet != null) {
-      return RedisSet.doSscan(matchPattern, count, cursor);
-    } else {
-      return emptyList();
-    }
-  }
-
-
-  private synchronized List<Object> doSscan(Pattern matchPattern, int count, int cursor) {
     List<Object> returnList = new ArrayList<>();
     int size = members.size();
     int beforeCursor = 0;
@@ -164,7 +68,6 @@ public class RedisSet implements Delta, DataSerializable {
       i++;
       if (beforeCursor < cursor) {
         beforeCursor++;
-        continue;
       } else if (numElements < count) {
         if (matchPattern != null) {
           String valueAsString = Coder.bytesToString(value.toBytes());
@@ -189,15 +92,14 @@ public class RedisSet implements Delta, DataSerializable {
     return returnList;
   }
 
-  private synchronized Collection<ByteArrayWrapper> doSpop(
-      Region<ByteArrayWrapper, RedisSet> region, ByteArrayWrapper key, int popCount) {
-    int originalSize = size();
+  Collection<ByteArrayWrapper> spop(
+      Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key, int popCount) {
+    int originalSize = scard();
     if (originalSize == 0) {
       return emptyList();
     }
 
     if (popCount >= originalSize) {
-      // TODO: need to also cause key to be removed from the metaregion
       region.remove(key, this);
       return this.members;
     }
@@ -215,18 +117,12 @@ public class RedisSet implements Delta, DataSerializable {
       }
     }
     if (!popped.isEmpty()) {
-      this.deltasAreAdds = false;
-      this.deltas = popped;
-      try {
-        region.put(key, this);
-      } finally {
-        this.deltas = null;
-      }
+      storeChanges(region, key, new RemsDeltaInfo(popped));
     }
     return popped;
   }
 
-  private synchronized Collection<ByteArrayWrapper> srandmember(int count) {
+  Collection<ByteArrayWrapper> srandmember(int count) {
     int membersSize = members.size();
 
     if (membersSize <= count && count != 1) {
@@ -254,52 +150,36 @@ public class RedisSet implements Delta, DataSerializable {
     return result;
   }
 
-  public synchronized boolean contains(ByteArrayWrapper member) {
+  public boolean sismember(ByteArrayWrapper member) {
     return members.contains(member);
   }
 
-  public synchronized int size() {
+  public int scard() {
     return members.size();
   }
 
-  // DELTA
-  @Override
-  public boolean hasDelta() {
-    return deltas != null;
-  }
 
   @Override
-  public void toDelta(DataOutput out) throws IOException {
-    DataSerializer.writeBoolean(deltasAreAdds, out);
-    DataSerializer.writeArrayList(deltas, out);
-  }
-
-  @Override
-  public synchronized void fromDelta(DataInput in)
-      throws IOException, InvalidDeltaException {
-    boolean deltaAdds = DataSerializer.readBoolean(in);
-    try {
-      ArrayList<ByteArrayWrapper> deltas = DataSerializer.readArrayList(in);
-      if (deltas != null) {
-        if (deltaAdds) {
-          members.addAll(deltas);
-        } else {
-          members.removeAll(deltas);
-        }
-      }
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+  protected void applyDelta(DeltaInfo deltaInfo) {
+    if (deltaInfo instanceof AddsDeltaInfo) {
+      AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
+      members.addAll(addsDeltaInfo.getAdds());
+    } else {
+      RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
+      members.removeAll(remsDeltaInfo.getRemoves());
     }
   }
 
   // DATA SERIALIZABLE
   @Override
   public void toData(DataOutput out) throws IOException {
+    super.toData(out);
     DataSerializer.writeHashSet(members, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     members = DataSerializer.readHashSet(in);
   }
 
@@ -308,22 +188,16 @@ public class RedisSet implements Delta, DataSerializable {
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to add to
-   * @return the number of members actually added; -1 if concurrent modification
+   * @return the number of members actually added
    */
-  private synchronized long doSadd(ArrayList<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, RedisSet> region,
+  long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
+      Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
     membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      deltasAreAdds = true;
-      deltas = membersToAdd;
-      try {
-        region.put(key, this);
-      } finally {
-        deltas = null;
-      }
+      storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
     }
     return membersAdded;
   }
@@ -333,41 +207,37 @@ public class RedisSet implements Delta, DataSerializable {
    *        modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to remove from
-   * @param setWasDeleted set to true if this method deletes the set
-   * @return the number of members actually removed; -1 if concurrent modification
+   * @return the number of members actually removed
    */
-  private synchronized long doSrem(ArrayList<ByteArrayWrapper> membersToRemove,
-      Region<ByteArrayWrapper, RedisSet> region,
-      ByteArrayWrapper key, AtomicBoolean setWasDeleted) {
+  long srem(ArrayList<ByteArrayWrapper> membersToRemove,
+      Region<ByteArrayWrapper, RedisData> region,
+      ByteArrayWrapper key) {
 
     membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      if (members.isEmpty()) {
-        region.remove(key);
-        if (setWasDeleted != null) {
-          setWasDeleted.set(true);
-        }
-      } else {
-        deltasAreAdds = false;
-        deltas = membersToRemove;
-        try {
-          region.put(key, this);
-        } finally {
-          deltas = null;
-        }
-      }
+      storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
     }
     return membersRemoved;
   }
 
   /**
    * The returned set is a copy and will not be changed
-   * by future changes to this DeltaSet.
+   * by future changes to this instance.
    *
    * @return a set containing all the members in this set
    */
-  private synchronized Set<ByteArrayWrapper> members() {
+  Set<ByteArrayWrapper> smembers() {
     return new HashSet<>(members);
+  }
+
+  @Override
+  public RedisDataType getType() {
+    return REDIS_SET;
+  }
+
+  @Override
+  protected boolean removeFromRegion() {
+    return members.isEmpty();
   }
 }

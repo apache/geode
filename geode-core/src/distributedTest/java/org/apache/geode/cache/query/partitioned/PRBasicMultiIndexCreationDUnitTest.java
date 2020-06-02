@@ -498,8 +498,8 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
     exps.add("nvl(k.status.toString(),'nopes')");
 
     ArrayList<String> fromClause = new ArrayList<>();
-    fromClause.add("/PartionedPortfolios.keys k");
-    fromClause.add("/PartionedPortfolios.values k");
+    fromClause.add(SEPARATOR + "PartionedPortfolios.keys k");
+    fromClause.add(SEPARATOR + "PartionedPortfolios.values k");
 
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForDefineIndex(name, names, exps, fromClause));
 

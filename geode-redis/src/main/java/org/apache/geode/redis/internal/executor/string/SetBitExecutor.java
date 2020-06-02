@@ -14,9 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -36,16 +37,14 @@ public class SetBitExecutor extends StringExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
-
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETBIT));
       return;
     }
 
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    ByteArrayWrapper wrapper = r.get(key);
 
     long offset;
     int value;
@@ -74,12 +73,13 @@ public class SetBitExecutor extends StringExecutor {
     int byteIndex = (int) (offset / 8);
     offset %= 8;
 
+    ByteArrayWrapper wrapper = stringCommands.get(key);
     if (wrapper == null) {
       byte[] bytes = new byte[byteIndex + 1];
       if (value == 1) {
         bytes[byteIndex] = (byte) (0x80 >> offset);
       }
-      r.put(key, new ByteArrayWrapper(bytes));
+      stringCommands.set(key, new ByteArrayWrapper(bytes), null);
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
     } else {
 
@@ -90,16 +90,17 @@ public class SetBitExecutor extends StringExecutor {
         returnBit = 0;
       }
 
+      SetOptions setOptions = new SetOptions(NONE, 0L, true);
       if (byteIndex < bytes.length) {
         bytes[byteIndex] = value == 1 ? (byte) (bytes[byteIndex] | (0x80 >> offset))
             : (byte) (bytes[byteIndex] & ~(0x80 >> offset));
-        r.put(key, new ByteArrayWrapper(bytes));
+        stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
       } else {
         byte[] newBytes = new byte[byteIndex + 1];
         System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
         newBytes[byteIndex] = value == 1 ? (byte) (newBytes[byteIndex] | (0x80 >> offset))
             : (byte) (newBytes[byteIndex] & ~(0x80 >> offset));
-        r.put(key, new ByteArrayWrapper(newBytes));
+        stringCommands.set(key, new ByteArrayWrapper(newBytes), setOptions);
       }
 
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), returnBit));

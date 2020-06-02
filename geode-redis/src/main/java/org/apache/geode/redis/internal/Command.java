@@ -47,16 +47,18 @@ public class Command {
     this.response = null;
 
     RedisCommandType type;
-    String commandName = null;
     try {
       byte[] charCommand = commandElems.get(0);
-      commandName = Coder.bytesToString(charCommand).toUpperCase();
+      String commandName = Coder.bytesToString(charCommand).toUpperCase();
       type = RedisCommandType.valueOf(commandName);
     } catch (Exception e) {
       type = RedisCommandType.UNKNOWN;
     }
     this.commandType = type;
+  }
 
+  public boolean isSupported() {
+    return commandType.isSupported();
   }
 
   /**
@@ -151,16 +153,40 @@ public class Command {
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
-    for (byte[] bs : this.commandElems) {
-      b.append(Coder.bytesToString(bs));
+    for (byte[] rawCommand : this.commandElems) {
+      b.append(getHexEncodedString(rawCommand));
       b.append(' ');
     }
     return b.toString();
   }
 
-  public void execute(ExecutionHandlerContext executionHandlerContext) {
+  public static String getHexEncodedString(byte[] data) {
+    return getHexEncodedString(data, data.length);
+  }
+
+  public static String getHexEncodedString(byte[] data, int size) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < size; i++) {
+      byte aByte = data[i];
+      if (aByte > 31 && aByte < 127) {
+        builder.append((char) aByte);
+      } else {
+        if (aByte == 0x0a) {
+          builder.append("\\n");
+        } else if (aByte == 0x0d) {
+          builder.append("\\r");
+        } else {
+          builder.append(String.format("\\x%02x", aByte));
+        }
+      }
+    }
+
+    return builder.toString();
+  }
+
+  public RedisResponse execute(ExecutionHandlerContext executionHandlerContext) {
     RedisCommandType type = getCommandType();
-    type.executeCommand(this, executionHandlerContext);
+    return type.executeCommand(this, executionHandlerContext);
   }
 
   boolean isOfType(RedisCommandType type) {
@@ -170,9 +196,5 @@ public class Command {
   public String wrongNumberOfArgumentsError() {
     return String.format("wrong number of arguments for '%s' command",
         getCommandType().toString().toLowerCase());
-  }
-
-  boolean isTransactional() {
-    return getCommandType().isTransactional();
   }
 }

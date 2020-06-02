@@ -15,102 +15,78 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public abstract class SetOpExecutor extends SetExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    int setsStartIndex = isStorage() ? 2 : 1;
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
+    int setsStartIndex = 1;
 
-    RegionProvider regionProvider = context.getRegionProvider();
-    ByteArrayWrapper destination = null;
     if (isStorage()) {
-      destination = command.getKey();
+      setsStartIndex++;
     }
 
-    ByteArrayWrapper firstSetKey = new ByteArrayWrapper(commandElems.get(setsStartIndex++));
-    if (destination != null) {
-      try (AutoCloseableLock regionLock = withRegionLock(context, destination)) {
-        doActualSetOperation(command, context, commandElems, setsStartIndex, regionProvider,
-            destination, firstSetKey);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      } catch (TimeoutException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-            "Timeout acquiring lock. Please try again."));
+    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
+    ArrayList<ByteArrayWrapper> setKeys =
+        new ArrayList<>(commandElements.subList(setsStartIndex, commandElements.size()));
+    if (isStorage()) {
+      ByteArrayWrapper destination = command.getKey();
+      RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+      int storeCount;
+      switch (command.getCommandType()) {
+        case SUNIONSTORE:
+          storeCount = redisSetCommands.sunionstore(destination, setKeys);
+          break;
+        case SINTERSTORE:
+          storeCount = redisSetCommands.sinterstore(destination, setKeys);
+          break;
+        case SDIFFSTORE:
+          storeCount = redisSetCommands.sdiffstore(destination, setKeys);
+          break;
+        default:
+          throw new IllegalStateException(
+              "expected a set store command but found: " + command.getCommandType());
       }
+      return RedisResponse.integer(storeCount);
     } else {
-      doActualSetOperation(command, context, commandElems, setsStartIndex, regionProvider,
-          destination, firstSetKey);
+      return doActualSetOperation(context, setKeys);
     }
   }
 
-  private boolean doActualSetOperation(Command command, ExecutionHandlerContext context,
-      List<byte[]> commandElems, int setsStartIndex,
-      RegionProvider regionProvider, ByteArrayWrapper destination,
-      ByteArrayWrapper firstSetKey) {
-    Region<ByteArrayWrapper, RedisSet> region = this.getRegion(context);
-    Set<ByteArrayWrapper> firstSet = RedisSet.smembers(region, firstSetKey);
+  private RedisResponse doActualSetOperation(ExecutionHandlerContext context,
+      ArrayList<ByteArrayWrapper> setKeys) {
+    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+    ByteArrayWrapper firstSetKey = setKeys.remove(0);
+    Set<ByteArrayWrapper> resultSet = redisSetCommands.smembers(firstSetKey);
 
-    List<Set<ByteArrayWrapper>> setList = new ArrayList<>();
-    for (int i = setsStartIndex; i < commandElems.size(); i++) {
-      ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
-
-      Set<ByteArrayWrapper> entry = RedisSet.smembers(region, key);
-      if (entry != null) {
-        setList.add(entry);
-      } else if (this instanceof SInterExecutor) {
-        setList.add(new HashSet<>());
+    for (ByteArrayWrapper key : setKeys) {
+      Set<ByteArrayWrapper> nextSet = redisSetCommands.smembers(key);
+      if (doSetOp(resultSet, nextSet)) {
+        break;
       }
     }
 
-    if (setList.isEmpty() && !isStorage()) {
-      respondBulkStrings(command, context, firstSet);
-      return true;
-    }
-
-    Set<ByteArrayWrapper> resultSet = setOp(firstSet, setList);
-    if (isStorage()) {
-      regionProvider.removeKey(destination);
-      if (resultSet != null) {
-        if (!resultSet.isEmpty()) {
-          region.put(destination, new RedisSet(resultSet));
-          context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
-        }
-        command
-            .setResponse(
-                Coder.getIntegerResponse(context.getByteBufAllocator(), resultSet.size()));
-      } else {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-      }
+    if (resultSet.isEmpty()) {
+      return RedisResponse.emptyArray();
     } else {
-      if (resultSet == null || resultSet.isEmpty()) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      } else {
-        respondBulkStrings(command, context, resultSet);
-      }
+      return respondBulkStrings(resultSet);
     }
-    return false;
   }
+
+  /**
+   * @return true if no further calls of doSetOp are needed
+   */
+  protected abstract boolean doSetOp(Set<ByteArrayWrapper> resultSet,
+      Set<ByteArrayWrapper> nextSet);
 
   protected abstract boolean isStorage();
 
-  protected abstract Set<ByteArrayWrapper> setOp(Set<ByteArrayWrapper> firstSet,
-      List<Set<ByteArrayWrapper>> setList);
 }

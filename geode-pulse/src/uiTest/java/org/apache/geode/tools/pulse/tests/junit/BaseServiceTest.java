@@ -16,6 +16,8 @@
  */
 package org.apache.geode.tools.pulse.tests.junit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -68,14 +70,16 @@ public abstract class BaseServiceTest {
 
   protected static final String PULSE_UPDATE_PARAM = "pulseData";
   protected static final String PULSE_UPDATE_1_VALUE =
-      "{'ClusterSelectedRegion':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
+      "{'ClusterSelectedRegion':{'regionFullPath':'" + SEPARATOR + "GlobalVilage_2" + SEPARATOR
+          + "GlobalVilage_9'}}";
   protected static final String PULSE_UPDATE_2_VALUE =
-      "{'ClusterSelectedRegion':{'regionFullPath':'/Rubbish'}}";
+      "{'ClusterSelectedRegion':{'regionFullPath':'" + SEPARATOR + "Rubbish'}}";
 
   protected static final String PULSE_UPDATE_3_VALUE =
-      "{'ClusterSelectedRegionsMember':{'regionFullPath':'/GlobalVilage_2/GlobalVilage_9'}}";
+      "{'ClusterSelectedRegionsMember':{'regionFullPath':'" + SEPARATOR + "GlobalVilage_2"
+          + SEPARATOR + "GlobalVilage_9'}}";
   protected static final String PULSE_UPDATE_4_VALUE =
-      "{'ClusterSelectedRegionsMember':{'regionFullPath':'/Rubbish'}}";
+      "{'ClusterSelectedRegionsMember':{'regionFullPath':'" + SEPARATOR + "Rubbish'}}";
 
   protected static final String PULSE_UPDATE_5_VALUE =
       "{'MemberGatewayHub':{'memberName':'pnq-visitor1'}}";

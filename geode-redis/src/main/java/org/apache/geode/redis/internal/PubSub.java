@@ -16,8 +16,6 @@
 
 package org.apache.geode.redis.internal;
 
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
-
 /**
  * Interface that represents the ability to Publish, Subscribe and Unsubscribe from channels.
  */

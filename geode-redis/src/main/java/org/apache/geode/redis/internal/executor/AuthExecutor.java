@@ -17,37 +17,35 @@ package org.apache.geode.redis.internal.executor;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class AuthExecutor implements Executor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.AUTH));
-      return;
+      return RedisResponse.error(ArityDef.AUTH);
     }
     byte[] password = context.getAuthPassword();
     if (password == null) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_NO_PASS));
-      return;
+      return RedisResponse.error(RedisConstants.ERROR_NO_PASS);
     }
+
     boolean correct = Arrays.equals(commandElems.get(1), password);
 
     if (correct) {
       context.setAuthenticationVerified();
-      command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), "OK"));
+      return RedisResponse.ok();
     } else {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_INVALID_PWD));
+      return RedisResponse.error(RedisConstants.ERROR_INVALID_PWD);
     }
   }
 

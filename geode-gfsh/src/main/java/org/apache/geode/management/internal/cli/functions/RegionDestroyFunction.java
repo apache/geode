@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -70,7 +72,7 @@ public class RegionDestroyFunction implements InternalFunction<String> {
       region.destroyRegion();
 
       String regionName =
-          regionPath.startsWith(Region.SEPARATOR) ? regionPath.substring(1) : regionPath;
+          regionPath.startsWith(SEPARATOR) ? regionPath.substring(1) : regionPath;
       XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
       context.getResultSender().lastResult(new CliFunctionResult(memberName, xmlEntity,
           String.format("Region '%s' destroyed successfully", regionPath)));

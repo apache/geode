@@ -15,14 +15,12 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 /**
  * <pre>
@@ -48,88 +46,31 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
  */
 public class HIncrByFloatExecutor extends HashExecutor {
 
-  private final String ERROR_FIELD_NOT_USABLE =
-      "The value at this field cannot be incremented numerically because it is not a float";
-
-  private final String ERROR_INCREMENT_NOT_USABLE =
+  private static final String ERROR_INCREMENT_NOT_USABLE =
       "The increment on this key must be floating point numeric";
 
-  private final int FIELD_INDEX = 2;
-
-  private final int INCREMENT_INDEX = 3;
+  private static final int INCREMENT_INDEX = FIELD_INDEX + 1;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    byte[] byteField = commandElems.get(FIELD_INDEX);
+    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     double increment;
-
     try {
       increment = Coder.bytesToDouble(incrArray);
     } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INCREMENT_NOT_USABLE));
-      return;
+      return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
     ByteArrayWrapper key = command.getKey();
-    double value;
+    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
 
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
-
-      byte[] byteField = commandElems.get(FIELD_INDEX);
-      ByteArrayWrapper field = new ByteArrayWrapper(byteField);
-
-      /*
-       * Put increment as value if field doesn't exist
-       */
-
-      ByteArrayWrapper oldValue = map.get(field);
-
-      if (oldValue == null) {
-        map.put(field, new ByteArrayWrapper(incrArray));
-
-        this.saveMap(map, context, key);
-
-        respondBulkStrings(command, context, increment);
-        return;
-      }
-
-      /*
-       * If the field did exist then increment the field
-       */
-      String valueS = oldValue.toString();
-      if (valueS.contains(" ")) {
-        command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
-        return;
-      }
-
-      try {
-        value = Coder.stringToDouble(valueS);
-      } catch (NumberFormatException e) {
-        command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
-        return;
-      }
-
-      value += increment;
-      map.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
-
-      this.saveMap(map, context, key);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
-    respondBulkStrings(command, context, value);
+    double value = redisHashCommands.hincrbyfloat(key, field, increment);
+    return RedisResponse.bulkString(value);
   }
 
 }

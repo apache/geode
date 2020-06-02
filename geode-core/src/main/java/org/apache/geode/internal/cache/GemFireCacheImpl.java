@@ -25,6 +25,8 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.distributed.ConfigurationPersistenceService.CLUSTER_CONFIG;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
@@ -33,10 +35,6 @@ import static org.apache.geode.distributed.internal.ClusterDistributionManager.L
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
 import static org.apache.geode.internal.cache.ColocationHelper.getColocatedChildRegions;
-import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.asDistributedMemberSet;
-import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.createMapArray;
-import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedCast;
-import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedRegionAttributes;
 import static org.apache.geode.internal.cache.LocalRegion.setThreadInitLevelRequirement;
 import static org.apache.geode.internal.cache.PartitionedRegion.DISK_STORE_FLUSHED;
 import static org.apache.geode.internal.cache.PartitionedRegion.OFFLINE_EQUAL_PERSISTED;
@@ -44,11 +42,11 @@ import static org.apache.geode.internal.cache.PartitionedRegion.PRIMARY_BUCKETS_
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME;
 import static org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType.HEAP_MEMORY;
 import static org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType.OFFHEAP_MEMORY;
-import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.apache.geode.internal.logging.CoreLoggingExecutors.newThreadPoolWithFixedFeed;
 import static org.apache.geode.internal.tcp.ConnectionTable.threadWantsSharedResources;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newFixedThreadPool;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -725,6 +723,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private List<File> backupFiles = emptyList();
 
+  private ConcurrentMap<String, CountDownLatch> diskStoreLatches = new ConcurrentHashMap();
+
   static {
     // this works around jdk bug 6427854
     String propertyName = "sun.nio.ch.bugLevel";
@@ -1090,6 +1090,57 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     clientMetadataService = clientMetadataServiceFactory.apply(this);
   }
 
+  @Override
+  public void lockDiskStore(String diskStoreName) {
+    doLockDiskStore(diskStoreName);
+  }
+
+  /**
+   * If the disk store is not associated with a {@code CountDownLatch},
+   * constructs a {@code CountDownLatch} with count one, and associate it with the disk store;
+   * otherwise wait until the associated {@code CountDownLatch} has counted down to zero.
+   *
+   * @param diskStoreName the name of the disk store
+   * @return {@code true} if it does not call {@code CountDownLatch.await()};
+   *         {@code false} otherwise.
+   */
+  @VisibleForTesting
+  boolean doLockDiskStore(String diskStoreName) {
+    CountDownLatch countDownLatch =
+        diskStoreLatches.putIfAbsent(diskStoreName, new CountDownLatch(1));
+    if (countDownLatch != null) {
+      try {
+        countDownLatch.await();
+        return false;
+      } catch (InterruptedException e) {
+        throw new InternalGemFireError(e);
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public void unlockDiskStore(String diskStoreName) {
+    doUnlockDiskStore(diskStoreName);
+  }
+
+  /**
+   * Decrements the count of the {@code CountDownLatch} associated with the disk store.
+   *
+   * @param diskStoreName the name of the disk store
+   * @return {@code true} if the disk store associated {@code CountDownLatch} has decremented;
+   *         {@code false} otherwise.
+   */
+  @VisibleForTesting
+  boolean doUnlockDiskStore(String diskStoreName) {
+    CountDownLatch countDownLatch = diskStoreLatches.get(diskStoreName);
+    if (countDownLatch != null) {
+      countDownLatch.countDown();
+      return true;
+    }
+    return false;
+  }
+
   /**
    * This is for debugging cache-open issues such as {@link CacheExistsException}.
    */
@@ -1376,7 +1427,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeDeclarativeCache();
       completedCacheXml = true;
     } catch (RuntimeException e) {
-      logger.error("Cache initialization for {} failed because: {}", this, e);
+      logger.error("Cache initialization for " + this.toString() + " failed because:", e);
       throw e;
     } finally {
       if (!completedCacheXml) {
@@ -1792,7 +1843,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             && partitionedRegion.getDataPolicy() == DataPolicy.PERSISTENT_PARTITION) {
           int numBuckets = partitionedRegion.getTotalNumberOfBuckets();
           Map<InternalDistributedMember, PersistentMemberID>[] bucketMaps =
-              createMapArray(numBuckets);
+              uncheckedCast(new Map[numBuckets]);
           PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
 
           // lock all the primary buckets
@@ -2490,6 +2541,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public void removeDiskStore(DiskStoreImpl diskStore) {
     diskStores.remove(diskStore.getName());
+    diskStoreLatches.remove(diskStore.getName());
     regionOwnedDiskStores.remove(diskStore.getName());
     if (!diskStore.getOwnedByRegion()) {
       system.handleResourceEvent(ResourceEvent.DISKSTORE_REMOVE, diskStore);
@@ -2665,18 +2717,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public Set<DistributedMember> getAdminMembers() {
-    return asDistributedMemberSet(dm.getAdminMemberSet());
+    return uncheckedCast(dm.getAdminMemberSet());
   }
 
   @Override
   public Set<DistributedMember> getMembers(Region region) {
     if (region instanceof DistributedRegion) {
       DistributedRegion distributedRegion = (DistributedRegion) region;
-      return asDistributedMemberSet(distributedRegion.getDistributionAdvisor().adviseCacheOp());
+      return uncheckedCast(distributedRegion.getDistributionAdvisor().adviseCacheOp());
     }
     if (region instanceof PartitionedRegion) {
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
-      return asDistributedMemberSet(partitionedRegion.getRegionAdvisor().adviseAllPRNodes());
+      return uncheckedCast(partitionedRegion.getRegionAdvisor().adviseAllPRNodes());
     }
     return emptySet();
   }
@@ -2957,7 +3009,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           // and we didn't find a region, i.e. the new region is about to be created
 
           if (!isReInitCreate) {
-            String fullPath = Region.SEPARATOR + name;
+            String fullPath = SEPARATOR + name;
             future = reinitializingRegions.get(fullPath);
           }
           if (future == null) {
@@ -3063,15 +3115,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       region.setRegionCreateNotified(true);
     }
 
-    return cast(region);
+    return uncheckedCast(region);
   }
 
   @Override
   public <K, V> RegionAttributes<K, V> invokeRegionBefore(InternalRegion parent, String name,
       RegionAttributes<K, V> attrs, InternalRegionArguments internalRegionArgs) {
     for (RegionListener listener : regionListeners) {
-      attrs =
-          uncheckedRegionAttributes(listener.beforeCreate(parent, name, attrs, internalRegionArgs));
+      attrs = uncheckedCast(listener.beforeCreate(parent, name, attrs, internalRegionArgs));
     }
     return attrs;
   }
@@ -3180,14 +3231,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (path.isEmpty()) {
       throw new IllegalArgumentException("path cannot be empty");
     }
-    if (path.equals(Region.SEPARATOR)) {
-      throw new IllegalArgumentException(String.format("path cannot be ' %s '", Region.SEPARATOR));
+    if (path.equals(SEPARATOR)) {
+      throw new IllegalArgumentException(String.format("path cannot be ' %s '", SEPARATOR));
     }
   }
 
   @Override
   public <K, V> Region<K, V> getRegionByPath(String path) {
-    return cast(getInternalRegionByPath(path));
+    return uncheckedCast(getInternalRegionByPath(path));
   }
 
   @Override
@@ -3244,7 +3295,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         stopper.checkCancelInProgress(null);
         return null;
       }
-      return cast(result);
+      return uncheckedCast(result);
     }
 
     String[] pathParts = parsePath(path);
@@ -3268,7 +3319,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       logger.debug("GemFireCache.getRegion, calling getSubregion on rootRegion({}): {}",
           pathParts[0], pathParts[1]);
     }
-    return cast(rootRegion.getSubregion(pathParts[1], returnDestroyedRegion));
+    return uncheckedCast(rootRegion.getSubregion(pathParts[1], returnDestroyedRegion));
   }
 
   @Override
@@ -3494,10 +3545,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     String[] result = new String[2];
     result[1] = "";
     // strip off root name from path
-    int slashIndex = path.indexOf(Region.SEPARATOR_CHAR);
+    int slashIndex = path.indexOf(SEPARATOR_CHAR);
     if (slashIndex == 0) {
       path = path.substring(1);
-      slashIndex = path.indexOf(Region.SEPARATOR_CHAR);
+      slashIndex = path.indexOf(SEPARATOR_CHAR);
     }
     result[0] = path;
     if (slashIndex > 0) {
@@ -4058,7 +4109,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public <K, V> RegionAttributes<K, V> getRegionAttributes(String id) {
-    return GemFireCacheImpl.UncheckedUtils.<K, V>uncheckedCast(namedRegionAttributes).get(id);
+    return uncheckedCast(namedRegionAttributes.get(id));
   }
 
   @Override
@@ -5172,28 +5223,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         notified = true;
         notifyAll();
       }
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  static class UncheckedUtils {
-
-    static Map<InternalDistributedMember, PersistentMemberID>[] createMapArray(int size) {
-      return new Map[size];
-    }
-
-    static Set<DistributedMember> asDistributedMemberSet(
-        Set<InternalDistributedMember> internalDistributedMembers) {
-      return (Set) internalDistributedMembers;
-    }
-
-    static <K, V> RegionAttributes<K, V> uncheckedRegionAttributes(RegionAttributes region) {
-      return region;
-    }
-
-    static <K, V> Map<String, RegionAttributes<K, V>> uncheckedCast(
-        Map<String, RegionAttributes<?, ?>> namedRegionAttributes) {
-      return (Map) namedRegionAttributes;
     }
   }
 

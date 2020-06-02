@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -28,19 +26,8 @@ public class SInterExecutor extends SetOpExecutor {
   }
 
   @Override
-  protected Set<ByteArrayWrapper> setOp(Set<ByteArrayWrapper> firstSet,
-      List<Set<ByteArrayWrapper>> setList) {
-    if (firstSet == null) {
-      return null;
-    }
-    Set<ByteArrayWrapper> copy = new HashSet<>(firstSet);
-    for (Set<ByteArrayWrapper> set : setList) {
-      if (set == null || set.isEmpty()) {
-        return null;
-      }
-      copy.retainAll(set);
-    }
-    return copy;
+  protected boolean doSetOp(Set<ByteArrayWrapper> resultSet, Set<ByteArrayWrapper> nextSet) {
+    resultSet.retainAll(nextSet);
+    return resultSet.isEmpty();
   }
-
 }

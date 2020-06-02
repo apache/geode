@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.control;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
@@ -1127,8 +1128,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     excluded.add("region3");
 
     Set<String> expectedRebalanced = new HashSet<>();
-    expectedRebalanced.add("/region0");
-    expectedRebalanced.add("/region1");
+    expectedRebalanced.add(SEPARATOR + "region0");
+    expectedRebalanced.add(SEPARATOR + "region1");
 
     int numRegions = 4;
 
@@ -1514,7 +1515,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Create some buckets
     vm0.invoke(() -> {
-      Region<Number, String> region = getCache().getRegion("parent/region1");
+      Region<Number, String> region = getCache().getRegion("parent" + SEPARATOR + "region1");
       for (int i = 0; i < 12; i++) {
         region.put(i, "A");
       }
@@ -1570,7 +1571,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
       vm.invoke(() -> {
-        Region region = getCache().getRegion("parent/region1");
+        Region region = getCache().getRegion("parent" + SEPARATOR + "region1");
 
         PartitionRegionInfo details = PartitionRegionHelper.getPartitionRegionInfo(region);
         assertThat(details.getCreatedBucketCount()).isEqualTo(12);

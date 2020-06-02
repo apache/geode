@@ -149,6 +149,7 @@ public class ShowMetricsDUnitTest {
   public void testShowMetricsRegionFromMember() throws Exception {
     gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --region=REGION1")
         .statusIsSuccess();
-    assertThat(gfsh.getGfshOutput()).contains("Metrics for region:/REGION1 On Member server-1");
+    assertThat(gfsh.getGfshOutput())
+        .contains("Metrics for region:" + SEPARATOR + "REGION1 On Member server-1");
   }
 }

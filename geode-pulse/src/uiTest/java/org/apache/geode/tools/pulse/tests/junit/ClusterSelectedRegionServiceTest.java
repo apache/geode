@@ -16,6 +16,8 @@
  */
 package org.apache.geode.tools.pulse.tests.junit;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -237,9 +239,11 @@ public class ClusterSelectedRegionServiceTest extends BaseServiceTest {
               jsonObjRegion.has("path"));
           String szPath = jsonObjRegion.getString("path");
           Assert.assertEquals(
-              "ClusterSelectedRegionServiceTest :: Server returned wrong region path. Expected region path = /GlobalVilage_2/GlobalVilage_9 , actual region path = "
+              "ClusterSelectedRegionServiceTest :: Server returned wrong region path. Expected region path = "
+                  + SEPARATOR + "GlobalVilage_2" + SEPARATOR
+                  + "GlobalVilage_9 , actual region path = "
                   + szPath,
-              szPath, "/GlobalVilage_2/GlobalVilage_9");
+              szPath, SEPARATOR + "GlobalVilage_2" + SEPARATOR + "GlobalVilage_9");
         } finally {
           response.close();
         }

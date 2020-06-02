@@ -16,13 +16,11 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class StrlenExecutor extends StringExecutor {
 
@@ -37,18 +35,17 @@ public class StrlenExecutor extends StringExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_STRING, context);
-    ByteArrayWrapper valueWrapper = r.get(key);
+    ByteArrayWrapper value = stringCommands.get(key);
 
-    if (valueWrapper == null) {
+    if (value == null) {
       command
           .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), KEY_DOES_NOT_EXIST));
     } else {
       command.setResponse(
-          Coder.getIntegerResponse(context.getByteBufAllocator(), valueWrapper.toBytes().length));
+          Coder.getIntegerResponse(context.getByteBufAllocator(), value.length()));
     }
   }
 }

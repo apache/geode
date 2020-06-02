@@ -14,14 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class AppendExecutor extends StringExecutor {
 
@@ -30,39 +29,12 @@ public class AppendExecutor extends StringExecutor {
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
-
-    if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.APPEND));
-      return;
-    }
-
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-    ByteArrayWrapper string = r.get(key);
+    byte[] bytesToAppend = commandElems.get(VALUE_INDEX);
+    ByteArrayWrapper valueToAppend = new ByteArrayWrapper(bytesToAppend);
 
-    byte[] stringByteArray = commandElems.get(VALUE_INDEX);
-    if (string == null) {
-      r.put(key, new ByteArrayWrapper(stringByteArray));
-      command.setResponse(
-          Coder.getIntegerResponse(context.getByteBufAllocator(), stringByteArray.length));
-    } else {
-      byte[] newValue = concatArrays(string.toBytes(), stringByteArray);
-      string.setBytes(newValue);
-      r.put(key, string);
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), newValue.length));
-    }
+    long returnValue = getRedisStringCommands(context).append(key, valueToAppend);
 
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), returnValue));
   }
-
-  private byte[] concatArrays(byte[] o, byte[] n) {
-    int oLen = o.length;
-    int nLen = n.length;
-    byte[] combined = new byte[oLen + nLen];
-    System.arraycopy(o, 0, combined, 0, oLen);
-    System.arraycopy(n, 0, combined, oLen, nLen);
-    return combined;
-  }
-
 }

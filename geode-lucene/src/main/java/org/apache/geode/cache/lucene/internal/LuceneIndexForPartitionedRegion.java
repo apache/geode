@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -259,7 +261,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
         if (cause instanceof IllegalArgumentException) {
           // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
           String fullRegionPath =
-              regionPath.startsWith(Region.SEPARATOR) ? regionPath : Region.SEPARATOR + regionPath;
+              regionPath.startsWith(SEPARATOR) ? regionPath : SEPARATOR + regionPath;
           String indexNotFoundMessage = String.format("Lucene index %s was not found in region %s",
               indexName, fullRegionPath);
           if (!cause.getLocalizedMessage().equals(indexNotFoundMessage)) {

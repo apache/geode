@@ -24,17 +24,17 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.executor.AbstractScanExecutor;
 
 public class SScanExecutor extends AbstractScanExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_SET, context);
 
     byte[] cAr = commandElems.get(2);
     String cursorString = Coder.bytesToString(cAr);
@@ -42,15 +42,15 @@ public class SScanExecutor extends AbstractScanExecutor {
     Pattern matchPattern = null;
     String globMatchPattern = null;
     int count = DEFAULT_COUNT;
+
     try {
       cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
-      return;
+      return RedisResponse.error(ERROR_CURSOR);
     }
+
     if (cursor < 0) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
-      return;
+      return RedisResponse.error(ERROR_CURSOR);
     }
 
     if (commandElems.size() > 4) {
@@ -65,8 +65,7 @@ public class SScanExecutor extends AbstractScanExecutor {
           count = Coder.bytesToInt(bytes);
         }
       } catch (NumberFormatException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_COUNT));
-        return;
+        return RedisResponse.error(ERROR_COUNT);
       }
     }
 
@@ -79,27 +78,24 @@ public class SScanExecutor extends AbstractScanExecutor {
           count = Coder.bytesToInt(bytes);
         }
       } catch (NumberFormatException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_COUNT));
-        return;
+        return RedisResponse.error(ERROR_COUNT);
       }
     }
 
     if (count < 0) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_COUNT));
-      return;
+      return RedisResponse.error(ERROR_COUNT);
     }
 
     try {
       matchPattern = convertGlobToRegex(globMatchPattern);
     } catch (PatternSyntaxException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_ILLEGAL_GLOB));
-      return;
+      return RedisResponse.error(RedisConstants.ERROR_ILLEGAL_GLOB);
     }
 
     RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getSetRegion());
+        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
     List<Object> returnList = redisSetCommands.sscan(key, matchPattern, count, cursor);
-    command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
+
+    return RedisResponse.scan(returnList);
   }
 }

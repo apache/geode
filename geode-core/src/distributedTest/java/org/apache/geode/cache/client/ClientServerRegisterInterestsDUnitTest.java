@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
@@ -120,7 +121,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
           assertNotNull("The 'Example' Region was not properly configured and initialized!",
               example);
-          assertEquals("/Example", example.getFullPath());
+          assertEquals(SEPARATOR + "Example", example.getFullPath());
           assertEquals("Example", example.getName());
           assertTrue(example.isEmpty());
 
@@ -220,7 +221,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
     ClientCache clientCache = setupGemFireClientCache();
 
     try {
-      Region<String, String> example = clientCache.getRegion("/Example");
+      Region<String, String> example = clientCache.getRegion(SEPARATOR + "Example");
 
       assertNotNull("'Example' Region in Client Cache was not found!", example);
       assertEquals(1, example.size());
@@ -228,7 +229,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
       assertEquals("ONE", example.get("1"));
       assertTrue(entryEvents.empty());
 
-      String value = put("/Example", "2", "TWO");
+      String value = put(SEPARATOR + "Example", "2", "TWO");
 
       assertEquals("TWO", value);
 

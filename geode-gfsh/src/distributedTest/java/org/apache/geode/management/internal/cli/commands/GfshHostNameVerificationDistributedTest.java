@@ -32,6 +32,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -60,14 +61,18 @@ public class GfshHostNameVerificationDistributedTest {
         .isCA()
         .generate();
 
-    CertificateMaterial locatorCertificate = new CertificateBuilder()
+    String hostname = LocalHostUtil.getCanonicalLocalHostName();
+    final CertificateBuilder builder = new CertificateBuilder()
         .commonName("locator")
         .issuedBy(ca)
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
-        .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanIpAddress(InetAddress.getLocalHost())
-        .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
-        .generate();
+        .sanDnsName(hostname)
+        .sanIpAddress(InetAddress.getByName("0.0.0.0"));
+    // the rules used by this test use "localhost" as a hostname, which
+    // causes it to use a non-loopback IP literal address instead of the
+    // host's name on CI Windows runs
+    builder.sanIpAddress(LocalHostUtil.getLocalHost());
+    CertificateMaterial locatorCertificate = builder.generate();
 
     CertificateMaterial gfshCertificate = new CertificateBuilder()
         .commonName("gfsh")

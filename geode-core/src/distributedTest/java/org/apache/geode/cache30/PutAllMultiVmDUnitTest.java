@@ -315,22 +315,17 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
     });
 
     vm3.invoke(() -> {
-      for (int i = 10; i < 20; i++) {
+      // Note: removeAll will not distribute to NORMAL member
+      for (int i = 0; i < 20; i++) {
         Object value = region.getEntry("putAllKeysFromNormal" + i).getValue();
         assertThat(value).isEqualTo("newmap" + i);
       }
 
-      // Note: removeAll will now distribute to NORMAL member
-      for (int i = 0; i < 10; i++) {
-        Region.Entry entry = region.getEntry("putAllKeysFromNormal" + i);
-        assertThat(entry).isNull();
-      }
-
       // verify NORMAL member received PUTALL_UPDATE only
-      // ReomeAll event will now distribute to NORMAL member
-      Region.Entry entry = region.getEntry("putKeyFromNormal");
-      assertThat(entry).isNull();
-      entry = region.getEntry("putKeyFromReplicate");
+      // ReomeAll event will not distribute to NORMAL member
+      Object value = region.getEntry("putKeyFromNormal").getValue();
+      assertThat(value).isEqualTo("value2");
+      Region.Entry entry = region.getEntry("putKeyFromReplicate");
       assertThat(entry).isNull();
     });
   }

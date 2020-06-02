@@ -15,13 +15,10 @@
 package org.apache.geode.redis;
 
 import static java.lang.Integer.parseInt;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.redis.GeodeRedisServer.REDIS_META_DATA_REGION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -34,11 +31,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,9 +45,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -59,25 +55,16 @@ public class StringsIntegrationTest {
   static Jedis jedis;
   static Jedis jedis2;
   static Random rand;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
-  private static int port = 6379;
   private static int ITERATION_COUNT = 4000;
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @BeforeClass
   public static void setUp() {
     rand = new Random();
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-
-    server.start();
-    jedis = new Jedis("localhost", port, 10000000);
-    jedis2 = new Jedis("localhost", port, 10000000);
+    jedis = new Jedis("localhost", server.getPort(), 10000000);
+    jedis2 = new Jedis("localhost", server.getPort(), 10000000);
   }
 
   @After
@@ -89,8 +76,6 @@ public class StringsIntegrationTest {
   public static void tearDown() {
     jedis.close();
     jedis2.close();
-    cache.close();
-    server.shutdown();
   }
 
   @Test
@@ -159,6 +144,32 @@ public class StringsIntegrationTest {
     String result = jedis.get(key);
 
     assertThat(result).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void setNX_shouldNotConflictWithRegularSet() {
+    List<String> keys = new ArrayList<>();
+    List<String> values = new ArrayList<>();
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      keys.add("key-" + i);
+      values.add("value-" + i);
+    }
+
+    AtomicInteger counter = new AtomicInteger(0);
+    SetParams setParams = new SetParams();
+    setParams.nx();
+
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
+        (i) -> {
+          String ok = jedis.set(keys.get(i), values.get(i));
+          if ("OK".equals(ok)) {
+            counter.addAndGet(1);
+          }
+        },
+        (i) -> jedis2.set(keys.get(i), values.get(i), setParams))
+            .run();
+
+    assertThat(counter.get()).isEqualTo(ITERATION_COUNT);
   }
 
   @Test
@@ -597,14 +608,6 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSet_protectedRedisDataType_throwsRedisDataTypeMismatchException() {
-    assertThatThrownBy(
-        () -> jedis.set(REDIS_META_DATA_REGION, "something else"))
-            .isInstanceOf(JedisDataException.class)
-            .hasMessageContaining("protected");
-  }
-
-  @Test
   public void testGetSet_shouldBeAtomic()
       throws ExecutionException, InterruptedException, TimeoutException {
     jedis.set("contestedKey", "0");
@@ -715,6 +718,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-8192")
   public void testMGet_concurrentInstances_mustBeAtomic()
       throws InterruptedException, ExecutionException {
     String keyBaseName = "MSETBASE";
@@ -898,7 +902,7 @@ public class StringsIntegrationTest {
   public void testIncr_whenWrongType_shouldReturnError() {
     String key = "key";
     String nonIntegerValue = "I am not a number! I am a free man!";
-    jedis.set(key, nonIntegerValue);
+    assertThat(jedis.set(key, nonIntegerValue)).isEqualTo("OK");
 
     try {
       jedis.incr(key);
@@ -918,12 +922,10 @@ public class StringsIntegrationTest {
         (i) -> jedis2.incr("contestedKey"))
             .run();
 
-
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(2 * ITERATION_COUNT));
   }
 
   @Test
-  // @todo: not looked over for current release
   public void testDecrBy() {
     String key1 = randString();
     String key2 = randString();
@@ -953,7 +955,6 @@ public class StringsIntegrationTest {
 
   }
 
-  // @todo: not looked over for current release
   @Test
   public void testSetNX() {
     String key1 = randString();
@@ -971,45 +972,7 @@ public class StringsIntegrationTest {
     assertThat(response3).isEqualTo(0);
   }
 
-  // @todo: not looked over for current release
   @Test
-  public void testPAndSetex() {
-    Random r = new Random();
-    int setex = r.nextInt(5);
-    if (setex == 0) {
-      setex = 1;
-    }
-    String key = randString();
-    jedis.setex(key, setex, randString());
-    try {
-      Thread.sleep((setex + 5) * 1000);
-    } catch (InterruptedException e) {
-      return;
-    }
-    String result = jedis.get(key);
-    // System.out.println(result);
-    assertThat(result).isNull();
-
-    int psetex = r.nextInt(5000);
-    if (psetex == 0) {
-      psetex = 1;
-    }
-    key = randString();
-    jedis.psetex(key, psetex, randString());
-    long start = System.currentTimeMillis();
-    try {
-      Thread.sleep(psetex + 5000);
-    } catch (InterruptedException e) {
-      return;
-    }
-    long stop = System.currentTimeMillis();
-    result = jedis.get(key);
-    assertThat(stop - start).isGreaterThanOrEqualTo(psetex);
-    assertThat(result).isNull();
-  }
-
-  @Test
-  // @todo: not looked over for current release
   public void testIncrBy() {
     String key1 = randString();
     String key2 = randString();
@@ -1035,6 +998,41 @@ public class StringsIntegrationTest {
       ex = e;
     }
     assertThat(ex).isNotNull();
+  }
+
+  @Test
+  public void testPAndSetex() {
+    Random r = new Random();
+    int setex = r.nextInt(5);
+    if (setex == 0) {
+      setex = 1;
+    }
+    String key = randString();
+    jedis.setex(key, setex, randString());
+    try {
+      Thread.sleep((setex + 5) * 1000);
+    } catch (InterruptedException e) {
+      return;
+    }
+    String result = jedis.get(key);
+    assertThat(result).isNull();
+
+    int psetex = r.nextInt(5000);
+    if (psetex == 0) {
+      psetex = 1;
+    }
+    key = randString();
+    jedis.psetex(key, psetex, randString());
+    long start = System.currentTimeMillis();
+    try {
+      Thread.sleep(psetex + 5000);
+    } catch (InterruptedException e) {
+      return;
+    }
+    long stop = System.currentTimeMillis();
+    result = jedis.get(key);
+    assertThat(stop - start).isGreaterThanOrEqualTo(psetex);
+    assertThat(result).isNull();
   }
 
   @Test

@@ -62,6 +62,15 @@ public class TeeOutputStream extends FilterOutputStream {
   }
 
   @Override
+  public void write(byte[] b, int off, int len) throws IOException {
+    super.write(b, off, len);
+    OutputStream os = this.branch;
+    if (os != null) {
+      os.write(b, off, len);
+    }
+  }
+
+  @Override
   public void flush() throws IOException {
     super.flush();
     OutputStream os = this.branch;

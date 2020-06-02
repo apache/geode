@@ -15,43 +15,30 @@
 
 package org.apache.geode.redis.general;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class ExpireIntegrationTest {
 
   public static Jedis jedis;
   public static int REDIS_CLIENT_TIMEOUT = 10000000;
-  private static GeodeRedisServer server;
-  private static GemFireCache cache;
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @BeforeClass
   public static void setUp() {
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port);
-
-    server.start();
-    jedis = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -62,8 +49,6 @@ public class ExpireIntegrationTest {
   @AfterClass
   public static void classLevelTearDown() {
     jedis.close();
-    cache.close();
-    server.shutdown();
   }
 
   @Test
@@ -101,24 +86,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  public void should_setExpiration_givenKeyTo_SortedSetValue() {
-
-    String key = "key";
-    double score = 2.0;
-    String member = "member";
-
-    jedis.zadd(key, score, member);
-    Long timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.expire(key, 20);
-    timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
   public void should_setExpiration_givenKeyTo_HashValue() {
 
     String key = "key";
@@ -128,59 +95,6 @@ public class ExpireIntegrationTest {
     jedis.hset(key, field, value);
     Long timeToLive = jedis.ttl(key);
 
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.expire(key, 20);
-    timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void should_setExpiration_givenKeyTo_GeoValue() {
-
-    String key = "sicily";
-    double latitude = 13.361389;
-    double longitude = 38.115556;
-    String member = "Palermo Catania";
-
-    jedis.geoadd(key, latitude, longitude, member);
-
-    Long timeToLive = jedis.ttl(key);
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.expire(key, 20);
-    timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void should_setExpiration_givenKeyTo_HyperLogLogValue() {
-
-    String key = "crawled:127.0.0.2";
-    String value = "www.insideTheHouse.com";
-
-    jedis.pfadd(key, value);
-
-    Long timeToLive = jedis.ttl(key);
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.expire(key, 20);
-    timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void should_setExpiration_givenKeyTo_ListValue() {
-
-    String key = "list";
-    String value = "value";
-
-    jedis.lpush(key, value);
-
-    Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isEqualTo(-1);
 
     jedis.expire(key, 20);
@@ -213,12 +127,22 @@ public class ExpireIntegrationTest {
     String value = "value";
     jedis.set(key, value);
 
-    jedis.expire(key, 1);
+    jedis.pexpire(key, 10);
+
     GeodeAwaitility.await().until(() -> jedis.get(key) == null);
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
+  public void should_removeSetKey_AfterExpirationPeriod() {
+    String key = "key";
+    String value = "value";
+    jedis.sadd(key, value);
+
+    jedis.pexpire(key, 10);
+    GeodeAwaitility.await().until(() -> !jedis.exists(key));
+  }
+
+  @Test
   public void settingAnExistingKeyToANewValue_ShouldClearExpirationTime() {
 
     String key = "key";
@@ -236,7 +160,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void callingGETSETonExistingKey_ShouldClearExpirationTime() {
     String key = "key";
     String value = "value";
@@ -352,21 +275,6 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  public void usingLPUSHCommandToAddNewValueToAKey_should_NOT_ClearExpirationTime() {
-    String key = "list";
-    String value = "value";
-    String value2 = "value2";
-
-    jedis.lpush(key, value);
-    jedis.expire(key, 20);
-
-    jedis.lpush(key, value2);
-    Long timeToLive = jedis.ttl(key);
-
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
   public void usingHSETCommandToAlterAFieldValue_should_NOT_ClearExpirationTimeOnKey() {
     String key = "key";
     String field = "field";
@@ -437,8 +345,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
-  public void SettingExiprationToNegativeValue_ShouldDeleteKey() {
+  public void SettingExpirationToNegativeValue_ShouldDeleteKey() {
 
     String key = "key";
     String value = "value";
@@ -448,7 +355,7 @@ public class ExpireIntegrationTest {
     assertThat(expirationWasSet).isEqualTo(1);
 
     Boolean keyExists = jedis.exists(key);
-    assertThat(keyExists).isTrue();
+    assertThat(keyExists).isFalse();
   }
 
 
@@ -463,5 +370,13 @@ public class ExpireIntegrationTest {
 
     Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isGreaterThan(21);
+  }
+
+  @Test
+  public void should_passivelyExpireKeys() {
+    jedis.sadd("key", "value");
+    jedis.pexpire("key", 100);
+
+    GeodeAwaitility.await().until(() -> jedis.keys("key").isEmpty());
   }
 }

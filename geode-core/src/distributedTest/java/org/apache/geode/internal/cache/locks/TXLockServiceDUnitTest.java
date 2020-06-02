@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.locks;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
@@ -143,7 +144,8 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     keymap.put("KEY-3", true);
     keymap.put("KEY-4", true);
     regionLockReqs
-        .add(new TXRegionLockRequestImpl("/testTXRecoverGrantorMessageProcessor", keymap));
+        .add(new TXRegionLockRequestImpl(SEPARATOR + "testTXRecoverGrantorMessageProcessor",
+            keymap));
 
     TXLockService dtls = TXLockService.getDTLS();
     TXLockId txLockId = dtls.txLock(regionLockReqs, participants);
@@ -216,7 +218,8 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     keymap.put("KEY-3", true);
     keymap.put("KEY-4", true);
     regionLockReqs
-        .add(new TXRegionLockRequestImpl("/testTXRecoverGrantorMessageProcessor2", keymap));
+        .add(new TXRegionLockRequestImpl(SEPARATOR + "testTXRecoverGrantorMessageProcessor2",
+            keymap));
 
     TXLockService dtls = TXLockService.getDTLS();
     TXLockId txLockId = dtls.txLock(regionLockReqs, Collections.EMPTY_SET);
@@ -341,8 +344,8 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     keymap2.put("KEY-C", true);
     keymap2.put("KEY-D", true);
 
-    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXLock1", keymap1));
-    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXLock2", keymap2));
+    regionLockReqs.add(new TXRegionLockRequestImpl(SEPARATOR + "testTXLock1", keymap1));
+    regionLockReqs.add(new TXRegionLockRequestImpl(SEPARATOR + "testTXLock2", keymap2));
 
     // create grantor
     LogWriterUtils.getLogWriter().info("[testTXLock] create grantor");
@@ -461,7 +464,8 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     keymap1.put("KEY-3", true);
     keymap1.put("KEY-4", true);
 
-    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXOriginatorRecoveryProcessor", keymap1));
+    regionLockReqs
+        .add(new TXRegionLockRequestImpl(SEPARATOR + "testTXOriginatorRecoveryProcessor", keymap1));
 
     // build participants set...
     InternalDistributedMember dmId = null;

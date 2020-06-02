@@ -83,7 +83,7 @@ public class RemoveCommandDUnitTest {
     String command = "remove --all --region=NotAValidRegion";
 
     gfsh.executeAndAssertThat(command).statusIsError()
-        .containsOutput(String.format(REGION_NOT_FOUND, "/NotAValidRegion"));
+        .containsOutput(String.format(REGION_NOT_FOUND, SEPARATOR + "NotAValidRegion"));
   }
 
   @Test

@@ -6,10 +6,10 @@
 
 ## <a name="overview"></a>Overview
 
-The [Geode Redis Module](https://geode.apache.org/docs/guide/12/tools_modules/redis_adapter.html) allows 
+The [Redis API for Geode](https://geode.apache.org/docs/guide/12/tools_modules/redis_api_for_geode.html) allows 
 Geode to function as a drop-in replacement for a Redis data store, letting Redis applications 
 take advantage of Geode’s scaling capabilities without changing their client code. Redis clients 
-connect to a Geode server in the same way they connect to a Redis server, using an IP address and a 
+connect to a Geode server in the same way they connect to a Redis server, using a hostname and a 
 port number.
 
 ## <a name="performance-test"></a>Performance Test Scripts

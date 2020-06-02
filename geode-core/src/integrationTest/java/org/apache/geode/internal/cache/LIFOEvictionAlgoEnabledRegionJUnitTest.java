@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -76,7 +77,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   @After
   public void tearDown() throws Exception {
     assertNotNull(cache);
-    Region rgn = cache.getRegion(Region.SEPARATOR + regionName);
+    Region rgn = cache.getRegion(SEPARATOR + regionName);
     assertNotNull(rgn);
     rgn.localDestroyRegion();
     cache.close();
@@ -119,7 +120,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
 
     ((GemFireCacheImpl) cache).createRegion(regionName, attr);
     lifoClockHand =
-        ((VMLRURegionMap) ((LocalRegion) cache.getRegion(Region.SEPARATOR + regionName)).entries)
+        ((VMLRURegionMap) ((LocalRegion) cache.getRegion(SEPARATOR + regionName)).entries)
             .getEvictionList();
 
     /* storing stats reference */
@@ -141,7 +142,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   public void testLIFOStatsUpdation() {
     try {
       assertNotNull(cache);
-      LocalRegion rgn = (LocalRegion) cache.getRegion(Region.SEPARATOR + regionName);
+      LocalRegion rgn = (LocalRegion) cache.getRegion(SEPARATOR + regionName);
       assertNotNull(rgn);
 
       // check for is LIFO Enable
@@ -197,7 +198,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   public void testLIFOEntryEviction() {
     try {
       assertNotNull(cache);
-      LocalRegion rgn = (LocalRegion) cache.getRegion(Region.SEPARATOR + regionName);
+      LocalRegion rgn = (LocalRegion) cache.getRegion(SEPARATOR + regionName);
       assertNotNull(rgn);
 
       assertEquals("Region is not properly cleared ", 0, rgn.size());
@@ -231,7 +232,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   public void testEntryEvictionCount() {
     try {
       assertNotNull(cache);
-      Region rgn = cache.getRegion(Region.SEPARATOR + regionName);
+      Region rgn = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(rgn);
 
       assertTrue("Entry count not 0 ", new Long(0).equals(new Long(lifoStats.getCounter())));
@@ -261,7 +262,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   public void testEntryFaultinCount() {
     try {
       assertNotNull(cache);
-      LocalRegion rgn = (LocalRegion) cache.getRegion(Region.SEPARATOR + regionName);
+      LocalRegion rgn = (LocalRegion) cache.getRegion(SEPARATOR + regionName);
       assertNotNull(rgn);
 
       DiskRegionStats diskRegionStats = rgn.getDiskRegion().getStats();
@@ -298,7 +299,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   public void testFaultInEntryValueShouldbeSerialized() {
     try {
       assertNotNull(cache);
-      LocalRegion rgn = (LocalRegion) cache.getRegion(Region.SEPARATOR + regionName);
+      LocalRegion rgn = (LocalRegion) cache.getRegion(SEPARATOR + regionName);
       assertNotNull(rgn);
 
       assertEquals("Region is not properly cleared ", 0, rgn.size());

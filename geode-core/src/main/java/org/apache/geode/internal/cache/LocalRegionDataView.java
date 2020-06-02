@@ -381,10 +381,7 @@ public class LocalRegionDataView implements InternalDataView {
     // BR, DR's removeAll
     long token = -1;
     try {
-      if (reg.getServerProxy() != null || (reg.getDataPolicy() != DataPolicy.NORMAL
-          && reg.getDataPolicy() != DataPolicy.PRELOADED)) {
-        token = reg.postRemoveAllSend(op, successfulOps);
-      }
+      token = reg.postRemoveAllSend(op, successfulOps);
       reg.postRemoveAllFireEvents(op, successfulOps);
     } finally {
       if (token != -1 && reg instanceof DistributedRegion) {

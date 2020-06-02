@@ -14,18 +14,14 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+
 import java.util.List;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class GetSetExecutor extends StringExecutor {
 
@@ -40,38 +36,12 @@ public class GetSetExecutor extends StringExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> region =
-        context.getRegionProvider().getStringsRegion();
-
     ByteArrayWrapper key = command.getKey();
-    checkAndSetDataType(key, context);
-
     byte[] newCharValue = commandElems.get(VALUE_INDEX);
     ByteArrayWrapper newValueWrapper = new ByteArrayWrapper(newCharValue);
-    ByteArrayWrapper oldValueWrapper;
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      oldValueWrapper = region.get(key);
-      if (oldValueWrapper != null) {
-        try {
-          checkDataType(oldValueWrapper, RedisDataType.REDIS_STRING, context);
-        } catch (Exception e) {
-          command.setResponse(
-              Coder.getErrorResponse(context.getByteBufAllocator(),
-                  RedisConstants.ERROR_WRONG_TYPE));
-          return;
-        }
-      }
-      region.put(key, newValueWrapper);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
+
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    ByteArrayWrapper oldValueWrapper = stringCommands.getset(key, newValueWrapper);
     respondBulkStrings(command, context, oldValueWrapper);
   }
 }

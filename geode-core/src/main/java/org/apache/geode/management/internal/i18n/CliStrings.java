@@ -1831,6 +1831,8 @@ public class CliStrings {
       "Cannot find regions <{0}> in any of the members";
   public static final String QUERY__MSG__NOT_SUPPORTED_ON_MEMBERS = CliStrings.QUERY
       + " command should be used only from shell. Use QueryService API for running query inside Geode VMs";
+  public static final String QUERY__MEMBER__HELP =
+      "Name/Id of a member on which to execute the query.";
 
   /* 'rebalance' command */
   public static final String REBALANCE = "rebalance";
@@ -2209,6 +2211,13 @@ public class CliStrings {
       "remote-distributed-system-id";
   public static final String CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP =
       "Id of the remote distributed system to which the sender will send events.";
+  public static final String CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS =
+      "group-transaction-events";
+  public static final String CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP =
+      "Ensure that all the events of a transaction are sent in the same batch, i.e., they are never spread across different batches.\n"
+          + "Only allowed on serial gateway senders with 1 dispatcher thread or on parallel ones.\n"
+          + "Note that in order to work for a transaction, the regions to which the transaction \n"
+          + "events belong must be replicated by the same set of senders with this flag enabled.";
   public static final String CREATE_GATEWAYSENDER__PARALLEL = "parallel";
   public static final String CREATE_GATEWAYSENDER__PARALLEL__HELP =
       "Whether this is Parallel GatewaySender.";
@@ -2267,7 +2276,7 @@ public class CliStrings {
   public static final String CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS =
       "Gateway Sender cannot be created until all members are the current version";
 
-  /* stop gateway-receiver */
+  /* start gateway-sender */
   public static final String START_GATEWAYSENDER = "start gateway-sender";
   public static final String START_GATEWAYSENDER__HELP =
       "Start the Gateway Sender on a member or members.";
@@ -2278,6 +2287,10 @@ public class CliStrings {
   public static final String START_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the member on which to start the Gateway Sender.";
 
+  public static final String START_GATEWAYSENDER__CLEAN_QUEUE = "clean-queues";
+  public static final String START_GATEWAYSENDER__CLEAN_QUEUE__HELP =
+      "Option to clean existing queue at start of the Gateway Sender. " +
+          "This option is only applicable for Gateway Senders with enabled persistence.";
 
   /* destroy gateway-sender */
   public static final String DESTROY_GATEWAYSENDER = "destroy gateway-sender";
@@ -2563,16 +2576,16 @@ public class CliStrings {
   public static final String START_SERVER__PROPERTIES = "properties-file";
   public static final String START_SERVER__PROPERTIES__HELP =
       "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
-  public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
-  public static final String START_SERVER__REDIS_PORT__HELP =
-      "Sets the port that the Geode Redis service listens on for Redis clients.";
   public static final String START_SERVER__REDIS_BIND_ADDRESS =
       ConfigurationProperties.REDIS_BIND_ADDRESS;
   public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP =
-      "Sets the IP address the Geode Redis service listens on for Redis clients. The default is to bind to the first non-loopback address for this machine.";
+      "Specifies the address on which the Redis API for Geode is listening. If set to the empty string or this property is not specified, localhost is requested from the operating system.";
   public static final String START_SERVER__REDIS_PASSWORD = ConfigurationProperties.REDIS_PASSWORD;
   public static final String START_SERVER__REDIS_PASSWORD__HELP =
-      "Sets the authentication password for GeodeRedisServer";
+      "Specifies the password that the server uses when a client attempts to authenticate. The default is none and no authentication will be required.";
+  public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
+  public static final String START_SERVER__REDIS_PORT__HELP =
+      "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.";
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_SERVER__SECURITY_PROPERTIES__HELP =
       "The gfsecurity.properties file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.";

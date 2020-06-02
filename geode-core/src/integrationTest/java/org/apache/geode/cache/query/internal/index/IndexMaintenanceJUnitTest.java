@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -108,7 +109,8 @@ public class IndexMaintenanceJUnitTest {
     region.put("5", p);
     idSet.add("" + p.getID());
     region.put("6", 6);
-    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID()", "/portfolio1 pf");
+    Index i1 =
+        qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID()", SEPARATOR + "portfolio1 pf");
     RangeIndex ri = (RangeIndex) i1;
     assertEquals(2, ri.valueToEntriesMap.size());
     Iterator itr = ri.valueToEntriesMap.values().iterator();
@@ -140,7 +142,8 @@ public class IndexMaintenanceJUnitTest {
 
     region.remove("7");
     idSet.remove(7);
-    Index i2 = qs.createIndex("indx2", IndexType.FUNCTIONAL, "pf.pkid", "/portfolio1 pf");
+    Index i2 =
+        qs.createIndex("indx2", IndexType.FUNCTIONAL, "pf.pkid", SEPARATOR + "portfolio1 pf");
     ri = (RangeIndex) i2;
     assertEquals(2, ri.valueToEntriesMap.size());
     itr = ri.valueToEntriesMap.values().iterator();
@@ -187,7 +190,8 @@ public class IndexMaintenanceJUnitTest {
     for (int i = 5; i < 10; ++i) {
       region.put(i + 1, i + 1);
     }
-    String queryStr = "Select distinct * from /portfolio1 pf1 where pf1.getID() > 3";
+    String queryStr =
+        "Select distinct * from " + SEPARATOR + "portfolio1 pf1 where pf1.getID() > 3";
     Query q = qs.newQuery(queryStr);
     SelectResults rs = (SelectResults) q.execute();
     assertEquals(2, rs.size());
@@ -197,7 +201,8 @@ public class IndexMaintenanceJUnitTest {
       assertTrue(p == region.get(4) || p == region.get(5));
     }
 
-    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID()", "/portfolio1 pf");
+    Index i1 =
+        qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID()", SEPARATOR + "portfolio1 pf");
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexUsed = false;
 
@@ -221,7 +226,7 @@ public class IndexMaintenanceJUnitTest {
     }
     qs.removeIndex(i1);
 
-    queryStr = "Select distinct * from /portfolio1 pf1 where pf1.pkid > '3'";
+    queryStr = "Select distinct * from " + SEPARATOR + "portfolio1 pf1 where pf1.pkid > '3'";
     q = qs.newQuery(queryStr);
     rs = (SelectResults) q.execute();
     assertEquals(2, rs.size());
@@ -231,7 +236,7 @@ public class IndexMaintenanceJUnitTest {
       assertTrue(p == region.get(4) || p == region.get(5));
     }
 
-    i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.pkid", "/portfolio1 pf");
+    i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.pkid", SEPARATOR + "portfolio1 pf");
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexUsed = false;
 
@@ -261,9 +266,10 @@ public class IndexMaintenanceJUnitTest {
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodKeys() throws Exception {
-    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "ks.toString", "/portfolio.keys() ks");
+    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "ks.toString",
+        SEPARATOR + "portfolio.keys() ks");
     CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -276,9 +282,10 @@ public class IndexMaintenanceJUnitTest {
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodAsList() throws Exception {
-    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID", "/portfolio.asList() pf");
+    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID",
+        SEPARATOR + "portfolio.asList() pf");
     CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -291,10 +298,11 @@ public class IndexMaintenanceJUnitTest {
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodValues() throws Exception {
-    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID", "/portfolio.values() pf");
+    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID",
+        SEPARATOR + "portfolio.values() pf");
     assertTrue(i1 instanceof CompactRangeIndex);
     Cache cache = CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -308,10 +316,11 @@ public class IndexMaintenanceJUnitTest {
   @Test
   public void testIndexMaintenanceWithIndexOnMethodGetValues() throws Exception {
     Index i1 =
-        qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID", "/portfolio.getValues() pf");
+        qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID",
+            SEPARATOR + "portfolio.getValues() pf");
     assertTrue(i1 instanceof CompactRangeIndex);
     Cache cache = CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -324,10 +333,11 @@ public class IndexMaintenanceJUnitTest {
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodtoArray() throws Exception {
-    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID", "/portfolio.toArray() pf");
+    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID",
+        SEPARATOR + "portfolio.toArray() pf");
     assertTrue(i1 instanceof CompactRangeIndex);
     Cache cache = CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -340,9 +350,10 @@ public class IndexMaintenanceJUnitTest {
    */
   @Test
   public void testIndexMaintenanceWithIndexOnMethodAsSet() throws Exception {
-    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID", "/portfolio.asSet() pf");
+    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID",
+        SEPARATOR + "portfolio.asSet() pf");
     CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -356,9 +367,10 @@ public class IndexMaintenanceJUnitTest {
   @Test
   public void testIndexMaintenanceWithIndexOnMethodKeySet() throws Exception {
     Index i1 =
-        qs.createIndex("indx1", IndexType.FUNCTIONAL, "ks.toString", "/portfolio.keySet() ks");
+        qs.createIndex("indx1", IndexType.FUNCTIONAL, "ks.toString",
+            SEPARATOR + "portfolio.keySet() ks");
     CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -372,9 +384,10 @@ public class IndexMaintenanceJUnitTest {
   @Test
   public void testIndexMaintenanceWithIndexOnMethodGetKeys() throws Exception {
     Index i1 =
-        qs.createIndex("indx1", IndexType.FUNCTIONAL, "ks.toString", "/portfolio.getKeys() ks");
+        qs.createIndex("indx1", IndexType.FUNCTIONAL, "ks.toString",
+            SEPARATOR + "portfolio.getKeys() ks");
     CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -388,9 +401,9 @@ public class IndexMaintenanceJUnitTest {
   @Test
   public void testIndexMaintenanceWithIndexOnMethodEntrySet() throws Exception {
     Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "entries.value.getID",
-        "/portfolio.entrySet() entries");
+        SEPARATOR + "portfolio.entrySet() entries");
     CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -404,9 +417,9 @@ public class IndexMaintenanceJUnitTest {
   @Test
   public void testIndexMaintenanceWithIndexOnMethodGetEntries() throws Exception {
     Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "entries.value.getID",
-        "/portfolio.getEntries() entries");
+        SEPARATOR + "portfolio.getEntries() entries");
     CacheUtils.getCache();
-    region = CacheUtils.getRegion("/portfolio");
+    region = CacheUtils.getRegion(SEPARATOR + "portfolio");
     region.put("4", new Portfolio(4));
     region.put("5", new Portfolio(5));
     CompactRangeIndex ri = (CompactRangeIndex) i1;
@@ -431,7 +444,8 @@ public class IndexMaintenanceJUnitTest {
       testRgn.put(ID, mkid);
     }
     --ID;
-    Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "objs.maap[*]", "/testRgn objs");
+    Index i1 =
+        qs.createIndex("Index1", IndexType.FUNCTIONAL, "objs.maap[*]", SEPARATOR + "testRgn objs");
     assertEquals(i1.getCanonicalizedIndexedExpression(), "index_iter1.maap[*]");
     assertTrue(i1 instanceof MapRangeIndex);
     MapRangeIndex mri = (MapRangeIndex) i1;
@@ -664,7 +678,7 @@ public class IndexMaintenanceJUnitTest {
     }
     --ID;// ID = 5;
     Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL,
-        "objs.maap['key1','key2','key3','key7']", "/testRgn objs");
+        "objs.maap['key1','key2','key3','key7']", SEPARATOR + "testRgn objs");
     assertEquals(i1.getCanonicalizedIndexedExpression(),
         "index_iter1.maap['key1','key2','key3','key7']");
     assertTrue(i1 instanceof MapRangeIndex);
@@ -904,7 +918,8 @@ public class IndexMaintenanceJUnitTest {
       testRgn.put(ID, mkid);
     }
     --ID;
-    Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "objs.maap[*]", "/testRgn objs");
+    Index i1 =
+        qs.createIndex("Index1", IndexType.FUNCTIONAL, "objs.maap[*]", SEPARATOR + "testRgn objs");
     assertEquals(i1.getCanonicalizedIndexedExpression(), "index_iter1.maap[*]");
     assertTrue(i1 instanceof MapRangeIndex);
     MapRangeIndex mri = (MapRangeIndex) i1;
@@ -988,7 +1003,8 @@ public class IndexMaintenanceJUnitTest {
       }
     });
 
-    Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID()", "/portfolio1 pf");
+    Index i1 =
+        qs.createIndex("indx1", IndexType.FUNCTIONAL, "pf.getID()", SEPARATOR + "portfolio1 pf");
     List keys = new ArrayList();
     keys.add("1");
     keys.add("2");
@@ -1009,7 +1025,7 @@ public class IndexMaintenanceJUnitTest {
     region = CacheUtils.createRegion("portfolio1", null);
     region.put("1", new Portfolio(1));
     Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "posvals.secId",
-        "/portfolio1 pf, pf.positions.values posvals ");
+        SEPARATOR + "portfolio1 pf, pf.positions.values posvals ");
     Map data = new HashMap();
     for (int i = 1; i < 11; ++i) {
       data.put("" + i, new Portfolio(i + 2));
@@ -1025,7 +1041,7 @@ public class IndexMaintenanceJUnitTest {
     qs = cache.getQueryService();
     region = CacheUtils.createRegion("portfolio1", null);
     Index i1 = qs.createIndex("indx1", IndexType.FUNCTIONAL, "posvals",
-        "/portfolio1 pf, pf.getCollectionHolderMap.values posvals ");
+        SEPARATOR + "portfolio1 pf, pf.getCollectionHolderMap.values posvals ");
     Portfolio pf1 = new Portfolio(1);
     Map collHolderMap = pf1.getCollectionHolderMap();
     collHolderMap.clear();

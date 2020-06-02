@@ -795,7 +795,7 @@ public class CreateMappingCommandTest {
   @Test
   public void createAsyncEventQueueNameWithRegionPathReturnsQueueNameThatIsTheSameAsRegionWithNoSlash() {
     String queueName1 = MappingCommandUtils.createAsyncEventQueueName("regionName");
-    String queueName2 = MappingCommandUtils.createAsyncEventQueueName("/regionName");
+    String queueName2 = MappingCommandUtils.createAsyncEventQueueName(SEPARATOR + "regionName");
     assertThat(queueName1).isEqualTo(queueName2);
   }
 
@@ -807,7 +807,8 @@ public class CreateMappingCommandTest {
 
   @Test
   public void createAsyncEventQueueNameWithSubregionNameReturnsQueueNameWithNoSlashes() {
-    String queueName = MappingCommandUtils.createAsyncEventQueueName("/parent/child/grandchild");
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(
+        SEPARATOR + "parent" + SEPARATOR + "child" + SEPARATOR + "grandchild");
     assertThat(queueName).isEqualTo("JDBC#parent_child_grandchild");
   }
 

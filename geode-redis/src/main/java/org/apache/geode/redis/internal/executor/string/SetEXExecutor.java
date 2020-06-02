@@ -14,16 +14,17 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SetEXExecutor extends StringExecutor implements Extendable {
 
@@ -40,12 +41,12 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
-
     if (commandElems.size() < 4) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
       return;
     }
+
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     ByteArrayWrapper key = command.getKey();
     byte[] value = commandElems.get(VALUE_INDEX);
@@ -67,13 +68,11 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
     }
 
     if (!timeUnitMillis()) {
-      expiration *= AbstractExecutor.millisInSecond;
+      expiration = SECONDS.toMillis(expiration);
     }
+    SetOptions setOptions = new SetOptions(NONE, expiration, false);
 
-    checkAndSetDataType(key, context);
-    r.put(key, new ByteArrayWrapper(value));
-
-    context.getRegionProvider().setExpiration(key, expiration);
+    stringCommands.set(key, new ByteArrayWrapper(value), setOptions);
 
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
 

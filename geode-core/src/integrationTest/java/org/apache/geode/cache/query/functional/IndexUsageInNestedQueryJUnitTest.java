@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -63,21 +64,31 @@ public class IndexUsageInNestedQueryJUnitTest {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "select distinct * from /portfolios p, (select distinct pos  as poos from /portfolios x, x.positions.values pos"
+        "select distinct * from " + SEPARATOR + "portfolios p, (select distinct pos  as poos from "
+            + SEPARATOR + "portfolios x, x.positions.values pos"
             + " where pos.secId = 'YHOO') as k",
-        "select distinct * from /portfolios p, (select distinct pos as poos from /portfolios p, p.positions.values pos"
+        "select distinct * from " + SEPARATOR + "portfolios p, (select distinct pos as poos from "
+            + SEPARATOR + "portfolios p, p.positions.values pos"
             + " where pos.secId = 'YHOO') as k",
-        "select distinct * from /portfolios p, (select distinct x.ID as ID  from /portfolios x"
+        "select distinct * from " + SEPARATOR + "portfolios p, (select distinct x.ID as ID  from "
+            + SEPARATOR + "portfolios x"
             + " where x.ID = p.ID) as k ", // Currently Index Not Getting Used
-        "select distinct * from /portfolios p, (select distinct pos as poos from /portfolios x, p.positions.values pos"
+        "select distinct * from " + SEPARATOR + "portfolios p, (select distinct pos as poos from "
+            + SEPARATOR + "portfolios x, p.positions.values pos"
             + " where x.ID = p.ID) as k", // Currently Index Not Getting Used
-        "select distinct * from /portfolios p, (select distinct x as pf , myPos as poos from /portfolios x, x.positions.values as myPos) as k "
+        "select distinct * from " + SEPARATOR
+            + "portfolios p, (select distinct x as pf , myPos as poos from " + SEPARATOR
+            + "portfolios x, x.positions.values as myPos) as k "
             + "  where k.poos.secId = 'YHOO'",
-        "select distinct * from /portfolios p, (select distinct x as pf , myPos as poos from /portfolios x, x.positions.values as myPos) as K"
+        "select distinct * from " + SEPARATOR
+            + "portfolios p, (select distinct x as pf , myPos as poos from " + SEPARATOR
+            + "portfolios x, x.positions.values as myPos) as K"
             + "  where K.poos.secId = 'YHOO'",
-        "select distinct * from /portfolios p, (select distinct val from positions.values as val where val.secId = 'YHOO') as k ",
-        "select distinct * from /portfolios x, x.positions.values where "
-            + "secId = element(select distinct vals.secId from /portfolios p, p.positions.values vals where vals.secId = 'YHOO')",
+        "select distinct * from " + SEPARATOR
+            + "portfolios p, (select distinct val from positions.values as val where val.secId = 'YHOO') as k ",
+        "select distinct * from " + SEPARATOR + "portfolios x, x.positions.values where "
+            + "secId = element(select distinct vals.secId from " + SEPARATOR
+            + "portfolios p, p.positions.values vals where vals.secId = 'YHOO')",
 
     };
     SelectResults r[][] = new SelectResults[queries.length][2];
@@ -101,11 +112,11 @@ public class IndexUsageInNestedQueryJUnitTest {
     // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    qs.createIndex("idIndex", IndexType.FUNCTIONAL, "p.ID", "/portfolios p");
+    qs.createIndex("idIndex", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolios p");
     qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
-        "/portfolios pf, pf.positions.values b");
+        SEPARATOR + "portfolios pf, pf.positions.values b");
     qs.createIndex("cIndex", IndexType.FUNCTIONAL,
-        "pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]", "/portfolios pf");
+        "pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]", SEPARATOR + "portfolios pf");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {

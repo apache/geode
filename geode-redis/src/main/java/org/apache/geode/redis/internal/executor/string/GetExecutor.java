@@ -14,33 +14,20 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import org.apache.geode.cache.Region;
+
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class GetExecutor extends StringExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
 
-    if (command.getProcessedCommand().size() != 2) {
-      command
-          .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.GETEXECUTOR));
-      return;
-    }
-
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, RedisDataType.REDIS_STRING, context);
-
-    Region<ByteArrayWrapper, ByteArrayWrapper> region =
-        context.getRegionProvider().getStringsRegion();
-    ByteArrayWrapper wrapper = region.get(key);
-
-    respondBulkStrings(command, context, wrapper);
+    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
+    ByteArrayWrapper result = redisStringCommands.get(key);
+    respondBulkStrings(command, context, result);
   }
 
 }
