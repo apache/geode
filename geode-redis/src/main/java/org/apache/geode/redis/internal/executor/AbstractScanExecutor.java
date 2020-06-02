@@ -16,7 +16,7 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.regex.Pattern;
 
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
+import org.apache.geode.redis.internal.GlobPattern;
 
 public abstract class AbstractScanExecutor extends AbstractExecutor {
 
