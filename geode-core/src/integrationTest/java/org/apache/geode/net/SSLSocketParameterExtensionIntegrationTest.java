@@ -36,7 +36,6 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -217,18 +216,18 @@ public class SSLSocketParameterExtensionIntegrationTest {
   }
 
   public static class MySSLParameterExtension implements SSLParameterExtension {
-    Map<SSLParameterExtensionTypes, Object> config;
+    SSLParameterExtensionContext context;
 
     @Override
-    public void init(final Map<SSLParameterExtensionTypes, Object> seedConfig) {
-      config = seedConfig;
+    public void init(final SSLParameterExtensionContext seedContext) {
+      context = seedContext;
     }
 
     @Override
     public SSLParameters modifySSLClientSocketParameters(SSLParameters parameters) {
       List<SNIServerName> serverNames = new ArrayList<>(1);
       SNIHostName serverName =
-          new SNIHostName(config.get(SSLParameterExtensionTypes.DistributedSystemID).toString());
+          new SNIHostName(String.valueOf(context.getDistributedSystemId()));
       serverNames.add(serverName);
       parameters.setServerNames(serverNames);
       return parameters;

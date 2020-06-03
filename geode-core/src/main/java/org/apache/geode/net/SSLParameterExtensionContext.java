@@ -12,34 +12,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.net;
 
-import javax.net.ssl.SSLParameters;
-
-import org.apache.geode.annotations.Experimental;
-
-/**
- * User implementation of a SSLParameter extension logic.
- *
- * @since Geode 1.12
- */
-
-public interface SSLParameterExtension {
-  /**
-   * Initialize the SSLParameterExtension.
-   *
-   * @param context Seed values for modifying SSL input parameters
-   */
-  @Experimental
-  default void init(final SSLParameterExtensionContext context) {}
-
-  default SSLParameters modifySSLClientSocketParameters(SSLParameters parameters) {
-    return parameters;
-  }
-
-  default SSLParameters modifySSLServerSocketParameters(SSLParameters parameters) {
-    return parameters;
-  }
-
+public interface SSLParameterExtensionContext {
+  int getDistributedSystemId();
 }

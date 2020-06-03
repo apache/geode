@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 
 import java.security.KeyStore;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -33,6 +32,7 @@ import org.apache.geode.internal.net.SSLUtil;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.net.SSLParameterExtension;
+import org.apache.geode.net.SSLParameterExtensionContextImpl;
 
 /**
  * The SSL configuration settings for a GemFire distributed system.
@@ -343,9 +343,7 @@ public class SSLConfig {
       ids.getConfig().getDistributedSystemId();
 
       sslParameterExtension.init(
-          Collections.singletonMap(
-              SSLParameterExtension.SSLParameterExtensionTypes.DistributedSystemID,
-              ids.getConfig().getDistributedSystemId()));
+          new SSLParameterExtensionContextImpl(ids.getConfig().getDistributedSystemId()));
       this.sslParameterExtension = sslParameterExtension;
       return this;
     }

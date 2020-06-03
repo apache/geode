@@ -12,34 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.net;
 
-import javax.net.ssl.SSLParameters;
+public class SSLParameterExtensionContextImpl implements SSLParameterExtensionContext {
+  private int distributedSystemId;
 
-import org.apache.geode.annotations.Experimental;
-
-/**
- * User implementation of a SSLParameter extension logic.
- *
- * @since Geode 1.12
- */
-
-public interface SSLParameterExtension {
-  /**
-   * Initialize the SSLParameterExtension.
-   *
-   * @param context Seed values for modifying SSL input parameters
-   */
-  @Experimental
-  default void init(final SSLParameterExtensionContext context) {}
-
-  default SSLParameters modifySSLClientSocketParameters(SSLParameters parameters) {
-    return parameters;
+  public SSLParameterExtensionContextImpl(int distributedSystemIdInput) {
+    distributedSystemId = distributedSystemIdInput;
   }
 
-  default SSLParameters modifySSLServerSocketParameters(SSLParameters parameters) {
-    return parameters;
+  @Override
+  public int getDistributedSystemId() {
+    return distributedSystemId;
   }
 
+  public void setDistributedSystemId(int distributedSystemIdInput) {
+    distributedSystemId = distributedSystemIdInput;
+  }
 }
