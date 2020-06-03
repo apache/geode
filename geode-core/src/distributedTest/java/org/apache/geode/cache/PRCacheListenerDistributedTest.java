@@ -132,7 +132,8 @@ public class PRCacheListenerDistributedTest extends ReplicateCacheListenerDistri
 
     region.destroyRegion();
 
-    assertThat(sharedCountersRule.getTotal(REGION_DESTROY)).isEqualTo(expectedRegionDestroys());
+    assertThat(sharedCountersRule.getTotal(REGION_DESTROY))
+        .isGreaterThanOrEqualTo(expectedRegionDestroys());
   }
 
   @Test
