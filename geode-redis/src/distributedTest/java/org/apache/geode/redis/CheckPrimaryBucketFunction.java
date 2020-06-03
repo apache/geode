@@ -19,6 +19,8 @@ package org.apache.geode.redis;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -33,10 +35,12 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 @SuppressWarnings("unchecked")
 public class CheckPrimaryBucketFunction implements Function {
-  private static final CountDownLatch signalFunctionHasStarted = new CountDownLatch(1);
-  private static final CountDownLatch signalPrimaryHasMoved = new CountDownLatch(1);
+  public static final String ID = CheckPrimaryBucketFunction.class.getName();
+  private final CountDownLatch signalFunctionHasStarted = new CountDownLatch(1);
+  private final CountDownLatch signalPrimaryHasMoved = new CountDownLatch(1);
+  private static final Logger logger = LogService.getLogger();
 
-  public static void waitForFunctionToStart() {
+  public void waitForFunctionToStart() {
     try {
       signalFunctionHasStarted.await();
     } catch (InterruptedException e) {
@@ -44,7 +48,7 @@ public class CheckPrimaryBucketFunction implements Function {
     }
   }
 
-  public static void finishedMovingPrimary() {
+  public void finishedMovingPrimary() {
     signalPrimaryHasMoved.countDown();
   }
 
@@ -116,6 +120,6 @@ public class CheckPrimaryBucketFunction implements Function {
 
   @Override
   public String getId() {
-    return CheckPrimaryBucketFunction.class.getName();
+    return ID;
   }
 }
