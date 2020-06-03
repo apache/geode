@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 public class RegionNameValidation {
 
-  private static final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
+  private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9-_.^`\\[\\]\\\\]+");
 
   static Pattern getNamePattern() {
     return NAME_PATTERN;
