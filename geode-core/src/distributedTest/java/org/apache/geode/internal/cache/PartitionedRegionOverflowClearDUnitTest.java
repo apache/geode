@@ -36,6 +36,7 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,7 +63,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
 
   @Rule
-  public DistributedRule distributedRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule(5);
 
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
@@ -70,6 +71,7 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
+  private VM locator;
   private VM server1;
   private VM server2;
   private VM accessor;
@@ -98,13 +100,15 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
 
   private static final AtomicReference<ServerLauncher> SERVER_LAUNCHER = new AtomicReference<>();
 
+  private static final AtomicReference<ClientCache> CLIENT_CACHE = new AtomicReference<>();
+
   private static final String OVERFLOW_REGION_NAME = "testOverflowRegion";
 
   public static final int NUM_ENTRIES = 1000;
 
   @Before
   public void setup() throws Exception {
-    VM locator = getVM(0);
+    locator = getVM(0);
     server1 = getVM(1);
     server2 = getVM(2);
     accessor = getVM(3);
@@ -130,6 +134,27 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     locatorString = "localhost[" + locatorPort + "]";
     server1.invoke(() -> startServer(SERVER1_NAME, server1Dir, locatorString, serverPort1));
     server2.invoke(() -> startServer(SERVER2_NAME, server2Dir, locatorString, serverPort2));
+  }
+
+  @After
+  public void tearDown() {
+    for (VM vm : new VM[] {client, accessor, server1, server2, locator}) {
+      vm.invoke(() -> {
+        if (CLIENT_CACHE.get() != null) {
+          CLIENT_CACHE.get().close();
+        }
+        if (LOCATOR_LAUNCHER.get() != null) {
+          LOCATOR_LAUNCHER.get().stop();
+        }
+        if (SERVER_LAUNCHER.get() != null) {
+          SERVER_LAUNCHER.get().stop();
+        }
+
+        CLIENT_CACHE.set(null);
+        LOCATOR_LAUNCHER.set(null);
+        SERVER_LAUNCHER.set(null);
+      });
+    }
   }
 
   @Test
@@ -158,13 +183,13 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     assertRegionSize(NUM_ENTRIES);
 
     client.invoke(() -> {
-      ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-      ClientCache clientCache =
-          clientCacheFactory.addPoolLocator("localhost", locatorPort).create();
+      if (CLIENT_CACHE.get() == null) {
+        ClientCache clientCache =
+            new ClientCacheFactory().addPoolLocator("localhost", locatorPort).create();
+        CLIENT_CACHE.set(clientCache);
+      }
 
-      clientCache
-          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-          .create(OVERFLOW_REGION_NAME).clear();
+      CLIENT_CACHE.get().getRegion(OVERFLOW_REGION_NAME).clear();
     });
     assertRegionSize(0);
 
@@ -283,14 +308,19 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
   }
 
   private void populateRegion() {
-    ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-    ClientCache clientCache =
-        clientCacheFactory.addPoolLocator("localhost", locatorPort).create();
+    client.invoke(() -> {
+      if (CLIENT_CACHE.get() == null) {
+        ClientCache clientCache =
+            new ClientCacheFactory().addPoolLocator("localhost", locatorPort).create();
+        CLIENT_CACHE.set(clientCache);
+      }
 
-    Region<Object, Object> clientRegion = clientCache
-        .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(OVERFLOW_REGION_NAME);
+      Region<Object, Object> clientRegion = CLIENT_CACHE.get()
+          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+          .create(OVERFLOW_REGION_NAME);
 
-    IntStream.range(0, NUM_ENTRIES).forEach(i -> clientRegion.put("key-" + i, "value-" + i));
+      IntStream.range(0, NUM_ENTRIES).forEach(i -> clientRegion.put("key-" + i, "value-" + i));
+    });
   }
 
   private void assertRegionSize(int size) {
