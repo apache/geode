@@ -147,8 +147,8 @@ public class LocatorClusterManagementServiceTest {
     } catch (Exception ignore) {
     }
 
-    verify(dLockService).lock(LocatorClusterManagementService.CMS_NAME, -1, -1);
-    verify(dLockService).unlock(LocatorClusterManagementService.CMS_NAME);
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
   }
 
   @Test
@@ -158,8 +158,8 @@ public class LocatorClusterManagementServiceTest {
     } catch (Exception ignore) {
     }
 
-    verify(dLockService).lock(LocatorClusterManagementService.CMS_NAME, -1, -1);
-    verify(dLockService).unlock(LocatorClusterManagementService.CMS_NAME);
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
   }
 
   @Test
@@ -167,8 +167,7 @@ public class LocatorClusterManagementServiceTest {
     org.apache.geode.cache.Region<Object, Object> region =
         mock(org.apache.geode.cache.Region.class);
     when(cache.getRegion(any())).thenReturn(region);
-    service = new LocatorClusterManagementService(cache, null, managers, validators,
-        memberValidator, cacheElementValidator, operationManager);
+    service = new LocatorClusterManagementService(cache, null);
     assertThatThrownBy(() -> service.create(regionConfig))
         .hasMessageContaining("Cluster configuration service needs to be enabled");
   }

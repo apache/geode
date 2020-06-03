@@ -112,7 +112,8 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  */
 public class LocatorClusterManagementService implements ClusterManagementService {
   @VisibleForTesting
-  static final String CMS_NAME = "CMS_LOCK_SERVICE";
+  // the dlock service name used by the CMS
+  static final String CMS_DLOCK_SERVICE_NAME = "CMS_DLOCK_SERVICE";
   private static final Logger logger = LogService.getLogger();
   private final InternalConfigurationPersistenceService persistenceService;
   private final Map<Class, ConfigurationManager> managers;
@@ -166,17 +167,18 @@ public class LocatorClusterManagementService implements ClusterManagementService
   DistributedLockService getCmsDlockService() {
     if (cmsDlockService == null) {
       cmsDlockService =
-          DLockService.getOrCreateService(CMS_NAME, cache.getInternalDistributedSystem());
+          DLockService.getOrCreateService(CMS_DLOCK_SERVICE_NAME,
+              cache.getInternalDistributedSystem());
     }
     return cmsDlockService;
   }
 
   private boolean lockCMS() {
-    return getCmsDlockService().lock(CMS_NAME, -1, -1);
+    return getCmsDlockService().lock(CMS_DLOCK_SERVICE_NAME, -1, -1);
   }
 
   private void unlockCMS() {
-    getCmsDlockService().unlock(CMS_NAME);
+    getCmsDlockService().unlock(CMS_DLOCK_SERVICE_NAME);
   }
 
   @Override
