@@ -177,6 +177,6 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(
         baseCommand + " --name=" + WRONG_DISK_STORE_ID + " --disk-dirs=" + diskDirs)
         .statusIsError().containsOutput("Could not find: \"" + File.separator + "BACKUP"
-        + WRONG_DISK_STORE_ID + DiskInitFile.IF_FILE_EXT);
+            + WRONG_DISK_STORE_ID + DiskInitFile.IF_FILE_EXT);
   }
 }
