@@ -61,11 +61,7 @@ public class ShutdownIntegrationTest {
 
     // Unfortunately Jedis' shutdown() doesn't seem to throw a JedisDataException when the command
     // returns an error.
-    try {
-      jedis.shutdown();
-    } catch (JedisConnectionException ignore) {
-      // Sometimes it throws sometimes it does not.
-    }
+    jedis.shutdown();
 
     // the old jedis client may be closed by shutdown even though disabled on server
 

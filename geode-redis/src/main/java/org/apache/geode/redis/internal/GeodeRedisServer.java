@@ -129,7 +129,7 @@ public class GeodeRedisServer {
    */
   private boolean singleThreadPerConnection;
 
-  private boolean allowUnsupportedCommands = false;
+  private volatile boolean allowUnsupportedCommands = false;
   /**
    * Logging level
    */
