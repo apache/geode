@@ -2088,7 +2088,8 @@ public class InternalDistributedSystem extends DistributedSystem
         // ignore
         logger.info("Skipping notifyResourceEventListeners for {} due to cancellation", event);
       } catch (GemFireSecurityException | ManagementException ex) {
-        if (event == ResourceEvent.CACHE_CREATE) {
+        if (event == ResourceEvent.CACHE_CREATE
+            || event == ResourceEvent.CLUSTER_CONFIGURATION_APPLIED) {
           throw ex;
         } else {
           logger.warn(ex.getMessage(), ex);

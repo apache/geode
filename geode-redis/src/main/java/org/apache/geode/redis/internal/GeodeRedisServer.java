@@ -65,6 +65,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.RedisKeyCommandsFunctionExecutor;
@@ -290,7 +291,7 @@ public class GeodeRedisServer {
         initializeRedis();
         startRedisServer();
       } catch (IOException | InterruptedException e) {
-        throw new RuntimeException("Could not start Server", e);
+        throw new ManagementException("Could not start Server", e);
       }
       started = true;
     }
@@ -325,10 +326,10 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, RedisData> redisData;
       InternalCache gemFireCache = (InternalCache) cache;
 
-      InternalRegionFactory<ByteArrayWrapper, RedisData> redisMetaDataFactory =
+      InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
           gemFireCache.createInternalRegionFactory(DEFAULT_REGION_TYPE);
-      redisMetaDataFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
-      redisData = redisMetaDataFactory.create(REDIS_DATA_REGION);
+      redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+      redisData = redisDataRegionFactory.create(REDIS_DATA_REGION);
 
       pubSub = new PubSubImpl(new Subscriptions());
       regionProvider = new RegionProvider(redisData);
@@ -501,16 +502,23 @@ public class GeodeRedisServer {
   public synchronized void shutdown() {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
-      ChannelFuture closeFuture = serverChannel.closeFuture();
+      ChannelFuture closeFuture = null;
+      if (serverChannel != null) {
+        closeFuture = serverChannel.closeFuture();
+      }
       workerGroup.shutdownGracefully();
       Future<?> bossFuture = bossGroup.shutdownGracefully();
-      serverChannel.close();
+      if (serverChannel != null) {
+        serverChannel.close();
+      }
       bossFuture.syncUninterruptibly();
       if (mainThread != null) {
         mainThread.interrupt();
       }
       expirationExecutor.shutdownNow();
-      closeFuture.syncUninterruptibly();
+      if (closeFuture != null) {
+        closeFuture.syncUninterruptibly();
+      }
       shutdown = true;
     }
   }

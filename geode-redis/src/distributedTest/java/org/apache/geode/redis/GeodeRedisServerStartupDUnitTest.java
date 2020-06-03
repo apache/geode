@@ -19,14 +19,20 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -102,6 +108,30 @@ public class GeodeRedisServerStartupDUnitTest {
     cluster.setEnableUnsupported(server, true);
 
     assertThat(jedis.echo("supported")).isEqualTo("supported");
+  }
+
+  @Test
+  public void startupFailsGivenIllegalPort() {
+    assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "-1")
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"))).hasRootCauseMessage(
+            "Could not set \"redis-port\" to \"-1\" because its value can not be less than \"0\".");
+  }
+
+  @Test
+  public void startupFailsGivenPortAlreadyInUse() throws Exception {
+    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+
+    addIgnoredException("Could not start Server");
+    try (Socket interferingSocket = new Socket()) {
+      interferingSocket.bind(new InetSocketAddress("localhost", port));
+      assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
+          .withProperty(REDIS_PORT, "" + port)
+          .withProperty(REDIS_BIND_ADDRESS, "localhost")
+          .withProperty(REDIS_ENABLED, "true")))
+              .hasRootCauseMessage("Address already in use");
+    }
   }
 
 }

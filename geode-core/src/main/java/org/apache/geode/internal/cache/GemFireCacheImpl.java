@@ -1442,7 +1442,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
 
-    system.handleResourceEvent(ResourceEvent.CLUSTER_CONFIGURATION_APPLIED, this);
+    boolean completedHandleResourceEvent = false;
+    try {
+      system.handleResourceEvent(ResourceEvent.CLUSTER_CONFIGURATION_APPLIED, this);
+      completedHandleResourceEvent = true;
+    } finally {
+      if (!completedHandleResourceEvent) {
+        try {
+          close();
+        } catch (Throwable ignore) {
+          // We don't want to throw an exception that came from the close
+          // so throw original exception from handleResourceEvent.
+        }
+      }
+    }
 
     startColocatedJmxManagerLocator();
 
