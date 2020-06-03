@@ -33,6 +33,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -132,6 +133,28 @@ public class GeodeRedisServerStartupDUnitTest {
           .withProperty(REDIS_ENABLED, "true")))
               .hasRootCauseMessage("Address already in use");
     }
+  }
+
+  @Test
+  public void startupWorksGivenAnyLocalAddress() {
+    String anyLocal = LocalHostUtil.getAnyLocalAddress().getHostAddress();
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "0")
+        .withProperty(REDIS_BIND_ADDRESS, anyLocal)
+        .withProperty(REDIS_ENABLED, "true"));
+
+    assertThat(cluster.getRedisPort(server))
+        .isNotEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
+  }
+
+  @Test
+  public void startupWorksGivenNoBindAddress() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "0")
+        .withProperty(REDIS_ENABLED, "true"));
+
+    assertThat(cluster.getRedisPort(server))
+        .isNotEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
   }
 
 }
