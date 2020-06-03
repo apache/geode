@@ -22,9 +22,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -45,7 +46,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Ignore("Geode-8127")
 public class EnsurePrimaryStaysPutDUnitTest {
 
   @Rule
@@ -60,6 +60,7 @@ public class EnsurePrimaryStaysPutDUnitTest {
 
   private static final String KEY = "foo";
   private static final String VALUE = "bar";
+  private static final String REGION = "TEST";
 
   @Before
   public void setup() throws Exception {
@@ -69,7 +70,8 @@ public class EnsurePrimaryStaysPutDUnitTest {
     server2 = cluster.startServerVM(2, cf -> cf.withConnectionToLocator(locatorPort));
 
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("create region --name=TEST --type=PARTITION_REDUNDANT")
+    gfsh.executeAndAssertThat(
+        String.format("create region --name=%s --type=PARTITION_REDUNDANT", REGION))
         .statusIsSuccess();
 
     server1.invoke(() -> FunctionService.registerFunction(new CheckPrimaryBucketFunction()));
@@ -109,7 +111,7 @@ public class EnsurePrimaryStaysPutDUnitTest {
 
       rebalanceRegions(cache, region);
 
-      return PartitionRegionHelper.getPrimaryMemberForKey(region, KEY).getName();
+      return awaitForPrimary(region);
     });
 
     // who is primary?
@@ -118,38 +120,69 @@ public class EnsurePrimaryStaysPutDUnitTest {
 
     MemberVM memberToRunOn = runLocally ? primary : secondary;
 
-    AsyncInvocation<Boolean> asyncChecking = memberToRunOn.invokeAsync(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      Region<String, String> region = cache.getRegion("TEST");
+    AsyncInvocation<Boolean> asyncChecking =
+        memberToRunOn.invokeAsync("CheckPrimaryBucketFunction", () -> {
+          InternalCache cache = ClusterStartupRule.getCache();
+          Region<String, String> region = cache.getRegion(REGION);
 
-      @SuppressWarnings("unchecked")
-      ResultCollector<?, List<Boolean>> rc = FunctionService.onRegion(region)
-          .withFilter(Collections.singleton(KEY))
-          .setArguments(releaseLatchEarly)
-          .execute(CheckPrimaryBucketFunction.class.getName());
+          @SuppressWarnings("unchecked")
+          ResultCollector<?, List<Boolean>> rc = FunctionService.onRegion(region)
+              .withFilter(Collections.singleton(KEY))
+              .setArguments(releaseLatchEarly)
+              .execute(CheckPrimaryBucketFunction.class.getName());
 
-      return rc.getResult().get(0);
+          return rc.getResult().get(0);
+        });
+
+    primary.invoke("waitForFunctionToStart", () -> {
+      CheckPrimaryBucketFunction fn =
+          (CheckPrimaryBucketFunction) FunctionService.getRegisteredFunctions()
+              .get(CheckPrimaryBucketFunction.ID);
+      fn.waitForFunctionToStart();
     });
 
-    primary.invoke(CheckPrimaryBucketFunction::waitForFunctionToStart);
-
     // switch primary to secondary while running test fn()
-    secondary.invoke(() -> {
+    secondary.invoke("Switching bucket", () -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      PartitionedRegion region = (PartitionedRegion) cache.getRegion("TEST");
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion(REGION);
 
       // get bucketId
       int bucketId = PartitionedRegionHelper.getHashKey(region, KEY);
       BucketAdvisor bucketAdvisor = region.getRegionAdvisor().getBucketAdvisor(bucketId);
 
       bucketAdvisor.becomePrimary(false);
-      CheckPrimaryBucketFunction.finishedMovingPrimary();
+
+      CheckPrimaryBucketFunction fn =
+          (CheckPrimaryBucketFunction) FunctionService.getRegisteredFunctions()
+              .get(CheckPrimaryBucketFunction.ID);
+      fn.finishedMovingPrimary();
     });
-    primary.invoke(CheckPrimaryBucketFunction::finishedMovingPrimary);
+
+    primary.invoke("finishedMovingPrimary", () -> {
+      CheckPrimaryBucketFunction fn =
+          (CheckPrimaryBucketFunction) FunctionService.getRegisteredFunctions()
+              .get(CheckPrimaryBucketFunction.ID);
+      fn.finishedMovingPrimary();
+    });
 
     assertThat(asyncChecking.get())
         .as("CheckPrimaryBucketFunction determined that the primary has moved")
         .isTrue();
+  }
+
+  private static String awaitForPrimary(Region<String, String> region) {
+    AtomicReference<String> lastPrimary =
+        new AtomicReference<>(PartitionRegionHelper.getPrimaryMemberForKey(region, KEY).getName());
+    GeodeAwaitility.await()
+        .during(10, TimeUnit.SECONDS)
+        .atMost(60, TimeUnit.SECONDS)
+        .until(() -> {
+          String currentPrimary =
+              PartitionRegionHelper.getPrimaryMemberForKey(region, KEY).getName();
+          return lastPrimary.getAndSet(currentPrimary).equals(currentPrimary);
+        });
+
+    return lastPrimary.get();
   }
 
   private static void rebalanceRegions(Cache cache, Region<?, ?> region) {
