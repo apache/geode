@@ -69,6 +69,9 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.RedisKeyCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.executor.RenameFunction;
+import org.apache.geode.redis.internal.executor.set.StripedExecutor;
+import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
 import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
 
 /**
@@ -334,7 +337,10 @@ public class GeodeRedisServer {
       pubSub = new PubSubImpl(new Subscriptions());
       regionProvider = new RegionProvider(redisData);
 
-      CommandFunction.register();
+      StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+
+      CommandFunction.register(stripedExecutor);
+      RenameFunction.register(stripedExecutor);
       scheduleDataExpiration(redisData);
     }
   }

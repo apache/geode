@@ -22,6 +22,8 @@ public interface RedisKeyCommands {
 
   boolean exists(ByteArrayWrapper key);
 
+  boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey);
+
   long pttl(ByteArrayWrapper key);
 
   int pexpireat(ByteArrayWrapper key, long timestamp);

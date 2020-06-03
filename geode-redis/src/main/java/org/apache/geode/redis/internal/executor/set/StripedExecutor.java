@@ -18,10 +18,11 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.concurrent.Callable;
 
+
 /**
  * Allows users to "stripe" their execution in such a way that all tasks belonging to one stripe are
- * executed in-order. A stripe is somehow associated with an Object called the "stripeId".
- * It is upto the implementor of this interface to decide how to do this assocations.
+ * executed in order. A stripe is associated with an Object called the "stripeId".
+ * It is up to the implementor of this interface to decide how to do this association.
  * For example it could use the hashCode of the stripeId or use the equals method.
  * Work submitted for the same stripe is guaranteed to be executed sequentially.
  */
@@ -35,4 +36,6 @@ public interface StripedExecutor {
    */
   public <T> T execute(Object stripeId,
       Callable<T> callable);
+
+  int compareStripes(Object object1, Object object2);
 }
