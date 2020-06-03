@@ -80,7 +80,7 @@ public abstract class AbstractExecutor implements Executor {
     if (message instanceof Collection) {
       return RedisResponse.array((Collection<?>) message);
     } else {
-      return RedisResponse.string((String) message);
+      return RedisResponse.bulkString(message);
     }
   }
 

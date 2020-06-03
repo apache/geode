@@ -79,6 +79,10 @@ public class RedisResponse {
     return new RedisResponse(Coder::getEmptyArrayResponse);
   }
 
+  public static RedisResponse emptyString() {
+    return new RedisResponse(Coder::getEmptyStringResponse);
+  }
+
   public static RedisResponse error(String error) {
     return new RedisResponse((bba) -> Coder.getErrorResponse(bba, error));
   }

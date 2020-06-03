@@ -23,6 +23,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class SetNXExecutor extends StringExecutor {
 
@@ -33,12 +34,11 @@ public class SetNXExecutor extends StringExecutor {
   private final int VALUE_INDEX = 2;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETNX));
-      return;
+      return RedisResponse.error(ArityDef.SETNX);
     }
 
     ByteArrayWrapper key = command.getKey();
@@ -49,10 +49,6 @@ public class SetNXExecutor extends StringExecutor {
 
     boolean result = stringCommands.set(key, value, setOptions);
 
-    if (result) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
-    } else {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
-    }
+    return RedisResponse.integer(result);
   }
 }

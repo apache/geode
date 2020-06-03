@@ -21,18 +21,18 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class BitOpExecutor extends StringExecutor {
 
   private static final String ERROR_NO_SUCH_OP = "Please specify a legal operation";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 4) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.BITOP));
-      return;
+      return RedisResponse.error(ArityDef.BITOP);
     }
 
     String operation = command.getStringKey().toUpperCase();
@@ -70,11 +70,10 @@ public class BitOpExecutor extends StringExecutor {
     } else if (operation.equals("NOT")) {
       not(context, destKey, values, maxLength);
     } else {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NO_SUCH_OP));
-      return;
+      return RedisResponse.error(ERROR_NO_SUCH_OP);
     }
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), maxLength));
+    return RedisResponse.integer(maxLength);
   }
 
   private void and(ExecutionHandlerContext context,

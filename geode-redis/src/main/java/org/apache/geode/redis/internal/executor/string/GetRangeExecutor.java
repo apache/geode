@@ -22,6 +22,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class GetRangeExecutor extends StringExecutor {
 
@@ -30,12 +31,11 @@ public class GetRangeExecutor extends StringExecutor {
   private static final int stopIndex = 3;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() != 4) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.GETRANGE));
-      return;
+      return RedisResponse.error(ArityDef.GETRANGE);
     }
 
     long start;
@@ -47,8 +47,7 @@ public class GetRangeExecutor extends StringExecutor {
       start = Coder.bytesToLong(startI);
       end = Coder.bytesToLong(stopI);
     } catch (NumberFormatException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INT));
-      return;
+      return RedisResponse.error(ERROR_NOT_INT);
     }
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
@@ -56,8 +55,7 @@ public class GetRangeExecutor extends StringExecutor {
     ByteArrayWrapper valueWrapper = stringCommands.get(key);
 
     if (valueWrapper == null) {
-      command.setResponse(Coder.getEmptyStringResponse(context.getByteBufAllocator()));
-      return;
+      return RedisResponse.emptyString();
     }
 
     byte[] value = valueWrapper.toBytes();
@@ -70,8 +68,7 @@ public class GetRangeExecutor extends StringExecutor {
      * Can't 'start' at end of value
      */
     if (start > end || start == length) {
-      command.setResponse(Coder.getEmptyStringResponse(context.getByteBufAllocator()));
-      return;
+      return RedisResponse.emptyString();
     }
     /*
      * 1 is added to end because the end in copyOfRange is exclusive but in Redis it is inclusive
@@ -81,10 +78,9 @@ public class GetRangeExecutor extends StringExecutor {
     }
     byte[] returnRange = Arrays.copyOfRange(value, (int) start, (int) end);
     if (returnRange == null || returnRange.length == 0) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
+      return RedisResponse.nil();
     }
 
-    respondBulkStrings(command, context, returnRange);
+    return respondBulkStrings(returnRange);
   }
 }

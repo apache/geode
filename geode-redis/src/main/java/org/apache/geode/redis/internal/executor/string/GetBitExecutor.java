@@ -21,26 +21,25 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class GetBitExecutor extends StringExecutor {
 
   private final String ERROR_NOT_INT = "The offset provided must be numeric";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.GETBIT));
-      return;
+      return RedisResponse.error(ArityDef.GETBIT);
     }
 
     ByteArrayWrapper key = command.getKey();
 
     ByteArrayWrapper wrapper = getRedisStringCommands(context).get(key);
     if (wrapper == null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-      return;
+      return RedisResponse.integer(0);
     }
 
     int bit = 0;
@@ -50,29 +49,25 @@ public class GetBitExecutor extends StringExecutor {
       byte[] offAr = commandElems.get(2);
       offset = Coder.bytesToInt(offAr);
     } catch (NumberFormatException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INT));
-      return;
+      return RedisResponse.error(ERROR_NOT_INT);
     }
     if (offset < 0) {
       offset += bytes.length * 8;
     }
 
     if (offset < 0 || offset > bytes.length * 8) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-      return;
+      return RedisResponse.integer(0);
     }
 
     int byteIndex = offset / 8;
     offset %= 8;
 
     if (byteIndex >= bytes.length) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-      return;
+      return RedisResponse.integer(0);
     }
 
     bit = (bytes[byteIndex] & (0x80 >> offset)) >> (7 - offset);
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), bit));
+    return RedisResponse.integer(bit);
   }
 
 }

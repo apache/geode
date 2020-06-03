@@ -22,6 +22,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class DecrByExecutor extends StringExecutor {
 
@@ -31,12 +32,11 @@ public class DecrByExecutor extends StringExecutor {
   private final int DECREMENT_INDEX = 2;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.DECRBY));
-      return;
+      return RedisResponse.error(ArityDef.DECRBY);
     }
     ByteArrayWrapper key = command.getKey();
 
@@ -47,12 +47,10 @@ public class DecrByExecutor extends StringExecutor {
     try {
       decrement = Long.parseLong(decrString);
     } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_DECREMENT_NOT_USABLE));
-      return;
+      return RedisResponse.error(ERROR_DECREMENT_NOT_USABLE);
     }
 
     long value = getRedisStringCommands(context).decrby(key, decrement);
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
+    return RedisResponse.integer(value);
   }
 }
