@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
@@ -27,7 +26,8 @@ import org.apache.geode.redis.internal.RedisResponse;
 public class DecrExecutor extends StringExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 2) {

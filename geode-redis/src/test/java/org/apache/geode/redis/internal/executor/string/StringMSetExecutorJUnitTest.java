@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,17 +29,21 @@ import org.junit.Test;
 
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.Executor;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class StringMSetExecutorJUnitTest {
+
+  private Executor executor = new MSetExecutor();
 
   @Test
   public void testTooFewOptions() {
     ArrayList<byte[]> commandElems = new ArrayList<>();
     commandElems.add("MSET".getBytes());
     Command command = new Command(commandElems);
-    new MSetExecutor().executeCommand(command, mockContext());
+    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -50,9 +53,9 @@ public class StringMSetExecutorJUnitTest {
         "MSET".getBytes(),
         "key".getBytes());
     Command command = new Command(args);
-    new MSetExecutor().executeCommand(command, mockContext());
+    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 

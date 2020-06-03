@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +30,7 @@ import org.junit.Test;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class StrlenExecutorJUnitTest {
   private ExecutionHandlerContext context;
@@ -49,9 +49,9 @@ public class StrlenExecutorJUnitTest {
     commandsAsBytes.add("STRLEN".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    strlenExecutor.executeCommand(command, context);
+    RedisResponse response = strlenExecutor.executeCommandWithResponse(command, context);
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -64,9 +64,9 @@ public class StrlenExecutorJUnitTest {
     commandsAsBytes.add("BONUS!".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    strlenExecutor.executeCommand(command, context);
+    RedisResponse response = strlenExecutor.executeCommandWithResponse(command, context);
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 }

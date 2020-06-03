@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
@@ -32,7 +31,8 @@ public class MSetNXExecutor extends StringExecutor {
   private final int NOT_SET = 0;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3 || commandElems.size() % 2 == 0) {

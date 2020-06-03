@@ -33,7 +33,8 @@ public class SetRangeExecutor extends StringExecutor {
       "The offset is out of range, must be greater than or equal to 0 and the offset added to the length of the value must be less than 536870911 (512MB), the maximum allowed size";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 4) {

@@ -28,7 +28,8 @@ public class GetBitExecutor extends StringExecutor {
   private final String ERROR_NOT_INT = "The offset provided must be numeric";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3) {

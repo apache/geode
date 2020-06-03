@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.string;
 
-import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -38,6 +37,7 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class StringSetExecutorJUnitTest {
@@ -78,9 +78,9 @@ public class StringSetExecutorJUnitTest {
         "EX".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    executor.executeCommand(command, context);
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
 
-    assertThat(command.getResponse().toString(defaultCharset()))
+    assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 
@@ -94,9 +94,9 @@ public class StringSetExecutorJUnitTest {
         "NotANumberAtAll".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    executor.executeCommand(command, context);
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
 
-    assertThat(command.getResponse().toString(defaultCharset()))
+    assertThat(response.toString())
         .contains(RedisConstants.ERROR_NOT_INTEGER);
   }
 
@@ -110,9 +110,9 @@ public class StringSetExecutorJUnitTest {
         "0".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    executor.executeCommand(command, context);
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
 
-    assertThat(command.getResponse().toString(defaultCharset()))
+    assertThat(response.toString())
         .contains(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
   }
 
@@ -126,9 +126,9 @@ public class StringSetExecutorJUnitTest {
 
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    executor.executeCommand(command, context);
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
 
-    assertThat(command.getResponse().toString(defaultCharset()))
+    assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 
@@ -144,9 +144,9 @@ public class StringSetExecutorJUnitTest {
         "30".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    executor.executeCommand(command, context);
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
 
-    assertThat(command.getResponse().toString(defaultCharset()))
+    assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 
@@ -160,9 +160,9 @@ public class StringSetExecutorJUnitTest {
         "XX".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    executor.executeCommand(command, context);
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
 
-    assertThat(command.getResponse().toString(defaultCharset()))
+    assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
   }
 

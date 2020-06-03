@@ -19,7 +19,6 @@ import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
@@ -34,7 +33,8 @@ public class SetNXExecutor extends StringExecutor {
   private final int VALUE_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3) {

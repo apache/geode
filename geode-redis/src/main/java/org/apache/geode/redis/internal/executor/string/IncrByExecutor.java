@@ -31,7 +31,8 @@ public class IncrByExecutor extends StringExecutor {
   private final int INCREMENT_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3) {

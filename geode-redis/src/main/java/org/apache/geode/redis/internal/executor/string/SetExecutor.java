@@ -32,7 +32,8 @@ public class SetExecutor extends StringExecutor {
   private final String SUCCESS = "OK";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper keyToSet = command.getKey();
@@ -49,7 +50,8 @@ public class SetExecutor extends StringExecutor {
     return doSet(command, context, keyToSet, valueToSet, redisStringCommands, setOptions);
   }
 
-  private RedisResponse doSet(Command command, ExecutionHandlerContext context, ByteArrayWrapper key,
+  private RedisResponse doSet(Command command, ExecutionHandlerContext context,
+      ByteArrayWrapper key,
       ByteArrayWrapper value, RedisStringCommands redisStringCommands, SetOptions setOptions) {
 
     boolean result = redisStringCommands.set(key, value, setOptions);

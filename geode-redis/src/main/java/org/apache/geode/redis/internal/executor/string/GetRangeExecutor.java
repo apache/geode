@@ -31,7 +31,8 @@ public class GetRangeExecutor extends StringExecutor {
   private static final int stopIndex = 3;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() != 4) {
