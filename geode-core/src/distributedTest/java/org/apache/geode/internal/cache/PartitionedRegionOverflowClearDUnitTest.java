@@ -138,6 +138,9 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
 
   @After
   public void tearDown() {
+    destroyRegion();
+    destroyDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
+
     for (VM vm : new VM[] {client, accessor, server1, server2, locator}) {
       vm.invoke(() -> {
         if (CLIENT_CACHE.get() != null) {
@@ -170,9 +173,6 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     restartServers();
 
     assertRegionSize(0);
-
-    destroyRegion();
-    destroyDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
   }
 
   @Test
@@ -196,9 +196,6 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     restartServers();
 
     assertRegionSize(0);
-
-    destroyRegion();
-    destroyDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
   }
 
   @Test
@@ -246,9 +243,6 @@ public class PartitionedRegionOverflowClearDUnitTest implements Serializable {
     asyncInvocation1.get();
     asyncInvocation2.get();
     assertRegionSize(0);
-
-    destroyRegion();
-    destroyDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
   }
 
   private void restartServers() throws InterruptedException {
