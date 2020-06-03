@@ -2571,7 +2571,7 @@ public class CliStrings {
   public static final String START_SERVER__REDIS_BIND_ADDRESS =
       ConfigurationProperties.REDIS_BIND_ADDRESS;
   public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP =
-      "Specifies the address on which the Redis API for Geode is listening. If set to the empty string or this property is not specified, localhost is requested from the operating system.";
+      "Specifies the address on which the Redis API for Geode is listening. If set to the empty string or this property is not specified, the server will listen on all local addresses.";
   public static final String START_SERVER__REDIS_PASSWORD = ConfigurationProperties.REDIS_PASSWORD;
   public static final String START_SERVER__REDIS_PASSWORD__HELP =
       "Specifies the password that the server uses when a client attempts to authenticate. The default is none and no authentication will be required.";
