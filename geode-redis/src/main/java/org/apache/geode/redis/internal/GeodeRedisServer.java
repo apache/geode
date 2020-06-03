@@ -348,15 +348,19 @@ public class GeodeRedisServer {
 
   private void doDataExpiration(
       Region<ByteArrayWrapper, RedisData> redisData) {
-    final long now = System.currentTimeMillis();
-    Region<ByteArrayWrapper, RedisData> localPrimaryData =
-        PartitionRegionHelper.getLocalPrimaryData(redisData);
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(redisData);
-    for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
-      if (entry.getValue().hasExpired(now)) {
-        // pttl will do its own check using active expiration and expire the key if needed
-        redisKeyCommands.pttl(entry.getKey());
+    try {
+      final long now = System.currentTimeMillis();
+      Region<ByteArrayWrapper, RedisData> localPrimaryData =
+          PartitionRegionHelper.getLocalPrimaryData(redisData);
+      RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(redisData);
+      for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
+        if (entry.getValue().hasExpired(now)) {
+          // pttl will do its own check using active expiration and expire the key if needed
+          redisKeyCommands.pttl(entry.getKey());
+        }
       }
+    } catch (RuntimeException | Error ex) {
+      logger.warn("Passive Redis expiration failed. Will try again in 1 second.", ex);
     }
   }
 
