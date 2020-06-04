@@ -48,7 +48,7 @@ public class PubSubDUnitTest {
   public static final String CHANNEL_NAME = "salutations";
 
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(5);
+  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(6);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -69,6 +69,7 @@ public class PubSubDUnitTest {
   private static MemberVM server2;
   private static MemberVM server3;
   private static MemberVM server4;
+  private static MemberVM server5;
 
   private static int redisServerPort1;
   private static int redisServerPort2;
@@ -86,6 +87,7 @@ public class PubSubDUnitTest {
     server2 = cluster.startRedisVM(2, locator.getPort());
     server3 = cluster.startRedisVM(3, locator.getPort());
     server4 = cluster.startRedisVM(4, locator.getPort());
+    server5 = cluster.startServerVM(5, locator.getPort());
 
     redisServerPort1 = cluster.getRedisPort(1);
     redisServerPort2 = cluster.getRedisPort(2);
@@ -117,6 +119,7 @@ public class PubSubDUnitTest {
     server2.stop();
     server3.stop();
     server4.stop();
+    server5.stop();
   }
 
   @Test
@@ -187,24 +190,23 @@ public class PubSubDUnitTest {
 
   private void restartServerVM1() {
     cluster.startRedisVM(1, locator.getPort());
-    await()
-        .untilAsserted(() -> gfsh.executeAndAssertThat("list members")
-            .statusIsSuccess()
-            .hasTableSection()
-            .hasColumn("Name")
-            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4"));
+    waitForRestart();
     redisServerPort1 = cluster.getRedisPort(1);
   }
 
   private void restartServerVM2() {
     cluster.startRedisVM(2, locator.getPort());
+    waitForRestart();
+    redisServerPort2 = cluster.getRedisPort(2);
+  }
+
+  private void waitForRestart() {
     await()
         .untilAsserted(() -> gfsh.executeAndAssertThat("list members")
             .statusIsSuccess()
             .hasTableSection()
             .hasColumn("Name")
-            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4"));
-    redisServerPort2 = cluster.getRedisPort(2);
+            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4", "server-5"));
   }
 
   private void reconnectSubscriber1() {

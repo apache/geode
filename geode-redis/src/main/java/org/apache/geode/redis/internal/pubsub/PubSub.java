@@ -20,6 +20,8 @@ import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
+import org.apache.geode.cache.Region;
+
 /**
  * Interface that represents the ability to Publish, Subscribe and Unsubscribe from channels.
  */
@@ -28,11 +30,14 @@ public interface PubSub {
   /**
    * Publish a message on a channel
    *
+   *
    * @param channel to publish to
    * @param message to publish
    * @return the number of messages published
    */
-  long publish(String channel, byte[] message);
+  long publish(
+      Region<ByteArrayWrapper, RedisData> dataRegion,
+      String channel, byte[] message);
 
   /**
    * Subscribe to a channel
