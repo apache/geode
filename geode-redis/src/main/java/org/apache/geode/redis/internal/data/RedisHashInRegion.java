@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHashInRegion extends RedisKeyInRegion implements RedisHashCommands {
 

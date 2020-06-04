@@ -15,9 +15,9 @@
  */
 package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ShutDownExecutor extends AbstractExecutor {
 

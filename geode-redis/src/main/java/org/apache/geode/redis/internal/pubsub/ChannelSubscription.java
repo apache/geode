@@ -19,8 +19,8 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.Client;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * This class represents a single channel subscription as created by the SUBSCRIBE command

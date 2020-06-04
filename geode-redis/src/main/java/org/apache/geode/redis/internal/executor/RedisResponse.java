@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.executor;
 
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -24,6 +24,9 @@ import java.util.function.Function;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.CoderException;
 
 public class RedisResponse {
 

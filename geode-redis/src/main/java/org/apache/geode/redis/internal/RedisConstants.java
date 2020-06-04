@@ -25,11 +25,11 @@ public class RedisConstants {
   /*
    * Error responses
    */
-  static final String PARSING_EXCEPTION_MESSAGE =
+  public static final String PARSING_EXCEPTION_MESSAGE =
       "The command received by GeodeRedisServer was improperly formatted";
   public static final String SERVER_ERROR_MESSAGE =
       "The server had an internal error please try again";
-  static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
+  public static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
   public static final String ERROR_UNKNOWN_COMMAND = "Unable to process unknown command";
   public static final String ERROR_UNSUPPORTED_COMMAND =
       "This command is unsupported. To enable it please start your system with the java system property '"

@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.executor;
 
 import java.util.Objects;
 import java.util.regex.Pattern;

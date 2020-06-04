@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 
 /**

@@ -21,10 +21,10 @@ import io.netty.channel.ChannelFutureListener;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.Client;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.CoderException;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractSubscription implements Subscription {
   private static final Logger logger = LogService.getLogger();

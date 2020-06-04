@@ -16,9 +16,8 @@
 package org.apache.geode.redis.internal.executor;
 
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Interface for executors of a {@link Command}.

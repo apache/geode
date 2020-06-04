@@ -22,6 +22,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.netty.Command;
 
 
 /**
@@ -32,7 +33,7 @@ import org.junit.Test;
 public class CommandJUnitTest {
 
   /**
-   * Test method for {@link org.apache.geode.redis.internal.Command#Command(java.util.List)}.
+   * Test method for {@link Command#Command(java.util.List)}.
    */
   @Test
   public void testCommand() {

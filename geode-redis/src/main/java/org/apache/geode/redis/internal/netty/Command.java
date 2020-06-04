@@ -11,8 +11,9 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.netty;
 
 import java.nio.channels.SocketChannel;
 import java.util.List;
@@ -20,7 +21,9 @@ import java.util.stream.Collectors;
 
 import io.netty.buffer.ByteBuf;
 
+import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 
 /**
  * The command class is used in holding a received Redis command. Each sent command resides in an
@@ -191,7 +194,7 @@ public class Command {
     return type.executeCommand(this, executionHandlerContext);
   }
 
-  boolean isOfType(RedisCommandType type) {
+  public boolean isOfType(RedisCommandType type) {
     return type == getCommandType();
   }
 

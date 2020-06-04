@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.netty.Command;
+
 public class SupportedCommandsJUnitTest {
 
   private final String[] supportedCommands = new String[] {

@@ -25,7 +25,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.netty.Coder;
 
 /**
  * This class is a wrapper for the any Regions that need to store a byte[]. The only data this an

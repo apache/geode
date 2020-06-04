@@ -22,12 +22,12 @@ import io.netty.buffer.ByteBuf;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.GlobPattern;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.CoderException;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PunsubscribeExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();

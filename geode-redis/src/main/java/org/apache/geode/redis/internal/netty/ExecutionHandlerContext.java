@@ -11,8 +11,9 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.RedisCommandType.SUBSCRIBE;
 
@@ -36,8 +37,13 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
+import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 
 /**
@@ -53,7 +59,6 @@ import org.apache.geode.redis.internal.pubsub.PubSub;
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
-  private static final boolean RUN_UNSUPPORTED_COMMANDS = true;
 
   private final Cache cache;
   private final GeodeRedisServer server;

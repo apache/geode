@@ -29,8 +29,8 @@ import io.netty.channel.Channel;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.Client;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class SubscriptionsIntegrationTest {

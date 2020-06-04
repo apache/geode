@@ -26,9 +26,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.Client;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.GlobPattern;
+import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Concrete class that manages publish and subscribe functionality. Since Redis subscriptions

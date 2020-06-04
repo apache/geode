@@ -22,9 +22,9 @@ import static org.mockito.Mockito.mock;
 import io.netty.channel.Channel;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.Client;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.GlobPattern;
+import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SubscriptionsJUnitTest {
 

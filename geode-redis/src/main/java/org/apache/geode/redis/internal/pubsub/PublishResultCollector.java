@@ -19,7 +19,7 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.geode.redis.internal.Client;
+import org.apache.geode.redis.internal.netty.Client;
 
 
 public class PublishResultCollector {

@@ -19,13 +19,13 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.Extendable;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class TTLExecutor extends AbstractExecutor implements Extendable {
 

@@ -19,9 +19,9 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.Client;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.GlobPattern;
+import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * This class represents a pattern subscription as created by the PSUBSCRIBE command

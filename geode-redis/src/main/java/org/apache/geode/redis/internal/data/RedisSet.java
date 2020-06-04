@@ -32,10 +32,10 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSet extends AbstractRedisData {
 

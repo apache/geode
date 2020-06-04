@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import org.apache.geode.redis.internal.Client;
+import org.apache.geode.redis.internal.netty.Client;
 
 /**
  * Represents the results of publishing a message to a subscription. Contains the client the message

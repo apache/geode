@@ -19,17 +19,16 @@ import java.util.Collection;
 import io.netty.buffer.ByteBuf;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.CoderException;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * The AbstractExecutor is the base of all {@link Executor} types for the {@link GeodeRedisServer}.

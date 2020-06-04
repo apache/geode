@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.pubsub;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.Client;
+import org.apache.geode.redis.internal.netty.Client;
 
 public class DummySubscription implements Subscription {
 

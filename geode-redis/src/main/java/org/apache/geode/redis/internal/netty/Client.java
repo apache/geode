@@ -11,26 +11,44 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.netty;
 
-public class CoderException extends Exception {
-  private static final long serialVersionUID = 4707944288714910949L;
+import java.util.Objects;
 
-  public CoderException() {
-    super();
+import io.netty.channel.Channel;
+
+public class Client {
+  private Channel channel;
+
+  public Client(Channel remoteAddress) {
+    this.channel = remoteAddress;
   }
 
-  public CoderException(String message) {
-    super(message);
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Client client = (Client) o;
+    return Objects.equals(channel, client.channel);
   }
 
-  public CoderException(Throwable cause) {
-    super(cause);
+  @Override
+  public int hashCode() {
+    return Objects.hash(channel);
   }
 
-  public CoderException(String message, Throwable cause) {
-    super(message, cause);
+  public boolean isDead() {
+    return !this.channel.isOpen();
+  }
+
+  public String toString() {
+    return channel.toString();
   }
 }

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-import org.apache.geode.redis.internal.Client;
+import org.apache.geode.redis.internal.netty.Client;
 
 /**
  * Class that manages both channel and pattern subscriptions.

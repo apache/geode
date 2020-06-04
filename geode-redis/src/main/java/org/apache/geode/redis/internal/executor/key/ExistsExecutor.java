@@ -17,11 +17,11 @@ package org.apache.geode.redis.internal.executor.key;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ExistsExecutor extends AbstractExecutor {
 

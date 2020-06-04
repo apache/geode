@@ -15,11 +15,11 @@
  */
 package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class QuitExecutor extends AbstractExecutor {
 
