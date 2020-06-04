@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 /**
  * This is a safe encoder and decoder for all redis matching needs

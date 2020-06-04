@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 import io.netty.buffer.ByteBuf;
 
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+
 /**
  * The command class is used in holding a received Redis command. Each sent command resides in an
  * instance of this class. This class is designed to be used strictly by getter and setter methods.

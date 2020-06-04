@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisData;
 
 public class RegionProvider {
 

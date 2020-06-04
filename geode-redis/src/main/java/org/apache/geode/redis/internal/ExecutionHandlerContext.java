@@ -37,6 +37,8 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
+import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.pubsub.PubSub;
 
 /**
  * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is the last part of the

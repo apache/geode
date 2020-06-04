@@ -17,10 +17,10 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.Collection;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisResponse;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 /**
  * <pre>
