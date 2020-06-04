@@ -12,11 +12,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.control;
+package org.apache.geode.management.internal.operation;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,17 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.control.RegionRedundancyStatus;
-import org.apache.geode.cache.control.RestoreRedundancyResults;
-import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.management.runtime.RegionRedundancyStatus;
+import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
-public class RestoreRedundancyResultsImpl
-    implements RestoreRedundancyResults, DataSerializableFixedID {
+/**
+ * result object used by the cms that only needs to be json serializable
+ */
+public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
   public static final String NO_REDUNDANT_COPIES_FOR_REGIONS =
       "The following regions have redundancy configured but zero redundant copies: ";
   public static final String REDUNDANCY_NOT_SATISFIED_FOR_REGIONS =
@@ -44,14 +37,19 @@ public class RestoreRedundancyResultsImpl
   public static final String PRIMARY_TRANSFERS_COMPLETED = "Total primary transfers completed = ";
   public static final String PRIMARY_TRANSFER_TIME = "Total primary transfer time (ms) = ";
 
-  private Map<String, RegionRedundancyStatus> zeroRedundancyRegions = new HashMap<>();
-  private Map<String, RegionRedundancyStatus> underRedundancyRegions = new HashMap<>();
-  private Map<String, RegionRedundancyStatus> satisfiedRedundancyRegions = new HashMap<>();
+  protected Map<String, RegionRedundancyStatus> zeroRedundancyRegions = new HashMap<>();
+  protected Map<String, RegionRedundancyStatus> underRedundancyRegions = new HashMap<>();
+  protected Map<String, RegionRedundancyStatus> satisfiedRedundancyRegions = new HashMap<>();
 
-  private int totalPrimaryTransfersCompleted;
-  private Duration totalPrimaryTransferTime = Duration.ZERO;
+  protected int totalPrimaryTransfersCompleted;
+  protected Duration totalPrimaryTransferTime = Duration.ZERO;
+  protected boolean success;
+  protected String statusMessage;
+  protected final List<String> includedRegionsWithNoMembers = new ArrayList<>();
+
 
   public RestoreRedundancyResultsImpl() {}
+
 
   public void addRegionResults(RestoreRedundancyResults results) {
     this.satisfiedRedundancyRegions.putAll(results.getSatisfiedRedundancyRegionResults());
@@ -60,12 +58,6 @@ public class RestoreRedundancyResultsImpl
     this.totalPrimaryTransfersCompleted += results.getTotalPrimaryTransfersCompleted();
     this.totalPrimaryTransferTime =
         this.totalPrimaryTransferTime.plus(results.getTotalPrimaryTransferTime());
-  }
-
-  public void addPrimaryReassignmentDetails(PartitionRebalanceInfo details) {
-    this.totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
-    this.totalPrimaryTransferTime =
-        this.totalPrimaryTransferTime.plusMillis(details.getPrimaryTransferTime());
   }
 
   public void addRegionResult(RegionRedundancyStatus regionResult) {
@@ -88,14 +80,14 @@ public class RestoreRedundancyResultsImpl
   }
 
   @Override
-  public RestoreRedundancyResults.Status getStatus() {
+  public Status getRegionOperationStatus() {
     boolean fullySatisfied = zeroRedundancyRegions.isEmpty() && underRedundancyRegions.isEmpty();
 
     return fullySatisfied ? Status.SUCCESS : Status.FAILURE;
   }
 
   @Override
-  public String getMessage() {
+  public String getRegionOperationMessage() {
     List<String> messages = new ArrayList<>();
 
     // List regions with redundancy configured but no redundant copies first
@@ -176,31 +168,43 @@ public class RestoreRedundancyResultsImpl
   }
 
   @Override
-  public int getDSFID() {
-    return RESTORE_REDUNDANCY_RESULTS;
+  public List<String> getIncludedRegionsWithNoMembers() {
+    return includedRegionsWithNoMembers;
   }
 
   @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
-    DataSerializer.writeHashMap(satisfiedRedundancyRegions, out);
-    DataSerializer.writeHashMap(underRedundancyRegions, out);
-    DataSerializer.writeHashMap(zeroRedundancyRegions, out);
-    out.writeInt(totalPrimaryTransfersCompleted);
-    DataSerializer.writeObject(totalPrimaryTransferTime, out);
+  public boolean getSuccess() {
+    return success;
+  }
+
+  public void setSuccess(boolean success) {
+    this.success = success;
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    this.satisfiedRedundancyRegions = DataSerializer.readHashMap(in);
-    this.underRedundancyRegions = DataSerializer.readHashMap(in);
-    this.zeroRedundancyRegions = DataSerializer.readHashMap(in);
-    this.totalPrimaryTransfersCompleted = in.readInt();
-    this.totalPrimaryTransferTime = DataSerializer.readObject(in);
+  public String getStatusMessage() {
+    return statusMessage;
+  }
+
+  public void setStatusMessage(String message) {
+    this.statusMessage = message;
+  }
+
+  public void addIncludedRegionsWithNoMembers(List<String> regions) {
+    includedRegionsWithNoMembers.addAll(regions);
   }
 
   @Override
-  public Version[] getSerializationVersions() {
-    return null;
+  public String toString() {
+    return "RestoreRedundancyResultsImpl{" +
+        "zeroRedundancyRegions=" + zeroRedundancyRegions +
+        ", underRedundancyRegions=" + underRedundancyRegions +
+        ", satisfiedRedundancyRegions=" + satisfiedRedundancyRegions +
+        ", totalPrimaryTransfersCompleted=" + totalPrimaryTransfersCompleted +
+        ", totalPrimaryTransferTime=" + totalPrimaryTransferTime +
+        ", success=" + success +
+        ", message='" + statusMessage + '\'' +
+        ", includedRegionsWithNoMembers=" + includedRegionsWithNoMembers +
+        '}';
   }
 }

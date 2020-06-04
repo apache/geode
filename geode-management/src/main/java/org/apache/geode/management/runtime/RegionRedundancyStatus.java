@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.control;
+package org.apache.geode.management.runtime;
 
 /**
  * Used to calculate and store a snapshot of the redundancy status for a partitioned region.

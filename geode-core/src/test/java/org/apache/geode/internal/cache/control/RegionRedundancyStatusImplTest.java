@@ -15,9 +15,9 @@
 package org.apache.geode.internal.cache.control;
 
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -33,8 +33,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.management.runtime.RegionRedundancyStatus;
 
 @RunWith(JUnitParamsRunner.class)
 public class RegionRedundancyStatusImplTest {
@@ -60,7 +60,7 @@ public class RegionRedundancyStatusImplTest {
       RegionRedundancyStatus.RedundancyStatus expectedStatus) {
     when(mockRegion.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(actualRedundancy);
 
-    RegionRedundancyStatus result = new RegionRedundancyStatusImpl(mockRegion);
+    RegionRedundancyStatus result = new SerializableRegionRedundancyStatusImpl(mockRegion);
 
     assertThat(result.getConfiguredRedundancy(), is(desiredRedundancy));
     assertThat(result.getActualRedundancy(), is(actualRedundancy));
@@ -74,7 +74,7 @@ public class RegionRedundancyStatusImplTest {
     // Have only the bucket with ID = 1 report being under redundancy
     when(mockRegion.getRegionAdvisor().getBucketRedundancy(1)).thenReturn(oneRedundantCopy);
 
-    RegionRedundancyStatus result = new RegionRedundancyStatusImpl(mockRegion);
+    RegionRedundancyStatus result = new SerializableRegionRedundancyStatusImpl(mockRegion);
 
     assertThat(result.getConfiguredRedundancy(), is(desiredRedundancy));
     assertThat(result.getActualRedundancy(), is(oneRedundantCopy));

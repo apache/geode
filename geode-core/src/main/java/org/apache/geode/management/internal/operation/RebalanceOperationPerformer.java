@@ -189,16 +189,16 @@ public class RebalanceOperationPerformer
 
     String[] membersName = bean.getMembers();
     Set<DistributedMember> dsMembers = ManagementUtils.getAllMembers(cache);
-    Iterator it = dsMembers.iterator();
+    Iterator<DistributedMember> it = dsMembers.iterator();
 
     boolean matchFound = false;
 
     if (membersName.length > 1) {
       while (it.hasNext() && !matchFound) {
-        DistributedMember dsmember = (DistributedMember) it.next();
+        DistributedMember DSMember = it.next();
         for (String memberName : membersName) {
-          if (MBeanJMXAdapter.getMemberNameOrUniqueId(dsmember).equals(memberName)) {
-            member = dsmember;
+          if (MBeanJMXAdapter.getMemberNameOrUniqueId(DSMember).equals(memberName)) {
+            member = DSMember;
             matchFound = true;
             break;
           }
@@ -219,24 +219,26 @@ public class RebalanceOperationPerformer
     for (String regionName : listDSRegions) {
       // check for excluded regions
       boolean excludedRegionMatch = false;
-      for (String aListExcludedRegion : listExcludedRegion) {
-        // this is needed since region name may start with / or without it
-        // also
-        String excludedRegion = aListExcludedRegion.trim();
-        if (regionName.startsWith(SEPARATOR)) {
-          if (!excludedRegion.startsWith(SEPARATOR)) {
-            excludedRegion = SEPARATOR + excludedRegion;
+      if (listExcludedRegion != null) {
+        for (String aListExcludedRegion : listExcludedRegion) {
+          // this is needed since region name may start with / or without it
+          // also
+          String excludedRegion = aListExcludedRegion.trim();
+          if (regionName.startsWith(SEPARATOR)) {
+            if (!excludedRegion.startsWith(SEPARATOR)) {
+              excludedRegion = SEPARATOR + excludedRegion;
+            }
           }
-        }
-        if (excludedRegion.startsWith(SEPARATOR)) {
-          if (!regionName.startsWith(SEPARATOR)) {
-            regionName = SEPARATOR + regionName;
+          if (excludedRegion.startsWith(SEPARATOR)) {
+            if (!regionName.startsWith(SEPARATOR)) {
+              regionName = SEPARATOR + regionName;
+            }
           }
-        }
 
-        if (excludedRegion.equals(regionName)) {
-          excludedRegionMatch = true;
-          break;
+          if (excludedRegion.equals(regionName)) {
+            excludedRegionMatch = true;
+            break;
+          }
         }
       }
 

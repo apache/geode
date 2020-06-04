@@ -12,16 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.control;
+package org.apache.geode.management.runtime;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 /**
  * A class to collect the results of restore redundancy operations for one or more regions and
  * determine the success of failure of the operation.
  */
-public interface RestoreRedundancyResults {
+public interface RestoreRedundancyResults extends OperationResult {
 
   /**
    * {@link #SUCCESS} is defined as every included region having fully satisfied redundancy.
@@ -42,14 +43,14 @@ public interface RestoreRedundancyResults {
    *
    * @return The {@link Status} of this restore redundancy operation.
    */
-  Status getStatus();
+  Status getRegionOperationStatus();
 
   /**
    * Returns a message describing the results of this restore redundancy operation.
    *
    * @return A {@link String} describing the results of this restore redundancy operation.
    */
-  String getMessage();
+  String getRegionOperationMessage();
 
   /**
    * Returns the {@link RegionRedundancyStatus} for a specific region or null if that region
@@ -116,4 +117,11 @@ public interface RestoreRedundancyResults {
    * @return A {@link Duration} representing the total time spent transferring primaries
    */
   Duration getTotalPrimaryTransferTime();
+
+  /**
+   * If user specified "includedRegion" list, but some of the regions in the list are not found in
+   * any
+   * members, this list would include those regions.
+   */
+  List<String> getIncludedRegionsWithNoMembers();
 }

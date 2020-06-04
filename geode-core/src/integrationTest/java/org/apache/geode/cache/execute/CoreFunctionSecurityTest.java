@@ -79,6 +79,7 @@ import org.apache.geode.management.internal.configuration.functions.GetRegionNam
 import org.apache.geode.management.internal.configuration.functions.RecreateCacheFunction;
 import org.apache.geode.management.internal.functions.GetMemberInformationFunction;
 import org.apache.geode.management.internal.functions.RebalanceFunction;
+import org.apache.geode.management.internal.functions.RestoreRedundancyFunction;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -140,6 +141,7 @@ public class CoreFunctionSecurityTest {
     functionStringMap.put(new ListIndexFunction(), "*");
     functionStringMap.put(new NetstatFunction(), "*");
     functionStringMap.put(new RebalanceFunction(), "*");
+    functionStringMap.put(new RestoreRedundancyFunction(), "*");
     functionStringMap.put(new RegionAlterFunction(), "*");
     functionStringMap.put(new RegionCreateFunction(), "*");
     functionStringMap.put(new RegionDestroyFunction(), "*");
