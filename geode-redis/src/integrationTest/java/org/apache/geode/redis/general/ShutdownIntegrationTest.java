@@ -16,12 +16,12 @@
 
 package org.apache.geode.redis.general;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -32,10 +32,11 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class ShutdownIntegrationTest {
 
   public Jedis jedis;
-  public static int REDIS_CLIENT_TIMEOUT = 1000;
+  public static int REDIS_CLIENT_TIMEOUT = 10000;
 
   @Rule
-  public GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public GeodeRedisServerRule server = new GeodeRedisServerRule()
+      .withProperty(LOG_LEVEL, "info");
 
   @Before
   public void setUp() {
@@ -57,7 +58,6 @@ public class ShutdownIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8211")
   public void shutdownIsDisabled_whenOnlySupportedCommandsAreAllowed() {
     server.getServer().setAllowUnsupportedCommands(false);
 
@@ -65,10 +65,6 @@ public class ShutdownIntegrationTest {
     // returns an error.
     jedis.shutdown();
 
-    // the old jedis client may be closed by shutdown even though disabled on server
-
-    Jedis jedis2 = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
-    assertThat(jedis2.keys("*")).isEmpty();
-    jedis2.close();
+    assertThat(jedis.keys("*")).isEmpty();
   }
 }
