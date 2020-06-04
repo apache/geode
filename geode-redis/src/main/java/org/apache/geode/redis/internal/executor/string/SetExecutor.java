@@ -57,7 +57,6 @@ public class SetExecutor extends StringExecutor {
     boolean result = redisStringCommands.set(key, value, setOptions);
 
     if (result) {
-      command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
       return RedisResponse.string(SUCCESS);
     }
 

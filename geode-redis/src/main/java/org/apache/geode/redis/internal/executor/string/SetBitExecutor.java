@@ -40,7 +40,6 @@ public class SetBitExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 4) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETBIT));
       return RedisResponse.error(ArityDef.SETBIT);
     }
 
@@ -78,7 +77,6 @@ public class SetBitExecutor extends StringExecutor {
         bytes[byteIndex] = (byte) (0x80 >> offset);
       }
       stringCommands.set(key, new ByteArrayWrapper(bytes), null);
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
       return RedisResponse.integer(0);
     }
 

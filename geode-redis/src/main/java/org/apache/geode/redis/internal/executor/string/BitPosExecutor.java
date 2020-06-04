@@ -57,7 +57,6 @@ public class BitPosExecutor extends StringExecutor {
 
     if (string == null || string.length() == 0) {
       // Redis returns 0 when key does not exists for this command
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), -bit));
       return RedisResponse.integer(-bit);
     }
     byte[] bytes = string.toBytes();
