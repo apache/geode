@@ -65,23 +65,24 @@ If the server is functioning properly, you should see a response of `PONG`.
 
 The Redis API for <%=vars.product_name%> currently supports the following commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
--   **Strings**: APPEND, GET, SET
--   **Hashes**: HGETALL, HMSET, HSET
--   **Sets**: SADD, SMEMBERS, SREM
--   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
--   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL, TYPE
 -   **Connection**: AUTH, PING, QUIT
+-   **Hashes**: HGETALL, HMSET, HSET
+-   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL, TYPE
+-   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
+-   **Sets**: SADD, SMEMBERS, SREM
+-   **Strings**: APPEND, GET, SET
 
 The following Redis API for <%=vars.product_name%> commands are **unsupported**:
 
--   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETRANGE, GETSET, INCR, INCRBY, INCRBYFLOAT, MGET,
-  MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, SETRANGE, STRLEN
+-   **Connection**: ECHO
 -   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HSCAN, HSETNX, HVALS
+-   **Keys**: SCAN
+-   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN, TIME
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
--   **Keys**: FLUSHALL (no async option), FLUSHDB (no async option), SCAN
--   **Server**: DBSIZE, TIME, SHUTDOWN
--   **Connection**: ECHO
+-   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETRANGE, GETSET, INCR, INCRBY, INCRBYFLOAT, MGET,
+  MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, SETRANGE, STRLEN
+
 
 To enable unsupported commands, the Geode server must be started with the Java property `enable-redis-unsupported-commands=true`:
 
