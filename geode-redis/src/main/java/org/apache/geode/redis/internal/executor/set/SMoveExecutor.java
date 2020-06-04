@@ -18,13 +18,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
-import org.apache.geode.redis.internal.RedisResponse;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisDataType;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SMoveExecutor extends SetExecutor {
 
@@ -44,7 +43,7 @@ public class SMoveExecutor extends SetExecutor {
     String destinationType = getRedisKeyCommands(context).type(destination);
     if (!destinationType.equals(RedisDataType.REDIS_SET.toString())
         && !destinationType.equals("none")) {
-      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+      return RedisResponse.wrongType(RedisConstants.ERROR_WRONG_TYPE);
     }
 
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);

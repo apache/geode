@@ -19,8 +19,8 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Test for the UnkownExecutor

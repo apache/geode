@@ -21,9 +21,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
-import org.apache.geode.redis.internal.executor.set.RedisSet;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisSet;
 
 @SuppressWarnings("unchecked")
 public abstract class SingleResultRedisFunction implements Function<Object[]> {

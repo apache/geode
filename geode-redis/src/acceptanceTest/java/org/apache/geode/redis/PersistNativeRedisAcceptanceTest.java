@@ -23,7 +23,7 @@ import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.redis.general.PersistIntegrationTest;
+import org.apache.geode.redis.key.PersistIntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 

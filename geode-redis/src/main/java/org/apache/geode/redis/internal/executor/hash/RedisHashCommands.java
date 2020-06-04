@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public interface RedisHashCommands {
   int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX);

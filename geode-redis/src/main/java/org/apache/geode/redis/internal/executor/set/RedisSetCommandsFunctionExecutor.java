@@ -34,8 +34,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.RedisData;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
 public class RedisSetCommandsFunctionExecutor implements RedisSetCommands {
