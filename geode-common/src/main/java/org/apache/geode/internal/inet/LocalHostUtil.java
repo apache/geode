@@ -17,6 +17,7 @@ package org.apache.geode.internal.inet;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -217,6 +218,14 @@ public class LocalHostUtil {
   }
 
   /**
+   * Returns the special address that can be used to bind to all local addresses.
+   * In most cases this will be "0.0.0.0".
+   */
+  public static InetAddress getAnyLocalAddress() {
+    return new InetSocketAddress(0).getAddress();
+  }
+
+  /**
    * Returns true if host matches the LOCALHOST.
    */
   public static boolean isLocalHost(Object host) {
@@ -225,6 +234,8 @@ public class LocalHostUtil {
       if (isLocalHost(inetAddress)) {
         return true;
       } else if (inetAddress.isLoopbackAddress()) {
+        return true;
+      } else if (inetAddress.isAnyLocalAddress()) {
         return true;
       } else {
         try {

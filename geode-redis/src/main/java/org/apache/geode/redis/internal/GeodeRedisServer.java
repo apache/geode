@@ -280,8 +280,12 @@ public class GeodeRedisServer {
    * @return The InetAddress to bind to
    */
   private InetAddress getBindAddress() throws UnknownHostException {
-    return bindAddress == null || bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
-        : InetAddress.getByName(bindAddress);
+    if (bindAddress == null || bindAddress.isEmpty()
+        || bindAddress.equals(LocalHostUtil.getAnyLocalAddress().getHostAddress())) {
+      return LocalHostUtil.getAnyLocalAddress();
+    } else {
+      return InetAddress.getByName(bindAddress);
+    }
   }
 
   /**
@@ -418,20 +422,20 @@ public class GeodeRedisServer {
 
   private Channel createBoundChannel(ServerBootstrap serverBootstrap)
       throws InterruptedException, UnknownHostException {
+    InetAddress bindAddress = getBindAddress();
+    int port = serverPort == RANDOM_PORT_INDICATOR ? 0 : serverPort;
     ChannelFuture channelFuture =
-        serverBootstrap.bind(new InetSocketAddress(getBindAddress(),
-            serverPort == RANDOM_PORT_INDICATOR ? 0 : serverPort))
-            .sync();
+        serverBootstrap.bind(new InetSocketAddress(bindAddress, port)).sync();
 
     serverPort = ((InetSocketAddress) channelFuture.channel().localAddress()).getPort();
 
-    logStartupMessage();
+    logStartupMessage(bindAddress);
 
     return channelFuture.channel();
   }
 
-  private void logStartupMessage() throws UnknownHostException {
-    String logMessage = "GeodeRedisServer started {" + getBindAddress() + ":" + serverPort
+  private void logStartupMessage(InetAddress bindAddress) throws UnknownHostException {
+    String logMessage = "GeodeRedisServer started {" + bindAddress + ":" + serverPort
         + "}, Selector threads: " + numSelectorThreads;
     if (singleThreadPerConnection) {
       logMessage += ", One worker thread per connection";
