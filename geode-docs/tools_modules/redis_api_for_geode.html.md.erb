@@ -80,8 +80,8 @@ The following Redis API for <%=vars.product_name%> commands are **unsupported**:
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
 -   **Keys**: FLUSHALL (no async option), FLUSHDB (no async option), SCAN
--   **Server**: DBSIZE, ECHO, TIME, SHUTDOWN
--   **Connection**: ECHO, TIME, SHUTDOWN
+-   **Server**: DBSIZE, TIME, SHUTDOWN
+-   **Connection**: ECHO
 
 To enable unsupported commands, the Geode server must be started with the Java property `enable-redis-unsupported-commands=true`:
 
