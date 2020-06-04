@@ -49,6 +49,11 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     server.start();
   }
 
+  public GeodeRedisServerRule withProperty(String property, String value) {
+    cacheFactory.set(property, value);
+    return this;
+  }
+
   @Override
   protected void after() {
     cache.close();
