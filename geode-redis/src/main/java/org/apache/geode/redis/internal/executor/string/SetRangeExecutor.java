@@ -23,6 +23,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class SetRangeExecutor extends StringExecutor {
 
@@ -32,12 +33,12 @@ public class SetRangeExecutor extends StringExecutor {
       "The offset is out of range, must be greater than or equal to 0 and the offset added to the length of the value must be less than 536870911 (512MB), the maximum allowed size";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 4) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SETRANGE));
-      return;
+      return RedisResponse.error(ArityDef.SETRANGE);
     }
 
     ByteArrayWrapper key = command.getKey();
@@ -52,15 +53,12 @@ public class SetRangeExecutor extends StringExecutor {
       byte[] offAr = commandElems.get(2);
       offset = Coder.bytesToInt(offAr);
     } catch (NumberFormatException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INT));
-      return;
+      return RedisResponse.error(ERROR_NOT_INT);
     }
 
     int totalLength = offset + value.length;
     if (offset < 0 || totalLength > 536870911) {
-      command
-          .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_ILLEGAL_OFFSET));
-      return;
+      return RedisResponse.error(ERROR_ILLEGAL_OFFSET);
     } else if (value.length == 0) {
       int length;
       if (wrapper == null) {
@@ -69,34 +67,33 @@ public class SetRangeExecutor extends StringExecutor {
       } else {
         length = wrapper.length();
       }
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), length));
 
-      return;
+      return RedisResponse.integer(length);
     }
 
     if (wrapper == null) {
       byte[] bytes = new byte[totalLength];
       System.arraycopy(value, 0, bytes, offset, value.length);
       stringCommands.set(key, new ByteArrayWrapper(bytes), null);
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), bytes.length));
-    } else {
-      byte[] bytes = wrapper.toBytes();
-      SetOptions setOptions = new SetOptions(NONE, 0L, true);
-      int returnLength;
-      if (totalLength < bytes.length) {
-        System.arraycopy(value, 0, bytes, offset, value.length);
-        stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
-        returnLength = bytes.length;
-      } else {
-        byte[] newBytes = new byte[totalLength];
-        System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
-        System.arraycopy(value, 0, newBytes, offset, value.length);
-        returnLength = newBytes.length;
-        stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
-      }
-
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), returnLength));
+      return RedisResponse.integer(bytes.length);
     }
+
+    byte[] bytes = wrapper.toBytes();
+    SetOptions setOptions = new SetOptions(NONE, 0L, true);
+    int returnLength;
+    if (totalLength < bytes.length) {
+      System.arraycopy(value, 0, bytes, offset, value.length);
+      stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
+      returnLength = bytes.length;
+    } else {
+      byte[] newBytes = new byte[totalLength];
+      System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
+      System.arraycopy(value, 0, newBytes, offset, value.length);
+      returnLength = newBytes.length;
+      stringCommands.set(key, new ByteArrayWrapper(bytes), setOptions);
+    }
+
+    return RedisResponse.integer(returnLength);
   }
 
 }

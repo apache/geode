@@ -25,13 +25,15 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class SetExecutor extends StringExecutor {
 
   private final String SUCCESS = "OK";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper keyToSet = command.getKey();
@@ -42,23 +44,23 @@ public class SetExecutor extends StringExecutor {
     try {
       setOptions = parseCommandElems(commandElems);
     } catch (IllegalArgumentException ex) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ex.getMessage()));
-      return;
+      return RedisResponse.error(ex.getMessage());
     }
 
-    doSet(command, context, keyToSet, valueToSet, redisStringCommands, setOptions);
+    return doSet(command, context, keyToSet, valueToSet, redisStringCommands, setOptions);
   }
 
-  private void doSet(Command command, ExecutionHandlerContext context, ByteArrayWrapper key,
+  private RedisResponse doSet(Command command, ExecutionHandlerContext context,
+      ByteArrayWrapper key,
       ByteArrayWrapper value, RedisStringCommands redisStringCommands, SetOptions setOptions) {
 
     boolean result = redisStringCommands.set(key, value, setOptions);
 
     if (result) {
-      command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
-    } else {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
+      return RedisResponse.string(SUCCESS);
     }
+
+    return RedisResponse.nil();
   }
 
   private ByteArrayWrapper getValueToSet(List<byte[]> commandElems) {

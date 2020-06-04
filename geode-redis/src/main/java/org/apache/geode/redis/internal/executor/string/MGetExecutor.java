@@ -19,20 +19,20 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class MGetExecutor extends StringExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.MGET));
-      return;
+      return RedisResponse.error(ArityDef.MGET);
     }
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
@@ -44,7 +44,7 @@ public class MGetExecutor extends StringExecutor {
       values.add(stringCommands.get(key));
     }
 
-    respondBulkStrings(command, context, values);
+    return respondBulkStrings(values);
   }
 
 }

@@ -16,12 +16,14 @@
 
 package org.apache.geode.redis.internal;
 
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 
 public class RedisResponse {
 
@@ -79,6 +81,10 @@ public class RedisResponse {
     return new RedisResponse(Coder::getEmptyArrayResponse);
   }
 
+  public static RedisResponse emptyString() {
+    return new RedisResponse(Coder::getEmptyStringResponse);
+  }
+
   public static RedisResponse error(String error) {
     return new RedisResponse((bba) -> Coder.getErrorResponse(bba, error));
   }
@@ -89,5 +95,12 @@ public class RedisResponse {
 
   public static RedisResponse scan(List<?> items) {
     return new RedisResponse((bba) -> Coder.getScanResponse(bba, items));
+  }
+
+  /**
+   * Be aware that this implementation will create extra garbage since it allocates from the heap.
+   */
+  public String toString() {
+    return encode(new UnpooledByteBufAllocator(false)).toString(Charset.defaultCharset());
   }
 }

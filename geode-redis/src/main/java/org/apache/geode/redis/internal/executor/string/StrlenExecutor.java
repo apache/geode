@@ -17,22 +17,22 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class StrlenExecutor extends StringExecutor {
 
   private final int KEY_DOES_NOT_EXIST = 0;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() != 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.STRLEN));
-      return;
+      return RedisResponse.error(ArityDef.STRLEN);
     }
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
@@ -41,11 +41,9 @@ public class StrlenExecutor extends StringExecutor {
     ByteArrayWrapper value = stringCommands.get(key);
 
     if (value == null) {
-      command
-          .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), KEY_DOES_NOT_EXIST));
-    } else {
-      command.setResponse(
-          Coder.getIntegerResponse(context.getByteBufAllocator(), value.length()));
+      return RedisResponse.integer(KEY_DOES_NOT_EXIST);
     }
+
+    return RedisResponse.integer(value.length());
   }
 }

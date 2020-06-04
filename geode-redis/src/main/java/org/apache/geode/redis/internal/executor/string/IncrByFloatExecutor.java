@@ -24,6 +24,7 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class IncrByFloatExecutor extends StringExecutor {
 
@@ -38,13 +39,12 @@ public class IncrByFloatExecutor extends StringExecutor {
   private final int INCREMENT_INDEX = 2;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3) {
-      command
-          .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.INCRBYFLOAT));
-      return;
+      return RedisResponse.error(ArityDef.INCRBYFLOAT);
     }
 
     ByteArrayWrapper key = command.getKey();
@@ -58,13 +58,9 @@ public class IncrByFloatExecutor extends StringExecutor {
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     String doub = Coder.bytesToString(incrArray).toLowerCase();
     if (doub.contains("inf") || doub.contains("nan")) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Increment would produce NaN or infinity"));
-      return;
+      return RedisResponse.error("Increment would produce NaN or infinity");
     } else if (valueWrapper != null && valueWrapper.toString().contains(" ")) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_VALUE_NOT_USABLE));
-      return;
+      return RedisResponse.error(ERROR_VALUE_NOT_USABLE);
     }
 
     double increment;
@@ -72,9 +68,7 @@ public class IncrByFloatExecutor extends StringExecutor {
     try {
       increment = Coder.stringToDouble(doub);
     } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INCREMENT_NOT_USABLE));
-      return;
+      return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
     /*
@@ -83,8 +77,7 @@ public class IncrByFloatExecutor extends StringExecutor {
 
     if (valueWrapper == null) {
       stringCommands.set(key, new ByteArrayWrapper(incrArray), null);
-      respondBulkStrings(command, context, increment);
-      return;
+      return respondBulkStrings(increment);
     }
 
     /*
@@ -97,24 +90,19 @@ public class IncrByFloatExecutor extends StringExecutor {
     try {
       value = Coder.stringToDouble(stringValue);
     } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_VALUE_NOT_USABLE));
-      return;
+      return RedisResponse.error(ERROR_VALUE_NOT_USABLE);
     }
 
     /*
      * Check for overflow
      */
     if (value >= 0 && increment > (Double.MAX_VALUE - value)) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_OVERFLOW));
-      return;
+      return RedisResponse.error(ERROR_OVERFLOW);
     }
 
     double result = value + increment;
     if (Double.isNaN(result) || Double.isInfinite(result)) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_NAN_INF_INCR));
-      return;
+      return RedisResponse.error(RedisConstants.ERROR_NAN_INF_INCR);
     }
     value += increment;
 
@@ -122,7 +110,7 @@ public class IncrByFloatExecutor extends StringExecutor {
     SetOptions setOptions = new SetOptions(NONE, 0L, true);
     stringCommands.set(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)), setOptions);
 
-    respondBulkStrings(command, context, value);
+    return respondBulkStrings(value);
   }
 
 }

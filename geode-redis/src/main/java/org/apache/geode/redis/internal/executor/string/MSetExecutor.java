@@ -17,22 +17,22 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisResponse;
 
 public class MSetExecutor extends StringExecutor {
 
   private final String SUCCESS = "OK";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3 || commandElems.size() % 2 == 0) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.MSET));
-      return;
+      return RedisResponse.error(ArityDef.MSET);
     }
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
@@ -46,7 +46,7 @@ public class MSetExecutor extends StringExecutor {
       stringCommands.set(key, value, null);
     }
 
-    command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
+    return RedisResponse.string(SUCCESS);
   }
 
 }
