@@ -32,7 +32,7 @@ import org.apache.geode.internal.net.SSLUtil;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.net.SSLParameterExtension;
-import org.apache.geode.net.SSLParameterExtensionContextImpl;
+import org.apache.geode.net.internal.SSLParameterExtensionContextImpl;
 
 /**
  * The SSL configuration settings for a GemFire distributed system.

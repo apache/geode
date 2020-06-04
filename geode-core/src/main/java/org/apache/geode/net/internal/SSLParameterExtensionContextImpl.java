@@ -12,7 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.net;
+package org.apache.geode.net.internal;
+
+import org.apache.geode.net.SSLParameterExtensionContext;
 
 public class SSLParameterExtensionContextImpl implements SSLParameterExtensionContext {
   private int distributedSystemId;
@@ -26,7 +28,4 @@ public class SSLParameterExtensionContextImpl implements SSLParameterExtensionCo
     return distributedSystemId;
   }
 
-  public void setDistributedSystemId(int distributedSystemIdInput) {
-    distributedSystemId = distributedSystemIdInput;
-  }
 }
