@@ -30,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedCountersRule;
@@ -179,7 +180,13 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
 
     region.destroyRegion();
 
-    assertThat(sharedCountersRule.getTotal(REGION_DESTROY)).isEqualTo(expectedRegionDestroys());
+    if (region instanceof PartitionedRegion) {
+      // In case of PR the cache listeners are invoked more than expected number.
+      assertThat(sharedCountersRule.getTotal(REGION_DESTROY))
+          .isGreaterThanOrEqualTo(expectedRegionDestroys());
+    } else {
+      assertThat(sharedCountersRule.getTotal(REGION_DESTROY)).isEqualTo(expectedRegionDestroys());
+    }
   }
 
   protected Region<String, Integer> createRegion(final String name,
