@@ -70,50 +70,41 @@ the provided keys. If a given key does not exist in the region, then that key's 
 
 The batch operation `Region.putAll`
 takes a `Map` of key-value pairs, puts them into the cache,
-and distributes them in a single operation.
-
-For partitioned regions,
-multiple keys are sent as a single message to each primary bucket
-and then distributed to the secondary buckets.
-For replicated regions, the keys are sent to one server.
-After applying all entry updates to that server,
-that server distributes the event to the other servers that host the region.
+and then distributes them to all other members.
 
 The design of a client application within a client-server design pattern
 faces the possibility that a partial operation can occur.
-Some, all, or none of the specified entries may be completed with `putAll`.
+Some, all, or none of the specified key-value pairs may be written
+with `putAll`.
 If either `ServerOperationException` or `ServerConnectivityException` is
 thrown,
 it can indicate an incomplete operation.
 
 ``` pre
-int retry = 0;
-RuntimeException rte = null;
-while (retry < 3) {
+// Retry if the exception may be due to a transient cause.
+for (int retry = 0; retry < 3; retry++) {
+  throwable = null;
   try {
     region.putAll(map);
   } catch (ServerOperationException e) {
-    if (e.getCause() instanceof TimeoutException
-        || e.getCause() instanceof LowMemoryException) {
-      // Retry due to transient error.
-      retry++;
-    } else {
-      rte = e;
+    throwable = e.getCause();
+    if (!(e.getCause() instanceof TimeoutException ||
+          e.getCause() instanceof LowMemoryException)) {
+      // Not a transient exception. Do not retry.
       break;
     }
   } catch (ServerConnectivityException e) {
-    // Retry due to transient error.
-    retry++;
+    throwable = e;
   }
 }
 
-if (retry == 3) {
-  System.out.println("3 putAll operations tried, and all failed.");
-} else if (rte != null) {
-  System.out.println("putAll failed due to " + rte);
-  throw rte;
+if (throwable != null) {
+  // Take appropriate action,
+  // such as logging the exception and rethrowing it.
+  System.out.println("putAll failed due to " + throwable);
+  throw new Exception(throwable);
 }
-```
+``` 
 
 Either a `ServerConnectivityException` or a `ServerOperationException`
 with a cause of
