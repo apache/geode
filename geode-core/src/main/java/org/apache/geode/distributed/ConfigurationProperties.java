@@ -1918,8 +1918,8 @@ public interface ConfigurationProperties {
    * name="redis-bind-address"/a>
    * </p>
    * <U>Description</U>: Specifies the address on which the Redis API for Geode is listening. If set
-   * to the empty string or this property is not specified, localhost is requested from the
-   * operating system.
+   * to the empty string or this property is not specified, the server listens on all local
+   * addresses.
    * </p>
    * <U>Default</U>: ""
    */
