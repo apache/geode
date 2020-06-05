@@ -49,7 +49,7 @@ Replace `<redisPort>` with the port that the <%=vars.product_name%> server liste
 
 Replace `<redisBindAddress>` with the address of the server host.
 
-Replace `<redisPassword>` with the password clients uses to authenticate.
+Replace `<redisPassword>` with the password clients use to authenticate.
 
 To confirm the server is listening, run:
 
@@ -65,6 +65,8 @@ If the server is functioning properly, you should see a response of `PONG`.
 
 The Redis API for <%=vars.product_name%> currently supports the following commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
+**Note**: These commands are supported for Redis 5.
+
 -   **Connection**: AUTH, PING, QUIT
 -   **Hashes**: HGETALL, HMSET, HSET
 -   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL, TYPE
@@ -72,9 +74,9 @@ The Redis API for <%=vars.product_name%> currently supports the following comman
 -   **Sets**: SADD, SMEMBERS, SREM
 -   **Strings**: APPEND, GET, SET
 
-The following Redis API for <%=vars.product_name%> commands are **unsupported**. These commands are
-available to use but have not been fully tested. There is no guarantee that they will work exactly
-as expected.
+The following Redis API for <%=vars.product_name%> commands are **unsupported**. Unsupported
+commands are available to use, but have not been fully tested. There is no guarantee they will work
+exactly as expected.
 
 -   **Connection**: ECHO
 -   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HSCAN, HSETNX, HVALS
