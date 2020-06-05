@@ -90,6 +90,9 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 - {{test.name}}Test{{java_test_version.name}}
   {%- endfor -%}
   {%- endfor -%}
+  {%- for run_var in (benchmarks.flavors) %}
+- Benchmark{{ run_var.title }}
+  {%- endfor -%}
 {% endmacro %}
 
 groups:
@@ -101,24 +104,14 @@ groups:
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
   - PublishArtifacts
   {%- endif %}
-  {%- for flavor in (benchmarks.flavors) %}
-  - Benchmark{{flavor.title}}
-  {%- endfor %}
 - name: complete
   jobs:
   - {{ build_test.name }}
-  {%- for test in (tests) if not test.name=="StressNew" -%}
-    {%- for java_test_version in (java_test_versions) %}
-  - {{test.name}}Test{{java_test_version.name}}
-    {%- endfor -%}
-  {%- endfor %}
-  - UpdatePassingTokens
+  {{- all_gating_jobs() | indent(2) }}
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
   - PublishArtifacts
   {%- endif %}
-  {%- for flavor in (benchmarks.flavors) %}
-  - Benchmark{{flavor.title}}
-  {%- endfor %}
+  - UpdatePassingTokens
 - name: linux
   jobs:
   - {{ build_test.name }}
@@ -408,9 +401,7 @@ jobs:
 {%- if repository.upstream_fork != "apache" or repository.branch == "develop" or repository.branch.startswith("support/") %}
       - PublishArtifacts
 {% else %}
-      {% for flavor in (benchmarks.flavors) %}
-      - Benchmark{{flavor.title}}
-      {% endfor %}
+      {{- all_gating_jobs() | indent(6) }}
 {% endif %}
       trigger: true
     - get: geode-build-version
@@ -459,22 +450,20 @@ jobs:
 {% for run_var in (benchmarks.flavors) %}
 - name: Benchmark{{ run_var.title }}
   public: true
-  max_in_flight: 3
+  max_in_flight: 2
   plan:
   - get: geode-ci
-    passed:
-    {{ all_gating_jobs() | indent(4) }}
+    passed: &benchmark-inputs
+    - Build
   - get: alpine-tools-image
   - aggregate:
     - get: geode
-      passed:
-      {{ all_gating_jobs() | indent(6) }}
+      passed: *benchmark-inputs
       trigger: true
     - get: geode-benchmarks
     - get: geode-build-version
       trigger: true
-      passed:
-      {{ all_gating_jobs() | indent(6) }}
+      passed: *benchmark-inputs
     - put: concourse-metadata-resource
   - do:
     - task: run_benchmarks{{ run_var.title }}
@@ -536,9 +525,7 @@ jobs:
   - aggregate:
     - get: geode-ci
       passed: &publish-passed-inputs
-      {% for flavor in (benchmarks.flavors) %}
-      - Benchmark{{flavor.title}}
-      {% endfor %}
+      {{- all_gating_jobs() | indent(6) }}
     - get: alpine-tools-image
     - get: geode
       passed: *publish-passed-inputs
