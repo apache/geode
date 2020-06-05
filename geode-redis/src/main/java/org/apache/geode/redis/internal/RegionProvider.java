@@ -21,12 +21,19 @@ import org.apache.geode.redis.internal.data.RedisData;
 public class RegionProvider {
 
   private final Region<ByteArrayWrapper, RedisData> dataRegion;
+  private final Region<String, Object> configRegion;
 
-  public RegionProvider(Region<ByteArrayWrapper, RedisData> dataRegion) {
+  public RegionProvider(Region<ByteArrayWrapper, RedisData> dataRegion,
+      Region<String, Object> configRegion) {
     this.dataRegion = dataRegion;
+    this.configRegion = configRegion;
   }
 
   public Region<ByteArrayWrapper, RedisData> getDataRegion() {
     return dataRegion;
+  }
+
+  public Region<String, Object> getConfigRegion() {
+    return configRegion;
   }
 }
