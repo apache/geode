@@ -16,13 +16,6 @@ package org.apache.geode.internal.cache;
 
 import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT_OVERFLOW;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_OVERFLOW;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
 import static org.apache.geode.test.dunit.VM.getVM;
 
 import java.io.IOException;
@@ -31,6 +24,7 @@ import java.util.stream.LongStream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,15 +58,21 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
 
   private static final String REGION_NAME = "testRegion";
 
-  private static final long NUM_ENTRIES = 1000;
+  private static final long NUM_ENTRIES = 100_000;
 
-  VM server1;
+  private static final int[] NUM_BUCKETS = new int[] {1, 10, 113, 227, 467, 1001};
 
-  VM server2;
+  private static final int NUM_ITERATIONS = 10;
 
-  VM server3;
+  private VM server1;
 
-  VM client;
+  private VM server2;
+
+  private VM server3;
+
+  private VM client;
+
+  private static StringBuilder performanceTestResult = new StringBuilder();
 
   @Before
   public void setUp() {
@@ -82,29 +82,47 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
     client = getVM(3);
   }
 
+  @AfterClass
+  public static void tearDown() {
+    System.out.println(performanceTestResult.toString());
+  }
+
   @Test
   @Parameters(method = "getRegionShortcuts")
   public void testPerformance(RegionShortcut shortcut) {
-    createRegionOnServers(shortcut, 2, 113);
-    populationRegion();
-    long start = System.nanoTime();
-    clearRegion();
-    long end = System.nanoTime();
-    System.out.println("Region shortcut: " + shortcut + ". Time elapsed for region clear "
-        + (end - start) + " nanoseconds.");
-    destroyRegion();
-    destroyDiskStore();
+    for (int numBuckets : NUM_BUCKETS) {
+      long sum = 0;
+      for (int i = 0; i < NUM_ITERATIONS; i++) {
+        createRegionOnServers(shortcut, numBuckets);
+        populationRegion();
+        long start = System.nanoTime();
+        clearRegion();
+        long end = System.nanoTime();
+        performanceTestResult.append("Region shortcut: " + shortcut + " numBuckets: " + numBuckets +
+            " Iteration: " + i
+            + ". Time elapsed for region clear "
+            + (end - start) + " nanoseconds.");
+        performanceTestResult.append(System.lineSeparator());
+        sum = sum + end - start;
+        destroyRegion();
+        destroyDiskStore();
+      }
+      performanceTestResult.append("Region shortcut: " + shortcut + " numBuckets: " + numBuckets
+          + ". Average time elapsed for region clear "
+          + (sum / NUM_ITERATIONS) + " nanoseconds.");
+      performanceTestResult.append(System.lineSeparator());
+    }
   }
 
-  private void createRegionOnServers(RegionShortcut shortcut, int redundancy, int numBuckets) {
+  private void createRegionOnServers(RegionShortcut shortcut, int numBuckets) {
     for (VM vm : new VM[] {server1, server2, server3}) {
       vm.invoke(() -> {
-        createRegion(shortcut, redundancy, numBuckets);
+        createRegion(shortcut, numBuckets);
       });
     }
   }
 
-  private void createRegion(RegionShortcut shortcut, int redundancy, int numBuckets)
+  private void createRegion(RegionShortcut shortcut, int numBuckets)
       throws IOException {
     cacheRule.createCache();
     final CacheServer cacheServer = cacheRule.getCache().addCacheServer();
@@ -112,7 +130,7 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
     cacheServer.start();
     cacheRule.getCache()
         .createRegionFactory(shortcut).setPartitionAttributes(new PartitionAttributesFactory<>()
-            .setRedundantCopies(redundancy).setTotalNumBuckets(numBuckets).create())
+            .setTotalNumBuckets(numBuckets).create())
         .create(REGION_NAME);
   }
 
@@ -127,8 +145,13 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
       final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
       clientCacheFactory.addPoolLocator("localhost", DistributedTestUtils.getLocatorPort());
       clientCacheRule.createClientCache(clientCacheFactory);
-      Region region = clientCacheRule.getClientCache()
-          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(REGION_NAME);
+      final Region region;
+      if (clientCacheRule.getClientCache().getRegion(REGION_NAME) == null) {
+        region = clientCacheRule.getClientCache()
+            .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(REGION_NAME);
+      } else {
+        region = clientCacheRule.getClientCache().getRegion(REGION_NAME);
+      }
       LongStream.range(0, NUM_ENTRIES).forEach(i -> {
         region.put("key" + i, "value" + i);
       });
@@ -142,11 +165,12 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
   }
 
   private static Object[] getRegionShortcuts() {
-    return $(new Object[] {PARTITION}, new Object[] {PARTITION_REDUNDANT},
-        new Object[] {PARTITION_PERSISTENT}, new Object[] {PARTITION_REDUNDANT_PERSISTENT},
-        new Object[] {PARTITION_OVERFLOW}, new Object[] {PARTITION_REDUNDANT_OVERFLOW},
-        new Object[] {PARTITION_PERSISTENT_OVERFLOW},
-        new Object[] {PARTITION_REDUNDANT_PERSISTENT_OVERFLOW});
+    return $(new Object[] {PARTITION});
+    // return $(new Object[] {PARTITION}, new Object[] {PARTITION_REDUNDANT},
+    // new Object[] {PARTITION_PERSISTENT}, new Object[] {PARTITION_REDUNDANT_PERSISTENT},
+    // new Object[] {PARTITION_OVERFLOW}, new Object[] {PARTITION_REDUNDANT_OVERFLOW},
+    // new Object[] {PARTITION_PERSISTENT_OVERFLOW},
+    // new Object[] {PARTITION_REDUNDANT_PERSISTENT_OVERFLOW});
   }
 
   private void destroyDiskStore() {
