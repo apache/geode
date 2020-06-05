@@ -940,13 +940,13 @@ public class Oplog implements CompactableOplog, Flushable {
         this.crf.RAFClosed = true;
         deleteCRF();
 
-        // See GEODE-8029.
-        // The drf file needs to be deleted, especially when the disk-store is *only* used by
-        // gateway-senders, otherwise there will be orphaned drfs that are never deleted by
-        // compaction (unless there are pending events in the queue upon restart - crf exists - or
-        // a manual compaction is executed).
-        deleteDRF();
+        // The drf file needs to be deleted (see GEODE-8029).
+        // If compaction is not enabled, or if the compaction-threshold is never reached, there
+        // will be orphaned drf files that are not automatically deleted (unless a manual
+        // compaction is executed), in which case a later recovery might fail when the amount of
+        // deleted records is too high (805306401).
         setHasDeletes(false);
+        deleteDRF();
 
         this.closed = true;
         this.deleted.set(true);
