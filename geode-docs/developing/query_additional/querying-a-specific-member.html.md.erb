@@ -1,0 +1,78 @@
+---
+title: Querying a Specific Member
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+When a region is specified with both REPLICATE and REPLICATE_PROXY region shortcuts on the server, a
+query could return a different result depending on the member on which it is executed.
+
+Here is an example to illustrate this:
+
+``` pre
+gfsh>connect --locator "localhost[64570]"
+Connecting to Locator at [host=localhost, port=64570] ..
+Connecting to Manager at [host=localhost, port=20571] ..
+Successfully connected to: [host=localhost, port=20571]
+
+gfsh>describe region --name "portfolio"
+Name            : portfolio
+Data Policy     : replicate
+Hosting Members : server-2
+
+Non-Default Attributes Shared By Hosting Members
+
+Type   | Name        | Value
+------ | ----------- | ---------------
+Region | data-policy | REPLICATE
+       | size        | 10
+       | scope       | distributed-ack
+
+Name             : portfolio
+Data Policy      : empty
+Accessor Members : server-1
+
+Non-Default Attributes Shared By Accessor Members
+
+Type   | Name        | Value
+------ | ----------- | ---------------
+Region | data-policy | EMPTY
+       | size        | 0
+       | scope       | distributed-ack
+```
+
+In this example, if the query is executed on a member with REPLICATE_PROXY, the result will be `0`, as it will be a member without hosting data.
+To cope with this issue, you can specify the `--member` option forcing the query to be run on a member hosting the data.
+
+``` pre
+gfsh>query --query="select ID, status from /portfolio where ID < 2"
+Result : true
+Limit : 100
+Rows  : 0
+
+gfsh>query --query="select ID, status from /portfolio where ID < 2" --member="server-2"
+Result : true
+Limit  : 100
+Rows   : 2
+
+ID | status
+–- | --------
+0  | active
+1  | inactive (edited)
+```
+
