@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -32,6 +33,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
@@ -68,7 +70,7 @@ public class PartitionedRegionClearTest {
       PartitionedRegionDataStore partitionedRegionDataStore,
       BucketAdvisor bucketAdvisor) {
     final int numBuckets = 2;
-    HashSet<BucketRegion> bucketRegions = new HashSet<>();
+    Set<BucketRegion> bucketRegions = new HashSet<>();
     for (int i = 0; i < numBuckets; i++) {
       BucketRegion bucketRegion = mock(BucketRegion.class);
       when(bucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
@@ -241,9 +243,13 @@ public class PartitionedRegionClearTest {
 
     List bucketsCleared = partitionedRegionClear.clearRegionLocal(regionEvent);
 
-    assertThat(bucketsCleared.size()).isEqualTo(buckets.size());
+    assertThat(bucketsCleared).hasSize(buckets.size());
+
+    ArgumentCaptor<RegionEventImpl> argument = ArgumentCaptor.forClass(RegionEventImpl.class);
     for (BucketRegion bucketRegion : buckets) {
-      verify(bucketRegion, times(1)).clear();
+      verify(bucketRegion, times(1)).cmnClearRegion(argument.capture(), eq(false), eq(true));
+      RegionEventImpl bucketRegionEvent = argument.getValue();
+      assertThat(bucketRegionEvent.getRegion()).isEqualTo(bucketRegion);
     }
   }
 
@@ -262,9 +268,13 @@ public class PartitionedRegionClearTest {
     List bucketsCleared = spyPartitionedRegionClear.clearRegionLocal(regionEvent);
 
     int expectedClears = buckets.size() * 2; /* clear is called twice on each bucket */
-    assertThat(bucketsCleared.size()).isEqualTo(expectedClears);
+    assertThat(bucketsCleared).hasSize(expectedClears);
+
+    ArgumentCaptor<RegionEventImpl> argument = ArgumentCaptor.forClass(RegionEventImpl.class);
     for (BucketRegion bucketRegion : buckets) {
-      verify(bucketRegion, times(2)).clear();
+      verify(bucketRegion, times(2)).cmnClearRegion(argument.capture(), eq(false), eq(true));
+      RegionEventImpl bucketRegionEvent = argument.getValue();
+      assertThat(bucketRegionEvent.getRegion()).isEqualTo(bucketRegion);
     }
   }
 
@@ -395,7 +405,12 @@ public class PartitionedRegionClearTest {
     InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
     when(internalDistributedSystem.getDistributionManager()).thenReturn(distributionManager);
     when(partitionedRegion.getSystem()).thenReturn(internalDistributedSystem);
-    when(partitionedRegion.isTransactionDistributed()).thenReturn(false);
+    InternalCache internalCache = mock(InternalCache.class);
+    TXManagerImpl txManager = mock(TXManagerImpl.class);
+    when(txManager.isDistributed()).thenReturn(false);
+    when(internalCache.getTxManager()).thenReturn(txManager);
+    when(partitionedRegion.getCache()).thenReturn(internalCache);
+
     when(distributionManager.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
     when(distributionManager.getStats()).thenReturn(mock(DMStats.class));
 

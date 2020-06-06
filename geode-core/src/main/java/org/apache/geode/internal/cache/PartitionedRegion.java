@@ -10269,8 +10269,4 @@ public class PartitionedRegion extends LocalRegion
     return (getRegionAdvisor().hasPRServerWithInterest()
         || getRegionAdvisor().hasPRServerWithCQs());
   }
-
-  boolean isTransactionDistributed() {
-    return getCache().getTxManager().isDistributed();
-  }
 }

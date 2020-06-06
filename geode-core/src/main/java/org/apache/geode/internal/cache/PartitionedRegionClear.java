@@ -137,11 +137,14 @@ public class PartitionedRegionClear {
           boolean retry;
           do {
             waitForPrimary(new PartitionedRegion.RetryTimeKeeper(retryTime));
-
+            RegionEventImpl bucketRegionEvent;
             for (BucketRegion localPrimaryBucketRegion : partitionedRegion.getDataStore()
                 .getAllLocalPrimaryBucketRegions()) {
               if (localPrimaryBucketRegion.size() > 0) {
-                localPrimaryBucketRegion.clear();
+                bucketRegionEvent =
+                    new RegionEventImpl(localPrimaryBucketRegion, Operation.REGION_CLEAR, null,
+                        false, partitionedRegion.getMyId(), regionEvent.getEventId());
+                localPrimaryBucketRegion.cmnClearRegion(bucketRegionEvent, false, true);
               }
               clearedBuckets.add(localPrimaryBucketRegion.getId());
             }
