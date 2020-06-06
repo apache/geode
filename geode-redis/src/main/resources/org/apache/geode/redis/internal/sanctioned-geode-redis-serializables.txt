@@ -1,5 +1,6 @@
 org/apache/geode/redis/internal/ParameterRequirements/RedisParametersMismatchException,true,-643700717871858072
-org/apache/geode/redis/internal/RedisCommandType,false,executor:org/apache/geode/redis/internal/executor/Executor,parameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements,supported:boolean
+org/apache/geode/redis/internal/RedisCommandSupportLevel,false
+org/apache/geode/redis/internal/RedisCommandType,false,executor:org/apache/geode/redis/internal/executor/Executor,parameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements,supportLevel:org/apache/geode/redis/internal/RedisCommandSupportLevel
 org/apache/geode/redis/internal/data/RedisDataType,false,toStringValue:java/lang/String
 org/apache/geode/redis/internal/data/RedisDataTypeMismatchException,true,-2451663685348513870
 org/apache/geode/redis/internal/delta/DeltaType,false

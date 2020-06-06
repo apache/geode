@@ -66,6 +66,14 @@ public class Command {
     return commandType.isSupported();
   }
 
+  public boolean isUnsupported() {
+    return commandType.isUnsupported();
+  }
+
+  public boolean isUnimplemented() {
+    return commandType.isUnimplemented();
+  }
+
   /**
    * Used to get the command element list
    *
