@@ -1199,20 +1199,44 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     if (this.singleMember) {
       flags |= 0x01;
     }
+    boolean allMembersToVersionNotSameType =
+        allMembersNotSameTypeAsThisMember(this.memberToVersion.keySet());
+    boolean allMembersToGCVersionNotSameType =
+        allMembersNotSameTypeAsThisMember(this.memberToGCVersion.keySet());
+    if (allMembersToVersionNotSameType) {
+      flags |= 0x02;
+    }
+    if (allMembersToGCVersionNotSameType) {
+      flags |= 0x04;
+    }
     out.writeInt(flags);
     out.writeLong(this.localVersion.get());
     out.writeLong(this.localGCVersion.get());
     out.writeInt(this.memberToVersion.size());
     for (Map.Entry<T, RegionVersionHolder<T>> entry : this.memberToVersion.entrySet()) {
-      writeMember(entry.getKey(), out);
+      if (allMembersToVersionNotSameType) {
+        out.writeBoolean(entry.getKey().isDiskStoreId());
+        entry.getKey().writeEssentialData(out);
+      } else {
+        writeMember(entry.getKey(), out);
+      }
       InternalDataSerializer.invokeToData(entry.getValue(), out);
     }
     out.writeInt(this.memberToGCVersion.size());
     for (Map.Entry<T, Long> entry : this.memberToGCVersion.entrySet()) {
-      writeMember(entry.getKey(), out);
+      if (allMembersToGCVersionNotSameType) {
+        out.writeBoolean(entry.getKey().isDiskStoreId());
+        entry.getKey().writeEssentialData(out);
+      } else {
+        writeMember(entry.getKey(), out);
+      }
       out.writeLong(entry.getValue());
     }
     InternalDataSerializer.invokeToData(this.localExceptions, out);
+  }
+
+  private boolean allMembersNotSameTypeAsThisMember(Set<T> members) {
+    return members.stream().anyMatch(member -> !member.getClass().equals(myId.getClass()));
   }
 
   /*
@@ -1226,19 +1250,35 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.myId = readMember(in);
     int flags = in.readInt();
-    this.singleMember = ((flags & 0x01) == 0x01);
+    this.singleMember = (flags & 0x01) != 0;
+    boolean allMembersToVersionNotSameType = (flags & 0x02) != 0;
+    boolean allMembersToGCVersionNotSameType = (flags & 0x04) != 0;
     this.localVersion.set(in.readLong());
     this.localGCVersion.set(in.readLong());
     int numHolders = in.readInt();
     for (int i = 0; i < numHolders; i++) {
-      T key = readMember(in);
+      T key;
+      if (allMembersToVersionNotSameType) {
+        boolean isDiskStoreId = in.readBoolean();
+        key = isDiskStoreId ? (T) DiskStoreID.readEssentialData(in)
+            : (T) InternalDistributedMember.readEssentialData(in);
+      } else {
+        key = readMember(in);
+      }
       RegionVersionHolder<T> holder = new RegionVersionHolder<T>(in);
       holder.id = key;
       this.memberToVersion.put(key, holder);
     }
     int numGCVersions = in.readInt();
     for (int i = 0; i < numGCVersions; i++) {
-      T key = readMember(in);
+      T key;
+      if (allMembersToGCVersionNotSameType) {
+        boolean isDiskStoreId = in.readBoolean();
+        key = isDiskStoreId ? (T) DiskStoreID.readEssentialData(in)
+            : (T) InternalDistributedMember.readEssentialData(in);
+      } else {
+        key = readMember(in);
+      }
       RegionVersionHolder<T> holder = this.memberToVersion.get(key);
       if (holder != null) {
         key = holder.id;

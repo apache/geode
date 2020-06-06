@@ -1974,8 +1974,8 @@ toData,93
 fromData,71
 
 org/apache/geode/internal/cache/versions/RegionVersionVector,2
-fromData,214
-toData,245
+fromData,307
+toData,379
 
 org/apache/geode/internal/cache/versions/VersionTag,2
 fromData,225
