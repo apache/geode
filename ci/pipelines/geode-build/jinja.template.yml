@@ -139,6 +139,11 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor -%}
 {%- endfor %}
+- name: Benchmarks
+  jobs:
+  {%- for run_var in (benchmarks.flavors) %}
+  - Benchmark{{ run_var.title }}
+  {%- endfor %}
 - name: Semver Management
   jobs:
   {%- for semverPiece in ['major', 'minor', 'patch'] %}
