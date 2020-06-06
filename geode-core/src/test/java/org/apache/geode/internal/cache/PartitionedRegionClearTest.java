@@ -374,7 +374,7 @@ public class PartitionedRegionClearTest {
     when(partitionedRegion.getDataStore()).thenReturn(partitionedRegionDataStore);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
 
-    partitionedRegionClear.obtainClearLockLocal(member);
+    partitionedRegionClear.releaseClearLockLocal();
 
     assertThat(partitionedRegionClear.lockForListenerAndClientNotification.getLockRequester())
         .isNull();
@@ -391,12 +391,10 @@ public class PartitionedRegionClearTest {
     when(partitionedRegion.getPRRoot()).thenReturn(prRoot);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
-    Set<InternalDistributedMember> prNodes = new HashSet<>();
-    prNodes.add(member);
+    Set<InternalDistributedMember> prNodes = Collections.singleton(member);
     Node node = mock(Node.class);
     when(node.getMemberId()).thenReturn(member);
-    Set<Node> configNodes = new HashSet<>();
-    configNodes.add(node);
+    Set<Node> configNodes = Collections.singleton(node);
     when(regionAdvisor.adviseAllPRNodes()).thenReturn(prNodes);
     when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
     PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
