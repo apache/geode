@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.apache.geode.DataSerializer;
@@ -286,5 +287,25 @@ public class RedisHash extends AbstractRedisData {
   @Override
   protected boolean removeFromRegion() {
     return hash.isEmpty();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RedisHash)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    RedisHash redisHash = (RedisHash) o;
+    return Objects.equals(hash, redisHash.hash);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), hash);
   }
 }

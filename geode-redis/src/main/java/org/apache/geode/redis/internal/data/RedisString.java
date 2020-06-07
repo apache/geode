@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -149,5 +150,25 @@ public class RedisString extends AbstractRedisData {
   @Override
   protected boolean removeFromRegion() {
     return false;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    RedisString that = (RedisString) o;
+    return Objects.equals(value, that.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), value);
   }
 }

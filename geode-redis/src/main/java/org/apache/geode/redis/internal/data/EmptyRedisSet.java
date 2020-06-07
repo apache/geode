@@ -29,6 +29,10 @@ import org.apache.geode.cache.Region;
 
 class EmptyRedisSet extends RedisSet {
 
+  public EmptyRedisSet() {
+    super(new HashSet<>());
+  }
+
   @Override
   List<Object> sscan(Pattern matchPattern, int count, int cursor) {
     return emptyList();
