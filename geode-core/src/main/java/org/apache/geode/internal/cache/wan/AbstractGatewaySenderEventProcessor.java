@@ -163,7 +163,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     return getQueue().size();
   }
 
-  protected abstract void initializeMessageQueue(String id, boolean cleanQueues);
+  protected abstract void initializeMessageQueue(String id);
 
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent event,
       Object substituteValue) throws IOException, CacheException {
@@ -448,7 +448,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         for (;;) {
           // check before sleeping
           if (stopped()) {
-            this.resetLastPeekedEvents = true;
             if (isDebugEnabled) {
               logger.debug(
                   "GatewaySenderEventProcessor is stopped. Returning without peeking events.");
@@ -661,7 +660,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
             }
             // check again, don't do post-processing if we're stopped.
             if (stopped()) {
-              this.resetLastPeekedEvents = true;
               break;
             }
 
@@ -695,11 +693,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                           "During normal processing, unsuccessfully dispatched {} events (batch #{})",
                           conflatedEventsToBeDispatched.size(), getBatchId());
                     }
-                    if (stopped()) {
-                      this.resetLastPeekedEvents = true;
-                      break;
-                    }
-                    if (resetLastPeekedEvents) {
+                    if (stopped() || resetLastPeekedEvents) {
                       break;
                     }
                     try {
@@ -711,9 +705,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                       Thread.currentThread().interrupt();
                     }
                   }
-                  if (!resetLastPeekedEvents) {
-                    incrementBatchId();
-                  }
+                  incrementBatchId();
                 }
               }
             } // unsuccessful batch
@@ -1248,10 +1240,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     try {
       if (this.sender.isPrimary() && this.queue.size() > 0) {
         logger.warn("Destroying GatewayEventDispatcher with actively queued data.");
-      }
-      if (resetLastPeekedEvents) {
-        resetLastPeekedEvents();
-        resetLastPeekedEvents = false;
       }
     } catch (RegionDestroyedException ignore) {
     } catch (CancelException ignore) {

@@ -233,7 +233,7 @@ public class SerialGatewaySenderQueueJUnitTest {
 
     public TestableSerialGatewaySenderQueue(final AbstractGatewaySender sender,
         String regionName, final MetaRegionFactory metaRegionFactory) {
-      super(sender, regionName, null, false, metaRegionFactory);
+      super(sender, regionName, null, metaRegionFactory);
     }
 
     public void setGroupTransactionEvents(boolean groupTransactionEvents) {

@@ -208,7 +208,6 @@ public class ColocationHelper {
       // Look through all of the disk stores for offline colocated child regions
       for (DiskStore diskStore : stores) {
         // Look at all of the partitioned regions.
-
         for (Map.Entry<String, PRPersistentConfig> entry : ((DiskStoreImpl) diskStore).getAllPRs()
             .entrySet()) {
 
@@ -243,6 +242,7 @@ public class ColocationHelper {
     return hasOfflineChildren;
   }
 
+
   private static boolean ignoreUnrecoveredQueue(PartitionedRegion region, String childName) {
     // Hack for #50120 if the childRegion is an async queue, but we
     // no longer define the async queue, ignore it.
@@ -251,7 +251,6 @@ public class ColocationHelper {
     }
 
     String senderId = ParallelGatewaySenderQueue.getSenderId(childName);
-
     if (!region.getAsyncEventQueueIds().contains(senderId)
         && !region.getParallelGatewaySenderIds().contains(senderId) && IGNORE_UNRECOVERED_QUEUE) {
       return true;

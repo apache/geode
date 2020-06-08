@@ -203,12 +203,6 @@ public interface GatewaySender {
   void start();
 
   /**
-   * Starts this GatewaySender and discards previous queue content. Once the GatewaySender is
-   * running, its configuration cannot be changed.
-   */
-  void startWithCleanQueue();
-
-  /**
    * Stops this GatewaySender. The scope of this operation is the VM on which it is invoked. In case
    * the GatewaySender is parallel, the GatewaySender will be stopped on individual node where this
    * API is called. If the GatewaySender is not parallel, then the GatewaySender will stop on this

@@ -56,9 +56,6 @@ public class SerialAsyncEventQueueImplTest {
   private StatisticsClock statisticsClock;
   private InternalRegionFactory regionFactory;
 
-  AbstractGatewaySenderEventProcessor eventProcessor1;
-  AbstractGatewaySenderEventProcessor eventProcessor2;
-
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
@@ -88,24 +85,17 @@ public class SerialAsyncEventQueueImplTest {
     GatewaySenderAdvisor gatewaySenderAdvisor = mock(GatewaySenderAdvisor.class);
     when(gatewaySenderAdvisor.isPrimary()).thenReturn(true);
 
-    eventProcessor1 = mock(AbstractGatewaySenderEventProcessor.class);
-    eventProcessor2 = mock(AbstractGatewaySenderEventProcessor.class);
-
-    when(eventProcessor1.isStopped()).thenReturn(false);
-    when(eventProcessor1.getRunningStateLock()).thenReturn(mock(Object.class));
-
-    when(eventProcessor2.isStopped()).thenReturn(false);
-    when(eventProcessor2.getRunningStateLock()).thenReturn(mock(Object.class));
-
+    AbstractGatewaySenderEventProcessor eventProcessor =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    when(eventProcessor.isStopped()).thenReturn(false);
+    when(eventProcessor.getRunningStateLock()).thenReturn(mock(Object.class));
 
     SerialAsyncEventQueueImpl serialAsyncEventQueue =
         new SerialAsyncEventQueueImpl(cache, statisticsFactory, statisticsClock,
             gatewaySenderAttributes);
     SerialAsyncEventQueueImpl spySerialAsyncEventQueue = spy(serialAsyncEventQueue);
     doReturn(gatewaySenderAdvisor).when(spySerialAsyncEventQueue).getSenderAdvisor();
-    doReturn(eventProcessor1).when(spySerialAsyncEventQueue).createEventProcessor(false);
-    doReturn(eventProcessor2).when(spySerialAsyncEventQueue).createEventProcessor(true);
-
+    doReturn(eventProcessor).when(spySerialAsyncEventQueue).createEventProcessor();
     doReturn(null).when(spySerialAsyncEventQueue).getQueues();
 
     return spySerialAsyncEventQueue;
@@ -117,16 +107,7 @@ public class SerialAsyncEventQueueImplTest {
 
     serialAsyncEventQueue.start();
 
-    assertThat(serialAsyncEventQueue.getEventProcessor()).isEqualTo(eventProcessor1);
-  }
-
-  @Test
-  public void whenStartedwithCleanShouldCreateEventProcessor() {
-    serialAsyncEventQueue = createSerialAsyncEventQueueImplSpy();
-
-    serialAsyncEventQueue.startWithCleanQueue();
-
-    assertThat(serialAsyncEventQueue.getEventProcessor()).isEqualTo(eventProcessor2);
+    assertThat(serialAsyncEventQueue.getEventProcessor()).isNotNull();
   }
 
   @Test

@@ -20,12 +20,12 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 public class TestSerialGatewaySenderEventProcessor extends SerialGatewaySenderEventProcessor {
 
   public TestSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super(sender, id, tMonitoring, cleanQueues);
+      ThreadsMonitoring tMonitoring) {
+    super(sender, id, tMonitoring);
   }
 
   @Override
-  protected void initializeMessageQueue(String id, boolean cleanQueues) {
+  protected void initializeMessageQueue(String id) {
     // Overridden to not create the RegionQueue in the constructor.
   }
 
