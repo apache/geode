@@ -90,7 +90,7 @@ public class InternalLocatorTest {
   public void startClusterManagementServiceWithRestServiceEnabledInvokesStartManager()
       throws Exception {
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
-    internalLocator.startClusterManagementService(cache, agentUtil, null);
+    internalLocator.startClusterManagementService(cache, agentUtil);
 
     verify(managementService).startManager();
     verify(httpService).addWebApplication(eq("/management"), any(), any());
@@ -102,7 +102,7 @@ public class InternalLocatorTest {
     when(distributionConfig.getEnableManagementRestService()).thenReturn(true);
     when(managementService.isManager()).thenReturn(true);
 
-    internalLocator.startClusterManagementService(cache, agentUtil, null);
+    internalLocator.startClusterManagementService(cache, agentUtil);
 
     verify(managementService).isManager();
     verify(managementService, never()).startManager();
@@ -113,7 +113,7 @@ public class InternalLocatorTest {
   public void startClusterManagementServiceWithRestServiceDisabledNeverInvokesStartManager()
       throws Exception {
     when(distributionConfig.getEnableManagementRestService()).thenReturn(false);
-    internalLocator.startClusterManagementService(cache, agentUtil, null);
+    internalLocator.startClusterManagementService(cache, agentUtil);
 
     verify(distributionConfig).getEnableManagementRestService();
     verify(managementService, never()).startManager();
@@ -127,7 +127,7 @@ public class InternalLocatorTest {
     RuntimeException startManagerEx = new RuntimeException("startManager failed");
     doThrow(startManagerEx).when(managementService).startManager();
 
-    internalLocator.startClusterManagementService(cache, agentUtil, null);
+    internalLocator.startClusterManagementService(cache, agentUtil);
 
     verify(managementService).startManager();
     verify(httpService, never()).addWebApplication(eq("/management"), any(), any());

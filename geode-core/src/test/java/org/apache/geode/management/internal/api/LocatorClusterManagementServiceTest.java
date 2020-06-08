@@ -131,7 +131,8 @@ public class LocatorClusterManagementServiceTest {
 
     service =
         spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators,
-            memberValidator, cacheElementValidator, operationManager, dLockService));
+            memberValidator, cacheElementValidator, operationManager));
+    doReturn(dLockService).when(service).getCmsDlockService();
 
     regionConfig = new Region();
     regionConfig.setName("region1");
@@ -166,7 +167,7 @@ public class LocatorClusterManagementServiceTest {
     org.apache.geode.cache.Region<Object, Object> region =
         mock(org.apache.geode.cache.Region.class);
     when(cache.getRegion(any())).thenReturn(region);
-    service = new LocatorClusterManagementService(cache, null, null);
+    service = new LocatorClusterManagementService(cache, null);
     assertThatThrownBy(() -> service.create(regionConfig))
         .hasMessageContaining("Cluster configuration service needs to be enabled");
   }
