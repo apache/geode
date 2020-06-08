@@ -16,6 +16,9 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -28,11 +31,14 @@ public interface PubSub {
   /**
    * Publish a message on a channel
    *
+   *
    * @param channel to publish to
    * @param message to publish
    * @return the number of messages published
    */
-  long publish(String channel, byte[] message);
+  long publish(
+      Region<ByteArrayWrapper, RedisData> dataRegion,
+      String channel, byte[] message);
 
   /**
    * Subscribe to a channel

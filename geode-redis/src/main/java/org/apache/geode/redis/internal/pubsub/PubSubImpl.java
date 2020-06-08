@@ -16,16 +16,25 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.partition.PartitionRegionInfo;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -49,10 +58,17 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long publish(String channel, byte[] message) {
+  public long publish(
+      Region<ByteArrayWrapper, RedisData> dataRegion,
+      String channel, byte[] message) {
+    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
+    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
+    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
+      membersWithDataRegion.add(memberInfo.getDistributedMember());
+    }
     @SuppressWarnings("unchecked")
     ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
-        .onMembers()
+        .onMembers(membersWithDataRegion)
         .setArguments(new Object[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
