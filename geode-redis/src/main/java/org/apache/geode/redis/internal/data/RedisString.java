@@ -157,7 +157,7 @@ public class RedisString extends AbstractRedisData {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof RedisString)) {
       return false;
     }
     if (!super.equals(o)) {

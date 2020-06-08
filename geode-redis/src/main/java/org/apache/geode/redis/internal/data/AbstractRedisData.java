@@ -186,6 +186,12 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof AbstractRedisData)) {
+      return false;
+    }
     AbstractRedisData that = (AbstractRedisData) o;
     return getExpirationTimestamp() == that.getExpirationTimestamp();
   }
