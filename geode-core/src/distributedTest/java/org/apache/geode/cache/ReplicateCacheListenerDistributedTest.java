@@ -51,8 +51,8 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   private static final String UPDATES = "UPDATES";
   private static final String INVALIDATES = "INVALIDATES";
   private static final String DESTROYS = "DESTROYS";
-  protected static final String CLEAR = "CLEAR";
-  protected static final String REGION_DESTROY = "REGION_DESTROY";
+  private static final String CLEAR = "CLEAR";
+  private static final String REGION_DESTROY = "REGION_DESTROY";
 
   private static final int ENTRY_VALUE = 0;
   private static final int UPDATED_ENTRY_VALUE = 1;
