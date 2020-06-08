@@ -25,7 +25,7 @@ optional password authentication.
 
 <img src="../images/redis_api_for_geode.png" class="image" />
 
-## <a id="using-the-redis-api-for-<%=vars.product_name_lowercase%>" class="no-quick-link"></a>Using the Redis API for <%=vars.product_name%>
+## <a id="using-the-api" class="no-quick-link"></a>Using the Redis API for <%=vars.product_name%>
 
 The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis
 commands.
@@ -61,7 +61,7 @@ Replace `<redisBindAddress>`,`<redisPort>`, and `<redisPassword>` with the same 
 
 If the server is functioning properly, you should see a response of `PONG`.
 
-## <a id="included-redis-commands" class="no-quick-link"></a>Included Redis Commands
+## <a id="included-commands" class="no-quick-link"></a>Included Redis Commands
 
 The Redis API for <%=vars.product_name%> currently supports the following commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
@@ -102,7 +102,7 @@ start server \
 
 Commands not listed above are **not implemented**.
 
-## <a id="advantages-of-<%=vars.product_name_lowercase%>-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
+## <a id="advantages-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
 
 <%=vars.product_name%>’s primary advantage is its **scalability**. While the Redis server is single threaded, <%=vars.product_name%> supports high concurrency. Many Redis clients can execute commands on the <%=vars.product_name%> cluster simultaneously.
 
@@ -112,5 +112,5 @@ Commands not listed above are **not implemented**.
 
 Keys are expired in two ways, actively and passively:
 
--   Expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
--   Keys are also evaluated every second for expiration.  If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
+-   With active expiration, expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
+-   With passive expiration, keys are evaluated every second. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
