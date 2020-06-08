@@ -49,6 +49,7 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
@@ -152,8 +153,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private boolean enablePersistence;
 
-  private final boolean cleanQueues;
-
   /**
    * Whether write to disk is synchronous.
    */
@@ -201,17 +200,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private MetaRegionFactory metaRegionFactory;
 
   public SerialGatewaySenderQueue(AbstractGatewaySender abstractSender, String regionName,
-      CacheListener listener, boolean cleanQueues) {
-    this(abstractSender, regionName, listener, cleanQueues, new MetaRegionFactory());
-  }
-
-  public SerialGatewaySenderQueue(AbstractGatewaySender abstractSender, String regionName,
-      CacheListener listener, boolean cleanQueues, MetaRegionFactory metaRegionFactory) {
+      CacheListener listener) {
     // The queue starts out with headKey and tailKey equal to -1 to force
     // them to be initialized from the region.
     this.regionName = regionName;
-    this.cleanQueues = cleanQueues;
-    this.metaRegionFactory = metaRegionFactory;
     this.headKey = -1;
     this.tailKey.set(-1);
     this.indexes = new HashMap<String, Map<Object, Long>>();
@@ -1071,12 +1063,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             e);
       }
     } else {
-      if (listener != null) {
-        addCacheListener(listener);
-      }
-    }
-    if ((this.region != null) && this.cleanQueues) {
-      this.region.clear();
+      throw new IllegalStateException(
+          "Queue region " + this.regionName + " already exists.");
     }
   }
 
@@ -1125,7 +1113,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   @Override
   public void close() {
-    removeCacheListener();
+    Region r = getRegion();
+    if (r != null && !r.isDestroyed()) {
+      try {
+        r.close();
+      } catch (RegionDestroyedException e) {
+      }
+    }
   }
 
   private class BatchRemovalThread extends Thread {

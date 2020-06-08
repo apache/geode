@@ -64,7 +64,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
   public void setUp() throws Exception {
     this.sender = mock(AbstractGatewaySender.class);
     this.processor =
-        new TestSerialGatewaySenderEventProcessor(this.sender, "ny", null, false);
+        new TestSerialGatewaySenderEventProcessor(this.sender, "ny", null);
     this.cache = Fakes.cache();
     InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
     when(this.cache.getDistributedSystem()).thenReturn(ids);

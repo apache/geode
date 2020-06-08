@@ -59,15 +59,6 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
 
   @Override
   public void start() {
-    this.start(false);
-  }
-
-  @Override
-  public void startWithCleanQueue() {
-    this.start(true);
-  }
-
-  private void start(boolean cleanQueues) {
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
@@ -89,8 +80,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
        * of Concurrent version of processor and queue.
        */
       eventProcessor =
-          new ConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
-              cleanQueues);
+          new ConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
       if (startEventProcessorInPausedState) {
         pauseEvenIfProcessorStopped();
       }

@@ -69,10 +69,8 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(sender.getCache()).thenReturn(cache);
     when(sender.getMaximumQueueMemory()).thenReturn(100);
     when(sender.getLifeCycleLock()).thenReturn(new ReentrantReadWriteLock());
-    when(sender.getId()).thenReturn("");
     metaRegionFactory = mock(MetaRegionFactory.class);
-    queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory,
-        false);
+    queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory);
   }
 
   @Test
@@ -378,13 +376,13 @@ public class ParallelGatewaySenderQueueJUnitTest {
 
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
         final Set<Region> userRegions, final int idx, final int nDispatcher) {
-      super(sender, userRegions, idx, nDispatcher, false);
+      super(sender, userRegions, idx, nDispatcher);
     }
 
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
         final Set<Region> userRegions, final int idx, final int nDispatcher,
         final MetaRegionFactory metaRegionFactory) {
-      super(sender, userRegions, idx, nDispatcher, metaRegionFactory, false);
+      super(sender, userRegions, idx, nDispatcher, metaRegionFactory);
     }
 
 

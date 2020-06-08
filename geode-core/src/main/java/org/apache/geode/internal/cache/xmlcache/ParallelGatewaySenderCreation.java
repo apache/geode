@@ -46,9 +46,6 @@ public class ParallelGatewaySenderCreation extends AbstractGatewaySender impleme
   public void start() {}
 
   @Override
-  public void startWithCleanQueue() {}
-
-  @Override
   public void stop() {}
 
   @Override

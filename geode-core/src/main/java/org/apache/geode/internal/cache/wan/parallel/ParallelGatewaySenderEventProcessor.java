@@ -47,27 +47,26 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   final int nDispatcher;
 
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
+      ThreadsMonitoring tMonitoring) {
     super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     this.index = 0;
     this.nDispatcher = 1;
-    initializeMessageQueue(sender.getId(), cleanQueues);
+    initializeMessageQueue(sender.getId());
   }
 
   /**
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring,
-      boolean cleanQueues) {
+      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring) {
     super("Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender, tMonitoring);
     this.index = id;
     this.nDispatcher = nDispatcher;
-    initializeMessageQueue(sender.getId(), cleanQueues);
+    initializeMessageQueue(sender.getId());
   }
 
   @Override
-  protected void initializeMessageQueue(String id, boolean cleanQueues) {
+  protected void initializeMessageQueue(String id) {
     Set<Region> targetRs = new HashSet<Region>();
     for (InternalRegion region : sender.getCache().getApplicationRegions()) {
       if (region.getAllGatewaySenderIds().contains(id)) {
@@ -79,8 +78,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     }
 
     ParallelGatewaySenderQueue queue;
-    queue = new ParallelGatewaySenderQueue(this.sender, targetRs, this.index, this.nDispatcher,
-        cleanQueues);
+    queue = new ParallelGatewaySenderQueue(this.sender, targetRs, this.index, this.nDispatcher);
 
     queue.start();
     this.queue = queue;

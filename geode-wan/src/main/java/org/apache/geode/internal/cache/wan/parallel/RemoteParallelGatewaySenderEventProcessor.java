@@ -37,17 +37,16 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
   private static final Logger logger = LogService.getLogger();
 
   protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super(sender, tMonitoring, cleanQueues);
+      ThreadsMonitoring tMonitoring) {
+    super(sender, tMonitoring);
   }
 
   /**
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring,
-      boolean cleanQueues) {
-    super(sender, userRegions, id, nDispatcher, tMonitoring, cleanQueues);
+      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring) {
+    super(sender, userRegions, id, nDispatcher, tMonitoring);
   }
 
   @Override
