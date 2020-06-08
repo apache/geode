@@ -217,6 +217,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
 
     if (command.isUnimplemented()) {
+      logger.info("Failed " + command.getCommandType() + " because it is not implemented.");
       writeToChannel(RedisResponse.error(command.getCommandType() + " is not implemented."));
       return;
     }
