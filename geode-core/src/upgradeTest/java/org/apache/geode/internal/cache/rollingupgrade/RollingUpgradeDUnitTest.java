@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
@@ -27,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -50,7 +55,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -59,6 +63,7 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.VersionManager;
 
@@ -78,9 +83,13 @@ import org.apache.geode.test.version.VersionManager;
  * @author jhuynh
  */
 
+
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
+
+  @Rule
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Parameters(name = "from_v{0}")
   public static Collection<String> data() {
@@ -136,10 +145,11 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   void doTestRollAll(String regionType, String objectType, String startingVersion)
       throws Exception {
     final Host host = Host.getHost(0);
+    // startingVersion = "1.12.0";
+
     VM server1 = host.getVM(startingVersion, 0); // testingDirs[0]
     VM server2 = host.getVM(startingVersion, 1); // testingDirs[1]
     VM locator = host.getVM(startingVersion, 2); // locator must be last
-
 
     String regionName = "aRegion";
     String shortcutName = RegionShortcut.REPLICATE.name();
@@ -159,14 +169,22 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       }
     }
 
-    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    int[] ports = getRandomAvailableTCPPorts(4);
+
+    int locatorPort = ports[0];
+    int locatorJmxPort = ports[1];
+
     String hostName = NetworkUtils.getServerHostName(host);
-    String locatorString = getLocatorString(locatorPorts);
+    String locatorString = getLocatorString(new int[] {locatorPort});
     final Properties locatorProps = new Properties();
+    locatorProps.setProperty(JMX_MANAGER, "true");
+    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(locatorJmxPort));
+    locatorProps.setProperty(JMX_MANAGER_START, "true");
+
     // configure all class loaders for each vm
 
     try {
-      locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
+      locator.invoke(invokeStartLocator(hostName, locatorPort, getTestMethodName(),
           locatorString, locatorProps, true));
 
       // Locators before 1.4 handled configuration asynchronously.
@@ -177,7 +195,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
+      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(ports)), server1, server2);
 
       // create region
       if ((regionType.equals("persistentReplicate"))) {
@@ -191,20 +209,26 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       }
 
       putAndVerify(objectType, server1, regionName, 0, 10, server2);
-      locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
-          locatorString);
+      locator =
+          rollLocatorToCurrent(locator, hostName, locatorPort, locatorProps, getTestMethodName(),
+              locatorString);
 
       server1 = rollServerToCurrentAndCreateRegion(server1, regionType, testingDirs[0],
-          shortcutName, regionName, locatorPorts);
+          shortcutName, regionName, new int[] {locatorPort});
       verifyValues(objectType, regionName, 0, 10, server1);
       putAndVerify(objectType, server1, regionName, 5, 15, server2);
       putAndVerify(objectType, server2, regionName, 10, 20, server1);
 
       server2 = rollServerToCurrentAndCreateRegion(server2, regionType, testingDirs[1],
-          shortcutName, regionName, locatorPorts);
+          shortcutName, regionName, ports);
       verifyValues(objectType, regionName, 0, 10, server2);
       putAndVerify(objectType, server2, regionName, 15, 25, server1);
 
+      String shutDownCommand = "shutdown --include-locators=true";
+      String listMembersCommand = "list members";
+      gfsh.connectAndVerify(locatorJmxPort, GfshCommandRule.PortType.jmxManager);
+      gfsh.executeAndAssertThat(listMembersCommand).statusIsSuccess()
+          .doesNotContainOutput(startingVersion);
     } finally {
       invokeRunnableInVMs(true, invokeStopLocator(), locator);
       invokeRunnableInVMs(true, invokeCloseCache(), server1, server2);
@@ -214,7 +238,10 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
     }
   }
 
+
+
   // ******** TEST HELPER METHODS ********/
+
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM... checkVMs) throws Exception {
     if (objectType.equals("strings")) {
@@ -330,12 +357,14 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   }
 
   private VM rollLocatorToCurrent(VM oldLocator, final String serverHostName, final int port,
+      Properties props,
       final String testName, final String locatorString) {
     // Roll the locator
     oldLocator.invoke(invokeStopLocator());
     VM rollLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldLocator.getId());
-    final Properties props = new Properties();
+    // final Properties props = new Properties();
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+
     rollLocator
         .invoke(invokeStartLocator(serverHostName, port, testName, locatorString, props, false));
     return rollLocator;
