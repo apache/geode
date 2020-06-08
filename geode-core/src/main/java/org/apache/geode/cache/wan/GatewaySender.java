@@ -172,7 +172,7 @@ public interface GatewaySender {
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
-          3);
+          10);
 
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.

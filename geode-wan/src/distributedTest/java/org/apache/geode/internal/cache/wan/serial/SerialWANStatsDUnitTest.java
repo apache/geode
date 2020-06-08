@@ -574,6 +574,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     inv2.join();
     inv3.join();
 
+    vm5.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 20000));
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", 20000));
 
     // batchesReceived is equal to numberOfEntries/(batchSize+1)
