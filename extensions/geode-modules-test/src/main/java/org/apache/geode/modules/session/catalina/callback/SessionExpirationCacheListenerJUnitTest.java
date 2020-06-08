@@ -15,7 +15,9 @@
 
 package org.apache.geode.modules.session.catalina.callback;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +28,7 @@ import org.junit.Test;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.modules.session.catalina.DeltaSession;
+import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 
 public class SessionExpirationCacheListenerJUnitTest {
   @Test
@@ -39,6 +42,22 @@ public class SessionExpirationCacheListenerJUnitTest {
 
     listener.afterDestroy(event);
 
+    verify(session).processExpired();
+  }
+
+  @Test
+  public void TestAfterDestroyProcessesSessionDestroyed() {
+    SessionExpirationCacheListener listener = spy(new SessionExpirationCacheListener());
+    EntryEvent<String, HttpSession> event = mock(EntryEvent.class);
+    DeltaSession session = mock(DeltaSession.class);
+
+    when(event.getOperation()).thenReturn(Operation.DESTROY);
+    when(event.getCallbackArgument()).thenReturn(session);
+    doReturn(mock(DeltaSessionManager.class)).when(listener).getContext(session);
+
+    listener.afterDestroy(event);
+
+    verify(session).setDeserializedAttributesValue();
     verify(session).processExpired();
   }
 }

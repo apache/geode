@@ -23,6 +23,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,6 +55,9 @@ public class DeltaSessionJUnitTest {
   DeltaSessionStatistics stats = mock(DeltaSessionStatistics.class);
   private final String sessionRegionName = "sessionRegionName";
   private final String contextName = "contextName";
+  private final String id = "id";
+  private final String attributeName = "name";
+  private final String value = "value";
   private Log logger = mock(Log.class);
 
   @Before
@@ -193,6 +197,65 @@ public class DeltaSessionJUnitTest {
     byte[] result = session.serialize(obj);
 
     assertThat(result).isEqualTo(serializedObj);
+  }
+
+  @Test
+  public void setDeserializedAttributesValueInvokesGetAttribute() {
+    when(manager.getPreferDeserializedForm()).thenReturn(true);
+    DeltaSession session = spy(new DeltaSession(manager));
+    String attributeName = "name";
+    List<String> attributeList = new ArrayList<>();
+    attributeList.add(attributeName);
+    Enumeration<String> attributeNames = Collections.enumeration(attributeList);
+    doReturn(attributeNames).when(session).getAttributeNames();
+    doReturn(new Object()).when(session).getAttribute(attributeName, false);
+
+    session.setDeserializedAttributesValue();
+
+    verify(session).getAttribute(attributeName, false);
+  }
+
+  @Test
+  public void setDeserializedAttributesValueNotInvokeGetAttributeIfNotPreferDeserializedForm() {
+    when(manager.getPreferDeserializedForm()).thenReturn(false);
+    DeltaSession session = spy(new DeltaSession(manager));
+    String attributeName = "name";
+
+    session.setDeserializedAttributesValue();
+
+    verify(session, never()).getAttribute(attributeName, false);
+  }
+
+  @Test
+  public void getAttributeSetsAndReturnsDeserializedValueIfPreferDeserializedForm()
+      throws Exception {
+    byte[] serialized = BlobHelper.serializeToBlob(value);
+    when(manager.getPreferDeserializedForm()).thenReturn(true);
+    DeltaSession session = spy(new DeltaSession(manager));
+    when(manager.isBackingCacheAvailable()).thenReturn(true);
+    doReturn(serialized).when(session).getAttributeWithoutDeserialize(attributeName);
+    doNothing().when(session).localUpdateAttribute(attributeName, value);
+    doReturn(id).when(session).getId();
+
+    assertThat(session.getAttribute(attributeName, false)).isEqualTo(value);
+
+    verify(session).localUpdateAttribute(attributeName, value);
+    verify(manager, never()).addSessionToTouch(id);
+  }
+
+  @Test
+  public void getAttributeNotSetDeserializedValueIfNotPreferDeserializedForm() throws Exception {
+    byte[] serialized = BlobHelper.serializeToBlob(value);
+    when(manager.getPreferDeserializedForm()).thenReturn(false);
+    DeltaSession session = spy(new DeltaSession(manager));
+    when(manager.isBackingCacheAvailable()).thenReturn(true);
+    doReturn(serialized).when(session).getAttributeWithoutDeserialize(attributeName);
+    doReturn(id).when(session).getId();
+
+    assertThat(session.getAttribute(attributeName, true)).isEqualTo(value);
+
+    verify(session, never()).localUpdateAttribute(attributeName, value);
+    verify(manager).addSessionToTouch(id);
   }
 
   // @Test

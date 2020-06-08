@@ -293,8 +293,12 @@ public class DeltaSession extends StandardSession
 
   @Override
   public Object getAttribute(String name) {
+    return getAttribute(name, true);
+  }
+
+  public Object getAttribute(String name, boolean doTouchSession) {
     checkBackingCacheAvailable();
-    Object value = super.getAttribute(name);
+    Object value = getAttributeWithoutDeserialize(name);
 
     // If the attribute is a byte[] (meaning it came from the server),
     // deserialize it and add it to attributes map before returning it.
@@ -312,10 +316,12 @@ public class DeltaSession extends StandardSession
       }
     }
 
-    // Touch the session region if necessary. This is an asynchronous operation
-    // that prevents the session region from prematurely expiring a session that
-    // is only getting attributes.
-    ((DeltaSessionManager) getManager()).addSessionToTouch(getId());
+    if (doTouchSession) {
+      // Touch the session region if necessary. This is an asynchronous operation
+      // that prevents the session region from prematurely expiring a session that
+      // is only getting attributes.
+      ((DeltaSessionManager) getManager()).addSessionToTouch(getId());
+    }
 
     return value;
   }
@@ -337,7 +343,6 @@ public class DeltaSession extends StandardSession
     if (manager != null && manager.getLogger() != null && manager.getLogger().isDebugEnabled()) {
       ((DeltaSessionManager) getManager()).getLogger().debug(this + ": Expired");
     }
-
     // Set expired (so region.destroy is not called again)
     setExpired(true);
 
@@ -347,6 +352,18 @@ public class DeltaSession extends StandardSession
     // Update statistics
     if (manager != null) {
       manager.getStatistics().incSessionsExpired();
+    }
+  }
+
+  @Override
+  public void setDeserializedAttributesValue() {
+    if (!preferDeserializedForm) {
+      return;
+    }
+    @SuppressWarnings("unchecked")
+    Enumeration<String> attributeNames = (Enumeration<String>) getAttributeNames();
+    while (attributeNames.hasMoreElements()) {
+      getAttribute(attributeNames.nextElement(), false);
     }
   }
 

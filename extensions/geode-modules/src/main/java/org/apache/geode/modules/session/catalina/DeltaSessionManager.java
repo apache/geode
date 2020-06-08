@@ -373,6 +373,9 @@ public abstract class DeltaSessionManager extends ManagerBase
         session.setOwner(this);
         session.activate();
       }
+      if (preferDeserializedForm) {
+        session.setDeserializedAttributesValue();
+      }
     }
 
     return session;

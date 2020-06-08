@@ -53,4 +53,6 @@ public interface DeltaSessionInterface extends Session {
   void activate();
 
   void processExpired();
+
+  void setDeserializedAttributesValue();
 }

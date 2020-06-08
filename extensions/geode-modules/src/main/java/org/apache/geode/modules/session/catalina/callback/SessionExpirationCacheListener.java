@@ -46,9 +46,10 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
       Object callback = event.getCallbackArgument();
       if (callback instanceof DeltaSessionInterface) {
         session = (DeltaSessionInterface) callback;
-        ManagerBase m = ContextMapper.getContext(session.getContextName());
+        ManagerBase m = getContext(session);
         if (m != null) {
           session.setOwner(m);
+          session.setDeserializedAttributesValue();
         }
       }
     }
@@ -56,6 +57,10 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
     if (session != null) {
       session.processExpired();
     }
+  }
+
+  ManagerBase getContext(DeltaSessionInterface session) {
+    return ContextMapper.getContext(session.getContextName());
   }
 
   @Override

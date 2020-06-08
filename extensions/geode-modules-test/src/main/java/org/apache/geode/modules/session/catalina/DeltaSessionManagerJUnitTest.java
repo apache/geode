@@ -165,6 +165,23 @@ public abstract class DeltaSessionManagerJUnitTest {
   }
 
   @Test
+  public void findSessionsReturnsSessionWithDeserializedValueIfPreferDeserializedForm()
+      throws IOException {
+    String sessionId = "sessionId";
+    String contextName = "contextName";
+
+    DeltaSession expectedSession = mock(DeltaSession.class);
+    when(sessionCache.getSession(sessionId)).thenReturn(expectedSession);
+    when(expectedSession.getContextName()).thenReturn(contextName);
+    when(context.getName()).thenReturn(contextName);
+
+    Session session = manager.findSession(sessionId);
+
+    assertThat(session).isEqualTo(expectedSession);
+    verify(expectedSession).setDeserializedAttributesValue();
+  }
+
+  @Test
   public void removeProperlyDestroysSessionFromSessionCacheWhenSessionIsNotExpired() {
     DeltaSession sessionToDestroy = mock(DeltaSession.class);
     String sessionId = "sessionId";
