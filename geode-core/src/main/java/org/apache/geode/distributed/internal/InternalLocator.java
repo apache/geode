@@ -58,9 +58,11 @@ import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
+import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
@@ -780,18 +782,22 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   void startClusterManagementService() throws IOException {
     startConfigurationPersistenceService();
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
-    startClusterManagementService(internalCache, agentUtil);
+    DistributedLockService cmsDlockService =
+        DLockService.getOrCreateService(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME,
+            internalCache.getInternalDistributedSystem());
+    startClusterManagementService(internalCache, agentUtil, cmsDlockService);
   }
 
   @VisibleForTesting
-  void startClusterManagementService(InternalCache myCache, AgentUtil agentUtil) {
+  void startClusterManagementService(InternalCache myCache, AgentUtil agentUtil,
+      DistributedLockService cmsDlockService) {
 
     if (myCache == null) {
       return;
     }
 
     clusterManagementService = new LocatorClusterManagementService(myCache,
-        configurationPersistenceService);
+        configurationPersistenceService, cmsDlockService);
 
     // Find the V2 Management rest WAR file
     URI gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");

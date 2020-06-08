@@ -50,7 +50,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -111,9 +110,8 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * each locator will have one instance of this running if enabled
  */
 public class LocatorClusterManagementService implements ClusterManagementService {
-  @VisibleForTesting
   // the dlock service name used by the CMS
-  static final String CMS_DLOCK_SERVICE_NAME = "CMS_DLOCK_SERVICE";
+  public static final String CMS_DLOCK_SERVICE_NAME = "CMS_DLOCK_SERVICE";
   private static final Logger logger = LogService.getLogger();
   private final InternalConfigurationPersistenceService persistenceService;
   private final Map<Class, ConfigurationManager> managers;
@@ -122,14 +120,16 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private final MemberValidator memberValidator;
   private final CommonConfigurationValidator commonValidator;
   private final InternalCache cache;
-  private DistributedLockService cmsDlockService;
+  private final DistributedLockService cmsDlockService;
 
   public LocatorClusterManagementService(InternalCache cache,
-      InternalConfigurationPersistenceService persistenceService) {
+      InternalConfigurationPersistenceService persistenceService,
+      DistributedLockService cmsDlockService) {
     this(cache, persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
         new MemberValidator(cache, persistenceService), new CommonConfigurationValidator(),
         new OperationManager(cache,
-            new OperationHistoryManager(new RegionOperationStateStore(cache))));
+            new OperationHistoryManager(new RegionOperationStateStore(cache))),
+        cmsDlockService);
     // initialize the list of managers
     managers.put(Region.class, new RegionConfigManager(persistenceService));
     managers.put(Pdx.class, new PdxManager(persistenceService));
@@ -153,7 +153,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       Map<Class, ConfigurationValidator> validators,
       MemberValidator memberValidator,
       CommonConfigurationValidator commonValidator,
-      OperationManager operationManager) {
+      OperationManager operationManager,
+      DistributedLockService cmsDlockService) {
     this.cache = cache;
     this.persistenceService = persistenceService;
     this.managers = managers;
@@ -161,24 +162,20 @@ public class LocatorClusterManagementService implements ClusterManagementService
     this.memberValidator = memberValidator;
     this.commonValidator = commonValidator;
     this.operationManager = operationManager;
+    this.cmsDlockService = cmsDlockService;
   }
 
   @VisibleForTesting
   DistributedLockService getCmsDlockService() {
-    if (cmsDlockService == null) {
-      cmsDlockService =
-          DLockService.getOrCreateService(CMS_DLOCK_SERVICE_NAME,
-              cache.getInternalDistributedSystem());
-    }
     return cmsDlockService;
   }
 
   private boolean lockCMS() {
-    return getCmsDlockService().lock(CMS_DLOCK_SERVICE_NAME, -1, -1);
+    return cmsDlockService.lock(CMS_DLOCK_SERVICE_NAME, -1, -1);
   }
 
   private void unlockCMS() {
-    getCmsDlockService().unlock(CMS_DLOCK_SERVICE_NAME);
+    cmsDlockService.unlock(CMS_DLOCK_SERVICE_NAME);
   }
 
   @Override
