@@ -15,10 +15,10 @@
 
 package org.apache.geode.redis.internal;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -144,12 +144,18 @@ public class SupportedCommandsJUnitTest {
 
   @Test
   public void checkAllDefinedCommands_areIncludedInBothLists() {
-    List<String> allCommands = new ArrayList<>(Arrays.asList(supportedCommands));
-    allCommands.addAll(Arrays.asList(unSupportedCommands));
+    List<String> allCommands = new ArrayList<>(asList(supportedCommands));
+    allCommands.addAll(asList(unSupportedCommands));
 
     List<String> definedCommands =
-        Arrays.stream(RedisCommandType.values()).map(Enum::name).collect(Collectors.toList());
+        getAllImplementedCommands().stream().map(Enum::name).collect(Collectors.toList());
 
     assertThat(definedCommands).containsExactlyInAnyOrderElementsOf(allCommands);
+  }
+
+  private List<RedisCommandType> getAllImplementedCommands() {
+    List<RedisCommandType> implementedCommands = new ArrayList<>(asList(RedisCommandType.values()));
+    implementedCommands.removeIf(RedisCommandType::isUnimplemented);
+    return implementedCommands;
   }
 }

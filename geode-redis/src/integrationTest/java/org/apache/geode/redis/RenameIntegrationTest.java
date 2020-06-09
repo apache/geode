@@ -16,6 +16,7 @@
 package org.apache.geode.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -364,4 +365,11 @@ public class RenameIntegrationTest {
     }
     return strings;
   }
+
+  @Test
+  public void renamenxIsUnimplemented() {
+    assertThatThrownBy(() -> jedis.renamenx("foo", "newfoo"))
+        .hasMessageContaining("RENAMENX is not implemented.");
+  }
+
 }

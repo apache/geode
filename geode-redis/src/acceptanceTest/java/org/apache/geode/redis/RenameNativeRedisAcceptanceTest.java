@@ -18,6 +18,8 @@ import java.util.Random;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
@@ -40,4 +42,9 @@ public class RenameNativeRedisAcceptanceTest extends RenameIntegrationTest {
     jedis2 = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);
     jedis3 = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);
   }
+
+  @Override
+  @Test
+  @Ignore("native redis does implement renamenx")
+  public void renamenxIsUnimplemented() {}
 }
