@@ -16,35 +16,34 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
+
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class RenameExecutor extends AbstractExecutor {
+
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
     ByteArrayWrapper key = command.getKey();
     ByteArrayWrapper newKey = commandElems.get(2);
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
 
     if (key.equals(newKey)) {
-      command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), "OK"));
-      return;
+      return RedisResponse.string("OK");
     }
 
     if (!redisKeyCommands.rename(key, newKey)) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(),
-              RedisConstants.ERROR_NO_SUCH_KEY));
-      return;
+      return RedisResponse.error(ERROR_NO_SUCH_KEY);
     }
 
-    command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), "OK"));
+    return RedisResponse.string("OK");
   }
 }

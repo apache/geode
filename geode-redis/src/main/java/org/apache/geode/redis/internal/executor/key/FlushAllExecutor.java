@@ -17,20 +17,21 @@ package org.apache.geode.redis.internal.executor.key;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class FlushAllExecutor extends AbstractExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
     for (ByteArrayWrapper skey : context.getRegionProvider().getDataRegion().keySet()) {
       redisKeyCommands.del(skey);
     }
 
-    command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), "OK"));
+    return RedisResponse.string("OK");
   }
 
 }

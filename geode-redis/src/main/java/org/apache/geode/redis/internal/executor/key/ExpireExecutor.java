@@ -24,6 +24,7 @@ import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.Extendable;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -31,15 +32,13 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ExpireExecutor extends AbstractExecutor implements Extendable {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int SECONDS_INDEX = 2;
 
     if (commandElems.size() != 3) {
-      command.setResponse(
-          Coder.getErrorResponse(
-              context.getByteBufAllocator(), getArgsError()));
-      return;
+      return RedisResponse.error(getArgsError());
     }
 
     ByteArrayWrapper key = command.getKey();
@@ -48,9 +47,7 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
     try {
       delay = Coder.bytesToLong(delayByteArray);
     } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INTEGER));
-      return;
+      return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
     if (!timeUnitMillis()) {
@@ -62,7 +59,8 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
     RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(
         context.getRegionProvider().getDataRegion());
     int result = redisKeyCommands.pexpireat(key, timestamp);
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), result));
+
+    return RedisResponse.integer(result);
   }
 
   /*

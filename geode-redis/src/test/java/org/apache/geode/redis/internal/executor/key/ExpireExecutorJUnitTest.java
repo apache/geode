@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,6 +27,7 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.executor.Executor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -41,10 +41,9 @@ public class ExpireExecutorJUnitTest {
     commandsAsBytesWithTooFewArguments.add("key".getBytes());
 
     Command command = new Command(commandsAsBytesWithTooFewArguments);
-    executor.executeCommand(command, mockContext());
+    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
 
-    assertThat(command.getResponse().toString(defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments");
+    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
 
   @Test
@@ -57,10 +56,9 @@ public class ExpireExecutorJUnitTest {
     commandsAsBytesWithTooManyArguments.add("Bonus!".getBytes());
     Command command = new Command(commandsAsBytesWithTooManyArguments);
 
-    executor.executeCommand(command, mockContext());
+    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
 
-    assertThat(command.getResponse().toString(defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments");
+    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
 
   @Test
@@ -72,10 +70,9 @@ public class ExpireExecutorJUnitTest {
     commandsAsBytesWithTooManyArguments.add("not a number".getBytes());
     Command command = new Command(commandsAsBytesWithTooManyArguments);
 
-    executor.executeCommand(command, mockContext());
+    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
 
-    assertThat(command.getResponse().toString(defaultCharset()))
-        .startsWith("-ERR value is not an integer or out of range");
+    assertThat(response.toString()).startsWith("-ERR value is not an integer or out of range");
   }
 
   public ExecutionHandlerContext mockContext() {

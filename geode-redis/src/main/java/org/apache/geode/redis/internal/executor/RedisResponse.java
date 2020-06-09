@@ -70,6 +70,16 @@ public class RedisResponse {
     return new RedisResponse(Coder::getNilResponse);
   }
 
+  public static RedisResponse flattenedArray(Collection<Collection<?>> nestedCollection) {
+    return new RedisResponse((bba) -> {
+      try {
+        return Coder.getFlattenedArrayResponse(bba, nestedCollection);
+      } catch (CoderException e) {
+        return Coder.getErrorResponse(bba, "Internal server error: " + e.getMessage());
+      }
+    });
+  }
+
   public static RedisResponse array(Collection<?> collection) {
     return new RedisResponse((bba) -> {
       try {

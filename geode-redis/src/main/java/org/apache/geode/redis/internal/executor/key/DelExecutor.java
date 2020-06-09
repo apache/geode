@@ -19,14 +19,15 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class DelExecutor extends AbstractExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 
     long numRemoved = commandElems
@@ -35,6 +36,6 @@ public class DelExecutor extends AbstractExecutor {
         .filter((key) -> getRedisKeyCommands(context).del(key))
         .count();
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
+    return RedisResponse.integer(numRemoved);
   }
 }

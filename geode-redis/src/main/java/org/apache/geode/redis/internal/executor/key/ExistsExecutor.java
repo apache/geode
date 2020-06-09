@@ -19,14 +19,15 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ExistsExecutor extends AbstractExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
 
@@ -36,7 +37,6 @@ public class ExistsExecutor extends AbstractExecutor {
         .filter(key -> redisKeyCommands.exists(key))
         .count();
 
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), existsCount));
+    return RedisResponse.integer(existsCount);
   }
 }

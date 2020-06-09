@@ -16,25 +16,21 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
-import io.netty.buffer.ByteBuf;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.redis.internal.netty.CoderException;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SubscribeExecutor extends AbstractExecutor {
-  private static final Logger logger = LogService.getLogger();
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    ArrayList<ArrayList<Object>> items = new ArrayList<>();
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
+    Collection<Collection<?>> items = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
-      ArrayList<Object> item = new ArrayList<>();
+      Collection<Object> item = new ArrayList<>();
       byte[] channelName = command.getProcessedCommand().get(i);
       long subscribedChannels =
           context.getPubSub().subscribe(new String(channelName), context, context.getClient());
@@ -46,25 +42,7 @@ public class SubscribeExecutor extends AbstractExecutor {
       items.add(item);
     }
 
-    writeResponse(command, context, items);
-  }
-
-  private void writeResponse(Command command, ExecutionHandlerContext context,
-      ArrayList<ArrayList<Object>> items) {
-    ByteBuf aggregatedResponse = context.getByteBufAllocator().buffer();
-    items.forEach(item -> {
-      ByteBuf response = null;
-      try {
-        response = Coder.getArrayResponse(context.getByteBufAllocator(), item);
-      } catch (CoderException e) {
-        logger.warn("Error encoding subscribe response", e);
-      }
-      if (response != null) {
-        aggregatedResponse.writeBytes(response);
-        response.release();
-      }
-    });
-    command.setResponse(aggregatedResponse);
+    return RedisResponse.flattenedArray(items);
   }
 
 }

@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static java.nio.charset.Charset.defaultCharset;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -39,10 +39,10 @@ public class PExpireAtExecutorJUnitTest {
     commandsAsBytesWithTooFewArguments.add("key".getBytes());
     Command command = new Command(commandsAsBytesWithTooFewArguments);
 
-    new PExpireAtExecutor().executeCommand(command, mockContext());
+    RedisResponse response =
+        new PExpireAtExecutor().executeCommandWithResponse(command, mockContext());
 
-    AssertionsForClassTypes.assertThat(command.getResponse().toString(defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments");
+    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
 
   @Test
@@ -54,10 +54,10 @@ public class PExpireAtExecutorJUnitTest {
     commandsAsBytesWithTooFewArguments.add("extra-argument".getBytes());
     Command command = new Command(commandsAsBytesWithTooFewArguments);
 
-    new PExpireAtExecutor().executeCommand(command, mockContext());
+    RedisResponse response =
+        new PExpireAtExecutor().executeCommandWithResponse(command, mockContext());
 
-    AssertionsForClassTypes.assertThat(command.getResponse().toString(defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments");
+    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
 
   @Test
@@ -68,10 +68,10 @@ public class PExpireAtExecutorJUnitTest {
     commandsAsBytesWithTooFewArguments.add("not-a-timestamp".getBytes());
     Command command = new Command(commandsAsBytesWithTooFewArguments);
 
-    new PExpireAtExecutor().executeCommand(command, mockContext());
+    RedisResponse response =
+        new PExpireAtExecutor().executeCommandWithResponse(command, mockContext());
 
-    AssertionsForClassTypes.assertThat(command.getResponse().toString(defaultCharset()))
-        .startsWith("-ERR value is not an integer or out of range");
+    assertThat(response.toString()).startsWith("-ERR value is not an integer or out of range");
   }
 
 

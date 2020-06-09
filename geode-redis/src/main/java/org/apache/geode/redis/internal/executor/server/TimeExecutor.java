@@ -15,37 +15,27 @@
  */
 package org.apache.geode.redis.internal.executor.server;
 
-import io.netty.buffer.ByteBuf;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class TimeExecutor extends AbstractExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommandWithResponse(Command command,
+      ExecutionHandlerContext context) {
+    List<String> results = new ArrayList<>();
     long timeStamp = System.currentTimeMillis();
-    long seconds = timeStamp / 1000;
-    long microSeconds = (timeStamp - (seconds * 1000)) * 1000;
-    byte[] secAr = Coder.longToBytes(seconds);
-    byte[] micAr = Coder.longToBytes(microSeconds);
+    Long seconds = timeStamp / 1000;
+    Long microSeconds = (timeStamp - (seconds * 1000)) * 1000;
 
-    ByteBuf response = context.getByteBufAllocator().buffer(50);
-    response.writeByte(Coder.ARRAY_ID);
-    response.writeByte(50); // #2
-    response.writeBytes(Coder.CRLFar);
-    response.writeByte(Coder.BULK_STRING_ID);
-    response.writeBytes(Coder.intToBytes(secAr.length));
-    response.writeBytes(Coder.CRLFar);
-    response.writeBytes(secAr);
-    response.writeBytes(Coder.CRLFar);
-    response.writeByte(Coder.BULK_STRING_ID);
-    response.writeBytes(Coder.intToBytes(micAr.length));
-    response.writeBytes(Coder.CRLFar);
-    response.writeBytes(micAr);
-    response.writeBytes(Coder.CRLFar);
-    command.setResponse(response);
+    results.add(seconds.toString());
+    results.add(microSeconds.toString());
+
+    return RedisResponse.array(results);
   }
 }

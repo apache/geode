@@ -16,23 +16,19 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.redis.internal.executor.Executor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -55,17 +51,12 @@ public class PersistExecutorJUnitTest {
     List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
     commandsAsBytesWithTooFewArguments.add("PERSIST".getBytes());
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
     when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooFewArguments);
 
-    executor.executeCommand(command, context);
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
 
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments");
+    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
 
   @Test
@@ -76,16 +67,11 @@ public class PersistExecutorJUnitTest {
     commandsAsBytesWithTooManyArguments.add("key".getBytes());
     commandsAsBytesWithTooManyArguments.add("Bonus!".getBytes());
 
-    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
-
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
     when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooManyArguments);
 
-    executor.executeCommand(command, context);
-    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
 
-    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
-    assertThat(capturedErrors.get(0).toString(defaultCharset()))
-        .startsWith("-ERR The wrong number of arguments");
+    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
 }
