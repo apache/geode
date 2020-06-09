@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -236,5 +237,25 @@ public class RedisSet extends AbstractRedisData {
   @Override
   protected boolean removeFromRegion() {
     return members.isEmpty();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RedisSet)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    RedisSet redisSet = (RedisSet) o;
+    return Objects.equals(members, redisSet.members);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), members);
   }
 }

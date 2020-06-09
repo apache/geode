@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -183,4 +184,20 @@ public abstract class AbstractRedisData implements RedisData {
 
   protected abstract boolean removeFromRegion();
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof AbstractRedisData)) {
+      return false;
+    }
+    AbstractRedisData that = (AbstractRedisData) o;
+    return getExpirationTimestamp() == that.getExpirationTimestamp();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getExpirationTimestamp());
+  }
 }
