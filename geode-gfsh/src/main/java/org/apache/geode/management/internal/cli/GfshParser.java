@@ -122,17 +122,18 @@ public class GfshParser extends SimpleParser {
     List<String> splitWithWhiteSpaces = splitWithWhiteSpace(userInput);
 
     List<String> furtherSplitWithEquals = new ArrayList<>();
-    boolean doNotRemoveEqualsInNextToken = false;
     for (String token : splitWithWhiteSpaces) {
-      if (doNotRemoveEqualsInNextToken) {
+      int indexOfFirstEqual = token.indexOf('=');
+      int indexOfFirstDoubleQuote = token.indexOf('"');
+      int indexOfFirstSingleQuote = token.indexOf('\'');
+      if (indexOfFirstEqual < 0 || token.startsWith("-D")) {
         furtherSplitWithEquals.add(token);
-        doNotRemoveEqualsInNextToken = false;
       } else {
-        // if this token has equal sign, split around the first occurrence of it
-        int indexOfFirstEqual = token.indexOf('=');
-        if (indexOfFirstEqual < 0) {
+        if (indexOfFirstDoubleQuote == 0 || indexOfFirstSingleQuote == 0) {
           furtherSplitWithEquals.add(token);
-        } else {
+        } else if ((indexOfFirstDoubleQuote < 0 && indexOfFirstSingleQuote < 0)
+            || (indexOfFirstEqual < indexOfFirstDoubleQuote)
+            || (indexOfFirstEqual < indexOfFirstSingleQuote)) {
           String left = token.substring(0, indexOfFirstEqual);
           String right = token.substring(indexOfFirstEqual + 1);
           if (left.length() > 0) {
@@ -142,9 +143,6 @@ public class GfshParser extends SimpleParser {
             furtherSplitWithEquals.add(right);
           }
         }
-      }
-      if (token.equals("--query") || token.equals("--J")) {
-        doNotRemoveEqualsInNextToken = true;
       }
     }
     return furtherSplitWithEquals;
