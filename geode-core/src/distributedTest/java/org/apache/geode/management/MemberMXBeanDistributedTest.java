@@ -107,8 +107,6 @@ public class MemberMXBeanDistributedTest implements
           server4.invoke(() -> getBucketsInitialized());
       assertTrue("Expected bucket count is greather than 3500, and actual count is " + sumOfBuckets,
           sumOfBuckets > 3500);
-      // assertEquals("Expected bucket count is 4000, and actual count is " + sumOfBuckets,
-      // 4000, sumOfBuckets);
     });
 
   }
