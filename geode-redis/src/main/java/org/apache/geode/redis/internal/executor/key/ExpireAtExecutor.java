@@ -32,7 +32,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int TIMESTAMP_INDEX = 2;

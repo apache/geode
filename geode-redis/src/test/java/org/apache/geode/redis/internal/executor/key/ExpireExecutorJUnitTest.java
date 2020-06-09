@@ -41,7 +41,7 @@ public class ExpireExecutorJUnitTest {
     commandsAsBytesWithTooFewArguments.add("key".getBytes());
 
     Command command = new Command(commandsAsBytesWithTooFewArguments);
-    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
     assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
@@ -56,7 +56,7 @@ public class ExpireExecutorJUnitTest {
     commandsAsBytesWithTooManyArguments.add("Bonus!".getBytes());
     Command command = new Command(commandsAsBytesWithTooManyArguments);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
     assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
@@ -70,7 +70,7 @@ public class ExpireExecutorJUnitTest {
     commandsAsBytesWithTooManyArguments.add("not a number".getBytes());
     Command command = new Command(commandsAsBytesWithTooManyArguments);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
     assertThat(response.toString()).startsWith("-ERR value is not an integer or out of range");
   }

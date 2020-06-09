@@ -32,7 +32,7 @@ public class DecrByExecutor extends StringExecutor {
   private final int DECREMENT_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 

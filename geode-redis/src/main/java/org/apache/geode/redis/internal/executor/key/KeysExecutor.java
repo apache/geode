@@ -35,7 +35,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class KeysExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     if (commandElems.size() < 2) {

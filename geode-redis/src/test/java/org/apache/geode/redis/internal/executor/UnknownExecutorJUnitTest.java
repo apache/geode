@@ -44,7 +44,7 @@ public class UnknownExecutorJUnitTest {
     UnpooledByteBufAllocator byteBuf = new UnpooledByteBufAllocator(false);
     Mockito.when(context.getByteBufAllocator()).thenReturn(byteBuf);
 
-    RedisResponse response = exe.executeCommandWithResponse(command, context);
+    RedisResponse response = exe.executeCommand(command, context);
 
     assertThat(response.toString()).contains("ERR Unable to process unknown command");
   }

@@ -40,7 +40,7 @@ public class PExpireAtExecutorJUnitTest {
     Command command = new Command(commandsAsBytesWithTooFewArguments);
 
     RedisResponse response =
-        new PExpireAtExecutor().executeCommandWithResponse(command, mockContext());
+        new PExpireAtExecutor().executeCommand(command, mockContext());
 
     assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
@@ -55,7 +55,7 @@ public class PExpireAtExecutorJUnitTest {
     Command command = new Command(commandsAsBytesWithTooFewArguments);
 
     RedisResponse response =
-        new PExpireAtExecutor().executeCommandWithResponse(command, mockContext());
+        new PExpireAtExecutor().executeCommand(command, mockContext());
 
     assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
@@ -69,7 +69,7 @@ public class PExpireAtExecutorJUnitTest {
     Command command = new Command(commandsAsBytesWithTooFewArguments);
 
     RedisResponse response =
-        new PExpireAtExecutor().executeCommandWithResponse(command, mockContext());
+        new PExpireAtExecutor().executeCommand(command, mockContext());
 
     assertThat(response.toString()).startsWith("-ERR value is not an integer or out of range");
   }

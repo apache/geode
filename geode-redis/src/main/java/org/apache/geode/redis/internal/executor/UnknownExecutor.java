@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class UnknownExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     StringBuilder commandProcessedText = new StringBuilder();

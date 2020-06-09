@@ -24,7 +24,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class QuitExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     return RedisResponse.string(RedisConstants.QUIT_RESPONSE);
   }

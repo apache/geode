@@ -30,7 +30,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     if (commandElems.size() < 2) {

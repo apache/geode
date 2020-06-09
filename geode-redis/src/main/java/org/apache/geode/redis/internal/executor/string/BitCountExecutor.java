@@ -29,7 +29,7 @@ public class BitCountExecutor extends StringExecutor {
   private final String ERROR_NOT_INT = "The indexes provided must be numeric values";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 

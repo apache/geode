@@ -78,7 +78,7 @@ public class StringSetExecutorJUnitTest {
         "EX".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
@@ -94,7 +94,7 @@ public class StringSetExecutorJUnitTest {
         "NotANumberAtAll".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_NOT_INTEGER);
@@ -110,7 +110,7 @@ public class StringSetExecutorJUnitTest {
         "0".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_INVALID_EXPIRE_TIME);
@@ -126,7 +126,7 @@ public class StringSetExecutorJUnitTest {
 
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
@@ -144,7 +144,7 @@ public class StringSetExecutorJUnitTest {
         "30".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
@@ -160,7 +160,7 @@ public class StringSetExecutorJUnitTest {
         "XX".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);

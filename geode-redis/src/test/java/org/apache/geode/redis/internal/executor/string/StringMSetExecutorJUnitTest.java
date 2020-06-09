@@ -41,7 +41,7 @@ public class StringMSetExecutorJUnitTest {
     ArrayList<byte[]> commandElems = new ArrayList<>();
     commandElems.add("MSET".getBytes());
     Command command = new Command(commandElems);
-    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
@@ -53,7 +53,7 @@ public class StringMSetExecutorJUnitTest {
         "MSET".getBytes(),
         "key".getBytes());
     Command command = new Command(args);
-    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");

@@ -42,7 +42,7 @@ public class IncrExecutorJUnitTest {
     commandsAsBytes.add("INCR".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
@@ -56,7 +56,7 @@ public class IncrExecutorJUnitTest {
     commandsAsBytes.add("spurious key".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");

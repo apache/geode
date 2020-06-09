@@ -397,6 +397,6 @@ public enum RedisCommandType {
       ExecutionHandlerContext executionHandlerContext) {
     parameterRequirements.checkParameters(command, executionHandlerContext);
 
-    return executor.executeCommandWithResponse(command, executionHandlerContext);
+    return executor.executeCommand(command, executionHandlerContext);
   }
 }

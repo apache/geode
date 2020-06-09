@@ -232,12 +232,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     logResponse(response);
     moveSubscribeToNewEventLoopGroup(ctx, command);
 
-    // TODO: Clean this up once all Executors are using RedisResponse
-    if (response == null) {
-      writeToChannel(command.getResponse());
-    } else if (response != null) {
-      writeToChannel(response);
-    }
+    writeToChannel(response);
 
     if (command.isOfType(RedisCommandType.QUIT)) {
       channelInactive(ctx);

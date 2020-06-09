@@ -31,7 +31,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     byte[] pattern = command.getProcessedCommand().get(1);
     long subscriptionCount =

@@ -30,7 +30,7 @@ public class BitPosExecutor extends StringExecutor {
   private final String ERROR_BIT = "The bit must either be a 0 or 1";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     if (commandElems.size() < 3) {

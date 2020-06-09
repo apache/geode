@@ -24,7 +24,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SMembersExecutor extends SetExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);

@@ -25,7 +25,7 @@ public class PingExecutor extends AbstractExecutor {
   private final String PING_RESPONSE = "PONG";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     return RedisResponse.string(PING_RESPONSE);
   }

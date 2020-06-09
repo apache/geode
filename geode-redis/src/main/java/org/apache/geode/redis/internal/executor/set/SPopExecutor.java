@@ -25,7 +25,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SPopExecutor extends SetExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int popCount = 1;

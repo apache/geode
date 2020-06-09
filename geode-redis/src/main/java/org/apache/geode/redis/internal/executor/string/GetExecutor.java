@@ -23,7 +23,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class GetExecutor extends StringExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     ByteArrayWrapper key = command.getKey();

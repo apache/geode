@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SubscribeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     Collection<Collection<?>> items = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {

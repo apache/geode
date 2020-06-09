@@ -50,7 +50,7 @@ public class HIncrByExecutor extends HashExecutor {
   private static final int INCREMENT_INDEX = FIELD_INDEX + 1;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();

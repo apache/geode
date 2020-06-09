@@ -40,7 +40,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class HSetExecutor extends HashExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 

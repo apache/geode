@@ -24,7 +24,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class FlushAllExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
     for (ByteArrayWrapper skey : context.getRegionProvider().getDataRegion().keySet()) {

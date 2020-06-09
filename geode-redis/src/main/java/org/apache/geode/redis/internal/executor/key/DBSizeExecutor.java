@@ -23,7 +23,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class DBSizeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     int size = context.getRegionProvider().getDataRegion().size();
 

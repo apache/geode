@@ -54,7 +54,7 @@ public class PersistExecutorJUnitTest {
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
     when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooFewArguments);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }
@@ -70,7 +70,7 @@ public class PersistExecutorJUnitTest {
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
     when(command.getProcessedCommand()).thenReturn(commandsAsBytesWithTooManyArguments);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
   }

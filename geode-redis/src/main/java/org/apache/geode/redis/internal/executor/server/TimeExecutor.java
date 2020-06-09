@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class TimeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<String> results = new ArrayList<>();
     long timeStamp = System.currentTimeMillis();

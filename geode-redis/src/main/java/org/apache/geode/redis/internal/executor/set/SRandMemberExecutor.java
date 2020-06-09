@@ -28,7 +28,7 @@ public class SRandMemberExecutor extends SetExecutor {
   private static final String ERROR_NOT_NUMERIC = "The count provided must be numeric";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
