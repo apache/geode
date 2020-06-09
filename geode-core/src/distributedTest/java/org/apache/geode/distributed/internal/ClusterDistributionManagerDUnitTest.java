@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
@@ -33,9 +34,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.Properties;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
@@ -381,21 +387,24 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
     MembershipView<InternalDistributedMember> view = dm.getDistribution().getView();
 
-    AtomicBoolean waitForViewInstallationDone = new AtomicBoolean();
-    executorService.submit(() -> {
+    CyclicBarrier cyclicBarrier = new CyclicBarrier(2);
+    Future future = executorService.submit(() -> {
       try {
+        cyclicBarrier.await(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
         dm.waitForViewInstallation(view.getViewId() + 1);
-        waitForViewInstallationDone.set(true);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
         errorCollector.addError(e);
       }
     });
 
-    await().timeout(2000, TimeUnit.MILLISECONDS);
-    system.disconnect();
-
-    await()
-        .untilAsserted(() -> assertThat(waitForViewInstallationDone.get()).isTrue());
+    try {
+      cyclicBarrier.await(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+      system.disconnect();
+      future.get(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+    } catch (InterruptedException | TimeoutException | ExecutionException
+        | BrokenBarrierException e) {
+      errorCollector.addError(e);
+    }
   }
 
   private CacheListener<String, String> getSleepingListener(final boolean playDead) {
