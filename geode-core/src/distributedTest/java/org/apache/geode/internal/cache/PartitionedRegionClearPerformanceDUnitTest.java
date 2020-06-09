@@ -16,6 +16,17 @@ package org.apache.geode.internal.cache;
 
 import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW;
 import static org.apache.geode.test.dunit.VM.getVM;
 
 import java.io.IOException;
@@ -58,7 +69,7 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
 
   private static final String REGION_NAME = "testRegion";
 
-  private static final long NUM_ENTRIES = 100_000;
+  private static final long NUM_ENTRIES = 2000;
 
   private static final int[] NUM_BUCKETS = new int[] {1, 10, 113, 227, 467, 1001};
 
@@ -90,7 +101,14 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
   @Test
   @Parameters(method = "getRegionShortcuts")
   public void testPerformance(RegionShortcut shortcut) {
+    boolean replicatedTested = false;
     for (int numBuckets : NUM_BUCKETS) {
+      if (shortcut.isReplicate()) {
+        if (replicatedTested) {
+          continue;
+        }
+        replicatedTested = true;
+      }
       long sum = 0;
       for (int i = 0; i < NUM_ITERATIONS; i++) {
         createRegionOnServers(shortcut, numBuckets);
@@ -128,10 +146,14 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
     final CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(0);
     cacheServer.start();
-    cacheRule.getCache()
-        .createRegionFactory(shortcut).setPartitionAttributes(new PartitionAttributesFactory<>()
-            .setTotalNumBuckets(numBuckets).create())
-        .create(REGION_NAME);
+    if (shortcut.isReplicate()) {
+      cacheRule.getCache().createRegionFactory(shortcut).create(REGION_NAME);
+    } else {
+      cacheRule.getCache()
+          .createRegionFactory(shortcut).setPartitionAttributes(new PartitionAttributesFactory<>()
+              .setTotalNumBuckets(numBuckets).create())
+          .create(REGION_NAME);
+    }
   }
 
   private void destroyRegion() {
@@ -165,12 +187,13 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
   }
 
   private static Object[] getRegionShortcuts() {
-    return $(new Object[] {PARTITION});
-    // return $(new Object[] {PARTITION}, new Object[] {PARTITION_REDUNDANT},
-    // new Object[] {PARTITION_PERSISTENT}, new Object[] {PARTITION_REDUNDANT_PERSISTENT},
-    // new Object[] {PARTITION_OVERFLOW}, new Object[] {PARTITION_REDUNDANT_OVERFLOW},
-    // new Object[] {PARTITION_PERSISTENT_OVERFLOW},
-    // new Object[] {PARTITION_REDUNDANT_PERSISTENT_OVERFLOW});
+    return $(new Object[] {REPLICATE}, new Object[] {REPLICATE_PERSISTENT},
+        new Object[] {REPLICATE_PERSISTENT_OVERFLOW}, new Object[] {REPLICATE_OVERFLOW},
+        new Object[] {PARTITION}, new Object[] {PARTITION_REDUNDANT},
+        new Object[] {PARTITION_PERSISTENT}, new Object[] {PARTITION_REDUNDANT_PERSISTENT},
+        new Object[] {PARTITION_OVERFLOW}, new Object[] {PARTITION_REDUNDANT_OVERFLOW},
+        new Object[] {PARTITION_PERSISTENT_OVERFLOW},
+        new Object[] {PARTITION_REDUNDANT_PERSISTENT_OVERFLOW});
   }
 
   private void destroyDiskStore() {
