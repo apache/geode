@@ -331,13 +331,14 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         boolean found = findCoordinator();
         logger.info("Discovery state after looking for membership coordinator is {}",
             state);
+        long now = System.currentTimeMillis();
         if (found) {
           logger.info("found possible coordinator {}", state.possibleCoordinator);
           if (localAddress.preferredForCoordinator()
               && state.possibleCoordinator.equals(this.localAddress)) {
             // if we haven't contacted a member of a cluster maybe this node should
             // become the coordinator.
-            if (state.joinedMembersContacted <= 0 &&
+            if (state.joinedMembersContacted <= 0 && (now >= locatorGiveUpTime) &&
                 (tries >= minimumRetriesBeforeBecomingCoordinator ||
                     state.locatorsContacted >= locators.size())) {
               synchronized (viewInstallationLock) {
@@ -360,7 +361,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             }
           }
         } else {
-          long now = System.currentTimeMillis();
           if (state.locatorsContacted <= 0) {
             if (now > locatorGiveUpTime) {
               // break out of the loop and return false
