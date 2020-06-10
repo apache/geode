@@ -9,6 +9,7 @@ org/apache/geode/redis/internal/executor/SingleResultRedisFunction,false
 org/apache/geode/redis/internal/executor/key/RenameFunction,false
 org/apache/geode/redis/internal/executor/string/SetOptions,false,exists:org/apache/geode/redis/internal/executor/string/SetOptions$Exists,expirationMillis:long,keepTTL:boolean
 org/apache/geode/redis/internal/executor/string/SetOptions$Exists,false
+org/apache/geode/redis/internal/gfsh/RedisCommandFunction,false
 org/apache/geode/redis/internal/netty/CoderException,true,4707944288714910949
 org/apache/geode/redis/internal/netty/RedisCommandParserException,true,4707944288714910949
 org/apache/geode/redis/internal/pubsub/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/pubsub/PubSubImpl

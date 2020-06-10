@@ -75,6 +75,7 @@ import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.key.RenameFunction;
+import org.apache.geode.redis.internal.gfsh.RedisCommandFunction;
 import org.apache.geode.redis.internal.netty.ByteToCommandDecoder;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -107,7 +108,11 @@ public class GeodeRedisServer {
   public static final String ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM =
       "enable-redis-unsupported-commands";
 
-  private static final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
+  /**
+   * Initialized with system property value but can also
+   * be explicitly set by tests.
+   */
+  private static volatile boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
       Boolean.getBoolean(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM);
 
   /**
@@ -140,7 +145,6 @@ public class GeodeRedisServer {
    */
   private boolean singleThreadPerConnection;
 
-  private volatile boolean allowUnsupportedCommands = false;
   /**
    * Logging level
    */
@@ -169,6 +173,7 @@ public class GeodeRedisServer {
    * The name of the region that holds data stored in redis.
    */
   public static final String REDIS_DATA_REGION = "__REDIS_DATA";
+  public static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
 
   /**
    * System property name that can be used to set the number of threads to be used by the
@@ -265,21 +270,39 @@ public class GeodeRedisServer {
         new NamedThreadFactory("GemFireRedis-ExpirationExecutor-", true));
     shutdown = false;
     started = false;
+
+    if (ENABLE_REDIS_UNSUPPORTED_COMMANDS) {
+      logUnsupportedCommandWarning();
+    }
   }
 
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
-    this.allowUnsupportedCommands = allowUnsupportedCommands;
+    if (regionProvider != null) {
+      Region<String, Object> configRegion = regionProvider.getConfigRegion();
+      configRegion.put(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
+          allowUnsupportedCommands);
+    } else {
+      ENABLE_REDIS_UNSUPPORTED_COMMANDS = allowUnsupportedCommands;
+    }
+    if (allowUnsupportedCommands) {
+      logUnsupportedCommandWarning();
+    }
   }
 
   /**
    * Precedence of the internal property overrides the global system property.
    */
   public boolean allowUnsupportedCommands() {
-    if (allowUnsupportedCommands) {
-      return true;
+    if (regionProvider != null) {
+      return (boolean) regionProvider.getConfigRegion()
+          .getOrDefault(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, ENABLE_REDIS_UNSUPPORTED_COMMANDS);
+    } else {
+      return ENABLE_REDIS_UNSUPPORTED_COMMANDS;
     }
+  }
 
-    return ENABLE_REDIS_UNSUPPORTED_COMMANDS;
+  private void logUnsupportedCommandWarning() {
+    logger.warn("Unsupported commands enabled. Unsupported commands have not been fully tested.");
   }
 
   /**
@@ -346,13 +369,19 @@ public class GeodeRedisServer {
       redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
       redisData = redisDataRegionFactory.create(REDIS_DATA_REGION);
 
+      InternalRegionFactory<String, Object> redisConfigRegionFactory =
+          gemFireCache.createInternalRegionFactory(RegionShortcut.REPLICATE);
+      redisConfigRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+      Region<String, Object> redisConfig = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
+
       pubSub = new PubSubImpl(new Subscriptions());
-      regionProvider = new RegionProvider(redisData);
+      regionProvider = new RegionProvider(redisData, redisConfig);
 
       StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
 
       CommandFunction.register(stripedExecutor);
       RenameFunction.register(stripedExecutor);
+      RedisCommandFunction.register();
       scheduleDataExpiration(redisData);
     }
   }

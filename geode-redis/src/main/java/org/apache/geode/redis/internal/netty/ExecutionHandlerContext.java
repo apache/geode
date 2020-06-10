@@ -212,7 +212,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
 
     if (command.isUnsupported() && !allowUnsupportedCommands()) {
-      writeToChannel(RedisResponse.error(RedisConstants.ERROR_UNSUPPORTED_COMMAND));
+      writeToChannel(
+          RedisResponse.error(command.getCommandType() + RedisConstants.ERROR_UNSUPPORTED_COMMAND));
       return;
     }
 

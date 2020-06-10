@@ -88,6 +88,13 @@ exactly as expected.
   MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, SETRANGE, STRLEN
 
 
+If you already have some Geode servers running with Redis enabled, you can execute the following
+command with gfsh to enable unsupported commands:
+
+```pre
+redis --enable-unsupported-commands
+```
+
 To enable unsupported commands, the Geode server must be started with the Java property `enable-redis-unsupported-commands=true`:
 
 ```pre
