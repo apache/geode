@@ -15,22 +15,43 @@
 
 package org.apache.geode.modules.session.catalina;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import java.lang.reflect.Field;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.coyote.OutputBuffer;
 
 public class Tomcat8CommitSessionValve
     extends AbstractCommitSessionValve<Tomcat8CommitSessionValve> {
 
+  private static final Field outputBufferField;
+
+  static {
+    try {
+      outputBufferField = org.apache.coyote.Response.class.getDeclaredField("outputBuffer");
+      outputBufferField.setAccessible(true);
+    } catch (final NoSuchFieldException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   @Override
   Response wrapResponse(final Response response) {
+    final org.apache.coyote.Response coyoteResponse = response.getCoyoteResponse();
+    final OutputBuffer delegateOutputBuffer = getOutputBuffer(coyoteResponse);
+    final Request request = response.getRequest();
+    final OutputBuffer sessionCommitOutputBuffer =
+        new Tomcat8CommitSessionOutputBuffer(() -> commitSession(request), delegateOutputBuffer);
+    coyoteResponse.setOutputBuffer(sessionCommitOutputBuffer);
     return response;
   }
-  
+
+  static OutputBuffer getOutputBuffer(final org.apache.coyote.Response coyoteResponse) {
+    try {
+      return (OutputBuffer) outputBufferField.get(coyoteResponse);
+    } catch (final IllegalAccessException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
 }

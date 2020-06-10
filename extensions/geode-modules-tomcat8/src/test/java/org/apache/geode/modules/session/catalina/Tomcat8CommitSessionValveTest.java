@@ -17,22 +17,56 @@ package org.apache.geode.modules.session.catalina;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.coyote.OutputBuffer;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 
 public class Tomcat8CommitSessionValveTest {
-  
+
+  @Test
+  public void test() throws IOException {
+    final Connector connector = mock(Connector.class);
+
+    final Context context = mock(Context.class);
+
+    final Request request = mock(Request.class);
+    doReturn(context).when(request).getContext();
+
+    final OutputBuffer outputBuffer = mock(OutputBuffer.class);
+
+    final org.apache.coyote.Response coyoteResponse = new org.apache.coyote.Response();
+    coyoteResponse.setOutputBuffer(outputBuffer);
+
+    final Response response = new Response();
+    response.setConnector(connector);
+    response.setRequest(request);
+    response.setCoyoteResponse(coyoteResponse);
+
+    final Tomcat8CommitSessionValve valve = new Tomcat8CommitSessionValve();
+    final OutputStream outputStream = valve.wrapResponse(response).getResponse().getOutputStream();
+    outputStream.write(new byte[] {'a', 'b', 'c'});
+    outputStream.flush();
+
+    final ArgumentCaptor<ByteBuffer> byteBuffer = ArgumentCaptor.forClass(ByteBuffer.class);
+
+    final InOrder inOrder = inOrder(outputBuffer);
+    inOrder.verify(outputBuffer).doWrite(byteBuffer.capture());
+    inOrder.verifyNoMoreInteractions();
+
+    assertThat(byteBuffer.getValue().array()).contains('a', 'b', 'c');
+  }
+
 }
