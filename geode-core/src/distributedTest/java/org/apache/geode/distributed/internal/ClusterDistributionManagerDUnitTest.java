@@ -382,7 +382,8 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
    * while waiting for the latest membership view to install
    */
   @Test
-  public void testWaitForViewInstallationDisconnectDS() {
+  public void testWaitForViewInstallationDisconnectDS()
+      throws InterruptedException, TimeoutException, BrokenBarrierException, ExecutionException {
     InternalDistributedSystem system = getSystem();
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
     MembershipView<InternalDistributedMember> view = dm.getDistribution().getView();
@@ -397,14 +398,9 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
       }
     });
 
-    try {
-      cyclicBarrier.await(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
-      system.disconnect();
-      future.get(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
-    } catch (InterruptedException | TimeoutException | ExecutionException
-        | BrokenBarrierException e) {
-      errorCollector.addError(e);
-    }
+    cyclicBarrier.await(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+    system.disconnect();
+    future.get(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
   }
 
   private CacheListener<String, String> getSleepingListener(final boolean playDead) {
