@@ -19,6 +19,7 @@ package org.apache.geode.modules.session.catalina;
  * Lambda interface for committing session data.
  */
 interface SessionCommitter {
+
   /**
    * Invoked to commit session data.
    */

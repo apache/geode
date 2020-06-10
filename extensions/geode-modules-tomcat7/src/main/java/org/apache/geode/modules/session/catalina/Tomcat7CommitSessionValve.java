@@ -15,12 +15,41 @@
 
 package org.apache.geode.modules.session.catalina;
 
+import java.lang.reflect.Field;
+
+import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.coyote.OutputBuffer;
 
 public class Tomcat7CommitSessionValve extends AbstractCommitSessionValve {
 
+  private static final Field outputBufferField;
+
+  static {
+    try {
+      outputBufferField = org.apache.coyote.Response.class.getDeclaredField("outputBuffer");
+      outputBufferField.setAccessible(true);
+    } catch (final NoSuchFieldException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   @Override
-  protected Response wrapResponse(Response response) {
-    throw new UnsupportedOperationException();
+  Response wrapResponse(final Response response) {
+    final org.apache.coyote.Response coyoteResponse = response.getCoyoteResponse();
+    final OutputBuffer delegateOutputBuffer = getOutputBuffer(coyoteResponse);
+    final Request request = response.getRequest();
+    final OutputBuffer sessionCommitOutputBuffer =
+        new Tomcat7CommitSessionOutputBuffer(() -> commitSession(request), delegateOutputBuffer);
+    coyoteResponse.setOutputBuffer(sessionCommitOutputBuffer);
+    return response;
+  }
+
+  static OutputBuffer getOutputBuffer(final org.apache.coyote.Response coyoteResponse) {
+    try {
+      return (OutputBuffer) outputBufferField.get(coyoteResponse);
+    } catch (final IllegalAccessException e) {
+      throw new IllegalStateException(e);
+    }
   }
 }

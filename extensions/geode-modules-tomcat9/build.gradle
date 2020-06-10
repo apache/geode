@@ -23,7 +23,6 @@ apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 evaluationDependsOn(":geode-core")
 
 
-
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   api(project(':extensions:geode-modules')) {
@@ -38,8 +37,8 @@ dependencies {
     exclude module: 'tomcat-servlet-api'
   }
   implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat9.version'))
-  implementation('javax.servlet:javax.servlet-api:' + '3.1.0')
-
+  implementation('javax.servlet:javax.servlet-api:4.0.1')
+  
   testImplementation('org.httpunit:httpunit')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
@@ -51,7 +50,7 @@ dependencies {
 
 eclipse.classpath.file {
   whenMerged { classpath ->
-    classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build')}
+    classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build') }
   }
 }
 
