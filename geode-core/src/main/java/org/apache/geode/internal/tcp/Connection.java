@@ -1261,7 +1261,7 @@ public class Connection implements Runnable {
    * Invoking this method ensures that the proper synchronization is done.
    */
   void requestClose(String reason) {
-    close(reason, true, true, false, false);
+    close(reason, true, false, false, false);
   }
 
   boolean isClosing() {
@@ -1519,9 +1519,6 @@ public class Connection implements Runnable {
   }
 
   private void readMessages() {
-    if (closing.get()) {
-      return;
-    }
     // take a snapshot of uniqueId to detect reconnect attempts
     SocketChannel channel;
     try {
@@ -3264,8 +3261,9 @@ public class Connection implements Runnable {
 
   @Override
   public String toString() {
-    return String.valueOf(remoteAddr) + '@' + uniqueId
-        + (remoteVersion != null ? '(' + remoteVersion.toString() + ')' : "");
+    return remoteAddr + "(uid=" + uniqueId + ")"
+        + (remoteVersion != null && remoteVersion != Version.CURRENT
+            ? "(v" + remoteVersion.toString() + ')' : "");
   }
 
   /**
