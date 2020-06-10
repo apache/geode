@@ -467,7 +467,7 @@ public class RegionVersionVectorTest {
   }
 
   @Test
-  public void testRVVSerialization() throws Exception {
+  public void testDiskRVVSerialization() throws Exception {
     DiskStoreID ownerId = new DiskStoreID(0, 0);
     DiskStoreID id1 = new DiskStoreID(0, 1);
     DiskStoreID id2 = new DiskStoreID(1, 0);
@@ -491,6 +491,66 @@ public class RegionVersionVectorTest {
 
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
     DiskRegionVersionVector rvv2 = DataSerializer.readObject(dis);
+
+    assertTrue(rvv.sameAs(rvv2));
+  }
+
+  @Test
+  public void testVMRVVSerialization() throws Exception {
+    final String local = getIPLiteral();
+    InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
+    InternalDistributedMember id1 = new InternalDistributedMember(local, 102);
+    InternalDistributedMember id2 = new InternalDistributedMember(local, 103);
+
+    RegionVersionVector rvv = new VMRegionVersionVector(ownerId);
+    rvv.recordVersion(id1, 5);
+    rvv.recordVersion(id1, 6);
+    rvv.recordVersion(id1, 7);
+    rvv.recordVersion(id1, 9);
+    rvv.recordVersion(id1, 20);
+    rvv.recordVersion(id1, 11);
+    rvv.recordVersion(id1, 12);
+    rvv.recordGCVersion(id2, 5);
+    rvv.recordGCVersion(id1, 3);
+
+    assertTrue(rvv.sameAs(rvv.getCloneForTransmission()));
+
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    DataSerializer.writeObject(rvv.getCloneForTransmission(), out);
+    byte[] bytes = out.toByteArray();
+
+    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
+    RegionVersionVector rvv2 = DataSerializer.readObject(dis);
+
+    assertTrue(rvv.sameAs(rvv2));
+  }
+
+  @Test
+  public void testVMRVVWithDiskStoreIdsSerialization() throws IOException, ClassNotFoundException {
+    final String local = getIPLiteral();
+    InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
+    DiskStoreID id1 = new DiskStoreID(0, 1);
+    DiskStoreID id2 = new DiskStoreID(1, 0);
+
+    RegionVersionVector rvv = new VMRegionVersionVector(ownerId);
+    rvv.recordVersion(id1, 5);
+    rvv.recordVersion(id1, 6);
+    rvv.recordVersion(id1, 7);
+    rvv.recordVersion(id1, 9);
+    rvv.recordVersion(id1, 20);
+    rvv.recordVersion(id1, 11);
+    rvv.recordVersion(id1, 12);
+    rvv.recordGCVersion(id2, 5);
+    rvv.recordGCVersion(id1, 3);
+
+    assertTrue(rvv.sameAs(rvv.getCloneForTransmission()));
+
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    DataSerializer.writeObject(rvv.getCloneForTransmission(), out);
+    byte[] bytes = out.toByteArray();
+
+    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
+    RegionVersionVector rvv2 = DataSerializer.readObject(dis);
 
     assertTrue(rvv.sameAs(rvv2));
   }
