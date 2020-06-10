@@ -170,6 +170,14 @@ public class ConnectionTable {
     threadWantsOwnResources.set(Boolean.TRUE);
   }
 
+  public static int getNumSenderSharedConnections() {
+    ConnectionTable ct = (ConnectionTable) lastInstance.get();
+    if (ct == null) {
+      return 0;
+    }
+    return (ct.getConduit().getStats().getSendersSU());
+  }
+
   /**
    * Returns true if calling thread owns its own communication resources.
    */

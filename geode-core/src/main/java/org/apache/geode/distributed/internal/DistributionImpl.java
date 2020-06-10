@@ -794,6 +794,10 @@ public class DistributionImpl implements Distribution {
     return result;
   }
 
+  public DirectChannel getDirectChannel() {
+    return directChannel;
+  }
+
 
   /**
    * Insert our own MessageReceiver between us and the direct channel, in order to correctly filter

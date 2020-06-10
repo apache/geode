@@ -595,7 +595,7 @@ public class TCPConduit implements Runnable {
     }
   }
 
-  private ConnectionTable getConTable() {
+  ConnectionTable getConTable() {
     ConnectionTable result = conTable;
     if (result == null) {
       stopper.checkCancelInProgress(null);

@@ -267,6 +267,7 @@ public class DirectChannel {
         final List cons = new ArrayList(destinations.length);
         ConnectExceptions ce = getConnections(mgr, msg, destinations, orderedMsg, retry, ackTimeout,
             ackSDTimeout, cons);
+
         if (directReply && msg.getProcessorId() > 0) { // no longer a direct-reply message?
           directReply = false;
         }
@@ -689,11 +690,6 @@ public class DirectChannel {
 
     }
   }
-
-  public void closeEndpoint(InternalDistributedMember member, String reason) {
-    closeEndpoint(member, reason, true);
-  }
-
 
   /**
    * Closes any connections used to communicate with the given jgroupsAddress.
