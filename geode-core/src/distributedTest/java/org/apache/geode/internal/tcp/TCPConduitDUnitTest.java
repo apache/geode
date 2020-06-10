@@ -31,8 +31,10 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -95,6 +97,25 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
     await().untilAsserted(() -> {
       assertThat(ConnectionTable.getNumSenderSharedConnections()).isEqualTo(3);
     });
+
+    // ensure that the closing of a shared/unordered connection to another node does not
+    // remove all connections for that node
+    InternalDistributedMember otherMember =
+        (InternalDistributedMember) system.getAllOtherMembers().iterator().next();
+    DistributionImpl distribution =
+        (DistributionImpl) system.getDistributionManager().getDistribution();
+    final ConnectionTable connectionTable =
+        distribution.getDirectChannel().getConduit().getConTable();
+
+    assertThat(connectionTable.hasReceiversFor(otherMember)).isTrue();
+
+    Connection sharedUnordered = connectionTable.get(otherMember, false,
+        System.currentTimeMillis(), 15000, 0);
+    sharedUnordered.requestClose("for testing");
+    // the sender connection has been closed so we should only have 2 senders now
+    assertThat(ConnectionTable.getNumSenderSharedConnections()).isEqualTo(2);
+    // there should still be receivers for the other member - endpoint not removed!
+    assertThat(connectionTable.hasReceiversFor(otherMember)).isTrue();
 
     try {
       await("for message to be sent").until(() -> {
