@@ -30,11 +30,11 @@ public class TimeExecutor extends AbstractExecutor {
       ExecutionHandlerContext context) {
     List<String> results = new ArrayList<>();
     long timeStamp = System.currentTimeMillis();
-    Long seconds = timeStamp / 1000;
-    Long microSeconds = (timeStamp - (seconds * 1000)) * 1000;
+    long seconds = timeStamp / 1000;
+    long microSeconds = (timeStamp - (seconds * 1000)) * 1000;
 
-    results.add(seconds.toString());
-    results.add(microSeconds.toString());
+    results.add(Long.toString(seconds));
+    results.add(Long.toString(microSeconds));
 
     return RedisResponse.array(results);
   }
