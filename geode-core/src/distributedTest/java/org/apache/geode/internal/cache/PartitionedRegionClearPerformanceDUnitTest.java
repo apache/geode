@@ -43,8 +43,13 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -74,6 +79,10 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
   private static final int[] NUM_BUCKETS = new int[] {1, 10, 113, 227, 467, 1001};
 
   private static final int NUM_ITERATIONS = 10;
+
+  private static final boolean WITH_EXPIRATION = true;
+
+  private static final int ENTRY_EXPIRATION_TIME = 1;
 
   private VM server1;
 
@@ -111,7 +120,7 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
       }
       long sum = 0;
       for (int i = 0; i < NUM_ITERATIONS; i++) {
-        createRegionOnServers(shortcut, numBuckets);
+        createRegionOnServers(shortcut, numBuckets, WITH_EXPIRATION);
         populationRegion();
         long start = System.nanoTime();
         clearRegion();
@@ -132,28 +141,40 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
     }
   }
 
-  private void createRegionOnServers(RegionShortcut shortcut, int numBuckets) {
+  private void createRegionOnServers(RegionShortcut shortcut, int numBuckets,
+      boolean withExpiration) {
     for (VM vm : new VM[] {server1, server2, server3}) {
       vm.invoke(() -> {
-        createRegion(shortcut, numBuckets);
+        createRegion(shortcut, numBuckets, withExpiration);
       });
     }
   }
 
-  private void createRegion(RegionShortcut shortcut, int numBuckets)
+  private void createRegion(RegionShortcut shortcut, int numBuckets, boolean withExpiration)
       throws IOException {
     cacheRule.createCache();
     final CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(0);
     cacheServer.start();
-    if (shortcut.isReplicate()) {
-      cacheRule.getCache().createRegionFactory(shortcut).create(REGION_NAME);
-    } else {
-      cacheRule.getCache()
-          .createRegionFactory(shortcut).setPartitionAttributes(new PartitionAttributesFactory<>()
-              .setTotalNumBuckets(numBuckets).create())
-          .create(REGION_NAME);
+    RegionFactory regionFactory = cacheRule.getCache()
+        .createRegionFactory(shortcut);
+    if (shortcut.isOverflow()) {
+      regionFactory.setEvictionAttributes(
+          EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
     }
+    if (withExpiration) {
+      ExpirationAttributes expirationAttributes =
+          new ExpirationAttributes(ENTRY_EXPIRATION_TIME, ExpirationAction.INVALIDATE);
+      regionFactory.setEntryTimeToLive(expirationAttributes);
+      regionFactory.setEntryIdleTimeout(expirationAttributes);
+    }
+    if (shortcut.isPartition()) {
+      regionFactory.setPartitionAttributes(new PartitionAttributesFactory<>()
+          .setTotalNumBuckets(numBuckets).create());
+    }
+
+    regionFactory.create(REGION_NAME);
+
   }
 
   private void destroyRegion() {
@@ -163,6 +184,15 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
   }
 
   private void populationRegion() {
+    server1.invoke(() -> {
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      LongStream.range(0, NUM_ENTRIES).forEach(i -> {
+        region.put("key" + i, "value" + i);
+      });
+    });
+  }
+
+  private void clearRegion() {
     client.invoke(() -> {
       final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
       clientCacheFactory.addPoolLocator("localhost", DistributedTestUtils.getLocatorPort());
@@ -174,15 +204,7 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
       } else {
         region = clientCacheRule.getClientCache().getRegion(REGION_NAME);
       }
-      LongStream.range(0, NUM_ENTRIES).forEach(i -> {
-        region.put("key" + i, "value" + i);
-      });
-    });
-  }
-
-  private void clearRegion() {
-    client.invoke(() -> {
-      clientCacheRule.getClientCache().getRegion(REGION_NAME).clear();
+      region.clear();
     });
   }
 
