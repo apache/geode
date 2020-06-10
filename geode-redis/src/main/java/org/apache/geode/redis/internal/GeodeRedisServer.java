@@ -108,11 +108,7 @@ public class GeodeRedisServer {
   public static final String ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM =
       "enable-redis-unsupported-commands";
 
-  /**
-   * Initialized with system property value but can also
-   * be explicitly set by tests.
-   */
-  private static volatile boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
+  private final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
       Boolean.getBoolean(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM);
 
   /**
@@ -277,13 +273,9 @@ public class GeodeRedisServer {
   }
 
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
-    if (regionProvider != null) {
-      Region<String, Object> configRegion = regionProvider.getConfigRegion();
-      configRegion.put(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
-          allowUnsupportedCommands);
-    } else {
-      ENABLE_REDIS_UNSUPPORTED_COMMANDS = allowUnsupportedCommands;
-    }
+    Region<String, Object> configRegion = regionProvider.getConfigRegion();
+    configRegion.put(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
+        allowUnsupportedCommands);
     if (allowUnsupportedCommands) {
       logUnsupportedCommandWarning();
     }
@@ -293,12 +285,8 @@ public class GeodeRedisServer {
    * Precedence of the internal property overrides the global system property.
    */
   public boolean allowUnsupportedCommands() {
-    if (regionProvider != null) {
-      return (boolean) regionProvider.getConfigRegion()
-          .getOrDefault(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, ENABLE_REDIS_UNSUPPORTED_COMMANDS);
-    } else {
-      return ENABLE_REDIS_UNSUPPORTED_COMMANDS;
-    }
+    return (boolean) regionProvider.getConfigRegion()
+        .getOrDefault(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, ENABLE_REDIS_UNSUPPORTED_COMMANDS);
   }
 
   private void logUnsupportedCommandWarning() {
