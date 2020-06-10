@@ -12,20 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.modules.session;
 
-import org.junit.BeforeClass;
-import org.junit.experimental.categories.Category;
+package org.apache.geode.modules.session.catalina.internal;
 
-import org.apache.geode.modules.session.catalina.Tomcat6DeltaSessionManager;
-import org.apache.geode.test.junit.categories.SessionTest;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-@Category(SessionTest.class)
-// TODO: Remove the entire class once Tomcat6DeltaSessionManager is removed from the product.
-public class Tomcat6SessionsJUnitTest extends TestSessionsBase {
+import org.junit.Test;
 
-  @BeforeClass
-  public static void setupClass() throws Exception {
-    setupServer(new Tomcat6DeltaSessionManager());
+import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
+
+public class DeltaSessionDestroyAttributeEventTest {
+  @Test
+  public void DeltaSessionDestroyAttributeEventAppliesAttributeToSession() {
+    final String attributeName = "DestroyAttribute";
+
+    final DeltaSessionDestroyAttributeEvent event =
+        new DeltaSessionDestroyAttributeEvent(attributeName);
+    final DeltaSessionInterface deltaSessionInterface = mock(DeltaSessionInterface.class);
+    event.apply((deltaSessionInterface));
+
+    verify(deltaSessionInterface).localDestroyAttribute(attributeName);
   }
 }

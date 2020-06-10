@@ -13,26 +13,32 @@
  * the License.
  */
 
-package org.apache.geode.modules.session.catalina.internal;
+package org.apache.geode.modules.session.catalina.callback;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import javax.servlet.http.HttpSession;
 
 import org.junit.Test;
 
-import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.modules.session.catalina.DeltaSession;
 
-public class DeltaSessionUpdateAttributeEventJUnitTest {
+public class SessionExpirationCacheListenerTest {
   @Test
-  public void DeltaSessionDestroyAttributeEventAppliesAttributeToSession() {
-    String attributeName = "UpdateAttribute";
-    String attributeValue = "UpdateValue";
+  public void testAfterDestroyProcessesSessionExpired() {
+    final SessionExpirationCacheListener listener = new SessionExpirationCacheListener();
+    final EntryEvent<String, HttpSession> event = mock(EntryEvent.class);
+    final DeltaSession session = mock(DeltaSession.class);
 
-    DeltaSessionUpdateAttributeEvent event =
-        new DeltaSessionUpdateAttributeEvent(attributeName, attributeValue);
-    DeltaSessionInterface deltaSessionInterface = mock(DeltaSessionInterface.class);
-    event.apply((deltaSessionInterface));
+    when(event.getOperation()).thenReturn(Operation.EXPIRE_DESTROY);
+    when(event.getOldValue()).thenReturn(session);
 
-    verify(deltaSessionInterface).localUpdateAttribute(attributeName, attributeValue);
+    listener.afterDestroy(event);
+
+    verify(session).processExpired();
   }
 }

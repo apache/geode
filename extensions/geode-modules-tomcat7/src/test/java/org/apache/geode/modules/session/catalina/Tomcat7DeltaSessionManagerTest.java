@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
-public class Tomcat7DeltaSessionManagerJUnitTest extends DeltaSessionManagerJUnitTest {
+public class Tomcat7DeltaSessionManagerTest extends AbstractDeltaSessionManagerTest {
   private Pipeline pipeline;
 
   @Before
@@ -118,8 +118,8 @@ public class Tomcat7DeltaSessionManagerJUnitTest extends DeltaSessionManagerJUni
 
   @Test
   public void setContainerSetsProperContainerAndMaxInactiveInterval() {
-    Context container = mock(Context.class);
-    int containerMaxInactiveInterval = 3;
+    final Context container = mock(Context.class);
+    final int containerMaxInactiveInterval = 3;
 
     doReturn(containerMaxInactiveInterval).when(container).getSessionTimeout();
 

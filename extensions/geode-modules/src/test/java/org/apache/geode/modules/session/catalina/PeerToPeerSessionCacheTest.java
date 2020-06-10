@@ -46,14 +46,12 @@ import org.apache.geode.modules.util.SessionCustomExpiry;
 import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
 import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
 
-public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTest {
+public class PeerToPeerSessionCacheTest extends AbstractSessionCacheTest {
 
-  private String localRegionName = sessionRegionName + "_local";
-  @SuppressWarnings("unchecked")
-  private RegionFactory<String, HttpSession> regionFactory = mock(RegionFactory.class);
-  @SuppressWarnings("unchecked")
-  private Region<String, HttpSession> localRegion = mock(Region.class);
-  private Cache cache = mock(Cache.class);
+  private final String localRegionName = sessionRegionName + "_local";
+  private final RegionFactory<String, HttpSession> regionFactory = mock(RegionFactory.class);
+  private final Region<String, HttpSession> localRegion = mock(Region.class);
+  private final Cache cache = mock(Cache.class);
 
   @Before
   public void setUp() {
@@ -152,8 +150,8 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
 
   @Test
   public void touchSessionsWithPartitionedRegionSucceeds() {
-    Set<String> sessionIds = new HashSet<>();
-    ResultCollector collector = mock(ResultCollector.class);
+    final Set<String> sessionIds = new HashSet<>();
+    final ResultCollector collector = mock(ResultCollector.class);
 
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.PARTITION.toString());
     doReturn(emptyExecution).when((PeerToPeerSessionCache) sessionCache)
@@ -171,8 +169,8 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
     // Need to invoke this to set the session region
     sessionCache.initialize();
 
-    Set<String> sessionIds = new HashSet<>();
-    ResultCollector collector = mock(ResultCollector.class);
+    final Set<String> sessionIds = new HashSet<>();
+    final ResultCollector collector = mock(ResultCollector.class);
 
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.REPLICATE.toString());
     doReturn(emptyExecution).when((PeerToPeerSessionCache) sessionCache)
@@ -187,9 +185,9 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
 
   @Test
   public void touchSessionsCatchesThrownException() {
-    Set<String> sessionIds = new HashSet<>();
-    ResultCollector collector = mock(ResultCollector.class);
-    FunctionException exception = new FunctionException();
+    final Set<String> sessionIds = new HashSet<>();
+    final ResultCollector collector = mock(ResultCollector.class);
+    final FunctionException exception = new FunctionException();
 
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.PARTITION.toString());
     doReturn(emptyExecution).when((PeerToPeerSessionCache) sessionCache)

@@ -12,31 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.modules.session;
 
-package org.apache.geode.modules.session.catalina;
+import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import org.apache.geode.modules.session.catalina.Tomcat6DeltaSessionManager;
+import org.apache.geode.test.junit.categories.SessionTest;
 
-import org.junit.Test;
+@Category(SessionTest.class)
+@Deprecated
+public class Tomcat6SessionsTest extends AbstractSessionsTest {
 
-public class DeltaSessionFacadeJUnitTest {
-
-  @Test
-  public void DeltaSessionFacadeMakesProperCallsOnSessionWhenInvoked() {
-    DeltaSessionInterface session = spy(new DeltaSession());
-
-    DeltaSessionFacade facade = new DeltaSessionFacade(session);
-
-    doNothing().when(session).commit();
-    doReturn(true).when(session).isValid();
-
-    facade.commit();
-    facade.isValid();
-
-    verify(session).commit();
-    verify(session).isValid();
+  @BeforeClass
+  public static void setupClass() throws Exception {
+    setupServer(new Tomcat6DeltaSessionManager());
   }
 }

@@ -22,7 +22,6 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 evaluationDependsOn(":geode-core")
 
 
-
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-logging'))
@@ -30,6 +29,9 @@ dependencies {
   implementation(project(':geode-serialization'))
   compile(project(':geode-core'))
   integrationTestImplementation(project(':extensions:geode-modules-test')) {
+    exclude module: 'geode-modules'
+  }
+  testImplementation(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'
   }
   integrationTestImplementation(project(':geode-dunit')) {

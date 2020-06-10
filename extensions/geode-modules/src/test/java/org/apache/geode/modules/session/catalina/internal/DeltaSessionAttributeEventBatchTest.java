@@ -30,7 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
-public class DeltaSessionAttributeEventBatchJUnitTest {
+public class DeltaSessionAttributeEventBatchTest {
   String regionName = "regionName";
   String sessionId = "sessionId";
   LogWriter logWriter = mock(LogWriter.class);
@@ -38,23 +38,22 @@ public class DeltaSessionAttributeEventBatchJUnitTest {
   @Test
   public void TestApplyForBatch() {
 
-    List<DeltaSessionAttributeEvent> eventList = new ArrayList<>();
-    DeltaSessionAttributeEvent event1 = mock(DeltaSessionAttributeEvent.class);
-    DeltaSessionAttributeEvent event2 = mock(DeltaSessionAttributeEvent.class);
+    final List<DeltaSessionAttributeEvent> eventList = new ArrayList<>();
+    final DeltaSessionAttributeEvent event1 = mock(DeltaSessionAttributeEvent.class);
+    final DeltaSessionAttributeEvent event2 = mock(DeltaSessionAttributeEvent.class);
     eventList.add(event1);
     eventList.add(event2);
 
-
-    Cache cache = mock(Cache.class);
-    Region<String, DeltaSessionInterface> region = mock(Region.class);
-    DeltaSessionInterface deltaSessionInterface = mock(DeltaSessionInterface.class);
+    final Cache cache = mock(Cache.class);
+    final Region<String, DeltaSessionInterface> region = mock(Region.class);
+    final DeltaSessionInterface deltaSessionInterface = mock(DeltaSessionInterface.class);
 
     doReturn(region).when(cache).getRegion(regionName);
     when(cache.getLogger()).thenReturn(logWriter);
     when(logWriter.fineEnabled()).thenReturn(false);
     when(region.get(sessionId)).thenReturn(deltaSessionInterface);
 
-    DeltaSessionAttributeEventBatch batch =
+    final DeltaSessionAttributeEventBatch batch =
         new DeltaSessionAttributeEventBatch(regionName, sessionId, eventList);
 
     batch.apply(cache);
