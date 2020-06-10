@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -31,7 +32,6 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
@@ -105,7 +105,7 @@ public class PubSubImpl implements PubSub {
   }
 
   private void registerPublishFunction() {
-    FunctionService.registerFunction(new InternalFunction<Object[]>() {
+    FunctionService.registerFunction(new Function<Object[]>() {
       @Override
       public String getId() {
         return REDIS_PUB_SUB_FUNCTION_ID;
