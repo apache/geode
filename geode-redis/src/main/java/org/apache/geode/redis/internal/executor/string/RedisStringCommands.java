@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public interface RedisStringCommands {
   long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend);

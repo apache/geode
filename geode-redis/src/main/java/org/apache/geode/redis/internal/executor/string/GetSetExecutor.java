@@ -17,23 +17,23 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class GetSetExecutor extends StringExecutor {
 
   private final int VALUE_INDEX = 2;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() != 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.GETSET));
-      return;
+      return RedisResponse.error(ArityDef.GETSET);
     }
 
     ByteArrayWrapper key = command.getKey();
@@ -42,6 +42,7 @@ public class GetSetExecutor extends StringExecutor {
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
     ByteArrayWrapper oldValueWrapper = stringCommands.getset(key, newValueWrapper);
-    respondBulkStrings(command, context, oldValueWrapper);
+
+    return respondBulkStrings(oldValueWrapper);
   }
 }

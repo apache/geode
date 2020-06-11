@@ -15,8 +15,8 @@
 
 package org.apache.geode.redis.internal.ParameterRequirements;
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MinimumParameterRequirements implements ParameterRequirements {
   private int minimum;

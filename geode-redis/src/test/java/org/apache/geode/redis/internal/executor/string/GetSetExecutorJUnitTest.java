@@ -22,7 +22,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,11 +32,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisData;
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class GetSetExecutorJUnitTest {
   private ExecutionHandlerContext context;
@@ -69,9 +69,9 @@ public class GetSetExecutorJUnitTest {
         "GETSET".getBytes());
     Command command = new Command(args);
 
-    executor.executeCommand(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -84,9 +84,9 @@ public class GetSetExecutorJUnitTest {
         "key2".getBytes());
     Command command = new Command(args);
 
-    executor.executeCommand(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 }

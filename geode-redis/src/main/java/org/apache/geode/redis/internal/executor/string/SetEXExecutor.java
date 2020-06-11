@@ -19,12 +19,13 @@ import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.Extendable;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SetEXExecutor extends StringExecutor implements Extendable {
 
@@ -38,12 +39,12 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
   private final int VALUE_INDEX = 3;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 4) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
-      return;
+      return RedisResponse.error(getArgsError());
     }
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
@@ -56,15 +57,11 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
     try {
       expiration = Coder.bytesToLong(expirationArray);
     } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_SECONDS_NOT_A_NUMBER));
-      return;
+      return RedisResponse.error(ERROR_SECONDS_NOT_A_NUMBER);
     }
 
     if (expiration <= 0) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_SECONDS_NOT_LEGAL));
-      return;
+      return RedisResponse.error(ERROR_SECONDS_NOT_LEGAL);
     }
 
     if (!timeUnitMillis()) {
@@ -74,8 +71,7 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
 
     stringCommands.set(key, new ByteArrayWrapper(value), setOptions);
 
-    command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
-
+    return RedisResponse.string(SUCCESS);
   }
 
   protected boolean timeUnitMillis() {

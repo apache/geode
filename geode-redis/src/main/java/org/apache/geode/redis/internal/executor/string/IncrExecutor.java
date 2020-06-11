@@ -17,26 +17,26 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class IncrExecutor extends StringExecutor {
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() != 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.INCR));
-      return;
+      return RedisResponse.error(ArityDef.INCR);
     }
 
     ByteArrayWrapper key = command.getKey();
     RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     long value = stringCommands.incr(key);
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
+    return RedisResponse.integer(value);
   }
 }

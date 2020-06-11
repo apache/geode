@@ -24,14 +24,13 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.RedisCommandType;
-import org.apache.geode.redis.internal.RedisData;
-import org.apache.geode.redis.internal.executor.set.RedisSetInRegion;
-import org.apache.geode.redis.internal.executor.set.SingleResultCollector;
-import org.apache.geode.redis.internal.executor.set.StripedExecutor;
-import org.apache.geode.redis.internal.executor.set.SynchronizedStripedExecutor;
-import org.apache.geode.redis.internal.executor.string.RedisStringInRegion;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisHashInRegion;
+import org.apache.geode.redis.internal.data.RedisKeyInRegion;
+import org.apache.geode.redis.internal.data.RedisSetInRegion;
+import org.apache.geode.redis.internal.data.RedisStringInRegion;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 
 @SuppressWarnings("unchecked")
@@ -41,8 +40,7 @@ public class CommandFunction extends SingleResultRedisFunction {
 
   private final transient StripedExecutor stripedExecutor;
 
-  public static void register() {
-    SynchronizedStripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+  public static void register(StripedExecutor stripedExecutor) {
     FunctionService.registerFunction(new CommandFunction(stripedExecutor));
   }
 

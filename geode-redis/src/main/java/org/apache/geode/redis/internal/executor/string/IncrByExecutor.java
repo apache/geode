@@ -17,11 +17,12 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class IncrByExecutor extends StringExecutor {
 
@@ -30,12 +31,12 @@ public class IncrByExecutor extends StringExecutor {
   private final int INCREMENT_INDEX = 2;
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.INCRBY));
-      return;
+      return RedisResponse.error(ArityDef.INCRBY);
     }
 
     ByteArrayWrapper key = command.getKey();
@@ -47,12 +48,10 @@ public class IncrByExecutor extends StringExecutor {
     try {
       increment = Coder.bytesToLong(incrArray);
     } catch (NumberFormatException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INCREMENT_NOT_USABLE));
-      return;
+      return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
     long value = stringCommands.incrby(key, increment);
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
+    return RedisResponse.integer(value);
   }
 }

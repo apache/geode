@@ -18,22 +18,21 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.GlobPattern;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PunsubscribeExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     byte[] pattern = command.getProcessedCommand().get(1);
     long subscriptionCount =
         context
@@ -45,12 +44,6 @@ public class PunsubscribeExecutor extends AbstractExecutor {
     items.add(pattern);
     items.add(subscriptionCount);
 
-    ByteBuf response = null;
-    try {
-      response = Coder.getArrayResponse(context.getByteBufAllocator(), items);
-    } catch (CoderException e) {
-      logger.warn("Error encoding unsubscribe response", e);
-    }
-    command.setResponse(response);
+    return RedisResponse.array(items);
   }
 }

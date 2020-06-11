@@ -19,7 +19,6 @@ import java.util.Random;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
@@ -49,10 +48,5 @@ public class StringsNativeRedisAcceptanceTest extends StringsIntegrationTest {
   public static void tearDown() {
     jedis.close();
     jedis2.close();
-  }
-
-  @Test
-  public void testSet_keyExistsWithDifferentDataType_returnsRedisDataTypeMismatchException() {
-    // TODO: Fix implementation of SET to always succeed regardless of data type, like Native Redis
   }
 }

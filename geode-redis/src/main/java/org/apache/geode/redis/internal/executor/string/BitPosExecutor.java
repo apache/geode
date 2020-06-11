@@ -16,11 +16,12 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class BitPosExecutor extends StringExecutor {
 
@@ -29,11 +30,11 @@ public class BitPosExecutor extends StringExecutor {
   private final String ERROR_BIT = "The bit must either be a 0 or 1";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.BITPOS));
-      return;
+      return RedisResponse.error(ArityDef.BITPOS);
     }
 
     ByteArrayWrapper key = command.getKey();
@@ -47,27 +48,16 @@ public class BitPosExecutor extends StringExecutor {
       byte[] bitAr = commandElems.get(2);
       bit = Coder.bytesToInt(bitAr);
     } catch (NumberFormatException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INT));
-      return;
+      return RedisResponse.error(ERROR_NOT_INT);
     }
 
     if (bit != 0 && bit != 1) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_BIT));
-      return;
+      return RedisResponse.error(ERROR_BIT);
     }
 
     if (string == null || string.length() == 0) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), -bit)); // Redis
-      // returns
-      // 0 when
-      // key
-      // does
-      // not
-      // exists
-      // for
-      // this
-      // command
-      return;
+      // Redis returns 0 when key does not exists for this command
+      return RedisResponse.integer(-bit);
     }
     byte[] bytes = string.toBytes();
     int start = 0;
@@ -77,8 +67,7 @@ public class BitPosExecutor extends StringExecutor {
         byte[] startAr = commandElems.get(3);
         start = Coder.bytesToInt(startAr);
       } catch (NumberFormatException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INT));
-        return;
+        return RedisResponse.error(ERROR_NOT_INT);
       }
     }
 
@@ -88,8 +77,7 @@ public class BitPosExecutor extends StringExecutor {
         end = Coder.bytesToInt(endAr);
         endSet = true;
       } catch (NumberFormatException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INT));
-        return;
+        return RedisResponse.error(ERROR_NOT_INT);
       }
     }
 
@@ -115,8 +103,7 @@ public class BitPosExecutor extends StringExecutor {
     }
 
     if (end < start) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), -1));
-      return;
+      return RedisResponse.integer(-1);
     }
 
     outerLoop: for (int i = start; i <= end; i++) {
@@ -135,7 +122,7 @@ public class BitPosExecutor extends StringExecutor {
       bitPosition = bytes.length * 8;
     }
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), bitPosition));
+    return RedisResponse.integer(bitPosition);
   }
 
 }

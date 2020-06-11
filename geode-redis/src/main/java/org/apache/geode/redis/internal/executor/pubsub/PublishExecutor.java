@@ -17,16 +17,16 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisResponse;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PublishExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> args = command.getProcessedCommand();
     if (args.size() != 3) {
@@ -34,7 +34,8 @@ public class PublishExecutor extends AbstractExecutor {
     }
 
     String channelName = new String(args.get(1));
-    long publishCount = context.getPubSub().publish(channelName, args.get(2));
+    long publishCount =
+        context.getPubSub().publish(getDataRegion(context), channelName, args.get(2));
 
     return RedisResponse.integer(publishCount);
   }

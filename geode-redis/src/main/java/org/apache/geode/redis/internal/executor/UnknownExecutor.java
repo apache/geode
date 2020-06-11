@@ -15,17 +15,19 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND;
+
 import java.util.Collection;
 
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class UnknownExecutor extends AbstractExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
 
     StringBuilder commandProcessedText = new StringBuilder();
 
@@ -42,7 +44,6 @@ public class UnknownExecutor extends AbstractExecutor {
       }
     }
 
-    command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-        RedisConstants.ERROR_UNKNOWN_COMMAND + " " + commandProcessedText));
+    return RedisResponse.error(ERROR_UNKNOWN_COMMAND + " " + commandProcessedText);
   }
 }

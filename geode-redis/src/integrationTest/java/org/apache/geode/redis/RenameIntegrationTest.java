@@ -16,11 +16,17 @@
 package org.apache.geode.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,16 +41,20 @@ import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.StripedExecutor;
+import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class RenameIntegrationTest {
   static Jedis jedis;
-  static final int REDIS_CLIENT_TIMEOUT = 100000;
+  static Jedis jedis2;
+  static Jedis jedis3;
+  static final int REDIS_CLIENT_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   static Random rand;
-  private static ThreePhraseGenerator generator = new ThreePhraseGenerator();
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -53,11 +63,15 @@ public class RenameIntegrationTest {
   public static void setUp() {
     rand = new Random();
     jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis3 = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
   public static void tearDown() {
     jedis.close();
+    jedis2.close();
+    jedis3.close();
   }
 
   public int getPort() {
@@ -107,12 +121,16 @@ public class RenameIntegrationTest {
   }
 
   @Test
+  public void testRenameSameKey() {
+    jedis.set("blue", "moon");
+    assertThat(jedis.rename("blue", "blue")).isEqualTo("OK");
+    assertThat(jedis.get("blue")).isEqualTo("moon");
+  }
+
+  @Test
   public void testConcurrentSets() throws ExecutionException, InterruptedException {
     Set<String> stringsForK1 = new HashSet<String>();
     Set<String> stringsForK2 = new HashSet<String>();
-
-    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    Jedis jedis3 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
 
     int numOfStrings = 500000;
     Callable<Long> callable1 =
@@ -144,8 +162,193 @@ public class RenameIntegrationTest {
     jedis3.close();
   }
 
+  @Test
+  public void should_succeed_givenTwoKeysOnDifferentStripes() {
+    List<String> listOfKeys = getKeysOnDifferentStripes();
+    String oldKey = listOfKeys.get(0);
+    String newKey = listOfKeys.get(1);
 
-  private Long addStringsToKeys(Set<String> strings, String key, int numOfStrings, Jedis client) {
+    jedis.sadd(oldKey, "value1");
+    jedis.sadd(newKey, "value2");
+
+    assertThat(jedis.rename(oldKey, newKey)).isEqualTo("OK");
+    assertThat(jedis.smembers(newKey)).containsExactly("value1");
+    assertThat(jedis.exists(oldKey)).isFalse();
+  }
+
+  @Test
+  public void should_succeed_givenTwoKeysOnSameStripe() {
+    List<String> listOfKeys = new ArrayList<>(getKeysOnSameRandomStripe(2));
+    String oldKey = listOfKeys.get(0);
+    String newKey = listOfKeys.get(1);
+
+    jedis.sadd(oldKey, "value1");
+    jedis.sadd(newKey, "value2");
+
+    assertThat(jedis.rename(oldKey, newKey)).isEqualTo("OK");
+    assertThat(jedis.smembers(newKey)).containsExactly("value1");
+    assertThat(jedis.exists(oldKey)).isFalse();
+  }
+
+  @Test
+  public void shouldNotDeadlock_concurrentRenames_givenStripeContention()
+      throws ExecutionException, InterruptedException {
+    List<String> keysOnStripe1 = new ArrayList<>(getKeysOnSameRandomStripe(2));
+    List<String> keysOnStripe2 = getKeysOnSameRandomStripe(2, keysOnStripe1.get(0));
+
+    for (int i = 0; i < 5; i++) {
+      doConcurrentRenamesDifferentKeys(
+          Arrays.asList(keysOnStripe1.get(0), keysOnStripe2.get(0)),
+          Arrays.asList(keysOnStripe2.get(1), keysOnStripe1.get(1)));
+    }
+  }
+
+  @Test
+  public void shouldNotDeadlock_concurrentRenames_givenTwoKeysOnDifferentStripe()
+      throws ExecutionException, InterruptedException {
+    doConcurrentRenamesSameKeys(getKeysOnDifferentStripes());
+  }
+
+  @Test
+  public void shouldNotDeadlock_concurrentRenames_givenTwoKeysOnSameStripe()
+      throws ExecutionException, InterruptedException {
+    doConcurrentRenamesSameKeys(new ArrayList<>(getKeysOnSameRandomStripe(2)));
+  }
+
+  private List<String> getKeysOnDifferentStripes() {
+    String key1 = "keyz" + new Random().nextInt();;
+    ByteArrayWrapper key1ByteArrayWrapper = new ByteArrayWrapper(key1.getBytes());
+    StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+    int iterator = 0;
+    String key2;
+    do {
+      key2 = "key" + iterator;
+      iterator++;
+    } while (stripedExecutor.compareStripes(key1ByteArrayWrapper,
+        new ByteArrayWrapper(key2.getBytes())) == 0);
+
+    return Arrays.asList(key1, key2);
+  }
+
+  private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
+    Random random = new Random();
+    String key1 = "keyz" + random.nextInt();
+    ByteArrayWrapper key1ByteArrayWrapper = new ByteArrayWrapper(key1.getBytes());
+    StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+    Set<String> keys = new HashSet<>();
+    keys.add(key1);
+
+    do {
+      String key2 = "key" + random.nextInt();
+      if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
+          new ByteArrayWrapper(key2.getBytes())) == 0) {
+        keys.add(key2);
+      }
+    } while (keys.size() < numKeysNeeded);
+
+    return keys;
+  }
+
+  public void doConcurrentRenamesDifferentKeys(List<String> listOfKeys1, List<String> listOfKeys2)
+      throws ExecutionException, InterruptedException {
+    CyclicBarrier startCyclicBarrier = new CyclicBarrier(2);
+
+    String oldKey1 = listOfKeys1.get(0);
+    String newKey1 = listOfKeys1.get(1);
+    String oldKey2 = listOfKeys2.get(0);
+    String newKey2 = listOfKeys2.get(1);
+
+    jedis.sadd(oldKey1, "foo", "bar");
+    jedis.sadd(oldKey2, "bar3", "back3");
+
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+
+    Runnable renameOldKey1ToNewKey1 = () -> {
+      cyclicBarrierAwait(startCyclicBarrier);
+
+      jedis.rename(oldKey1, newKey1);
+    };
+
+    Runnable renameOldKey2ToNewKey2 = () -> {
+      cyclicBarrierAwait(startCyclicBarrier);
+
+      jedis2.rename(oldKey2, newKey2);
+    };
+
+    Future<?> future1 = pool.submit(renameOldKey1ToNewKey1);
+    Future<?> future2 = pool.submit(renameOldKey2ToNewKey2);
+
+    future1.get();
+    future2.get();
+  }
+
+  private void cyclicBarrierAwait(CyclicBarrier startCyclicBarrier) {
+    try {
+      startCyclicBarrier.await();
+    } catch (InterruptedException | BrokenBarrierException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private List<String> getKeysOnSameRandomStripe(int numKeysNeeded, Object toAvoid) {
+
+    StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+
+    List<String> keys = new ArrayList<>();
+
+    String key1;
+    ByteArrayWrapper key1ByteArrayWrapper;
+    do {
+      key1 = "keyz" + new Random().nextInt();
+      key1ByteArrayWrapper = new ByteArrayWrapper(key1.getBytes());
+    } while (stripedExecutor.compareStripes(key1ByteArrayWrapper, toAvoid) == 0 && keys.add(key1));
+
+    do {
+      String key2 = "key" + new Random().nextInt();
+
+      if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
+          new ByteArrayWrapper(key2.getBytes())) == 0) {
+        keys.add(key2);
+      }
+    } while (keys.size() < numKeysNeeded);
+
+    return keys;
+  }
+
+  public void doConcurrentRenamesSameKeys(List<String> listOfKeys)
+      throws ExecutionException, InterruptedException {
+    String key1 = listOfKeys.get(0);
+    String key2 = listOfKeys.get(1);
+
+    CyclicBarrier startCyclicBarrier = new CyclicBarrier(2);
+
+    jedis.sadd(key1, "foo", "bar");
+    jedis.sadd(key2, "bar", "back");
+
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+
+    Runnable renameKey1ToKey2 = () -> {
+      cyclicBarrierAwait(startCyclicBarrier);
+      jedis.rename(key1, key2);
+    };
+
+    Runnable renameKey2ToKey1 = () -> {
+      cyclicBarrierAwait(startCyclicBarrier);
+      jedis2.rename(key2, key1);
+    };
+
+    Future<?> future1 = pool.submit(renameKey1ToKey2);
+    Future<?> future2 = pool.submit(renameKey2ToKey1);
+
+    future1.get();
+    future2.get();
+  }
+
+  private Long addStringsToKeys(
+      Set<String> strings,
+      String key,
+      int numOfStrings,
+      Jedis client) {
     generateStrings(numOfStrings, strings);
     String[] stringArray = strings.toArray(new String[strings.size()]);
     return client.sadd(key, stringArray);
@@ -162,4 +365,11 @@ public class RenameIntegrationTest {
     }
     return strings;
   }
+
+  @Test
+  public void renamenxIsUnimplemented() {
+    assertThatThrownBy(() -> jedis.renamenx("foo", "newfoo"))
+        .hasMessageContaining("RENAMENX is not implemented.");
+  }
+
 }

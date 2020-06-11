@@ -16,32 +16,32 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class BitCountExecutor extends StringExecutor {
 
   private final String ERROR_NOT_INT = "The indexes provided must be numeric values";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() != 2 && commandElems.size() != 4) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.BITCOUNT));
-      return;
+      return RedisResponse.error(ArityDef.BITCOUNT);
     }
 
     ByteArrayWrapper key = command.getKey();
     RedisStringCommands stringCommands = getRedisStringCommands(context);
     ByteArrayWrapper wrapper = stringCommands.get(key);
     if (wrapper == null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-      return;
+      return RedisResponse.integer(0);
     }
     byte[] value = wrapper.toBytes();
 
@@ -53,14 +53,11 @@ public class BitCountExecutor extends StringExecutor {
         startL = Coder.bytesToLong(commandElems.get(2));
         endL = Coder.bytesToLong(commandElems.get(3));
       } catch (NumberFormatException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_INT));
-        return;
+        return RedisResponse.error(ERROR_NOT_INT);
       }
     }
     if (startL > Integer.MAX_VALUE || endL > Integer.MAX_VALUE) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_OUT_OF_RANGE));
-      return;
+      return RedisResponse.error(RedisConstants.ERROR_OUT_OF_RANGE);
     }
 
     int start = (int) startL;
@@ -84,8 +81,7 @@ public class BitCountExecutor extends StringExecutor {
     }
 
     if (end < start || start >= value.length) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-      return;
+      return RedisResponse.integer(0);
     }
 
     long setBits = 0;
@@ -94,7 +90,7 @@ public class BitCountExecutor extends StringExecutor {
     }
     // opposed to keeping the same value
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), setBits));
+    return RedisResponse.integer(setBits);
   }
 
 }

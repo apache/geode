@@ -1,0 +1,4 @@
+{
+  "Class org.apache.geode.net.SSLParameterExtension": "Old implementation exposed an internal class",
+  "Method org.apache.geode.net.SSLParameterExtension.init(org.apache.geode.distributed.internal.DistributionConfig)": "Old implementation exposed an internal class",
+}

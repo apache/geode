@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public interface RedisSetCommands {
 

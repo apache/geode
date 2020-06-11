@@ -16,7 +16,7 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.Set;
 
-import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public class SInterExecutor extends SetOpExecutor {
 

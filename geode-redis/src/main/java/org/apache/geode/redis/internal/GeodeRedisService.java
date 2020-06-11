@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();
@@ -36,10 +37,14 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   @Override
   public boolean init(Cache cache) {
     this.cache = (InternalCache) cache;
+    if (!this.cache.getInternalDistributedSystem().getConfig().getRedisEnabled()) {
+      return false;
+    }
+
     this.cache.getInternalDistributedSystem().addResourceListener(this);
     registerDataSerializables();
 
-    return this.cache.getInternalDistributedSystem().getConfig().getRedisEnabled();
+    return true;
   }
 
   private void registerDataSerializables() {

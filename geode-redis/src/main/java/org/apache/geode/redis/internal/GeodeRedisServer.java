@@ -52,7 +52,9 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -65,10 +67,22 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.CommandFunction;
-import org.apache.geode.redis.internal.executor.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.RedisKeyCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.serverinitializer.NamedThreadFactory;
+import org.apache.geode.redis.internal.executor.StripedExecutor;
+import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
+import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
+import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.executor.key.RenameFunction;
+import org.apache.geode.redis.internal.gfsh.RedisCommandFunction;
+import org.apache.geode.redis.internal.netty.ByteToCommandDecoder;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.PubSub;
+import org.apache.geode.redis.internal.pubsub.PubSubImpl;
+import org.apache.geode.redis.internal.pubsub.Subscriptions;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -95,7 +109,7 @@ public class GeodeRedisServer {
   public static final String ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM =
       "enable-redis-unsupported-commands";
 
-  private static final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
+  private final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
       Boolean.getBoolean(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM);
 
   /**
@@ -128,7 +142,6 @@ public class GeodeRedisServer {
    */
   private boolean singleThreadPerConnection;
 
-  private boolean allowUnsupportedCommands = false;
   /**
    * Logging level
    */
@@ -157,6 +170,7 @@ public class GeodeRedisServer {
    * The name of the region that holds data stored in redis.
    */
   public static final String REDIS_DATA_REGION = "__REDIS_DATA";
+  public static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
 
   /**
    * System property name that can be used to set the number of threads to be used by the
@@ -253,21 +267,31 @@ public class GeodeRedisServer {
         new NamedThreadFactory("GemFireRedis-ExpirationExecutor-", true));
     shutdown = false;
     started = false;
+
+    if (ENABLE_REDIS_UNSUPPORTED_COMMANDS) {
+      logUnsupportedCommandWarning();
+    }
   }
 
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
-    this.allowUnsupportedCommands = allowUnsupportedCommands;
+    Region<String, Object> configRegion = regionProvider.getConfigRegion();
+    configRegion.put(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
+        allowUnsupportedCommands);
+    if (allowUnsupportedCommands) {
+      logUnsupportedCommandWarning();
+    }
   }
 
   /**
    * Precedence of the internal property overrides the global system property.
    */
   public boolean allowUnsupportedCommands() {
-    if (allowUnsupportedCommands) {
-      return true;
-    }
+    return (boolean) regionProvider.getConfigRegion()
+        .getOrDefault(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, ENABLE_REDIS_UNSUPPORTED_COMMANDS);
+  }
 
-    return ENABLE_REDIS_UNSUPPORTED_COMMANDS;
+  private void logUnsupportedCommandWarning() {
+    logger.warn("Unsupported commands enabled. Unsupported commands have not been fully tested.");
   }
 
   /**
@@ -276,8 +300,12 @@ public class GeodeRedisServer {
    * @return The InetAddress to bind to
    */
   private InetAddress getBindAddress() throws UnknownHostException {
-    return bindAddress == null || bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
-        : InetAddress.getByName(bindAddress);
+    if (bindAddress == null || bindAddress.isEmpty()
+        || bindAddress.equals(LocalHostUtil.getAnyLocalAddress().getHostAddress())) {
+      return LocalHostUtil.getAnyLocalAddress();
+    } else {
+      return InetAddress.getByName(bindAddress);
+    }
   }
 
   /**
@@ -290,7 +318,7 @@ public class GeodeRedisServer {
         initializeRedis();
         startRedisServer();
       } catch (IOException | InterruptedException e) {
-        throw new RuntimeException("Could not start Server", e);
+        throw new ManagementException("Could not start Server", e);
       }
       started = true;
     }
@@ -325,15 +353,24 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, RedisData> redisData;
       InternalCache gemFireCache = (InternalCache) cache;
 
-      InternalRegionFactory<ByteArrayWrapper, RedisData> redisMetaDataFactory =
+      InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
           gemFireCache.createInternalRegionFactory(DEFAULT_REGION_TYPE);
-      redisMetaDataFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
-      redisData = redisMetaDataFactory.create(REDIS_DATA_REGION);
+      redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+      redisData = redisDataRegionFactory.create(REDIS_DATA_REGION);
+
+      InternalRegionFactory<String, Object> redisConfigRegionFactory =
+          gemFireCache.createInternalRegionFactory(RegionShortcut.REPLICATE);
+      redisConfigRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+      Region<String, Object> redisConfig = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
 
       pubSub = new PubSubImpl(new Subscriptions());
-      regionProvider = new RegionProvider(redisData);
+      regionProvider = new RegionProvider(redisData, redisConfig);
 
-      CommandFunction.register();
+      StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+
+      CommandFunction.register(stripedExecutor);
+      RenameFunction.register(stripedExecutor);
+      RedisCommandFunction.register();
       scheduleDataExpiration(redisData);
     }
   }
@@ -347,15 +384,20 @@ public class GeodeRedisServer {
 
   private void doDataExpiration(
       Region<ByteArrayWrapper, RedisData> redisData) {
-    final long now = System.currentTimeMillis();
-    Region<ByteArrayWrapper, RedisData> localPrimaryData =
-        PartitionRegionHelper.getLocalPrimaryData(redisData);
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(redisData);
-    for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
-      if (entry.getValue().hasExpired(now)) {
-        // pttl will do its own check using active expiration and expire the key if needed
-        redisKeyCommands.pttl(entry.getKey());
+    try {
+      final long now = System.currentTimeMillis();
+      Region<ByteArrayWrapper, RedisData> localPrimaryData =
+          PartitionRegionHelper.getLocalPrimaryData(redisData);
+      RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(redisData);
+      for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
+        if (entry.getValue().hasExpired(now)) {
+          // pttl will do its own check using active expiration and expire the key if needed
+          redisKeyCommands.pttl(entry.getKey());
+        }
       }
+    } catch (CacheClosedException | EntryDestroyedException ignore) {
+    } catch (RuntimeException | Error ex) {
+      logger.warn("Passive Redis expiration failed. Will try again in 1 second.", ex);
     }
   }
 
@@ -411,20 +453,20 @@ public class GeodeRedisServer {
 
   private Channel createBoundChannel(ServerBootstrap serverBootstrap)
       throws InterruptedException, UnknownHostException {
+    InetAddress bindAddress = getBindAddress();
+    int port = serverPort == RANDOM_PORT_INDICATOR ? 0 : serverPort;
     ChannelFuture channelFuture =
-        serverBootstrap.bind(new InetSocketAddress(getBindAddress(),
-            serverPort == RANDOM_PORT_INDICATOR ? 0 : serverPort))
-            .sync();
+        serverBootstrap.bind(new InetSocketAddress(bindAddress, port)).sync();
 
     serverPort = ((InetSocketAddress) channelFuture.channel().localAddress()).getPort();
 
-    logStartupMessage();
+    logStartupMessage(bindAddress);
 
     return channelFuture.channel();
   }
 
-  private void logStartupMessage() throws UnknownHostException {
-    String logMessage = "GeodeRedisServer started {" + getBindAddress() + ":" + serverPort
+  private void logStartupMessage(InetAddress bindAddress) throws UnknownHostException {
+    String logMessage = "GeodeRedisServer started {" + bindAddress + ":" + serverPort
         + "}, Selector threads: " + numSelectorThreads;
     if (singleThreadPerConnection) {
       logMessage += ", One worker thread per connection";
@@ -501,16 +543,23 @@ public class GeodeRedisServer {
   public synchronized void shutdown() {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
-      ChannelFuture closeFuture = serverChannel.closeFuture();
+      ChannelFuture closeFuture = null;
+      if (serverChannel != null) {
+        closeFuture = serverChannel.closeFuture();
+      }
       workerGroup.shutdownGracefully();
       Future<?> bossFuture = bossGroup.shutdownGracefully();
-      serverChannel.close();
+      if (serverChannel != null) {
+        serverChannel.close();
+      }
       bossFuture.syncUninterruptibly();
       if (mainThread != null) {
         mainThread.interrupt();
       }
       expirationExecutor.shutdownNow();
-      closeFuture.syncUninterruptibly();
+      if (closeFuture != null) {
+        closeFuture.syncUninterruptibly();
+      }
       shutdown = true;
     }
   }

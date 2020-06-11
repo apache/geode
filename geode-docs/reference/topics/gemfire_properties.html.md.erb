@@ -489,7 +489,7 @@ off-heap-memory-size=120g</code></pre></td>
 <tr>
 <td>redis-bind-address</td>
 <td>Specifies the address on which the Redis API for <%=vars.product_name%> is listening. If set to the empty string or this property is not
-specified, localhost is requested from the operating system.</td>
+specified, the server listens on all local addresses.
 <td>S</td>
 <td><code>""</code></td>
 </tr>
@@ -756,6 +756,13 @@ When enabled, also sets ssl-endpoint-identification-enabled to true.</td>
 <td>JKS</td>
 </tr>
 
+<tr>
+<td>standard-output-always-on</td>
+<td>Boolean value specifying to always log to standard out even if a log file exists.</td>
+<td>S, L</td>
+<td>false</td>
+</tr>
+     
 <tr>
 <td>start-dev-rest-api</td>
 <td>If set to true, then the developer REST API service will be started when cache is created. REST service can be configured using <code class="ph codeph">http-service-port</code> and <code class="ph codeph">http-service-bind-address</code> properties.</td>

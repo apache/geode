@@ -15,12 +15,14 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Test for the UnkownExecutor
@@ -42,11 +44,9 @@ public class UnknownExecutorJUnitTest {
     UnpooledByteBufAllocator byteBuf = new UnpooledByteBufAllocator(false);
     Mockito.when(context.getByteBufAllocator()).thenReturn(byteBuf);
 
-    exe.executeCommand(command, context);
+    RedisResponse response = exe.executeCommand(command, context);
 
-    // verify the response was set
-    Mockito.verify(command).setResponse(Mockito.any());
-
+    assertThat(response.toString()).contains("ERR Unable to process unknown command");
   }
 
 }

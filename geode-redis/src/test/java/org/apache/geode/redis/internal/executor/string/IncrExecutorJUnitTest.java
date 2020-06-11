@@ -20,18 +20,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.executor.Executor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 
 public class IncrExecutorJUnitTest {
+
+  private Executor executor = new IncrExecutor();
 
   @Test
   public void calledWithTooFewOptions_returnsError() {
@@ -39,9 +42,9 @@ public class IncrExecutorJUnitTest {
     commandsAsBytes.add("INCR".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    new IncrExecutor().executeCommand(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -53,9 +56,9 @@ public class IncrExecutorJUnitTest {
     commandsAsBytes.add("spurious key".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    new IncrExecutor().executeCommand(command, mockContext());
+    RedisResponse response = executor.executeCommand(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 

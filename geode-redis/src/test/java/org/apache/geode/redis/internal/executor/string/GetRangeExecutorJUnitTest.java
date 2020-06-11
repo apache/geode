@@ -19,16 +19,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Executor;
+import org.apache.geode.redis.internal.executor.Executor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 
 public class GetRangeExecutorJUnitTest {
@@ -41,9 +41,9 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithThreeArgs.add("1".getBytes());
     Command command = new Command(commandsAsBytesWithThreeArgs);
 
-    getRangeExecutor.executeCommand(command, mockContext());
+    RedisResponse response = getRangeExecutor.executeCommand(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -58,9 +58,9 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithFiveArgs.add("avocado".getBytes());
     Command command = new Command(commandsAsBytesWithFiveArgs);
 
-    getRangeExecutor.executeCommand(command, mockContext());
+    RedisResponse response = getRangeExecutor.executeCommand(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
   }
 
@@ -75,9 +75,9 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithInvalidStartIndex.add("1".getBytes());
 
     Command command = new Command(commandsAsBytesWithInvalidStartIndex);
-    getRangeExecutor.executeCommand(command, mockContext());
+    RedisResponse response = getRangeExecutor.executeCommand(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR value is not an integer or out of range");
   }
 
@@ -93,9 +93,9 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithInvalidEndIndex.add("not-a-number".getBytes());
     Command command = new Command(commandsAsBytesWithInvalidEndIndex);
 
-    getRangeExecutor.executeCommand(command, mockContext());
+    RedisResponse response = getRangeExecutor.executeCommand(command, mockContext());
 
-    assertThat(command.getResponse().toString(Charset.defaultCharset()))
+    assertThat(response.toString())
         .startsWith("-ERR value is not an integer or out of range");
   }
 
