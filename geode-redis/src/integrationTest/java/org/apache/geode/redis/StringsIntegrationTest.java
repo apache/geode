@@ -706,6 +706,44 @@ public class StringsIntegrationTest {
     assertThat(jedis.bitpos(key, true, new BitPosParams(1, 2))).isEqualTo(-1);
   }
 
+
+  @Test
+  public void getbit_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.getbit("key", 1)).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void getbit_givenNonExistentKeyReturnsFalse() {
+    assertThat(jedis.getbit("does not exist", 1)).isFalse();
+    assertThat(jedis.exists("does not exist")).isFalse();
+  }
+
+  @Test
+  public void getbit_givenNoBitsReturnsFalse() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0};
+    jedis.set(key, bytes);
+    assertThat(jedis.getbit(key, 1)).isFalse();
+  }
+
+  @Test
+  public void getbit_givenOneBitReturnsTrue() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.getbit(key, 8 + 7)).isTrue();
+  }
+
+  @Test
+  public void getbit_pastEndReturnsFalse() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.getbit(key, 8 + 8 + 7)).isFalse();
+  }
+
+
   @Test
   public void testGetSet_updatesKeyWithNewValue_returnsOldValue() {
     String key = randString();
