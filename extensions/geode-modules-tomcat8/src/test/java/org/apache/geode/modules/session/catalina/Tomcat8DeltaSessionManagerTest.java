@@ -33,12 +33,12 @@ import org.junit.Test;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
-public class Tomcat9DeltaSessionManagerJUnitTest extends DeltaSessionManagerJUnitTest {
+public class Tomcat8DeltaSessionManagerTest extends AbstractDeltaSessionManagerTest {
   private Pipeline pipeline;
 
   @Before
   public void setup() {
-    manager = spy(new Tomcat9DeltaSessionManager());
+    manager = spy(new Tomcat8DeltaSessionManager());
     initTest();
     pipeline = mock(Pipeline.class);
     doReturn(context).when(manager).getContext();
@@ -47,7 +47,7 @@ public class Tomcat9DeltaSessionManagerJUnitTest extends DeltaSessionManagerJUni
   @Test
   public void startInternalSucceedsInitialRun()
       throws LifecycleException, IOException, ClassNotFoundException {
-    doNothing().when((Tomcat9DeltaSessionManager) manager).startInternalBase();
+    doNothing().when((Tomcat8DeltaSessionManager) manager).startInternalBase();
     doReturn(true).when(manager).isCommitValveEnabled();
     doReturn(cache).when(manager).getAnyCacheInstance();
     doReturn(true).when((GemFireCacheImpl) cache).isClient();
@@ -57,19 +57,19 @@ public class Tomcat9DeltaSessionManagerJUnitTest extends DeltaSessionManagerJUni
     // Unit testing for load is handled in the parent DeltaSessionManagerJUnitTest class
     doNothing().when(manager).load();
 
-    doNothing().when((Tomcat9DeltaSessionManager) manager)
+    doNothing().when((Tomcat8DeltaSessionManager) manager)
         .setLifecycleState(LifecycleState.STARTING);
 
     assertThat(manager.started).isFalse();
-    ((Tomcat9DeltaSessionManager) manager).startInternal();
+    ((Tomcat8DeltaSessionManager) manager).startInternal();
     assertThat(manager.started).isTrue();
-    verify((Tomcat9DeltaSessionManager) manager).setLifecycleState(LifecycleState.STARTING);
+    verify((Tomcat8DeltaSessionManager) manager).setLifecycleState(LifecycleState.STARTING);
   }
 
   @Test
   public void startInternalDoesNotReinitializeManagerOnSubsequentCalls()
       throws LifecycleException, IOException, ClassNotFoundException {
-    doNothing().when((Tomcat9DeltaSessionManager) manager).startInternalBase();
+    doNothing().when((Tomcat8DeltaSessionManager) manager).startInternalBase();
     doReturn(true).when(manager).isCommitValveEnabled();
     doReturn(cache).when(manager).getAnyCacheInstance();
     doReturn(true).when((GemFireCacheImpl) cache).isClient();
@@ -79,41 +79,41 @@ public class Tomcat9DeltaSessionManagerJUnitTest extends DeltaSessionManagerJUni
     // Unit testing for load is handled in the parent DeltaSessionManagerJUnitTest class
     doNothing().when(manager).load();
 
-    doNothing().when((Tomcat9DeltaSessionManager) manager)
+    doNothing().when((Tomcat8DeltaSessionManager) manager)
         .setLifecycleState(LifecycleState.STARTING);
 
     assertThat(manager.started).isFalse();
-    ((Tomcat9DeltaSessionManager) manager).startInternal();
+    ((Tomcat8DeltaSessionManager) manager).startInternal();
 
     // Verify that various initialization actions were performed
     assertThat(manager.started).isTrue();
     verify(manager).initializeSessionCache();
-    verify((Tomcat9DeltaSessionManager) manager).setLifecycleState(LifecycleState.STARTING);
+    verify((Tomcat8DeltaSessionManager) manager).setLifecycleState(LifecycleState.STARTING);
 
     // Rerun startInternal
-    ((Tomcat9DeltaSessionManager) manager).startInternal();
+    ((Tomcat8DeltaSessionManager) manager).startInternal();
 
     // Verify that the initialization actions were still only performed one time
     verify(manager).initializeSessionCache();
-    verify((Tomcat9DeltaSessionManager) manager).setLifecycleState(LifecycleState.STARTING);
+    verify((Tomcat8DeltaSessionManager) manager).setLifecycleState(LifecycleState.STARTING);
   }
 
   @Test
   public void stopInternal() throws LifecycleException, IOException {
-    doNothing().when((Tomcat9DeltaSessionManager) manager).startInternalBase();
-    doNothing().when((Tomcat9DeltaSessionManager) manager).destroyInternalBase();
+    doNothing().when((Tomcat8DeltaSessionManager) manager).startInternalBase();
+    doNothing().when((Tomcat8DeltaSessionManager) manager).destroyInternalBase();
     doReturn(true).when(manager).isCommitValveEnabled();
 
     // Unit testing for unload is handled in the parent DeltaSessionManagerJUnitTest class
     doNothing().when(manager).unload();
 
-    doNothing().when((Tomcat9DeltaSessionManager) manager)
+    doNothing().when((Tomcat8DeltaSessionManager) manager)
         .setLifecycleState(LifecycleState.STOPPING);
 
-    ((Tomcat9DeltaSessionManager) manager).stopInternal();
+    ((Tomcat8DeltaSessionManager) manager).stopInternal();
 
     assertThat(manager.started).isFalse();
-    verify((Tomcat9DeltaSessionManager) manager).setLifecycleState(LifecycleState.STOPPING);
+    verify((Tomcat8DeltaSessionManager) manager).setLifecycleState(LifecycleState.STOPPING);
   }
 
 }
