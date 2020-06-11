@@ -974,7 +974,6 @@ javadoc/org/apache/geode/services/management/package-tree.html
 javadoc/org/apache/geode/services/module/ModuleDescriptor.Builder.html
 javadoc/org/apache/geode/services/module/ModuleDescriptor.html
 javadoc/org/apache/geode/services/module/ModuleService.html
-javadoc/org/apache/geode/services/module/impl/GeodeModuleLoader.html
 javadoc/org/apache/geode/services/module/impl/JBossModuleServiceImpl.html
 javadoc/org/apache/geode/services/module/impl/package-frame.html
 javadoc/org/apache/geode/services/module/impl/package-summary.html
@@ -982,6 +981,16 @@ javadoc/org/apache/geode/services/module/impl/package-tree.html
 javadoc/org/apache/geode/services/module/package-frame.html
 javadoc/org/apache/geode/services/module/package-summary.html
 javadoc/org/apache/geode/services/module/package-tree.html
+javadoc/org/apache/geode/services/result/ModuleServiceResult.html
+javadoc/org/apache/geode/services/result/Result.html
+javadoc/org/apache/geode/services/result/impl/Failure.html
+javadoc/org/apache/geode/services/result/impl/Success.html
+javadoc/org/apache/geode/services/result/impl/package-frame.html
+javadoc/org/apache/geode/services/result/impl/package-summary.html
+javadoc/org/apache/geode/services/result/impl/package-tree.html
+javadoc/org/apache/geode/services/result/package-frame.html
+javadoc/org/apache/geode/services/result/package-summary.html
+javadoc/org/apache/geode/services/result/package-tree.html
 javadoc/overview-frame.html
 javadoc/overview-summary.html
 javadoc/overview-tree.html
