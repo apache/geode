@@ -24,11 +24,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.services.module.ModuleDescriptor;
 
 public class GeodeJarModuleFinderTest {
+
+  private static String gemFireVersion = GemFireVersion.getGemFireVersion();
 
   private static final String MODULE1_PATH =
       System.getProperty("user.dir") + "/../libs/module1WithManifest-1.0.jar";
@@ -40,9 +44,11 @@ public class GeodeJarModuleFinderTest {
       System.getProperty("user.dir") + "/../libs/module4WithManifest-1.0.jar";
 
   private static final String GEODE_COMMONS_SERVICES_PATH =
-      System.getProperty("user.dir") + "/../libs/geode-common-services-1.14.0-build.0.jar";
+      System.getProperty("user.dir") + "/../libs/geode-common-services-" + gemFireVersion + ".jar";
   private static final String GEODE_COMMONS_PATH =
-      System.getProperty("user.dir") + "/../libs/geode-common-1.14.0-build.0.jar";
+      System.getProperty("user.dir") + "/../libs/geode-common-" + gemFireVersion + ".jar";
+
+
 
   @Test
   public void findModuleSimpleJar() throws IOException, ModuleLoadException {
@@ -56,23 +62,10 @@ public class GeodeJarModuleFinderTest {
 
     assertThat(moduleSpec.getName()).isEqualTo(moduleDescriptor.getName());
     assertThat(moduleSpec.getDependencies().length).isEqualTo(4);
-    String[] expectedDependencies = new String[] {"spring-core", "spring-jcl", "log4j-core",
-        "log4j-api", "jboss-modules", "module1WithManifest"};
-    ResourceLoaderSpec[] resourceLoaders = moduleSpec.getResourceLoaders();
-    assertThat(resourceLoaders.length).isEqualTo(expectedDependencies.length);
-    List<String> loadedResources = Arrays.stream(resourceLoaders)
-        .map(resourceLoaderSpec -> resourceLoaderSpec.getResourceLoader().getLocation().toString())
-        .collect(Collectors.toList());
-    for (String expectedDependency : expectedDependencies) {
-      boolean found = false;
-      for (String loadedResource : loadedResources) {
-        boolean contains = loadedResource.contains(expectedDependency);
-        if (contains) {
-          found = true;
-        }
-      }
-      assertThat(found).isTrue();
-    }
+    String[] expectedDependencies = new String[] {"log4j-core", "log4j-api", "jboss-modules",
+        "module1WithManifest", "guava", "failureaccess", "listenablefuture",
+        "jsr305", "checker-qual", "error_prone_annotations", "j2objc-annotations"};
+    assertModuleResourcesEqual(moduleSpec, expectedDependencies);
   }
 
   @Test
@@ -88,11 +81,12 @@ public class GeodeJarModuleFinderTest {
 
     assertThat(moduleSpec.getName()).isEqualTo(moduleDescriptor.getName());
     // This contain duplicate entries for 'geode-common-services'. This is because the underlying
-    // moduleBuilder does
-    // check for duplicates
+    // moduleBuilder does check for duplicates
     assertThat(moduleSpec.getDependencies().length).isEqualTo(5);
-    String[] expectedDependencies = new String[] {"spring-core", "spring-jcl", "log4j-core",
-        "log4j-api", "jboss-modules", "module1WithManifest", "module2WithManifest"};
+    String[] expectedDependencies = new String[] {"log4j-core", "log4j-api", "jboss-modules",
+        "module1WithManifest", "module2WithManifest", "guava", "failureaccess", "listenablefuture",
+        "jsr305", "checker-qual", "error_prone_annotations", "j2objc-annotations"};
+
     assertModuleResourcesEqual(moduleSpec, expectedDependencies);
   }
 
@@ -127,8 +121,9 @@ public class GeodeJarModuleFinderTest {
 
     assertThat(moduleSpec.getName()).isEqualTo(moduleDescriptor.getName());
     assertThat(moduleSpec.getDependencies().length).isEqualTo(5);
-    String[] expectedDependencies = new String[] {"spring-core", "spring-jcl", "log4j-core",
-        "log4j-api", "jboss-modules", "module1WithManifest"};
+    String[] expectedDependencies = new String[] {"log4j-core", "log4j-api", "jboss-modules",
+        "module1WithManifest", "guava", "failureaccess", "listenablefuture",
+        "jsr305", "checker-qual", "error_prone_annotations", "j2objc-annotations"};
     assertModuleResourcesEqual(moduleSpec, expectedDependencies);
   }
 
@@ -139,12 +134,12 @@ public class GeodeJarModuleFinderTest {
             .build();
 
     ModuleDescriptor geodeCommonsServiceDescriptor =
-        new ModuleDescriptor.Builder("geode-common-services-1.14.0-build.0")
+        new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)
             .build();
 
     ModuleDescriptor geodeCommonDescriptor =
-        new ModuleDescriptor.Builder("geode-common-1.14.0-build.0")
+        new ModuleDescriptor.Builder("geode-common", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_PATH)
             .build();
 
@@ -169,12 +164,12 @@ public class GeodeJarModuleFinderTest {
             .build();
 
     ModuleDescriptor geodeCommonsServiceDescriptor =
-        new ModuleDescriptor.Builder("geode-common-services-1.14.0-build.0")
+        new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)
             .build();
 
     ModuleDescriptor geodeCommonDescriptor =
-        new ModuleDescriptor.Builder("geode-common-1.14.0-build.0")
+        new ModuleDescriptor.Builder("geode-common", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_PATH)
             .build();
 
@@ -191,10 +186,10 @@ public class GeodeJarModuleFinderTest {
   @Test
   public void loadJarFileWithDependencies() throws IOException, ModuleLoadException {
     ModuleDescriptor commonServices =
-        new ModuleDescriptor.Builder("geode-common-services", "1.14.0-build.0")
+        new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH).build();
 
-    ModuleDescriptor geodeCommon = new ModuleDescriptor.Builder("geode-common", "1.14.0-build.0")
+    ModuleDescriptor geodeCommon = new ModuleDescriptor.Builder("geode-common", gemFireVersion)
         .fromResourcePaths(GEODE_COMMONS_PATH).build();
 
     ModuleDescriptor module1Descriptor =
