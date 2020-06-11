@@ -25,7 +25,7 @@ public class ShutDownExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
+    context.getServer().shutdown();
     return RedisResponse.nil();
   }
-
 }

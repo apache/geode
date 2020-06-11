@@ -347,6 +347,15 @@ public class GeodeRedisServer {
     return regionProvider;
   }
 
+  public PubSub getPubSub() {
+    return pubSub;
+  }
+
+  public EventLoopGroup getSubscriberGroup() {
+    return subscriberGroup;
+  }
+
+
   private void initializeRedis() {
     synchronized (cache) {
 
@@ -489,8 +498,8 @@ public class GeodeRedisServer {
         pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
-            new ExecutionHandlerContext(socketChannel, cache, regionProvider, GeodeRedisServer.this,
-                redisPasswordBytes, pubSub, subscriberGroup));
+            new ExecutionHandlerContext(socketChannel, GeodeRedisServer.this,
+                redisPasswordBytes));
       }
     };
   }
