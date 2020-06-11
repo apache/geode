@@ -16,15 +16,10 @@ package org.apache.geode.internal.cache;
 
 import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT_OVERFLOW;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
-import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_OVERFLOW;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
-import static org.apache.geode.cache.RegionShortcut.REPLICATE_OVERFLOW;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -45,8 +40,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.ExpirationAction;
-import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -74,15 +67,11 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
 
   private static final String REGION_NAME = "testRegion";
 
-  private static final long NUM_ENTRIES = 2000;
+  private static final long NUM_ENTRIES = 1000;
 
-  private static final int[] NUM_BUCKETS = new int[] {1, 10, 113, 227, 467, 1001};
+  private static final int[] NUM_BUCKETS = new int[] {1, 2, 11, 113, 227};
 
   private static final int NUM_ITERATIONS = 10;
-
-  private static final boolean WITH_EXPIRATION = true;
-
-  private static final int ENTRY_EXPIRATION_TIME = 1;
 
   private VM server1;
 
@@ -114,18 +103,19 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
     for (int numBuckets : NUM_BUCKETS) {
       if (shortcut.isReplicate()) {
         if (replicatedTested) {
-          continue;
+          break;
         }
         replicatedTested = true;
       }
       long sum = 0;
       for (int i = 0; i < NUM_ITERATIONS; i++) {
-        createRegionOnServers(shortcut, numBuckets, WITH_EXPIRATION);
+        createRegionOnServers(shortcut, numBuckets);
         populationRegion();
         long start = System.nanoTime();
         clearRegion();
         long end = System.nanoTime();
-        performanceTestResult.append("Region shortcut: " + shortcut + " numBuckets: " + numBuckets +
+        performanceTestResult.append("Region shortcut: " + shortcut
+            + (shortcut.isPartition() ? " numBuckets: " + numBuckets : "") +
             " Iteration: " + i
             + ". Time elapsed for region clear "
             + (end - start) + " nanoseconds.");
@@ -141,40 +131,32 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
     }
   }
 
-  private void createRegionOnServers(RegionShortcut shortcut, int numBuckets,
-      boolean withExpiration) {
+  private void createRegionOnServers(RegionShortcut shortcut, int numBuckets) {
     for (VM vm : new VM[] {server1, server2, server3}) {
       vm.invoke(() -> {
-        createRegion(shortcut, numBuckets, withExpiration);
+        createRegion(shortcut, numBuckets);
       });
     }
   }
 
-  private void createRegion(RegionShortcut shortcut, int numBuckets, boolean withExpiration)
+  private void createRegion(RegionShortcut shortcut, int numBuckets)
       throws IOException {
     cacheRule.createCache();
     final CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(0);
     cacheServer.start();
+
     RegionFactory regionFactory = cacheRule.getCache()
         .createRegionFactory(shortcut);
     if (shortcut.isOverflow()) {
       regionFactory.setEvictionAttributes(
           EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
     }
-    if (withExpiration) {
-      ExpirationAttributes expirationAttributes =
-          new ExpirationAttributes(ENTRY_EXPIRATION_TIME, ExpirationAction.INVALIDATE);
-      regionFactory.setEntryTimeToLive(expirationAttributes);
-      regionFactory.setEntryIdleTimeout(expirationAttributes);
-    }
     if (shortcut.isPartition()) {
       regionFactory.setPartitionAttributes(new PartitionAttributesFactory<>()
           .setTotalNumBuckets(numBuckets).create());
     }
-
     regionFactory.create(REGION_NAME);
-
   }
 
   private void destroyRegion() {
@@ -210,11 +192,9 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
 
   private static Object[] getRegionShortcuts() {
     return $(new Object[] {REPLICATE}, new Object[] {REPLICATE_PERSISTENT},
-        new Object[] {REPLICATE_PERSISTENT_OVERFLOW}, new Object[] {REPLICATE_OVERFLOW},
+        new Object[] {REPLICATE_PERSISTENT_OVERFLOW},
         new Object[] {PARTITION}, new Object[] {PARTITION_REDUNDANT},
-        new Object[] {PARTITION_PERSISTENT}, new Object[] {PARTITION_REDUNDANT_PERSISTENT},
-        new Object[] {PARTITION_OVERFLOW}, new Object[] {PARTITION_REDUNDANT_OVERFLOW},
-        new Object[] {PARTITION_PERSISTENT_OVERFLOW},
+        new Object[] {PARTITION_REDUNDANT_PERSISTENT},
         new Object[] {PARTITION_REDUNDANT_PERSISTENT_OVERFLOW});
   }
 
