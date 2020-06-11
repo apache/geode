@@ -597,6 +597,51 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  public void bitcount_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.bitcount("key")).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void bitcount_givenNonExistentKeyReturnsZero() {
+    assertThat(jedis.bitcount("does not exist")).isEqualTo(0);
+    assertThat(jedis.exists("does not exist")).isFalse();
+  }
+
+  @Test
+  public void bitcount_givenEmptyStringReturnsZero() {
+    jedis.set("key", "");
+    assertThat(jedis.bitcount("key")).isEqualTo(0);
+  }
+
+  @Test
+  public void bitcount_givenOneBitReturnsOne() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 0, 0};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitcount(key)).isEqualTo(1);
+  }
+
+  @Test
+  public void bitcount_givenTwoBitsReturnsTwo() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitcount(key)).isEqualTo(2);
+  }
+
+  @Test
+  public void bitcount_correctForAllByteValues() {
+    byte[] key = {1, 2, 3};
+    byte[] value = {0};
+    for (int b = Byte.MIN_VALUE; b <= Byte.MAX_VALUE; b++) {
+      value[0] = (byte) b;
+      jedis.set(key, value);
+      assertThat(jedis.bitcount(key)).as("b=" + b).isEqualTo(Integer.bitCount(0xFF & b));
+    }
+  }
+
+  @Test
   public void testGetSet_updatesKeyWithNewValue_returnsOldValue() {
     String key = randString();
     String contents = randString();
