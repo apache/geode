@@ -15,6 +15,7 @@
 package org.apache.geode.launchers;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.internal.lang.SystemUtils.isWindows;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
@@ -63,9 +64,10 @@ public class LocatorLauncherWithCustomLogConfigAcceptanceTest {
         .as("java.home is not null")
         .isNotNull();
 
-    javaBin = Paths.get(javaHome, "bin", "java");
+    String java = isWindows() ? "java.exe" : "java";
+    javaBin = Paths.get(javaHome, "bin", java);
     assertThat(javaBin)
-        .as("JAVA_HOME/bin/java exists")
+        .as("JAVA_HOME/bin/" + java + " exists")
         .exists();
   }
 
