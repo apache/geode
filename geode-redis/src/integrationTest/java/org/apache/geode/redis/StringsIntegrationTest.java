@@ -41,6 +41,7 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
@@ -639,6 +640,70 @@ public class StringsIntegrationTest {
       jedis.set(key, value);
       assertThat(jedis.bitcount(key)).as("b=" + b).isEqualTo(Integer.bitCount(0xFF & b));
     }
+  }
+
+  @Test
+  public void bitpos_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.bitpos("key", false)).hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.bitpos("key", true)).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void bitpos_givenNonExistentKeyReturnsExpectedValue() {
+    assertThat(jedis.bitpos("does not exist", false)).isEqualTo(0);
+    assertThat(jedis.bitpos("does not exist", true)).isEqualTo(-1);
+    assertThat(jedis.bitpos("does not exist", false, new BitPosParams(4, 7))).isEqualTo(0);
+    assertThat(jedis.bitpos("does not exist", true, new BitPosParams(4, 7))).isEqualTo(-1);
+    assertThat(jedis.exists("does not exist")).isFalse();
+  }
+
+  @Test
+  public void bitcount_givenBitInFirstByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true)).isEqualTo(7);
+  }
+
+  @Test
+  public void bitcount_givenOneInSecondByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true)).isEqualTo(7 + 8);
+  }
+
+  @Test
+  public void bitcountFalse_givenBitInFirstByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {-2, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, false)).isEqualTo(7);
+  }
+
+  @Test
+  public void bitcountFalse_givenOneInSecondByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {-1, -2, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, false)).isEqualTo(7 + 8);
+  }
+
+  @Test
+  public void bitcountWithStart_givenOneInLastByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true, new BitPosParams(-1))).isEqualTo(7 + 3 * 8);
+  }
+
+  @Test
+  public void bitcountWithStartAndEnd_givenNoBits() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true, new BitPosParams(1, 2))).isEqualTo(-1);
   }
 
   @Test
