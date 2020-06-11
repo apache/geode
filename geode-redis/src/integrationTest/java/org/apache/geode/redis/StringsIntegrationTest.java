@@ -743,6 +743,51 @@ public class StringsIntegrationTest {
     assertThat(jedis.getbit(key, 8 + 8 + 7)).isFalse();
   }
 
+  @Test
+  public void setbit_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.setbit("key", 1, true)).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void setbit_givenNonExistentKeyCreatesString() {
+    assertThat(jedis.setbit("newKey", 1, true)).isFalse();
+    assertThat(jedis.exists("newKey")).isTrue();
+    assertThat(jedis.type("newKey")).isEqualTo("string");
+    assertThat(jedis.getbit("newKey", 1)).isTrue();
+  }
+
+  @Test
+  public void setbit_canSetOneBit() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0};
+    jedis.set(key, bytes);
+    assertThat(jedis.setbit(key, 1, true)).isFalse();
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 0x40);
+  }
+
+  @Test
+  public void setbit_canSetOneBitAlreadySet() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1};
+    jedis.set(key, bytes);
+    assertThat(jedis.setbit(key, 7, true)).isTrue();
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 1);
+  }
+
+  @Test
+  public void setbit_canSetOneBitPastEnd() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0};
+    jedis.set(key, bytes);
+    assertThat(jedis.setbit(key, 1 + 8, true)).isFalse();
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 0);
+    assertThat(newbytes[1]).isEqualTo((byte) 0x40);
+  }
+
 
   @Test
   public void testGetSet_updatesKeyWithNewValue_returnsOldValue() {
