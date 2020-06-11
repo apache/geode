@@ -108,19 +108,18 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
         replicatedTested = true;
       }
       long sum = 0;
+      long elapsed;
       for (int i = 0; i < NUM_ITERATIONS; i++) {
         createRegionOnServers(shortcut, numBuckets);
         populationRegion();
-        long start = System.nanoTime();
-        clearRegion();
-        long end = System.nanoTime();
+        elapsed = clearRegion();
         performanceTestResult.append("Region shortcut: " + shortcut
             + (shortcut.isPartition() ? " numBuckets: " + numBuckets : "") +
             " Iteration: " + i
             + ". Time elapsed for region clear "
-            + (end - start) + " nanoseconds.");
+            + elapsed + " nanoseconds.");
         performanceTestResult.append(System.lineSeparator());
-        sum = sum + end - start;
+        sum = sum + elapsed;
         destroyRegion();
         destroyDiskStore();
       }
@@ -174,8 +173,8 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
     });
   }
 
-  private void clearRegion() {
-    client.invoke(() -> {
+  private long clearRegion() {
+    return client.invoke(() -> {
       final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
       clientCacheFactory.addPoolLocator("localhost", DistributedTestUtils.getLocatorPort());
       clientCacheRule.createClientCache(clientCacheFactory);
@@ -186,7 +185,10 @@ public class PartitionedRegionClearPerformanceDUnitTest implements Serializable 
       } else {
         region = clientCacheRule.getClientCache().getRegion(REGION_NAME);
       }
+      long start = System.nanoTime();
       region.clear();
+      long end = System.nanoTime();
+      return end - start;
     });
   }
 
