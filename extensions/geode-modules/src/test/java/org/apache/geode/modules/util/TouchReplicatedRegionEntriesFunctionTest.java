@@ -15,10 +15,6 @@
 
 package org.apache.geode.modules.util;
 
-
-import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -37,47 +33,44 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 
-public class TouchPartitionedRegionEntriesFunctionJUnitTest {
-
-  private TouchPartitionedRegionEntriesFunction function =
-      spy(new TouchPartitionedRegionEntriesFunction());
-  private FunctionContext context = mock(RegionFunctionContext.class);
-  private Cache cache = mock(Cache.class);
-  private LogWriter logger = mock(LogWriter.class);
-  private Region primaryDataSet = mock(Region.class);
-  private ResultSender resultSender = mock(ResultSender.class);
+public class TouchReplicatedRegionEntriesFunctionTest {
+  private final TouchReplicatedRegionEntriesFunction function =
+      spy(new TouchReplicatedRegionEntriesFunction());
+  private final FunctionContext context = mock(RegionFunctionContext.class);
+  private final Cache cache = mock(Cache.class);
+  private final LogWriter logger = mock(LogWriter.class);
+  private final Region region = mock(Region.class);
+  private final ResultSender resultSender = mock(ResultSender.class);
+  private final String regionName = "regionName";
+  private final HashSet<String> keys = new HashSet<>();
+  private final Object[] arguments = new Object[] {regionName, keys};
 
   @Before
   public void setUp() {
+    when(context.getArguments()).thenReturn(arguments);
     when(context.getCache()).thenReturn(cache);
     when(context.getResultSender()).thenReturn(resultSender);
     when(cache.getLogger()).thenReturn(logger);
     when(logger.fineEnabled()).thenReturn(false);
-    doReturn(primaryDataSet).when(function)
-        .getLocalDataForContextViaRegionHelper((RegionFunctionContext) context);
   }
 
   @Test
   public void executeDoesNotThrowExceptionWithProperlyDefinedContext() {
-    doReturn(new HashSet() {}).when((RegionFunctionContext) context).getFilter();
+    when(cache.getRegion(regionName)).thenReturn(region);
 
     function.execute(context);
 
-    verify(primaryDataSet, times(0)).get(any());
+    verify(region).getAll(keys);
     verify(resultSender).lastResult(true);
   }
 
   @Test
-  public void executeDoesNotThrowExceptionWithProperlyDefinedContextAndMultipleKeys() {
-    HashSet<String> keys = new HashSet();
-    keys.add("Key1");
-    keys.add("Key2");
-
-    doReturn(keys).when((RegionFunctionContext) context).getFilter();
+  public void executeDoesNotThrowExceptionWithProperlyDefinedContextAndNullRegion() {
+    when(cache.getRegion(regionName)).thenReturn(null);
 
     function.execute(context);
 
-    verify(primaryDataSet, times(keys.size())).get(anyString());
+    verify(region, times(0)).getAll(keys);
     verify(resultSender).lastResult(true);
   }
 }

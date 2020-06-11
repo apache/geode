@@ -39,14 +39,13 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.modules.util.RegionConfiguration;
 
-public abstract class AbstractSessionCacheJUnitTest {
+public abstract class AbstractSessionCacheTest {
 
   protected String sessionRegionName = "sessionRegion";
-  private String sessionRegionAttributesId = RegionShortcut.PARTITION.toString();
-  private int nonDefaultMaxInactiveInterval = RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL + 1;
-  private boolean gatewayDeltaReplicationEnabled = true;
-  private boolean gatewayReplicationEnabled = true;
-  private boolean enableDebugListener = true;
+  private final String sessionRegionAttributesId = RegionShortcut.PARTITION.toString();
+  private final boolean gatewayDeltaReplicationEnabled = true;
+  private final boolean gatewayReplicationEnabled = true;
+  private final boolean enableDebugListener = true;
 
 
   protected SessionManager sessionManager = mock(SessionManager.class);
@@ -60,7 +59,7 @@ public abstract class AbstractSessionCacheJUnitTest {
 
   @Test
   public void createRegionConfigurationSetsAppropriateValuesWithDefaultMaxInactiveInterval() {
-    RegionConfiguration config = spy(new RegionConfiguration());
+    final RegionConfiguration config = spy(new RegionConfiguration());
     doReturn(config).when(sessionCache).getNewRegionConfiguration();
 
     when(sessionManager.getRegionName()).thenReturn(sessionRegionName);
@@ -85,11 +84,12 @@ public abstract class AbstractSessionCacheJUnitTest {
 
   @Test
   public void createRegionConfigurationSetsAppropriateValuesWithNonDefaultMaxInactiveInterval() {
-    RegionConfiguration config = spy(new RegionConfiguration());
+    final RegionConfiguration config = spy(new RegionConfiguration());
     doReturn(config).when(sessionCache).getNewRegionConfiguration();
 
     when(sessionManager.getRegionName()).thenReturn(sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(sessionRegionAttributesId);
+    final int nonDefaultMaxInactiveInterval = RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL + 1;
     when(sessionManager.getMaxInactiveInterval()).thenReturn(nonDefaultMaxInactiveInterval);
     when(sessionManager.getEnableGatewayDeltaReplication())
         .thenReturn(gatewayDeltaReplicationEnabled);
@@ -109,8 +109,8 @@ public abstract class AbstractSessionCacheJUnitTest {
 
   @Test
   public void destroySessionDoesNotThrowExceptionWhenGetOperatingRegionThrowsEntryNotFoundException() {
-    EntryNotFoundException exception = new EntryNotFoundException("Entry not found.");
-    String sessionId = "sessionId";
+    final EntryNotFoundException exception = new EntryNotFoundException("Entry not found.");
+    final String sessionId = "sessionId";
     // For Client/Server the operating Region is always the session Region, for peer to peer this is
     // only true when
     // local caching is not enabled. For the purposes of this test the behavior is equivalent

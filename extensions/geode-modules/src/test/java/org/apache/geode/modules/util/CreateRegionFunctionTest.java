@@ -30,10 +30,10 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;
 
 // TODO: Remove the deprecated method invocations once RegionAttributesCreation is also updated.
-public class CreateRegionFunctionJUnitTest {
+public class CreateRegionFunctionTest {
 
   private RegionAttributes getRegionAttributesWithModifiedDiskDirs(final File[] diskDirs) {
-    RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
+    final RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(null);
     when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
     when(mockRegionAttributes.getCacheListeners()).thenReturn(new CacheListener[] {});
@@ -45,7 +45,7 @@ public class CreateRegionFunctionJUnitTest {
   }
 
   private RegionAttributes getRegionAttributesWithModifiedDiskDirSize(final int[] diskDirSize) {
-    RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
+    final RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(null);
     when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
     when(mockRegionAttributes.getCacheListeners()).thenReturn(new CacheListener[] {});
@@ -59,18 +59,19 @@ public class CreateRegionFunctionJUnitTest {
 
   @Test
   public void regionComparisonMustBeSuccessfulWhenDiskStoreNamesForBothAreNullAndDiskPropertiesAreDifferent() {
-    CreateRegionFunction createRegionFunction = mock(CreateRegionFunction.class);
+    final CreateRegionFunction createRegionFunction = mock(CreateRegionFunction.class);
     doCallRealMethod().when(createRegionFunction).compareRegionAttributes(any(), any());
 
-    RegionAttributes existingRegionAttributes =
+    final RegionAttributes existingRegionAttributes =
         getRegionAttributesWithModifiedDiskDirSize(new int[] {1});
-    RegionAttributes requestedRegionAttributes =
+    final RegionAttributes requestedRegionAttributes =
         getRegionAttributesWithModifiedDiskDirSize(new int[] {2});
     createRegionFunction.compareRegionAttributes(existingRegionAttributes,
         requestedRegionAttributes);
 
-    RegionAttributes existingRegionAttributes2 = getRegionAttributesWithModifiedDiskDirs(null);
-    RegionAttributes requestedRegionAttributes2 =
+    final RegionAttributes existingRegionAttributes2 =
+        getRegionAttributesWithModifiedDiskDirs(null);
+    final RegionAttributes requestedRegionAttributes2 =
         getRegionAttributesWithModifiedDiskDirs(new File[] {});
     createRegionFunction.compareRegionAttributes(existingRegionAttributes2,
         requestedRegionAttributes2);
