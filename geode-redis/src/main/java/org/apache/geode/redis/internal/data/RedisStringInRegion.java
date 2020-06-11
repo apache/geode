@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
@@ -167,7 +168,12 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     List<ByteArrayWrapper> sourceValues = new ArrayList<>();
     int selfIndex = -1;
     // Read all the source values, except for self, before locking the stripe.
-    RedisStringCommands commander = new RedisStringCommandsFunctionExecutor(region);
+    Region fetchRegion = region;
+    if (fetchRegion instanceof LocalDataSet) {
+      LocalDataSet lds = (LocalDataSet) fetchRegion;
+      fetchRegion = lds.getProxy();
+    }
+    RedisStringCommands commander = new RedisStringCommandsFunctionExecutor(fetchRegion);
     for (ByteArrayWrapper sourceKey : sources) {
       if (sourceKey.equals(key)) {
         // get self later after the stripe is locked
