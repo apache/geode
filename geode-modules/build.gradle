@@ -20,82 +20,148 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
-sourceSets {
-    module1 {
-        java.srcDir "src/testModules/module1/java"
-        resources.srcDir "src/testModules/module1/resources"
-        compileClasspath += configurations.compileClasspath
-        runtimeClasspath += configurations.runtimeClasspath
-    }
-    module2 {
-        java.srcDir "src/testModules/module2/java"
-        resources.srcDir "src/testModules/module2/resources"
-        compileClasspath += configurations.compileClasspath
-        runtimeClasspath += configurations.runtimeClasspath
-    }
-    module3 {
-        java.srcDir "src/testModules/module3/java"
-        resources.srcDir "src/testModules/module3/resources"
-        compileClasspath += configurations.compileClasspath
-        runtimeClasspath += configurations.runtimeClasspath
-    }
-    module4 {
-        java.srcDir "src/testModules/module4/java"
-        resources.srcDir "src/testModules/module4/resources"
-        compileClasspath += configurations.compileClasspath
-        runtimeClasspath += configurations.runtimeClasspath
-    }
-}
-
-task module1Jar(type: Jar, dependsOn: classes) {
-    description 'Assembles the jar archive that contains the module1 classes'
-    from sourceSets.module1.output
-    archiveName 'module1.jar'
-}
-
-task module2Jar(type: Jar, dependsOn: classes) {
-    description 'Assembles the jar archive that contains the module2 classes'
-    from sourceSets.module2.output
-    archiveName 'module2.jar'
-}
-
-task module3Jar(type: Jar, dependsOn: classes) {
-    description 'Assembles the jar archive that contains the module3 classes'
-    from sourceSets.module3.output
-    archiveName 'module3.jar'
-}
-
-task module4Jar(type: Jar, dependsOn: classes) {
-    description 'Assembles the jar archive that contains the module4 classes'
-    from sourceSets.module4.output
-    archiveName 'module4.jar'
-}
-
-tasks.test.dependsOn("module1Jar")
-tasks.test.dependsOn("module2Jar")
-tasks.test.dependsOn("module3Jar")
-tasks.test.dependsOn("module4Jar")
-
 repositories {
     mavenCentral()
 }
+
+apply plugin: 'nebula.facet'
+facets {
+    module1WithManifest {}
+    module2WithManifest {}
+    module3WithManifest {}
+    module4WithManifest {}
+    module1WithoutManifest {}
+    module2WithoutManifest {}
+    module3WithoutManifest {}
+    module4WithoutManifest {}
+}
+
+sourceSets {
+    module5WithManifest {
+        java.srcDir "src/testModules/module5WithManifest/java"
+        resources.srcDir "src/testModules/module5WithManifest/resources"
+        compileClasspath += configurations.compileClasspath
+        runtimeClasspath += configurations.runtimeClasspath
+    }
+}
+
+def moduleTasks = []
+def moduleCopyTasks = []
+def geodeProjects = ['geode-common-services','geode-common']
+
+facets.each { thisConfig ->
+    if (thisConfig.name.contains("WithoutManifest")) {
+        tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
+            into "$buildDir/libs"
+            from configurations.getByName("${thisConfig.name}RuntimeClasspath")
+            moduleCopyTasks.add(it.name - ".jar")
+        }
+        tasks.create("${thisConfig.name}Jar", Jar) {
+            description 'Assembles the jar archive that contains the $it classes without a manifest file'
+            from sourceSets.getByName(thisConfig.name).output
+
+            def ss = sourceSets.getByName(thisConfig.name)
+            ss.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
+            ss.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
+
+            archiveName "${thisConfig.name}-1.0".concat(".jar")
+            moduleTasks.add(it.name)
+        }
+
+
+    }
+    if (thisConfig.name.contains("WithManifest")) {
+        tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
+            into "$buildDir/libs"
+            from configurations.getByName("${thisConfig.name}RuntimeClasspath")
+            moduleCopyTasks.add(it.name)
+        }
+        tasks.create("${thisConfig.name}Jar", Jar) {
+            description 'Assembles the jar archive that contains the $it classes with a manifest file'
+            from sourceSets.getByName(thisConfig.name).output
+
+            def sourceSet = sourceSets.getByName(thisConfig.name)
+            sourceSet.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
+            sourceSet.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
+
+            doFirst {
+                def projectDependencies = []
+                def runtimeList = []
+
+                configurations.getByName("${thisConfig.name}RuntimeClasspath")
+                        .collect { it.name - ".jar" }
+                        .each { dependency ->
+                            if (dependency.startsWith("geode-")) {
+                                projectDependencies.add(dependency)
+                            } else {
+                                runtimeList.add(dependency)
+                            }
+                        }
+
+                projectDependencies.each { projectDependency ->
+                    geodeProjects.each { geodeProject ->
+                        if (projectDependency.contains(geodeProject)) {
+                            def childProject = project(":$geodeProject")
+
+                            if (childProject != null) {
+                                def collect = childProject.configurations.runtimeClasspath.collect { it.name - ".jar" }
+                                runtimeList.removeAll(collect)
+                                projectDependencies.removeAll(collect)
+                            }
+                        }
+                    }
+                }
+                manifest {
+                    attributes("Class-Path": runtimeList.join(' '))
+                    attributes("Dependent-Modules": projectDependencies.join(' '))
+                }
+            }
+            archiveName "${thisConfig.name}-1.0".concat(".jar")
+            moduleTasks.add(it.name)
+        }
+    }
+}
+
+task module5WithManifestJar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive that contains a manifest file wih an incorrect classpath location'
+    from sourceSets.module5WithManifest.output
+    doFirst {
+        manifest {
+            attributes("Class-Path": "invalidjar.jar")
+        }
+    }
+    archiveName 'module5WithManifest-1.0.jar'
+}
+
+task copyRuntimeLibs(type: Copy) {
+    into "$buildDir/libs"
+    from configurations.module1WithoutManifestRuntime
+}
+
+tasks.test.dependsOn("module5WithManifestJar")
+tasks.test.dependsOn(moduleTasks)
+tasks.test.dependsOn(moduleCopyTasks)
 
 dependencies {
     testCompile(group: 'junit', name: 'junit', version: '4.12')
     testImplementation('org.assertj:assertj-core')
 
-    compile(platform(project(':boms:geode-all-bom')))
-
-    compile(project(':geode-common'))
-    implementation(project(':geode-logging'))
-    implementation(project(':geode-log4j'))
+    testImplementation('org.mockito:mockito-core')
 
     compile(project(':geode-common-services'))
 
     implementation('org.apache.logging.log4j:log4j-core')
     compile('org.jboss.modules:jboss-modules')
 
-    module1Compile(sourceSets.test.output)
-    module2Compile(sourceSets.test.output)
-    module3Compile(sourceSets.test.output)
+    module1WithoutManifestCompileOnly(sourceSets.test.output)
+    module2WithoutManifestCompileOnly(sourceSets.test.output)
+    module3WithoutManifestCompileOnly(sourceSets.test.output)
+    module4WithoutManifestCompileOnly(sourceSets.test.output)
+    module1WithManifestCompileOnly(sourceSets.test.output)
+    module2WithManifestCompileOnly(sourceSets.test.output)
+    module3WithManifestCompileOnly(sourceSets.test.output)
+    module4WithManifestCompileOnly(sourceSets.test.output)
+    module5WithManifestCompileOnly(sourceSets.test.output)
+
+    module1WithManifestCompile('org.springframework:spring-core')
 }
