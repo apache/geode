@@ -1001,6 +1001,34 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  public void testIncrByFloat() {
+    String key1 = randString();
+    String key2 = randString();
+    String key3 = randString();
+    double incr1 = rand.nextInt(100);
+    double incr2 = rand.nextInt(100);
+    double incr3 = Double.MAX_VALUE / 2;
+    double num1 = 100;
+    double num2 = -100;
+    jedis.set(key1, "" + num1);
+    jedis.set(key2, "" + num2);
+    jedis.set(key3, "" + Double.MAX_VALUE);
+
+    jedis.incrByFloat(key1, incr1);
+    jedis.incrByFloat(key2, incr2);
+    assertThat(Double.valueOf(jedis.get(key1))).isEqualTo(num1 + incr1);
+    assertThat(Double.valueOf(jedis.get(key2))).isEqualTo(num2 + incr2);
+
+    Exception ex = null;
+    try {
+      jedis.incrByFloat(key3, incr3);
+    } catch (Exception e) {
+      ex = e;
+    }
+    assertThat(ex).isNotNull();
+  }
+
+  @Test
   public void testPAndSetex() {
     Random r = new Random();
     int setex = r.nextInt(5);
