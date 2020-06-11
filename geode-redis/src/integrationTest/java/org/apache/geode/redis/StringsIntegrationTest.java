@@ -633,6 +633,14 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  public void bitcount_givenEmptyRangeReturnsZero() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitcount(key, 1, 3)).isEqualTo(0);
+  }
+
+  @Test
   public void bitcount_correctForAllByteValues() {
     byte[] key = {1, 2, 3};
     byte[] value = {0};
