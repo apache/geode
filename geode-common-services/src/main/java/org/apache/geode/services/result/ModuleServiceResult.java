@@ -13,11 +13,36 @@
  * the License.
  */
 
-package org.apache.geode;
+package org.apache.geode.services.result;
 
-public class Module1 implements TestService {
+import java.util.function.Function;
+
+/**
+ * The {@link ModuleServiceResult} type is an attempt at the function construct of
+ * <a href="https://www.vavr.io/vavr-docs/#_either">Either</a>. In this implementation a
+ * {@link ModuleServiceResult}
+ * can define either success or failure (error) using the same type.
+ *
+ * @param <SuccessType> the return type for a successful operation.
+ *
+ * @since 1.14.0
+ */
+public interface ModuleServiceResult<SuccessType> extends Result<SuccessType, String> {
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public String sayHello() {
-    return "Hello from Module1!";
-  }
+  <T> T map(Function<SuccessType, T> successFunction, Function<String, T> errorFunction);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  SuccessType getMessage();
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  String getErrorMessage();
 }
