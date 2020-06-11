@@ -24,7 +24,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
@@ -160,14 +159,13 @@ public class ExpireDUnitTest {
 
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
   public void whenExpirationIsSet_andKeyWithoutExpirationIsRenamedOnAnotherServer_expirationIsCorrectlyTransferred() {
     String key1 = "key1";
     String key2 = "key2";
 
     jedis1.sadd(key1, "value");
     jedis1.sadd(key2, "value");
-    jedis1.expire(key1, 20);
+    jedis1.expire(key1, 200);
     jedis2.rename(key1, key2);
 
     assertThat(jedis1.ttl(key2)).isGreaterThan(0L);
