@@ -81,7 +81,7 @@ public class SetExecutor extends StringExecutor {
 
     boolean keepTTL = false;
     SetOptions.Exists existsOption = SetOptions.Exists.NONE;
-    long expiration = 0L;
+    long millisecondsUntilExpiration = 0L;
 
     List<String> optionalParametersStrings =
         optionalParameterBytes.stream()
@@ -90,31 +90,15 @@ public class SetExecutor extends StringExecutor {
 
     throwExceptionIfUnknownParameter(optionalParametersStrings);
     throwExceptionIfIncompatableParamaterOptions(optionalParametersStrings);
-    keepTTL = optionalParametersStrings.contains("KEEPTL");
+    keepTTL = optionalParametersStrings.contains("KEEPTTL");
 
     if (optionalParametersStrings.contains("PX")) {
-      String nextParameter =
-          getNextParameter("PX", optionalParametersStrings);
-
-      if (!isANumber(nextParameter)) {
-        throw new IllegalArgumentException(ERROR_SYNTAX);
-      }
-
-      expiration = parseExpirationTime("PX", nextParameter);
-      if (expiration <= 0) {
-        throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
-      }
+      millisecondsUntilExpiration =
+          handleEpiration(optionalParametersStrings, "PX" );
 
     } else if (optionalParametersStrings.contains("EX")) {
-      String nextParameter =
-          getNextParameter("EX", optionalParametersStrings);
-      if (!isANumber(nextParameter)) {
-        throw new IllegalArgumentException(ERROR_SYNTAX);
-      }
-      expiration = parseExpirationTime("EX", nextParameter);
-      if (expiration <= 0) {
-        throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
-      }
+      millisecondsUntilExpiration =
+          handleEpiration(optionalParametersStrings, "EX" );
     }
 
     if (optionalParametersStrings.contains("NX")) {
@@ -122,7 +106,32 @@ public class SetExecutor extends StringExecutor {
     } else if (optionalParametersStrings.contains("XX")) {
       existsOption = SetOptions.Exists.XX;
     }
-    return new SetOptions(existsOption, expiration, keepTTL);
+
+    return new SetOptions(existsOption, millisecondsUntilExpiration, keepTTL);
+  }
+
+  private long handleEpiration(List<String> optionalParametersStrings, String expirationType) {
+
+    long timeUntilExpiration;
+    long millisecondsUntilExpiration;
+
+    String nextParameter =
+        getNextParameter(expirationType, optionalParametersStrings);
+
+    timeUntilExpiration =
+        convertToLongOrThrowException(nextParameter);
+
+    if (timeUntilExpiration <= 0) {
+      throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
+    }
+
+    if (expirationType.equals("EX")){
+      millisecondsUntilExpiration =
+          SECONDS.toMillis(timeUntilExpiration);
+    }else {
+      millisecondsUntilExpiration = timeUntilExpiration;
+    }
+    return millisecondsUntilExpiration;
   }
 
   private String getNextParameter(String currentParameter,
@@ -135,7 +144,7 @@ public class SetExecutor extends StringExecutor {
   }
 
   private void throwExceptionIfUnknownParameter(List<String> optionalParameters) {
-    List<String> validOptionalParamaters = Arrays.asList("EX", "PX", "NX", "XX", "KEEPTL");
+    List<String> validOptionalParamaters = Arrays.asList("EX", "PX", "NX", "XX", "KEEPTTL");
 
     List<String> parametersInQuestion =
         optionalParameters
@@ -151,20 +160,10 @@ public class SetExecutor extends StringExecutor {
   private void throwErrorIfNotANumberInExpectedPosition(
       String parameter,
       List<String> optionalParameters) {
-
     if (previousOptionIsValidAndExpectsANumber(parameter, optionalParameters)) {
       convertToLongOrThrowException(parameter);
     } else {
       throw new IllegalArgumentException(ERROR_SYNTAX);
-    }
-  }
-
-  private boolean isANumber(String parameter) {
-    try {
-      Long.parseLong(parameter);
-      return true;
-    } catch (NumberFormatException e) {
-      return false;
     }
   }
 
@@ -182,7 +181,6 @@ public class SetExecutor extends StringExecutor {
     return validParamaters.contains(previousParameter);
   }
 
-
   private void throwExceptionIfIncompatableParamaterOptions(List<String> passedParametersStrings) {
 
     if (passedParametersStrings.contains("PX")
@@ -194,18 +192,6 @@ public class SetExecutor extends StringExecutor {
         && passedParametersStrings.contains("NX")) {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     }
-  }
-
-  private long parseExpirationTime(String expirationParameter, String timeUntilExpiration) {
-
-    long millisecondsUntilExpirationLong =
-        Long.parseLong(timeUntilExpiration);
-
-    if (expirationParameter.equals("EX")) {
-      millisecondsUntilExpirationLong = SECONDS.toMillis(millisecondsUntilExpirationLong);
-    }
-
-    return millisecondsUntilExpirationLong;
   }
 
   private long convertToLongOrThrowException(String expirationTime) {

@@ -29,6 +29,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
@@ -89,12 +90,29 @@ public class StringSetExecutorJUnitTest {
         "key".getBytes(),
         "value".getBytes(),
         "EX".getBytes());
+
     Command command = new Command(commandArgumentWithEXNoParameter);
 
     RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+
+  @Test
+  @Ignore("should pass When KeepTTL is implemented")
+  public void testSET_KEEPTTLArgument_DoesNoThrowError_givenCorrectInput() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "KEEPTTL".getBytes());
+    Command command = new Command(commandArgumentWithEXNoParameter);
+
+    RedisResponse response = executor.executeCommandWithResponse(command, context);
+
+    assertThat(response.toString()).doesNotContain("-ERR");
   }
 
   @Test
