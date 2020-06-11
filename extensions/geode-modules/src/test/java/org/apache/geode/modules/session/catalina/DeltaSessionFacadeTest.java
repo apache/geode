@@ -13,24 +13,30 @@
  * the License.
  */
 
-package org.apache.geode.modules.session.catalina.internal;
+package org.apache.geode.modules.session.catalina;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 
-import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
+public class DeltaSessionFacadeTest {
 
-public class DeltaSessionDestroyAttributeEventJUnitTest {
   @Test
-  public void DeltaSessionDestroyAttributeEventAppliesAttributeToSession() {
-    String attributeName = "DestroyAttribute";
+  public void DeltaSessionFacadeMakesProperCallsOnSessionWhenInvoked() {
+    final DeltaSessionInterface session = spy(new DeltaSession());
 
-    DeltaSessionDestroyAttributeEvent event = new DeltaSessionDestroyAttributeEvent(attributeName);
-    DeltaSessionInterface deltaSessionInterface = mock(DeltaSessionInterface.class);
-    event.apply((deltaSessionInterface));
+    final DeltaSessionFacade facade = new DeltaSessionFacade(session);
 
-    verify(deltaSessionInterface).localDestroyAttribute(attributeName);
+    doNothing().when(session).commit();
+    doReturn(true).when(session).isValid();
+
+    facade.commit();
+    facade.isValid();
+
+    verify(session).commit();
+    verify(session).isValid();
   }
 }
