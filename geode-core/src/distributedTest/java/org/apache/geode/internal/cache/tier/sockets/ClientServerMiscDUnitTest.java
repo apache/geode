@@ -18,11 +18,15 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.internal.PingOp;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
@@ -31,6 +35,7 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+
 
 public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
 
@@ -103,5 +108,34 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
     });
     await()
         .until(() -> entry2.getVersionStamp().getEntryVersion() > entryVersion2);
+  }
+
+  @Test
+  public void testPingWrongServer() {
+    PORT1 = initServerCache(true);
+    initServerCache2();
+    InternalDistributedMember server2ID = server2.invoke("get ID", () -> cache.getMyId());
+    pool = (PoolImpl) createClientCache(NetworkUtils.getServerHostName(), PORT1);
+    // send the ping to server1 but use server2's identifier so the ping will be forwarded
+
+    ClientProxyMembershipID proxyID = server1.invoke(
+        () -> CacheClientNotifier.getInstance().getClientProxies().iterator().next().getProxyID());
+    logger.info("ProxyID is : " + proxyID);
+    server2.invoke(() -> {
+      assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
+          .isFalse();
+      assertEquals(0, ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size());
+    });
+    PingOp.execute(pool, new ServerLocation(NetworkUtils.getServerHostName(), PORT1), server2ID);
+    // if the ping made it to server2 it will have the client's ID in its health monitor
+    server2.invoke(() -> {
+      assertEquals(1, ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size());
+      ClientProxyMembershipID proxyIDFound =
+          ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().iterator().next();
+      logger.info("ProxyID found in clientHealthMonitor: " + proxyIDFound);
+      assertThat(
+          ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
+              .isTrue();
+    });
   }
 }
