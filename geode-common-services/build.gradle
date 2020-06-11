@@ -27,7 +27,43 @@ repositories {
 dependencies {
     compile(platform(project(':boms:geode-all-bom')))
 
-    compile(project(':geode-common'))
+    compile('org.apache.commons:commons-lang3')
 
-    compile(project(':geode-core'))
+    compile(project(':geode-common'))
+}
+
+def geodeProjects = ['geode-common-services', 'geode-common']
+
+jar {
+    doFirst {
+        def projectDependencies = []
+        def runtimeList = []
+
+        configurations.runtimeClasspath
+                .collect { it.name - ".jar" }
+                .each { dependency ->
+                    if (dependency.startsWith("geode-")) {
+                        projectDependencies.add(dependency)
+                    } else {
+                        runtimeList.add(dependency)
+                    }
+                }
+
+        projectDependencies.each { projectDependency ->
+            geodeProjects.each { geodeProject ->
+                if (projectDependency.contains(geodeProject)) {
+                    def parentProject = project(":$geodeProject")
+                    if (parentProject != null) {
+                        def collect = parentProject.configurations.runtimeClasspath.collect { it.name - ".jar" }
+                        runtimeList.removeAll(collect)
+                        projectDependencies.removeAll(collect)
+                    }
+                }
+            }
+        }
+        manifest {
+            attributes("Class-Path": runtimeList.join(' '))
+            attributes("Dependent-Modules": projectDependencies.join(' '))
+        }
+    }
 }

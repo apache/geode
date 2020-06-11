@@ -15,14 +15,16 @@
 
 package org.apache.geode.services.module;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * Loads and unloads modules and services in a classloader-isolated manner.
  *
- * @since Geode 1.13.0
+ * @since Geode 1.14.0
  */
 @Experimental
 public interface ModuleService {
@@ -32,9 +34,30 @@ public interface ModuleService {
    *
    * @param moduleDescriptor description of the module to be loaded and information necessary to
    *        load it.
-   * @return true on success, false if the module could not be loaded.
+   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
+   *         success.
+   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         failure
+   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         failure.
    */
-  boolean loadModule(ModuleDescriptor moduleDescriptor);
+  ModuleServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor);
+
+  /**
+   * Registers a module from the {@link ModuleDescriptor}.
+   *
+   * @param moduleDescriptor description of the module to be loaded and information necessary to
+   *        register it.
+   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
+   *         success.
+   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         failure
+   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         failure.
+   */
+  ModuleServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor);
 
   /**
    * Unloads a previously loaded module.
@@ -42,15 +65,60 @@ public interface ModuleService {
    * modules that are not dependencies of other modules.
    *
    * @param moduleName name of the module to be unloaded.
-   * @return true on success, false if the module could not be unloaded.
+   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
+   *         success.
+   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         failure
+   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         failure.
    */
-  boolean unloadModule(String moduleName);
+  ModuleServiceResult<Boolean> unloadModule(String moduleName);
 
   /**
-   * Loads and returns a service instance for an interface.
+   * Loads and returns a service instance from any loaded module.
    *
    * @param service interface type to load and instantiate an implementation of.
-   * @return An instance of an implementation of service
+   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Map<String,Set<T>>} in
+   *         the case of success.
+   *         The result is a Map of {@code <ModuleName,Set<ServiceInstance>>}. Where moduleName
+   *         corresponds
+   *         to the serviceInstance from the module.
+   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         failure
+   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         failure.
    */
-  <T> List<T> loadService(Class<T> service);
+  <T> ModuleServiceResult<Map<String, Set<T>>> loadService(Class<T> service);
+
+  /**
+   * Returns the Class for the provided name for a specific module.
+   *
+   * @param className the classname that is to be loaded
+   * @param moduleDescriptor the ${@link ModuleDescriptor} used to lookup the module in question
+   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Class<T>} in the case of
+   *         success.
+   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         failure
+   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         failure.
+   */
+  ModuleServiceResult<Class<?>> loadClass(String className, ModuleDescriptor moduleDescriptor);
+
+  /**
+   * Returns the Class for the provided name for all loaded module.
+   *
+   * @param className the classname that is to be loaded
+   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Map<String,Class<T>>} in
+   *         the case of success.
+   *         The resultant map returns a list of modules where the class can be loaded from.
+   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         failure
+   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         failure.
+   */
+  ModuleServiceResult<Map<String, Class<?>>> loadClass(String className);
 }

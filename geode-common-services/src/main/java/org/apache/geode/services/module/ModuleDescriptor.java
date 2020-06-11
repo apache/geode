@@ -16,56 +16,70 @@
 package org.apache.geode.services.module;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 
 /**
- * Holds information to describe a classloader-isolated module including how to create it.
+ * Holds configuration information to describe a classloader-isolated module.
  *
  * @see Builder
  * @see ModuleService
- *
- * @since Geode 1.13.0
+ * @since Geode 1.14.0
  */
 @Experimental
 public class ModuleDescriptor {
 
-  private String name;
+  // The name of the module
+  private final String name;
 
-  private String version;
+  // The version module. Maybe be null
+  private final String version;
 
-  private List<String> sources;
+  // A collection of source paths for the module
+  private final Set<String> resourceJarPaths;
 
-  private List<String> dependencies;
+  // A collection of module names on which this module depends on
+  private final Set<String> dependencies;
 
-  private ModuleDescriptor(String name, String version, List<String> sources,
-      List<String> dependencies) {
+  private ModuleDescriptor(String name, String version, Set<String> resourceJarPaths,
+      Set<String> dependencies) {
     this.name = name;
     this.version = version;
-    this.sources = sources;
+    this.resourceJarPaths = resourceJarPaths;
     this.dependencies = dependencies;
   }
 
-  public String getName() {
-    return name;
+  /**
+   * A collection of resource paths that are to be loaded by the module
+   *
+   * @return a collection of resource paths for the module
+   */
+  public Set<String> getResourceJarPaths() {
+    return resourceJarPaths;
   }
 
-  public String getVersion() {
-    return version;
-  }
-
-  public List<String> getSources() {
-    return sources;
-  }
-
-  public List<String> getDependedOnModules() {
+  /**
+   * A collection of module names on which this module is dependent on
+   *
+   * @return A collection of module names on which this module is dependent on
+   */
+  public Set<String> getDependedOnModules() {
     return dependencies;
   }
 
-  public String getVersionedName() {
-    return name + ":" + version;
+  /**
+   * The name of the module concatenated with the version provided. In the case of the version being
+   * null
+   * the name does not contain the version.
+   *
+   */
+  public String getName() {
+    return name + (version != null ? "-" + version : "");
   }
 
   /**
@@ -75,21 +89,38 @@ public class ModuleDescriptor {
 
     private final String name;
     private final String version;
-    private List<String> dependencies = Collections.emptyList();
-    private List<String> sources = Collections.emptyList();
+    private final Set<String> dependencies = new HashSet<>();
+    private final Set<String> sources = new HashSet<>();
+
+    public Builder(String name) {
+      this(name, null);
+    }
 
     public Builder(String name, String version) {
-      this.name = name;
+      if (!StringUtils.isEmpty(name)) {
+        this.name = name;
+      } else {
+        throw new IllegalArgumentException(
+            "Name in the ModuleDescriptor.Builder cannot be null or empty");
+      }
       this.version = version;
     }
 
-    public Builder fromSources(String... sources) {
-      this.sources = Arrays.asList(sources);
+    public Builder fromResourcePaths(String... resourcePaths) {
+      return fromResourcePaths(Arrays.asList(resourcePaths));
+    }
+
+    public Builder fromResourcePaths(Collection<String> resourcePaths) {
+      this.sources.addAll(resourcePaths);
       return this;
     }
 
     public Builder dependsOnModules(String... dependencies) {
-      this.dependencies = Arrays.asList(dependencies);
+      return this.dependsOnModules(Arrays.asList(dependencies));
+    }
+
+    public Builder dependsOnModules(Collection<String> dependencies) {
+      this.dependencies.addAll(dependencies);
       return this;
     }
 

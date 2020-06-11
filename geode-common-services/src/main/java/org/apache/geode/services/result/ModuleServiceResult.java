@@ -13,24 +13,36 @@
  * the License.
  */
 
-package org.apache.geode.services.management;
+package org.apache.geode.services.result;
 
-import org.apache.geode.annotations.Experimental;
+import java.util.function.Function;
 
 /**
- * Entry point for creating a cache and bootstrapping Geode using the BootstrappingService
+ * The {@link ModuleServiceResult} type is an attempt at the function construct of
+ * <a href="https://www.vavr.io/vavr-docs/#_either">Either</a>. In this implementation a
+ * {@link ModuleServiceResult}
+ * can define either success or failure (error) using the same type.
  *
- * @since Geode 1.13.0
+ * @param <SuccessType> the return type for a successful operation.
+ *
+ * @since 1.14.0
  */
-@Experimental
-public interface ManagementService {
+public interface ModuleServiceResult<SuccessType> extends Result<SuccessType, String> {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  <T> T map(Function<SuccessType, T> successFunction, Function<String, T> errorFunction);
 
   /**
-   * Creates a Geode Cache given some configuration.
-   *
-   * @param properties system properties to use when creating the Cache.
-   *
-   * @throws Exception is Cache cannot be created.
+   * {@inheritDoc}
    */
-  // Cache createCache(Properties properties) throws Exception;
+  @Override
+  SuccessType getMessage();
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  String getErrorMessage();
 }
