@@ -28,7 +28,7 @@ import org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager;
 import org.apache.geode.test.junit.categories.HttpSessionTest;
 
 @Category({HttpSessionTest.class})
-public class Tomcat7SessionsJUnitTest extends TestSessionsBase {
+public class Tomcat7SessionsTest extends AbstractSessionsTest {
 
   // Set up the session manager we need
   @BeforeClass
@@ -45,11 +45,11 @@ public class Tomcat7SessionsJUnitTest extends TestSessionsBase {
     // TestSessions only live for a minute
     sessionManager.getTheContext().setSessionTimeout(1);
 
-    String key = "value_testSessionExpiration1";
-    String value = "Foo";
+    final String key = "value_testSessionExpiration1";
+    final String value = "Foo";
 
-    WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
+    final WebConversation wc = new WebConversation();
+    final WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
 
     // Set an attribute
     req.setParameter("cmd", QueryCommand.SET.name());
