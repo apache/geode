@@ -95,7 +95,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients() {
 
     String key = "key";
 
@@ -114,7 +114,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingDifferentDataFromSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_removingDifferentDataFromSameSetConcurrently() {
 
     String key = "key";
 
@@ -137,7 +137,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingSameDataFromSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_removingSameDataFromSameSetConcurrently() {
 
     String key = "key";
 
@@ -155,7 +155,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_removingFromDifferentSetsConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_removingFromDifferentSetsConcurrently() {
 
     String key1 = "key1";
     String key2 = "key2";
@@ -179,7 +179,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
     Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
@@ -204,7 +204,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
     Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);

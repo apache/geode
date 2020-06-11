@@ -121,7 +121,7 @@ public enum RedisCommandType {
    ***************************************/
 
   /*************** Connection ****************/
-  AUTH(new AuthExecutor(), SUPPORTED),
+  AUTH(new AuthExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   PING(new PingExecutor(), SUPPORTED),
   QUIT(new QuitExecutor(), SUPPORTED),
 
@@ -129,16 +129,16 @@ public enum RedisCommandType {
 
   DEL(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   EXISTS(new ExistsExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
-  EXPIRE(new ExpireExecutor(), SUPPORTED),
-  EXPIREAT(new ExpireAtExecutor(), SUPPORTED),
-  KEYS(new KeysExecutor(), SUPPORTED),
-  PERSIST(new PersistExecutor(), SUPPORTED),
-  PEXPIRE(new PExpireExecutor(), SUPPORTED),
-  PEXPIREAT(new PExpireAtExecutor(), SUPPORTED),
-  PTTL(new PTTLExecutor(), SUPPORTED),
+  EXPIRE(new ExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  EXPIREAT(new ExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  KEYS(new KeysExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  PERSIST(new PersistExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  PEXPIRE(new PExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  PTTL(new PTTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   RENAME(new RenameExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  TTL(new TTLExecutor(), SUPPORTED),
-  TYPE(new TypeExecutor(), SUPPORTED),
+  TTL(new TTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  TYPE(new TypeExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
   /************* Strings *****************/
 
@@ -162,13 +162,11 @@ public enum RedisCommandType {
 
   /********** Publish Subscribe **********/
 
-  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED),
-  PUBLISH(new PublishExecutor(), SUPPORTED),
-  UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED),
-  PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED),
-  PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED),
-
-  /*************** Server ****************/
+  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  PUBLISH(new PublishExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
 
   UNKNOWN(new UnknownExecutor(), SUPPORTED),
 

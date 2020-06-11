@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -92,15 +90,7 @@ public class SRemIntegrationTest {
 
   @Test
   public void testSRem_should_ThrowError_givenOnlyKey() {
-    String key = "key";
-    String field1 = "field1";
-    String field2 = "field2";
-    jedis.sadd(key, field1, field2);
-
-    Throwable caughtException = catchThrowable(
-        () -> jedis.srem(key));
-
-    assertThat(caughtException).hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.srem("key")).hasMessageContaining("wrong number of arguments");
   }
 
   @Test
@@ -135,12 +125,8 @@ public class SRemIntegrationTest {
     String value = "value";
     jedis.set(key, value);
 
-    Throwable caughtException = catchThrowable(
-        () -> jedis.srem(key, value));
-
-    assertThat(caughtException)
-        .hasMessageContaining(
-            "WRONGTYPE Operation against a key holding the wrong kind of value");
+    assertThatThrownBy(() -> jedis.srem(key, value))
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 
   @Test
@@ -151,15 +137,6 @@ public class SRemIntegrationTest {
     long result = jedis.srem(key, field);
 
     assertThat(result).isEqualTo(0);
-  }
-
-  @Test
-  public void testSRemErrorMessage_givenIncorrectDataType() {
-    jedis.set("farm", "chicken");
-    assertThatThrownBy(() -> {
-      jedis.srem("farm", "chicken");
-    }).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 
   @Test

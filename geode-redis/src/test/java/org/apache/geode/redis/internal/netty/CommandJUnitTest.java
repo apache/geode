@@ -15,11 +15,13 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.RedisCommandType;
@@ -37,42 +39,33 @@ public class CommandJUnitTest {
    */
   @Test
   public void testCommand() {
-    List<byte[]> list = null;
-    try {
-      new Command(list);
-      Assert.fail("Expected exception");
-    } catch (IllegalArgumentException e) {
-    }
+    List<byte[]> list1 = null;
+    assertThatThrownBy(() -> new Command(list1))
+        .hasMessageContaining("List of command elements cannot be empty");
 
-    list = new ArrayList<byte[]>();
-    try {
-      new Command(list);
-      Assert.fail("Expected exception");
-    } catch (IllegalArgumentException e) {
-    }
+    List<byte[]> list2 = new ArrayList<byte[]>();
 
-    list = new ArrayList<byte[]>();
-    list.add("Garbage".getBytes(StandardCharsets.UTF_8));
+    assertThatThrownBy(() -> new Command(list2))
+        .hasMessageContaining("List of command elements cannot be empty");
 
-    Command cmd = new Command(list);
-    Assert.assertNotNull(cmd.getCommandType());
+    List<byte[]> list3 = new ArrayList<byte[]>();
+    list3.add("Garbage".getBytes(StandardCharsets.UTF_8));
 
-    Assert.assertEquals(RedisCommandType.UNKNOWN, cmd.getCommandType());
-    list.clear();
-    list.add(RedisCommandType.HEXISTS.toString().getBytes(StandardCharsets.UTF_8));
-    cmd = new Command(list);
-    Assert.assertNotNull(cmd.getCommandType());
-    Assert.assertNotEquals(RedisCommandType.UNKNOWN, cmd.getCommandType());
-    Assert.assertEquals(RedisCommandType.HEXISTS, cmd.getCommandType());
-    Assert.assertEquals(list, cmd.getProcessedCommand());
-    Assert.assertNull(cmd.getKey());
+    Command cmd = new Command(list3);
+    assertThat(cmd.getCommandType()).isNotNull();
 
-    list.add("Arg1".getBytes(StandardCharsets.UTF_8));
-    cmd = new Command(list);
-    Assert.assertNotNull(cmd.getKey());
-    Assert.assertEquals("Arg1", cmd.getStringKey());
+    assertThat(cmd.getCommandType()).isEqualTo(RedisCommandType.UNKNOWN);
+    list3.clear();
+    list3.add(RedisCommandType.HEXISTS.toString().getBytes(StandardCharsets.UTF_8));
+    cmd = new Command(list3);
+    assertThat(cmd.getCommandType()).isNotNull();
+    assertThat(cmd.getCommandType()).isEqualTo(RedisCommandType.HEXISTS);
+    assertThat(cmd.getProcessedCommand()).isEqualTo(list3);
+    assertThat(cmd.getKey()).isNull();
+
+    list3.add("Arg1".getBytes(StandardCharsets.UTF_8));
+    cmd = new Command(list3);
+    assertThat(cmd.getKey()).isNotNull();
+    assertThat(cmd.getStringKey()).isEqualTo("Arg1");
   }
-
-
-
 }

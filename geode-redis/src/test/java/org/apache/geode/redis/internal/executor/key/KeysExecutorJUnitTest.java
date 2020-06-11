@@ -31,12 +31,25 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 
-public class DelExecutorJUnitTest {
+public class KeysExecutorJUnitTest {
 
   @Test
   public void calledWithTooFewOptions_returnsError() {
     List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("DEL".getBytes());
+    commandsAsBytes.add("KEYS".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    assertThatThrownBy(() -> command.execute(mockContext()))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
+  }
+
+  @Test
+  public void calledWithTooManyOptions_returnsError() {
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("KEYS".getBytes());
+    commandsAsBytes.add("*".getBytes());
+    commandsAsBytes.add("**".getBytes());
     Command command = new Command(commandsAsBytes);
 
     assertThatThrownBy(() -> command.execute(mockContext()))

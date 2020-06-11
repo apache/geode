@@ -19,7 +19,6 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,9 +26,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -37,13 +33,10 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class StringGetExecutorJUnitTest {
 
   private ExecutionHandlerContext context;
-  private GetExecutor executor;
-  private Region<ByteArrayWrapper, RedisData> region;
 
   @Before
   public void setup() {
     context = mock(ExecutionHandlerContext.class);
-    executor = spy(new GetExecutor());
   }
 
   @Test

@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -238,6 +239,37 @@ public class PubSubIntegrationTest {
     subscriberThread.start();
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    String message = "hello-" + System.currentTimeMillis();
+
+    Long result = publisher.publish("salutations", message);
+    assertThat(result).isEqualTo(1);
+
+    assertThat(mockSubscriber.getReceivedMessages()).isEmpty();
+    GeodeAwaitility.await().until(() -> !mockSubscriber.getReceivedPMessages().isEmpty());
+    assertThat(mockSubscriber.getReceivedPMessages()).containsExactly(message);
+
+    mockSubscriber.punsubscribe("sal*s");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
+  public void testSubscribeToSamePattern() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> {
+      subscriber.psubscribe(mockSubscriber, "sal*s");
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    mockSubscriber.psubscribe("sal*s");
+    GeodeAwaitility.await()
+        .during(5, TimeUnit.SECONDS)
+        .until(() -> mockSubscriber.getSubscribedChannels() == 1);
 
     String message = "hello-" + System.currentTimeMillis();
 

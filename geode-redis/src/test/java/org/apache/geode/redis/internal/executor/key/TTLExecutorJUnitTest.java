@@ -30,13 +30,12 @@ import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMism
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-
-public class DelExecutorJUnitTest {
+public class TTLExecutorJUnitTest {
 
   @Test
-  public void calledWithTooFewOptions_returnsError() {
+  public void calledWithTooFewCommandArguments_returnsError() {
     List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("DEL".getBytes());
+    commandsAsBytes.add("TTL".getBytes());
     Command command = new Command(commandsAsBytes);
 
     assertThatThrownBy(() -> command.execute(mockContext()))

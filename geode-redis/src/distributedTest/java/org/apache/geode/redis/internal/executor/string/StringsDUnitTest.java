@@ -98,7 +98,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients() {
+  public void set_shoulddistributeDataAmongMultipleServers_givenMultipleClients() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
 
@@ -110,7 +110,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void setnxShould_onlySucceedOnceForAParticularKey_givenMultipleClientsSettingSameKey() {
+  public void setnx_shouldOnlySucceedOnceForAParticularKey_givenMultipleClientsSettingSameKey() {
     Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
@@ -146,7 +146,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void setxxShould_alwaysSucceedOnceForAParticularKey_givenMultipleClientsSettingSameKey() {
+  public void setxx_shouldAlwaysSucceed_givenMultipleClientsSettingSameKeyThatAlreadyExists() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
 
@@ -177,7 +177,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentDataToSameStringConcurrently() {
+  public void set_shouldDistributeDataAmongMultipleServers_givenMultipleClientsAddingDifferentDataToDifferentStringsConcurrently() {
     List<String> keys1 = makeStringList(LIST_SIZE, "key1-");
     List<String> values1 = makeStringList(LIST_SIZE, "values1-");
     List<String> keys2 = makeStringList(LIST_SIZE, "key2-");
@@ -194,7 +194,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingSameDataToSameStringConcurrently() {
+  public void set_shouldDistributeDataAmongMultipleServers_givenMultipleClientsAddingSameDataToSameStringsConcurrently() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
 
@@ -207,7 +207,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameStringConcurrently() {
+  public void set_shouldDistributeDataAmongMultipleServers_givenTwoSetsOfClientsOperatingOnTheSameStringConcurrently() {
     Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
     Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
 
@@ -228,7 +228,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AppendingDifferentDataToSameStringConcurrently() {
+  public void set_shouldDistributeDataAmongMultipleServers_givenMultipleClientsAppendingDifferentDataToSameStringConcurrently() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values1 = makeStringList(LIST_SIZE, "values1-");
     List<String> values2 = makeStringList(LIST_SIZE, "values2-");

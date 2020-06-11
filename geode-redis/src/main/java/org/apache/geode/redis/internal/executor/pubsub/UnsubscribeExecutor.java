@@ -33,9 +33,6 @@ public class UnsubscribeExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 2) {
-      return RedisResponse.error("not enough arguments");
-    }
 
     byte[] channelName = commandElems.get(1);
     long subscriptionCount =

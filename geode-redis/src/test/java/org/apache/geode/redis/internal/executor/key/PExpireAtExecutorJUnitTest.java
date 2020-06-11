@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +27,7 @@ import java.util.List;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -34,46 +36,41 @@ public class PExpireAtExecutorJUnitTest {
 
   @Test
   public void calledWithTooFewCommandArguments_returnsError() {
-    List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
-    commandsAsBytesWithTooFewArguments.add("PEXPIREAT".getBytes());
-    commandsAsBytesWithTooFewArguments.add("key".getBytes());
-    Command command = new Command(commandsAsBytesWithTooFewArguments);
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("PEXPIREAT".getBytes());
+    Command command = new Command(commandsAsBytes);
 
-    RedisResponse response =
-        new PExpireAtExecutor().executeCommand(command, mockContext());
-
-    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
+    assertThatThrownBy(() -> command.execute(mockContext()))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
   }
 
   @Test
   public void calledWithTooManyCommandArguments_returnsError() {
-    List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
-    commandsAsBytesWithTooFewArguments.add("PEXPIREAT".getBytes());
-    commandsAsBytesWithTooFewArguments.add("key".getBytes());
-    commandsAsBytesWithTooFewArguments.add("1".getBytes());
-    commandsAsBytesWithTooFewArguments.add("extra-argument".getBytes());
-    Command command = new Command(commandsAsBytesWithTooFewArguments);
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("PEXPIREAT".getBytes());
+    commandsAsBytes.add("key".getBytes());
+    commandsAsBytes.add("1".getBytes());
+    commandsAsBytes.add("extra-argument".getBytes());
+    Command command = new Command(commandsAsBytes);
 
-    RedisResponse response =
-        new PExpireAtExecutor().executeCommand(command, mockContext());
-
-    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
+    assertThatThrownBy(() -> command.execute(mockContext()))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
   }
 
   @Test
   public void calledWithInvalidTimeStamp_returnsError() {
-    List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
-    commandsAsBytesWithTooFewArguments.add("PEXPIREAT".getBytes());
-    commandsAsBytesWithTooFewArguments.add("key".getBytes());
-    commandsAsBytesWithTooFewArguments.add("not-a-timestamp".getBytes());
-    Command command = new Command(commandsAsBytesWithTooFewArguments);
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("PEXPIREAT".getBytes());
+    commandsAsBytes.add("key".getBytes());
+    commandsAsBytes.add("not-a-timestamp".getBytes());
+    Command command = new Command(commandsAsBytes);
 
-    RedisResponse response =
-        new PExpireAtExecutor().executeCommand(command, mockContext());
+    RedisResponse response = command.execute(mockContext());
 
     assertThat(response.toString()).startsWith("-ERR value is not an integer or out of range");
   }
-
 
   public ExecutionHandlerContext mockContext() {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);

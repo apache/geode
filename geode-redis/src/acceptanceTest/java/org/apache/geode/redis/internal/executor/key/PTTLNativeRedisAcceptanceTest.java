@@ -11,27 +11,29 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package org.apache.geode.redis.internal.executor.key;
 
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.rules.TestRule;
+import org.testcontainers.containers.GenericContainer;
+import redis.clients.jedis.Jedis;
 
-public class TypeExecutor extends AbstractExecutor {
+import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
-  @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+public class PTTLNativeRedisAcceptanceTest extends PTTLIntegrationTest {
 
-    ByteArrayWrapper key = command.getKey();
-    String result = getRedisKeyCommands(context).type(key);
+  // Docker compose does not work on windows in CI. Ignore this test on windows
+  // Using a RuleChain to make sure we ignore the test before the rule comes into play
+  @ClassRule
+  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
-    return respondBulkStrings(result);
+  @BeforeClass
+  public static void setUp() {
+    GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
+    redisContainer.start();
+    jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);
   }
-
 }

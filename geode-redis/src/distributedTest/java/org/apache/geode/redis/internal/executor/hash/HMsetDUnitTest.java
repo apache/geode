@@ -95,7 +95,7 @@ public class HMsetDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients() {
 
     String key = "key";
 
@@ -110,7 +110,7 @@ public class HMsetDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_addingDifferentDataToSameHashConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_addingDifferentDataToSameHashConcurrently() {
 
     String key = "key";
 
@@ -136,7 +136,7 @@ public class HMsetDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_addingSameDataToSameHashConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_addingSameDataToSameHashConcurrently() {
 
     String key = "key";
 
@@ -157,7 +157,7 @@ public class HMsetDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_addingToDifferentHashesConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_addingToDifferentHashesConcurrently() {
 
     String key1 = "key1";
     String key2 = "key2";
@@ -183,7 +183,7 @@ public class HMsetDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_addingSameDataToSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_addingSameDataToSameSetConcurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
     Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
@@ -211,7 +211,7 @@ public class HMsetDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_addingDifferentDataToSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_addingDifferentDataToSameSetConcurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
     Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);

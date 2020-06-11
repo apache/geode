@@ -189,35 +189,6 @@ public class PubSubDUnitTest {
     reconnectSubscriber2();
   }
 
-  private void restartServerVM1() {
-    cluster.startRedisVM(1, locator.getPort());
-    waitForRestart();
-    redisServerPort1 = cluster.getRedisPort(1);
-  }
-
-  private void restartServerVM2() {
-    cluster.startRedisVM(2, locator.getPort());
-    waitForRestart();
-    redisServerPort2 = cluster.getRedisPort(2);
-  }
-
-  private void waitForRestart() {
-    await()
-        .untilAsserted(() -> gfsh.executeAndAssertThat("list members")
-            .statusIsSuccess()
-            .hasTableSection()
-            .hasColumn("Name")
-            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4", "server-5"));
-  }
-
-  private void reconnectSubscriber1() {
-    subscriber1 = new Jedis(LOCAL_HOST, redisServerPort1);
-  }
-
-  private void reconnectSubscriber2() {
-    subscriber2 = new Jedis(LOCAL_HOST, redisServerPort2);
-  }
-
   @Test
   public void shouldContinueToFunction_whenOneServerShutsDownGracefully_givenTwoSubscribersTwoPublishers()
       throws InterruptedException {
@@ -405,5 +376,34 @@ public class PubSubDUnitTest {
     GeodeAwaitility.await().untilAsserted(() -> future.get());
 
     clients.forEach(Jedis::close);
+  }
+
+  private void restartServerVM1() {
+    cluster.startRedisVM(1, locator.getPort());
+    waitForRestart();
+    redisServerPort1 = cluster.getRedisPort(1);
+  }
+
+  private void restartServerVM2() {
+    cluster.startRedisVM(2, locator.getPort());
+    waitForRestart();
+    redisServerPort2 = cluster.getRedisPort(2);
+  }
+
+  private void waitForRestart() {
+    await()
+        .untilAsserted(() -> gfsh.executeAndAssertThat("list members")
+            .statusIsSuccess()
+            .hasTableSection()
+            .hasColumn("Name")
+            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4", "server-5"));
+  }
+
+  private void reconnectSubscriber1() {
+    subscriber1 = new Jedis(LOCAL_HOST, redisServerPort1);
+  }
+
+  private void reconnectSubscriber2() {
+    subscriber2 = new Jedis(LOCAL_HOST, redisServerPort2);
   }
 }

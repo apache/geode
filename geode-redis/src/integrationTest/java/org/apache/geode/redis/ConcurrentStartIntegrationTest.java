@@ -16,7 +16,7 @@ package org.apache.geode.redis;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.Before;
@@ -89,7 +89,7 @@ public class ConcurrentStartIntegrationTest {
     for (Thread t : threads)
       t.join();
     cache = getCache();
-    assertFalse(cache.isClosed());
+    assertThat(cache.isClosed()).isFalse();
   }
 
   @SuppressWarnings("deprecation")

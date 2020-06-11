@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -40,6 +39,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -76,7 +76,39 @@ public class HashesIntegrationTest {
   }
 
   @Test
-  public void testHMSetHSetHLen() {
+  public void testHMSet_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1"))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2"))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2", "3", "4"))
+        .hasMessageContaining("wrong number of arguments");
+  }
+
+  @Test
+  public void testHSet_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1"))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1", "2"))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1", "2", "3", "4"))
+        .hasMessageContaining("wrong number of arguments");
+  }
+
+  @Test
+  public void testHGetall_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGETALL))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2"))
+        .hasMessageContaining("wrong number of arguments");
+  }
+
+  @Test
+  public void testHMSet() {
     int num = 10;
     String key = randString();
     Map<String, String> hash = new HashMap<String, String>();
@@ -86,10 +118,14 @@ public class HashesIntegrationTest {
     String response = jedis.hmset(key, hash);
     assertThat(response).isEqualTo("OK");
     assertThat(jedis.hlen(key)).isEqualTo(hash.size());
+  }
 
-    key = randString();
-    hash = new HashMap<String, String>();
-    for (int i = 0; i < num; i++) {
+  @Test
+  public void testHSet() {
+    String key = randString();
+    Map<String, String> hash = new HashMap<String, String>();
+
+    for (int i = 0; i < 10; i++) {
       hash.put(randString(), randString());
     }
     Set<String> keys = hash.keySet();
@@ -479,16 +515,13 @@ public class HashesIntegrationTest {
 
   @Test
   public void testHsetHandlesMultipleFields() {
-    String key = "HMSET" + randString();
-    String field1 = "F1" + randString();
-    String field2 = "F2" + randString();
-    String field1Value = randString();
-    String field2Value = randString();
+    String key = "key" + randString();
+
     Long fieldsAdded;
 
     Map<String, String> hsetMap = new HashMap<>();
-    hsetMap.put(field1, field1Value);
-    hsetMap.put(field2, field2Value);
+    hsetMap.put(randString(), randString());
+    hsetMap.put(randString(), randString());
 
     fieldsAdded = jedis.hset(key, hsetMap);
 
@@ -617,7 +650,7 @@ public class HashesIntegrationTest {
   }
 
   @Test
-  public void testConcurrentHSetHDel_sameKeyPerClient() throws InterruptedException {
+  public void testConcurrentHSetHDel_sameKeyPerClient() {
     String key = "HSET1";
 
     ArrayBlockingQueue<String> blockingQueue = new ArrayBlockingQueue<>(ITERATION_COUNT);
@@ -643,7 +676,7 @@ public class HashesIntegrationTest {
   }
 
   @Test
-  public void testConcurrentHGetAll() throws InterruptedException, ExecutionException {
+  public void testConcurrentHGetAll() {
     String key = "HSET1";
     HashMap<String, String> record = new HashMap<>();
 

@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -38,10 +37,6 @@ public class KeysExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 2) {
-      return RedisResponse.error(ArityDef.KEYS);
-    }
-
     String glob = Coder.bytesToString(commandElems.get(1));
     Set<ByteArrayWrapper> allKeys = getDataRegion(context).keySet();
     List<String> matchingKeys = new ArrayList<String>();

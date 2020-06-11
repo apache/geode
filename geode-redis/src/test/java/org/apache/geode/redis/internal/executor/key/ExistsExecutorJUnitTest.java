@@ -16,8 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,9 +50,8 @@ public class ExistsExecutorJUnitTest {
     commandsAsBytesWithTooFewArguments.add("EXISTS".getBytes());
     command = new Command(commandsAsBytesWithTooFewArguments);
 
-    Throwable thrown = catchThrowable(() -> command.execute(context));
-
-    assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    assertThatThrownBy(() -> command.execute(context))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
   }
 }
