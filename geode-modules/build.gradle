@@ -47,7 +47,7 @@ sourceSets {
 
 def moduleTasks = []
 def moduleCopyTasks = []
-def geodeProjects = ['geode-common-services','geode-common']
+def geodeProjects = ['geode-common-services', 'geode-common']
 
 facets.each { thisConfig ->
     if (thisConfig.name.contains("WithoutManifest")) {
@@ -163,5 +163,7 @@ dependencies {
     module4WithManifestCompileOnly(sourceSets.test.output)
     module5WithManifestCompileOnly(sourceSets.test.output)
 
-    module1WithManifestCompile('org.springframework:spring-core')
+    module1WithManifestCompile('com.google.guava:guava:29.0-jre')
+
+    testCompile(project(":geode-core"))
 }
