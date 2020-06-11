@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
+import org.jboss.modules.ModuleClassLoader;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.Event;
@@ -217,15 +218,29 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     if (contextClassLoader != null) {
       is = contextClassLoader.getResourceAsStream(r);
     }
+
     if (is == null) {
       is = getClass().getResourceAsStream(r);
     }
     if (is == null) {
       is = ClassLoader.getSystemResourceAsStream(r);
     }
+
+    if (is == null) {
+      if (this.getClass().getClassLoader() instanceof ModuleClassLoader) {
+        ModuleClassLoader classLoader = (ModuleClassLoader) this.getClass().getClassLoader();
+        is = classLoader.findResourceAsStream(r, false);
+      }
+    }
+
     if (is == null) {
       throw new MembershipConfigurationException(
           String.format("Cannot find %s", r));
+    }
+
+    if (this.getClass().getClassLoader() instanceof ModuleClassLoader) {
+      ModuleClassLoader classLoader = (ModuleClassLoader) this.getClass().getClassLoader();
+
     }
 
     String properties;

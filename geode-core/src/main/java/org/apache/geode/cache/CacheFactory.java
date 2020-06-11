@@ -31,6 +31,7 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire
@@ -403,5 +404,10 @@ public class CacheFactory {
    */
   public static String getVersion() {
     return GemFireVersion.getGemFireVersion();
+  }
+
+  public CacheFactory setModuleService(ModuleService moduleService) {
+    internalCacheBuilder.setModuleService(moduleService);
+    return this;
   }
 }

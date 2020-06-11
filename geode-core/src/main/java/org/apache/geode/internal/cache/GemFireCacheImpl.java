@@ -80,7 +80,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CancellationException;
@@ -276,6 +275,8 @@ import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * GemFire's implementation of a distributed {@link Cache}.
@@ -725,6 +726,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private ConcurrentMap<String, CountDownLatch> diskStoreLatches = new ConcurrentHashMap();
 
+  private final ModuleService modulesService;
+
   static {
     // this works around jdk bug 6427854
     String propertyName = "sun.nio.ch.bugLevel";
@@ -954,6 +957,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.functionServiceRegisterFunction = functionServiceRegisterFunction;
     this.systemTimerFactory = systemTimerFactory;
     this.replyProcessor21Factory = replyProcessor21Factory;
+    this.modulesService = cacheConfig.getModuleService();
 
     // Synchronized to prevent a new cache from being created before an old one finishes closing
     synchronized (GemFireCacheImpl.class) {
@@ -1478,16 +1482,23 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Initialize any services provided as extensions to the cache using service loader.
    */
   private void initializeServices() {
-    ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
-    for (CacheService service : loader) {
-      try {
-        if (service.init(this)) {
-          services.put(service.getInterface(), service);
-          logger.info("Initialized cache service {}", service.getClass().getName());
+    ModuleServiceResult<Set<CacheService>> loadedServices =
+        modulesService.loadService(CacheService.class);
+    if (loadedServices.isSuccessful()) {
+      // ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
+      for (CacheService service : loadedServices.getMessage()) {
+        try {
+          if (service.init(this)) {
+            this.services.put(service.getInterface(), service);
+            logger.info("Initialized cache service {}", service.getClass().getName());
+          }
+        } catch (Exception ex) {
+          logger.warn("Cache service " + service.getClass().getName() + " failed to initialize",
+              ex);
         }
-      } catch (Exception ex) {
-        logger.warn("Cache service " + service.getClass().getName() + " failed to initialize", ex);
       }
+    } else {
+      logger.warn(loadedServices.getErrorMessage());
     }
   }
 

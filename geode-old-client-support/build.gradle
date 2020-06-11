@@ -29,6 +29,10 @@ dependencies {
     exclude module: 'geode-core'
   }
 
+  testImplementation(project(":geode-modules"))
+  integrationTestImplementation(project(":geode-modules"))
+  acceptanceTestImplementation(project(":geode-modules"))
+  distributedTestImplementation(project(":geode-modules"))
 
   distributedTestImplementation('junit:junit')
 }

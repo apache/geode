@@ -163,7 +163,7 @@ public class InternalCacheBuilderTest {
     internalCacheBuilder
         .create();
 
-    verify(systemConstructor).construct(same(configProperties), any(), any());
+    verify(systemConstructor).construct(same(configProperties), any(), any(), any());
   }
 
   @Test
@@ -192,7 +192,7 @@ public class InternalCacheBuilderTest {
 
     internalCacheBuilder.create();
 
-    verify(systemConstructor).construct(any(), any(), same(theMetricsServiceBuilder));
+    verify(systemConstructor).construct(any(), any(), same(theMetricsServiceBuilder), any());
   }
 
   @Test

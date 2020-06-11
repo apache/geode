@@ -41,6 +41,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Factory class used to create the singleton {@link ClientCache client cache} and connect to one or
@@ -279,7 +280,8 @@ public class ClientCacheFactory {
     MetricsService.Builder metricsServiceBuilder =
         new InternalDistributedSystemMetricsService.Builder()
             .setIsClient(true);
-    return InternalDistributedSystem.connectInternal(dsProps, null, metricsServiceBuilder);
+    return InternalDistributedSystem.connectInternal(dsProps, null, metricsServiceBuilder,
+        ModuleService.getDefaultModuleService());
   }
 
   private PoolFactory getPoolFactory() {

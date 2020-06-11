@@ -23,6 +23,7 @@ import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * This is helper class used by CacheFactory to pass the cache configuration values to cache
@@ -74,6 +75,8 @@ public class CacheConfig {
 
   public boolean pdxIgnoreUnreadFields = DEFAULT_PDX_IGNORE_UNREAD_FIELDS;
   public boolean pdxIgnoreUnreadFieldsUserSet = false;
+
+  private ModuleService moduleService;
 
 
 
@@ -254,4 +257,11 @@ public class CacheConfig {
     }
   }
 
+  public void setModuleService(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
+
+  public ModuleService getModuleService() {
+    return this.moduleService;
+  }
 }

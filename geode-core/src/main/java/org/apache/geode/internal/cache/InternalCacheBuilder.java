@@ -49,6 +49,7 @@ import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalCacheBuilder {
   private static final Logger logger = LogService.getLogger();
@@ -343,7 +344,8 @@ public class InternalCacheBuilder {
         cacheConfig.getPostProcessor());
 
     return internalDistributedSystemConstructor
-        .construct(configProperties, securityConfig, metricsSessionBuilder);
+        .construct(configProperties, securityConfig, metricsSessionBuilder,
+            cacheConfig.getModuleService());
   }
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,
@@ -404,6 +406,11 @@ public class InternalCacheBuilder {
     return Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY);
   }
 
+  public InternalCacheBuilder setModuleService(ModuleService moduleService) {
+    cacheConfig.setModuleService(moduleService);
+    return this;
+  }
+
 
   @VisibleForTesting
   public interface InternalCacheConstructor {
@@ -415,6 +422,6 @@ public class InternalCacheBuilder {
   @VisibleForTesting
   public interface InternalDistributedSystemConstructor {
     InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig,
-        MetricsService.Builder metricsSessionBuilder);
+        MetricsService.Builder metricsSessionBuilder, ModuleService moduleService);
   }
 }

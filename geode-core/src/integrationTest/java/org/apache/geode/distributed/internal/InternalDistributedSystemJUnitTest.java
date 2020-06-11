@@ -75,6 +75,7 @@ import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -93,8 +94,9 @@ public class InternalDistributedSystemJUnitTest {
 
   private InternalDistributedSystem createSystem(Properties props,
       MetricsService.Builder metricsSessionBuilder) {
-    this.system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder)
-        .build();
+    this.system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder,
+        ModuleService.getDefaultModuleService())
+            .build();
     return this.system;
   }
 
@@ -659,8 +661,9 @@ public class InternalDistributedSystemJUnitTest {
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
     when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
     InternalDistributedSystem sys =
-        new InternalDistributedSystem.Builder(config1.toProperties(), metricsSessionBuilder)
-            .build();
+        new InternalDistributedSystem.Builder(config1.toProperties(), metricsSessionBuilder,
+            ModuleService.getDefaultModuleService())
+                .build();
     try {
 
       props.put(MCAST_PORT, "1");

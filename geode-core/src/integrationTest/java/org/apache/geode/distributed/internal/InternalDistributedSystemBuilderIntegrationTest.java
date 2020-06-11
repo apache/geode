@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalDistributedSystemBuilderIntegrationTest {
 
@@ -52,8 +53,10 @@ public class InternalDistributedSystemBuilderIntegrationTest {
     Properties configProperties = new Properties();
     configProperties.setProperty(NAME, theName);
 
-    system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder)
-        .build();
+    system =
+        new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder, ModuleService
+            .getDefaultModuleService())
+                .build();
 
     assertThat(system.isConnected()).isTrue();
     assertThat(system.getName()).isEqualTo(theName);
@@ -67,9 +70,10 @@ public class InternalDistributedSystemBuilderIntegrationTest {
     SecurityConfig securityConfig = new SecurityConfig(theSecurityManager, thePostProcessor);
     Properties configProperties = new Properties();
 
-    system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder)
-        .setSecurityConfig(securityConfig)
-        .build();
+    system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder,
+        ModuleService.getDefaultModuleService())
+            .setSecurityConfig(securityConfig)
+            .build();
 
     assertThat(system.getSecurityService().getSecurityManager())
         .isSameAs(theSecurityManager);

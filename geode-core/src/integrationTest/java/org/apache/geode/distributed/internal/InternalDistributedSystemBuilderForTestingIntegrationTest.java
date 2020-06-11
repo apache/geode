@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsManagerFactory;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalDistributedSystemBuilderForTestingIntegrationTest {
 
@@ -44,10 +45,11 @@ public class InternalDistributedSystemBuilderForTestingIntegrationTest {
         .thenReturn(statisticsManager);
 
     InternalDistributedSystem system =
-        new InternalDistributedSystem.BuilderForTesting(configProperties)
-            .setDistributionManager(distributionManager)
-            .setStatisticsManagerFactory(statisticsManagerFactory)
-            .build();
+        new InternalDistributedSystem.BuilderForTesting(configProperties,
+            ModuleService.getDefaultModuleService())
+                .setDistributionManager(distributionManager)
+                .setStatisticsManagerFactory(statisticsManagerFactory)
+                .build();
 
     assertThat(system.isConnected()).isTrue();
     assertThat(system.getDistributionManager()).isSameAs(distributionManager);

@@ -18,10 +18,9 @@ package org.apache.geode.services.module.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +32,7 @@ import org.apache.geode.services.result.impl.Failure;
 
 public class JBossModulesServiceImplWithPopulatedManifestFileTest {
 
-  private static String gemFireVersion = GemFireVersion.getGemFireVersion();
+  private static final String gemFireVersion = GemFireVersion.getGemFireVersion();
 
   private static final String MODULE1_PATH =
       System.getProperty("user.dir") + "/../libs/module1WithManifest-1.0.jar";
@@ -56,7 +55,7 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
 
   @Before
   public void setup() {
-    moduleService = new JBossModuleServiceImpl(LogManager.getLogger());
+    moduleService = new JBossModuleServiceImpl();
     geodeCommonsServiceDescriptor =
         new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)
@@ -86,14 +85,13 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
     loadModuleAndAssert(module1Descriptor);
     loadModuleAndAssert(module2Descriptor);
 
-    ModuleServiceResult<Map<String, Class<?>>> loadClassResult =
+    ModuleServiceResult<List<Class<?>>> loadClassResult =
         moduleService.loadClass("com.google.common.base.Strings");
 
     assertThat(loadClassResult.isSuccessful()).isTrue();
 
-    Map<String, Class<?>> message = loadClassResult.getMessage();
+    List<Class<?>> message = loadClassResult.getMessage();
     assertThat(message.size()).isEqualTo(1);
-    assertThat(message.keySet().toArray()[0]).isEqualTo(module1Descriptor.getName());
   }
 
   private void loadModuleAndAssert(ModuleDescriptor descriptor) {
@@ -113,7 +111,7 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
     assertThat(moduleService.registerModule(module1Descriptor).isSuccessful()).isTrue();
     loadModuleAndAssert(module1Descriptor);
 
-    ModuleServiceResult<Map<String, Class<?>>> loadClassResult =
+    ModuleServiceResult<List<Class<?>>> loadClassResult =
         moduleService.loadClass(".ocm.this.should.not.Exist");
     assertThat(loadClassResult.isSuccessful()).isTrue();
     assertThat(loadClassResult.getMessage().size()).isEqualTo(0);
@@ -133,15 +131,20 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
 
     String[] errorMessageSnippet =
         new String[] {"java.io.FileNotFoundException:", "java.nio.file.NoSuchFileException:"};
-    assertMessageContains(loadModuleResult.getErrorMessage(), errorMessageSnippet);
+    assertMessageContainsAny(loadModuleResult.getErrorMessage(), errorMessageSnippet);
     assertThat(loadModuleResult.getErrorMessage())
         .contains("libs/invalidjar.jar");
   }
 
-  private void assertMessageContains(String errorMessage, String[] errorMessageSnippet) {
+  private void assertMessageContainsAny(String errorMessage, String[] errorMessageSnippet) {
     AtomicBoolean containsString = new AtomicBoolean();
     Arrays.stream(errorMessageSnippet)
-        .forEach(errorSnippet -> containsString.set(errorMessage.contains(errorMessage)));
+        .forEach(errorSnippet -> {
+          boolean contains = errorMessage.contains(errorSnippet);
+          if (contains) {
+            containsString.set(true);
+          }
+        });
     assertThat(containsString.get()).isTrue();
   }
 }

@@ -15,7 +15,11 @@
 
 package org.apache.geode.services.management;
 
+import java.util.Properties;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * Entry point for creating a cache and bootstrapping Geode using the BootstrappingService
@@ -25,6 +29,8 @@ import org.apache.geode.annotations.Experimental;
 @Experimental
 public interface ManagementService {
 
+  void init(ModuleService moduleService);
+
   /**
    * Creates a Geode Cache given some configuration.
    *
@@ -32,5 +38,5 @@ public interface ManagementService {
    *
    * @throws Exception is Cache cannot be created.
    */
-  // Cache createCache(Properties properties) throws Exception;
+  ModuleServiceResult<Boolean> createCache(Properties properties);
 }

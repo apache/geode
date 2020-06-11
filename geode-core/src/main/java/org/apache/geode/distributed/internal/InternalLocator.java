@@ -113,6 +113,7 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 import org.apache.geode.security.AuthTokenEnabledComponents;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
@@ -742,6 +743,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           InternalDistributedSystem
               .connectInternal(distributedSystemProperties, null,
                   new InternalDistributedSystemMetricsService.Builder(),
+                  ModuleService.getDefaultModuleService(),
                   membershipLocator);
 
       if (peerLocator) {

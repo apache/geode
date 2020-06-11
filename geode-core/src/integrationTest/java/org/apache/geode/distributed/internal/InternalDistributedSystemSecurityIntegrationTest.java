@@ -29,6 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category(SecurityTest.class)
@@ -58,7 +59,7 @@ public class InternalDistributedSystemSecurityIntegrationTest {
 
     system =
         InternalDistributedSystem.connectInternal(configProperties, securityConfig,
-            metricsSessionBuilder);
+            metricsSessionBuilder, ModuleService.getDefaultModuleService());
 
     system.disconnect();
 
@@ -74,7 +75,8 @@ public class InternalDistributedSystemSecurityIntegrationTest {
     Properties configProperties = new Properties();
 
     system = InternalDistributedSystem.connectInternal(
-        configProperties, securityConfig, metricsSessionBuilder);
+        configProperties, securityConfig, metricsSessionBuilder,
+        ModuleService.getDefaultModuleService());
 
     system.disconnect();
 

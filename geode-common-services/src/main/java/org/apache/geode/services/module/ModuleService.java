@@ -15,11 +15,16 @@
 
 package org.apache.geode.services.module;
 
-import java.util.Map;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.impl.Failure;
+import org.apache.geode.services.result.impl.Success;
 
 /**
  * Loads and unloads modules and services in a classloader-isolated manner.
@@ -28,6 +33,52 @@ import org.apache.geode.services.result.ModuleServiceResult;
  */
 @Experimental
 public interface ModuleService {
+
+  static ModuleService getDefaultModuleService() {
+    return new ModuleService() {
+      @Override
+      public ModuleServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor) {
+        return Failure.of("This features is not implemented for a default ModuleService");
+      }
+
+      @Override
+      public ModuleServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor) {
+        return Failure.of("This features is not implemented for a default ModuleService");
+      }
+
+      @Override
+      public ModuleServiceResult<Boolean> unloadModule(String moduleName) {
+        return Failure.of("This features is not implemented for a default ModuleService");
+      }
+
+      @Override
+      public <T> ModuleServiceResult<Set<T>> loadService(Class<T> service) {
+        Set<T> result = new HashSet<>();
+        try {
+          ServiceLoader.load(service).forEach(result::add);
+        } catch (Exception e) {
+          return Failure.of(e.toString());
+        }
+        return Success.of(result);
+      }
+
+      @Override
+      public ModuleServiceResult<Class<?>> loadClass(String className,
+          ModuleDescriptor moduleDescriptor) {
+        return Failure.of("This features is not implemented for a default ModuleService");
+      }
+
+      @Override
+      public ModuleServiceResult<List<Class<?>>> loadClass(String className) {
+        try {
+          return Success.of(Collections.singletonList(
+              this.getClass().getClassLoader().loadClass(className)));
+        } catch (ClassNotFoundException e) {
+          return Failure.of(e.toString());
+        }
+      }
+    };
+  }
 
   /**
    * Loads a module from a resource.
@@ -90,7 +141,7 @@ public interface ModuleService {
    *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  <T> ModuleServiceResult<Map<String, Set<T>>> loadService(Class<T> service);
+  <T> ModuleServiceResult<Set<T>> loadService(Class<T> service);
 
   /**
    * Returns the Class for the provided name for a specific module.
@@ -120,5 +171,5 @@ public interface ModuleService {
    *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  ModuleServiceResult<Map<String, Class<?>>> loadClass(String className);
+  ModuleServiceResult<List<Class<?>>> loadClass(String className);
 }

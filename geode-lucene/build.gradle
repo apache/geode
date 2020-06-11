@@ -43,6 +43,10 @@ dependencies {
 
   runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
 
+  testImplementation(project(":geode-modules"))
+  integrationTestImplementation(project(":geode-modules"))
+  acceptanceTestImplementation(project(":geode-modules"))
+  distributedTestImplementation(project(":geode-modules"))
 
   testImplementation(project(':geode-junit'))
   testImplementation(project(':geode-lucene:geode-lucene-test'))
