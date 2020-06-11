@@ -154,6 +154,11 @@ public class RedisHash extends AbstractRedisData {
     return hash.size();
   }
 
+  public int hstrlen(ByteArrayWrapper field) {
+    ByteArrayWrapper entry = hget(field);
+    return entry != null ? entry.length() : 0;
+  }
+
   public List<ByteArrayWrapper> hmget(List<ByteArrayWrapper> fields) {
     ArrayList<ByteArrayWrapper> results = new ArrayList<>(fields.size());
     for (ByteArrayWrapper field : fields) {

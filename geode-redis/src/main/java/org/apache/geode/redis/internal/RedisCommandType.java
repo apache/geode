@@ -42,6 +42,7 @@ import org.apache.geode.redis.internal.executor.hash.HMSetExecutor;
 import org.apache.geode.redis.internal.executor.hash.HScanExecutor;
 import org.apache.geode.redis.internal.executor.hash.HSetExecutor;
 import org.apache.geode.redis.internal.executor.hash.HSetNXExecutor;
+import org.apache.geode.redis.internal.executor.hash.HStrLenExecutor;
 import org.apache.geode.redis.internal.executor.hash.HValsExecutor;
 import org.apache.geode.redis.internal.executor.key.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.key.DelExecutor;
@@ -221,6 +222,7 @@ public enum RedisCommandType {
   HMGET(new HMGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   HSETNX(new HSetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  HSTRLEN(new HStrLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   HVALS(new HValsExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /***************************************
@@ -304,6 +306,7 @@ public enum RedisCommandType {
   PFCOUNT(null, UNIMPLEMENTED),
   PFMERGE(null, UNIMPLEMENTED),
   PSYNC(null, UNIMPLEMENTED),
+  PUBSUB(null, UNIMPLEMENTED),
   RANDOMKEY(null, UNIMPLEMENTED),
   READONLY(null, UNIMPLEMENTED),
   READWRITE(null, UNIMPLEMENTED),

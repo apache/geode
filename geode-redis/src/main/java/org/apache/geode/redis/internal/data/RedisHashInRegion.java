@@ -72,6 +72,11 @@ public class RedisHashInRegion extends RedisKeyInRegion implements RedisHashComm
   }
 
   @Override
+  public int hstrlen(ByteArrayWrapper key, ByteArrayWrapper field) {
+    return getRedisHash(key).hstrlen(field);
+  }
+
+  @Override
   public List<ByteArrayWrapper> hmget(ByteArrayWrapper key, List<ByteArrayWrapper> fields) {
     return getRedisHash(key).hmget(fields);
   }
