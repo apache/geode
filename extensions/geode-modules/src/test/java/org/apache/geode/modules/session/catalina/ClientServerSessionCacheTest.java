@@ -99,6 +99,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
     doReturn(regionFactory).when(cache)
         .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
+    doReturn(sessionRegion).when(regionFactory).create(any());
     when(((InternalClientCache) cache).isClient()).thenReturn(true);
 
     when(emptyExecution.execute(any(Function.class))).thenReturn(collector);
@@ -193,7 +194,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
     sessionCache.initialize();
 
     verify(regionFactory).addCacheListener(any(SessionExpirationCacheListener.class));
-    verify(sessionRegion).registerInterest("ALL_KEYS", InterestResultPolicy.KEYS);
+    verify(sessionRegion).registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
   @Test
@@ -237,7 +238,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
 
     sessionCache.initialize();
 
-    verify(sessionRegion).registerInterest("ALL_KEYS", InterestResultPolicy.KEYS);
+    verify(sessionRegion).registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
   @Test
