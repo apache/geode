@@ -91,8 +91,13 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   /**
    * amount of time to sleep before trying to join after a failed attempt
    */
-  private static final int JOIN_RETRY_SLEEP =
+  public static final int JOIN_RETRY_SLEEP =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "join-retry-sleep", 1000);
+
+  /**
+   * amount of time to sleep before trying to contact a locator after a failed attempt
+   */
+  public static final int FIND_LOCATOR_RETRY_SLEEP = 1_000;
 
   /**
    * time to wait for a broadcast message to be transmitted by jgroups
@@ -1189,7 +1194,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           logger.info("Exception thrown when contacting a locator", problem);
           if (state.locatorsContacted == 0 && System.currentTimeMillis() < giveUpTime) {
             try {
-              Thread.sleep(1000);
+              Thread.sleep(FIND_LOCATOR_RETRY_SLEEP);
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
               services.getCancelCriterion().checkCancelInProgress(e);

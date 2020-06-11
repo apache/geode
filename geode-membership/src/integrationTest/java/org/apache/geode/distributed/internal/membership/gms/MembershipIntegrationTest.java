@@ -15,6 +15,8 @@
 package org.apache.geode.distributed.internal.membership.gms;
 
 import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_LOCATOR_WAIT_TIME;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.FIND_LOCATOR_RETRY_SLEEP;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.JOIN_RETRY_SLEEP;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -221,8 +223,8 @@ public class MembershipIntegrationTest {
         new int[] {coordinatorLocatorPort, lateJoiningLocatorPort};
 
     final Duration minimumJoinWaitTime = Duration
-        .ofMillis(2_000) // expected amount of sleep time per loop in GMSJoinLeave.join()
-        .multipliedBy(lateJoiningMembershipLocatorPorts.length * 2); // expected number of loops
+        .ofMillis(JOIN_RETRY_SLEEP + FIND_LOCATOR_RETRY_SLEEP) // amount of sleep time per retry
+        .multipliedBy(lateJoiningMembershipLocatorPorts.length * 2); // expected number of retries
     final int locatorWaitTime = (int) (3 * minimumJoinWaitTime.getSeconds());
 
     final MembershipConfig lateJoiningMembershipConfig =
