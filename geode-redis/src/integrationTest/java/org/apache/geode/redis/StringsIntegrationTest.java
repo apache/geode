@@ -550,6 +550,53 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  public void setRange_replacesStart() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 0, "abcd")).isEqualTo(10);
+    assertThat(jedis.get("key")).isEqualTo("abcd456789");
+  }
+
+  @Test
+  public void setRange_replacesMiddle() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 3, "abc")).isEqualTo(10);
+    assertThat(jedis.get("key")).isEqualTo("012abc6789");
+  }
+
+  @Test
+  public void setRange_replacesEnd() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 7, "abc")).isEqualTo(10);
+    assertThat(jedis.get("key")).isEqualTo("0123456abc");
+  }
+
+  @Test
+  public void setRange_extendsEnd() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 10, "abc")).isEqualTo(13);
+    assertThat(jedis.get("key")).isEqualTo("0123456789abc");
+  }
+
+  @Test
+  public void setRange_extendsAndPadsWithZero() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 11, "abc")).isEqualTo(14);
+    assertThat((int) (jedis.get("key").charAt(10))).isEqualTo(0);
+  }
+
+  @Test
+  public void setRange_createsKey() {
+    assertThat(jedis.setrange("key", 0, "abcd")).isEqualTo(4);
+    assertThat(jedis.get("key")).isEqualTo("abcd");
+  }
+
+  @Test
+  public void setRange_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.setrange("key", 0, "abc")).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
   public void testGetSet_updatesKeyWithNewValue_returnsOldValue() {
     String key = randString();
     String contents = randString();
