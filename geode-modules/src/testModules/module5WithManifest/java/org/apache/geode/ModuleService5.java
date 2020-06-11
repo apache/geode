@@ -13,24 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.services.management;
+package org.apache.geode;
 
-import org.apache.geode.annotations.Experimental;
-
-/**
- * Entry point for creating a cache and bootstrapping Geode using the BootstrappingService
- *
- * @since Geode 1.13.0
- */
-@Experimental
-public interface ManagementService {
-
-  /**
-   * Creates a Geode Cache given some configuration.
-   *
-   * @param properties system properties to use when creating the Cache.
-   *
-   * @throws Exception is Cache cannot be created.
-   */
-  // Cache createCache(Properties properties) throws Exception;
+public class ModuleService5 {
 }
