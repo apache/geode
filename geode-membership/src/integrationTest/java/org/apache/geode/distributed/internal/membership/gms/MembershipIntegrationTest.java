@@ -234,7 +234,7 @@ public class MembershipIntegrationTest {
       try {
         start(lateJoiningMembership);
       } catch (MemberStartupException e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
       }
     });
 
@@ -247,13 +247,14 @@ public class MembershipIntegrationTest {
       try {
         Thread.sleep(2 * minimumJoinWaitTime.toMillis());
         start(coordinatorMembership);
-      } catch (MemberStartupException | InterruptedException e) {
-        e.printStackTrace();
+      } catch (InterruptedException ignored) {
+      } catch (MemberStartupException e) {
+        throw new RuntimeException(e);
       }
     });
 
-    await().untilAsserted(() -> assertThat(coordinatorMembershipStartup).isDone());
-    await().untilAsserted(() -> assertThat(lateJoiningMembershipStartup).isDone());
+    await().untilAsserted(() -> assertThat(coordinatorMembershipStartup).isCompleted());
+    await().untilAsserted(() -> assertThat(lateJoiningMembershipStartup).isCompleted());
 
     await().untilAsserted(
         () -> assertThat(coordinatorMembership.getView().getMembers()).hasSize(2));
