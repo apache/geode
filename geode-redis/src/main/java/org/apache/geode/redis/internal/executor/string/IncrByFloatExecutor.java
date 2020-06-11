@@ -39,7 +39,7 @@ public class IncrByFloatExecutor extends StringExecutor {
   private final int INCREMENT_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 

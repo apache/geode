@@ -41,7 +41,7 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithThreeArgs.add("1".getBytes());
     Command command = new Command(commandsAsBytesWithThreeArgs);
 
-    RedisResponse response = getRangeExecutor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = getRangeExecutor.executeCommand(command, mockContext());
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
@@ -58,7 +58,7 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithFiveArgs.add("avocado".getBytes());
     Command command = new Command(commandsAsBytesWithFiveArgs);
 
-    RedisResponse response = getRangeExecutor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = getRangeExecutor.executeCommand(command, mockContext());
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
@@ -75,7 +75,7 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithInvalidStartIndex.add("1".getBytes());
 
     Command command = new Command(commandsAsBytesWithInvalidStartIndex);
-    RedisResponse response = getRangeExecutor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = getRangeExecutor.executeCommand(command, mockContext());
 
     assertThat(response.toString())
         .startsWith("-ERR value is not an integer or out of range");
@@ -93,7 +93,7 @@ public class GetRangeExecutorJUnitTest {
     commandsAsBytesWithInvalidEndIndex.add("not-a-number".getBytes());
     Command command = new Command(commandsAsBytesWithInvalidEndIndex);
 
-    RedisResponse response = getRangeExecutor.executeCommandWithResponse(command, mockContext());
+    RedisResponse response = getRangeExecutor.executeCommand(command, mockContext());
 
     assertThat(response.toString())
         .startsWith("-ERR value is not an integer or out of range");

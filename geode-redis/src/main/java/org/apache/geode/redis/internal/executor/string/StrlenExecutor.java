@@ -27,7 +27,7 @@ public class StrlenExecutor extends StringExecutor {
   private final int KEY_DOES_NOT_EXIST = 0;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 

@@ -32,7 +32,7 @@ public class SMoveExecutor extends SetExecutor {
   private static final int NOT_MOVED = 0;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 

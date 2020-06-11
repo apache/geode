@@ -16,12 +16,16 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ShutDownExecutor extends AbstractExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {}
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
+    return RedisResponse.nil();
+  }
 
 }

@@ -27,7 +27,7 @@ public class BitOpExecutor extends StringExecutor {
   private static final String ERROR_NO_SUCH_OP = "Please specify a legal operation";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 

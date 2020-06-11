@@ -69,7 +69,7 @@ public class GetSetExecutorJUnitTest {
         "GETSET".getBytes());
     Command command = new Command(args);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
@@ -84,7 +84,7 @@ public class GetSetExecutorJUnitTest {
         "key2".getBytes());
     Command command = new Command(args);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");

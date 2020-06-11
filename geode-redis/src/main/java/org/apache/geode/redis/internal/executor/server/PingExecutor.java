@@ -16,7 +16,7 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -25,8 +25,8 @@ public class PingExecutor extends AbstractExecutor {
   private final String PING_RESPONSE = "PONG";
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    command
-        .setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), PING_RESPONSE));
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
+    return RedisResponse.string(PING_RESPONSE);
   }
 }

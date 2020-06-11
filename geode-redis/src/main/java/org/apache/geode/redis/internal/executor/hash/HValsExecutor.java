@@ -49,7 +49,7 @@ public class HValsExecutor extends HashExecutor {
    * @param context the context (ex: region provider)
    */
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
 

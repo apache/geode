@@ -39,7 +39,7 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
   private final int VALUE_INDEX = 3;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 

@@ -47,7 +47,7 @@ public class HMSetExecutor extends HashExecutor {
   private static final String SUCCESS = "OK";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
 

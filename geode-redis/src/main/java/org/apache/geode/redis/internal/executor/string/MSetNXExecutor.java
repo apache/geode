@@ -31,7 +31,7 @@ public class MSetNXExecutor extends StringExecutor {
   private final int NOT_SET = 0;
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 

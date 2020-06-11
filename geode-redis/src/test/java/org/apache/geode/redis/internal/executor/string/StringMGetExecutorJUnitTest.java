@@ -52,7 +52,7 @@ public class StringMGetExecutorJUnitTest {
   public void testTooFewOptions() {
     List<byte[]> args = Arrays.asList("MGET".getBytes());
     Command command = new Command(args);
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
@@ -63,7 +63,7 @@ public class StringMGetExecutorJUnitTest {
     List<byte[]> args = Arrays.asList("MGET".getBytes());
 
     Command command = new Command(args);
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");

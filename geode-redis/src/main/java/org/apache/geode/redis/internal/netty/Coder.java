@@ -168,6 +168,18 @@ public class Coder {
     response.writeBytes(CRLFar);
   }
 
+  public static ByteBuf getFlattenedArrayResponse(ByteBufAllocator alloc,
+      Collection<Collection<?>> items)
+      throws CoderException {
+    ByteBuf response = alloc.buffer();
+
+    for (Object next : items) {
+      writeCollectionOrString(alloc, response, next);
+    }
+
+    return response;
+  }
+
   public static ByteBuf getArrayResponse(ByteBufAllocator alloc, Collection<?> items)
       throws CoderException {
     ByteBuf response = alloc.buffer();
@@ -175,24 +187,29 @@ public class Coder {
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);
     for (Object next : items) {
-      ByteBuf tmp = null;
-      try {
-        if (next instanceof Collection) {
-          Collection<?> nextItems = (Collection<?>) next;
-          tmp = getArrayResponse(alloc, nextItems);
-          response.writeBytes(tmp);
-        } else {
-          tmp = getBulkStringResponse(alloc, next);
-          response.writeBytes(tmp);
-        }
-      } finally {
-        if (tmp != null) {
-          tmp.release();
-        }
-      }
+      writeCollectionOrString(alloc, response, next);
     }
 
     return response;
+  }
+
+  private static void writeCollectionOrString(ByteBufAllocator alloc, ByteBuf response, Object next)
+      throws CoderException {
+    ByteBuf tmp = null;
+    try {
+      if (next instanceof Collection) {
+        Collection<?> nextItems = (Collection<?>) next;
+        tmp = getArrayResponse(alloc, nextItems);
+        response.writeBytes(tmp);
+      } else {
+        tmp = getBulkStringResponse(alloc, next);
+        response.writeBytes(tmp);
+      }
+    } finally {
+      if (tmp != null) {
+        tmp.release();
+      }
+    }
   }
 
   public static ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {

@@ -49,7 +49,7 @@ public class StrlenExecutorJUnitTest {
     commandsAsBytes.add("STRLEN".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    RedisResponse response = strlenExecutor.executeCommandWithResponse(command, context);
+    RedisResponse response = strlenExecutor.executeCommand(command, context);
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");
@@ -64,7 +64,7 @@ public class StrlenExecutorJUnitTest {
     commandsAsBytes.add("BONUS!".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    RedisResponse response = strlenExecutor.executeCommandWithResponse(command, context);
+    RedisResponse response = strlenExecutor.executeCommand(command, context);
 
     assertThat(response.toString())
         .startsWith("-ERR The wrong number of arguments or syntax was provided");

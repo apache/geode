@@ -15,17 +15,19 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_ILLEGAL_GLOB;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -33,11 +35,11 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class KeysExecutor extends AbstractExecutor {
 
   @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command,
+      ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.KEYS));
-      return;
+      return RedisResponse.error(ArityDef.KEYS);
     }
 
     String glob = Coder.bytesToString(commandElems.get(1));
@@ -48,9 +50,7 @@ public class KeysExecutor extends AbstractExecutor {
     try {
       pattern = GlobPattern.compile(glob);
     } catch (PatternSyntaxException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_ILLEGAL_GLOB));
-      return;
+      return RedisResponse.error(ERROR_ILLEGAL_GLOB);
     }
 
     for (ByteArrayWrapper bytesKey : allKeys) {
@@ -61,9 +61,9 @@ public class KeysExecutor extends AbstractExecutor {
     }
 
     if (matchingKeys.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-    } else {
-      respondBulkStrings(command, context, matchingKeys);
+      return RedisResponse.emptyArray();
     }
+
+    return respondBulkStrings(matchingKeys);
   }
 }

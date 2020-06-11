@@ -27,7 +27,7 @@ public class MSetExecutor extends StringExecutor {
   private final String SUCCESS = "OK";
 
   @Override
-  public RedisResponse executeCommandWithResponse(Command command,
+  public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
