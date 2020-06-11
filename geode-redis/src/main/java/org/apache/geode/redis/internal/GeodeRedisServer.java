@@ -54,6 +54,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -394,7 +395,7 @@ public class GeodeRedisServer {
           redisKeyCommands.pttl(entry.getKey());
         }
       }
-    } catch (CacheClosedException ignore) {
+    } catch (CacheClosedException | EntryDestroyedException ignore) {
     } catch (RuntimeException | Error ex) {
       logger.warn("Passive Redis expiration failed. Will try again in 1 second.", ex);
     }
