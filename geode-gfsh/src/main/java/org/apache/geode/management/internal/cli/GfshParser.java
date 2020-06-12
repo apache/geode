@@ -123,26 +123,24 @@ public class GfshParser extends SimpleParser {
 
     List<String> furtherSplitWithEquals = new ArrayList<>();
     for (String token : splitWithWhiteSpaces) {
-      int indexOfFirstEqual = token.indexOf('=');
-      int indexOfFirstDoubleQuote = token.indexOf('"');
-      int indexOfFirstSingleQuote = token.indexOf('\'');
-      if (indexOfFirstEqual < 0 || token.startsWith("-D")) {
+      // do not split with "=" if this part starts with quotes or is part of -D
+      if (token.startsWith("'") || token.startsWith("\"") || token.startsWith("-D")) {
         furtherSplitWithEquals.add(token);
-      } else {
-        if (indexOfFirstDoubleQuote == 0 || indexOfFirstSingleQuote == 0) {
-          furtherSplitWithEquals.add(token);
-        } else if ((indexOfFirstDoubleQuote < 0 && indexOfFirstSingleQuote < 0)
-            || (indexOfFirstEqual < indexOfFirstDoubleQuote)
-            || (indexOfFirstEqual < indexOfFirstSingleQuote)) {
-          String left = token.substring(0, indexOfFirstEqual);
-          String right = token.substring(indexOfFirstEqual + 1);
-          if (left.length() > 0) {
-            furtherSplitWithEquals.add(left);
-          }
-          if (right.length() > 0) {
-            furtherSplitWithEquals.add(right);
-          }
-        }
+        continue;
+      }
+      // if this token has equal sign, split around the first occurrence of it
+      int indexOfFirstEqual = token.indexOf('=');
+      if (indexOfFirstEqual < 0) {
+        furtherSplitWithEquals.add(token);
+        continue;
+      }
+      String left = token.substring(0, indexOfFirstEqual);
+      String right = token.substring(indexOfFirstEqual + 1);
+      if (left.length() > 0) {
+        furtherSplitWithEquals.add(left);
+      }
+      if (right.length() > 0) {
+        furtherSplitWithEquals.add(right);
       }
     }
     return furtherSplitWithEquals;
