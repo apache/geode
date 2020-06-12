@@ -15,8 +15,10 @@
 package org.apache.geode.redis.sets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -177,6 +179,47 @@ public class SetsIntegrationTest {
     }
     return successes;
   }
+
+  @Test
+  public void srandmember_withStringFails() {
+    jedis.set("string", "value");
+    assertThatThrownBy(() -> jedis.srandmember("string")).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void srandmember_withNonExistentKeyReturnsNull() {
+    assertThat(jedis.srandmember("non existent")).isNull();
+  }
+
+  @Test
+  public void srandmemberCount_withNonExistentKeyReturnsEmptyArray() {
+    assertThat(jedis.srandmember("non existent", 3)).isEmpty();
+  }
+
+  @Test
+  public void srandmember_returnsOneMember() {
+    jedis.sadd("key", "m1", "m2");
+    String result = jedis.srandmember("key");
+    assertThat(result).isIn("m1", "m2");
+  }
+
+  @Test
+  public void srandmemberCount_returnsTwoUniqueMembers() {
+    jedis.sadd("key", "m1", "m2", "m3");
+    List<String> results = jedis.srandmember("key", 2);
+    assertThat(results).hasSize(2);
+    assertThat(results).containsAnyOf("m1", "m2", "m3");
+    assertThat(results.get(0)).isNotEqualTo(results.get(1));
+  }
+
+  @Test
+  public void srandmemberCount_returnsTwoMembers() {
+    jedis.sadd("key", "m1", "m2", "m3");
+    List<String> results = jedis.srandmember("key", -3);
+    assertThat(results).hasSize(3);
+    assertThat(results).containsAnyOf("m1", "m2", "m3");
+  }
+
 
   @Test
   public void testSMembersSIsMember() {
