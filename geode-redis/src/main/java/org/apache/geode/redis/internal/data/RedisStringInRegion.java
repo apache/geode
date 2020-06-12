@@ -163,6 +163,7 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     return redisString.incrbyfloat(region, key, increment);
   }
 
+  @SuppressWarnings("unchecked")
   public int bitop(StripedExecutor stripedExecutor, String operation, ByteArrayWrapper key,
       List<ByteArrayWrapper> sources) {
     List<ByteArrayWrapper> sourceValues = new ArrayList<>();
