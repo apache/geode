@@ -190,9 +190,11 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
 
   private int doBitOp(String operation, ByteArrayWrapper key, int selfIndex,
       List<ByteArrayWrapper> sourceValues) {
-    RedisString redisString = getRedisString(key);
-    if (selfIndex != -1 && redisString != null) {
-      sourceValues.set(selfIndex, redisString.getValue());
+    if (selfIndex != -1) {
+      RedisString redisString = getRedisString(key);
+      if (redisString != null) {
+        sourceValues.set(selfIndex, redisString.getValue());
+      }
     }
     int maxLength = 0;
     for (ByteArrayWrapper sourceValue : sourceValues) {
@@ -215,12 +217,17 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
         newValue = not(sourceValues.get(0), maxLength);
         break;
     }
-    if (redisString == null) {
-      redisString = new RedisString(newValue);
+    if (newValue.length() == 0) {
+      region.remove(key);
     } else {
-      redisString.set(newValue);
+      RedisString redisString = getRedisStringForSet(key);
+      if (redisString == null) {
+        redisString = new RedisString(newValue);
+      } else {
+        redisString.set(newValue);
+      }
+      region.put(key, redisString);
     }
-    region.put(key, redisString);
     return newValue.length();
   }
 
