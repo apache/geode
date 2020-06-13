@@ -1085,11 +1085,12 @@ public class FilterProfile implements DataSerializableFixedID {
     FilterRoutingInfo frInfo = null;
     // bug #50809 - local routing for transactional ops must be done here
     // because the event isn't available later and we lose the old value for the entry
-    final boolean processLocalProfile =
-        event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
+    boolean processLocalProfile = false;
 
     CqService cqService = getCqService(event.getRegion());
     if (cqService.isRunning()) {
+      processLocalProfile =
+          event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
       frInfo = new FilterRoutingInfo();
       fillInCQRoutingInfo(event, processLocalProfile, peerProfiles, frInfo);
     }
