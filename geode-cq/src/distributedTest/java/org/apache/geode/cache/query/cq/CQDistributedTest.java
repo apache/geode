@@ -209,8 +209,8 @@ public class CQDistributedTest implements Serializable {
       txMgr.commit();
     });
 
-    await().untilAsserted(() -> assertThat(testListener2.onEventCalls).isEqualTo(2));
-    await().untilAsserted(() -> assertThat(testListener2.onEventUPDATE).isEqualTo(0));
+    await().untilAsserted(() -> assertThat(testListener2.onEventCreateCalls).isEqualTo(2));
+    await().untilAsserted(() -> assertThat(testListener2.onEventUpdateCalls).isEqualTo(0));
   }
 
   @Test
@@ -229,8 +229,8 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(0, new Portfolio(1));
     });
 
-    await().untilAsserted(() -> assertThat(testListener2.onEventCalls).isEqualTo(2));
-    await().untilAsserted(() -> assertThat(testListener2.onEventUPDATE).isEqualTo(0));
+    await().untilAsserted(() -> assertThat(testListener2.onEventCreateCalls).isEqualTo(2));
+    await().untilAsserted(() -> assertThat(testListener2.onEventUpdateCalls).isEqualTo(0));
   }
 
   private class TestCqListener implements CqListener, Serializable {
@@ -242,39 +242,31 @@ public class CQDistributedTest implements Serializable {
     }
 
     @Override
-    public void onError(CqEvent aCqEvent) {
-
-    }
+    public void onError(CqEvent aCqEvent) {}
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
   }
 
   private class TestCqListener2 implements CqListener, Serializable {
-    public int onEventCalls = 0;
-    public int onEventUPDATE = 0;
+    public int onEventCreateCalls = 0;
+    public int onEventUpdateCalls = 0;
 
     @Override
     public void onEvent(CqEvent aCqEvent) {
       Operation queryOperation = aCqEvent.getQueryOperation();
       if (queryOperation.isCreate()) {
-        onEventCalls++;
+        onEventCreateCalls++;
       } else if (queryOperation.isUpdate()) {
-        onEventUPDATE++;
+        onEventUpdateCalls++;
       }
     }
 
     @Override
-    public void onError(CqEvent aCqEvent) {
-
-    }
+    public void onError(CqEvent aCqEvent) {}
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
   }
 
 
