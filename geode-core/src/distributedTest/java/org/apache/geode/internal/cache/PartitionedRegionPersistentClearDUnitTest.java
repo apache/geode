@@ -45,9 +45,9 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
         Thread.sleep(100);
       }
     });
-    //dataStore2.stop();
+    dataStore2.stop();
 
-    verifyServerRegionSize(0);
+    verifyServerRegionSize(0, true);
 
     dataStore3.invoke(() -> {
       while (!((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
@@ -91,10 +91,10 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
       }
     });
 
-    //dataStore2.stop();
-    //dataStore2 = cluster.startServerVM(2, getProperties(), locatorPort);
+    dataStore2.stop();
+    dataStore2 = cluster.startServerVM(2, getProperties(), locatorPort);
 
-    verifyServerRegionSize(0);
+    verifyServerRegionSize(0, true);
 
     dataStore3.invoke(() -> {
       while (!((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
