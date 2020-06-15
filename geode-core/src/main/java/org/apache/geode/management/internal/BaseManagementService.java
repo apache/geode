@@ -94,6 +94,13 @@ public abstract class BaseManagementService extends ManagementService {
     }
   }
 
+  @VisibleForTesting
+  public static void clearManagementService(InternalCacheForClientAccess cache) {
+    synchronized (instances) {
+      instances.remove(cache);
+    }
+  }
+
   public static ManagementService getExistingManagementService(InternalCache cache) {
     synchronized (instances) {
       BaseManagementService service = instances.get(cache.getCacheForProcessingClientRequests());

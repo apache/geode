@@ -66,7 +66,6 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
@@ -129,7 +128,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   public InternalConfigurationPersistenceService(InternalCache cache, Path workingDirectory,
       JAXBService jaxbService) {
     this(cache,
-        sharedConfigLockService(cache.getDistributedSystem()),
+        DLockService.getOrCreateService(SHARED_CONFIG_LOCK_SERVICE_NAME,
+            cache.getInternalDistributedSystem()),
         jaxbService,
         workingDirectory.resolve(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME),
         workingDirectory
@@ -151,24 +151,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     this.sharedConfigLockingService = sharedConfigLockingService;
     status.set(SharedConfigurationStatus.NOT_STARTED);
     this.jaxbService = jaxbService;
-  }
-
-
-  /**
-   * Gets or creates (if not created) shared configuration lock service
-   */
-  private static DistributedLockService sharedConfigLockService(DistributedSystem ds) {
-    DistributedLockService sharedConfigDls =
-        DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
-    try {
-      if (sharedConfigDls == null) {
-        sharedConfigDls = DLockService.create(SHARED_CONFIG_LOCK_SERVICE_NAME,
-            (InternalDistributedSystem) ds, true, true);
-      }
-    } catch (IllegalArgumentException ignore) {
-      return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
-    }
-    return sharedConfigDls;
   }
 
   public JAXBService getJaxbService() {
