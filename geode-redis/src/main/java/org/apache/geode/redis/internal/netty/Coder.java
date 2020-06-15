@@ -309,6 +309,12 @@ public class Coder {
     return response;
   }
 
+  public static ByteBuf getDoubleResponse(ByteBufAllocator alloc, double d) {
+    ByteBuf response = alloc.buffer();
+    writeStringResponse(response, doubleToBytes(d));
+    return response;
+  }
+
   public static ByteBuf getNilResponse(ByteBufAllocator alloc) {
     ByteBuf buf = alloc.buffer().writeBytes(bNIL);
     return buf;

@@ -34,33 +34,31 @@ public class SRandMemberExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
+    boolean countSpecified = false;
     int count = 1;
 
     if (commandElems.size() > 2) {
       try {
         count = Coder.bytesToInt(commandElems.get(2));
+        countSpecified = true;
       } catch (NumberFormatException e) {
         return RedisResponse.error(ERROR_NOT_NUMERIC);
       }
     }
 
     if (count == 0) {
-      return RedisResponse.nil();
-    }
-
-    if (count < 0) {
-      count = -count;
+      return RedisResponse.emptyArray();
     }
 
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     Collection<ByteArrayWrapper> results = redisSetCommands.srandmember(key, count);
 
-    if (results.isEmpty()) {
-      return RedisResponse.nil();
-    } else if (count == 1) {
-      return RedisResponse.bulkString(results.iterator().next());
-    } else {
+    if (countSpecified) {
       return RedisResponse.array(results);
+    } else if (results.isEmpty()) {
+      return RedisResponse.nil();
+    } else {
+      return RedisResponse.bulkString(results.iterator().next());
     }
   }
 }

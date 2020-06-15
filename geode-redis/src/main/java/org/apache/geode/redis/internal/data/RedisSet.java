@@ -122,6 +122,10 @@ public class RedisSet extends AbstractRedisData {
 
   Collection<ByteArrayWrapper> srandmember(int count) {
     int membersSize = members.size();
+    boolean duplicatesAllowed = count < 0;
+    if (duplicatesAllowed) {
+      count = -count;
+    }
 
     if (membersSize <= count && count != 1) {
       return new ArrayList<>(members);
@@ -138,14 +142,23 @@ public class RedisSet extends AbstractRedisData {
       result.add(randEntry);
       return result;
     }
-    Set<ByteArrayWrapper> result = new HashSet<>();
-    // Note that rand.nextInt can return duplicates when "count" is high
-    // so we need to use a Set to collect the results.
-    while (result.size() < count) {
-      ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
-      result.add(s);
+    if (duplicatesAllowed) {
+      ArrayList<ByteArrayWrapper> result = new ArrayList<>(count);
+      while (count > 0) {
+        result.add(entries[rand.nextInt(entries.length)]);
+        count--;
+      }
+      return result;
+    } else {
+      Set<ByteArrayWrapper> result = new HashSet<>();
+      // Note that rand.nextInt can return duplicates when "count" is high
+      // so we need to use a Set to collect the results.
+      while (result.size() < count) {
+        ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
+        result.add(s);
+      }
+      return result;
     }
-    return result;
   }
 
   public boolean sismember(ByteArrayWrapper member) {

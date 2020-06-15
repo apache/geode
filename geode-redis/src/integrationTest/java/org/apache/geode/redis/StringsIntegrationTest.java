@@ -41,6 +41,8 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import redis.clients.jedis.BitOP;
+import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
@@ -550,6 +552,411 @@ public class StringsIntegrationTest {
   }
 
   @Test
+  public void setRange_replacesStart() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 0, "abcd")).isEqualTo(10);
+    assertThat(jedis.get("key")).isEqualTo("abcd456789");
+  }
+
+  @Test
+  public void setRange_replacesMiddle() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 3, "abc")).isEqualTo(10);
+    assertThat(jedis.get("key")).isEqualTo("012abc6789");
+  }
+
+  @Test
+  public void setRange_replacesEnd() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 7, "abc")).isEqualTo(10);
+    assertThat(jedis.get("key")).isEqualTo("0123456abc");
+  }
+
+  @Test
+  public void setRange_extendsEnd() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 10, "abc")).isEqualTo(13);
+    assertThat(jedis.get("key")).isEqualTo("0123456789abc");
+  }
+
+  @Test
+  public void setRange_extendsAndPadsWithZero() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 11, "abc")).isEqualTo(14);
+    assertThat((int) (jedis.get("key").charAt(10))).isEqualTo(0);
+  }
+
+  @Test
+  public void setRange_createsKey() {
+    assertThat(jedis.setrange("key", 0, "abcd")).isEqualTo(4);
+    assertThat(jedis.get("key")).isEqualTo("abcd");
+  }
+
+  @Test
+  public void setRange_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.setrange("key", 0, "abc")).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void bitcount_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.bitcount("key")).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void bitcount_givenNonExistentKeyReturnsZero() {
+    assertThat(jedis.bitcount("does not exist")).isEqualTo(0);
+    assertThat(jedis.exists("does not exist")).isFalse();
+  }
+
+  @Test
+  public void bitcount_givenEmptyStringReturnsZero() {
+    jedis.set("key", "");
+    assertThat(jedis.bitcount("key")).isEqualTo(0);
+  }
+
+  @Test
+  public void bitcount_givenOneBitReturnsOne() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 0, 0};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitcount(key)).isEqualTo(1);
+  }
+
+  @Test
+  public void bitcount_givenTwoBitsReturnsTwo() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitcount(key)).isEqualTo(2);
+  }
+
+  @Test
+  public void bitcount_givenEmptyRangeReturnsZero() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitcount(key, 1, 3)).isEqualTo(0);
+  }
+
+  @Test
+  public void bitcount_correctForAllByteValues() {
+    byte[] key = {1, 2, 3};
+    byte[] value = {0};
+    for (int b = Byte.MIN_VALUE; b <= Byte.MAX_VALUE; b++) {
+      value[0] = (byte) b;
+      jedis.set(key, value);
+      assertThat(jedis.bitcount(key)).as("b=" + b).isEqualTo(Integer.bitCount(0xFF & b));
+    }
+  }
+
+  @Test
+  public void bitpos_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.bitpos("key", false)).hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.bitpos("key", true)).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void bitpos_givenNonExistentKeyReturnsExpectedValue() {
+    assertThat(jedis.bitpos("does not exist", false)).isEqualTo(0);
+    assertThat(jedis.bitpos("does not exist", true)).isEqualTo(-1);
+    assertThat(jedis.bitpos("does not exist", false, new BitPosParams(4, 7))).isEqualTo(0);
+    assertThat(jedis.bitpos("does not exist", true, new BitPosParams(4, 7))).isEqualTo(-1);
+    assertThat(jedis.exists("does not exist")).isFalse();
+  }
+
+  @Test
+  public void bitcount_givenBitInFirstByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true)).isEqualTo(7);
+  }
+
+  @Test
+  public void bitcount_givenOneInSecondByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true)).isEqualTo(7 + 8);
+  }
+
+  @Test
+  public void bitcountFalse_givenBitInFirstByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {-2, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, false)).isEqualTo(7);
+  }
+
+  @Test
+  public void bitcountFalse_givenOneInSecondByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {-1, -2, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, false)).isEqualTo(7 + 8);
+  }
+
+  @Test
+  public void bitcountWithStart_givenOneInLastByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true, new BitPosParams(-1))).isEqualTo(7 + 3 * 8);
+  }
+
+  @Test
+  public void bitcountWithStartAndEnd_givenNoBits() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true, new BitPosParams(1, 2))).isEqualTo(-1);
+  }
+
+
+  @Test
+  public void getbit_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.getbit("key", 1)).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void getbit_givenNonExistentKeyReturnsFalse() {
+    assertThat(jedis.getbit("does not exist", 1)).isFalse();
+    assertThat(jedis.exists("does not exist")).isFalse();
+  }
+
+  @Test
+  public void getbit_givenNoBitsReturnsFalse() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0};
+    jedis.set(key, bytes);
+    assertThat(jedis.getbit(key, 1)).isFalse();
+  }
+
+  @Test
+  public void getbit_givenOneBitReturnsTrue() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.getbit(key, 8 + 7)).isTrue();
+  }
+
+  @Test
+  public void getbit_pastEndReturnsFalse() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.getbit(key, 8 + 8 + 7)).isFalse();
+  }
+
+  @Test
+  public void setbit_givenSetFails() {
+    jedis.sadd("key", "m1");
+    assertThatThrownBy(() -> jedis.setbit("key", 1, true)).hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void setbit_givenNonExistentKeyCreatesString() {
+    assertThat(jedis.setbit("newKey", 1, true)).isFalse();
+    assertThat(jedis.exists("newKey")).isTrue();
+    assertThat(jedis.type("newKey")).isEqualTo("string");
+    assertThat(jedis.getbit("newKey", 1)).isTrue();
+  }
+
+  @Test
+  public void setbit_canSetOneBit() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0};
+    jedis.set(key, bytes);
+    assertThat(jedis.setbit(key, 1, true)).isFalse();
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 0x40);
+  }
+
+  @Test
+  public void setbit_canSetOneBitAlreadySet() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1};
+    jedis.set(key, bytes);
+    assertThat(jedis.setbit(key, 7, true)).isTrue();
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 1);
+  }
+
+  @Test
+  public void setbit_canSetOneBitPastEnd() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0};
+    jedis.set(key, bytes);
+    assertThat(jedis.setbit(key, 1 + 8, true)).isFalse();
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 0);
+    assertThat(newbytes[1]).isEqualTo((byte) 0x40);
+  }
+
+  @Test
+  public void bitop_givenSetFails() {
+    jedis.sadd("foo", "m1");
+    assertThatThrownBy(() -> jedis.bitop(BitOP.AND, "key", "foo"))
+        .hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.bitop(BitOP.OR, "key", "foo")).hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.bitop(BitOP.XOR, "key", "foo"))
+        .hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.bitop(BitOP.NOT, "key", "foo"))
+        .hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
+  public void bitopNOT_givenNothingLeavesKeyUnset() {
+    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
+    assertThat(jedis.exists("key")).isFalse();
+  }
+
+  @Test
+  public void bitopNOT_givenNothingDeletesKey() {
+    jedis.set("key", "value");
+    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
+    assertThat(jedis.exists("key")).isFalse();
+  }
+
+  @Test
+  public void bitopNOT_givenNothingDeletesSet() {
+    jedis.sadd("key", "value");
+    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
+    assertThat(jedis.exists("key")).isFalse();
+  }
+
+  @Test
+  public void bitopNOT_givenEmptyStringDeletesKey() {
+    jedis.set("key", "value");
+    jedis.set("foo", "");
+    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
+    assertThat(jedis.exists("key")).isFalse();
+  }
+
+  @Test
+  public void bitopNOT_givenEmptyStringDeletesSet() {
+    jedis.sadd("key", "value");
+    jedis.set("foo", "");
+    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
+    assertThat(jedis.exists("key")).isFalse();
+  }
+
+  @Test
+  public void bitopNOT_negatesSelf() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitop(BitOP.NOT, key, key)).isEqualTo(1);
+    assertThat(jedis.strlen(key)).isEqualTo(1);
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 0xFE);
+  }
+
+  @Test
+  public void bitopNOT_createsNonExistingKey() {
+    byte[] key = {1};
+    byte[] other = {2};
+    byte[] bytes = {1};
+    jedis.set(other, bytes);
+    assertThat(jedis.bitop(BitOP.NOT, key, other)).isEqualTo(1);
+    assertThat(jedis.strlen(key)).isEqualTo(1);
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 0xFE);
+  }
+
+  @Test
+  public void bitopAND_givenSelfAndOther() {
+    byte[] key = {1};
+    byte[] other = {2};
+    byte[] bytes = {1};
+    byte[] otherBytes = {-1};
+    jedis.set(key, bytes);
+    jedis.set(other, otherBytes);
+    assertThat(jedis.bitop(BitOP.AND, key, key, other)).isEqualTo(1);
+    assertThat(jedis.strlen(key)).isEqualTo(1);
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 1);
+  }
+
+  @Test
+  public void bitopAND_givenSelfAndLongerOther() {
+    byte[] key = {1};
+    byte[] other = {2};
+    byte[] bytes = {1};
+    byte[] otherBytes = {-1, 3};
+    jedis.set(key, bytes);
+    jedis.set(other, otherBytes);
+    assertThat(jedis.bitop(BitOP.AND, key, key, other)).isEqualTo(2);
+    assertThat(jedis.strlen(key)).isEqualTo(2);
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 1);
+    assertThat(newbytes[1]).isEqualTo((byte) 0);
+  }
+
+  @Test
+  public void bitopOR_givenSelfAndOther() {
+    byte[] key = {1};
+    byte[] other = {2};
+    byte[] bytes = {1};
+    byte[] otherBytes = {8};
+    jedis.set(key, bytes);
+    jedis.set(other, otherBytes);
+    assertThat(jedis.bitop(BitOP.OR, key, key, other)).isEqualTo(1);
+    assertThat(jedis.strlen(key)).isEqualTo(1);
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 9);
+  }
+
+  @Test
+  public void bitopOR_givenSelfAndLongerOther() {
+    byte[] key = {1};
+    byte[] other = {2};
+    byte[] bytes = {1};
+    byte[] otherBytes = {-1, 3};
+    jedis.set(key, bytes);
+    jedis.set(other, otherBytes);
+    assertThat(jedis.bitop(BitOP.OR, key, key, other)).isEqualTo(2);
+    assertThat(jedis.strlen(key)).isEqualTo(2);
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) -1);
+    assertThat(newbytes[1]).isEqualTo((byte) 3);
+  }
+
+  @Test
+  public void bitopXOR_givenSelfAndOther() {
+    byte[] key = {1};
+    byte[] other = {2};
+    byte[] bytes = {9};
+    byte[] otherBytes = {8};
+    jedis.set(key, bytes);
+    jedis.set(other, otherBytes);
+    assertThat(jedis.bitop(BitOP.XOR, key, key, other)).isEqualTo(1);
+    assertThat(jedis.strlen(key)).isEqualTo(1);
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 1);
+  }
+
+  @Test
+  public void bitopXOR_givenSelfAndLongerOther() {
+    byte[] key = {1};
+    byte[] other = {2};
+    byte[] bytes = {1};
+    byte[] otherBytes = {-1, 3};
+    jedis.set(key, bytes);
+    jedis.set(other, otherBytes);
+    assertThat(jedis.bitop(BitOP.XOR, key, key, other)).isEqualTo(2);
+    assertThat(jedis.strlen(key)).isEqualTo(2);
+    byte[] newbytes = jedis.get(key);
+    assertThat(newbytes[0]).isEqualTo((byte) 0xFE);
+    assertThat(newbytes[1]).isEqualTo((byte) 3);
+  }
+
+
+  @Test
   public void testGetSet_updatesKeyWithNewValue_returnsOldValue() {
     String key = randString();
     String contents = randString();
@@ -998,6 +1405,23 @@ public class StringsIntegrationTest {
       ex = e;
     }
     assertThat(ex).isNotNull();
+  }
+
+  @Test
+  public void testIncrByFloat() {
+    String key1 = randString();
+    String key2 = randString();
+    double incr1 = rand.nextInt(100);
+    double incr2 = rand.nextInt(100);
+    double num1 = 100;
+    double num2 = -100;
+    jedis.set(key1, "" + num1);
+    jedis.set(key2, "" + num2);
+
+    jedis.incrByFloat(key1, incr1);
+    jedis.incrByFloat(key2, incr2);
+    assertThat(Double.valueOf(jedis.get(key1))).isEqualTo(num1 + incr1);
+    assertThat(Double.valueOf(jedis.get(key2))).isEqualTo(num2 + incr2);
   }
 
   @Test

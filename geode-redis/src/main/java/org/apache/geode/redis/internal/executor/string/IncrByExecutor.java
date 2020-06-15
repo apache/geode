@@ -26,9 +26,10 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class IncrByExecutor extends StringExecutor {
 
-  private final String ERROR_INCREMENT_NOT_USABLE = "The increment on this key must be numeric";
+  private static final String ERROR_INCREMENT_NOT_USABLE =
+      "The increment on this key must be numeric";
 
-  private final int INCREMENT_INDEX = 2;
+  private static final int INCREMENT_INDEX = 2;
 
   @Override
   public RedisResponse executeCommand(Command command,

@@ -29,14 +29,15 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SetEXExecutor extends StringExecutor implements Extendable {
 
-  private final String ERROR_SECONDS_NOT_A_NUMBER =
+  private static final String ERROR_SECONDS_NOT_A_NUMBER =
       "The expiration argument provided was not a number";
 
-  private final String ERROR_SECONDS_NOT_LEGAL = "The expiration argument must be greater than 0";
+  private static final String ERROR_SECONDS_NOT_LEGAL =
+      "The expiration argument must be greater than 0";
 
-  private final String SUCCESS = "OK";
+  private static final String SUCCESS = "OK";
 
-  private final int VALUE_INDEX = 3;
+  private static final int VALUE_INDEX = 3;
 
   @Override
   public RedisResponse executeCommand(Command command,

@@ -29,7 +29,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SetExecutor extends StringExecutor {
 
-  private final String SUCCESS = "OK";
+  private static final String SUCCESS = "OK";
 
   @Override
   public RedisResponse executeCommand(Command command,

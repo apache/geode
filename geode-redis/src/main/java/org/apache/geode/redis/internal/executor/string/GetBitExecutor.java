@@ -25,7 +25,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class GetBitExecutor extends StringExecutor {
 
-  private final String ERROR_NOT_INT = "The offset provided must be numeric";
+  private static final String ERROR_NOT_INT = "The offset provided must be numeric";
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -38,13 +38,6 @@ public class GetBitExecutor extends StringExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    ByteArrayWrapper wrapper = getRedisStringCommands(context).get(key);
-    if (wrapper == null) {
-      return RedisResponse.integer(0);
-    }
-
-    int bit = 0;
-    byte[] bytes = wrapper.toBytes();
     int offset;
     try {
       byte[] offAr = commandElems.get(2);
@@ -52,23 +45,10 @@ public class GetBitExecutor extends StringExecutor {
     } catch (NumberFormatException e) {
       return RedisResponse.error(ERROR_NOT_INT);
     }
-    if (offset < 0) {
-      offset += bytes.length * 8;
-    }
 
-    if (offset < 0 || offset > bytes.length * 8) {
-      return RedisResponse.integer(0);
-    }
+    int result = getRedisStringCommands(context).getbit(key, offset);
 
-    int byteIndex = offset / 8;
-    offset %= 8;
-
-    if (byteIndex >= bytes.length) {
-      return RedisResponse.integer(0);
-    }
-
-    bit = (bytes[byteIndex] & (0x80 >> offset)) >> (7 - offset);
-    return RedisResponse.integer(bit);
+    return RedisResponse.integer(result);
   }
 
 }

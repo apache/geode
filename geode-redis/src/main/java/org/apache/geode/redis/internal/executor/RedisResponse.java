@@ -116,4 +116,9 @@ public class RedisResponse {
   public String toString() {
     return encode(new UnpooledByteBufAllocator(false)).toString(Charset.defaultCharset());
   }
+
+  public static RedisResponse doubleValue(double numericValue) {
+    return new RedisResponse((bba) -> Coder.getDoubleResponse(bba, numericValue));
+  }
+
 }
