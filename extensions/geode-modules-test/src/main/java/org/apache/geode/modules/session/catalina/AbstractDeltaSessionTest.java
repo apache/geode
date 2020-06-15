@@ -15,6 +15,7 @@
 
 package org.apache.geode.modules.session.catalina;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,19 +50,18 @@ import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics
 public abstract class AbstractDeltaSessionTest {
 
   protected final DeltaSessionManager manager = mock(DeltaSessionManager.class);
-  private final Region<String, HttpSession> sessionRegion = mock(Region.class);
+  private final Region<String, HttpSession> sessionRegion = uncheckedCast(mock(Region.class));
   private final SessionCache sessionCache = mock(ClientServerSessionCache.class);
-  DeltaSessionStatistics stats = mock(DeltaSessionStatistics.class);
-  private final String sessionRegionName = "sessionRegionName";
-  private final String contextName = "contextName";
+  private final DeltaSessionStatistics stats = mock(DeltaSessionStatistics.class);
   private final Log logger = mock(Log.class);
 
   @Before
   public void setup() {
+    String sessionRegionName = "sessionRegionName";
     when(manager.getRegionName()).thenReturn(sessionRegionName);
     when(manager.getSessionCache()).thenReturn(sessionCache);
     when(manager.getLogger()).thenReturn(logger);
-    when(manager.getContextName()).thenReturn(contextName);
+    when(manager.getContextName()).thenReturn("contextName");
     when(manager.getStatistics()).thenReturn(stats);
     when(manager.isBackingCacheAvailable()).thenReturn(true);
     when(manager.getPreferDeserializedForm()).thenReturn(true);
@@ -83,8 +83,7 @@ public abstract class AbstractDeltaSessionTest {
 
   @Test
   public void sessionConstructionDoesNotThrowExceptionWithValidArgument() {
-    final DeltaSession session = new DeltaSession(manager);
-
+    new DeltaSession(manager);
     verify(logger).debug(anyString());
   }
 
@@ -126,7 +125,7 @@ public abstract class AbstractDeltaSessionTest {
     final List<DeltaSessionAttributeEvent> events = new ArrayList<>();
     events.add(event1);
     events.add(event2);
-    final Region<String, DeltaSessionInterface> region = mock(Region.class);
+    final Region<String, DeltaSessionInterface> region = uncheckedCast(mock(Region.class));
     final DeltaSession session = spy(new DeltaSession(manager));
 
     session.applyAttributeEvents(region, events);
@@ -145,7 +144,7 @@ public abstract class AbstractDeltaSessionTest {
     final String sessionId = "invalidatedSession";
     doReturn(sessionId).when(session).getId();
 
-    assertThatThrownBy(() -> session.commit()).isInstanceOf(IllegalStateException.class)
+    assertThatThrownBy(session::commit).isInstanceOf(IllegalStateException.class)
         .hasMessage("commit: Session " + sessionId + " already invalidated");
   }
 
@@ -153,7 +152,7 @@ public abstract class AbstractDeltaSessionTest {
   public void getSizeInBytesReturnsProperValueForMultipleAttributes() {
     final String attrName1 = "attrName1";
     final String attrName2 = "attrName2";
-    final List attrList = new ArrayList<String>();
+    final List<String> attrList = new ArrayList<>();
     attrList.add(attrName1);
     attrList.add(attrName2);
 

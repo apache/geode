@@ -57,7 +57,7 @@ import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttr
 public class DeltaSession extends StandardSession
     implements DataSerializable, Delta, GatewayDelta, Sizeable, DeltaSessionInterface {
 
-  private transient Region<String, HttpSession> operatingRegion;
+  private transient Region<String, DeltaSessionInterface> operatingRegion;
 
   private String sessionRegionName;
 
@@ -71,7 +71,7 @@ public class DeltaSession extends StandardSession
 
   private final transient Object changeLock = new Object();
 
-  private final List<DeltaSessionAttributeEvent> eventQueue = new ArrayList<>();
+  private final ArrayList<DeltaSessionAttributeEvent> eventQueue = new ArrayList<>();
 
   private transient GatewayDeltaEvent currentGatewayDeltaEvent;
 
@@ -81,7 +81,7 @@ public class DeltaSession extends StandardSession
 
   private byte[] serializedPrincipal;
 
-  private static Field cachedField;
+  private static final Field cachedField;
 
   static {
     try {
@@ -114,7 +114,6 @@ public class DeltaSession extends StandardSession
    * Return the <code>HttpSession</code> for which this object is the facade.
    */
   @Override
-  @SuppressWarnings("unchecked")
   public HttpSession getSession() {
     if (facade == null) {
       if (isPackageProtectionEnabled()) {
@@ -129,27 +128,27 @@ public class DeltaSession extends StandardSession
 
   @Override
   public Principal getPrincipal() {
-    if (this.principal == null && this.serializedPrincipal != null) {
+    if (principal == null && serializedPrincipal != null) {
       SerializablePrincipal sp;
       try {
-        sp = (SerializablePrincipal) BlobHelper.deserializeBlob(this.serializedPrincipal);
+        sp = (SerializablePrincipal) BlobHelper.deserializeBlob(serializedPrincipal);
       } catch (Exception e) {
         String builder = this
             + ": Serialized principal contains a byte[] that cannot be deserialized due to the following exception";
         getDeltaSessionManager().getLogger().warn(builder, e);
         return null;
       }
-      this.principal =
-          sp.getPrincipal(((DeltaSessionManager) this.manager).getTheContext().getRealm());
+      principal =
+          sp.getPrincipal(((DeltaSessionManager) manager).getTheContext().getRealm());
       if (getManager() != null) {
         DeltaSessionManager mgr = getDeltaSessionManager();
         if (mgr.getLogger().isDebugEnabled()) {
-          mgr.getLogger().debug(this + ": Deserialized principal: " + this.principal);
+          mgr.getLogger().debug(this + ": Deserialized principal: " + principal);
           // mgr.logCurrentStack();
         }
       }
     }
-    return this.principal;
+    return principal;
   }
 
   @Override
@@ -169,11 +168,11 @@ public class DeltaSession extends StandardSession
   }
 
   private byte[] getSerializedPrincipal() {
-    if (this.serializedPrincipal == null) {
-      if (this.principal != null && this.principal instanceof GenericPrincipal) {
-        GenericPrincipal gp = (GenericPrincipal) this.principal;
+    if (serializedPrincipal == null) {
+      if (principal != null && principal instanceof GenericPrincipal) {
+        GenericPrincipal gp = (GenericPrincipal) principal;
         SerializablePrincipal sp = SerializablePrincipal.createPrincipal(gp);
-        this.serializedPrincipal = serialize(sp);
+        serializedPrincipal = serialize(sp);
         if (manager != null) {
           DeltaSessionManager mgr = getDeltaSessionManager();
           if (mgr.getLogger().isDebugEnabled()) {
@@ -183,13 +182,13 @@ public class DeltaSession extends StandardSession
         }
       }
     }
-    return this.serializedPrincipal;
+    return serializedPrincipal;
   }
 
-  private Region<String, HttpSession> getOperatingRegion() {
+  private Region<String, DeltaSessionInterface> getOperatingRegion() {
     // This region shouldn't be null when it is needed.
     // It should have been set by the setOwner method.
-    return this.operatingRegion;
+    return operatingRegion;
   }
 
   boolean isCommitEnabled() {
@@ -199,7 +198,7 @@ public class DeltaSession extends StandardSession
 
   @Override
   public GatewayDeltaEvent getCurrentGatewayDeltaEvent() {
-    return this.currentGatewayDeltaEvent;
+    return currentGatewayDeltaEvent;
   }
 
   @Override
@@ -213,18 +212,18 @@ public class DeltaSession extends StandardSession
       DeltaSessionManager sessionManager = (DeltaSessionManager) manager;
       this.manager = sessionManager;
       initializeRegion(sessionManager);
-      this.hasDelta = false;
-      this.applyRemotely = false;
-      this.enableGatewayDeltaReplication = sessionManager.getEnableGatewayDeltaReplication();
-      this.preferDeserializedForm = sessionManager.getPreferDeserializedForm();
+      hasDelta = false;
+      applyRemotely = false;
+      enableGatewayDeltaReplication = sessionManager.getEnableGatewayDeltaReplication();
+      preferDeserializedForm = sessionManager.getPreferDeserializedForm();
 
       // Initialize transient variables
-      if (this.listeners == null) {
-        this.listeners = new ArrayList();
+      if (listeners == null) {
+        listeners = new ArrayList<>();
       }
 
-      if (this.notes == null) {
-        this.notes = new Hashtable();
+      if (notes == null) {
+        notes = new Hashtable<>();
       }
 
       contextName = ((DeltaSessionManager) manager).getContextName();
@@ -244,12 +243,12 @@ public class DeltaSession extends StandardSession
 
     checkBackingCacheAvailable();
 
-    synchronized (this.changeLock) {
+    synchronized (changeLock) {
       // Serialize the value
       byte[] serializedValue = serialize(value);
 
       // Store the attribute locally
-      if (this.preferDeserializedForm) {
+      if (preferDeserializedForm) {
         // Force deserialization of old value for event handling
         getAttributeAndDeserialize(name);
         super.setAttribute(name, value, true);
@@ -280,8 +279,8 @@ public class DeltaSession extends StandardSession
     if (expired) {
       return;
     }
-    synchronized (this.changeLock) {
-      if (this.preferDeserializedForm) {
+    synchronized (changeLock) {
+      if (preferDeserializedForm) {
         // Force deserialization of old value for event handling
         getAttributeAndDeserialize(name);
       }
@@ -327,7 +326,7 @@ public class DeltaSession extends StandardSession
                 + " contains a byte[] that cannot be deserialized due to the following exception",
             e);
       }
-      if (this.preferDeserializedForm) {
+      if (preferDeserializedForm) {
         localUpdateAttribute(name, value);
       }
     }
@@ -371,7 +370,7 @@ public class DeltaSession extends StandardSession
   @Override
   public void expire(boolean notify) {
     if (notify) {
-      getOperatingRegion().destroy(this.getId(), this);
+      getOperatingRegion().destroy(getId(), this);
     } else {
       super.expire(false);
     }
@@ -427,16 +426,16 @@ public class DeltaSession extends StandardSession
 
   private void initializeRegion(DeltaSessionManager sessionManager) {
     // Get the session region name
-    this.sessionRegionName = sessionManager.getRegionName();
+    sessionRegionName = sessionManager.getRegionName();
 
     // Get the operating region.
     // If a P2P manager is used, then this will be a local region fronting the
     // session region if local cache is enabled; otherwise, it will be the
     // session region itself.
     // If a CS manager is used, it will be the session proxy region.
-    this.operatingRegion = sessionManager.getSessionCache().getOperatingRegion();
+    operatingRegion = uncheckedCast(sessionManager.getSessionCache().getOperatingRegion());
     if (sessionManager.getLogger().isDebugEnabled()) {
-      sessionManager.getLogger().debug(this + ": Set operating region: " + this.operatingRegion);
+      sessionManager.getLogger().debug(this + ": Set operating region: " + operatingRegion);
     }
   }
 
@@ -447,28 +446,28 @@ public class DeltaSession extends StandardSession
       // If the manager has enabled gateway delta replication and is a P2P
       // manager, the GatewayDeltaForwardCacheListener will be invoked in this
       // VM. Add the event to the currentDelta.
-      DeltaSessionManager mgr = (DeltaSessionManager) this.manager;
-      if (this.enableGatewayDeltaReplication && mgr.isPeerToPeer()) {
+      DeltaSessionManager mgr = (DeltaSessionManager) manager;
+      if (enableGatewayDeltaReplication && mgr.isPeerToPeer()) {
         // If commit is not enabled, add the event to the current batch; else,
         // the current batch will be initialized to the events in the queue will
         // be added at commit time.
         if (!isCommitEnabled()) {
           List<DeltaSessionAttributeEvent> events = new ArrayList<>();
           events.add(event);
-          this.currentGatewayDeltaEvent =
-              new DeltaSessionAttributeEventBatch(this.sessionRegionName, this.id, events);
+          currentGatewayDeltaEvent =
+              new DeltaSessionAttributeEventBatch(sessionRegionName, id, events);
         }
       }
     }
     addEventToEventQueue(event);
   }
 
-  @SuppressWarnings("unchecked")
-  private void putInRegion(Region region, boolean applyRemotely, Object callbackArgument) {
-    this.hasDelta = true;
+  private void putInRegion(Region<String, DeltaSessionInterface> region, boolean applyRemotely,
+      Object callbackArgument) {
+    hasDelta = true;
     this.applyRemotely = applyRemotely;
-    region.put(this.id, this, callbackArgument);
-    this.eventQueue.clear();
+    region.put(id, this, callbackArgument);
+    eventQueue.clear();
   }
 
   @Override
@@ -477,26 +476,26 @@ public class DeltaSession extends StandardSession
       throw new IllegalStateException("commit: Session " + getId() + " already invalidated");
     // (STRING_MANAGER.getString("deltaSession.commit.ise", getId()));
 
-    synchronized (this.changeLock) {
+    synchronized (changeLock) {
       // Jens - there used to be a check to only perform this if the queue is
       // empty, but we want this to always run so that the lastAccessedTime
       // will be updated even when no attributes have been changed.
-      DeltaSessionManager mgr = (DeltaSessionManager) this.manager;
-      if (this.enableGatewayDeltaReplication && mgr.isPeerToPeer()) {
+      DeltaSessionManager mgr = (DeltaSessionManager) manager;
+      if (enableGatewayDeltaReplication && mgr.isPeerToPeer()) {
         setCurrentGatewayDeltaEvent(
-            new DeltaSessionAttributeEventBatch(this.sessionRegionName, this.id, this.eventQueue));
+            new DeltaSessionAttributeEventBatch(sessionRegionName, id, eventQueue));
       }
-      this.hasDelta = true;
-      this.applyRemotely = true;
+      hasDelta = true;
+      applyRemotely = true;
       putInRegion(getOperatingRegion(), true, null);
-      this.eventQueue.clear();
+      eventQueue.clear();
     }
   }
 
   @Override
   public void abort() {
-    synchronized (this.changeLock) {
-      this.eventQueue.clear();
+    synchronized (changeLock) {
+      eventQueue.clear();
     }
   }
 
@@ -506,7 +505,7 @@ public class DeltaSession extends StandardSession
 
   @Override
   public boolean getExpired() {
-    return this.expired;
+    return expired;
   }
 
   @Override
@@ -516,25 +515,25 @@ public class DeltaSession extends StandardSession
 
   @Override
   public boolean hasDelta() {
-    return this.hasDelta;
+    return hasDelta;
   }
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
     // Write whether to apply the changes to another DS if necessary
-    out.writeBoolean(this.applyRemotely);
+    out.writeBoolean(applyRemotely);
 
     // Write the events
-    DataSerializer.writeArrayList((ArrayList) this.eventQueue, out);
+    DataSerializer.writeArrayList(eventQueue, out);
 
-    out.writeLong(this.lastAccessedTime);
-    out.writeInt(this.maxInactiveInterval);
+    out.writeLong(lastAccessedTime);
+    out.writeInt(maxInactiveInterval);
   }
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     // Read whether to apply the changes to another DS if necessary
-    this.applyRemotely = in.readBoolean();
+    applyRemotely = in.readBoolean();
 
     // Read the events
     List<DeltaSessionAttributeEvent> events;
@@ -546,8 +545,8 @@ public class DeltaSession extends StandardSession
 
     // This allows for backwards compatibility with 2.1 clients
     if (((InputStream) in).available() > 0) {
-      this.lastAccessedTime = in.readLong();
-      this.maxInactiveInterval = in.readInt();
+      lastAccessedTime = in.readLong();
+      maxInactiveInterval = in.readInt();
     }
 
     // Iterate and apply the events
@@ -556,9 +555,9 @@ public class DeltaSession extends StandardSession
     }
 
     // Add the events to the gateway delta region if necessary
-    if (this.enableGatewayDeltaReplication && this.applyRemotely) {
+    if (enableGatewayDeltaReplication && applyRemotely) {
       setCurrentGatewayDeltaEvent(
-          new DeltaSessionAttributeEventBatch(this.sessionRegionName, this.id, events));
+          new DeltaSessionAttributeEventBatch(sessionRegionName, id, events));
     }
 
     // Access it to set the last accessed time. End access it to set not new.
@@ -569,57 +568,57 @@ public class DeltaSession extends StandardSession
   @Override
   public void toData(DataOutput out) throws IOException {
     // Write the StandardSession state
-    DataSerializer.writeString(this.id, out);
-    out.writeLong(this.creationTime);
-    out.writeLong(this.lastAccessedTime);
-    out.writeLong(this.thisAccessedTime);
-    out.writeInt(this.maxInactiveInterval);
-    out.writeBoolean(this.isNew);
-    out.writeBoolean(this.isValid);
+    DataSerializer.writeString(id, out);
+    out.writeLong(creationTime);
+    out.writeLong(lastAccessedTime);
+    out.writeLong(thisAccessedTime);
+    out.writeInt(maxInactiveInterval);
+    out.writeBoolean(isNew);
+    out.writeBoolean(isValid);
     DataSerializer.writeObject(getSerializedAttributes(), out);
     DataSerializer.writeByteArray(getSerializedPrincipal(), out);
 
     // Write the DeltaSession state
-    out.writeBoolean(this.enableGatewayDeltaReplication);
-    DataSerializer.writeString(this.sessionRegionName, out);
+    out.writeBoolean(enableGatewayDeltaReplication);
+    DataSerializer.writeString(sessionRegionName, out);
 
-    DataSerializer.writeString(this.contextName, out);
+    DataSerializer.writeString(contextName, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // Read the StandardSession state
-    this.id = DataSerializer.readString(in);
-    this.creationTime = in.readLong();
-    this.lastAccessedTime = in.readLong();
-    this.thisAccessedTime = in.readLong();
-    this.maxInactiveInterval = in.readInt();
-    this.isNew = in.readBoolean();
-    this.isValid = in.readBoolean();
+    id = DataSerializer.readString(in);
+    creationTime = in.readLong();
+    lastAccessedTime = in.readLong();
+    thisAccessedTime = in.readLong();
+    maxInactiveInterval = in.readInt();
+    isNew = in.readBoolean();
+    isValid = in.readBoolean();
     readInAttributes(in);
-    this.serializedPrincipal = DataSerializer.readByteArray(in);
+    serializedPrincipal = DataSerializer.readByteArray(in);
 
     // Read the DeltaSession state
-    this.enableGatewayDeltaReplication = in.readBoolean();
-    this.sessionRegionName = DataSerializer.readString(in);
+    enableGatewayDeltaReplication = in.readBoolean();
+    sessionRegionName = DataSerializer.readString(in);
 
     // This allows for backwards compatibility with 2.1 clients
     if (((InputStream) in).available() > 0) {
-      this.contextName = DataSerializer.readString(in);
+      contextName = DataSerializer.readString(in);
     }
 
     // Initialize the transients if necessary
-    if (this.listeners == null) {
-      this.listeners = new ArrayList();
+    if (listeners == null) {
+      listeners = new ArrayList<>();
     }
 
-    if (this.notes == null) {
-      this.notes = new Hashtable();
+    if (notes == null) {
+      notes = new Hashtable<>();
     }
   }
 
   private void readInAttributes(DataInput in) throws IOException, ClassNotFoundException {
-    ConcurrentHashMap map = DataSerializer.readObject(in);
+    ConcurrentHashMap<Object, Object> map = DataSerializer.readObject(in);
     try {
       Field field = getAttributesFieldObject();
       field.set(this, map);
@@ -656,7 +655,7 @@ public class DeltaSession extends StandardSession
     return size;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked"})
   private Map<String, byte[]> getSerializedAttributes() {
     // Iterate the values and serialize them if necessary before sending them to the server. This
     // makes the application classes unnecessary on the server.
@@ -701,16 +700,16 @@ public class DeltaSession extends StandardSession
   @Override
   public String toString() {
     return "DeltaSession[" + "id=" + getId()
-        + "; context=" + this.contextName + "; sessionRegionName="
-        + this.sessionRegionName + "; operatingRegionName="
+        + "; context=" + contextName + "; sessionRegionName="
+        + sessionRegionName + "; operatingRegionName="
         + (getOperatingRegion() == null ? "unset" : getOperatingRegion().getFullPath())
         + "]";
   }
 
   // Helper methods to enable better unit testing
   DeltaSessionFacade getNewFacade(DeltaSessionInterface fSession) {
-    return (DeltaSessionFacade) AccessController.doPrivileged(
-        (PrivilegedAction) () -> new DeltaSessionFacade(fSession));
+    return AccessController.doPrivileged(
+        (PrivilegedAction<DeltaSessionFacade>) () -> new DeltaSessionFacade(fSession));
   }
 
   boolean isPackageProtectionEnabled() {
