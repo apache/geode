@@ -174,6 +174,24 @@ public class GfshRule extends ExternalResource {
     return processBuilder;
   }
 
+  /**
+   * this will stop the server that's been started in this gfsh execution
+   */
+  public void stopServer(GfshExecution execution, String serverName) {
+    String command = "stop server --dir="
+        + execution.getWorkingDir().toPath().resolve(serverName).toAbsolutePath();
+    execute(GfshScript.of(command).withName("Stop-server-" + serverName));
+  }
+
+  /**
+   * this will stop the lcoator that's been started in this gfsh execution
+   */
+  public void stopLocator(GfshExecution execution, String locatorName) {
+    String command = "stop locator --dir="
+        + execution.getWorkingDir().toPath().resolve(locatorName).toAbsolutePath();
+    execute(GfshScript.of(command).withName("Stop-locator-" + locatorName));
+  }
+
   private void stopMembers(GfshExecution gfshExecution) {
     String[] stopMemberScripts = gfshExecution.getStopMemberCommands();
     if (stopMemberScripts.length == 0) {
