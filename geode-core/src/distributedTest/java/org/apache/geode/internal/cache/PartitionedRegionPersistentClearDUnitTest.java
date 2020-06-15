@@ -49,6 +49,13 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
 
     verifyServerRegionSize(0);
 
+    dataStore3.invoke(() -> {
+      while (!((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
+          && getRegion(false).size() != 0) {
+        Thread.sleep(100);
+      }
+    });
+
     // do the region destroy to compare that the same callbacks will be triggered
     dataStore3.invoke(() -> {
       Region region = getRegion(false);
@@ -88,6 +95,13 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
     // dataStore2 = cluster.startServerVM(2, getProperties(), locatorPort);
 
     verifyServerRegionSize(0);
+
+    dataStore3.invoke(() -> {
+      while (!((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
+          && getRegion(false).size() != 0) {
+        Thread.sleep(100);
+      }
+    });
 
     // do the region destroy to compare that the same callbacks will be triggered
     dataStore3.invoke(() -> {
