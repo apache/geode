@@ -77,6 +77,10 @@ public class DeltaSession extends StandardSession
 
   private transient boolean expired = false;
 
+  /**
+   * @deprecated No replacement. Always refer deserialized form.
+   */
+  @Deprecated
   private transient boolean preferDeserializedForm = true;
 
   private byte[] serializedPrincipal;
@@ -215,7 +219,7 @@ public class DeltaSession extends StandardSession
       hasDelta = false;
       applyRemotely = false;
       enableGatewayDeltaReplication = sessionManager.getEnableGatewayDeltaReplication();
-      preferDeserializedForm = sessionManager.getPreferDeserializedForm();
+      setOwnerDeprecated(sessionManager);
 
       // Initialize transient variables
       if (listeners == null) {
@@ -230,6 +234,11 @@ public class DeltaSession extends StandardSession
     } else {
       throw new IllegalArgumentException(this + ": The Manager must be an AbstractManager");
     }
+  }
+
+  @SuppressWarnings("deprecation")
+  private void setOwnerDeprecated(DeltaSessionManager sessionManager) {
+    preferDeserializedForm = sessionManager.getPreferDeserializedForm();
   }
 
   private void checkBackingCacheAvailable() {
@@ -264,7 +273,6 @@ public class DeltaSession extends StandardSession
       DeltaSessionAttributeEvent event =
           new DeltaSessionUpdateAttributeEvent(name, serializedValue);
       queueAttributeEvent(event, true);
-
 
       // Distribute the update
       if (!isCommitEnabled()) {
@@ -472,8 +480,9 @@ public class DeltaSession extends StandardSession
 
   @Override
   public void commit() {
-    if (!isValidInternal())
+    if (!isValidInternal()) {
       throw new IllegalStateException("commit: Session " + getId() + " already invalidated");
+    }
     // (STRING_MANAGER.getString("deltaSession.commit.ise", getId()));
 
     synchronized (changeLock) {

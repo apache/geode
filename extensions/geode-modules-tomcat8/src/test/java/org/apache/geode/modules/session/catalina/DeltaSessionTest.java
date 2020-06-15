@@ -27,32 +27,30 @@ import java.io.IOException;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.apache.catalina.Context;
 import org.apache.juli.logging.Log;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.internal.util.BlobHelper;
 
-@RunWith(JUnitParamsRunner.class)
 public class DeltaSessionTest extends AbstractDeltaSessionTest {
+  final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
 
-  @Test
-  @Parameters({"true", "false"})
-  public void serializedAttributesNotLeakedInAttributeReplaceEvent(
-      final boolean preferDeserializedForm) throws IOException {
-    when(manager.getPreferDeserializedForm()).thenReturn(preferDeserializedForm);
-
-    final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
+  @Before
+  @Override
+  public void setup() {
+    super.setup();
 
     final Context context = mock(Context.class);
     when(manager.getContext()).thenReturn(context);
     when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
     when(context.getLogger()).thenReturn(mock(Log.class));
+  }
 
+  @Test
+  public void serializedAttributesNotLeakedInAttributeReplaceEvent() throws IOException {
     final DeltaSession session = spy(new DeltaSession(manager));
     session.setValid(true);
     final String name = "attribute";
@@ -72,18 +70,7 @@ public class DeltaSessionTest extends AbstractDeltaSessionTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
-  public void serializedAttributesNotLeakedInAttributeRemovedEvent(
-      final boolean preferDeserializedForm) throws IOException {
-    when(manager.getPreferDeserializedForm()).thenReturn(preferDeserializedForm);
-
-    final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
-
-    final Context context = mock(Context.class);
-    when(manager.getContext()).thenReturn(context);
-    when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
-    when(context.getLogger()).thenReturn(mock(Log.class));
-
+  public void serializedAttributesNotLeakedInAttributeRemovedEvent() throws IOException {
     final DeltaSession session = spy(new DeltaSession(manager));
     session.setValid(true);
     final String name = "attribute";
@@ -99,6 +86,56 @@ public class DeltaSessionTest extends AbstractDeltaSessionTest {
     verify(listener).attributeRemoved(event.capture());
     verifyNoMoreInteractions(listener);
     assertThat(event.getValue().getValue()).isEqualTo(value1);
+  }
+
+  @Test
+  public void serializedAttributesLeakedInAttributeReplaceEventWhenPreferSerializedFormFalse()
+      throws IOException {
+    setPreferSeserializedForm();
+
+    final DeltaSession session = spy(new DeltaSession(manager));
+    session.setValid(true);
+    final String name = "attribute";
+    final Object value1 = "value1";
+    final byte[] serializedValue1 = BlobHelper.serializeToBlob(value1);
+    // simulates initial deserialized state with serialized attribute values.
+    session.getAttributes().put(name, serializedValue1);
+
+    final Object value2 = "value2";
+    session.setAttribute(name, value2);
+
+    final ArgumentCaptor<HttpSessionBindingEvent> event =
+        ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
+    verify(listener).attributeReplaced(event.capture());
+    verifyNoMoreInteractions(listener);
+    assertThat(event.getValue().getValue()).isInstanceOf(byte[].class);
+  }
+
+  @Test
+  public void serializedAttributesLeakedInAttributeRemovedEventWhenPreferSerializedFormFalse()
+      throws IOException {
+    setPreferSeserializedForm();
+
+    final DeltaSession session = spy(new DeltaSession(manager));
+    session.setValid(true);
+    final String name = "attribute";
+    final Object value1 = "value1";
+    final byte[] serializedValue1 = BlobHelper.serializeToBlob(value1);
+    // simulates initial deserialized state with serialized attribute values.
+    session.getAttributes().put(name, serializedValue1);
+
+    session.removeAttribute(name);
+
+    final ArgumentCaptor<HttpSessionBindingEvent> event =
+        ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
+    verify(listener).attributeRemoved(event.capture());
+    verifyNoMoreInteractions(listener);
+    assertThat(event.getValue().getValue()).isInstanceOf(byte[].class);
+  }
+
+  @SuppressWarnings("deprecation")
+  protected void setPreferSeserializedForm() {
+    when(manager.getPreferDeserializedForm()).thenReturn(false);
   }
 
 }

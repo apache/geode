@@ -64,12 +64,17 @@ public abstract class AbstractDeltaSessionTest {
     when(manager.getContextName()).thenReturn("contextName");
     when(manager.getStatistics()).thenReturn(stats);
     when(manager.isBackingCacheAvailable()).thenReturn(true);
-    when(manager.getPreferDeserializedForm()).thenReturn(true);
+    setupDeprecated();
     // For Client/Server behavior and some PeerToPeer use cases the session region and operating
     // regions
     // will be the same.
     when(sessionCache.getOperatingRegion()).thenReturn(sessionRegion);
     when(logger.isDebugEnabled()).thenReturn(true);
+  }
+
+  @SuppressWarnings("deprecation")
+  protected void setupDeprecated() {
+    when(manager.getPreferDeserializedForm()).thenReturn(true);
   }
 
   @Test

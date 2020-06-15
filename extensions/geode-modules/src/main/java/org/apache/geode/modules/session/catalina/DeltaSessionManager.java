@@ -111,6 +111,10 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   private static final boolean DEFAULT_ENABLE_COMMIT_VALVE_FAILFAST = false;
 
+  /**
+   * @deprecated No replacement. Always refer deserialized form.
+   */
+  @Deprecated
   private static final boolean DEFAULT_PREFER_DESERIALIZED_FORM = true;
 
   /*
@@ -134,6 +138,10 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   private boolean enableDebugListener = DEFAULT_ENABLE_DEBUG_LISTENER;
 
+  /**
+   * @deprecated No replacement. Always refer deserialized form.
+   */
+  @Deprecated
   private boolean preferDeserializedForm = DEFAULT_PREFER_DESERIALIZED_FORM;
 
   private Timer timer;
@@ -269,11 +277,24 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     return sessionCache.isBackingCacheAvailable();
   }
 
+  /**
+   * @deprecated No replacement. Always refer deserialized form.
+   */
+  @Deprecated
   @Override
   public void setPreferDeserializedForm(boolean enable) {
+    log.warn("Use of deprecated preferDeserializedForm property to be removed in future release.");
+    if (!enable) {
+      log.warn(
+          "Use of HttpSessionAttributeListener may result in serialized form in HttpSessionBindingEvent.");
+    }
     preferDeserializedForm = enable;
   }
 
+  /**
+   * @deprecated No replacement. Always refer deserialized form.
+   */
+  @Deprecated
   @Override
   public boolean getPreferDeserializedForm() {
     return preferDeserializedForm;
@@ -824,7 +845,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
    * anything.
    *
    * @throws ClassNotFoundException if a serialized class cannot be found during the reload
-   * @throws IOException            if an input/output error occurs
+   * @throws IOException if an input/output error occurs
    */
   private void doLoad() throws ClassNotFoundException, IOException {
     Context context = getTheContext();
@@ -898,8 +919,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
         session.setManager(this);
 
         final Region<String, HttpSession> region = getSessionCache().getOperatingRegion();
-        final DeltaSessionInterface
-            existingSession =
+        final DeltaSessionInterface existingSession =
             (DeltaSessionInterface) region.get(session.getId());
         // Check whether the existing session is newer
         if (existingSession != null
