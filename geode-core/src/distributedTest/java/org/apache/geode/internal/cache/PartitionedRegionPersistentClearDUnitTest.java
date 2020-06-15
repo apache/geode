@@ -45,9 +45,9 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
         Thread.sleep(100);
       }
     });
-    dataStore2.stop();
+    //dataStore2.stop();
 
-    verifyServerRegionSize(0, true);
+    verifyServerRegionSize(0);
 
     // do the region destroy to compare that the same callbacks will be triggered
     dataStore3.invoke(() -> {
@@ -84,10 +84,10 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
       }
     });
 
-    dataStore2.stop();
-    dataStore2 = cluster.startServerVM(2, getProperties(), locatorPort);
+    //dataStore2.stop();
+    //dataStore2 = cluster.startServerVM(2, getProperties(), locatorPort);
 
-    verifyServerRegionSize(0, true);
+    verifyServerRegionSize(0);
 
     // do the region destroy to compare that the same callbacks will be triggered
     dataStore3.invoke(() -> {
