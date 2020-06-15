@@ -38,7 +38,7 @@ dependencies {
   }
   implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat9.version'))
   implementation('javax.servlet:javax.servlet-api:4.0.1')
-  
+
   testImplementation('org.httpunit:httpunit')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
@@ -46,6 +46,9 @@ dependencies {
   testImplementation(project(':extensions:geode-modules-test'))
 
   integrationTestImplementation(project(':extensions:geode-modules-test'))
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.mockito:mockito-core')
+
 }
 
 eclipse.classpath.file {

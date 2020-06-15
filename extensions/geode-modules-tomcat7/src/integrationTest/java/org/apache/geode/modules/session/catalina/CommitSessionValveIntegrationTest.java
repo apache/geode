@@ -27,7 +27,7 @@ import org.apache.juli.logging.Log;
 import org.junit.Before;
 
 public class CommitSessionValveIntegrationTest
-    extends AbstractCommitSessionValveIntegrationTest<Tomcat8CommitSessionValve> {
+    extends AbstractCommitSessionValveIntegrationTest<Tomcat7CommitSessionValve> {
 
   @Before
   public void setUp() {
@@ -50,8 +50,8 @@ public class CommitSessionValveIntegrationTest
 
 
   @Override
-  protected Tomcat8CommitSessionValve createCommitSessionValve() {
-    return new Tomcat8CommitSessionValve();
+  protected Tomcat7CommitSessionValve createCommitSessionValve() {
+    return new Tomcat7CommitSessionValve();
   }
 
 }

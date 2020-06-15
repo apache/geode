@@ -20,7 +20,6 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 
-
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   implementation(project(':extensions:geode-modules')) {
@@ -52,7 +51,6 @@ dependencies {
 
   compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version')) {
     exclude module: 'annotations-api'
-    exclude module: 'coyote'
     exclude module: 'tribes'
   }
 }

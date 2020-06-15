@@ -21,7 +21,8 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.coyote.OutputBuffer;
 
-public class Tomcat9CommitSessionValve extends AbstractCommitSessionValve {
+public class Tomcat9CommitSessionValve
+    extends AbstractCommitSessionValve<Tomcat9CommitSessionValve> {
 
   private static final Field outputBufferField;
 

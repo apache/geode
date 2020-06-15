@@ -14,10 +14,39 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-public class CommitSessionValveIntegrationTest extends AbstractCommitSessionValveIntegrationTest {
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
+import org.apache.catalina.Context;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.coyote.OutputBuffer;
+import org.apache.juli.logging.Log;
+import org.junit.Before;
+
+public class CommitSessionValveIntegrationTest
+    extends AbstractCommitSessionValveIntegrationTest<Tomcat9CommitSessionValve> {
+
+  @Before
+  public void setUp() {
+    final Context context = mock(Context.class);
+    doReturn(mock(Log.class)).when(context).getLogger();
+
+    request = mock(Request.class);
+    doReturn(context).when(request).getContext();
+
+    final OutputBuffer outputBuffer = mock(OutputBuffer.class);
+
+    final org.apache.coyote.Response coyoteResponse = new org.apache.coyote.Response();
+    coyoteResponse.setOutputBuffer(outputBuffer);
+
+    response = new Response();
+    response.setRequest(request);
+    response.setCoyoteResponse(coyoteResponse);
+  }
 
   @Override
-  protected AbstractCommitSessionValve createCommitSessionValve() {
+  protected Tomcat9CommitSessionValve createCommitSessionValve() {
     return new Tomcat9CommitSessionValve();
   }
 }
