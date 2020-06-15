@@ -52,14 +52,17 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.StandardConstants;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -277,7 +280,14 @@ public class SSLSocketIntegrationTest {
                 false,
                 ByteBuffer.allocate(65535),
                 new BufferPool(mock(DMStats.class)));
-        assertThat(sslEngine.getSSLParameters().getServerNames()).isEmpty();
+        final List<SNIServerName> serverNames = sslEngine.getSSLParameters().getServerNames();
+        if (serverNames.stream()
+            .mapToInt(SNIServerName::getType)
+            .anyMatch(type -> type == StandardConstants.SNI_HOST_NAME)) {
+          serverException = new AssertionError("found SNI server name in SSL Parameters");
+          return;
+        }
+
         readMessageFromNIOSSLClient(socket, buffer, engine);
         readMessageFromNIOSSLClient(socket, buffer, engine);
         readMessageFromNIOSSLClient(socket, buffer, engine);
