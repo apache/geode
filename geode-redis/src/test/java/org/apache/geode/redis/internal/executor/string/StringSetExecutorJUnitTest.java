@@ -110,7 +110,7 @@ public class StringSetExecutorJUnitTest {
         "KEEPTTL".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString()).doesNotContain("-ERR");
   }
@@ -238,7 +238,7 @@ public class StringSetExecutorJUnitTest {
         "blah".getBytes());
 
     Command command = new Command(commandArgumentWithUnknownParameter);
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
@@ -253,7 +253,7 @@ public class StringSetExecutorJUnitTest {
         "30".getBytes());
 
     Command command = new Command(commandArgumentWithUnknownParameter);
-    RedisResponse response = executor.executeCommandWithResponse(command, context);
+    RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);

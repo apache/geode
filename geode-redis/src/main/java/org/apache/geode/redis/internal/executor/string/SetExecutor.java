@@ -94,11 +94,11 @@ public class SetExecutor extends StringExecutor {
 
     if (optionalParametersStrings.contains("PX")) {
       millisecondsUntilExpiration =
-          handleEpiration(optionalParametersStrings, "PX" );
+          handleEpiration(optionalParametersStrings, "PX");
 
     } else if (optionalParametersStrings.contains("EX")) {
       millisecondsUntilExpiration =
-          handleEpiration(optionalParametersStrings, "EX" );
+          handleEpiration(optionalParametersStrings, "EX");
     }
 
     if (optionalParametersStrings.contains("NX")) {
@@ -125,10 +125,10 @@ public class SetExecutor extends StringExecutor {
       throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
     }
 
-    if (expirationType.equals("EX")){
+    if (expirationType.equals("EX")) {
       millisecondsUntilExpiration =
           SECONDS.toMillis(timeUntilExpiration);
-    }else {
+    } else {
       millisecondsUntilExpiration = timeUntilExpiration;
     }
     return millisecondsUntilExpiration;
