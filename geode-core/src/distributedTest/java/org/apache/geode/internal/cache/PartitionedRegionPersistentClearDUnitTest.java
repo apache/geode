@@ -38,14 +38,14 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
     accessor.invoke(() -> feed(false));
     verifyServerRegionSize(NUM_ENTRIES);
 
-//    dataStore3.invokeAsync(() -> getRegion(false).clear());
-//    dataStore3.invoke(() -> {
-//      while (((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
-//          && getRegion(false).size() != 0) {
-//        Thread.sleep(100);
-//      }
-//    });
-    // dataStore2.stop();
+    dataStore3.invokeAsync(() -> getRegion(false).clear());
+    dataStore3.invoke(() -> {
+      while (((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
+          && getRegion(false).size() != 0) {
+        Thread.sleep(100);
+      }
+    });
+    //dataStore2.stop();
 
     verifyServerRegionSize(0);
 
@@ -83,16 +83,16 @@ public class PartitionedRegionPersistentClearDUnitTest extends PartitionedRegion
     accessor.invoke(() -> feed(false));
     verifyServerRegionSize(NUM_ENTRIES);
 
-    dataStore3.invoke(() -> getRegion(false).clear());
-//    dataStore3.invoke(() -> {
-//      while (((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
-//          && getRegion(false).size() != 0) {
-//        Thread.sleep(100);
-//      }
-//    });
+    dataStore3.invokeAsync(() -> getRegion(false).clear());
+    dataStore3.invoke(() -> {
+      while (((PartitionedRegion) getRegion(false)).isRegionClearInProgress()
+          && getRegion(false).size() != 0) {
+        Thread.sleep(100);
+      }
+    });
 
-    // dataStore2.stop();
-    // dataStore2 = cluster.startServerVM(2, getProperties(), locatorPort);
+    //dataStore2.stop();
+    //dataStore2 = cluster.startServerVM(2, getProperties(), locatorPort);
 
     verifyServerRegionSize(0);
 
