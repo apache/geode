@@ -291,7 +291,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8058: this test needs to pass to have feature parity with native redis")
+  @Ignore("KEEPTTL is part of redis 6")
   public void testSET_with_KEEPTTL_shouldRetainPreviousTTL_OnSuccess() {
     String key = "key";
     String value = "value";
@@ -719,7 +719,7 @@ public class StringsIntegrationTest {
 
   @Test
   @Ignore("GEODE-8192")
-  public void testMGet_concurrentInstances_mustBeAtomic()
+  public void testMSet_concurrentInstances_mustBeAtomic()
       throws InterruptedException, ExecutionException {
     String keyBaseName = "MSETBASE";
     String val1BaseName = "FIRSTVALBASE";
