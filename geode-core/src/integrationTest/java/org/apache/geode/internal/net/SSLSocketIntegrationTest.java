@@ -17,6 +17,7 @@ package org.apache.geode.internal.net;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
@@ -58,6 +59,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 
 import org.apache.commons.io.FileUtils;
@@ -130,6 +132,7 @@ public class SSLSocketIntegrationTest {
     properties.setProperty(SSL_TRUSTSTORE, keystore.getCanonicalPath());
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "false");
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
 
@@ -264,13 +267,14 @@ public class SSLSocketIntegrationTest {
 
         socket = serverSocket.accept();
         SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
+        final SSLEngine sslEngine = sc.createSSLEngine("localhost", 1234);
         engine =
-            sc.handshakeSSLSocketChannel(socket.getChannel(), sc.createSSLEngine("localhost", 1234),
+            sc.handshakeSSLSocketChannel(socket.getChannel(), sslEngine,
                 timeoutMillis,
                 false,
                 ByteBuffer.allocate(65535),
                 new BufferPool(mock(DMStats.class)));
-
+        assertThat(sslEngine.getSSLParameters().getServerNames()).isEmpty();
         readMessageFromNIOSSLClient(socket, buffer, engine);
         readMessageFromNIOSSLClient(socket, buffer, engine);
         readMessageFromNIOSSLClient(socket, buffer, engine);
