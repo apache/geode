@@ -141,7 +141,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void lockAndUnlockCalledAtCreate() {
+  public void lockAndUnlockCalledAtCreateWithException() {
     try {
       service.create(regionConfig);
     } catch (Exception ignore) {
@@ -152,7 +152,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void lockAndUnlockCalledAtDelete() {
+  public void lockAndUnlockCalledAtDeleteWithException() {
     try {
       service.delete(regionConfig);
     } catch (Exception ignore) {
@@ -236,6 +236,8 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
 
     assertThat(cacheConfig.getRegions()).hasSize(1);
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
   }
 
   @Test
@@ -372,6 +374,8 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
 
     assertThat(config.getRegions()).isEmpty();
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
   }
 
   @Test

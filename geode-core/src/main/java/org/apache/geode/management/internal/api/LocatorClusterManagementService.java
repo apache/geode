@@ -164,7 +164,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @VisibleForTesting
-  DistributedLockService getCmsDlockService() {
+  // synchronized because cmsDlockService is lazily initialized
+  synchronized DistributedLockService getCmsDlockService() {
     if (cmsDlockService == null) {
       cmsDlockService =
           DLockService.getOrCreateService(CMS_DLOCK_SERVICE_NAME,
