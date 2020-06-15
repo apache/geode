@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -37,6 +38,7 @@ import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
 public class RestoreRedundancyPerformer
     implements OperationPerformer<RestoreRedundancyRequest, RestoreRedundancyResults> {
+  @Immutable
   public static final Version ADDED_VERSION = Version.GEODE_1_13_0;
   public static final String NO_MEMBERS_WITH_VERSION_FOR_REGION =
       "No members with a version greater than or equal to %s were found for region %s";
