@@ -40,7 +40,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -157,6 +159,17 @@ public class HashesIntegrationTest {
     assertThat(jedis.hstrlen("farm", "chicken")).isEqualTo("little".length());
     assertThat(jedis.hstrlen("farm", "unknown-field")).isEqualTo(0);
     assertThat(jedis.hstrlen("unknown-key", "unknown-field")).isEqualTo(0);
+  }
+
+  @Test
+  public void testHStrLen_failsForNonHashes() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hstrlen("farm", "chicken"))
+        .hasMessageContaining("WRONGTYPE");
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hstrlen("tractor", "chicken"))
+        .hasMessageContaining("WRONGTYPE");
   }
 
   @Test
