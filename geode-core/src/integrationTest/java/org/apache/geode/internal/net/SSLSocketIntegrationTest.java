@@ -33,7 +33,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 
 import java.io.DataInputStream;
@@ -179,7 +178,7 @@ public class SSLSocketIntegrationTest {
   }
 
   @Test
-  public void securedSocketTransmissionShouldWork() throws Exception {
+  public void securedSocketTransmissionShouldWork() throws Throwable {
     this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
     this.serverThread = startServer(this.serverSocket, 15000);
 
@@ -197,12 +196,14 @@ public class SSLSocketIntegrationTest {
     await().until(() -> {
       return !serverThread.isAlive();
     });
-    assertNull(serverException);
+    if (serverException != null) {
+      throw serverException;
+    }
     assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE);
   }
 
   @Test
-  public void testSecuredSocketTransmissionShouldWorkUsingNIO() throws Exception {
+  public void testSecuredSocketTransmissionShouldWorkUsingNIO() throws Throwable {
     ServerSocketChannel serverChannel = ServerSocketChannel.open();
     serverSocket = serverChannel.socket();
 
@@ -235,7 +236,9 @@ public class SSLSocketIntegrationTest {
     await().until(() -> {
       return !serverThread.isAlive();
     });
-    assertNull(serverException);
+    if (serverException != null) {
+      throw serverException;
+    }
     // assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE);
   }
 
