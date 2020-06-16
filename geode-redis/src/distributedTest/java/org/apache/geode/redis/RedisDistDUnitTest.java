@@ -24,6 +24,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -96,6 +97,12 @@ public class RedisDistDUnitTest implements Serializable {
         jedis.sadd(key, member);
       }
     }
+  }
+
+  @After
+  public void cleanup() {
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+    jedis.flushAll();
   }
 
   @Test
