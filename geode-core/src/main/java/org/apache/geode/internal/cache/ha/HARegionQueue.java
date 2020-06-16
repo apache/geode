@@ -3432,26 +3432,28 @@ public class HARegionQueue implements RegionQueue {
     }
   }
 
-  private void addClientCQsAndInterestList(ClientUpdateMessageImpl msg,
+  protected void addClientCQsAndInterestList(ClientUpdateMessageImpl msg,
       HAEventWrapper haEventWrapper, Map haContainer, String regionName) {
 
     ClientProxyMembershipID proxyID = ((HAContainerWrapper) haContainer).getProxyID(regionName);
-    if (haEventWrapper.getClientCqs() != null) {
-      CqNameToOp clientCQ = haEventWrapper.getClientCqs().get(proxyID);
-      if (clientCQ != null) {
-        msg.addClientCqs(proxyID, clientCQ);
+    if (proxyID != null) {
+      if (haEventWrapper.getClientCqs() != null) {
+        CqNameToOp clientCQ = haEventWrapper.getClientCqs().get(proxyID);
+        if (clientCQ != null) {
+          msg.addClientCqs(proxyID, clientCQ);
+        }
       }
-    }
 
-    // This is a remote HAEventWrapper.
-    // Add new Interested client lists.
-    ClientUpdateMessageImpl clientMsg =
-        (ClientUpdateMessageImpl) haEventWrapper.getClientUpdateMessage();
-    if (clientMsg != null) {
-      if (clientMsg.isClientInterestedInUpdates(proxyID)) {
-        msg.addClientInterestList(proxyID, true);
-      } else if (clientMsg.isClientInterestedInInvalidates(proxyID)) {
-        msg.addClientInterestList(proxyID, false);
+      // This is a remote HAEventWrapper.
+      // Add new Interested client lists.
+      ClientUpdateMessageImpl clientMsg =
+          (ClientUpdateMessageImpl) haEventWrapper.getClientUpdateMessage();
+      if (clientMsg != null) {
+        if (clientMsg.isClientInterestedInUpdates(proxyID)) {
+          msg.addClientInterestList(proxyID, true);
+        } else if (clientMsg.isClientInterestedInInvalidates(proxyID)) {
+          msg.addClientInterestList(proxyID, false);
+        }
       }
     }
   }
