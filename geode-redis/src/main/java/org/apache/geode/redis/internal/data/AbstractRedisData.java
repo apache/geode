@@ -33,6 +33,10 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.delta.TimestampDeltaInfo;
 
 public abstract class AbstractRedisData implements RedisData {
+  @Override
+  public String toString() {
+    return "expirationTimestamp=" + expirationTimestamp;
+  }
 
   private static final long NO_EXPIRATION = -1L;
   /**

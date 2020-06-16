@@ -313,4 +313,12 @@ public class RedisHash extends AbstractRedisData {
   public int hashCode() {
     return Objects.hash(super.hashCode(), hash);
   }
+
+  @Override
+  public String toString() {
+    return "RedisHash{" +
+        super.toString() + ", " +
+        "hash=" + hash +
+        '}';
+  }
 }
