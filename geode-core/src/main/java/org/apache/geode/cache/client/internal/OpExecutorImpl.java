@@ -331,7 +331,6 @@ public class OpExecutorImpl implements ExecutablePool {
     try {
       return executeWithPossibleReAuthentication(conn, op);
     } catch (Exception e) {
-      // logger.info("GGG3:before handleException:" + e);
       handleException(e, conn, 0, true);
       // this shouldn't actually be reached, handle exception will throw something
       throw new ServerConnectivityException("Received error connecting to server", e);
@@ -612,12 +611,10 @@ public class OpExecutorImpl implements ExecutablePool {
       invalidateServer = false;
     } else {
       Throwable t = e.getCause();
-      // logger.info("GGG:handling SCE and SOE:cause=" + t + ":finalAttempt=" + finalAttempt);
       if ((t instanceof IOException)
           || (t instanceof SerializationException) || (t instanceof CopyException)
           || (t instanceof GemFireSecurityException) || (t instanceof ServerOperationException)
           || (t instanceof TransactionException) || (t instanceof CancelException)) {
-        // logger.info("GGG:in IOException?, forceThrow:" + forceThrow + ":t=" + t);
         handleException(t, conn, retryCount, finalAttempt, timeoutFatal);
         return;
       } else if (e instanceof ServerOperationException) {

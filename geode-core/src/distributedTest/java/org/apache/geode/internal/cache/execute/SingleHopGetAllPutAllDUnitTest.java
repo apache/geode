@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,9 +33,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.dunit.VM;
+
 
 /**
  * This class tests single-hop bulk operations in client caches. Single-hop makes use
@@ -49,8 +46,6 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
 
 
   private static final long serialVersionUID = 3873751456134028508L;
-
-  private static final Logger logger = LogService.getLogger();
 
   public SingleHopGetAllPutAllDUnitTest() {
     super();
@@ -70,9 +65,6 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
    */
   @Test
   public void testGetAllInClient() {
-    for (VM vm : new VM[] {client, server1, server2, server3}) {
-      vm.invoke(() -> VersionedObjectList.isNormal = false);
-    }
     client.invoke("testGetAllInClient", () -> {
       Region<Integer, Object> region = cache.getRegion(PartitionedRegionName);
       assertThat(region).isNotNull();
@@ -98,18 +90,14 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
           ((GemFireCacheImpl) cache).getClientMetadataService()
               .getTotalRefreshTaskCount_TEST_ONLY();
 
-      logger.info("GGG:start");
       Map<Integer, Object> resultMap = region.getAll(testKeyList);
       assertThat(resultMap).isEqualTo(origVals);
 
       // a new refresh should not have been triggered
       assertThat(((GemFireCacheImpl) cache).getClientMetadataService()
           .getTotalRefreshTaskCount_TEST_ONLY())
-              .isEqualTo(metadataRefreshes + 3);
+              .isEqualTo(metadataRefreshes);
     });
-    for (VM vm : new VM[] {client, server1, server2, server3}) {
-      vm.invoke(() -> VersionedObjectList.isNormal = true);
-    }
   }
 
 
