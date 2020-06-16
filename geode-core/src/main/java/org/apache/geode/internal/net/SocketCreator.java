@@ -547,10 +547,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    */
   public SSLEngine createSSLEngine(String hostName, int port) {
     SSLEngine engine = getSslContext().createSSLEngine(hostName, port);
-    SSLParameters parameters = engine.getSSLParameters();
-    // set server-names so that endpoint identification algorithms can find what's expected
-    if (setServerNames(parameters, new HostAndPort(hostName, port))) {
-      engine.setSSLParameters(parameters);
+    if (sslConfig.doEndpointIdentification()) {
+      // set server-names so that endpoint identification algorithms can find what's expected
+      SSLParameters parameters = engine.getSSLParameters();
+      if (setServerNames(parameters, new HostAndPort(hostName, port))) {
+        engine.setSSLParameters(parameters);
+      }
     }
     return engine;
   }

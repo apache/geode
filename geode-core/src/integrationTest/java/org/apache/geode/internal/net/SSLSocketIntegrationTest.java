@@ -17,6 +17,7 @@ package org.apache.geode.internal.net;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
@@ -32,7 +33,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 
 import java.io.DataInputStream;
@@ -52,13 +52,17 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.StandardConstants;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -130,6 +134,7 @@ public class SSLSocketIntegrationTest {
     properties.setProperty(SSL_TRUSTSTORE, keystore.getCanonicalPath());
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "false");
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
 
@@ -176,7 +181,7 @@ public class SSLSocketIntegrationTest {
   }
 
   @Test
-  public void securedSocketTransmissionShouldWork() throws Exception {
+  public void securedSocketTransmissionShouldWork() throws Throwable {
     this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
     this.serverThread = startServer(this.serverSocket, 15000);
 
@@ -194,12 +199,14 @@ public class SSLSocketIntegrationTest {
     await().until(() -> {
       return !serverThread.isAlive();
     });
-    assertNull(serverException);
+    if (serverException != null) {
+      throw serverException;
+    }
     assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE);
   }
 
   @Test
-  public void testSecuredSocketTransmissionShouldWorkUsingNIO() throws Exception {
+  public void testSecuredSocketTransmissionShouldWorkUsingNIO() throws Throwable {
     ServerSocketChannel serverChannel = ServerSocketChannel.open();
     serverSocket = serverChannel.socket();
 
@@ -232,7 +239,9 @@ public class SSLSocketIntegrationTest {
     await().until(() -> {
       return !serverThread.isAlive();
     });
-    assertNull(serverException);
+    if (serverException != null) {
+      throw serverException;
+    }
     // assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE);
   }
 
@@ -264,12 +273,20 @@ public class SSLSocketIntegrationTest {
 
         socket = serverSocket.accept();
         SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
+        final SSLEngine sslEngine = sc.createSSLEngine("localhost", 1234);
         engine =
-            sc.handshakeSSLSocketChannel(socket.getChannel(), sc.createSSLEngine("localhost", 1234),
+            sc.handshakeSSLSocketChannel(socket.getChannel(), sslEngine,
                 timeoutMillis,
                 false,
                 ByteBuffer.allocate(65535),
                 new BufferPool(mock(DMStats.class)));
+        final List<SNIServerName> serverNames = sslEngine.getSSLParameters().getServerNames();
+        if (serverNames != null && serverNames.stream()
+            .mapToInt(SNIServerName::getType)
+            .anyMatch(type -> type == StandardConstants.SNI_HOST_NAME)) {
+          serverException = new AssertionError("found SNI server name in SSL Parameters");
+          return;
+        }
 
         readMessageFromNIOSSLClient(socket, buffer, engine);
         readMessageFromNIOSSLClient(socket, buffer, engine);
