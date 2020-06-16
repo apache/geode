@@ -271,4 +271,12 @@ public class RedisSet extends AbstractRedisData {
   public int hashCode() {
     return Objects.hash(super.hashCode(), members);
   }
+
+  @Override
+  public String toString() {
+    return "RedisSet{" +
+        super.toString() + ", " +
+        "members=" + members +
+        '}';
+  }
 }

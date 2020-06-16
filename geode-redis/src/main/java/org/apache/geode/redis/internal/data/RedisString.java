@@ -658,4 +658,12 @@ public class RedisString extends AbstractRedisData {
   ByteArrayWrapper getValue() {
     return value;
   }
+
+  @Override
+  public String toString() {
+    return "RedisString{" +
+        super.toString() + ", " +
+        "value=" + value +
+        '}';
+  }
 }
