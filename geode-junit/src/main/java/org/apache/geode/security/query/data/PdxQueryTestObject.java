@@ -15,6 +15,7 @@
 package org.apache.geode.security.query.data;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
@@ -63,11 +64,17 @@ public class PdxQueryTestObject
     name = reader.readString("getName");
   }
 
+  @Override
   public boolean equals(Object o) {
     if (o instanceof PdxQueryTestObject) {
       PdxQueryTestObject other = (PdxQueryTestObject) o;
       return other.id == this.id && other.name.equals(this.name);
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, name);
   }
 }
