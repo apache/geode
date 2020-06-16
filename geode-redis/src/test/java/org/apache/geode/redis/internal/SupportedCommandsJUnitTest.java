@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,6 +85,7 @@ public class SupportedCommandsJUnitTest {
       "HMGET",
       "HSCAN",
       "HSETNX",
+      "HSTRLEN",
       "HVALS",
       "INCR",
       "INCRBY",
@@ -112,6 +114,122 @@ public class SupportedCommandsJUnitTest {
       "SUNION",
       "SUNIONSTORE",
       "TIME",
+  };
+
+  private final String[] unImplementedCommands = new String[] {
+      "ACL",
+      "BGREWRITEAOF",
+      "BGSAVE",
+      "BITFIELD",
+      "BLPOP",
+      "BRPOP",
+      "BRPOPLPUSH",
+      "BZPOPMIN",
+      "BZPOPMAX",
+      "CLIENT",
+      "CLUSTER",
+      "COMMAND",
+      "CONFIG",
+      "DEBUG",
+      "DISCARD",
+      "DUMP",
+      "EVAL",
+      "EVALSHA",
+      "EXEC",
+      "GEOADD",
+      "GEOHASH",
+      "GEOPOS",
+      "GEODIST",
+      "GEORADIUS",
+      "GEORADIUSBYMEMBER",
+      "HELLO",
+      "INFO",
+      "LATENCY",
+      "LASTSAVE",
+      "LINDEX",
+      "LINSERT",
+      "LLEN",
+      "LOLWUT",
+      "LPOP",
+      "LPUSH",
+      "LPUSHX",
+      "LRANGE",
+      "LREM",
+      "LSET",
+      "LTRIM",
+      "MEMORY",
+      "MIGRATE",
+      "MODULE",
+      "MONITOR",
+      "MOVE",
+      "MULTI",
+      "OBJECT",
+      "PFADD",
+      "PFCOUNT",
+      "PFMERGE",
+      "PSYNC",
+      "PUBSUB",
+      "RANDOMKEY",
+      "READONLY",
+      "READWRITE",
+      "RENAMENX",
+      "RESTORE",
+      "ROLE",
+      "RPOP",
+      "RPOPLPUSH",
+      "RPUSH",
+      "RPUSHX",
+      "SAVE",
+      "SCRIPT",
+      "SELECT",
+      "SLAVEOF",
+      "REPLICAOF",
+      "SLOWLOG",
+      "SORT",
+      "STRALGO",
+      "SWAPDB",
+      "SYNC",
+      "TOUCH",
+      "UNLINK",
+      "UNWATCH",
+      "WAIT",
+      "WATCH",
+      "XINFO",
+      "XADD",
+      "XTRIM",
+      "XDEL",
+      "XRANGE",
+      "XREVRANGE",
+      "XLEN",
+      "XREAD",
+      "XGROUP",
+      "XREADGROUP",
+      "XACK",
+      "XCLAIM",
+      "XPENDING",
+      "ZADD",
+      "ZCARD",
+      "ZCOUNT",
+      "ZINCRBY",
+      "ZINTERSTORE",
+      "ZLEXCOUNT",
+      "ZPOPMAX",
+      "ZPOPMIN",
+      "ZRANGE",
+      "ZRANGEBYLEX",
+      "ZREVRANGEBYLEX",
+      "ZRANGEBYSCORE",
+      "ZRANK",
+      "ZREM",
+      "ZREMRANGEBYLEX",
+      "ZREMRANGEBYRANK",
+      "ZREMRANGEBYSCORE",
+      "ZREVRANGE",
+      "ZREVRANGEBYSCORE",
+      "ZREVRANK",
+      "ZSCORE",
+      "ZUNIONSCORE",
+      "ZSCAN"
   };
 
   @Test
@@ -143,12 +261,38 @@ public class SupportedCommandsJUnitTest {
   }
 
   @Test
-  public void checkAllDefinedCommands_areIncludedInBothLists() {
+  public void crossCheckAllUnimplementedCommands_areMarkedUnimplemented() {
+    for (String commandName : unImplementedCommands) {
+      List<byte[]> args = new ArrayList<>();
+      args.add(commandName.getBytes());
+
+      Command command = new Command(args);
+
+      assertThat(command.isUnimplemented())
+          .as("Command " + commandName + " should be unimplemented")
+          .isTrue();
+    }
+  }
+
+  @Test
+  public void checkAllImplementedCommands_areIncludedInBothSupportedAndUnsupportedLists() {
     List<String> allCommands = new ArrayList<>(asList(supportedCommands));
     allCommands.addAll(asList(unSupportedCommands));
 
-    List<String> definedCommands =
+    List<String> implementedCommands =
         getAllImplementedCommands().stream().map(Enum::name).collect(Collectors.toList());
+
+    assertThat(implementedCommands).containsExactlyInAnyOrderElementsOf(allCommands);
+  }
+
+  @Test
+  public void checkAllDefinedCommands_areIncludedInAllLists() {
+    List<String> allCommands = new ArrayList<>(asList(supportedCommands));
+    allCommands.addAll(asList(unSupportedCommands));
+    allCommands.addAll(asList(unImplementedCommands));
+
+    List<String> definedCommands =
+        Arrays.stream(RedisCommandType.values()).map(Enum::name).collect(Collectors.toList());
 
     assertThat(definedCommands).containsExactlyInAnyOrderElementsOf(allCommands);
   }

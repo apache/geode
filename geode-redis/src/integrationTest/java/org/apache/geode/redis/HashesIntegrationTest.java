@@ -151,6 +151,26 @@ public class HashesIntegrationTest {
   }
 
   @Test
+  public void testHStrLen() {
+    jedis.hset("farm", "chicken", "little");
+
+    assertThat(jedis.hstrlen("farm", "chicken")).isEqualTo("little".length());
+    assertThat(jedis.hstrlen("farm", "unknown-field")).isEqualTo(0);
+    assertThat(jedis.hstrlen("unknown-key", "unknown-field")).isEqualTo(0);
+  }
+
+  @Test
+  public void testHStrLen_failsForNonHashes() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hstrlen("farm", "chicken"))
+        .hasMessageContaining("WRONGTYPE");
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hstrlen("tractor", "chicken"))
+        .hasMessageContaining("WRONGTYPE");
+  }
+
+  @Test
   public void testHkeys() {
     String key = randString();
     Map<String, String> hash = new HashMap<String, String>();

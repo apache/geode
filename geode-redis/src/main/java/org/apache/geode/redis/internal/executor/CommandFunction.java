@@ -290,6 +290,11 @@ public class CommandFunction extends SingleResultRedisFunction {
         callable = () -> new RedisHashInRegion(localRegion).hlen(key);
         break;
       }
+      case HSTRLEN: {
+        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        callable = () -> new RedisHashInRegion(localRegion).hstrlen(key, field);
+        break;
+      }
       case HMGET: {
         List<ByteArrayWrapper> fields = (List<ByteArrayWrapper>) args[1];
         callable = () -> new RedisHashInRegion(localRegion).hmget(key, fields);
