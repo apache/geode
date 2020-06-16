@@ -35,7 +35,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.internal.util.BlobHelper;
 
-public class DeltaSessionTest extends AbstractDeltaSessionTest {
+public class DeltaSession8Test extends AbstractDeltaSessionTest {
   final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
 
   @Before
@@ -51,7 +51,7 @@ public class DeltaSessionTest extends AbstractDeltaSessionTest {
 
   @Test
   public void serializedAttributesNotLeakedInAttributeReplaceEvent() throws IOException {
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession8 session = spy(new DeltaSession8(manager));
     session.setValid(true);
     final String name = "attribute";
     final Object value1 = "value1";
@@ -71,7 +71,7 @@ public class DeltaSessionTest extends AbstractDeltaSessionTest {
 
   @Test
   public void serializedAttributesNotLeakedInAttributeRemovedEvent() throws IOException {
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession8 session = spy(new DeltaSession8(manager));
     session.setValid(true);
     final String name = "attribute";
     final Object value1 = "value1";
@@ -93,7 +93,7 @@ public class DeltaSessionTest extends AbstractDeltaSessionTest {
       throws IOException {
     setPreferSeserializedForm();
 
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession8 session = spy(new DeltaSession8(manager));
     session.setValid(true);
     final String name = "attribute";
     final Object value1 = "value1";
@@ -116,7 +116,7 @@ public class DeltaSessionTest extends AbstractDeltaSessionTest {
       throws IOException {
     setPreferSeserializedForm();
 
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession8 session = spy(new DeltaSession8(manager));
     session.setValid(true);
     final String name = "attribute";
     final Object value1 = "value1";
