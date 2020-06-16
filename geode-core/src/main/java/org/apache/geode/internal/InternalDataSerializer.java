@@ -2506,153 +2506,156 @@ public abstract class InternalDataSerializer extends DataSerializer {
       throw new IOException("Unknown header byte: " + header);
     }
 
-    switch (headerDSCode) {
-      case DS_FIXED_ID_BYTE:
-        return dsfidFactory.create(in.readByte(), in);
-      case DS_FIXED_ID_SHORT:
-        return dsfidFactory.create(in.readShort(), in);
-      case DS_FIXED_ID_INT:
-        return dsfidFactory.create(in.readInt(), in);
-      case DS_NO_FIXED_ID:
-      case DATA_SERIALIZABLE:
-        return readDataSerializable(in);
-      case NULL:
-      case NULL_STRING:
-        return null;
-      case STRING:
-        return readStringUTFFromDataInput(in);
-      case HUGE_STRING:
-        return readHugeStringFromDataInput(in);
-      case STRING_BYTES:
-        return readStringBytesFromDataInput(in, in.readUnsignedShort());
-      case HUGE_STRING_BYTES:
-        return readStringBytesFromDataInput(in, in.readInt());
-      case CLASS:
-        return readClass(in);
-      case DATE:
-        return readDate(in);
-      case FILE:
-        return readFile(in);
-      case INET_ADDRESS:
-        return readInetAddress(in);
-      case BOOLEAN:
-        return readBoolean(in);
-      case CHARACTER:
-        return readCharacter(in);
-      case BYTE:
-        return readByte(in);
-      case SHORT:
-        return readShort(in);
-      case INTEGER:
-        return readInteger(in);
-      case LONG:
-        return readLong(in);
-      case FLOAT:
-        return readFloat(in);
-      case DOUBLE:
-        return readDouble(in);
-      case BYTE_ARRAY:
-        return readByteArray(in);
-      case ARRAY_OF_BYTE_ARRAYS:
-        return readArrayOfByteArrays(in);
-      case SHORT_ARRAY:
-        return readShortArray(in);
-      case STRING_ARRAY:
-        return readStringArray(in);
-      case INT_ARRAY:
-        return readIntArray(in);
-      case LONG_ARRAY:
-        return readLongArray(in);
-      case FLOAT_ARRAY:
-        return readFloatArray(in);
-      case DOUBLE_ARRAY:
-        return readDoubleArray(in);
-      case BOOLEAN_ARRAY:
-        return readBooleanArray(in);
-      case CHAR_ARRAY:
-        return readCharArray(in);
-      case OBJECT_ARRAY:
-        return readObjectArray(in);
-      case ARRAY_LIST:
-        return readArrayList(in);
-      case LINKED_LIST:
-        return readLinkedList(in);
-      case HASH_SET:
-        return readHashSet(in);
-      case LINKED_HASH_SET:
-        return readLinkedHashSet(in);
-      case HASH_MAP:
-        return readHashMap(in);
-      case IDENTITY_HASH_MAP:
-        return readIdentityHashMap(in);
-      case HASH_TABLE:
-        return readHashtable(in);
-      case CONCURRENT_HASH_MAP:
-        return readConcurrentHashMap(in);
-      case PROPERTIES:
-        return readProperties(in);
-      case TIME_UNIT:
-        return readTimeUnit(in);
-      case USER_CLASS:
-        return readUserObject(in, in.readByte());
-      case USER_CLASS_2:
-        return readUserObject(in, in.readShort());
-      case USER_CLASS_4:
-        return readUserObject(in, in.readInt());
-      case VECTOR:
-        return readVector(in);
-      case STACK:
-        return readStack(in);
-      case TREE_MAP:
-        return readTreeMap(in);
-      case TREE_SET:
-        return readTreeSet(in);
-      case BOOLEAN_TYPE:
-        return Boolean.TYPE;
-      case CHARACTER_TYPE:
-        return Character.TYPE;
-      case BYTE_TYPE:
-        return Byte.TYPE;
-      case SHORT_TYPE:
-        return Short.TYPE;
-      case INTEGER_TYPE:
-        return Integer.TYPE;
-      case LONG_TYPE:
-        return Long.TYPE;
-      case FLOAT_TYPE:
-        return Float.TYPE;
-      case DOUBLE_TYPE:
-        return Double.TYPE;
-      case VOID_TYPE:
-        return Void.TYPE;
-      case USER_DATA_SERIALIZABLE:
-        return readUserDataSerializable(in, in.readByte());
-      case USER_DATA_SERIALIZABLE_2:
-        return readUserDataSerializable(in, in.readShort());
-      case USER_DATA_SERIALIZABLE_4:
-        return readUserDataSerializable(in, in.readInt());
-      case SERIALIZABLE:
-        return readSerializable(in);
-      case PDX:
-        return readPdxSerializable(in);
-      case PDX_ENUM:
-        return readPdxEnum(in);
-      case GEMFIRE_ENUM:
-        return readGemFireEnum(in);
-      case PDX_INLINE_ENUM:
-        return readPdxInlineEnum(in);
-      case BIG_INTEGER:
-        return readBigInteger(in);
-      case BIG_DECIMAL:
-        return readBigDecimal(in);
-      case UUID:
-        return readUUID(in);
-      case TIMESTAMP:
-        return readTimestamp(in);
-      default:
-        throw new IOException("Unknown header byte: " + header);
+    try {
+      switch (headerDSCode) {
+        case DS_FIXED_ID_BYTE:
+          return dsfidFactory.create(in.readByte(), in);
+        case DS_FIXED_ID_SHORT:
+          return dsfidFactory.create(in.readShort(), in);
+        case DS_FIXED_ID_INT:
+          return dsfidFactory.create(in.readInt(), in);
+        case DS_NO_FIXED_ID:
+        case DATA_SERIALIZABLE:
+          return readDataSerializable(in);
+        case NULL:
+        case NULL_STRING:
+          return null;
+        case STRING:
+          return readStringUTFFromDataInput(in);
+        case HUGE_STRING:
+          return readHugeStringFromDataInput(in);
+        case STRING_BYTES:
+          return readStringBytesFromDataInput(in, in.readUnsignedShort());
+        case HUGE_STRING_BYTES:
+          return readStringBytesFromDataInput(in, in.readInt());
+        case CLASS:
+          return readClass(in);
+        case DATE:
+          return readDate(in);
+        case FILE:
+          return readFile(in);
+        case INET_ADDRESS:
+          return readInetAddress(in);
+        case BOOLEAN:
+          return readBoolean(in);
+        case CHARACTER:
+          return readCharacter(in);
+        case BYTE:
+          return readByte(in);
+        case SHORT:
+          return readShort(in);
+        case INTEGER:
+          return readInteger(in);
+        case LONG:
+          return readLong(in);
+        case FLOAT:
+          return readFloat(in);
+        case DOUBLE:
+          return readDouble(in);
+        case BYTE_ARRAY:
+          return readByteArray(in);
+        case ARRAY_OF_BYTE_ARRAYS:
+          return readArrayOfByteArrays(in);
+        case SHORT_ARRAY:
+          return readShortArray(in);
+        case STRING_ARRAY:
+          return readStringArray(in);
+        case INT_ARRAY:
+          return readIntArray(in);
+        case LONG_ARRAY:
+          return readLongArray(in);
+        case FLOAT_ARRAY:
+          return readFloatArray(in);
+        case DOUBLE_ARRAY:
+          return readDoubleArray(in);
+        case BOOLEAN_ARRAY:
+          return readBooleanArray(in);
+        case CHAR_ARRAY:
+          return readCharArray(in);
+        case OBJECT_ARRAY:
+          return readObjectArray(in);
+        case ARRAY_LIST:
+          return readArrayList(in);
+        case LINKED_LIST:
+          return readLinkedList(in);
+        case HASH_SET:
+          return readHashSet(in);
+        case LINKED_HASH_SET:
+          return readLinkedHashSet(in);
+        case HASH_MAP:
+          return readHashMap(in);
+        case IDENTITY_HASH_MAP:
+          return readIdentityHashMap(in);
+        case HASH_TABLE:
+          return readHashtable(in);
+        case CONCURRENT_HASH_MAP:
+          return readConcurrentHashMap(in);
+        case PROPERTIES:
+          return readProperties(in);
+        case TIME_UNIT:
+          return readTimeUnit(in);
+        case USER_CLASS:
+          return readUserObject(in, in.readByte());
+        case USER_CLASS_2:
+          return readUserObject(in, in.readShort());
+        case USER_CLASS_4:
+          return readUserObject(in, in.readInt());
+        case VECTOR:
+          return readVector(in);
+        case STACK:
+          return readStack(in);
+        case TREE_MAP:
+          return readTreeMap(in);
+        case TREE_SET:
+          return readTreeSet(in);
+        case BOOLEAN_TYPE:
+          return Boolean.TYPE;
+        case CHARACTER_TYPE:
+          return Character.TYPE;
+        case BYTE_TYPE:
+          return Byte.TYPE;
+        case SHORT_TYPE:
+          return Short.TYPE;
+        case INTEGER_TYPE:
+          return Integer.TYPE;
+        case LONG_TYPE:
+          return Long.TYPE;
+        case FLOAT_TYPE:
+          return Float.TYPE;
+        case DOUBLE_TYPE:
+          return Double.TYPE;
+        case VOID_TYPE:
+          return Void.TYPE;
+        case USER_DATA_SERIALIZABLE:
+          return readUserDataSerializable(in, in.readByte());
+        case USER_DATA_SERIALIZABLE_2:
+          return readUserDataSerializable(in, in.readShort());
+        case USER_DATA_SERIALIZABLE_4:
+          return readUserDataSerializable(in, in.readInt());
+        case SERIALIZABLE:
+          return readSerializable(in);
+        case PDX:
+          return readPdxSerializable(in);
+        case PDX_ENUM:
+          return readPdxEnum(in);
+        case GEMFIRE_ENUM:
+          return readGemFireEnum(in);
+        case PDX_INLINE_ENUM:
+          return readPdxInlineEnum(in);
+        case BIG_INTEGER:
+          return readBigInteger(in);
+        case BIG_DECIMAL:
+          return readBigDecimal(in);
+        case UUID:
+          return readUUID(in);
+        case TIMESTAMP:
+          return readTimestamp(in);
+        default:
+          throw new IOException("Unknown header byte: " + header);
+      }
+    } catch (RuntimeException rte) {
+      throw new SerializationException("Unexpected serialization failure", rte);
     }
-
   }
 
   private static Serializable readSerializable(DataInput in)
