@@ -88,7 +88,7 @@ The following `gfsh` commands cause the configuration to be written to all locat
 
 **\*** Note that the `configure pdx` command must be executed *before* starting your data members. This command does not affect any currently running members in the system. Data members (with cluster configuration enabled) that are started after running this command will pick up the new PDX configuration.
 
-**\*\*** The region this command is applied to must have been created via `gfsh`. If that is not the case, the command will fail saying the region does not exist.
+**\*\*** If cluster configuration is enabled, the region this command is applied to needs to exist in the cluster configuration. If that is not the case, the command will fail saying the region does not exist.
 
 ## <a id="concept_r22_hyw_bl__section_bn3_23p_y4" class="no-quick-link"></a>gfsh Limitations
 
