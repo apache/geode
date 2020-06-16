@@ -1368,8 +1368,8 @@ fromData,42
 toData,37
 
 org/apache/geode/internal/cache/control/SerializableRestoreRedundancyResultsImpl,2
-fromData,46
-toData,43
+fromData,65
+toData,61
 
 org/apache/geode/internal/cache/event/EventSequenceNumberHolder,2
 fromData,22
