@@ -65,6 +65,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -254,6 +255,8 @@ public abstract class ServerConnection implements Runnable {
   @MutableForTesting
   private static boolean TEST_VERSION_AFTER_HANDSHAKE_FLAG;
 
+  private NioSslEngine nioSslEngine;
+
   /**
    * Creates a new {@code ServerConnection} that processes messages received from an edge
    * client over a given {@code Socket}.
@@ -284,6 +287,7 @@ public abstract class ServerConnection implements Runnable {
     postAuthzRequest = null;
     randomConnectionIdGen = new Random(hashCode());
 
+    this.nioSslEngine = null;
     this.securityService = securityService;
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -328,7 +332,7 @@ public abstract class ServerConnection implements Runnable {
         ServerSideHandshake readHandshake;
         try {
           readHandshake = handshakeFactory.readHandshake(getSocket(), getHandShakeTimeout(),
-              getCommunicationMode(), getDistributedSystem(), getSecurityService());
+              getCommunicationMode(), getDistributedSystem(), getSecurityService(), this);
 
         } catch (SocketTimeoutException timeout) {
           logger.warn("{}: Handshake reply code timeout, not received with in {} ms",
@@ -648,7 +652,8 @@ public abstract class ServerConnection implements Runnable {
 
   private void refuseHandshake(String message, byte exception) {
     try {
-      acceptor.refuseHandshake(theSocket.getOutputStream(), message, exception);
+      acceptor.refuseHandshake(theSocket.getOutputStream(), message, exception, getSSLEngine(),
+          getSocket());
     } catch (IOException ignore) {
     } finally {
       stats.incFailedConnectionAttempts();
@@ -1243,7 +1248,8 @@ public abstract class ServerConnection implements Runnable {
   }
 
   void registerWithSelector2(Selector s) throws ClosedChannelException {
-    getSelectableChannel().register(s, SelectionKey.OP_READ, this);
+    // getSelectableChannel().register(s, SelectionKey.OP_READ, this);
+    getSelectableChannel().register(s, SelectionKey.OP_WRITE | SelectionKey.OP_READ, this);
   }
 
   /**
@@ -1840,6 +1846,14 @@ public abstract class ServerConnection implements Runnable {
           new AuthorizeRequestPP(postAuthzFactoryName, getProxyID(), principal, getCache());
     }
     return setUserAuthorizeAndPostAuthorizeRequest(authzRequest, postAuthzRequest);
+  }
+
+  public void setSSLEngine(NioSslEngine engine) {
+    this.nioSslEngine = engine;
+  }
+
+  public NioSslEngine getSSLEngine() {
+    return this.nioSslEngine;
   }
 
   @VisibleForTesting

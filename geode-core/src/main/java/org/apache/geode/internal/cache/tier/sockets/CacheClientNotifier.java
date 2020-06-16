@@ -401,7 +401,7 @@ public class CacheClientNotifier {
           new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
       // write the message type, message length and the error message (if any)
       socketMessageWriter.writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion,
-          endpointType, queueSize);
+          endpointType, queueSize, null, socket);
     } catch (IOException ioe) {// remove the added proxy if we get IOException.
       if (cacheClientProxy != null) {
         // do not check for queue, just close it
