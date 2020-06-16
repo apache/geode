@@ -15,10 +15,8 @@
  */
 package org.apache.geode.redis.internal.netty;
 
-import static org.apache.geode.redis.internal.RedisCommandType.SUBSCRIBE;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.buffer.ByteBuf;
@@ -205,7 +203,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     response = command.execute(this);
 
     logResponse(response);
-    moveSubscribeToNewEventLoopGroup(ctx, command);
 
     writeToChannel(response);
 
@@ -229,20 +226,18 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return response;
   }
 
+  public EventLoopGroup getSubscriberGroup() {
+    return server.getSubscriberGroup();
+  }
 
-  /**
-   * SUBSCRIBE commands run in their own {@link EventLoopGroup}
-   */
-  private void moveSubscribeToNewEventLoopGroup(ChannelHandlerContext ctx, Command command)
-      throws InterruptedException {
-    if (command.isOfType(SUBSCRIBE)) {
-      CountDownLatch latch = new CountDownLatch(0);
-      ctx.channel().deregister().addListener((ChannelFutureListener) future -> {
-        server.getSubscriberGroup().register(ctx.channel()).sync();
-        latch.countDown();
-      });
-      latch.await();
+  public void changeChannelEventLoopGroup(EventLoopGroup newGroup) {
+    if (newGroup.equals(channel.eventLoop())) {
+      // already registered with newGroup
+      return;
     }
+    channel.deregister().addListener((ChannelFutureListener) future -> {
+      newGroup.register(channel).sync();
+    });
   }
 
   private void logResponse(RedisResponse response) {
