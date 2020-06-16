@@ -78,8 +78,10 @@ public class SetExecutor extends StringExecutor {
       String current_arg = Coder.bytesToString(commandElems.get(i)).toUpperCase();
       switch (current_arg) {
         case "KEEPTTL":
-          keepTTL = true;
-          break;
+          throw new IllegalArgumentException(ERROR_SYNTAX);
+          // KEEPTTL is part of Redis 6
+          // keepTTL = true;
+          // break;
         case "EX":
           if (expiration != 0) {
             throw new IllegalArgumentException(ERROR_SYNTAX);
