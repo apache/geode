@@ -281,7 +281,7 @@ public class SSLSocketIntegrationTest {
                 ByteBuffer.allocate(65535),
                 new BufferPool(mock(DMStats.class)));
         final List<SNIServerName> serverNames = sslEngine.getSSLParameters().getServerNames();
-        if (serverNames.stream()
+        if (serverNames != null && serverNames.stream()
             .mapToInt(SNIServerName::getType)
             .anyMatch(type -> type == StandardConstants.SNI_HOST_NAME)) {
           serverException = new AssertionError("found SNI server name in SSL Parameters");
