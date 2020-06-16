@@ -63,6 +63,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class VersionedObjectList extends ObjectPartList implements Externalizable {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = -8384671357532347892L;
+  public static boolean isNormal = true; // hack toData to pack wrong msg for the first time
 
   ArrayList<VersionTag> versionTags;
 
@@ -425,19 +426,30 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
             InternalDataSerializer.invokeToData(tag, out);
           } else {
             Integer idNumber = ids.get(id);
-            if (idNumber == null) {
+            if (idNumber == null && isNormal) {
               out.writeByte(FLAG_TAG_WITH_NEW_ID);
               idNumber = Integer.valueOf(idCount++);
               ids.put(id, idNumber);
               InternalDataSerializer.invokeToData(tag, out);
+              // logger.info("GGG:toData:FLAG_TAG_WITH_NEW_ID:idNumber=" + idNumber);
             } else {
+              if (isNormal == false) {
+                idNumber = Integer.valueOf(idCount++);
+              }
               out.writeByte(FLAG_TAG_WITH_NUMBER_ID);
               tag.toData(out, false);
               tag.setMemberID(id);
               InternalDataSerializer.writeUnsignedVL(idNumber, out);
+              // logger.info("GGG:toData:FLAG_TAG_WITH_NUMBER_ID:idNumber=" + idNumber +
+              // ":isNormal="
+              // + isNormal);
             }
           }
         }
+      }
+      if (isNormal == false) {
+        isNormal = true;
+        logger.info("GGG:isNormal is set to true");
       }
     }
   }
@@ -501,10 +513,14 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
             VersionTag tag = VersionTag.create(persistent, in);
             ids.add(tag.getMemberID());
             this.versionTags.add(tag);
+            // logger.info("GGG:fromData:FLAG_TAG_WITH_NEW_ID:ids=" + ids + ":tag=" + tag);
             break;
           case FLAG_TAG_WITH_NUMBER_ID:
             tag = VersionTag.create(persistent, in);
             int idNumber = (int) InternalDataSerializer.readUnsignedVL(in);
+            // logger.info("GGG:fromData:FLAG_TAG_WITH_NUMBER_ID:idNumber=" + idNumber + ":ids=" +
+            // ids
+            // + ":tag=" + tag);
             tag.setMemberID(ids.get(idNumber));
             this.versionTags.add(tag);
             break;

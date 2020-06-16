@@ -140,7 +140,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     paf.setColocatedWith((String) commonAttributes.get(4));
     paf.setLocalMaxMemory(localMaxMemory);
     PartitionAttributes partitionAttributes = paf.create();
-    factory.setDataPolicy(DataPolicy.PARTITION);
+    factory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
     factory.setPartitionAttributes(partitionAttributes);
     RegionAttributes attrs = factory.create();
 
@@ -329,7 +329,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
       p = PoolManager.createFactory().addServer(host, port1)
           .addServer(host, port2).addServer(host, port3).setPingInterval(2000)
           .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(2)
+          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
           .setPRSingleHopEnabled(true).create("PRClientServerTestBase");
     } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
