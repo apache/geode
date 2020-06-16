@@ -15,6 +15,6 @@ fromData,14
 toData,14
 
 org/apache/geode/redis/internal/data/RedisString,2
-fromData,21
-toData,17
+fromData,14
+toData,14
 
