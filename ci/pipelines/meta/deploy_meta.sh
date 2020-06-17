@@ -283,7 +283,7 @@ if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
     enableFeature examples
   fi
   if [[ "$GEODE_BRANCH" == "develop" ]]; then
-    enableFeature pr
+    enableFeature pr mass-test-run
   fi
 fi
 
