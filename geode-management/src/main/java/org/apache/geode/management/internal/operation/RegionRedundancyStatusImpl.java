@@ -45,6 +45,22 @@ public class RegionRedundancyStatusImpl implements RegionRedundancyStatus {
    */
   protected RedundancyStatus status;
 
+  public void setRegionName(String regionName) {
+    this.regionName = regionName;
+  }
+
+  public void setConfiguredRedundancy(int configuredRedundancy) {
+    this.configuredRedundancy = configuredRedundancy;
+  }
+
+  public void setActualRedundancy(int actualRedundancy) {
+    this.actualRedundancy = actualRedundancy;
+  }
+
+  public void setStatus(RedundancyStatus status) {
+    this.status = status;
+  }
+
   /**
    * Default constructor used for serialization
    */

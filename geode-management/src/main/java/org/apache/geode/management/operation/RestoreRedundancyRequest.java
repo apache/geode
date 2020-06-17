@@ -36,7 +36,7 @@ public class RestoreRedundancyRequest
   /**
    * see {@link #getEndpoint()}
    */
-  private static final String RESTORE_REDUNDANCY_ENDPOINT = "/operations/restoreRedundancy";
+  public static final String RESTORE_REDUNDANCY_ENDPOINT = "/operations/restoreRedundancy";
   private static final long serialVersionUID = -3896185413062876188L;
   /** null means all regions included */
   private List<String> includeRegions;
