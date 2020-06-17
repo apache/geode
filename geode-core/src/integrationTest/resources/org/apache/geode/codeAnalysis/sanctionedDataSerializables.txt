@@ -355,7 +355,7 @@ fromData,17
 toData,17
 
 org/apache/geode/distributed/internal/streaming/StreamingOperation$StreamingReplyMessage,2
-fromData,425
+fromData,417
 toData,86
 
 org/apache/geode/distributed/internal/tcpserver/InfoResponse,2
@@ -2108,3 +2108,4 @@ toData,105
 org/apache/geode/pdx/internal/PdxType,2
 fromData,109
 toData,124
+
