@@ -105,8 +105,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
     try {
-      logger.warn("Executing Redis command: {}", command);
-
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Redis command: {}", command);
       }

@@ -34,8 +34,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public class KeysIntegrationTest {
 
   public static Jedis jedis;
-  public static Jedis jedis2;
-  public static Jedis jedis3;
   public static int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
@@ -45,8 +43,6 @@ public class KeysIntegrationTest {
   @BeforeClass
   public static void setUp() {
     jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis3 = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -57,8 +53,6 @@ public class KeysIntegrationTest {
   @AfterClass
   public static void tearDown() {
     jedis.close();
-    jedis2.close();
-    jedis3.close();
   }
 
   @Test
@@ -86,10 +80,17 @@ public class KeysIntegrationTest {
     assertThat(jedis.exists(stringKey));
     assertThat(jedis.exists(setKey));
     assertThat(jedis.exists(hashKey));
-    //assertThat(jedis.keys(new byte[]{'*'})).containsExactlyInAnyOrder(stringKey, setKey, hashKey);
+    assertThat(jedis.keys(new byte[]{'*'})).containsExactlyInAnyOrder(stringKey, setKey, hashKey);
     assertThat(jedis.keys(new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', '*'})).containsExactlyInAnyOrder(stringKey, setKey);
     assertThat(jedis.keys(new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 'h', '*'})).containsExactlyInAnyOrder(hashKey);
     assertThat(jedis.keys(new byte[]{'f', '*'})).isEmpty();
+  }
+
+  @Test
+  public void keys_givenBinaryValue_withExactMatch_preservesBinaryData() {
+    byte[] stringKey = new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
+    jedis.set(stringKey, stringKey);
+    assertThat(jedis.keys(stringKey)).containsExactlyInAnyOrder(stringKey);
   }
 
 }
