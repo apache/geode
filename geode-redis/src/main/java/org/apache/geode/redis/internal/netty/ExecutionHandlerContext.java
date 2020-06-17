@@ -15,10 +15,8 @@
  */
 package org.apache.geode.redis.internal.netty;
 
-import static org.apache.geode.redis.internal.RedisCommandType.SUBSCRIBE;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.buffer.ByteBuf;
@@ -33,7 +31,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -60,51 +57,31 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final Cache cache;
   private final GeodeRedisServer server;
+  private final Client client;
   private final Channel channel;
-  private final EventLoopGroup subscriberEventLoopGroup;
   private final AtomicBoolean needChannelFlush;
   private final ByteBufAllocator byteBufAllocator;
-  private final RegionProvider regionProvider;
   private final byte[] authPassword;
 
   private boolean isAuthenticated;
-
-  private final PubSub pubSub;
-
-  public PubSub getPubSub() {
-    return pubSub;
-  }
 
   /**
    * Default constructor for execution contexts.
    *
    * @param channel Channel used by this context, should be one to one
-   * @param cache The Geode cache instance of this vm
-   * @param regionProvider The region provider of this context
    * @param server Instance of the server it is attached to, only used so that any execution
    *        can initiate a shutdown
    * @param password Authentication password for each context, can be null
    */
-  public ExecutionHandlerContext(Channel channel, Cache cache, RegionProvider regionProvider,
-      GeodeRedisServer server, byte[] password,
-      PubSub pubSub,
-      EventLoopGroup subscriberEventLoopGroup) {
-    this.pubSub = pubSub;
-    if (channel == null || cache == null || regionProvider == null || server == null) {
-      throw new IllegalArgumentException("Only the authentication password may be null");
-    }
-    this.cache = cache;
+  public ExecutionHandlerContext(Channel channel, GeodeRedisServer server, byte[] password) {
     this.server = server;
     this.channel = channel;
-    this.subscriberEventLoopGroup = subscriberEventLoopGroup;
+    this.client = new Client(channel);
     this.needChannelFlush = new AtomicBoolean(false);
     this.byteBufAllocator = this.channel.alloc();
-    this.regionProvider = regionProvider;
     this.authPassword = password;
-    this.isAuthenticated = password != null ? false : true;
-
+    this.isAuthenticated = password == null;
   }
 
   private void flushChannel() {
@@ -205,7 +182,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
     RedisResponse response;
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated()) {
       response = handleUnAuthenticatedCommand(command);
       writeToChannel(response);
       return;
@@ -223,15 +200,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return;
     }
 
-    if (command.isOfType(RedisCommandType.SHUTDOWN)) {
-      this.server.shutdown();
-      return;
-    }
-
     response = command.execute(this);
 
     logResponse(response);
-    moveSubscribeToNewEventLoopGroup(ctx, command);
 
     writeToChannel(response);
 
@@ -255,20 +226,18 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return response;
   }
 
+  public EventLoopGroup getSubscriberGroup() {
+    return server.getSubscriberGroup();
+  }
 
-  /**
-   * SUBSCRIBE commands run in their own {@link EventLoopGroup}
-   */
-  private void moveSubscribeToNewEventLoopGroup(ChannelHandlerContext ctx, Command command)
-      throws InterruptedException {
-    if (command.isOfType(SUBSCRIBE)) {
-      CountDownLatch latch = new CountDownLatch(0);
-      ctx.channel().deregister().addListener((ChannelFutureListener) future -> {
-        subscriberEventLoopGroup.register(ctx.channel()).sync();
-        latch.countDown();
-      });
-      latch.await();
+  public void changeChannelEventLoopGroup(EventLoopGroup newGroup) {
+    if (newGroup.equals(channel.eventLoop())) {
+      // already registered with newGroup
+      return;
     }
+    channel.deregister().addListener((ChannelFutureListener) future -> {
+      newGroup.register(channel).sync();
+    });
   }
 
   private void logResponse(RedisResponse response) {
@@ -293,7 +262,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * Gets the provider of Regions
    */
   public RegionProvider getRegionProvider() {
-    return this.regionProvider;
+    return server.getRegionProvider();
   }
 
   /**
@@ -328,7 +297,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public Client getClient() {
-    return new Client(channel);
+    return client;
   }
+
+  public GeodeRedisServer getServer() {
+    return server;
+  }
+
+  public PubSub getPubSub() {
+    return server.getPubSub();
+  }
+
 
 }
