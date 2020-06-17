@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 import static java.lang.Integer.parseInt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SET;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -314,6 +315,12 @@ public class StringsIntegrationTest {
 
     Long result = jedis.ttl(key);
     assertThat(result).isGreaterThan(15L);
+  }
+
+  @Test
+  public void set_with_KEEPTTL_fails() {
+    assertThatThrownBy(() -> jedis.sendCommand(SET, "key", "value", "KEEPTTL"))
+        .hasMessageContaining("syntax error");
   }
 
   @Test
