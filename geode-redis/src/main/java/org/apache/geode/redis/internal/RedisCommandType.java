@@ -29,6 +29,10 @@ import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParamete
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
+import org.apache.geode.redis.internal.executor.connection.AuthExecutor;
+import org.apache.geode.redis.internal.executor.connection.EchoExecutor;
+import org.apache.geode.redis.internal.executor.connection.PingExecutor;
+import org.apache.geode.redis.internal.executor.connection.QuitExecutor;
 import org.apache.geode.redis.internal.executor.hash.HDelExecutor;
 import org.apache.geode.redis.internal.executor.hash.HExistsExecutor;
 import org.apache.geode.redis.internal.executor.hash.HGetAllExecutor;
@@ -44,12 +48,10 @@ import org.apache.geode.redis.internal.executor.hash.HSetExecutor;
 import org.apache.geode.redis.internal.executor.hash.HSetNXExecutor;
 import org.apache.geode.redis.internal.executor.hash.HStrLenExecutor;
 import org.apache.geode.redis.internal.executor.hash.HValsExecutor;
-import org.apache.geode.redis.internal.executor.key.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.key.DelExecutor;
 import org.apache.geode.redis.internal.executor.key.ExistsExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireAtExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireExecutor;
-import org.apache.geode.redis.internal.executor.key.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.key.KeysExecutor;
 import org.apache.geode.redis.internal.executor.key.PExpireAtExecutor;
 import org.apache.geode.redis.internal.executor.key.PExpireExecutor;
@@ -64,10 +66,8 @@ import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.UnsubscribeExecutor;
-import org.apache.geode.redis.internal.executor.server.AuthExecutor;
-import org.apache.geode.redis.internal.executor.server.EchoExecutor;
-import org.apache.geode.redis.internal.executor.server.PingExecutor;
-import org.apache.geode.redis.internal.executor.server.QuitExecutor;
+import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
+import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.server.TimeExecutor;
 import org.apache.geode.redis.internal.executor.set.SAddExecutor;
@@ -120,6 +120,11 @@ public enum RedisCommandType {
    *** Supported Commands ***
    ***************************************/
 
+  /*************** Connection ****************/
+  AUTH(new AuthExecutor(), SUPPORTED),
+  PING(new PingExecutor(), SUPPORTED),
+  QUIT(new QuitExecutor(), SUPPORTED),
+
   /*************** Keys ******************/
 
   DEL(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
@@ -165,9 +170,6 @@ public enum RedisCommandType {
 
   /*************** Server ****************/
 
-  AUTH(new AuthExecutor(), SUPPORTED),
-  PING(new PingExecutor(), SUPPORTED),
-  QUIT(new QuitExecutor(), SUPPORTED),
   UNKNOWN(new UnknownExecutor(), SUPPORTED),
 
 
@@ -176,11 +178,15 @@ public enum RedisCommandType {
    ***************************************/
 
   /***************************************
+   *************** Connection *************
+   ***************************************/
+
+  ECHO(new EchoExecutor(), UNSUPPORTED),
+
+  /***************************************
    *************** Keys ******************
    ***************************************/
 
-  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
-  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
   SCAN(new ScanExecutor(), UNSUPPORTED),
 
   /***************************************
@@ -249,9 +255,10 @@ public enum RedisCommandType {
    ***************************************/
 
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED),
-  ECHO(new EchoExecutor(), UNSUPPORTED),
-  TIME(new TimeExecutor(), UNSUPPORTED),
+  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
+  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
+  TIME(new TimeExecutor(), UNSUPPORTED),
 
   /////////// UNIMPLEMENTED /////////////////////
 
