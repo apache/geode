@@ -115,7 +115,6 @@ public class RestoreRedundancyPerformer
     return finalResult;
   }
 
-  // this returns RestoreRedundancyResults or null based on
   public RestoreRedundancyResults executeFunctionAndGetFunctionResult(Function<?> function,
       Object args,
       DistributedMember targetMember) {

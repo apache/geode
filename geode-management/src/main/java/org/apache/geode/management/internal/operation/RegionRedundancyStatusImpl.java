@@ -22,7 +22,7 @@ import org.apache.geode.management.runtime.RegionRedundancyStatus;
  */
 public class RegionRedundancyStatusImpl implements RegionRedundancyStatus {
 
-  public static final String OUTPUT_STRING =
+  protected static final String OUTPUT_STRING =
       "%s redundancy status: %s. Desired redundancy is %s and actual redundancy is %s.";
 
   /**
@@ -51,7 +51,7 @@ public class RegionRedundancyStatusImpl implements RegionRedundancyStatus {
   public RegionRedundancyStatusImpl() {}
 
   @VisibleForTesting
-  public RegionRedundancyStatusImpl(int configuredRedundancy, int actualRedundancy,
+  RegionRedundancyStatusImpl(int configuredRedundancy, int actualRedundancy,
       String regionName, RedundancyStatus status) {
     this.configuredRedundancy = configuredRedundancy;
     this.actualRedundancy = actualRedundancy;
