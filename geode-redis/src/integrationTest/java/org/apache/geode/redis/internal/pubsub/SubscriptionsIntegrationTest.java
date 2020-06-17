@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.mocks.DummySubscription;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class SubscriptionsIntegrationTest {
