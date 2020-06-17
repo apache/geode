@@ -1392,7 +1392,7 @@ public class ClusterDistributionManager implements DistributionManager {
           logger.debug("waiting for view {}.  Current DM view processed by all listeners is {}", id,
               membershipViewIdAcknowledged);
         }
-        membershipViewIdGuard.wait();
+        membershipViewIdGuard.wait(100);
       }
     }
   }
