@@ -895,7 +895,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         .setUniqueTag(uniqueTag)
         .build();
 
-    if (StaticSerialization.getVersionForDataStream(in).compareTo(Version.GFE_90) == 0) {
+    if (StaticSerialization.getVersionForDataStream(in) == Version.GFE_90) {
       memberData.readAdditionalData(in);
     }
   }
@@ -926,8 +926,8 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     StaticSerialization.writeString(memberData.getName(), out);
 
     Version outputVersion = StaticSerialization.getVersionForDataStream(out);
-    if (0 <= outputVersion.compareTo(Version.GFE_90)
-        && outputVersion.isOlderThan(Version.GEODE_1_1_0)) {
+    if (outputVersion.isOlderThan(Version.GEODE_1_1_0)
+        && outputVersion.isNotOlderThan(Version.GFE_90)) {
       memberData.writeAdditionalData(out);
     }
   }
