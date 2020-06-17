@@ -323,7 +323,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // [sumedh] nothing more to be done for older clients used in tests
       // there is a difference in serializer map registration for >= 6.5.1.6
       // clients but that is not used in tests
-      if (currentClientVersion.compareTo(Version.GFE_61) < 0) {
+      if (currentClientVersion.isOlderThan(Version.GFE_61)) {
         return new ServerQueueStatus(endpointType, queueSize, member);
       }
       HashMap instantiatorMap = DataSerializer.readHashMap(dis);

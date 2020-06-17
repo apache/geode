@@ -927,7 +927,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
     Version outputVersion = StaticSerialization.getVersionForDataStream(out);
     if (0 <= outputVersion.compareTo(Version.GFE_90)
-        && outputVersion.compareTo(Version.GEODE_1_1_0) < 0) {
+        && outputVersion.isOlderThan(Version.GEODE_1_1_0)) {
       memberData.writeAdditionalData(out);
     }
   }

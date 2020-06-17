@@ -85,7 +85,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         DataInputStream dataInputStream = new DataInputStream(inputStream);
         DataOutputStream dataOutputStream = new DataOutputStream(sock.getOutputStream());
         this.clientReadTimeout = dataInputStream.readInt();
-        if (clientVersion.compareTo(Version.CURRENT) < 0) {
+        if (clientVersion.isOlderThan(Version.CURRENT)) {
           // versioned streams allow object serialization code to deal with older clients
           dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion);
           dataOutputStream =
@@ -99,7 +99,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         } else {
           setClientConflation(dataInputStream.readByte());
         }
-        if (this.clientVersion.compareTo(Version.GFE_65) < 0 || communicationMode.isWAN()) {
+        if (this.clientVersion.isOlderThan(Version.GFE_65) || communicationMode.isWAN()) {
           this.credentials =
               readCredentials(dataInputStream, dataOutputStream, sys, this.securityService);
         } else {
@@ -133,7 +133,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       int queueSize, CommunicationMode communicationMode, Principal principal) throws IOException {
     DataOutputStream dos = new DataOutputStream(out);
     DataInputStream dis;
-    if (clientVersion.compareTo(Version.CURRENT) < 0) {
+    if (clientVersion.isOlderThan(Version.CURRENT)) {
       dis = new VersionedDataInputStream(in, clientVersion);
       dos = new VersionedDataOutputStream(dos, clientVersion);
     } else {

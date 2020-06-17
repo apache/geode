@@ -417,7 +417,7 @@ public abstract class VersionTag<T extends VersionSource>
         try {
           this.previousMemberID = readMember(in);
         } catch (BufferUnderflowException e) {
-          if (context.getSerializationVersion().compareTo(Version.GEODE_1_11_0) < 0) {
+          if (context.getSerializationVersion().isOlderThan(Version.GEODE_1_11_0)) {
             // GEODE-7219: older versions may report HAS_PREVIOUS_MEMBER_ID but not transmit it
             logger.info("Buffer underflow encountered while reading a version tag - ignoring");
           } else {

@@ -683,7 +683,7 @@ public class CacheClientNotifier {
       Object[] objects = filterClients.toArray();
       for (Object id : objects) {
         CacheClientProxy ccp = getClientProxy((ClientProxyMembershipID) id, true);
-        if (ccp != null && ccp.getVersion().compareTo(Version.GFE_70) < 0) {
+        if (ccp != null && ccp.getVersion().isOlderThan(Version.GFE_70)) {
           filterClients.remove(id);
         }
       }

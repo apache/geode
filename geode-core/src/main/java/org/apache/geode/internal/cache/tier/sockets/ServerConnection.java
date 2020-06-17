@@ -362,7 +362,7 @@ public abstract class ServerConnection implements Runnable {
 
         setHandshake(readHandshake);
         setProxyId(readHandshake.getMembershipId());
-        if (readHandshake.getVersion().compareTo(Version.GFE_65) < 0
+        if (readHandshake.getVersion().isOlderThan(Version.GFE_65)
             || getCommunicationMode().isWAN()) {
           try {
             setAuthAttributes();
