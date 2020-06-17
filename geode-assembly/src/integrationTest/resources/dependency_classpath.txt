@@ -6,7 +6,6 @@ geode-gfsh-0.0.0.jar
 geode-log4j-0.0.0.jar
 geode-logging-0.0.0.jar
 geode-lucene-0.0.0.jar
-geode-management-0.0.0.jar
 geode-memcached-0.0.0.jar
 geode-old-client-support-0.0.0.jar
 geode-protobuf-0.0.0.jar
@@ -16,6 +15,7 @@ geode-redis-0.0.0.jar
 geode-serialization-0.0.0.jar
 geode-tcp-server-0.0.0.jar
 geode-wan-0.0.0.jar
+geode-management-0.0.0.jar
 jackson-databind-2.10.1.jar
 jackson-annotations-2.10.1.jar
 jackson-core-2.10.1.jar
@@ -66,13 +66,13 @@ shiro-event-1.5.2.jar
 shiro-crypto-core-1.5.2.jar
 shiro-lang-1.5.2.jar
 slf4j-api-1.7.30.jar
-spring-core-5.2.5.RELEASE.jar
+spring-core-5.2.7.RELEASE.jar
 javax.activation-api-1.2.0.jar
 jline-2.12.jar
 HdrHistogram-2.1.12.jar
 LatencyUtils-2.0.3.jar
 javax.transaction-api-1.3.jar
-spring-jcl-5.2.5.RELEASE.jar
+spring-jcl-5.2.7.RELEASE.jar
 jetty-http-9.4.21.v20190926.jar
 jetty-io-9.4.21.v20190926.jar
 jetty-xml-9.4.21.v20190926.jar

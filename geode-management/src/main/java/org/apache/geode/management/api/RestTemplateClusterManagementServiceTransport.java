@@ -20,6 +20,7 @@ import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -138,6 +139,7 @@ public class RestTemplateClusterManagementServiceTransport
     // configure our own ObjectMapper
     MappingJackson2HttpMessageConverter messageConverter =
         new MappingJackson2HttpMessageConverter();
+    messageConverter.setDefaultCharset(StandardCharsets.UTF_8);
     messageConverter.setPrettyPrint(false);
     // the client should use a mapper that would ignore unknown properties in case the server
     // is a newer version than the client

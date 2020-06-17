@@ -162,8 +162,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
-        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.0.1.RELEASE')
-        api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
+        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.1.0.RELEASE')
+        api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.3.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: '1.2.0.RELEASE')
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.13.0')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
@@ -249,7 +249,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-oauth2-jose')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.2.5.RELEASE') {
+    dependencySet(group: 'org.springframework', version: '5.2.7.RELEASE') {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')
@@ -262,14 +262,14 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-webmvc')
     }
 
-    dependencySet(group: 'org.springframework.boot', version: '2.2.1.RELEASE') {
+    dependencySet(group: 'org.springframework.boot', version: '2.2.7.RELEASE') {
       entry('spring-boot-starter')
       entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')
       entry('spring-boot-starter-data-redis')
     }
 
-    dependencySet(group: 'org.springframework.session', version: '2.2.1.RELEASE') {
+    dependencySet(group: 'org.springframework.session', version: '2.2.3.RELEASE') {
       entry('spring-session-data-redis')
     }
   }
