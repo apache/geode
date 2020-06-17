@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms;
 import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_LOCATOR_WAIT_TIME;
 import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.FIND_LOCATOR_RETRY_SLEEP;
 import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.JOIN_RETRY_SLEEP;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.getMinimumRetriesBeforeBecomingCoordinator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -210,25 +211,30 @@ public class MembershipIntegrationTest {
      *
      * Set its locator-wait-time so it'll not become a coordinator right away, allowing time for the
      * other member to start and become a coordinator.
-     *
-     * Calculate the locator-wait-time to be greater than the minimum wait time for connecting to a
-     * locator.
      */
 
     final MembershipLocator<MemberIdentifier> lateJoiningLocator = createLocator(0);
     lateJoiningLocator.start();
     final int lateJoiningLocatorPort = lateJoiningLocator.getPort();
 
-    final int[] lateJoiningMembershipLocatorPorts =
-        new int[] {coordinatorLocatorPort, lateJoiningLocatorPort};
+    final int[] locatorPorts = new int[] {coordinatorLocatorPort, lateJoiningLocatorPort};
 
     final Duration minimumJoinWaitTime = Duration
-        .ofMillis(JOIN_RETRY_SLEEP + FIND_LOCATOR_RETRY_SLEEP) // amount of sleep time per retry
-        .multipliedBy(lateJoiningMembershipLocatorPorts.length * 2); // expected number of retries
+        // amount of sleep time per retry in GMSJoinLeave.join()
+        .ofMillis(JOIN_RETRY_SLEEP + FIND_LOCATOR_RETRY_SLEEP)
+        // expected number of retries in GMSJoinLeave.join()
+        .multipliedBy(getMinimumRetriesBeforeBecomingCoordinator(locatorPorts.length));
+
+    /*
+     * By setting locatorWaitTime to 3x the minimumJoinWaitTime, we are trying to make sure the
+     * locatorWaitTime is sufficiently larger than the minimum so we can reliably detect whether
+     * the lateJoiningMembership is waiting for the full locatorWaitTime and not just the minimum
+     * wait time.
+     */
     final int locatorWaitTime = (int) (3 * minimumJoinWaitTime.getSeconds());
 
     final MembershipConfig lateJoiningMembershipConfig =
-        createMembershipConfig(true, locatorWaitTime, lateJoiningMembershipLocatorPorts);
+        createMembershipConfig(true, locatorWaitTime, locatorPorts);
     final Membership<MemberIdentifier> lateJoiningMembership =
         createMembership(lateJoiningMembershipConfig, lateJoiningLocator);
 
@@ -247,6 +253,12 @@ public class MembershipIntegrationTest {
 
     CompletableFuture<Void> coordinatorMembershipStartup = executorServiceRule.runAsync(() -> {
       try {
+        /*
+         * By sleeping for 2x the minimumJoinWaitTime, we are trying to make sure we sleep for
+         * longer than the minimum but shorter than the locatorWaitTime so we can detect whether the
+         * lateJoiningMembership is waiting for the full locatorWaitTime and not just the minimum
+         * wait time.
+         */
         Thread.sleep(2 * minimumJoinWaitTime.toMillis());
         start(coordinatorMembership);
       } catch (InterruptedException ignored) {

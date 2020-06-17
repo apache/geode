@@ -300,6 +300,11 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     return viewInstallationLock;
   }
 
+  @VisibleForTesting
+  public static int getMinimumRetriesBeforeBecomingCoordinator(int locatorsSize) {
+    return locatorsSize * 2;
+  }
+
   /**
    * attempt to join the distributed system loop send a join request to a locator & get a response
    * <p>
@@ -329,7 +334,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       long startTime = System.currentTimeMillis();
       long locatorGiveUpTime = startTime + locatorWaitTime;
       long giveupTime = startTime + timeout;
-      int minimumRetriesBeforeBecomingCoordinator = locators.size() * 2;
+      int minimumRetriesBeforeBecomingCoordinator =
+          getMinimumRetriesBeforeBecomingCoordinator(locators.size());
 
       for (int tries = 0; !this.isJoined && !this.isStopping; tries++) {
         logger.debug("searching for the membership coordinator");
