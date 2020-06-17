@@ -107,14 +107,14 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
     messages.add(PRIMARY_TRANSFERS_COMPLETED + totalPrimaryTransfersCompleted);
     messages.add(PRIMARY_TRANSFER_TIME + totalPrimaryTransferTime.toMillis());
 
-    return String.join("\n", messages);
+    return String.join(System.lineSeparator(), messages);
   }
 
   private String getResultsMessage(Map<String, RegionRedundancyStatus> regionResults,
       String baseMessage) {
-    String message = baseMessage + "\n";
+    String message = baseMessage + System.lineSeparator();
     message += regionResults.values().stream().map(RegionRedundancyStatus::toString)
-        .collect(Collectors.joining(",\n"));
+        .collect(Collectors.joining("," + System.lineSeparator()));
     return message;
   }
 

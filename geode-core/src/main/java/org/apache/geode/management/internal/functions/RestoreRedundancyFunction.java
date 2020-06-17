@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.operation.RestoreRedundancyResultsImpl;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
@@ -67,7 +66,7 @@ public class RestoreRedundancyFunction implements InternalFunction<Object[]> {
       results.setSuccess(true);
       results.setStatusMessage("Success");
     } catch (Exception e) {
-      results = new SerializableRestoreRedundancyResultsImpl();
+      results = new RestoreRedundancyResultsImpl();
       results.setSuccess(false);
       results.setStatusMessage(e.getMessage());
     }

@@ -46,6 +46,7 @@ public class RestoreRedundancyPerformer
   private static final String NO_MEMBERS_WITH_VERSION_FOR_REGION =
       "No members with a version greater than or equal to %s were found for region %s";
   private static final String EXCEPTION_MEMBER_MESSAGE = "Exception occurred on member %s: %s";
+  public static final String SUCCESS_STATUS_MESSAGE = "Success";
 
   @Override
   public RestoreRedundancyResults perform(Cache cache, RestoreRedundancyRequest operation) {
@@ -108,9 +109,9 @@ public class RestoreRedundancyPerformer
     finalResult.addIncludedRegionsWithNoMembers(includedRegionsWithNoMembers);
     for (RestoreRedundancyResults functionResult : functionResults) {
       finalResult.addRegionResults(functionResult);
-      finalResult.setSuccess(functionResult.getSuccess());
-      finalResult.setStatusMessage(functionResult.getStatusMessage());
     }
+    finalResult.setSuccess(true);
+    finalResult.setStatusMessage(SUCCESS_STATUS_MESSAGE);
     return finalResult;
   }
 
