@@ -43,20 +43,20 @@ import org.apache.geode.internal.serialization.Version;
  */
 public class GMSMemberDataVersionJUnitTest {
 
-  private final Version unknownVersion =
-      Version.UNKNOWN_VERSION_FOR_ROLLING_UPGRADE_TESTING;
+  private final short unknownVersionOrdinal =
+      (short)(Version.CURRENT_ORDINAL + 1);
 
   @Test
   public void testConstructor1() {
     final MemberDataBuilderImpl builder = MemberDataBuilderImpl.newBuilder(null, null);
-    builder.setVersionOrdinal(unknownVersion.ordinal());
+    builder.setVersionOrdinal(unknownVersionOrdinal);
     validate(builder.build());
   }
 
   @Test
   public void testConstructor2() {
     final GMSMemberData memberData =
-        new GMSMemberData(mock(InetAddress.class), 0, unknownVersion.ordinal(), 0, 0, 0);
+        new GMSMemberData(mock(InetAddress.class), 0, unknownVersionOrdinal, 0, 0, 0);
     validate(memberData);
   }
 
@@ -64,7 +64,7 @@ public class GMSMemberDataVersionJUnitTest {
   public void testReadEssentialData() throws IOException, ClassNotFoundException {
 
     final MemberDataBuilderImpl builder = MemberDataBuilderImpl.newBuilder(null, null);
-    builder.setVersionOrdinal(unknownVersion.ordinal());
+    builder.setVersionOrdinal(unknownVersionOrdinal);
     final MemberData member = builder.build();
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -88,12 +88,12 @@ public class GMSMemberDataVersionJUnitTest {
   @Test
   public void testSetVersionOrdinal() {
     final GMSMemberData memberData = new GMSMemberData();
-    memberData.setVersionOrdinal(unknownVersion.ordinal());
+    memberData.setVersionOrdinal(unknownVersionOrdinal);
     validate(memberData);
   }
 
   private AbstractShortAssert<?> validate(final MemberData memberData) {
-    return assertThat(memberData.getVersionOrdinal()).isEqualTo(unknownVersion.ordinal());
+    return assertThat(memberData.getVersionOrdinal()).isEqualTo(unknownVersionOrdinal);
   }
 
 }
