@@ -39,7 +39,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    * @param version the product version that serialized object on the given {@link ObjectOutput}
    */
   public VersionedObjectOutput(ObjectOutput out, Version version) {
-    if (version.compareTo(Version.CURRENT) > 0) {
+    if (version.isNewerThan(Version.CURRENT)) {
       Assert.fail("unexpected version: " + version + ", CURRENT: " + Version.CURRENT);
     }
     this.out = out;

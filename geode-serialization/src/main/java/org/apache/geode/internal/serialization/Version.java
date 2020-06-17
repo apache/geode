@@ -647,4 +647,8 @@ public class Version implements Comparable<Version> {
     return compareTo(version) < 0;
   }
 
+  public final boolean isNewerThan(final Version version) {
+    return compareTo(version) > 0;
+  }
+
 }
