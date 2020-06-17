@@ -60,15 +60,15 @@ def main(url, team, pipeline, job, number_of_builds, authorization_cookie, threa
     builds = get_builds_summary_sheet(url, team, pipeline, job, number_of_builds+10, authorization_cookie)
 
     build_to_examine = get_builds_to_examine(builds, number_of_builds)
-    expected_failed_builds = [int(b['name']) for b in build_to_examine if b['status'] in ['failed', 'succeeded']]
-    expected_failed_builds_count = len(expected_failed_builds)
-    logging.info(f"Expecting {expected_failed_builds_count} runs to have failure strings: {expected_failed_builds}")
+    completed_builds = [int(b['name']) for b in build_to_examine if b['status'] in ['failed', 'succeeded']]
+    completed_builds_count = len(completed_builds)
+    logging.info(f"Expecting {completed_builds_count} runs to have failure strings: {completed_builds}")
 
     long_list_of_failures = aggregate_failure_information(authorization_cookie, build_to_examine, threaded, url)
 
     failure_url_base = f"{url}/teams/{team}/pipelines/{pipeline}/jobs/{job}/builds/"
 
-    print_results(len(build_to_examine), expected_failed_builds, long_list_of_failures, url, failure_url_base)
+    print_results(len(build_to_examine), completed_builds, long_list_of_failures, url, failure_url_base)
 
 
 def get_cookie(url):
