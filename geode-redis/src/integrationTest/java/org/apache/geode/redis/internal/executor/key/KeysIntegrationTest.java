@@ -17,9 +17,6 @@ package org.apache.geode.redis.internal.executor.key;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -27,7 +24,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -68,30 +64,33 @@ public class KeysIntegrationTest {
 
   @Test
   public void keys_givenSplat_withBinaryData_returnsExpectedMatches() {
-    byte[] stringKey = new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
-    byte[] value = new byte[]{'v', '1'};
+    byte[] stringKey =
+        new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
+    byte[] value = new byte[] {'v', '1'};
     jedis.set(stringKey, value);
-    byte[] setKey = new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 'e', 't', '1'};
-    byte[] member = new byte[]{'m', '1'};
+    byte[] setKey = new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 'e', 't', '1'};
+    byte[] member = new byte[] {'m', '1'};
     jedis.sadd(setKey, member);
-    byte[] hashKey = new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 'h', 'a', 's', 'h', '1'};
-    byte[] key = new byte[]{'k', 'e', 'y', '1'};
+    byte[] hashKey = new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 'h', 'a', 's', 'h', '1'};
+    byte[] key = new byte[] {'k', 'e', 'y', '1'};
     jedis.hset(hashKey, key, value);
     assertThat(jedis.exists(stringKey));
     assertThat(jedis.exists(setKey));
     assertThat(jedis.exists(hashKey));
-    assertThat(jedis.keys(new byte[]{'*'})).containsExactlyInAnyOrder(stringKey, setKey, hashKey);
-    assertThat(jedis.keys(new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', '*'})).containsExactlyInAnyOrder(stringKey, setKey);
-    assertThat(jedis.keys(new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 'h', '*'})).containsExactlyInAnyOrder(hashKey);
-    assertThat(jedis.keys(new byte[]{'f', '*'})).isEmpty();
+    assertThat(jedis.keys(new byte[] {'*'})).containsExactlyInAnyOrder(stringKey, setKey, hashKey);
+    assertThat(jedis.keys(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', '*'}))
+        .containsExactlyInAnyOrder(stringKey, setKey);
+    assertThat(jedis.keys(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 'h', '*'}))
+        .containsExactlyInAnyOrder(hashKey);
+    assertThat(jedis.keys(new byte[] {'f', '*'})).isEmpty();
   }
 
   @Test
   public void keys_givenBinaryValue_withExactMatch_preservesBinaryData() {
-    byte[] stringKey = new byte[]{(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
+    byte[] stringKey =
+        new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
     jedis.set(stringKey, stringKey);
     assertThat(jedis.keys(stringKey)).containsExactlyInAnyOrder(stringKey);
   }
 
 }
-
