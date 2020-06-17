@@ -190,7 +190,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
         logger.debug("Started executing query from remote node: {}", query.getQueryString());
       }
       isQueryTraced =
-          query.isTraced() && this.sender.getVersionObject().compareTo(Version.GFE_81) >= 0;
+          query.isTraced() && this.sender.getVersionObject().isNotOlderThan(Version.GFE_81);
 
       // Adds a query trace info object to the results list for remote queries
       PRQueryTraceInfo queryTraceInfo = null;

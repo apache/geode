@@ -345,7 +345,7 @@ public class InitialImageOperation {
       RegionVersionVector received_rvv = null;
       RegionVersionVector remote_rvv = null;
       if (this.region.getConcurrencyChecksEnabled()
-          && recipient.getVersionObject().compareTo(Version.GFE_80) >= 0) {
+          && recipient.getVersionObject().isNotOlderThan(Version.GFE_80)) {
         if (internalBeforeRequestRVV != null
             && internalBeforeRequestRVV.getRegionName().equals(this.region.getName())) {
           internalBeforeRequestRVV.run();

@@ -94,7 +94,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
         // Note: credentials should always be the last piece in handshake for
         // Diffie-Hellman key exchange to work
-        if (clientVersion.compareTo(Version.GFE_603) >= 0) {
+        if (clientVersion.isNotOlderThan(Version.GFE_603)) {
           setOverrides(new byte[] {dataInputStream.readByte()});
         } else {
           setClientConflation(dataInputStream.readByte());
@@ -171,7 +171,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     dos.writeUTF("");
 
     // Write delta-propagation property value if this is not WAN.
-    if (!communicationMode.isWAN() && this.clientVersion.compareTo(Version.GFE_61) >= 0) {
+    if (!communicationMode.isWAN() && this.clientVersion.isNotOlderThan(Version.GFE_61)) {
       dos.writeBoolean(((InternalDistributedSystem) this.system).getConfig().getDeltaPropagation());
     }
 
@@ -183,14 +183,14 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // Write the distributed system id if this is a 6.6 or greater client
     // on the remote side of the gateway
-    if (communicationMode.isWAN() && this.clientVersion.compareTo(Version.GFE_66) >= 0
-        && currentServerVersion.compareTo(Version.GFE_66) >= 0) {
+    if (communicationMode.isWAN() && this.clientVersion.isNotOlderThan(Version.GFE_66)
+        && currentServerVersion.isNotOlderThan(Version.GFE_66)) {
       dos.writeByte(((InternalDistributedSystem) this.system).getDistributionManager()
           .getDistributedSystemId());
     }
 
-    if ((communicationMode.isWAN()) && this.clientVersion.compareTo(Version.GFE_80) >= 0
-        && currentServerVersion.compareTo(Version.GFE_80) >= 0) {
+    if ((communicationMode.isWAN()) && this.clientVersion.isNotOlderThan(Version.GFE_80)
+        && currentServerVersion.isNotOlderThan(Version.GFE_80)) {
       int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
       dos.writeInt(pdxSize);
     }

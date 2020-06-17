@@ -121,7 +121,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
     if (theThrowable == null) {
       return theThrowable;
     }
-    if (clientVersion.compareTo(Version.GFE_90) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_90)) {
       return theThrowable;
     }
 

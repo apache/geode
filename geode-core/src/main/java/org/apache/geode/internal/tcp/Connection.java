@@ -2813,7 +2813,7 @@ public class Connection implements Runnable {
       remoteVersion = Version.readVersion(dis, true);
       int dominoNumber = 0;
       if (remoteVersion == null
-          || remoteVersion.compareTo(Version.GFE_80) >= 0) {
+          || remoteVersion.isNotOlderThan(Version.GFE_80)) {
         dominoNumber = dis.readInt();
         if (sharedResource) {
           dominoNumber = 0;

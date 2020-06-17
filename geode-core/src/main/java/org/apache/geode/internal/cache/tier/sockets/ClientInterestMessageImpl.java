@@ -137,7 +137,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     Version clientVersion = proxy.getVersion();
     Message message = null;
-    if (clientVersion.compareTo(Version.GFE_57) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_57)) {
       message = getGFEMessage();
     } else {
       throw new IOException(

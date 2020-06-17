@@ -97,7 +97,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
     // from 7.0, set flag to indicate a remote query irrespective of the
     // object type
-    if (servConn.getClientVersion().compareTo(Version.GFE_70) >= 0) {
+    if (servConn.getClientVersion().isNotOlderThan(Version.GFE_70)) {
       ((DefaultQuery) query).setRemoteQuery(true);
     }
     // Process the query request
@@ -310,7 +310,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
   private boolean sendCqResultsWithKey(ServerConnection servConn) {
     Version clientVersion = servConn.getClientVersion();
-    if (clientVersion.compareTo(Version.GFE_65) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_65)) {
       return true;
     }
     return false;

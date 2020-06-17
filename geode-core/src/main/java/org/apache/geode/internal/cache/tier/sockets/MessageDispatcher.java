@@ -137,7 +137,7 @@ public class MessageDispatcher extends LoggingThread {
       ((HAContainerWrapper) proxy._cacheClientNotifier.getHaContainer())
           .putProxy(HARegionQueue.createRegionName(getProxy().getHARegionName()), getProxy());
       boolean createDurableQueue = proxy.proxyID.isDurable();
-      boolean canHandleDelta = (proxy.getClientVersion().compareTo(Version.GFE_61) >= 0)
+      boolean canHandleDelta = (proxy.getClientVersion().isNotOlderThan(Version.GFE_61))
           && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
           && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
       if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {

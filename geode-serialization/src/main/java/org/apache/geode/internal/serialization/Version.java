@@ -638,4 +638,9 @@ public class Version implements Comparable<Version> {
   public boolean isCurrentVersion() {
     return this.ordinal == CURRENT.ordinal;
   }
+
+  public final boolean isNotOlderThan(final Version version) {
+    return compareTo(version) >= 0;
+  }
+
 }

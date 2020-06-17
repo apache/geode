@@ -374,13 +374,13 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this._value = serializedValue = CacheServerHelper.serialize(latestValue);
       }
     }
-    if (clientVersion.compareTo(Version.GFE_70) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_70)) {
       message = getGFE70Message(proxy, serializedValue, conflation, clientVersion);
-    } else if (clientVersion.compareTo(Version.GFE_65) >= 0) {
+    } else if (clientVersion.isNotOlderThan(Version.GFE_65)) {
       message = getGFE65Message(proxy, serializedValue, conflation, clientVersion);
-    } else if (clientVersion.compareTo(Version.GFE_61) >= 0) {
+    } else if (clientVersion.isNotOlderThan(Version.GFE_61)) {
       message = getGFE61Message(proxy, serializedValue, conflation, clientVersion);
-    } else if (clientVersion.compareTo(Version.GFE_57) >= 0) {
+    } else if (clientVersion.isNotOlderThan(Version.GFE_57)) {
       message = getGFEMessage(proxy.getProxyID(), latestValue, clientVersion);
     } else {
       throw new IOException(

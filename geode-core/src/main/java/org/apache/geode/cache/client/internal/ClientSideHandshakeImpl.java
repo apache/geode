@@ -128,7 +128,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     // handshakes.
     // Client side handshake code uses this.currentClientVersion which can be
     // set via tests.
-    if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {
+    if (currentClientVersion.isNotOlderThan(Version.GFE_603)) {
       this.overrides = new byte[] {this.clientConflation};
     }
   }
@@ -235,13 +235,13 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // Read delta-propagation property value from server.
       // [sumedh] Static variable below? Client can connect to different
       // DSes with different values of this. It shoule be a member variable.
-      if (!communicationMode.isWAN() && currentClientVersion.compareTo(Version.GFE_61) >= 0) {
+      if (!communicationMode.isWAN() && currentClientVersion.isNotOlderThan(Version.GFE_61)) {
         ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
       }
 
       // validate that the remote side has a different distributed system id.
       if (communicationMode.isWAN() && Version.GFE_66.compareTo(conn.getWanSiteVersion()) <= 0
-          && currentClientVersion.compareTo(Version.GFE_66) >= 0) {
+          && currentClientVersion.isNotOlderThan(Version.GFE_66)) {
         int remoteDistributedSystemId = in.read();
         int localDistributedSystemId =
             ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId();
@@ -254,7 +254,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       }
       // Read the PDX registry size from the remote size
       if (communicationMode.isWAN() && Version.GFE_80.compareTo(conn.getWanSiteVersion()) <= 0
-          && currentClientVersion.compareTo(Version.GFE_80) >= 0) {
+          && currentClientVersion.isNotOlderThan(Version.GFE_80)) {
         int remotePdxSize = dis.readInt();
         serverQStatus.setPdxSize(remotePdxSize);
       }
@@ -393,7 +393,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       DataOutput idOut = new VersionedDataOutputStream(hdos, Version.GFE_82);
       DataSerializer.writeObject(this.id, idOut);
 
-      if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {
+      if (currentClientVersion.isNotOlderThan(Version.GFE_603)) {
         byte[] overrides = getOverrides();
         for (int bytes = 0; bytes < overrides.length; bytes++) {
           hdos.writeByte(overrides[bytes]);
