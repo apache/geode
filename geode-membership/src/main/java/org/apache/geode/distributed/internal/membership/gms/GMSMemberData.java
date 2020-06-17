@@ -79,7 +79,14 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    * displayable.
    */
   private String uniqueTag = null;
-  private transient Version versionObj = Version.CURRENT;
+
+  /**
+   * versionOrdinal is stored here as an ordinal and not a Version proper, because
+   * GMSMemberData needs to sometimes store the version of a new product version,
+   * e.g. during rolling upgrade members with old versions receive member identifiers
+   * from members with new (unknown) versions.
+   */
+  private transient short versionOrdinal = Version.CURRENT.ordinal();
 
   /**
    * whether this is a partial member ID (without roles, durable attributes). We use partial IDs in
@@ -102,7 +109,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    * @param networkPartitionDetectionEnabled whether the member has network partition detection
    *        enabled
    * @param preferredForCoordinator whether the member can be group coordinator
-   * @param version the member's version ordinal
+   * @param versionOrdinal the member's version ordinal
    * @param msbs - most significant bytes of UUID
    * @param lsbs - least significant bytes of UUID
    */
@@ -112,7 +119,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
       String name, String[] groups,
       String durableId, int durableTimeout,
       boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator,
-      short version,
+      short versionOrdinal,
       long msbs, long lsbs, byte memberWeight, boolean isPartial, String uniqueTag) {
     this.inetAddr = i;
     this.hostName = hostName;
@@ -127,7 +134,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.durableTimeout = durableTimeout;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.preferredForCoordinator = preferredForCoordinator;
-    setVersionObject(version);
+    this.versionOrdinal = versionOrdinal;
     this.uuidMSBs = msbs;
     this.uuidLSBs = lsbs;
     this.memberWeight = memberWeight;
@@ -135,19 +142,12 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.uniqueTag = uniqueTag;
   }
 
-  private void setVersionObject(short versionOrdinal) {
-    try {
-      this.versionObj = Version.fromOrdinal(versionOrdinal);
-    } catch (UnsupportedSerializationVersionException e) {
-      this.versionObj = Version.CURRENT;
-    }
-  }
-
-  public GMSMemberData(InetAddress i, int p, short version, long msbs, long lsbs, int viewId) {
+  public GMSMemberData(InetAddress i, int p, short versionOrdinal, long msbs, long lsbs,
+      int viewId) {
     this.inetAddr = i;
     this.hostName = i.getHostName();
     this.udpPort = p;
-    setVersionObject(version);
+    this.versionOrdinal = versionOrdinal;
     this.uuidMSBs = msbs;
     this.uuidLSBs = lsbs;
     this.vmViewId = viewId;
@@ -176,7 +176,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.durableId = other.durableId;
     this.durableTimeout = other.durableTimeout;
     this.groups = other.groups;
-    this.versionObj = other.versionObj;
+    this.versionOrdinal = other.versionOrdinal;
     this.uuidLSBs = other.uuidLSBs;
     this.uuidMSBs = other.uuidMSBs;
     this.isPartial = other.isPartial;
@@ -220,12 +220,16 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   @Override
 
   public short getVersionOrdinal() {
-    return this.versionObj.ordinal();
+    return versionOrdinal;
   }
 
   @Override
   public Version getVersion() {
-    return versionObj;
+    try {
+      return Version.fromOrdinal(versionOrdinal);
+    } catch (final UnsupportedSerializationVersionException e) {
+      return Version.CURRENT;
+    }
   }
 
   @Override
@@ -235,7 +239,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   @Override
   public void setVersionOrdinal(short versionOrdinal) {
-    setVersionObject(versionOrdinal);
+    this.versionOrdinal = versionOrdinal;
   }
 
   @Override
@@ -506,7 +510,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   @Override
   public void setVersion(Version v) {
-    this.versionObj = v;
+    versionOrdinal = v.ordinal();
   }
 
   @Override
@@ -581,7 +585,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   @Override
   public void readEssentialData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    setVersionObject(Version.readOrdinal(in));
+    versionOrdinal = Version.readOrdinal(in);
 
     int flags = in.readShort();
     this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;

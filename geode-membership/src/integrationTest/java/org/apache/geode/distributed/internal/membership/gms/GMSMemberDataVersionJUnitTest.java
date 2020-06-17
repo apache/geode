@@ -44,7 +44,7 @@ import org.apache.geode.internal.serialization.Version;
 public class GMSMemberDataVersionJUnitTest {
 
   private final short unknownVersionOrdinal =
-      (short)(Version.CURRENT_ORDINAL + 1);
+      (short) (Version.CURRENT_ORDINAL + 1);
 
   @Test
   public void testConstructor1() {
