@@ -15,8 +15,8 @@
 package org.apache.geode.internal.net;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 /**
  * Prior to transmitting a buffer or processing a received buffer
@@ -53,7 +53,7 @@ public interface NioFilter {
    * wrappedBuffer = filter.ensureWrappedCapacity(amount, wrappedBuffer, etc.);<br>
    * unwrappedBuffer = filter.readAtLeast(channel, amount, wrappedBuffer, etc.)
    */
-  ByteBuffer readAtLeast(SocketChannel channel, int amount, ByteBuffer wrappedBuffer)
+  ByteBuffer readAtLeast(int amount, ByteBuffer wrappedBuffer, Socket socket)
       throws IOException;
 
   /**
@@ -77,11 +77,8 @@ public interface NioFilter {
 
   /**
    * invoke this method when you are done using the NioFilter
-   *
    */
-  default void close(SocketChannel socketChannel) {
-    // nothing by default
-  }
+  void close(Socket socket);
 
   /**
    * returns the unwrapped byte buffer associated with the given wrapped buffer

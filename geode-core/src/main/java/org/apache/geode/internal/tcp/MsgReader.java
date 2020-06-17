@@ -15,10 +15,7 @@
 package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -28,7 +25,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class is currently used for reading direct ack responses It should probably be used for all
@@ -36,8 +32,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  */
 public class MsgReader {
-  private static final Logger logger = LogService.getLogger();
-
   protected final Connection conn;
   protected final Header header = new Header();
   private final NioFilter ioFilter;
@@ -58,26 +52,21 @@ public class MsgReader {
 
     Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
-    try {
-      int nioMessageLength = unwrappedBuffer.getInt();
-      /* nioMessageVersion = */
-      Connection.calcHdrVersion(nioMessageLength);
-      nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
-      byte nioMessageType = unwrappedBuffer.get();
-      short nioMsgId = unwrappedBuffer.getShort();
+    int nioMessageLength = unwrappedBuffer.getInt();
+    /* nioMessageVersion = */
+    Connection.calcHdrVersion(nioMessageLength);
+    nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
+    byte nioMessageType = unwrappedBuffer.get();
+    short nioMsgId = unwrappedBuffer.getShort();
 
-      boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
-      if (directAck) {
-        nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
-      }
-
-      header.setFields(nioMessageLength, nioMessageType, nioMsgId);
-
-      return header;
-    } catch (BufferUnderflowException e) {
-      throw e;
+    boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
+    if (directAck) {
+      nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
     }
 
+    header.setFields(nioMessageLength, nioMessageType, nioMsgId);
+
+    return header;
   }
 
   /**
@@ -95,10 +84,6 @@ public class MsgReader {
       byteBufferInputStream.setBuffer(nioInputBuffer);
       ReplyProcessor21.initMessageRPId();
       return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
-    } catch (RuntimeException e) {
-      throw e;
-    } catch (IOException e) {
-      throw e;
     } finally {
       this.getStats().endMsgDeserialization(startSer);
       this.getStats().decMessagesBeingReceived(header.messageLength);
@@ -120,7 +105,7 @@ public class MsgReader {
   private ByteBuffer readAtLeast(int bytes) throws IOException {
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
         BufferPool.BufferType.TRACKED_RECEIVER);
-    return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData);
+    return ioFilter.readAtLeast(bytes, peerNetData, conn.getSocket());
   }
 
   public void close() {

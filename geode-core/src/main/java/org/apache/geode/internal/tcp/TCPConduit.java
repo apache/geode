@@ -365,18 +365,30 @@ public class TCPConduit implements Runnable {
     InetAddress bindAddress = address;
 
     try {
-      if (serverPort <= 0) {
-        socket = socketCreator.forAdvancedUse().createServerSocketUsingPortRange(bindAddress,
-            connectionRequestBacklog, isBindAddress, true, 0, tcpPortRange,
-            socketCreator.forAdvancedUse().useSSL());
+      if (!useSSL()) {
+        if (serverPort <= 0) {
+          socket = socketCreator.forAdvancedUse().createServerSocketUsingPortRange(bindAddress,
+              connectionRequestBacklog, isBindAddress, true, 0, tcpPortRange,
+              false);
 
+        } else {
+          ServerSocketChannel channel = ServerSocketChannel.open();
+          socket = channel.socket();
+
+          InetSocketAddress inetSocketAddress =
+              new InetSocketAddress(isBindAddress ? bindAddress : null, serverPort);
+          socket.bind(inetSocketAddress, connectionRequestBacklog);
+        }
+        channel = socket.getChannel();
       } else {
-        ServerSocketChannel channel = ServerSocketChannel.open();
-        socket = channel.socket();
-
-        InetSocketAddress inetSocketAddress =
-            new InetSocketAddress(isBindAddress ? bindAddress : null, serverPort);
-        socket.bind(inetSocketAddress, connectionRequestBacklog);
+        if (serverPort <= 0) {
+          socket = getSocketCreator().forAdvancedUse().createServerSocketUsingPortRange(bindAddress,
+              connectionRequestBacklog, isBindAddress,
+              false, tcpBufferSize, tcpPortRange, true);
+        } else {
+          socket = getSocketCreator().forCluster().createServerSocket(serverPort,
+              connectionRequestBacklog, isBindAddress ? bindAddress : null);
+        }
       }
 
       try {
@@ -392,7 +404,6 @@ public class TCPConduit implements Runnable {
         logger.warn("Failed to set listener receiverBufferSize to {}",
             tcpBufferSize);
       }
-      channel = socket.getChannel();
       port = socket.getLocalPort();
     } catch (IOException io) {
       throw new ConnectionException(
@@ -534,8 +545,12 @@ public class TCPConduit implements Runnable {
 
       Socket othersock = null;
       try {
-        SocketChannel otherChannel = channel.accept();
-        othersock = otherChannel.socket();
+        if (channel != null) {
+          SocketChannel otherChannel = channel.accept();
+          othersock = otherChannel.socket();
+        } else {
+          othersock = socket.accept();
+        }
         if (stopped) {
           try {
             if (othersock != null) {

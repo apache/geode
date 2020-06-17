@@ -49,14 +49,14 @@ public class ConnectionTest {
   @Test
   public void canBeMocked() throws Exception {
     Connection mockConnection = mock(Connection.class);
-    SocketChannel channel = null;
+    Socket socket = null;
     ByteBuffer buffer = null;
     boolean forceAsync = true;
     DistributionMessage mockDistributionMessage = mock(DistributionMessage.class);
 
-    mockConnection.writeFully(channel, buffer, forceAsync, mockDistributionMessage);
+    mockConnection.writeFully(socket, buffer, forceAsync, mockDistributionMessage);
 
-    verify(mockConnection, times(1)).writeFully(channel, buffer, forceAsync,
+    verify(mockConnection, times(1)).writeFully(socket, buffer, forceAsync,
         mockDistributionMessage);
   }
 

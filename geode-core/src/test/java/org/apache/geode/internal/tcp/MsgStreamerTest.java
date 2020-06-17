@@ -96,6 +96,6 @@ public class MsgStreamerTest {
     }
     List<Connection> connections = Arrays.asList(connection1, connection2);
 
-    return MsgStreamer.create(connections, message, false, stats, pool);
+    return MsgStreamer.create(connections, message, false, stats, pool, true);
   }
 }

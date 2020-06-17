@@ -125,11 +125,12 @@ public class MsgStreamer extends OutputStream
    * now be used.
    */
   MsgStreamer(List<?> cons, DistributionMessage msg, boolean directReply, DMStats stats,
-      int sendBufferSize, BufferPool bufferPool) {
+      int sendBufferSize, BufferPool bufferPool, boolean useDirectBuffers) {
     this.stats = stats;
     this.msg = msg;
     this.cons = cons;
-    this.buffer = bufferPool.acquireDirectSenderBuffer(sendBufferSize);
+    this.buffer = useDirectBuffers ? bufferPool.acquireDirectSenderBuffer(sendBufferSize)
+        : bufferPool.acquireNonDirectSenderBuffer(sendBufferSize);
     this.buffer.clear();
     this.buffer.position(Connection.MSG_HEADER_BYTES);
     this.msgId = MsgIdGenerator.NO_MSG_ID;
@@ -144,7 +145,8 @@ public class MsgStreamer extends OutputStream
    * List of MsgStreamer objects.
    */
   public static BaseMsgStreamer create(List<?> cons, final DistributionMessage msg,
-      final boolean directReply, final DMStats stats, BufferPool bufferPool) {
+      final boolean directReply, final DMStats stats,
+      BufferPool bufferPool, boolean useDirectBuffers) {
     final Connection firstCon = (Connection) cons.get(0);
     // split into different versions if required
     Version version;
@@ -173,7 +175,7 @@ public class MsgStreamer extends OutputStream
       }
       if (versionToConnMap == null) {
         return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
-            bufferPool);
+            bufferPool, useDirectBuffers);
       } else {
         // if there is a versioned stream created, then split remaining
         // connections to unversioned stream
@@ -193,7 +195,7 @@ public class MsgStreamer extends OutputStream
           }
           streamers.add(
               new MsgStreamer(currentVersionConnections, msg, directReply, stats, sendBufferSize,
-                  bufferPool));
+                  bufferPool, useDirectBuffers));
         }
         for (ObjectIterator<Object2ObjectMap.Entry> itr =
             versionToConnMap.object2ObjectEntrySet().fastIterator(); itr.hasNext();) {
@@ -201,18 +203,18 @@ public class MsgStreamer extends OutputStream
           Object ver = entry.getKey();
           Object l = entry.getValue();
           streamers.add(new VersionedMsgStreamer((List<?>) l, msg, directReply, stats,
-              bufferPool, sendBufferSize, (Version) ver));
+              bufferPool, sendBufferSize, (Version) ver, useDirectBuffers));
         }
         return new MsgStreamerList(streamers);
       }
     } else if ((version = firstCon.getRemoteVersion()) == null) {
       return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
-          bufferPool);
+          bufferPool, useDirectBuffers);
     } else {
       // create a single VersionedMsgStreamer
       return new VersionedMsgStreamer(cons, msg, directReply, stats, bufferPool,
           firstCon.getSendBufferSize(),
-          version);
+          version, useDirectBuffers);
     }
   }
 

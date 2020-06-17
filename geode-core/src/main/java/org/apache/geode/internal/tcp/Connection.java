@@ -23,6 +23,7 @@ import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -44,6 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.logging.log4j.Logger;
 
@@ -72,6 +74,7 @@ import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -81,6 +84,7 @@ import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketUtils;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
@@ -720,7 +724,7 @@ public class Connection implements Runnable {
       my_okHandshakeBuf = okHandshakeBuf;
     }
     my_okHandshakeBuf.position(0);
-    writeFully(getSocket().getChannel(), my_okHandshakeBuf, false, null);
+    writeFully(getSocket(), my_okHandshakeBuf, false, null);
   }
 
   /**
@@ -800,9 +804,10 @@ public class Connection implements Runnable {
   }
 
   private void notifyHandshakeWaiter(boolean success) {
-    if (getConduit().useSSL() && ioFilter != null) {
+    ByteBuffer buffer = inputBuffer;
+    if (getConduit().useSSL() && ioFilter != null && buffer != null) {
       // clear out any remaining handshake bytes
-      ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
+      buffer = ioFilter.getUnwrappedBuffer(buffer);
       buffer.position(0).limit(0);
     }
     synchronized (handshakeSync) {
@@ -835,8 +840,7 @@ public class Connection implements Runnable {
         Socket s = socket;
         if (s != null && !s.isClosed()) {
           prepareForAsyncClose();
-          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr),
-              () -> ioFilter.close(s.getChannel()));
+          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr), null);
         }
       }
     }
@@ -894,7 +898,7 @@ public class Connection implements Runnable {
     // on the receiver to show the cause of reader thread creation
     connectHandshake.setMessageHeader(NORMAL_MSG_TYPE, OperationExecutors.STANDARD_EXECUTOR,
         MsgIdGenerator.NO_MSG_ID);
-    writeFully(getSocket().getChannel(), connectHandshake.getContentBuffer(), false, null);
+    writeFully(getSocket(), connectHandshake.getContentBuffer(), false, null);
   }
 
   /**
@@ -1142,31 +1146,47 @@ public class Connection implements Runnable {
 
     InetSocketAddress addr =
         new InetSocketAddress(remoteID.getInetAddress(), remoteID.getDirectChannelPort());
-    SocketChannel channel = SocketChannel.open();
-    owner.addConnectingSocket(channel.socket(), addr.getAddress());
+
+    int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
+    boolean useSSL = getConduit().useSSL();
+    if (useSSL) {
+      // socket = javax.net.ssl.SSLSocketFactory.getDefault()
+      // .createSocket(remoteId.getInetAddress(), remoteId.getPort());
+      int socketBufferSize =
+          sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
+      socket = getConduit().getSocketCreator().forAdvancedUse().connect(
+          new HostAndPort(remoteID.getHostName(), remoteID.getDirectChannelPort()),
+          0, null, false, socketBufferSize, true);
+    } else {
+      SocketChannel channel = SocketChannel.open();
+      socket = channel.socket();
+    }
+    owner.addConnectingSocket(socket, addr.getAddress());
 
     try {
-      channel.socket().setTcpNoDelay(true);
-      channel.socket().setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
+      socket.setTcpNoDelay(true);
+      socket.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
 
       // If conserve-sockets is false, the socket can be used for receiving responses, so set the
       // receive buffer accordingly.
       if (!sharedResource) {
-        setReceiveBufferSize(channel.socket(), owner.getConduit().tcpBufferSize);
+        setReceiveBufferSize(socket, owner.getConduit().tcpBufferSize);
       } else {
-        setReceiveBufferSize(channel.socket(), SMALL_BUFFER_SIZE); // make small since only
+        setReceiveBufferSize(socket, SMALL_BUFFER_SIZE); // make small since only
         // receive ack messages
       }
-      setSendBufferSize(channel.socket());
-      channel.configureBlocking(true);
-
-      int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
+      setSendBufferSize(socket);
+      if (!useSSL) {
+        socket.getChannel().configureBlocking(true);
+      }
 
       try {
 
-        channel.socket().connect(addr, connectTime);
-
-        createIoFilter(channel, true);
+        if (!useSSL) {
+          // haven't connected yet
+          socket.connect(addr, connectTime);
+        }
+        createIoFilter(socket, true);
 
       } catch (NullPointerException e) {
         // jdk 1.7 sometimes throws an NPE here
@@ -1191,9 +1211,8 @@ public class Connection implements Runnable {
         throw c;
       }
     } finally {
-      owner.removeConnectingSocket(channel.socket());
+      owner.removeConnectingSocket(socket);
     }
-    socket = channel.socket();
 
     if (logger.isDebugEnabled()) {
       logger.debug("Connection: connected to {} with IP address {}", remoteID, addr);
@@ -1522,15 +1541,16 @@ public class Connection implements Runnable {
 
   private void readMessages() {
     // take a snapshot of uniqueId to detect reconnect attempts
-    SocketChannel channel;
     try {
-      channel = getSocket().getChannel();
       socket.setSoTimeout(0);
       socket.setTcpNoDelay(true);
       if (ioFilter == null) {
-        createIoFilter(channel, false);
+        createIoFilter(socket, false);
       }
-      channel.configureBlocking(true);
+      SocketChannel channel = socket.getChannel();
+      if (channel != null) {
+        channel.configureBlocking(true);
+      }
     } catch (ClosedChannelException e) {
       // the channel was asynchronously closed. Our work is done.
       try {
@@ -1576,7 +1596,7 @@ public class Connection implements Runnable {
         if (SystemFailure.getFailure() != null) {
           // Allocate no objects here!
           try {
-            ioFilter.close(socket.getChannel());
+            ioFilter.close(socket);
             socket.close();
           } catch (IOException e) {
             // don't care
@@ -1594,15 +1614,16 @@ public class Connection implements Runnable {
           }
           int amountRead;
           if (!isInitialRead) {
-            amountRead = channel.read(buff);
+            amountRead = SocketUtils.readFromSocket(socket, buff);
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
-              amountRead = channel.read(buff);
+              amountRead = SocketUtils.readFromSocket(socket, buff);
             } else {
               amountRead = buff.position();
             }
           }
+
           synchronized (stateLock) {
             connectionState = STATE_IDLE;
           }
@@ -1638,6 +1659,9 @@ public class Connection implements Runnable {
               // not exiting and not a Reader spawned from a ServerSocket.accept(), so
               // let's set some state noting that this is happening
               hasResidualReaderThread = true;
+              Thread.currentThread().setName(String.format(
+                  "P2P connection monitor for %s shared %s connection uid=%s",
+                  remoteAddr, preserveOrder ? "ordered" : "unordered", uniqueId));
             }
 
           }
@@ -1706,7 +1730,9 @@ public class Connection implements Runnable {
     }
   }
 
-  private void createIoFilter(SocketChannel channel, boolean clientSocket) throws IOException {
+
+  private void createIoFilter(Socket socket, boolean clientSocket) throws IOException {
+    SocketChannel channel = socket.getChannel();
     if (getConduit().useSSL() && channel != null) {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
       SSLEngine engine =
@@ -1731,6 +1757,10 @@ public class Connection implements Runnable {
           getConduit().idleConnectionTimeout, clientSocket, inputBuffer,
           getBufferPool());
     } else {
+      if (!clientSocket && getConduit().useSSL()) {
+        getConduit().getSocketCreator().forCluster()
+            .handshakeIfSocketIsSSL(socket, getConduit().idleConnectionTimeout);
+      }
       ioFilter = new NioPlainEngine(getBufferPool());
     }
   }
@@ -1862,8 +1892,7 @@ public class Connection implements Runnable {
     }
     socketInUse = true;
     try {
-      SocketChannel channel = getSocket().getChannel();
-      writeFully(channel, buffer, false, msg);
+      writeFully(getSocket(), buffer, false, msg);
       if (cacheContentChanges) {
         messagesSent++;
       }
@@ -2284,7 +2313,7 @@ public class Connection implements Runnable {
               if (s != null) {
                 try {
                   logger.debug("closing socket", new Exception("closing socket"));
-                  ioFilter.close(s.getChannel());
+                  ioFilter.close(socket);
                   s.close();
                 } catch (IOException e) {
                   // don't care
@@ -2307,7 +2336,6 @@ public class Connection implements Runnable {
                 disconnectSlowReceiver();
                 return;
               }
-              SocketChannel channel = getSocket().getChannel();
               ByteBuffer bb = takeFromOutgoingQueue();
               if (bb == null) {
                 if (logger.isDebugEnabled() && flushId == 1) {
@@ -2315,7 +2343,7 @@ public class Connection implements Runnable {
                 }
                 return;
               }
-              writeFully(channel, bb, true, null);
+              writeFully(getSocket(), bb, true, null);
               // We should not add messagesSent. The counts are increased elsewhere.
               accessed();
             } finally {
@@ -2566,7 +2594,7 @@ public class Connection implements Runnable {
    * @throws ConnectionException if the conduit has stopped
    */
   @VisibleForTesting
-  void writeFully(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
+  void writeFully(Socket socket, ByteBuffer buffer, boolean forceAsync,
       DistributionMessage msg) throws IOException, ConnectionException {
     final DMStats stats = owner.getConduit().getStats();
     if (!sharedResource) {
@@ -2593,7 +2621,33 @@ public class Connection implements Runnable {
           int amtWritten = 0;
           long start = stats.startSocketWrite(true);
           try {
-            amtWritten = channel.write(wrappedBuffer);
+            if (socket instanceof SSLSocket) {
+              try {
+                OutputStream output = socket.getOutputStream();
+                if (buffer.hasArray()) {
+                  // logger.info("BRUCE: writeFully writing {} with array, offset={} position={}
+                  // limit={}",
+                  // buffer, buffer.arrayOffset(), buffer.position(), buffer.limit());
+                  output.write(buffer.array(), buffer.arrayOffset(),
+                      buffer.limit() - buffer.position());
+                  buffer.position(buffer.limit());
+                } else {
+                  // logger.info("BRUCE: writeFully writing {} with no array",
+                  // buffer);
+                  byte[] bytesToWrite = getBytesToWrite(buffer);
+                  output.write(bytesToWrite);
+                  output.flush();
+                }
+              } catch (Exception | Error e) {
+                logger.info("BRUCE: caught exception while writing", e);
+                try {
+                  Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                }
+              }
+            } else {
+              amtWritten = socket.getChannel().write(wrappedBuffer);
+            }
           } finally {
             stats.endSocketWrite(true, start, amtWritten, 0);
           }
@@ -2601,8 +2655,14 @@ public class Connection implements Runnable {
 
       }
     } else {
-      writeAsync(channel, buffer, forceAsync, msg, stats);
+      writeAsync(socket.getChannel(), buffer, forceAsync, msg, stats);
     }
+  }
+
+  private static byte[] getBytesToWrite(ByteBuffer buffer) {
+    byte[] bytesToWrite = new byte[buffer.limit()];
+    buffer.get(bytesToWrite);
+    return bytesToWrite;
   }
 
   /**
@@ -3403,8 +3463,7 @@ public class Connection implements Runnable {
                 socketInUse = true;
                 try {
                   sendBatchBuffer.flip();
-                  SocketChannel channel = getSocket().getChannel();
-                  writeFully(channel, sendBatchBuffer, false, null);
+                  writeFully(getSocket(), sendBatchBuffer, false, null);
                   sendBatchBuffer.clear();
                 } catch (IOException | ConnectionException ex) {
                   logger.fatal("Exception flushing batch send buffer: %s", ex);

@@ -297,7 +297,7 @@ public class SSLSocketIntegrationTest {
       } finally {
         if (engine != null && socket != null) {
           final NioSslEngine nioSslEngine = engine;
-          engine.close(socket.getChannel());
+          engine.close(socket);
           assertThatThrownBy(() -> {
             nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
           })

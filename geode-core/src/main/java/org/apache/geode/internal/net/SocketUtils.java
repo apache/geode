@@ -16,8 +16,16 @@
 package org.apache.geode.internal.net;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+
+import javax.net.ssl.SSLSocket;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The SocketUtils class is utility class for performing operations on Sockets and ServerSockets.
@@ -28,6 +36,7 @@ import java.net.Socket;
  * @since GemFire 7.0
  */
 public abstract class SocketUtils {
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Closes the specified Socket silently ignoring any IOException, guarding against null Object
@@ -72,5 +81,67 @@ public abstract class SocketUtils {
 
     return true;
   }
+
+  /**
+   * Read data from the given socket into the given ByteBuffer. If NIO is supported
+   * we use Channel.read(ByteBuffer). If not we use byte arrays to read available
+   * bytes or buffer.remaining() bytes, whichever is smaller. If buffer.limit is zero
+   * and buffer.remaining is also zero the limit is changed to be buffer.capacity
+   * before reading.
+   *
+   * @return the number of bytes read, which may be -1 for EOF
+   */
+  public static int readFromSocket(Socket socket, ByteBuffer inputBuffer) throws IOException {
+    int amountRead;
+    if (socket instanceof SSLSocket) {
+      InputStream stream = socket.getInputStream();
+      amountRead = readFromStream(stream, inputBuffer);
+    } else {
+      amountRead = socket.getChannel().read(inputBuffer);
+    }
+    return amountRead;
+  }
+
+  private static int readFromStream(InputStream stream, ByteBuffer inputBuffer) throws IOException {
+    int amountRead;
+    if (inputBuffer.position() == 0 && inputBuffer.limit() == 0) {
+      inputBuffer.limit(inputBuffer.capacity());
+    }
+    // if bytes are available we read that number of bytes. Otherwise we do a blocking read
+    // of buffer.remaining() bytes
+    int amountToRead =
+        stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
+            : inputBuffer.remaining();
+    try {
+      if (inputBuffer.hasArray()) {
+        // logger.info("BRUCE: hasArray, amountToRead={}, stream.available()={}, inputBuffer={}",
+        // amountToRead, stream.available(), inputBuffer);
+        amountRead =
+            stream.read(inputBuffer.array(),
+                inputBuffer.arrayOffset() + inputBuffer.position(), amountToRead);
+        if (amountRead > 0) {
+          inputBuffer.position(inputBuffer.position() + amountRead);
+        }
+      } else {
+        // logger.info(
+        // "BRUCE: does not have Array, amountToRead={}, stream.available()={}, inputBuffer={}",
+        // amountToRead, stream.available(), inputBuffer);
+        byte[] buffer = new byte[amountToRead];
+        amountRead = stream.read(buffer);
+        if (amountRead > 0) {
+          inputBuffer.put(buffer, 0, amountRead);
+        }
+      }
+    } catch (RuntimeException | Error x) {
+      logger.info("BRUCE: caught exception in readFromStream", x);
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+      }
+      throw x;
+    }
+    return amountRead;
+  }
+
 
 }
