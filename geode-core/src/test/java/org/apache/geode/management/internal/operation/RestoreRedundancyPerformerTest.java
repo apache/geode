@@ -17,7 +17,11 @@
 package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -28,7 +32,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.distributed.DistributedMember;
@@ -48,11 +51,11 @@ import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
 public class RestoreRedundancyPerformerTest {
 
-  public static final String DS_MEMBER_NAME_SERVER1 = "server1";
-  public static final String DS_MEMBER_NAME_SERVER2 = "server2";
+  private static final String DS_MEMBER_NAME_SERVER1 = "server1";
+  private static final String DS_MEMBER_NAME_SERVER2 = "server2";
 
-  public static final String REGION_1 = "region1";
-  public static final String BOGUS_PASS_MESSAGE = "Bogus pass message";
+  private static final String REGION_1 = "region1";
+  private static final String BOGUS_PASS_MESSAGE = "Bogus pass message";
   private InternalDistributedMember server1;
   private InternalDistributedMember server2;
   private InternalCacheForClientAccess internalCacheForClientAccess;
@@ -69,7 +72,7 @@ public class RestoreRedundancyPerformerTest {
     InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(baseManagementService.getDistributedSystemMXBean()).thenReturn(distributedSystemMXBean);
-    when(baseManagementService.getDistributedRegionMXBean(Mockito.anyString()))
+    when(baseManagementService.getDistributedRegionMXBean(anyString()))
         .thenReturn(distributedRegionMXBean);
     when(distributedRegionMXBean.getRegionType()).thenReturn(String.valueOf(DataPolicy.PARTITION));
     when(distributedRegionMXBean.getMembers())
@@ -122,11 +125,11 @@ public class RestoreRedundancyPerformerTest {
     satisfied.put(REGION_1, regionRedundancyStatusImpl);
 
     // intercept the executeFunctionAndGetFunctionResult method call on the performer
-    RestoreRedundancyPerformer spyRedundancyPerformer = Mockito.spy(restoreRedundancyPerformer);
-    Mockito.doReturn(restoreRedundancyResultsImpl).when(spyRedundancyPerformer)
-        .executeFunctionAndGetFunctionResult(Mockito.any(RestoreRedundancyFunction.class),
-            Mockito.any(Object.class),
-            Mockito.any(
+    RestoreRedundancyPerformer spyRedundancyPerformer = spy(restoreRedundancyPerformer);
+    doReturn(restoreRedundancyResultsImpl).when(spyRedundancyPerformer)
+        .executeFunctionAndGetFunctionResult(any(RestoreRedundancyFunction.class),
+            any(Object.class),
+            any(
                 DistributedMember.class));
 
     // invoke perform
@@ -158,11 +161,11 @@ public class RestoreRedundancyPerformerTest {
     satisfied.put(REGION_1, regionRedundancyStatusImpl);
 
     // intercept the executeFunctionAndGetFunctionResult method call on the performer
-    RestoreRedundancyPerformer spyRedundancyPerformer = Mockito.spy(restoreRedundancyPerformer);
-    Mockito.doReturn(restoreRedundancyResultsImpl).when(spyRedundancyPerformer)
-        .executeFunctionAndGetFunctionResult(Mockito.any(RestoreRedundancyFunction.class),
-            Mockito.any(Object.class),
-            Mockito.any(
+    RestoreRedundancyPerformer spyRedundancyPerformer = spy(restoreRedundancyPerformer);
+    doReturn(restoreRedundancyResultsImpl).when(spyRedundancyPerformer)
+        .executeFunctionAndGetFunctionResult(any(RestoreRedundancyFunction.class),
+            any(Object.class),
+            any(
                 DistributedMember.class));
 
     // invoke perform
@@ -197,11 +200,11 @@ public class RestoreRedundancyPerformerTest {
 
 
     // intercept the executeFunctionAndGetFunctionResult method call on the performer
-    RestoreRedundancyPerformer spyRedundancyPerformer = Mockito.spy(restoreRedundancyPerformer);
-    Mockito.doReturn(restoreRedundancyResultsImpl).when(spyRedundancyPerformer)
-        .executeFunctionAndGetFunctionResult(Mockito.any(RestoreRedundancyFunction.class),
-            Mockito.any(Object.class),
-            Mockito.any(
+    RestoreRedundancyPerformer spyRedundancyPerformer = spy(restoreRedundancyPerformer);
+    doReturn(restoreRedundancyResultsImpl).when(spyRedundancyPerformer)
+        .executeFunctionAndGetFunctionResult(any(RestoreRedundancyFunction.class),
+            any(Object.class),
+            any(
                 DistributedMember.class));
 
     // invoke perform
@@ -211,8 +214,6 @@ public class RestoreRedundancyPerformerTest {
     assertThat(restoreRedundancyResult.getSuccess()).isFalse();
     assertThat(restoreRedundancyResult.getStatusMessage()).contains(BOGUS_PASS_MESSAGE);
   }
-
-
 
   @Test
   public void executePerformNoViableMembers() {
@@ -245,11 +246,11 @@ public class RestoreRedundancyPerformerTest {
 
 
     // intercept the executeFunctionAndGetFunctionResult method call on the performer
-    RestoreRedundancyPerformer spyRedundancyPerformer = Mockito.spy(restoreRedundancyPerformer);
-    Mockito.doReturn(restoreRedundancyResultsImpl).when(spyRedundancyPerformer)
-        .executeFunctionAndGetFunctionResult(Mockito.any(RestoreRedundancyFunction.class),
-            Mockito.any(Object.class),
-            Mockito.any(
+    RestoreRedundancyPerformer spyRedundancyPerformer = spy(restoreRedundancyPerformer);
+    doReturn(restoreRedundancyResultsImpl).when(spyRedundancyPerformer)
+        .executeFunctionAndGetFunctionResult(any(RestoreRedundancyFunction.class),
+            any(Object.class),
+            any(
                 DistributedMember.class));
 
     // invoke perform

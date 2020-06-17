@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.operation;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -39,10 +41,11 @@ import org.apache.geode.management.runtime.RestoreRedundancyResults;
 public class RestoreRedundancyPerformer
     implements OperationPerformer<RestoreRedundancyRequest, RestoreRedundancyResults> {
   @Immutable
-  public static final Version ADDED_VERSION = Version.GEODE_1_13_0;
-  public static final String NO_MEMBERS_WITH_VERSION_FOR_REGION =
+  @VisibleForTesting
+  static final Version ADDED_VERSION = Version.GEODE_1_13_0;
+  private static final String NO_MEMBERS_WITH_VERSION_FOR_REGION =
       "No members with a version greater than or equal to %s were found for region %s";
-  public static final String EXCEPTION_MEMBER_MESSAGE = "Exception occurred on member %s: %s";
+  private static final String EXCEPTION_MEMBER_MESSAGE = "Exception occurred on member %s: %s";
 
   @Override
   public RestoreRedundancyResults perform(Cache cache, RestoreRedundancyRequest operation) {
@@ -50,7 +53,7 @@ public class RestoreRedundancyPerformer
   }
 
   public RestoreRedundancyResults perform(Cache cache, RestoreRedundancyRequest operation,
-      boolean checkStatus) {
+      boolean isStatusCommand) {
     List<RebalanceOperationPerformer.MemberPRInfo> membersForEachRegion = new ArrayList<>();
     List<String> includedRegionsWithNoMembers = new ArrayList<>();
 
@@ -61,7 +64,7 @@ public class RestoreRedundancyPerformer
       // Filter out any members using older versions of Geode
       List<DistributedMember> viableMembers = filterViableMembers(prInfo);
 
-      if (viableMembers.size() != 0) {
+      if (!viableMembers.isEmpty()) {
         // Update the MemberPRInfo with the viable members
         prInfo.dsMemberList = viableMembers;
       } else {
@@ -74,7 +77,7 @@ public class RestoreRedundancyPerformer
     }
 
     List<RestoreRedundancyResults> functionResults = new ArrayList<>();
-    Object[] functionArgs = new Object[] {operation, checkStatus};
+    Object[] functionArgs = {operation, isStatusCommand};
     List<DistributedMember> completedMembers = new ArrayList<>();
     for (RebalanceOperationPerformer.MemberPRInfo memberPRInfo : membersForEachRegion) {
       // Check to see if an earlier function execution has already targeted a member hosting this
@@ -90,7 +93,6 @@ public class RestoreRedundancyPerformer
       if (!functionResult.getSuccess()) {
         // Record the error and then give up
         RestoreRedundancyResultsImpl results = new RestoreRedundancyResultsImpl();
-        results.setSuccess(false);
         String errorString =
             String.format(EXCEPTION_MEMBER_MESSAGE, targetMember.getName(),
                 functionResult.getStatusMessage());
@@ -112,14 +114,14 @@ public class RestoreRedundancyPerformer
     return finalResult;
   }
 
-  // this returns either an Exception or RestoreRedundancyResults
+  // this returns RestoreRedundancyResults or null based on
   public RestoreRedundancyResults executeFunctionAndGetFunctionResult(Function<?> function,
       Object args,
-      final DistributedMember targetMember) {
+      DistributedMember targetMember) {
     ResultCollector<?, ?> rc =
         ManagementUtils.executeFunction(function, args, Collections.singleton(targetMember));
-    List<RestoreRedundancyResults> results = (List<RestoreRedundancyResults>) rc.getResult();
-    return results.size() > 0 ? results.get(0) : null;
+    List<RestoreRedundancyResults> results = uncheckedCast(rc.getResult());
+    return results.isEmpty() ? null : results.get(0);
   }
 
 
@@ -160,14 +162,15 @@ public class RestoreRedundancyPerformer
   }
 
   // Extracted for testing
-  List<RebalanceOperationPerformer.MemberPRInfo> getMembersForEachRegion(InternalCache cache,
+  private List<RebalanceOperationPerformer.MemberPRInfo> getMembersForEachRegion(
+      InternalCache cache,
       List<String> excludedRegionList) {
     return RebalanceOperationPerformer.getMemberRegionList(
         ManagementService.getManagementService(cache), cache, excludedRegionList);
   }
 
   // Extracted for testing
-  DistributedMember getOneMemberForRegion(InternalCache cache, String regionName) {
+  private DistributedMember getOneMemberForRegion(InternalCache cache, String regionName) {
     String regionNameWithSeparator = regionName;
     // The getAssociatedMembers method requires region names start with '/'
     if (!regionName.startsWith(SEPARATOR)) {

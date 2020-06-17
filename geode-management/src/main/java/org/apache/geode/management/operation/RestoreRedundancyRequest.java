@@ -24,7 +24,11 @@ import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
 /**
  * Defines a distributed system request to optimize bucket allocation across members.
+ * RestoreRedundancyRequest - is part of an experimental API for performing operations on GEODE
+ * using a REST interface. This API is experimental and may change.
+ *
  */
+
 @Experimental
 public class RestoreRedundancyRequest
     implements ClusterManagementOperation<RestoreRedundancyResults> {
@@ -32,11 +36,11 @@ public class RestoreRedundancyRequest
   /**
    * see {@link #getEndpoint()}
    */
-  public static final String RESTORE_REDUNDANCY_REBALANCE_ENDPOINT =
-      "/operations/restoreRedundancy";
-  // null means all regions included
+  private static final String RESTORE_REDUNDANCY_ENDPOINT = "/operations/restoreRedundancy";
+  private static final long serialVersionUID = -3896185413062876188L;
+  /** null means all regions included */
   private List<String> includeRegions;
-  // null means don't exclude any regions
+  /** null means don't exclude any regions */
   private List<String> excludeRegions;
   private boolean reassignPrimaries = true;
   private String operator;
@@ -51,10 +55,10 @@ public class RestoreRedundancyRequest
    */
   public RestoreRedundancyRequest(
       RestoreRedundancyRequest other) {
-    this.setExcludeRegions(other.getExcludeRegions());
-    this.setIncludeRegions(other.getIncludeRegions());
-    this.setReassignPrimaries(other.getReassignPrimaries());
-    this.operator = other.getOperator();
+    setExcludeRegions(other.getExcludeRegions());
+    setIncludeRegions(other.getIncludeRegions());
+    setReassignPrimaries(other.getReassignPrimaries());
+    operator = other.getOperator();
   }
 
   /***
@@ -99,7 +103,7 @@ public class RestoreRedundancyRequest
   @Override
   @JsonIgnore
   public String getEndpoint() {
-    return RESTORE_REDUNDANCY_REBALANCE_ENDPOINT;
+    return RESTORE_REDUNDANCY_ENDPOINT;
   }
 
   @Override

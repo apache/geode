@@ -44,8 +44,7 @@ import org.apache.geode.management.runtime.RegionRedundancyStatus;
 import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
 public class RedundancyCommand extends GfshCommand {
-  public static final String NO_MEMBERS_WITH_VERSION_FOR_REGION =
-      "No members with a version greater than or equal to %s were found for region %s";
+
   public static final String NO_MEMBERS_SECTION = "no-members";
   public static final String NO_MEMBERS_HEADER =
       "No partitioned regions were found.";
@@ -130,8 +129,8 @@ public class RedundancyCommand extends GfshCommand {
       boolean isStatusCommand) {
     // No members hosting partitioned regions were found, but no regions were explicitly included,
     // so return OK status
-    if (results.getRegionResults().size() == 0
-        && results.getIncludedRegionsWithNoMembers().size() == 0) {
+    if (results.getRegionResults().isEmpty()
+        && results.getIncludedRegionsWithNoMembers().isEmpty()) {
       return createNoMembersResultModel();
     }
 
@@ -142,7 +141,7 @@ public class RedundancyCommand extends GfshCommand {
     ResultModel result = new ResultModel();
     // At least one explicitly included region was not found, so return error status along with the
     // results for the regions that were found
-    if (results.getIncludedRegionsWithNoMembers().size() > 0) {
+    if (!results.getIncludedRegionsWithNoMembers().isEmpty()) {
       addRegionsWithNoMembersSection(results.getIncludedRegionsWithNoMembers(), result);
     }
 
@@ -156,7 +155,7 @@ public class RedundancyCommand extends GfshCommand {
       addPrimariesSection(result, results);
 
       // If redundancy was not fully restored, return error status
-      if (results.getRegionOperationStatus().equals(RestoreRedundancyResults.Status.FAILURE)) {
+      if (results.getRegionOperationStatus() == RestoreRedundancyResults.Status.FAILURE) {
         result.setStatus(Result.Status.ERROR);
       }
     }
@@ -201,7 +200,7 @@ public class RedundancyCommand extends GfshCommand {
       RestoreRedundancyResults resultCollector) {
     Map<String, RegionRedundancyStatus> zeroRedundancyResults =
         resultCollector.getZeroRedundancyRegionResults();
-    if (zeroRedundancyResults.size() > 0) {
+    if (!zeroRedundancyResults.isEmpty()) {
       InfoResultModel zeroRedundancy = result.addInfo(ZERO_REDUNDANCY_SECTION);
       zeroRedundancy.setHeader(NO_REDUNDANT_COPIES_FOR_REGIONS);
       zeroRedundancyResults.values().stream().map(RegionRedundancyStatus::toString)
@@ -213,7 +212,7 @@ public class RedundancyCommand extends GfshCommand {
       RestoreRedundancyResults resultCollector) {
     Map<String, RegionRedundancyStatus> underRedundancyResults =
         resultCollector.getUnderRedundancyRegionResults();
-    if (underRedundancyResults.size() > 0) {
+    if (!underRedundancyResults.isEmpty()) {
       InfoResultModel underRedundancy = result.addInfo(UNDER_REDUNDANCY_SECTION);
       underRedundancy.setHeader(REDUNDANCY_NOT_SATISFIED_FOR_REGIONS);
       underRedundancyResults.values().stream().map(RegionRedundancyStatus::toString)
@@ -225,7 +224,7 @@ public class RedundancyCommand extends GfshCommand {
       RestoreRedundancyResults resultCollector) {
     Map<String, RegionRedundancyStatus> satisfiedRedundancyResults =
         resultCollector.getSatisfiedRedundancyRegionResults();
-    if (satisfiedRedundancyResults.size() > 0) {
+    if (!satisfiedRedundancyResults.isEmpty()) {
       InfoResultModel satisfiedRedundancy = result.addInfo(SATISFIED_REDUNDANCY_SECTION);
       satisfiedRedundancy.setHeader(REDUNDANCY_SATISFIED_FOR_REGIONS);
       satisfiedRedundancyResults.values().stream().map(RegionRedundancyStatus::toString)

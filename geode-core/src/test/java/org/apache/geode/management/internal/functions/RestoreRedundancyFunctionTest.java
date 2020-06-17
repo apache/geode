@@ -49,7 +49,7 @@ public class RestoreRedundancyFunctionTest {
       mock(SerializableRestoreRedundancyResultsImpl.class);
   private final String message = "expected message";
   private RestoreRedundancyFunction function;
-  private ResultSender resultSender;
+  private ResultSender<RestoreRedundancyResults> resultSender;
   private ArgumentCaptor<SerializableRestoreRedundancyResultsImpl> argumentCaptor;
   private RestoreRedundancyRequest request;
 
@@ -58,7 +58,6 @@ public class RestoreRedundancyFunctionTest {
     function = new RestoreRedundancyFunction();
     when(mockContext.getCache()).thenReturn(mockCache);
     request = new RestoreRedundancyRequest();
-    request.setReassignPrimaries(true);
 
     when(mockContext.getArguments()).thenReturn(new Object[] {request, false});
     when(mockCache.getResourceManager().createRestoreRedundancyOperation())
@@ -67,9 +66,8 @@ public class RestoreRedundancyFunctionTest {
         CompletableFuture.completedFuture(mockResults);
     when(mockOperation.start()).thenReturn(future);
     when(mockResults.getRegionOperationMessage()).thenReturn(message);
-    // when(mockResults.getStatusMessage()).thenReturn(message);
     resultSender = mock(ResultSender.class);
-    when(mockContext.getResultSender()).thenReturn(resultSender);
+    when(mockContext.getResultSender()).thenReturn((ResultSender) resultSender);
     argumentCaptor = ArgumentCaptor.forClass(SerializableRestoreRedundancyResultsImpl.class);
   }
 
@@ -101,7 +99,7 @@ public class RestoreRedundancyFunctionTest {
     when(mockOperation.redundancyStatus()).thenReturn(mockResults);
     when(mockResults.getRegionOperationStatus())
         .thenReturn(RestoreRedundancyResults.Status.SUCCESS);
-    // isStatusCommand is the fourth argument passed to the function
+    // isStatusCommand is the second argument passed to the function
     when(mockContext.getArguments()).thenReturn(new Object[] {request, true});
 
     function.execute(mockContext);
@@ -152,7 +150,7 @@ public class RestoreRedundancyFunctionTest {
   }
 
   @Test
-  public void whenFunctionThrowException() throws Exception {
+  public void executeFunctionReturnsFailureWhenExceptionThrownDuringOperation() {
     when(mockOperation.start()).thenThrow(new RuntimeException("Any exception"));
     function.execute(mockContext);
     verify(resultSender).lastResult(argumentCaptor.capture());

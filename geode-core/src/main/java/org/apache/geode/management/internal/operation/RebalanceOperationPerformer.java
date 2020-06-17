@@ -61,7 +61,7 @@ public class RebalanceOperationPerformer
     RebalanceResultImpl result = new RebalanceResultImpl();
     result.setSuccess(false);
 
-    if (includeRegions.size() != 0) {
+    if (!includeRegions.isEmpty()) {
 
       List<RebalanceRegionResult> rebalanceRegionResults = new ArrayList<>();
 
@@ -116,7 +116,6 @@ public class RebalanceOperationPerformer
             CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
       }
 
-      Function rebalanceFunction = new RebalanceFunction();
       Object[] functionArgs = new Object[3];
       functionArgs[0] = simulate ? "true" : "false";
       Set<String> setRegionName = new HashSet<>();
@@ -125,20 +124,20 @@ public class RebalanceOperationPerformer
 
       functionArgs[2] = null;
 
-      List resultList = null;
+      List<String> resultList = null;
       try {
-        resultList = (ArrayList) ManagementUtils
-            .executeFunction(rebalanceFunction, functionArgs, Collections.singleton(member))
+        resultList = (List<String>) ManagementUtils
+            .executeFunction(new RebalanceFunction(), functionArgs, Collections.singleton(member))
             .getResult();
-      } catch (Exception ex) {
+      } catch (Exception ignored) {
 
       }
 
       RebalanceRegionResult result = new RebalanceRegionResultImpl();
-      if (resultList != null && resultList.size() > 0) {
-        List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
+      if (resultList != null && !resultList.isEmpty()) {
+        List<String> rstList = Arrays.asList(resultList.get(0).split(","));
 
-        result = (RebalanceRegionResultImpl) toRebalanceRegionResut(rstList);
+        result = toRebalanceRegionResult(rstList);
       }
 
       return result;
@@ -177,7 +176,7 @@ public class RebalanceOperationPerformer
     }
   }
 
-  public static DistributedMember getAssociatedMembers(String region, final InternalCache cache) {
+  public static DistributedMember getAssociatedMembers(String region, InternalCache cache) {
     DistributedRegionMXBean bean =
         ManagementService.getManagementService(cache).getDistributedRegionMXBean(region);
 
@@ -195,10 +194,10 @@ public class RebalanceOperationPerformer
 
     if (membersName.length > 1) {
       while (it.hasNext() && !matchFound) {
-        DistributedMember DSMember = it.next();
+        DistributedMember dsMember = it.next();
         for (String memberName : membersName) {
-          if (MBeanJMXAdapter.getMemberNameOrUniqueId(DSMember).equals(memberName)) {
-            member = DSMember;
+          if (MBeanJMXAdapter.getMemberNameOrUniqueId(dsMember).equals(memberName)) {
+            member = dsMember;
             matchFound = true;
             break;
           }
@@ -214,7 +213,7 @@ public class RebalanceOperationPerformer
     List<MemberPRInfo> listMemberPRInfo = new ArrayList<>();
     String[] listDSRegions =
         managementService.getDistributedSystemMXBean().listRegions();
-    final Set<DistributedMember> dsMembers = ManagementUtils.getAllMembers(cache);
+    Set<DistributedMember> dsMembers = ManagementUtils.getAllMembers(cache);
 
     for (String regionName : listDSRegions) {
       // check for excluded regions
@@ -222,17 +221,13 @@ public class RebalanceOperationPerformer
       if (listExcludedRegion != null) {
         for (String aListExcludedRegion : listExcludedRegion) {
           // this is needed since region name may start with / or without it
-          // also
           String excludedRegion = aListExcludedRegion.trim();
-          if (regionName.startsWith(SEPARATOR)) {
-            if (!excludedRegion.startsWith(SEPARATOR)) {
-              excludedRegion = SEPARATOR + excludedRegion;
-            }
+          if (regionName.startsWith(SEPARATOR) && !excludedRegion.startsWith(SEPARATOR)) {
+            excludedRegion = SEPARATOR + excludedRegion;
           }
-          if (excludedRegion.startsWith(SEPARATOR)) {
-            if (!regionName.startsWith(SEPARATOR)) {
-              regionName = SEPARATOR + regionName;
-            }
+
+          if (excludedRegion.startsWith(SEPARATOR) && !regionName.startsWith(SEPARATOR)) {
+            regionName = SEPARATOR + regionName;
           }
 
           if (excludedRegion.equals(regionName)) {
@@ -258,17 +253,17 @@ public class RebalanceOperationPerformer
             || bean.getRegionType().equals(DataPolicy.PERSISTENT_PARTITION.toString())) {
 
           String[] memberNames = bean.getMembers();
-          for (DistributedMember dsmember : dsMembers) {
+          for (DistributedMember dsMember : dsMembers) {
             for (String memberName : memberNames) {
-              if (MBeanJMXAdapter.getMemberNameOrUniqueId(dsmember).equals(memberName)) {
+              if (MBeanJMXAdapter.getMemberNameOrUniqueId(dsMember).equals(memberName)) {
                 MemberPRInfo memberAndItsPRRegions = new MemberPRInfo();
                 memberAndItsPRRegions.region = regionName;
-                memberAndItsPRRegions.dsMemberList.add(dsmember);
+                memberAndItsPRRegions.dsMemberList.add(dsMember);
                 if (listMemberPRInfo.contains(memberAndItsPRRegions)) {
                   // add member for appropriate region
                   int index = listMemberPRInfo.indexOf(memberAndItsPRRegions);
                   MemberPRInfo listMember = listMemberPRInfo.get(index);
-                  listMember.dsMemberList.add(dsmember);
+                  listMember.dsMemberList.add(dsMember);
                 } else {
                   listMemberPRInfo.add(memberAndItsPRRegions);
                 }
@@ -350,7 +345,7 @@ public class RebalanceOperationPerformer
     List<MemberPRInfo> listMemberRegion =
         getMemberRegionList(managementService, cache, excludeRegionsList);
 
-    if (listMemberRegion.size() == 0) {
+    if (listMemberRegion.isEmpty()) {
       rebalanceResult.setStatusMessage(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
       rebalanceResult.setSuccess(true);
       return rebalanceResult;
@@ -380,7 +375,7 @@ public class RebalanceOperationPerformer
         if (memberPR.dsMemberList.size() > 1) {
           for (int i = 0; i < memberPR.dsMemberList.size(); i++) {
             DistributedMember dsMember = memberPR.dsMemberList.get(i);
-            Function rebalanceFunction = new RebalanceFunction();
+            RebalanceFunction rebalanceFunction = new RebalanceFunction();
             Object[] functionArgs = new Object[3];
             functionArgs[0] = simulate;
             Set<String> regionSet = new HashSet<>();
@@ -401,7 +396,7 @@ public class RebalanceOperationPerformer
                 }
 
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-                rebalanceRegionResults.add(toRebalanceRegionResut(rstList));
+                rebalanceRegionResults.add(toRebalanceRegionResult(rstList));
                 rebalanceResult.setSuccess(true);
 
                 // Rebalancing for region is done so break and continue with other region
@@ -433,7 +428,7 @@ public class RebalanceOperationPerformer
             }
 
             List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-            rebalanceRegionResults.add(toRebalanceRegionResut(rstList));
+            rebalanceRegionResults.add(toRebalanceRegionResult(rstList));
             rebalanceResult.setSuccess(true);
           }
         }
@@ -444,13 +439,13 @@ public class RebalanceOperationPerformer
       }
     }
     rebalanceResult.setRebalanceSummary(rebalanceRegionResults);
-    if (0 == rebalanceRegionResults.size()) {
+    if (rebalanceRegionResults.isEmpty()) {
       rebalanceResult.setSuccess(false);
     }
     return rebalanceResult;
   }
 
-  private static RebalanceRegionResult toRebalanceRegionResut(List<String> rstList) {
+  private static RebalanceRegionResult toRebalanceRegionResult(List<String> rstList) {
     RebalanceRegionResultImpl result = new RebalanceRegionResultImpl();
     result.setBucketCreateBytes(Long.parseLong(rstList.get(0)));
     result.setBucketCreateTimeInMilliseconds(Long.parseLong(rstList.get(1)));
@@ -479,7 +474,7 @@ public class RebalanceOperationPerformer
     @Override
     public boolean equals(Object o2) {
       if (o2 instanceof MemberPRInfo) {
-        return this.region.equals(((MemberPRInfo) o2).region);
+        return region.equals(((MemberPRInfo) o2).region);
       } else {
         return false;
       }
@@ -487,7 +482,7 @@ public class RebalanceOperationPerformer
 
     @Override
     public int hashCode() {
-      return this.region.hashCode();
+      return region.hashCode();
     }
   }
 }

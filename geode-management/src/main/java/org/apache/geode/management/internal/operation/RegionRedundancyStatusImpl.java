@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
 
 /**
@@ -49,6 +50,7 @@ public class RegionRedundancyStatusImpl implements RegionRedundancyStatus {
    */
   public RegionRedundancyStatusImpl() {}
 
+  @VisibleForTesting
   public RegionRedundancyStatusImpl(int configuredRedundancy, int actualRedundancy,
       String regionName, RedundancyStatus status) {
     this.configuredRedundancy = configuredRedundancy;
@@ -75,24 +77,6 @@ public class RegionRedundancyStatusImpl implements RegionRedundancyStatus {
   @Override
   public RedundancyStatus getStatus() {
     return status;
-  }
-
-
-  /**
-   * Determines the {@link RedundancyStatus} for the region. If redundancy is not configured (i.e.
-   * configured redundancy = 0), this always returns {@link RedundancyStatus#SATISFIED}.
-   *
-   * @param desiredRedundancy The configured redundancy of the region.
-   * @param actualRedundancy The actual redundancy of the region.
-   * @return The {@link RedundancyStatus} for the region.
-   */
-  private RedundancyStatus determineStatus(int desiredRedundancy, int actualRedundancy) {
-    boolean zeroRedundancy = desiredRedundancy == 0;
-    if (actualRedundancy == 0) {
-      return zeroRedundancy ? RedundancyStatus.SATISFIED : RedundancyStatus.NO_REDUNDANT_COPIES;
-    }
-    return desiredRedundancy == actualRedundancy ? RedundancyStatus.SATISFIED
-        : RedundancyStatus.NOT_SATISFIED;
   }
 
   @Override

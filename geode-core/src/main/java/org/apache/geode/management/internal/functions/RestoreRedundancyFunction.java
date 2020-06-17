@@ -19,24 +19,19 @@ import static org.apache.geode.management.runtime.RestoreRedundancyResults.Statu
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.operation.RestoreRedundancyResultsImpl;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
 
 
 public class RestoreRedundancyFunction implements InternalFunction<Object[]> {
-  private static final Logger logger = LogService.getLogger();
 
   public static final String ID = RestoreRedundancyFunction.class.getName();
+  private static final long serialVersionUID = -8991672237560920252L;
 
-
-  private static final long serialVersionUID = 1L;
 
   @Override
   // this would return the RestoreRedundancyResults if successful,
@@ -66,15 +61,13 @@ public class RestoreRedundancyFunction implements InternalFunction<Object[]> {
         redundancyOperation.shouldReassignPrimaries(request.getReassignPrimaries());
         results = (RestoreRedundancyResultsImpl) redundancyOperation.start().join();
       }
-      if (results.getRegionOperationStatus().equals(ERROR)) {
-        Exception e = new Exception(results.getRegionOperationMessage());
-        throw e;
+      if (results.getRegionOperationStatus() == ERROR) {
+        throw new IllegalStateException(results.getRegionOperationMessage());
       }
       results.setSuccess(true);
-      results.setStatusMessage("Success"); // MLH change this
+      results.setStatusMessage("Success");
     } catch (Exception e) {
-      results =
-          new SerializableRestoreRedundancyResultsImpl();
+      results = new SerializableRestoreRedundancyResultsImpl();
       results.setSuccess(false);
       results.setStatusMessage(e.getMessage());
     }
@@ -83,7 +76,7 @@ public class RestoreRedundancyFunction implements InternalFunction<Object[]> {
 
   @Override
   public String getId() {
-    return RestoreRedundancyFunction.ID;
+    return ID;
   }
 
   @Override

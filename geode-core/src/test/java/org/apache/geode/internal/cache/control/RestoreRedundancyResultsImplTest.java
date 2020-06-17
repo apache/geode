@@ -72,7 +72,7 @@ public class RestoreRedundancyResultsImplTest {
   }
 
   @Test
-  public void initialStateIsSuccess() throws Exception {
+  public void initialStateIsSuccess() {
     results = new SerializableRestoreRedundancyResultsImpl();
     assertThat(results.getRegionOperationStatus(), is(SUCCESS));
   }
@@ -105,11 +105,10 @@ public class RestoreRedundancyResultsImplTest {
     results.addRegionResult(successfulRegionResult);
     results.addRegionResult(underRedundancyRegionResult);
     results.addRegionResult(zeroRedundancyRegionResult);
-
     results.addPrimaryReassignmentDetails(details);
 
     String message = results.getRegionOperationMessage();
-    List<String> messageLines = Arrays.asList(message.split("\n"));
+    List<String> messageLines = Arrays.asList(message.split(System.lineSeparator()));
 
     assertThat(messageLines, contains(NO_REDUNDANT_COPIES_FOR_REGIONS,
         zeroRedundancyRegionResult.toString(),

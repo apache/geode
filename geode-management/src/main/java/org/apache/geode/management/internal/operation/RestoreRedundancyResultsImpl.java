@@ -36,6 +36,7 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
       "Redundancy is fully satisfied for regions: ";
   public static final String PRIMARY_TRANSFERS_COMPLETED = "Total primary transfers completed = ";
   public static final String PRIMARY_TRANSFER_TIME = "Total primary transfer time (ms) = ";
+  private static final long serialVersionUID = -1174735246756963521L;
 
   protected Map<String, RegionRedundancyStatus> zeroRedundancyRegions = new HashMap<>();
   protected Map<String, RegionRedundancyStatus> underRedundancyRegions = new HashMap<>();
@@ -48,16 +49,13 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
   protected final List<String> includedRegionsWithNoMembers = new ArrayList<>();
 
 
-  public RestoreRedundancyResultsImpl() {}
-
-
   public void addRegionResults(RestoreRedundancyResults results) {
-    this.satisfiedRedundancyRegions.putAll(results.getSatisfiedRedundancyRegionResults());
-    this.underRedundancyRegions.putAll(results.getUnderRedundancyRegionResults());
-    this.zeroRedundancyRegions.putAll(results.getZeroRedundancyRegionResults());
-    this.totalPrimaryTransfersCompleted += results.getTotalPrimaryTransfersCompleted();
-    this.totalPrimaryTransferTime =
-        this.totalPrimaryTransferTime.plus(results.getTotalPrimaryTransferTime());
+    satisfiedRedundancyRegions.putAll(results.getSatisfiedRedundancyRegionResults());
+    underRedundancyRegions.putAll(results.getUnderRedundancyRegionResults());
+    zeroRedundancyRegions.putAll(results.getZeroRedundancyRegionResults());
+    totalPrimaryTransfersCompleted += results.getTotalPrimaryTransfersCompleted();
+    totalPrimaryTransferTime =
+        totalPrimaryTransferTime.plus(results.getTotalPrimaryTransferTime());
   }
 
   public void addRegionResult(RegionRedundancyStatus regionResult) {
@@ -91,17 +89,17 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
     List<String> messages = new ArrayList<>();
 
     // List regions with redundancy configured but no redundant copies first
-    if (zeroRedundancyRegions.size() != 0) {
+    if (!zeroRedundancyRegions.isEmpty()) {
       messages.add(getResultsMessage(zeroRedundancyRegions, NO_REDUNDANT_COPIES_FOR_REGIONS));
     }
 
     // List failures
-    if (underRedundancyRegions.size() != 0) {
+    if (!underRedundancyRegions.isEmpty()) {
       messages.add(getResultsMessage(underRedundancyRegions, REDUNDANCY_NOT_SATISFIED_FOR_REGIONS));
     }
 
     // List successes
-    if (satisfiedRedundancyRegions.size() != 0) {
+    if (!satisfiedRedundancyRegions.isEmpty()) {
       messages.add(getResultsMessage(satisfiedRedundancyRegions, REDUNDANCY_SATISFIED_FOR_REGIONS));
     }
 
@@ -159,7 +157,7 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
 
   @Override
   public int getTotalPrimaryTransfersCompleted() {
-    return this.totalPrimaryTransfersCompleted;
+    return totalPrimaryTransfersCompleted;
   }
 
   @Override
@@ -187,7 +185,7 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
   }
 
   public void setStatusMessage(String message) {
-    this.statusMessage = message;
+    statusMessage = message;
   }
 
   public void addIncludedRegionsWithNoMembers(List<String> regions) {

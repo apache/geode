@@ -39,23 +39,23 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
   private Set<String> includedRegions;
   private Set<String> excludedRegions;
   private boolean shouldReassign = true;
-  private ScheduledExecutorService executor;
+  private final ScheduledExecutorService executor;
 
   public RestoreRedundancyOperationImpl(InternalCache cache) {
     this.cache = cache;
-    this.manager = cache.getInternalResourceManager();
-    this.executor = this.manager.getExecutor();
+    manager = cache.getInternalResourceManager();
+    executor = manager.getExecutor();
   }
 
   @Override
   public RestoreRedundancyOperation includeRegions(Set<String> regions) {
-    this.includedRegions = regions;
+    includedRegions = regions;
     return this;
   }
 
   @Override
   public RestoreRedundancyOperation excludeRegions(Set<String> regions) {
-    this.excludedRegions = regions;
+    excludedRegions = regions;
     return this;
   }
 
@@ -152,7 +152,7 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
 
   // Extracted for testing
   RegionFilter getRegionFilter() {
-    return new FilterByPath(this.includedRegions, this.excludedRegions);
+    return new FilterByPath(includedRegions, excludedRegions);
   }
 
   // Extracted for testing

@@ -34,10 +34,12 @@ public class SerializableRestoreRedundancyResultsImpl
     extends RestoreRedundancyResultsImpl
     implements DataSerializableFixedID {
 
+  private static final long serialVersionUID = -6385537590999520662L;
+
   public void addPrimaryReassignmentDetails(PartitionRebalanceInfo details) {
-    this.totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
-    this.totalPrimaryTransferTime =
-        this.totalPrimaryTransferTime.plusMillis(details.getPrimaryTransferTime());
+    totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
+    totalPrimaryTransferTime =
+        totalPrimaryTransferTime.plusMillis(details.getPrimaryTransferTime());
   }
 
   @Override
@@ -59,13 +61,13 @@ public class SerializableRestoreRedundancyResultsImpl
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    this.satisfiedRedundancyRegions = DataSerializer.readHashMap(in);
-    this.underRedundancyRegions = DataSerializer.readHashMap(in);
-    this.zeroRedundancyRegions = DataSerializer.readHashMap(in);
-    this.totalPrimaryTransfersCompleted = in.readInt();
-    this.totalPrimaryTransferTime = DataSerializer.readObject(in);
-    this.success = DataSerializer.readBoolean(in);
-    this.statusMessage = DataSerializer.readString(in);
+    satisfiedRedundancyRegions = DataSerializer.readHashMap(in);
+    underRedundancyRegions = DataSerializer.readHashMap(in);
+    zeroRedundancyRegions = DataSerializer.readHashMap(in);
+    totalPrimaryTransfersCompleted = in.readInt();
+    totalPrimaryTransferTime = DataSerializer.readObject(in);
+    success = DataSerializer.readBoolean(in);
+    statusMessage = DataSerializer.readString(in);
   }
 
   @Override
