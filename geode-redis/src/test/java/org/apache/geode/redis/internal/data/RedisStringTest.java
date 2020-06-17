@@ -78,6 +78,7 @@ public class RedisStringTest {
     assertThat(o1).isEqualTo(o2);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void append_stores_delta_that_is_stable() throws IOException {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
@@ -97,6 +98,7 @@ public class RedisStringTest {
     assertThat(o2).isEqualTo(o1);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);

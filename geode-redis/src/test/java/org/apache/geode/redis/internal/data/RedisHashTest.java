@@ -25,6 +25,7 @@ import java.util.Collections;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -102,13 +103,14 @@ public class RedisHashTest {
     assertThat(o2).isEqualTo(o1);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void hset_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<ByteArrayWrapper, RedisData> region = Mockito.mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     ByteArrayWrapper k3 = createByteArrayWrapper("k3");
     ByteArrayWrapper v3 = createByteArrayWrapper("v3");
-    ArrayList adds = new ArrayList<>();
+    ArrayList<ByteArrayWrapper> adds = new ArrayList<>();
     adds.add(k3);
     adds.add(v3);
     o1.hset(region, null, adds, false);
@@ -123,12 +125,13 @@ public class RedisHashTest {
     assertThat(o2).isEqualTo(o1);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void hdel_stores_delta_that_is_stable() throws IOException {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     ByteArrayWrapper k1 = createByteArrayWrapper("k1");
-    ArrayList removes = new ArrayList<>();
+    ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
     removes.add(k1);
     o1.hdel(region, null, removes);
     assertThat(o1.hasDelta()).isTrue();
@@ -142,6 +145,7 @@ public class RedisHashTest {
     assertThat(o2).isEqualTo(o1);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
