@@ -51,14 +51,19 @@ public class RebalanceManagementDunitTest {
 
   private static ClusterManagementService client1, client2;
 
+  private static MemberVM locator1;
+
+  private static MemberVM locator2;
+
   @BeforeClass
   public static void beforeClass() {
-    MemberVM locator1 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    locator1 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     int locator1Port = locator1.getPort();
-    MemberVM locator2 =
+    locator2 =
         cluster.startLocatorVM(1, l -> l.withHttpService().withConnectionToLocator(locator1Port));
-    cluster.startServerVM(2, "group1", locator1Port);
-    cluster.startServerVM(3, "group2", locator1Port);
+    int locator2Port = locator2.getPort();
+    cluster.startServerVM(2, "group1", locator1Port, locator2Port);
+    cluster.startServerVM(3, "group2", locator1Port, locator2Port);
 
     client1 = new ClusterManagementServiceBuilder()
         .setHost("localhost")
@@ -85,14 +90,23 @@ public class RebalanceManagementDunitTest {
 
   @Test
   public void rebalance() throws Exception {
+    RebalanceOperation op = new RebalanceOperation();
+    new Thread(() -> {
+      try {
+        Thread.sleep(1000);
+        locator1.stop();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }).start();
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> startResult =
-        client1.start(new RebalanceOperation());
+        client1.start(op);
     assertThat(startResult.isSuccessful()).isTrue();
     long now = System.currentTimeMillis();
     assertThat(startResult.getOperationStart().getTime()).isBetween(now - 60000, now);
 
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> endResult =
-        client1.getFuture(new RebalanceOperation(), startResult.getOperationId()).get();
+        client2.getFuture(new RebalanceOperation(), startResult.getOperationId()).get();
     long end = endResult.getOperationEnd().getTime();
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
