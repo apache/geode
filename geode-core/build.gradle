@@ -120,7 +120,11 @@ jar {
 
 jar.dependsOn(createVersionPropertiesFile)
 
-tasks.withType(Test) {
+upgradeTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
+}
+
+repeatUpgradeTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
 }
 
