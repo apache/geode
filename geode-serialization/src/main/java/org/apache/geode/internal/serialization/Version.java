@@ -316,6 +316,13 @@ public class Version implements Comparable<Version> {
   public static final Version TEST_VERSION = new Version("TEST", "VERSION", (byte) 0, (byte) 0,
       (byte) 0, (byte) 0, validOrdinalForTesting);
 
+  private static final short UNKNOWN_VERSION_FOR_ROLLING_UPGRADE_TESTING_ORDINAL = -2;
+  @Immutable
+  public static final Version UNKNOWN_VERSION_FOR_ROLLING_UPGRADE_TESTING =
+      new Version("FUTURE-PRODUCT", "FUTURE-VERSION", (byte) 0, (byte) 0, (byte) 0, (byte) 0,
+          UNKNOWN_VERSION_FOR_ROLLING_UPGRADE_TESTING_ORDINAL);
+
+
   /** Creates a new instance of <code>Version</code> */
   private Version(String product, String name, byte major, byte minor, byte release, byte patch,
       short ordinal) {
@@ -328,7 +335,8 @@ public class Version implements Comparable<Version> {
     this.ordinal = ordinal;
     this.methodSuffix = this.productName + "_" + this.majorVersion + "_" + this.minorVersion + "_"
         + this.release + "_" + this.patch;
-    if (ordinal != TOKEN_ORDINAL) {
+    if (ordinal != TOKEN_ORDINAL
+        && ordinal != UNKNOWN_VERSION_FOR_ROLLING_UPGRADE_TESTING_ORDINAL) {
       VALUES[this.ordinal] = this;
     }
   }
@@ -345,7 +353,7 @@ public class Version implements Comparable<Version> {
     }
     // for clients also check that there must be a commands object mapping
     // for processing
-    if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null) {
+    if (ordinal < 0 || (VALUES.length < ordinal + 1) || VALUES[ordinal] == null) {
       throw new UnsupportedSerializationVersionException(String.format(
           "Peer or client version with ordinal %s not supported. Highest known version is %s",
           ordinal, CURRENT.name));
