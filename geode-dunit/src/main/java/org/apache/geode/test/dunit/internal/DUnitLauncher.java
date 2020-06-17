@@ -77,7 +77,7 @@ public class DUnitLauncher {
   /**
    * change this to use a different log level in unit tests
    */
-  public static final String logLevel = System.getProperty(LOG_LEVEL, "fine");
+  public static final String logLevel = System.getProperty(LOG_LEVEL, "info");
 
   public static final String LOG4J = System.getProperty("log4j.configurationFile");
 
