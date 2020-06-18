@@ -102,6 +102,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
@@ -301,7 +302,8 @@ public class CacheClientNotifier {
         cacheClientProxy =
             cacheClientProxyFactory.create(this, socket, clientProxyMembershipID, isPrimary,
                 clientConflation, clientVersion, acceptorId, notifyBySubscription,
-                cache.getSecurityService(), subject, statisticsClock);
+                cache.getSecurityService(), subject, statisticsClock,
+                clientRegistrationMetadata.getSslEngine());
         successful = initializeProxy(cacheClientProxy);
       } else {
         cacheClientProxy.setSubject(subject);
@@ -377,7 +379,7 @@ public class CacheClientNotifier {
       cacheClientProxy =
           new CacheClientProxy(this, socket, clientProxyMembershipID, isPrimary, clientConflation,
               clientVersion, acceptorId, notifyBySubscription, cache.getSecurityService(), subject,
-              statisticsClock);
+              statisticsClock, clientRegistrationMetadata.getSslEngine());
       successful = initializeProxy(cacheClientProxy);
     }
 
@@ -399,9 +401,12 @@ public class CacheClientNotifier {
     try {
       DataOutputStream dos =
           new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+
+      NioSslEngine engine = clientRegistrationMetadata.getSslEngine();
+
       // write the message type, message length and the error message (if any)
       socketMessageWriter.writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion,
-          endpointType, queueSize, null, socket);
+          endpointType, queueSize, engine, socket);
     } catch (IOException ioe) {// remove the added proxy if we get IOException.
       if (cacheClientProxy != null) {
         // do not check for queue, just close it

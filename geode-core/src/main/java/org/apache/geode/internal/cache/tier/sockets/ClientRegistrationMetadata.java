@@ -75,7 +75,6 @@ class ClientRegistrationMetadata {
     }
     DataInputStream unversionedDataInputStream = new DataInputStream(inputStream);
 
-
     DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
 
     if (getAndValidateClientVersion(socket, unversionedDataInputStream,

@@ -26,6 +26,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.serialization.DSCODE;
@@ -448,7 +449,7 @@ public class Part {
    * buffer. This is only called for parts that will not fit into the commBuffer so they need to be
    * written directly to the socket. Precondition: buf contains nothing that needs to be sent
    */
-  public void writeTo(SocketChannel sc, ByteBuffer buf) throws IOException {
+  public void writeTo(SocketChannel sc, ByteBuffer buf, NioSslEngine engine) throws IOException {
     if (getLength() > 0) {
       final int BUF_MAX = buf.capacity();
       if (this.part instanceof byte[]) {
@@ -465,9 +466,17 @@ public class Part {
           len -= bytesThisTime;
           off += bytesThisTime;
           buf.flip();
-          while (buf.remaining() > 0) {
-            sc.write(buf);
+          if (engine == null) {
+            while (buf.remaining() > 0) {
+              sc.write(buf);
+            }
+          } else {
+            ByteBuffer wrappedBuffer = engine.wrap(buf);
+            while (wrappedBuffer.remaining() > 0) {
+              sc.write(wrappedBuffer);
+            }
           }
+
           buf.clear();
         }
       } else if (this.part instanceof StoredObject) {
@@ -476,8 +485,15 @@ public class Part {
         StoredObject c = (StoredObject) this.part;
         ByteBuffer bb = c.createDirectByteBuffer();
         if (bb != null) {
-          while (bb.remaining() > 0) {
-            sc.write(bb);
+          if (engine == null) {
+            while (bb.remaining() > 0) {
+              sc.write(bb);
+            }
+          } else {
+            ByteBuffer wrappedBuffer = engine.wrap(bb);
+            while (wrappedBuffer.remaining() > 0) {
+              sc.write(wrappedBuffer);
+            }
           }
         } else {
           int len = c.getDataSize();
@@ -495,8 +511,15 @@ public class Part {
               bytesThisTime--;
             }
             buf.flip();
-            while (buf.remaining() > 0) {
-              sc.write(buf);
+            if (engine == null) {
+              while (buf.remaining() > 0) {
+                sc.write(buf);
+              }
+            } else {
+              ByteBuffer wrappedBuffer = engine.wrap(buf);
+              while (wrappedBuffer.remaining() > 0) {
+                sc.write(wrappedBuffer);
+              }
             }
             buf.clear();
           }
