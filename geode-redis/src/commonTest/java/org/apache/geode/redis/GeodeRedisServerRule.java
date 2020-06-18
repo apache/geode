@@ -73,8 +73,4 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   public int getPort() {
     return server.getPort();
   }
-
-  public RegionProvider getRegionProvider() {
-    return server.getRegionProvider();
-  }
 }

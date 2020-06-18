@@ -73,15 +73,11 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
       int port = system.getConfig().getRedisPort();
       String bindAddress = system.getConfig().getRedisBindAddress();
       assert bindAddress != null;
-      if (bindAddress.equals(DistributionConfig.DEFAULT_REDIS_BIND_ADDRESS)) {
-        logger.info(
-            String.format("Starting GeodeRedisServer on port %s",
-                new Object[] {port}));
-      } else {
-        logger.info(
-            String.format("Starting GeodeRedisServer on bind address %s on port %s",
-                new Object[] {bindAddress, port}));
-      }
+
+      logger.info(
+          String.format("Starting GeodeRedisServer on bind address %s on port %s",
+              new Object[]{bindAddress, port}));
+
       this.redisServer = new GeodeRedisServer(bindAddress, port);
       this.redisServer.start();
     }

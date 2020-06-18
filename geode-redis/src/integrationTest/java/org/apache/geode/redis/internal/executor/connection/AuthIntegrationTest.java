@@ -48,8 +48,6 @@ public class AuthIntegrationTest {
   Random rand;
   int port;
 
-  int runs = 150;
-
   @Before
   public void setUp() {
     rand = new Random();
@@ -93,16 +91,11 @@ public class AuthIntegrationTest {
   @Test
   public void testAuthRejectAccept() {
     setupCacheWithPassword();
-    Exception ex = null;
-    try {
-      jedis.auth("wrongpwd");
-    } catch (JedisDataException e) {
-      ex = e;
-    }
-    assertThat(ex).isNotNull();
 
-    String res = jedis.auth(PASSWORD);
-    assertThat(res).isEqualTo("OK");
+    assertThatThrownBy(() -> jedis.auth("wrongpwd"))
+        .hasMessageContaining("Attemping to authenticate with an invalid password");
+
+    assertThat(jedis.auth(PASSWORD)).isEqualTo("OK");
   }
 
   @Test
@@ -115,25 +108,16 @@ public class AuthIntegrationTest {
     server = new GeodeRedisServer("localhost", port);
     server.start();
 
-    Exception ex = null;
-    try {
-      jedis.auth(PASSWORD);
-    } catch (JedisDataException e) {
-      ex = e;
-    }
-    assertThat(ex).isNotNull();
+    assertThatThrownBy(() -> jedis.auth(PASSWORD))
+        .hasMessageContaining("Attempting to authenticate when no password has been set");
   }
 
   @Test
   public void testAuthAcceptRequests() {
     setupCacheWithPassword();
-    Exception ex = null;
-    try {
-      jedis.set("foo", "bar");
-    } catch (JedisDataException e) {
-      ex = e;
-    }
-    assertThat(ex).isNotNull();
+
+    assertThatThrownBy(() -> jedis.set("foo", "bar"))
+        .hasMessageContaining("Must authenticate before sending any requests");
 
     String res = jedis.auth(PASSWORD);
     assertThat(res).isEqualTo("OK");
@@ -144,28 +128,17 @@ public class AuthIntegrationTest {
   @Test
   public void testSeparateClientRequests() {
     setupCacheWithPassword();
-    Jedis authorizedJedis = null;
-    Jedis nonAuthorizedJedis = null;
-    try {
-      authorizedJedis = new Jedis("localhost", port, 100000);
-      nonAuthorizedJedis = new Jedis("localhost", port, 100000);
-      String res = authorizedJedis.auth(PASSWORD);
-      assertThat(res).isEqualTo("OK");
-      authorizedJedis.set("foo", "bar"); // No exception for authorized client
+    Jedis nonAuthorizedJedis = new Jedis("localhost", port, 100000);
+    Jedis authorizedJedis = new Jedis("localhost", port, 100000);
 
-      authorizedJedis.auth(PASSWORD);
-      Exception ex = null;
-      try {
-        nonAuthorizedJedis.set("foo", "bar");
-      } catch (JedisDataException e) {
-        ex = e;
-      }
-      assertThat(ex).isNotNull();
-    } finally {
-      if (authorizedJedis != null)
-        authorizedJedis.close();
-      if (nonAuthorizedJedis != null)
-        nonAuthorizedJedis.close();
-    }
+    assertThat(authorizedJedis.auth(PASSWORD)).isEqualTo("OK");
+    authorizedJedis.set("foo", "bar"); // No exception for authorized client
+    authorizedJedis.auth(PASSWORD);
+
+    assertThatThrownBy(() -> nonAuthorizedJedis.set("foo", "bar"))
+        .hasMessageContaining("Must authenticate before sending any requests");
+
+    authorizedJedis.close();
+    nonAuthorizedJedis.close();
   }
 }

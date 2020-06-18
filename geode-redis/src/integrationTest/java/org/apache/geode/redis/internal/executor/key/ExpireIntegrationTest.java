@@ -51,7 +51,7 @@ public class ExpireIntegrationTest {
   }
 
   @Test
-  public void Should_SetExipration_givenKeyTo_StringValue() {
+  public void Should_SetExpiration_givenKeyTo_StringValue() {
 
     String key = "key";
     String value = "value";
@@ -118,27 +118,6 @@ public class ExpireIntegrationTest {
     timeToLive = jedis.ttl(key);
 
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void should_removeKey_AfterExpirationPeriod() {
-    String key = "key";
-    String value = "value";
-    jedis.set(key, value);
-
-    jedis.pexpire(key, 10);
-
-    GeodeAwaitility.await().until(() -> jedis.get(key) == null);
-  }
-
-  @Test
-  public void should_removeSetKey_AfterExpirationPeriod() {
-    String key = "key";
-    String value = "value";
-    jedis.sadd(key, value);
-
-    jedis.pexpire(key, 10);
-    GeodeAwaitility.await().until(() -> !jedis.exists(key));
   }
 
   @Test
@@ -356,7 +335,7 @@ public class ExpireIntegrationTest {
 
 
   @Test
-  public void CallingExpireOnAKeyThatAlreadyHasAnExiprationTime_ShouldUpdateTheExpirationTime() {
+  public void CallingExpireOnAKeyThatAlreadyHasAnExpirationTime_ShouldUpdateTheExpirationTime() {
     String key = "key";
     String value = "value";
     jedis.set(key, value);
@@ -366,13 +345,5 @@ public class ExpireIntegrationTest {
 
     Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isGreaterThan(21);
-  }
-
-  @Test
-  public void should_passivelyExpireKeys() {
-    jedis.sadd("key", "value");
-    jedis.pexpire("key", 100);
-
-    GeodeAwaitility.await().until(() -> jedis.keys("key").isEmpty());
   }
 }

@@ -19,6 +19,7 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.redis.internal.GeodeRedisServer.NUM_THREADS_SYS_PROP_NAME;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -192,7 +193,7 @@ public class GeodeRedisServerStartupDUnitTest {
   public void whenUnsupportedCommandsEnabledDynamicallyWithGfsh_newGeodeRedisServersWillRetainConfig()
       throws Exception {
     MemberVM locator = cluster.startLocatorVM(0);
-    MemberVM server1 = cluster.startServerVM(1, s -> s
+    cluster.startServerVM(1, s -> s
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_ENABLED, "true")

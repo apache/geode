@@ -96,7 +96,6 @@ public class HMsetDUnitTest {
 
   @Test
   public void shouldDistributeDataAmongMultipleServers_givenMultipleClients() {
-
     String key = "key";
 
     Map<String, String> testMap = makeHashMap(HASH_SIZE, "field-", "value-");

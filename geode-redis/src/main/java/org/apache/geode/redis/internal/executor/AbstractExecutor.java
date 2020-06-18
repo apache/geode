@@ -35,47 +35,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  */
 public abstract class AbstractExecutor implements Executor {
 
-  protected long getBoundedStartIndex(long index, long size) {
-    if (size < 0L) {
-      throw new IllegalArgumentException("Size < 0, really?");
-    }
-    if (index >= 0L) {
-      return Math.min(index, size);
-    } else {
-      return Math.max(index + size, 0);
-    }
-  }
-
-  protected long getBoundedEndIndex(long index, long size) {
-    if (size < 0L) {
-      throw new IllegalArgumentException("Size < 0, really?");
-    }
-    if (index >= 0L) {
-      return Math.min(index, size);
-    } else {
-      return Math.max(index + size, -1);
-    }
-  }
-
-  protected void respondBulkStrings(Command command, ExecutionHandlerContext context,
-      Object message) {
-    ByteBuf rsp;
-    try {
-      if (message instanceof Collection) {
-        rsp = Coder.getArrayResponse(context.getByteBufAllocator(),
-            (Collection<?>) message);
-      } else {
-        rsp = Coder.getBulkStringResponse(context.getByteBufAllocator(), message);
-      }
-    } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          RedisConstants.SERVER_ERROR_MESSAGE));
-      return;
-    }
-
-    command.setResponse(rsp);
-  }
-
   protected RedisResponse respondBulkStrings(Object message) {
     if (message instanceof Collection) {
       return RedisResponse.array((Collection<?>) message);

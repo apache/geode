@@ -342,7 +342,6 @@ public class GeodeRedisServer {
     this.cache = cache;
   }
 
-  @VisibleForTesting
   public RegionProvider getRegionProvider() {
     return regionProvider;
   }
@@ -354,7 +353,6 @@ public class GeodeRedisServer {
   public EventLoopGroup getSubscriberGroup() {
     return subscriberGroup;
   }
-
 
   private void initializeRedis() {
     synchronized (cache) {
