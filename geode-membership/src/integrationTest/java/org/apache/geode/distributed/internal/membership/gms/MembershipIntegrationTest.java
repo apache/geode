@@ -184,7 +184,7 @@ public class MembershipIntegrationTest {
 
   @Test
   public void secondMembershipPausesForLocatorWaitTime()
-      throws IOException, MemberStartupException {
+      throws IOException, MemberStartupException, InterruptedException {
 
     /*
      * Start a locator for the coordinator (membership) so we have a port for it.
@@ -219,6 +219,7 @@ public class MembershipIntegrationTest {
 
     final int[] locatorPorts = new int[] {coordinatorLocatorPort, lateJoiningLocatorPort};
 
+    // minimum duration a locator waits to become the coordinator, regardless of locatorWaitTime
     final Duration minimumJoinWaitTime = Duration
         // amount of sleep time per retry in GMSJoinLeave.join()
         .ofMillis(JOIN_RETRY_SLEEP + FIND_LOCATOR_RETRY_SLEEP)
@@ -226,12 +227,12 @@ public class MembershipIntegrationTest {
         .multipliedBy(getMinimumRetriesBeforeBecomingCoordinator(locatorPorts.length));
 
     /*
-     * By setting locatorWaitTime to 3x the minimumJoinWaitTime, we are trying to make sure the
+     * By setting locatorWaitTime to 10x the minimumJoinWaitTime, we are trying to make sure the
      * locatorWaitTime is sufficiently larger than the minimum so we can reliably detect whether
      * the lateJoiningMembership is waiting for the full locatorWaitTime and not just the minimum
      * wait time.
      */
-    final int locatorWaitTime = (int) (3 * minimumJoinWaitTime.getSeconds());
+    final int locatorWaitTime = (int) (10 * minimumJoinWaitTime.getSeconds());
 
     final MembershipConfig lateJoiningMembershipConfig =
         createMembershipConfig(true, locatorWaitTime, locatorPorts);
@@ -247,27 +248,19 @@ public class MembershipIntegrationTest {
     });
 
     /*
+     * By sleeping for 2x the minimumJoinWaitTime, we are trying to make sure we sleep for
+     * longer than the minimum but shorter than the locatorWaitTime so we can detect whether the
+     * lateJoiningMembership is waiting for the full locatorWaitTime and not just the minimum
+     * wait time.
+     */
+    Thread.sleep(2 * minimumJoinWaitTime.toMillis());
+
+    /*
      * Now start the coordinator (membership), after waiting longer than the minimum wait time for
      * connecting to a locator but shorter than the locator-wait-time.
      */
+    start(coordinatorMembership);
 
-    CompletableFuture<Void> coordinatorMembershipStartup = executorServiceRule.runAsync(() -> {
-      try {
-        /*
-         * By sleeping for 2x the minimumJoinWaitTime, we are trying to make sure we sleep for
-         * longer than the minimum but shorter than the locatorWaitTime so we can detect whether the
-         * lateJoiningMembership is waiting for the full locatorWaitTime and not just the minimum
-         * wait time.
-         */
-        Thread.sleep(2 * minimumJoinWaitTime.toMillis());
-        start(coordinatorMembership);
-      } catch (InterruptedException ignored) {
-      } catch (MemberStartupException e) {
-        throw new RuntimeException(e);
-      }
-    });
-
-    await().untilAsserted(() -> assertThat(coordinatorMembershipStartup).isCompleted());
     await().untilAsserted(() -> assertThat(lateJoiningMembershipStartup).isCompleted());
 
     await().untilAsserted(
