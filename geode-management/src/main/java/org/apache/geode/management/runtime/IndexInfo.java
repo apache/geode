@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.runtime;
 
+import org.apache.geode.annotations.Experimental;
+
+@Experimental
 public class IndexInfo extends RuntimeInfo {
   @Override
   public boolean equals(Object o) {

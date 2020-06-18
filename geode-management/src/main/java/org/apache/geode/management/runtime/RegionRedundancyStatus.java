@@ -14,9 +14,12 @@
  */
 package org.apache.geode.management.runtime;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * Used to calculate and store a snapshot of the redundancy status for a partitioned region.
  */
+@Experimental
 public interface RegionRedundancyStatus {
 
   /**

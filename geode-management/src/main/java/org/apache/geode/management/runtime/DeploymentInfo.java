@@ -18,6 +18,9 @@ package org.apache.geode.management.runtime;
 
 import java.util.Objects;
 
+import org.apache.geode.annotations.Experimental;
+
+@Experimental
 public class DeploymentInfo extends RuntimeInfo {
   private String jarLocation;
   private String lastModified;

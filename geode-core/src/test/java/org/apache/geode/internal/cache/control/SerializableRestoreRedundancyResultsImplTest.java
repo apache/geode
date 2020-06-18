@@ -43,7 +43,7 @@ import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
 import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
-public class RestoreRedundancyResultsImplTest {
+public class SerializableRestoreRedundancyResultsImplTest {
   private final RegionRedundancyStatus successfulRegionResult =
       mock(SerializableRegionRedundancyStatusImpl.class);
   private final String successfulRegionName = "successfulRegion";

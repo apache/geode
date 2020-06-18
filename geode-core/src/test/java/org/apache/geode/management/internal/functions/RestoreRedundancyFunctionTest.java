@@ -109,17 +109,6 @@ public class RestoreRedundancyFunctionTest {
   }
 
   @Test
-  public void executeFunctionReturnsErrorWhenResultStatusIsError() {
-    when(mockResults.getRegionOperationStatus()).thenReturn(RestoreRedundancyResults.Status.ERROR);
-    function.execute(mockContext);
-    verify(resultSender).lastResult(argumentCaptor.capture());
-
-    RestoreRedundancyResults result = argumentCaptor.getValue();
-    assertThat(result.getSuccess()).isFalse();
-    assertThat(result.getStatusMessage()).isEqualTo(message);
-  }
-
-  @Test
   // The function was able to execute successfully but redundancy was not able to be established for
   // at least one region
   public void executeFunctionReturnsOkWhenResultStatusIsFailure() {

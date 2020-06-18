@@ -14,13 +14,12 @@
  */
 package org.apache.geode.management.internal.functions;
 
-import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.ERROR;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.operation.RestoreRedundancyResultsImpl;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
@@ -60,13 +59,10 @@ public class RestoreRedundancyFunction implements InternalFunction<Object[]> {
         redundancyOperation.shouldReassignPrimaries(request.getReassignPrimaries());
         results = (RestoreRedundancyResultsImpl) redundancyOperation.start().join();
       }
-      if (results.getRegionOperationStatus() == ERROR) {
-        throw new IllegalStateException(results.getRegionOperationMessage());
-      }
       results.setSuccess(true);
       results.setStatusMessage("Success");
     } catch (Exception e) {
-      results = new RestoreRedundancyResultsImpl();
+      results = new SerializableRestoreRedundancyResultsImpl();
       results.setSuccess(false);
       results.setStatusMessage(e.getMessage());
     }

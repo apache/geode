@@ -44,7 +44,7 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
 
   protected int totalPrimaryTransfersCompleted;
   protected Duration totalPrimaryTransferTime = Duration.ZERO;
-  protected boolean success;
+  protected boolean success = true;
   protected String statusMessage;
   protected final List<String> includedRegionsWithNoMembers = new ArrayList<>();
 
