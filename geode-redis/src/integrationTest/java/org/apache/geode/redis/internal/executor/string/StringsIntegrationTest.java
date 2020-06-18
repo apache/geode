@@ -105,9 +105,8 @@ public class StringsIntegrationTest {
     jedis.sadd(key, "member1", "member2");
 
     jedis.set(key, stringValue);
-    String result = jedis.get(key);
 
-    assertThat(result).isEqualTo(stringValue);
+    assertThat(jedis.get(key)).isEqualTo(stringValue);
   }
 
   @Test
@@ -120,11 +119,71 @@ public class StringsIntegrationTest {
     String result = jedis.set(key, stringValue);
     assertThat(result).isEqualTo("OK");
 
-    assertThat(stringValue).isEqualTo(jedis.get(key));
+    assertThat(jedis.get(key)).isEqualTo(stringValue);
   }
 
   @Test
-  public void testSET_shouldSetNX_evenIfKeyContainsOtherDataType() {
+  public void testSET_withNXAndExArguments() {
+    String key = "key";
+    String stringValue = "value";
+
+    SetParams setParams = new SetParams();
+    setParams.nx();
+    setParams.ex(20);
+
+    jedis.set(key, stringValue, setParams);
+    assertThat(jedis.ttl(key)).isGreaterThan(15);
+    assertThat(jedis.get(key)).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void testSET_withXXAndExArguments() {
+    String key = "key";
+    String stringValue = "value";
+
+    jedis.set(key, "differentValue");
+
+    SetParams setParams = new SetParams();
+    setParams.xx();
+    setParams.ex(20);
+
+    jedis.set(key, stringValue, setParams);
+    assertThat(jedis.ttl(key)).isGreaterThan(15);
+    assertThat(jedis.get(key)).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void testSET_withNXAndPxArguments() {
+    String key = "key";
+    String stringValue = "value";
+
+    SetParams setParams = new SetParams();
+    setParams.nx();
+    setParams.px(2000);
+
+    jedis.set(key, stringValue, setParams);
+    assertThat(jedis.pttl(key)).isGreaterThan(1500);
+    assertThat(jedis.get(key)).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void testSET_withXXAndPxArguments() {
+    String key = "key";
+    String stringValue = "value";
+
+    jedis.set(key, "differentValue");
+
+    SetParams setParams = new SetParams();
+    setParams.xx();
+    setParams.px(2000);
+
+    jedis.set(key, stringValue, setParams);
+    assertThat(jedis.pttl(key)).isGreaterThan(1500);
+    assertThat(jedis.get(key)).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void testSET_withNXArgument_shouldReturnNil_ifKeyContainsOtherDataType() {
     String key = "key";
     String stringValue = "value";
 
@@ -137,7 +196,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldSetXX_evenIfKeyContainsOtherDataType() {
+  public void testSET_shouldSetXX_ifKeyContainsOtherDataType() {
     String key = "key";
     String stringValue = "value";
 
@@ -178,7 +237,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_withEXargument_shouldSetExpireTime() {
+  public void testSET_withEXArgument_shouldSetExpireTime() {
     String key = "key";
     String value = "value";
     int secondsUntilExpiration = 20;
@@ -194,7 +253,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_withNegative_EX_time_shouldReturnError() {
+  public void testSET_withNegativeEXTime_shouldReturnError() {
     String key = "key";
     String value = "value";
     int millisecondsUntilExpiration = -1;
@@ -208,7 +267,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_withPXargument_shouldSetExpireTime() {
+  public void testSET_withPXArgument_shouldSetExpireTime() {
     String key = "key";
     String value = "value";
     int millisecondsUntilExpiration = 20000;
@@ -224,7 +283,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_with_Negative_PX_time_shouldReturnError() {
+  public void testSET_withNegativePXTime_shouldReturnError() {
     String key = "key";
     String value = "value";
     int millisecondsUntilExpiration = -1;
@@ -238,7 +297,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_shouldClearPreviousTTL_onSuccess() {
+  public void testSET_shouldClearPreviousTTL() {
     String key = "key";
     String value = "value";
     int secondsUntilExpiration = 20;
@@ -256,7 +315,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_withXXArgument_shouldClearPreviousTTL_Success() {
+  public void testSET_withXXArgument_shouldClearPreviousTTL() {
     String key = "xx_key";
     String value = "did exist";
     int secondsUntilExpiration = 20;
@@ -324,7 +383,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_withNXargument_shouldOnlySetKeyIfKeyDoesNotExist() {
+  public void testSET_withNXArgument_shouldOnlySetKeyIfKeyDoesNotExist() {
     String key1 = "key_1";
     String key2 = "key_2";
     String value1 = "value_1";
@@ -347,7 +406,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_withXXargument_shouldOnlySetKeyIfKeyExists() {
+  public void testSET_withXXArgument_shouldOnlySetKeyIfKeyExists() {
     String key1 = "key_1";
     String key2 = "key_2";
     String value1 = "value_1";
@@ -370,7 +429,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_XX_NX_arguments_should_return_OK_if_Successful() {
+  public void testSET_XXAndNXArguments_shouldReturnOK_ifSuccessful() {
     String key_NX = "nx_key";
     String key_XX = "xx_key";
     String value_NX = "did not exist";
@@ -391,7 +450,7 @@ public class StringsIntegrationTest {
   }
 
   @Test
-  public void testSET_XX_NX_arguments_should_return_NULL_if_Not_Successful() {
+  public void testSET_XXAndNXArguments_shouldReturnNull_ifNotSuccessful() {
     String key_NX = "nx_key";
     String key_XX = "xx_key";
     String value_NX = "set only if key did not exist";
@@ -432,15 +491,16 @@ public class StringsIntegrationTest {
     assertThat(result).isNull();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void testGET_shouldThrow_JedisDataExceptiondError_givenValueIs_Not_A_String() {
+  @Test
+  public void testGET_shouldThrowJedisDataExceptionError_givenValueIsNotAString() {
     String key = "key";
     String field = "field";
     String member = "member";
 
     jedis.sadd(key, field, member);
 
-    jedis.get(key);
+    assertThatThrownBy(() -> jedis.get(key))
+        .hasMessageContaining("Operation against a key holding the wrong kind of value");
   }
 
   @Test
@@ -462,6 +522,24 @@ public class StringsIntegrationTest {
 
     String finalValue = jedis.get(key);
     assertThat(finalValue).isEqualTo(value.concat(randomString));
+  }
+
+  @Test
+  public void testAppend_concurrent() {
+    int listSize = 1000;
+    String key = "key";
+
+    List<String> values1 = makeStringList(listSize, "values1-");
+    List<String> values2 = makeStringList(listSize, "values2-");
+
+    new ConcurrentLoopingThreads(listSize,
+        (i) -> jedis.append(key, values1.get(i)),
+        (i) -> jedis2.append(key, values2.get(i))).run();
+
+    for (int i = 0; i < listSize; i++) {
+      assertThat(jedis.get(key)).contains(values1.get(i));
+      assertThat(jedis.get(key)).contains(values2.get(i));
+    }
   }
 
 
@@ -1496,5 +1574,13 @@ public class StringsIntegrationTest {
 
   private String randString() {
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
+  }
+
+  private List<String> makeStringList(int setSize, String baseString) {
+    List<String> strings = new ArrayList<>();
+    for (int i = 0; i < setSize; i++) {
+      strings.add(baseString + i);
+    }
+    return strings;
   }
 }

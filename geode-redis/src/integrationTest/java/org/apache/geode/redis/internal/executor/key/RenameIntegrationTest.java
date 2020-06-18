@@ -39,6 +39,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -82,6 +83,18 @@ public class RenameIntegrationTest {
   @After
   public void flush() {
     jedis.flushAll();
+  }
+
+  @Test
+  public void testTooFewArgs() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.RENAME, "foo"))
+        .hasMessageContaining("wrong number of arguments");
+  }
+
+  @Test
+  public void testTooManyArgs() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.RENAME, "foo", "newfoo", "bluefoo"))
+        .hasMessageContaining("wrong number of arguments");
   }
 
   @Test
@@ -205,6 +218,42 @@ public class RenameIntegrationTest {
   }
 
   @Test
+  public void shouldThrowError_givenKeyDeletedDuringRename()
+      throws ExecutionException, InterruptedException {
+    CyclicBarrier startCyclicBarrier = new CyclicBarrier(2);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+
+    for (int i = 0; i < 100; i++) {
+      jedis.set("oldKey", "foo");
+
+      Runnable renameOldKeyToNewKey = () -> {
+        cyclicBarrierAwait(startCyclicBarrier);
+
+        jedis.rename("oldKey", "newKey");
+      };
+
+      Runnable deleteOldKey = () -> {
+        cyclicBarrierAwait(startCyclicBarrier);
+
+        jedis2.del("oldKey");
+      };
+
+      Future<?> future1 = pool.submit(renameOldKeyToNewKey);
+      Future<?> future2 = pool.submit(deleteOldKey);
+
+      try {
+        future1.get();
+        assertThat(jedis.get("newKey")).isEqualTo("foo");
+      } catch (Exception e) {
+        assertThat(e).hasMessageContaining("no such key");
+      }
+      future2.get();
+
+      assertThat(jedis.get("oldKey")).isNull();
+    }
+  }
+
+  @Test
   public void shouldNotDeadlock_concurrentRenames_givenTwoKeysOnDifferentStripe()
       throws ExecutionException, InterruptedException {
     doConcurrentRenamesSameKeys(getKeysOnDifferentStripes());
@@ -217,7 +266,8 @@ public class RenameIntegrationTest {
   }
 
   private List<String> getKeysOnDifferentStripes() {
-    String key1 = "keyz" + new Random().nextInt();;
+    String key1 = "keyz" + new Random().nextInt();
+
     ByteArrayWrapper key1ByteArrayWrapper = new ByteArrayWrapper(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     int iterator = 0;

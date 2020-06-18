@@ -121,4 +121,14 @@ public class ExpireAtIntegrationTest {
     GeodeAwaitility.await().until(
         () -> jedis.get(key) == null);
   }
+
+  @Test
+  public void should_expireKeyAtTimeSpecifiedInMillis() {
+    long unixTimeStampInTheNearFuture = (System.currentTimeMillis()) + 5;
+    jedis.set(key, value);
+    jedis.pexpireAt(key, unixTimeStampInTheNearFuture);
+
+    GeodeAwaitility.await().until(
+        () -> jedis.get(key) == null);
+  }
 }

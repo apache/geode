@@ -73,6 +73,7 @@ public class PubSubImpl implements PubSub {
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
     List<Long> subscriberCounts = null;
+
     try {
       subscriberCounts = subscriberCountCollector.getResult();
     } catch (Exception e) {

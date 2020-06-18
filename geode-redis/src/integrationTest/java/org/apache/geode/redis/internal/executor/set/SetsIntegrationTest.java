@@ -92,12 +92,9 @@ public class SetsIntegrationTest {
     String[] setValue = new String[1];
     setValue[0] = "set value that should never get added";
 
-    exceptionRule.expect(JedisDataException.class);
-    exceptionRule
-        .expectMessage("WRONGTYPE Operation against a key holding the wrong kind of value");
-
     jedis.set(key, stringValue);
-    jedis.sadd(key, setValue);
+    assertThatThrownBy(() -> jedis.sadd(key, setValue))
+        .hasMessageContaining("Operation against a key holding the wrong kind of value");
   }
 
   @Test
@@ -220,9 +217,8 @@ public class SetsIntegrationTest {
     assertThat(results).containsAnyOf("m1", "m2", "m3");
   }
 
-
   @Test
-  public void testSMembersSIsMember() {
+  public void testSMembers() {
     int elements = 10;
     String key = generator.generate('x');
 
@@ -232,15 +228,11 @@ public class SetsIntegrationTest {
     Set<String> returnedSet = jedis.smembers(key);
 
     assertThat(returnedSet).containsExactlyInAnyOrder(strings);
+  }
 
-    for (String entry : strings) {
-      assertThat(jedis.sismember(key, entry)).isTrue();
-    }
-
+  @Test
+  public void testSMembersWithNonexistentKey_returnsEmptySet() {
     assertThat(jedis.smembers("doesNotExist")).isEmpty();
-
-    assertThat(jedis.sismember("nonExistentKey", "nonExistentMember")).isFalse();
-    assertThat(jedis.sismember(key, "nonExistentMember")).isFalse();
   }
 
   private String[] generateStrings(int elements, char uniqueElement) {

@@ -17,10 +17,9 @@ package org.apache.geode.redis.internal.executor.connection;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
 import java.util.Random;
 
 import org.junit.After;
@@ -28,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.cache.CacheFactory;
@@ -51,14 +51,14 @@ public class AuthIntegrationTest {
   int runs = 150;
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     rand = new Random();
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     this.jedis = new Jedis("localhost", port, 100000);
   }
 
   @After
-  public void tearDown() throws InterruptedException {
+  public void tearDown() {
     server.shutdown();
     cache.close();
   }
@@ -72,6 +72,15 @@ public class AuthIntegrationTest {
     cache = cf.create();
     server = new GeodeRedisServer("localhost", port);
     server.start();
+  }
+
+  @Test
+  public void testAuthIncorrectNumberOfArguments() {
+    setupCacheWithPassword();
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH, "fhqwhgads", "extraArg"))
+        .hasMessageContaining("wrong number of arguments");
   }
 
   @Test
@@ -90,10 +99,10 @@ public class AuthIntegrationTest {
     } catch (JedisDataException e) {
       ex = e;
     }
-    assertNotNull(ex);
+    assertThat(ex).isNotNull();
 
     String res = jedis.auth(PASSWORD);
-    assertEquals(res, "OK");
+    assertThat(res).isEqualTo("OK");
   }
 
   @Test
@@ -112,7 +121,7 @@ public class AuthIntegrationTest {
     } catch (JedisDataException e) {
       ex = e;
     }
-    assertNotNull(ex);
+    assertThat(ex).isNotNull();
   }
 
   @Test
@@ -124,10 +133,10 @@ public class AuthIntegrationTest {
     } catch (JedisDataException e) {
       ex = e;
     }
-    assertNotNull(ex);
+    assertThat(ex).isNotNull();
 
     String res = jedis.auth(PASSWORD);
-    assertEquals(res, "OK");
+    assertThat(res).isEqualTo("OK");
 
     jedis.set("foo", "bar"); // No exception
   }
@@ -141,7 +150,7 @@ public class AuthIntegrationTest {
       authorizedJedis = new Jedis("localhost", port, 100000);
       nonAuthorizedJedis = new Jedis("localhost", port, 100000);
       String res = authorizedJedis.auth(PASSWORD);
-      assertEquals(res, "OK");
+      assertThat(res).isEqualTo("OK");
       authorizedJedis.set("foo", "bar"); // No exception for authorized client
 
       authorizedJedis.auth(PASSWORD);
@@ -151,7 +160,7 @@ public class AuthIntegrationTest {
       } catch (JedisDataException e) {
         ex = e;
       }
-      assertNotNull(ex);
+      assertThat(ex).isNotNull();
     } finally {
       if (authorizedJedis != null)
         authorizedJedis.close();
@@ -159,5 +168,4 @@ public class AuthIntegrationTest {
         nonAuthorizedJedis.close();
     }
   }
-
 }

@@ -95,7 +95,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients() {
 
     String key = "key";
 
@@ -110,7 +110,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentDataToSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentDataToSameSetConcurrently() {
 
     String key = "key";
 
@@ -131,7 +131,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingSameDataToSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_AddingSameDataToSameSetConcurrently() {
 
     String key = "key";
 
@@ -148,7 +148,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentSetsConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_AddingDifferentSetsConcurrently() {
 
     String key1 = "key1";
     String key2 = "key2";
@@ -169,7 +169,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSetConcurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSetConcurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
     Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
@@ -193,7 +193,7 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void should_distributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSet_withDifferentData_Concurrently() {
+  public void shouldDistributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSet_withDifferentData_Concurrently() {
 
     Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
     Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);

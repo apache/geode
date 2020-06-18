@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -32,9 +31,6 @@ public class AuthExecutor implements Executor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() < 2) {
-      return RedisResponse.error(ArityDef.AUTH);
-    }
     byte[] password = context.getAuthPassword();
     if (password == null) {
       return RedisResponse.error(RedisConstants.ERROR_NO_PASS);

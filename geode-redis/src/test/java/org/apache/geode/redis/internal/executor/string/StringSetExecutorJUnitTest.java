@@ -70,6 +70,21 @@ public class StringSetExecutorJUnitTest {
   }
 
   @Test
+  public void testSET_nonexistentArgument_returnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "OR".getBytes());
+    Command command = new Command(commandArgumentWithEXNoParameter);
+
+    RedisResponse response = executor.executeCommand(command, context);
+
+    assertThat(response.toString())
+        .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
   public void testSET_EXargument_withoutParameterReturnsError() {
     List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
         "SET".getBytes(),
@@ -151,6 +166,24 @@ public class StringSetExecutorJUnitTest {
   }
 
   @Test
+  public void testSET_EXandPX_inSameCommand_ReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "EX".getBytes(),
+        "30".getBytes(),
+        "PX".getBytes(),
+        "3000".getBytes());
+    Command command = new Command(commandArgumentWithEXNoParameter);
+
+    RedisResponse response = executor.executeCommand(command, context);
+
+    assertThat(response.toString())
+        .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
   public void testSET_NXandXX_inSameCommand_ReturnsError() {
     List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
         "SET".getBytes(),
@@ -162,8 +195,22 @@ public class StringSetExecutorJUnitTest {
 
     RedisResponse response = executor.executeCommand(command, context);
 
-    assertThat(response.toString())
-        .contains(RedisConstants.ERROR_SYNTAX);
+    assertThat(response.toString()).contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
+  public void testSET_XXandNX_inSameCommand_ReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "XX".getBytes(),
+        "NX".getBytes());
+    Command command = new Command(commandArgumentWithEXNoParameter);
+
+    RedisResponse response = executor.executeCommand(command, context);
+
+    assertThat(response.toString()).contains(RedisConstants.ERROR_SYNTAX);
   }
 
 }
