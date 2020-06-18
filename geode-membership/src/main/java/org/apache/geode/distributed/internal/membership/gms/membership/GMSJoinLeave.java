@@ -91,8 +91,13 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   /**
    * amount of time to sleep before trying to join after a failed attempt
    */
-  private static final int JOIN_RETRY_SLEEP =
+  public static final int JOIN_RETRY_SLEEP =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "join-retry-sleep", 1000);
+
+  /**
+   * amount of time to sleep before trying to contact a locator after a failed attempt
+   */
+  public static final int FIND_LOCATOR_RETRY_SLEEP = 1_000;
 
   /**
    * time to wait for a broadcast message to be transmitted by jgroups
@@ -295,6 +300,11 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     return viewInstallationLock;
   }
 
+  @VisibleForTesting
+  public static int getMinimumRetriesBeforeBecomingCoordinator(int locatorsSize) {
+    return locatorsSize * 2;
+  }
+
   /**
    * attempt to join the distributed system loop send a join request to a locator & get a response
    * <p>
@@ -324,20 +334,22 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       long startTime = System.currentTimeMillis();
       long locatorGiveUpTime = startTime + locatorWaitTime;
       long giveupTime = startTime + timeout;
-      int minimumRetriesBeforeBecomingCoordinator = locators.size() * 2;
+      int minimumRetriesBeforeBecomingCoordinator =
+          getMinimumRetriesBeforeBecomingCoordinator(locators.size());
 
       for (int tries = 0; !this.isJoined && !this.isStopping; tries++) {
         logger.debug("searching for the membership coordinator");
         boolean found = findCoordinator();
         logger.info("Discovery state after looking for membership coordinator is {}",
             state);
+        long now = System.currentTimeMillis();
         if (found) {
           logger.info("found possible coordinator {}", state.possibleCoordinator);
           if (localAddress.preferredForCoordinator()
               && state.possibleCoordinator.equals(this.localAddress)) {
             // if we haven't contacted a member of a cluster maybe this node should
             // become the coordinator.
-            if (state.joinedMembersContacted <= 0 &&
+            if (state.joinedMembersContacted <= 0 && (now >= locatorGiveUpTime) &&
                 (tries >= minimumRetriesBeforeBecomingCoordinator ||
                     state.locatorsContacted >= locators.size())) {
               synchronized (viewInstallationLock) {
@@ -360,7 +372,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             }
           }
         } else {
-          long now = System.currentTimeMillis();
           if (state.locatorsContacted <= 0) {
             if (now > locatorGiveUpTime) {
               // break out of the loop and return false
@@ -1189,7 +1200,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           logger.info("Exception thrown when contacting a locator", problem);
           if (state.locatorsContacted == 0 && System.currentTimeMillis() < giveUpTime) {
             try {
-              Thread.sleep(1000);
+              Thread.sleep(FIND_LOCATOR_RETRY_SLEEP);
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
               services.getCancelCriterion().checkCancelInProgress(e);
