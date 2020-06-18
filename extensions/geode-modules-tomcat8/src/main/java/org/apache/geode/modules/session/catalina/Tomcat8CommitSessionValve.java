@@ -39,10 +39,12 @@ public class Tomcat8CommitSessionValve
   Response wrapResponse(final Response response) {
     final org.apache.coyote.Response coyoteResponse = response.getCoyoteResponse();
     final OutputBuffer delegateOutputBuffer = getOutputBuffer(coyoteResponse);
-    final Request request = response.getRequest();
-    final OutputBuffer sessionCommitOutputBuffer =
-        new Tomcat8CommitSessionOutputBuffer(() -> commitSession(request), delegateOutputBuffer);
-    coyoteResponse.setOutputBuffer(sessionCommitOutputBuffer);
+    if (!(delegateOutputBuffer instanceof Tomcat8CommitSessionOutputBuffer)) {
+      final Request request = response.getRequest();
+      final OutputBuffer sessionCommitOutputBuffer =
+          new Tomcat8CommitSessionOutputBuffer(() -> commitSession(request), delegateOutputBuffer);
+      coyoteResponse.setOutputBuffer(sessionCommitOutputBuffer);
+    }
     return response;
   }
 

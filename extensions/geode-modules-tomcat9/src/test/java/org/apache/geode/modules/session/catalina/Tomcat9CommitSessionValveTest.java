@@ -15,10 +15,12 @@
 
 package org.apache.geode.modules.session.catalina;
 
+import static org.apache.geode.modules.session.catalina.Tomcat9CommitSessionValve.getOutputBuffer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,6 +30,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.coyote.OutputBuffer;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -35,25 +38,43 @@ import org.mockito.InOrder;
 
 public class Tomcat9CommitSessionValveTest {
 
-  @Test
-  public void test() throws IOException {
+  private final Tomcat9CommitSessionValve valve = new Tomcat9CommitSessionValve();
+  private final OutputBuffer outputBuffer = mock(OutputBuffer.class);
+  private Response response;
+  private org.apache.coyote.Response coyoteResponse;
+
+  @Before
+  public void before() {
     final Context context = mock(Context.class);
 
     final Request request = mock(Request.class);
     doReturn(context).when(request).getContext();
 
-    final OutputBuffer outputBuffer = mock(OutputBuffer.class);
-
-    final org.apache.coyote.Response coyoteResponse = new org.apache.coyote.Response();
+    coyoteResponse = new org.apache.coyote.Response();
     coyoteResponse.setOutputBuffer(outputBuffer);
 
-    final Response response = new Response();
+    response = new Response();
     response.setRequest(request);
     response.setCoyoteResponse(coyoteResponse);
+  }
 
-    final Tomcat9CommitSessionValve valve = new Tomcat9CommitSessionValve();
-    final OutputStream outputStream = valve.wrapResponse(response).getResponse().getOutputStream();
-    outputStream.write(new byte[] {'a', 'b', 'c'});
+  @Test
+  public void wrappedOutputBufferForwardsToDelegate() throws IOException {
+    wrappedOutputBufferForwardsToDelegate(new byte[] {'a', 'b', 'c'});
+  }
+
+  @Test
+  public void recycledResponseObjectDoesNotWrapAlreadyWrappedOutputBuffer() throws IOException {
+    wrappedOutputBufferForwardsToDelegate(new byte[] {'a', 'b', 'c'});
+    response.recycle();
+    reset(outputBuffer);
+    wrappedOutputBufferForwardsToDelegate(new byte[] {'d', 'e', 'f'});
+  }
+
+  private void wrappedOutputBufferForwardsToDelegate(final byte[] bytes) throws IOException {
+    final OutputStream outputStream =
+        valve.wrapResponse(response).getResponse().getOutputStream();
+    outputStream.write(bytes);
     outputStream.flush();
 
     final ArgumentCaptor<ByteBuffer> byteBuffer = ArgumentCaptor.forClass(ByteBuffer.class);
@@ -62,7 +83,12 @@ public class Tomcat9CommitSessionValveTest {
     inOrder.verify(outputBuffer).doWrite(byteBuffer.capture());
     inOrder.verifyNoMoreInteractions();
 
-    assertThat(byteBuffer.getValue().array()).contains('a', 'b', 'c');
+    final OutputBuffer wrappedOutputBuffer = getOutputBuffer(coyoteResponse);
+    assertThat(wrappedOutputBuffer).isInstanceOf(Tomcat9CommitSessionOutputBuffer.class);
+    assertThat(((Tomcat9CommitSessionOutputBuffer) wrappedOutputBuffer).getDelegate())
+        .isNotInstanceOf(Tomcat9CommitSessionOutputBuffer.class);
+
+    assertThat(byteBuffer.getValue().array()).contains(bytes);
   }
 
 }

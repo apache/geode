@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.coyote.OutputBuffer;
 
+
 /**
  * Delegating {@link OutputBuffer} that commits sessions on write through. Output data is buffered
  * ahead of this object and flushed through this interface when full or explicitly flushed.
@@ -44,5 +45,9 @@ class Tomcat9CommitSessionOutputBuffer implements OutputBuffer {
   @Override
   public long getBytesWritten() {
     return delegate.getBytesWritten();
+  }
+
+  OutputBuffer getDelegate() {
+    return delegate;
   }
 }

@@ -53,4 +53,8 @@ class Tomcat8CommitSessionOutputBuffer implements OutputBuffer {
   public long getBytesWritten() {
     return delegate.getBytesWritten();
   }
+
+  OutputBuffer getDelegate() {
+    return delegate;
+  }
 }
