@@ -90,7 +90,9 @@ public class SetExecutor extends StringExecutor {
 
     throwExceptionIfUnknownParameter(optionalParametersStrings);
     throwExceptionIfIncompatableParamaterOptions(optionalParametersStrings);
-    keepTTL = optionalParametersStrings.contains("KEEPTTL");
+
+    // uncomment below when this functionality is reimplemented see GEODE-8263
+    // keepTTL = optionalParametersStrings.contains("KEEPTTL");
 
     if (optionalParametersStrings.contains("PX")) {
       millisecondsUntilExpiration =
@@ -144,7 +146,7 @@ public class SetExecutor extends StringExecutor {
   }
 
   private void throwExceptionIfUnknownParameter(List<String> optionalParameters) {
-    List<String> validOptionalParamaters = Arrays.asList("EX", "PX", "NX", "XX", "KEEPTTL");
+    List<String> validOptionalParamaters = Arrays.asList("EX", "PX", "NX", "XX");
 
     List<String> parametersInQuestion =
         optionalParameters
