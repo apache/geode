@@ -44,7 +44,7 @@ public class KeysExecutor extends AbstractExecutor {
 
     String glob = Coder.bytesToString(commandElems.get(1));
     Set<ByteArrayWrapper> allKeys = getDataRegion(context).keySet();
-    List<String> matchingKeys = new ArrayList<String>();
+    List<ByteArrayWrapper> matchingKeys = new ArrayList<>();
 
     Pattern pattern;
     try {
@@ -56,7 +56,7 @@ public class KeysExecutor extends AbstractExecutor {
     for (ByteArrayWrapper bytesKey : allKeys) {
       String key = bytesKey.toString();
       if (pattern.matcher(key).matches()) {
-        matchingKeys.add(key);
+        matchingKeys.add(bytesKey);
       }
     }
 
