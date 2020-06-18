@@ -20,10 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Random;
-
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -40,18 +37,14 @@ import org.apache.geode.test.junit.categories.RedisTest;
 @Category({RedisTest.class})
 public class AuthIntegrationTest {
 
-  private static final String PASSWORD = "pwd";
+  static final String PASSWORD = "pwd";
   Jedis jedis;
   GeodeRedisServer server;
   GemFireCache cache;
-  Random rand;
   int port;
 
-  @Before
-  public void setUp() {
-    rand = new Random();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
-    this.jedis = new Jedis("localhost", port, 100000);
+  int getPort() {
+    return port;
   }
 
   @After
@@ -60,7 +53,8 @@ public class AuthIntegrationTest {
     cache.close();
   }
 
-  private void setupCacheWithPassword() {
+  public void setupCacheWithPassword() {
+    port = AvailablePortHelper.getRandomAvailableTCPPort();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
@@ -69,6 +63,19 @@ public class AuthIntegrationTest {
     cache = cf.create();
     server = new GeodeRedisServer("localhost", port);
     server.start();
+    this.jedis = new Jedis("localhost", port, 100000);
+  }
+
+  public void setupCacheWithoutPassword() {
+    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    CacheFactory cf = new CacheFactory();
+    cf.set(LOG_LEVEL, "error");
+    cf.set(MCAST_PORT, "0");
+    cf.set(LOCATORS, "");
+    cache = cf.create();
+    server = new GeodeRedisServer("localhost", port);
+    server.start();
+    this.jedis = new Jedis("localhost", port, 100000);
   }
 
   @Test
@@ -84,7 +91,7 @@ public class AuthIntegrationTest {
   public void testAuthConfig() {
     setupCacheWithPassword();
     InternalDistributedSystem iD = (InternalDistributedSystem) cache.getDistributedSystem();
-    assert (iD.getConfig().getRedisPassword().equals(PASSWORD));
+    assertThat(iD.getConfig().getRedisPassword()).isEqualTo(PASSWORD);
   }
 
   @Test
@@ -92,23 +99,17 @@ public class AuthIntegrationTest {
     setupCacheWithPassword();
 
     assertThatThrownBy(() -> jedis.auth("wrongpwd"))
-        .hasMessageContaining("Attemping to authenticate with an invalid password");
+        .hasMessageContaining("ERR invalid password");
 
     assertThat(jedis.auth(PASSWORD)).isEqualTo("OK");
   }
 
   @Test
   public void testAuthNoPwd() {
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
-    server = new GeodeRedisServer("localhost", port);
-    server.start();
+    setupCacheWithoutPassword();
 
     assertThatThrownBy(() -> jedis.auth(PASSWORD))
-        .hasMessageContaining("Attempting to authenticate when no password has been set");
+        .hasMessage("ERR Client sent AUTH, but no password is set");
   }
 
   @Test
@@ -116,7 +117,7 @@ public class AuthIntegrationTest {
     setupCacheWithPassword();
 
     assertThatThrownBy(() -> jedis.set("foo", "bar"))
-        .hasMessageContaining("Must authenticate before sending any requests");
+        .hasMessage("NOAUTH Authentication required.");
 
     String res = jedis.auth(PASSWORD);
     assertThat(res).isEqualTo("OK");
@@ -127,15 +128,15 @@ public class AuthIntegrationTest {
   @Test
   public void testSeparateClientRequests() {
     setupCacheWithPassword();
-    Jedis nonAuthorizedJedis = new Jedis("localhost", port, 100000);
-    Jedis authorizedJedis = new Jedis("localhost", port, 100000);
+    Jedis nonAuthorizedJedis = new Jedis("localhost", getPort(), 100000);
+    Jedis authorizedJedis = new Jedis("localhost", getPort(), 100000);
 
     assertThat(authorizedJedis.auth(PASSWORD)).isEqualTo("OK");
     authorizedJedis.set("foo", "bar"); // No exception for authorized client
     authorizedJedis.auth(PASSWORD);
 
     assertThatThrownBy(() -> nonAuthorizedJedis.set("foo", "bar"))
-        .hasMessageContaining("Must authenticate before sending any requests");
+        .hasMessage("NOAUTH Authentication required.");
 
     authorizedJedis.close();
     nonAuthorizedJedis.close();

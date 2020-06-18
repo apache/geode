@@ -215,7 +215,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (command.isOfType(RedisCommandType.AUTH)) {
       response = command.execute(this);
     } else {
-      response = RedisResponse.error(RedisConstants.ERROR_NOT_AUTH);
+      response = RedisResponse.customError(RedisConstants.ERROR_NOT_AUTH);
     }
     return response;
   }

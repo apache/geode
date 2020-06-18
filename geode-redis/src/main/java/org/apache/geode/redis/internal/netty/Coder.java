@@ -278,6 +278,15 @@ public class Coder {
     return response;
   }
 
+  public static ByteBuf getCustomErrorResponse(ByteBufAllocator alloc, String error) {
+    byte[] errorAr = stringToBytes(error);
+    ByteBuf response = alloc.buffer(errorAr.length + 25);
+    response.writeByte(ERROR_ID);
+    response.writeBytes(errorAr);
+    response.writeBytes(CRLFar);
+    return response;
+  }
+
   public static ByteBuf getWrongTypeResponse(ByteBufAllocator alloc, String error) {
     byte[] errorAr = stringToBytes(error);
     ByteBuf response = alloc.buffer(errorAr.length + 31);
