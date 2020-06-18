@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
@@ -76,7 +75,7 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
 
       logger.info(
           String.format("Starting GeodeRedisServer on bind address %s on port %s",
-              new Object[]{bindAddress, port}));
+              new Object[] {bindAddress, port}));
 
       this.redisServer = new GeodeRedisServer(bindAddress, port);
       this.redisServer.start();

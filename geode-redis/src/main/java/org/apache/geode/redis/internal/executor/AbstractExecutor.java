@@ -16,18 +16,12 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.Collection;
 
-import io.netty.buffer.ByteBuf;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.GeodeRedisServer;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.redis.internal.netty.CoderException;
-import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**

@@ -25,7 +25,6 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class ExpireIntegrationTest {
 

@@ -19,8 +19,6 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.netty.buffer.ByteBuf;
-
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;

@@ -15,10 +15,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -26,10 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.util.SafeEncoder;
 
-import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
