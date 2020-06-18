@@ -683,7 +683,7 @@ public class CacheClientNotifier {
       Object[] objects = filterClients.toArray();
       for (Object id : objects) {
         CacheClientProxy ccp = getClientProxy((ClientProxyMembershipID) id, true);
-        if (ccp != null && ccp.getVersion().compareTo(Version.GFE_70) < 0) {
+        if (ccp != null && ccp.getVersion().isOlderThan(Version.GFE_70)) {
           filterClients.remove(id);
         }
       }
@@ -1864,7 +1864,7 @@ public class CacheClientNotifier {
         for (CacheClientProxy proxy : getClientProxies()) {
           logger.debug("Checking whether to ping {}", proxy);
           // Ping clients whose version is GE 6.6.2.2
-          if (proxy.getVersion().compareTo(Version.GFE_6622) >= 0) {
+          if (proxy.getVersion().isNotOlderThan(Version.GFE_6622)) {
             // Send the ping message directly to the client. Do not qo through
             // the queue. If the queue were used, the secondary connection would
             // not be pinged. Instead, pings would just build up in secondary

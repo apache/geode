@@ -311,7 +311,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    */
   public InternalDistributedMember getDistributedMember(Version targetVersion) {
     Version disVersion = null;
-    if (targetVersion.compareTo(Version.GEODE_1_1_0) < 0) {
+    if (targetVersion.isOlderThan(Version.GEODE_1_1_0)) {
       // GEODE-3153: clients expect to receive UUID bytes, which are only
       // read if the stream's version is 1.0.0-incubating
       disVersion = Version.GFE_90;
@@ -356,7 +356,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     // using the client's version to ensure it gets the proper on-wire form
     // of the identifier
     // See GEODE-3072
-    if (membershipID != null && version.compareTo(Version.GEODE_1_1_0) < 0) {
+    if (membershipID != null && version.isOlderThan(Version.GEODE_1_1_0)) {
       InternalDistributedMember member = getDistributedMember(Version.GFE_90);
       // reserialize with the client's version so that we write the UUID
       // bytes

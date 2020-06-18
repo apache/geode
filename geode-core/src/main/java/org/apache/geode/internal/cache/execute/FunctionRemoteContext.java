@@ -77,7 +77,7 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     this.args = DataSerializer.readObject(in);
     this.filter = (HashSet) DataSerializer.readHashSet(in);
-    if (StaticSerialization.getVersionForDataStream(in).compareTo(Version.GEODE_1_11_0) >= 0) {
+    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(Version.GEODE_1_11_0)) {
       this.bucketArray = DataSerializer.readIntArray(in);
     } else {
       HashSet<Integer> bucketSet = DataSerializer.readHashSet(in);
@@ -95,7 +95,7 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     DataSerializer.writeObject(this.args, out);
     DataSerializer.writeHashSet((HashSet) this.filter, out);
-    if (StaticSerialization.getVersionForDataStream(out).compareTo(Version.GEODE_1_11_0) >= 0) {
+    if (StaticSerialization.getVersionForDataStream(out).isNotOlderThan(Version.GEODE_1_11_0)) {
       DataSerializer.writeIntArray(this.bucketArray, out);
     } else {
       Set<Integer> bucketSet = BucketSetHelper.toSet(this.bucketArray);

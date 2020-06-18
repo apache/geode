@@ -638,4 +638,45 @@ public class Version implements Comparable<Version> {
   public boolean isCurrentVersion() {
     return this.ordinal == CURRENT.ordinal;
   }
+
+  /**
+   * Test if this version is older than given version.
+   *
+   * @param version to compare to this version
+   * @return true if this is older than version, otherwise false.
+   */
+  public final boolean isOlderThan(final Version version) {
+    return compareTo(version) < 0;
+  }
+
+  /**
+   * Test if this version is not older than given version.
+   *
+   * @param version to compare to this version
+   * @return true if this is the same version or newer, otherwise false.
+   */
+  public final boolean isNotOlderThan(final Version version) {
+    return compareTo(version) >= 0;
+  }
+
+  /**
+   * Test if this version is newer than given version.
+   *
+   * @param version to compare to this version
+   * @return true if this is newer than version, otherwise false.
+   */
+  public final boolean isNewerThan(final Version version) {
+    return compareTo(version) > 0;
+  }
+
+  /**
+   * Test if this version is not newer than given version.
+   *
+   * @param version to compare to this version
+   * @return true if this is the same version or older, otherwise false.
+   */
+  public final boolean isNotNewerThan(final Version version) {
+    return compareTo(version) <= 0;
+  }
+
 }

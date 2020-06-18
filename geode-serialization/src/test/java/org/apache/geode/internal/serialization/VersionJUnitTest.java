@@ -42,6 +42,9 @@ public class VersionJUnitTest {
     compare(Version.GEODE_1_9_0, Version.GEODE_1_8_0);
     compare(Version.GEODE_1_10_0, Version.GEODE_1_9_0);
     compare(Version.GEODE_1_11_0, Version.GEODE_1_10_0);
+    compare(Version.GEODE_1_12_0, Version.GEODE_1_11_0);
+    compare(Version.GEODE_1_13_0, Version.GEODE_1_12_0);
+    compare(Version.GEODE_1_14_0, Version.GEODE_1_13_0);
   }
 
   private void compare(Version later, Version earlier) {
@@ -53,6 +56,30 @@ public class VersionJUnitTest {
     assertTrue(later.compareTo(earlier.ordinal()) > 0);
     assertTrue(later.compareTo(later.ordinal()) == 0);
     assertTrue(earlier.compareTo(later.ordinal()) < 0);
+
+    compareNewerVsOlder(later, earlier);
+  }
+
+  private void compareNewerVsOlder(Version newer, Version older) {
+    assertTrue(older.isOlderThan(newer));
+    assertFalse(newer.isOlderThan(older));
+    assertFalse(newer.isOlderThan(newer));
+    assertFalse(older.isOlderThan(older));
+
+    assertTrue(older.isNotOlderThan(older));
+    assertFalse(older.isNotOlderThan(newer));
+    assertTrue(newer.isNotOlderThan(newer));
+    assertTrue(newer.isNotOlderThan(older));
+
+    assertTrue(newer.isNewerThan(older));
+    assertFalse(older.isNewerThan(newer));
+    assertFalse(newer.isNewerThan(newer));
+    assertFalse(older.isNewerThan(older));
+
+    assertTrue(older.isNotNewerThan(older));
+    assertTrue(older.isNotNewerThan(newer));
+    assertTrue(newer.isNotNewerThan(newer));
+    assertFalse(newer.isNotNewerThan(older));
   }
 
   @Test
@@ -68,4 +95,5 @@ public class VersionJUnitTest {
       throws UnsupportedSerializationVersionException {
     Version.fromOrdinal(Version.CURRENT_ORDINAL);
   }
+
 }

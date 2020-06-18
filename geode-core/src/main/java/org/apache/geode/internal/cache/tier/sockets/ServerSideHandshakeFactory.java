@@ -49,7 +49,7 @@ class ServerSideHandshakeFactory {
       logger.debug("Client version: {}", clientVersion);
     }
 
-    if (clientVersion.compareTo(Version.GFE_57) < 0) {
+    if (clientVersion.isOlderThan(Version.GFE_57)) {
       throw new UnsupportedVersionException("Unsupported version " + clientVersion
           + "Server's current version " + currentServerVersion);
     }

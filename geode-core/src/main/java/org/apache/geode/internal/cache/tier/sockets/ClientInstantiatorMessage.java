@@ -108,7 +108,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
     Version clientVersion = proxy.getVersion();
     Message message = null;
-    if (clientVersion.compareTo(Version.GFE_57) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_57)) {
       message = getGFEMessage(proxy.getProxyID(), null, clientVersion);
     } else {
       throw new IOException(

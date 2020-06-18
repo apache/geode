@@ -186,7 +186,7 @@ public class Configuration implements DataSerializable {
     } else {
       // version of the data we are reading (1.12 or later)
       Version version = Version.fromOrdinalNoThrow(Version.readOrdinal(in), true);
-      if (version.compareTo(Version.GEODE_1_12_0) >= 0) {
+      if (version.isNotOlderThan(Version.GEODE_1_12_0)) {
         deployments.putAll(DataSerializer.readHashMap(in));
       }
     }
