@@ -67,6 +67,7 @@ java_test_versions:
 
 metadata:
   initial_version: 1.14.0-((semver-prerelease-token)).0
+  mass_test_run_iterations: 200
 
 publish_artifacts:
   CPUS: '8'

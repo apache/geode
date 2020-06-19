@@ -256,6 +256,7 @@ set +x
 if [[ "${GEODE_FORK}" != "${UPSTREAM_FORK}" ]]; then
   echo "Disabling unnecessary jobs for forks."
   pauseJobs ${META_PIPELINE} set-reaper-pipeline
+  pauseJobs ${META_PIPELINE} set-mass-test-run-pipeline
   pauseNewJobs ${META_PIPELINE} set-metrics-pipeline
 elif [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
   echo "Disabling optional jobs for develop"
@@ -283,6 +284,7 @@ if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
   fi
   if [[ "$GEODE_BRANCH" == "develop" ]]; then
     enableFeature pr
+    enableFeature mass-test-run
   fi
 fi
 
