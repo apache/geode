@@ -63,7 +63,8 @@ import org.apache.geode.modules.util.ContextMapper;
 import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.RegionHelper;
 
-public abstract class DeltaSessionManager extends ManagerBase
+public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCommitSessionValve>
+    extends ManagerBase
     implements Lifecycle, PropertyChangeListener, SessionManager {
 
   static final String catalinaBaseSystemProperty = "catalina.base";
@@ -91,7 +92,7 @@ public abstract class DeltaSessionManager extends ManagerBase
 
   private Valve jvmRouteBinderValve;
 
-  private Valve commitSessionValve;
+  private CommitSessionValveT commitSessionValve;
 
   private SessionCache sessionCache;
 
@@ -601,9 +602,11 @@ public abstract class DeltaSessionManager extends ManagerBase
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Registering CommitSessionValve");
     }
-    commitSessionValve = new CommitSessionValve();
+    commitSessionValve = createCommitSessionValve();
     getPipeline().addValve(commitSessionValve);
   }
+
+  protected abstract CommitSessionValveT createCommitSessionValve();
 
   protected void unregisterCommitSessionValve() {
     if (getLogger().isDebugEnabled()) {
