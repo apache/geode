@@ -120,6 +120,14 @@ jar {
 
 jar.dependsOn(createVersionPropertiesFile)
 
+upgradeTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
+}
+
+repeatUpgradeTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
+}
+
 task raJar(type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive that contains the JCA classes'
   from sourceSets.jca.output
