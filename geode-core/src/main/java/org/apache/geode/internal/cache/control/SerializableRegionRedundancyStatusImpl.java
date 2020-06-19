@@ -19,68 +19,30 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.management.internal.operation.RegionRedundancyStatusImpl;
 
-public class RegionRedundancyStatusImpl implements DataSerializableFixedID, RegionRedundancyStatus {
-
-  public static final String OUTPUT_STRING =
-      "%s redundancy status: %s. Desired redundancy is %s and actual redundancy is %s.";
-
-  /**
-   * The name of the region used to create this object.
-   */
-  private String regionName;
-
-  /**
-   * The configured redundancy of the region used to create this object.
-   */
-  private int configuredRedundancy;
-
-  /**
-   * The actual redundancy of the region used to create this object at time of creation.
-   */
-  private int actualRedundancy;
-
-  /**
-   * The {@link RedundancyStatus} of the region used to create this object at time of creation.
-   */
-  private RedundancyStatus status;
-
+/**
+ * result object produced by the servers. These need to be transferred to the locators
+ * via functions so they need to be DataSerializable
+ */
+public class SerializableRegionRedundancyStatusImpl extends
+    RegionRedundancyStatusImpl
+    implements DataSerializableFixedID {
   /**
    * Default constructor used for serialization
    */
-  public RegionRedundancyStatusImpl() {}
+  public SerializableRegionRedundancyStatusImpl() {}
 
-  public RegionRedundancyStatusImpl(PartitionedRegion region) {
+  public SerializableRegionRedundancyStatusImpl(PartitionedRegion region) {
     regionName = region.getName();
     configuredRedundancy = region.getRedundantCopies();
     actualRedundancy = calculateLowestRedundancy(region);
     status = determineStatus(configuredRedundancy, actualRedundancy);
-  }
-
-  @Override
-  public String getRegionName() {
-    return regionName;
-  }
-
-  @Override
-  public int getConfiguredRedundancy() {
-    return configuredRedundancy;
-  }
-
-  @Override
-  public int getActualRedundancy() {
-    return actualRedundancy;
-  }
-
-  @Override
-  public RedundancyStatus getStatus() {
-    return status;
   }
 
   /**

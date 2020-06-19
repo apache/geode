@@ -38,19 +38,19 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.control.RegionRedundancyStatus;
-import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
+import org.apache.geode.management.runtime.RegionRedundancyStatus;
+import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
 public class RestoreRedundancyOperationImplTest {
   InternalCache cache;
   InternalResourceManager manager;
   ResourceManagerStats stats;
   RestoreRedundancyOperationImpl operation;
-  RestoreRedundancyResultsImpl emptyResults;
+  SerializableRestoreRedundancyResultsImpl emptyResults;
   long startTime = 5;
 
   @Before
@@ -64,7 +64,7 @@ public class RestoreRedundancyOperationImplTest {
 
     operation = spy(new RestoreRedundancyOperationImpl(cache));
 
-    emptyResults = mock(RestoreRedundancyResultsImpl.class);
+    emptyResults = mock(SerializableRestoreRedundancyResultsImpl.class);
     doReturn(emptyResults).when(operation).getEmptyRestoreRedundancyResults();
   }
 
@@ -85,7 +85,7 @@ public class RestoreRedundancyOperationImplTest {
     doReturn(op).when(operation).getPartitionedRegionRebalanceOp(region);
     when(op.execute()).thenReturn(new HashSet<>());
 
-    RegionRedundancyStatus regionResult = mock(RegionRedundancyStatusImpl.class);
+    RegionRedundancyStatus regionResult = mock(SerializableRegionRedundancyStatusImpl.class);
     doReturn(regionResult).when(operation).getRegionResult(region);
 
     operation.doRestoreRedundancy(region);
@@ -119,8 +119,8 @@ public class RestoreRedundancyOperationImplTest {
     when(cache.getRegion(regionPath1)).thenReturn(detailRegion1);
     when(cache.getRegion(regionPath2)).thenReturn(detailRegion2);
 
-    RegionRedundancyStatus regionResult1 = mock(RegionRedundancyStatusImpl.class);
-    RegionRedundancyStatus regionResult2 = mock(RegionRedundancyStatusImpl.class);
+    RegionRedundancyStatus regionResult1 = mock(SerializableRegionRedundancyStatusImpl.class);
+    RegionRedundancyStatus regionResult2 = mock(SerializableRegionRedundancyStatusImpl.class);
     doReturn(regionResult1).when(operation).getRegionResult(detailRegion1);
     doReturn(regionResult2).when(operation).getRegionResult(detailRegion2);
 
