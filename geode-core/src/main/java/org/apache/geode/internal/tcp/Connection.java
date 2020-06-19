@@ -2680,8 +2680,9 @@ public class Connection implements Runnable {
       if (allocSize == -1) {
         allocSize = owner.getConduit().tcpBufferSize;
       }
-      inputBuffer = getConduit().useDirectBuffers()? getBufferPool().acquireDirectReceiveBuffer(allocSize) :
-                    getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
+      inputBuffer =
+          getConduit().useDirectBuffers() ? getBufferPool().acquireDirectReceiveBuffer(allocSize)
+              : getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
     }
     return inputBuffer;
   }
@@ -3258,8 +3259,9 @@ public class Connection implements Runnable {
       logger.info("Allocating larger network read buffer, new size is {} old size was {}.",
           allocSize, oldBufferSize);
       ByteBuffer oldBuffer = inputBuffer;
-      inputBuffer = getConduit().useDirectBuffers()? getBufferPool().acquireDirectReceiveBuffer(allocSize) :
-          getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
+      inputBuffer =
+          getConduit().useDirectBuffers() ? getBufferPool().acquireDirectReceiveBuffer(allocSize)
+              : getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
 
       if (oldBuffer != null) {
         int oldByteCount = oldBuffer.remaining();

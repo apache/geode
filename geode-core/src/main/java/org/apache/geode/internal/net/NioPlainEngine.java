@@ -38,7 +38,7 @@ public class NioPlainEngine implements NioFilter {
 
 
   public NioPlainEngine(BufferPool bufferPool, boolean useDirectBuffers,
-                        InputStream inputStream) {
+      InputStream inputStream) {
     this.bufferPool = bufferPool;
     this.useDirectBuffers = useDirectBuffers;
     this.inputStream = inputStream;
@@ -61,8 +61,8 @@ public class NioPlainEngine implements NioFilter {
     ByteBuffer buffer = wrappedBuffer;
 
     if (buffer == null) {
-      buffer = useDirectBuffers? bufferPool.acquireDirectBuffer(bufferType, amount) :
-         bufferPool.acquireNonDirectBuffer(bufferType, amount);
+      buffer = useDirectBuffers ? bufferPool.acquireDirectBuffer(bufferType, amount)
+          : bufferPool.acquireNonDirectBuffer(bufferType, amount);
       buffer.clear();
       lastProcessedPosition = 0;
       lastReadPosition = 0;
@@ -79,8 +79,8 @@ public class NioPlainEngine implements NioFilter {
       ByteBuffer oldBuffer = buffer;
       oldBuffer.limit(lastReadPosition);
       oldBuffer.position(lastProcessedPosition);
-      buffer = useDirectBuffers? bufferPool.acquireDirectBuffer(bufferType, amount) :
-          bufferPool.acquireNonDirectBuffer(bufferType, amount);
+      buffer = useDirectBuffers ? bufferPool.acquireDirectBuffer(bufferType, amount)
+          : bufferPool.acquireNonDirectBuffer(bufferType, amount);
       buffer.clear();
       buffer.put(oldBuffer);
       bufferPool.releaseBuffer(bufferType, oldBuffer);
