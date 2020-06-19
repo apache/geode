@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 import static org.apache.geode.distributed.internal.DistributionConfigImpl.SECURITY_SYSTEM_PREFIX;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
+import java.io.BufferedInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -481,6 +482,9 @@ public class Connection implements Runnable {
    * ensure that the socket is properly closed.
    */
   private volatile boolean hasResidualReaderThread;
+
+  /** for "old IO" we use a buffered input stream to read from the socket */
+  private BufferedInputStream inputStream;
 
   /**
    * creates a "reader" connection that we accepted (it was initiated by an explicit connect being
@@ -1148,8 +1152,8 @@ public class Connection implements Runnable {
         new InetSocketAddress(remoteID.getInetAddress(), remoteID.getDirectChannelPort());
 
     int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
-    boolean useSSL = getConduit().useSSL();
-    if (useSSL) {
+    boolean useTLSOverOldIO = getConduit().useTLSOverOldIO();
+    if (useTLSOverOldIO) {
       // socket = javax.net.ssl.SSLSocketFactory.getDefault()
       // .createSocket(remoteId.getInetAddress(), remoteId.getPort());
       int socketBufferSize =
@@ -1176,13 +1180,13 @@ public class Connection implements Runnable {
         // receive ack messages
       }
       setSendBufferSize(socket);
-      if (!useSSL) {
+      if (!useTLSOverOldIO) {
         socket.getChannel().configureBlocking(true);
       }
 
       try {
 
-        if (!useSSL) {
+        if (!useTLSOverOldIO) {
           // haven't connected yet
           socket.connect(addr, connectTime);
         }
@@ -1614,11 +1618,11 @@ public class Connection implements Runnable {
           }
           int amountRead;
           if (!isInitialRead) {
-            amountRead = SocketUtils.readFromSocket(socket, buff);
+            amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
-              amountRead = SocketUtils.readFromSocket(socket, buff);
+              amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
             } else {
               amountRead = buff.position();
             }
@@ -1733,7 +1737,9 @@ public class Connection implements Runnable {
 
   private void createIoFilter(Socket socket, boolean clientSocket) throws IOException {
     SocketChannel channel = socket.getChannel();
-    if (getConduit().useSSL() && channel != null) {
+    inputStream = new BufferedInputStream(socket.getInputStream(),
+        getConduit().getConfig().getSocketBufferSize());
+    if (getConduit().useTLSOverNIO()) {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
       SSLEngine engine =
           getConduit().getSocketCreator().createSSLEngine(address.getHostString(),
@@ -1761,7 +1767,7 @@ public class Connection implements Runnable {
         getConduit().getSocketCreator().forCluster()
             .handshakeIfSocketIsSSL(socket, getConduit().idleConnectionTimeout);
       }
-      ioFilter = new NioPlainEngine(getBufferPool());
+      ioFilter = new NioPlainEngine(getBufferPool(), getConduit().useDirectBuffers(), inputStream);
     }
   }
 
@@ -2674,7 +2680,8 @@ public class Connection implements Runnable {
       if (allocSize == -1) {
         allocSize = owner.getConduit().tcpBufferSize;
       }
-      inputBuffer = getBufferPool().acquireDirectReceiveBuffer(allocSize);
+      inputBuffer = getConduit().useDirectBuffers()? getBufferPool().acquireDirectReceiveBuffer(allocSize) :
+                    getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
     }
     return inputBuffer;
   }
@@ -2837,7 +2844,7 @@ public class Connection implements Runnable {
           peerDataBuffer.position(startPos + messageLength);
         } else {
           done = true;
-          if (getConduit().useSSL()) {
+          if (getConduit().useTLSOverNIO()) {
             ioFilter.doneReading(peerDataBuffer);
           } else {
             compactOrResizeBuffer(messageLength);
@@ -3251,7 +3258,8 @@ public class Connection implements Runnable {
       logger.info("Allocating larger network read buffer, new size is {} old size was {}.",
           allocSize, oldBufferSize);
       ByteBuffer oldBuffer = inputBuffer;
-      inputBuffer = getBufferPool().acquireDirectReceiveBuffer(allocSize);
+      inputBuffer = getConduit().useDirectBuffers()? getBufferPool().acquireDirectReceiveBuffer(allocSize) :
+          getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
 
       if (oldBuffer != null) {
         int oldByteCount = oldBuffer.remaining();

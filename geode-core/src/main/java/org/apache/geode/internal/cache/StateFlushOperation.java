@@ -512,8 +512,8 @@ public class StateFlushOperation {
 
   /**
    * StateStabilizationMessage is sent by a distributed member to a member who is the target of a
-   * state flush. The target then sends a StateStabilizedMessage to the sender of the
-   * StateStabilizationMessage when all state has been flushed to it.
+   * state flush. The target then sends a StateStabilizedMessage to the initiator of the
+   * state flush operation.
    * <p>
    * author bruce
    *

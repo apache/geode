@@ -91,11 +91,11 @@ public abstract class SocketUtils {
    *
    * @return the number of bytes read, which may be -1 for EOF
    */
-  public static int readFromSocket(Socket socket, ByteBuffer inputBuffer) throws IOException {
+  public static int readFromSocket(Socket socket, ByteBuffer inputBuffer,
+                                   InputStream socketInputStream) throws IOException {
     int amountRead;
     if (socket instanceof SSLSocket) {
-      InputStream stream = socket.getInputStream();
-      amountRead = readFromStream(stream, inputBuffer);
+      amountRead = readFromStream(socketInputStream, inputBuffer);
     } else {
       amountRead = socket.getChannel().read(inputBuffer);
     }

@@ -17,6 +17,7 @@ package org.apache.geode.internal.net;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
@@ -29,13 +30,18 @@ import org.apache.geode.internal.Assert;
  */
 public class NioPlainEngine implements NioFilter {
   private final BufferPool bufferPool;
+  private final boolean useDirectBuffers;
+  private final InputStream inputStream;
 
   int lastReadPosition;
   int lastProcessedPosition;
 
 
-  public NioPlainEngine(BufferPool bufferPool) {
+  public NioPlainEngine(BufferPool bufferPool, boolean useDirectBuffers,
+                        InputStream inputStream) {
     this.bufferPool = bufferPool;
+    this.useDirectBuffers = useDirectBuffers;
+    this.inputStream = inputStream;
   }
 
   @Override
@@ -55,7 +61,8 @@ public class NioPlainEngine implements NioFilter {
     ByteBuffer buffer = wrappedBuffer;
 
     if (buffer == null) {
-      buffer = bufferPool.acquireDirectBuffer(bufferType, amount);
+      buffer = useDirectBuffers? bufferPool.acquireDirectBuffer(bufferType, amount) :
+         bufferPool.acquireNonDirectBuffer(bufferType, amount);
       buffer.clear();
       lastProcessedPosition = 0;
       lastReadPosition = 0;
@@ -72,7 +79,8 @@ public class NioPlainEngine implements NioFilter {
       ByteBuffer oldBuffer = buffer;
       oldBuffer.limit(lastReadPosition);
       oldBuffer.position(lastProcessedPosition);
-      buffer = bufferPool.acquireDirectBuffer(bufferType, amount);
+      buffer = useDirectBuffers? bufferPool.acquireDirectBuffer(bufferType, amount) :
+          bufferPool.acquireNonDirectBuffer(bufferType, amount);
       buffer.clear();
       buffer.put(oldBuffer);
       bufferPool.releaseBuffer(bufferType, oldBuffer);
@@ -93,7 +101,7 @@ public class NioPlainEngine implements NioFilter {
     buffer.position(lastReadPosition);
 
     while (buffer.position() < (lastProcessedPosition + bytes)) {
-      int amountRead = SocketUtils.readFromSocket(socket, buffer);
+      int amountRead = SocketUtils.readFromSocket(socket, buffer, inputStream);
       if (amountRead < 0) {
         throw new EOFException();
       }

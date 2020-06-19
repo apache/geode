@@ -96,7 +96,7 @@ public class MsgStreamer extends OutputStream
   protected void release() {
     MsgIdGenerator.release(this.msgId);
     this.buffer.clear();
-    this.overflowBuf = null;
+    this.overflowStream = null;
     bufferPool.releaseSenderBuffer(this.buffer);
   }
 
@@ -265,15 +265,15 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" byte={}", b);
 
     ensureCapacity(1);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.write(b);
+    if (this.overflowStream != null) {
+      this.overflowStream.write(b);
       return;
     }
     this.buffer.put((byte) (b & 0xff));
   }
 
   private void ensureCapacity(int amount) {
-    if (this.overflowBuf != null) {
+    if (this.overflowStream != null) {
       return;
     }
     int remainingSpace = this.buffer.capacity() - this.buffer.position();
@@ -289,7 +289,7 @@ public class MsgStreamer extends OutputStream
   }
 
   private int overflowMode = 0;
-  private HeapDataOutputStream overflowBuf = null;
+  private HeapDataOutputStream overflowStream = null;
 
   private boolean isOverflowMode() {
     return this.overflowMode > 0;
@@ -302,14 +302,14 @@ public class MsgStreamer extends OutputStream
   private void disableOverflowMode() {
     this.overflowMode--;
     if (!isOverflowMode()) {
-      this.overflowBuf = null;
+      this.overflowStream = null;
     }
   }
 
   public void realFlush(boolean lastFlushForMessage) {
     if (isOverflowMode()) {
-      if (this.overflowBuf == null) {
-        this.overflowBuf = new HeapDataOutputStream(
+      if (this.overflowStream == null) {
+        this.overflowStream = new HeapDataOutputStream(
             this.buffer.capacity() - Connection.MSG_HEADER_BYTES, Version.CURRENT);
       }
       return;
@@ -375,16 +375,16 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) {
     // logger.trace(" bytes={} offset={} len={}", source, offset, len);
     // }
-    if (this.overflowBuf != null) {
-      this.overflowBuf.write(source, offset, len);
+    if (this.overflowStream != null) {
+      this.overflowStream.write(source, offset, len);
       return;
     }
     while (len > 0) {
       int remainingSpace = this.buffer.capacity() - this.buffer.position();
       if (remainingSpace == 0) {
         realFlush(false);
-        if (this.overflowBuf != null) {
-          this.overflowBuf.write(source, offset, len);
+        if (this.overflowStream != null) {
+          this.overflowStream.write(source, offset, len);
           return;
         }
       } else {
@@ -404,8 +404,8 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) {
     // logger.trace(" bytes={} offset={} len={}", source, offset, len);
     // }
-    if (this.overflowBuf != null) {
-      this.overflowBuf.write(bb);
+    if (this.overflowStream != null) {
+      this.overflowStream.write(bb);
       return;
     }
     int len = bb.remaining();
@@ -413,8 +413,8 @@ public class MsgStreamer extends OutputStream
       int remainingSpace = this.buffer.capacity() - this.buffer.position();
       if (remainingSpace == 0) {
         realFlush(false);
-        if (this.overflowBuf != null) {
-          this.overflowBuf.write(bb);
+        if (this.overflowStream != null) {
+          this.overflowStream.write(bb);
           return;
         }
       } else {
@@ -435,7 +435,7 @@ public class MsgStreamer extends OutputStream
    * write the header after the message has been written to the stream
    */
   private void setMessageHeader() {
-    Assert.assertTrue(this.overflowBuf == null);
+    Assert.assertTrue(this.overflowStream == null);
     Assert.assertTrue(!isOverflowMode());
     // int processorType = this.msg.getProcessorType();
     int msgType;
@@ -516,8 +516,8 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" short={}", v);
 
     ensureCapacity(2);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeShort(v);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeShort(v);
       return;
     }
     this.buffer.putShort((short) (v & 0xffff));
@@ -546,8 +546,8 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" char={}", v);
 
     ensureCapacity(2);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeChar(v);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeChar(v);
       return;
     }
     this.buffer.putChar((char) v);
@@ -577,8 +577,8 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" int={}", v);
 
     ensureCapacity(4);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeInt(v);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeInt(v);
       return;
     }
     this.buffer.putInt(v);
@@ -612,8 +612,8 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" long={}", v);
 
     ensureCapacity(8);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeLong(v);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeLong(v);
       return;
     }
     this.buffer.putLong(v);
@@ -634,8 +634,8 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" float={}", v);
 
     ensureCapacity(4);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeFloat(v);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeFloat(v);
       return;
     }
     this.buffer.putFloat(v);
@@ -656,8 +656,8 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" double={}", v);
 
     ensureCapacity(8);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeDouble(v);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeDouble(v);
       return;
     }
     this.buffer.putDouble(v);
@@ -680,8 +680,8 @@ public class MsgStreamer extends OutputStream
   public void writeBytes(String str) {
     // if (logger.isTraceEnabled()) logger.trace(" bytes={}", str);
 
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeBytes(str);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeBytes(str);
       return;
     }
     int strlen = str.length();
@@ -706,8 +706,8 @@ public class MsgStreamer extends OutputStream
   public void writeChars(String s) {
     // if (logger.isTraceEnabled()) logger.trace(" chars={}", s);
 
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeChars(s);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeChars(s);
       return;
     }
     int len = s.length();
@@ -716,8 +716,8 @@ public class MsgStreamer extends OutputStream
       int remainingCharSpace = (this.buffer.capacity() - this.buffer.position()) / 2;
       if (remainingCharSpace == 0) {
         realFlush(false);
-        if (this.overflowBuf != null) {
-          this.overflowBuf.writeChars(s.substring(offset));
+        if (this.overflowStream != null) {
+          this.overflowStream.writeChars(s.substring(offset));
           return;
         }
       } else {
@@ -796,8 +796,8 @@ public class MsgStreamer extends OutputStream
   public void writeUTF(String str) throws IOException {
     // if (logger.isTraceEnabled()) logger.trace(" utf={}", str);
 
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeUTF(str);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeUTF(str);
       return;
     }
     if (ASCII_STRINGS) {
@@ -818,8 +818,8 @@ public class MsgStreamer extends OutputStream
       int remainingSpace = this.buffer.capacity() - this.buffer.position();
       if (remainingSpace == 0) {
         realFlush(false);
-        if (this.overflowBuf != null) {
-          this.overflowBuf.write(str.substring(offset).getBytes());
+        if (this.overflowStream != null) {
+          this.overflowStream.write(str.substring(offset).getBytes());
           return;
         }
       } else {
@@ -925,8 +925,8 @@ public class MsgStreamer extends OutputStream
       other.rewind();
       return;
     }
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeAsSerializedByteArray(v);
+    if (this.overflowStream != null) {
+      this.overflowStream.writeAsSerializedByteArray(v);
       return;
     }
     if (isOverflowMode()) {
@@ -935,9 +935,9 @@ public class MsgStreamer extends OutputStream
       if (remainingSpace < 5) {
         // we don't even have room to write the length field so just create
         // the overflowBuf
-        this.overflowBuf = new HeapDataOutputStream(
+        this.overflowStream = new HeapDataOutputStream(
             this.buffer.capacity() - Connection.MSG_HEADER_BYTES, Version.CURRENT);
-        this.overflowBuf.writeAsSerializedByteArray(v);
+        this.overflowStream.writeAsSerializedByteArray(v);
         return;
       }
     } else {
@@ -960,7 +960,7 @@ public class MsgStreamer extends OutputStream
         throw e2;
       }
       int baLength = this.buffer.position() - (lengthPos + 5);
-      HeapDataOutputStream overBuf = this.overflowBuf;
+      HeapDataOutputStream overBuf = this.overflowStream;
       if (overBuf != null) {
         baLength += overBuf.size();
       }

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.EOFException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -44,7 +45,7 @@ public class NioPlainEngineTest {
   public void setUp() throws Exception {
     mockStats = mock(DMStats.class);
     bufferPool = new BufferPool(mockStats);
-    nioEngine = new NioPlainEngine(bufferPool);
+    nioEngine = new NioPlainEngine(bufferPool, true, mock(InputStream.class));
   }
 
   @Test
