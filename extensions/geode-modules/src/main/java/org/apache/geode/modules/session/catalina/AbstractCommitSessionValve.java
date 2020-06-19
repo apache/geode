@@ -28,7 +28,6 @@ import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
-
 public abstract class AbstractCommitSessionValve<SelfT extends AbstractCommitSessionValve<?>>
     extends ValveBase {
 
@@ -44,7 +43,6 @@ public abstract class AbstractCommitSessionValve<SelfT extends AbstractCommitSes
   @Override
   public void invoke(final Request request, final Response response)
       throws IOException, ServletException {
-    // Invoke the next Valve
     try {
       getNext().invoke(request, wrapResponse(response));
     } finally {
@@ -65,16 +63,15 @@ public abstract class AbstractCommitSessionValve<SelfT extends AbstractCommitSes
       final DeltaSessionFacade session = (DeltaSessionFacade) request.getSession(false);
       if (session != null) {
         final DeltaSessionManager<SelfT> deltaSessionManager = uncheckedCast(manager);
-        final Log contextLogger = context.getLogger();
         if (session.isValid()) {
           deltaSessionManager.removeTouchedSession(session.getId());
           session.commit();
-          if (contextLogger.isDebugEnabled()) {
-            contextLogger.debug(session + ": Committed.");
+          if (log.isDebugEnabled()) {
+            log.debug(session + ": Committed.");
           }
         } else {
-          if (contextLogger.isDebugEnabled()) {
-            contextLogger.debug(session + ": Not valid so not committing.");
+          if (log.isDebugEnabled()) {
+            log.debug(session + ": Not valid so not committing.");
           }
         }
       }
