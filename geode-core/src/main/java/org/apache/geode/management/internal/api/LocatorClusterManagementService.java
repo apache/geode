@@ -71,6 +71,7 @@ import org.apache.geode.management.api.EntityInfo;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.configuration.DiskStore;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.GroupableConfiguration;
 import org.apache.geode.management.configuration.HasFile;
@@ -86,6 +87,7 @@ import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.DeploymentManager;
+import org.apache.geode.management.internal.configuration.mutators.DiskStoreManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.IndexConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.PdxManager;
@@ -93,6 +95,7 @@ import org.apache.geode.management.internal.configuration.mutators.RegionConfigM
 import org.apache.geode.management.internal.configuration.validators.CommonConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.DeploymentValidator;
+import org.apache.geode.management.internal.configuration.validators.DiskStoreValidator;
 import org.apache.geode.management.internal.configuration.validators.GatewayReceiverConfigValidator;
 import org.apache.geode.management.internal.configuration.validators.IndexValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
@@ -136,6 +139,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     managers.put(GatewayReceiver.class, new GatewayReceiverConfigManager(persistenceService));
     managers.put(Index.class, new IndexConfigManager(persistenceService));
     managers.put(Deployment.class, new DeploymentManager(persistenceService));
+    managers.put(DiskStore.class, new DiskStoreManager(persistenceService));
 
     // initialize the list of validators
     validators.put(Region.class, new RegionConfigValidator(cache));
@@ -143,6 +147,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     validators.put(Pdx.class, new PdxValidator());
     validators.put(Index.class, new IndexValidator());
     validators.put(Deployment.class, new DeploymentValidator());
+    validators.put(DiskStore.class, new DiskStoreValidator());
   }
 
   @VisibleForTesting
