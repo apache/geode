@@ -600,7 +600,7 @@ public class CacheConfig {
    */
   public List<DiskStoreType> getDiskStores() {
     if (diskStores == null) {
-      diskStores = new ArrayList<DiskStoreType>();
+      diskStores = new ArrayList<>();
     }
     return this.diskStores;
   }
