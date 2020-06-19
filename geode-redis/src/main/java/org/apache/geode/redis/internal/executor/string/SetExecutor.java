@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static java.lang.Long.parseLong;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
@@ -88,19 +89,20 @@ public class SetExecutor extends StringExecutor {
             .map(item -> Coder.bytesToString(item).toUpperCase())
             .collect(Collectors.toList());
 
+    throwExceptionIfIncompatableParameterOptions(optionalParametersStrings);
+    throwErrorIfNumberInWrongPosition(optionalParametersStrings);
     throwExceptionIfUnknownParameter(optionalParametersStrings);
-    throwExceptionIfIncompatableParamaterOptions(optionalParametersStrings);
 
     // uncomment below when this functionality is reimplemented see GEODE-8263
     // keepTTL = optionalParametersStrings.contains("KEEPTTL");
 
     if (optionalParametersStrings.contains("PX")) {
       millisecondsUntilExpiration =
-          handleEpiration(optionalParametersStrings, "PX");
+          handleExpiration(optionalParametersStrings, "PX");
 
     } else if (optionalParametersStrings.contains("EX")) {
       millisecondsUntilExpiration =
-          handleEpiration(optionalParametersStrings, "EX");
+          handleExpiration(optionalParametersStrings, "EX");
     }
 
     if (optionalParametersStrings.contains("NX")) {
@@ -112,8 +114,7 @@ public class SetExecutor extends StringExecutor {
     return new SetOptions(existsOption, millisecondsUntilExpiration, keepTTL);
   }
 
-  private long handleEpiration(List<String> optionalParametersStrings, String expirationType) {
-
+  private long handleExpiration(List<String> optionalParametersStrings, String expirationType) {
     long timeUntilExpiration;
     long millisecondsUntilExpiration;
 
@@ -154,36 +155,55 @@ public class SetExecutor extends StringExecutor {
             .filter(parameter -> (!validOptionalParamaters.contains(parameter)))
             .collect(Collectors.toList());
 
-    parametersInQuestion.forEach(parameter -> throwErrorIfNotANumberInExpectedPosition(
-        parameter,
-        optionalParameters));
+    parametersInQuestion.forEach(parameter -> {
+
+      int index = optionalParameters.indexOf(parameter);
+
+      if (!isANumber(parameter)) {
+        if (index == 0) {
+          throw new IllegalArgumentException(ERROR_SYNTAX);
+        }
+
+        String previousParameter = optionalParameters.get(index - 1);
+        if (previousOptionIsValidAndExpectsANumber(previousParameter)) {
+          throw new IllegalArgumentException(ERROR_NOT_INTEGER);
+        }
+
+        throw new IllegalArgumentException(ERROR_SYNTAX);
+      }
+    });
   }
 
-  private void throwErrorIfNotANumberInExpectedPosition(
-      String parameter,
-      List<String> optionalParameters) {
-    if (previousOptionIsValidAndExpectsANumber(parameter, optionalParameters)) {
-      convertToLongOrThrowException(parameter);
-    } else {
-      throw new IllegalArgumentException(ERROR_SYNTAX);
-    }
-  }
-
-  private boolean previousOptionIsValidAndExpectsANumber(String paramter,
-      List<String> optionalParameters) {
-
+  private boolean previousOptionIsValidAndExpectsANumber(String previousParameter) {
     List<String> validParamaters = Arrays.asList("EX", "PX");
-    if (optionalParameters.size() < 2) {
-      return false;
-    }
-
-    int indexOfParameter = optionalParameters.indexOf(paramter);
-    String previousParameter = optionalParameters.get(indexOfParameter - 1);
-
     return validParamaters.contains(previousParameter);
   }
 
-  private void throwExceptionIfIncompatableParamaterOptions(List<String> passedParametersStrings) {
+  private void throwErrorIfNumberInWrongPosition(List<String> optionalParameters) {
+    for (int i = 0; i < optionalParameters.size(); i++) {
+      String parameter = optionalParameters.get(i);
+      if (isANumber(parameter)) {
+        if (i == 0) {
+          throw new IllegalArgumentException(ERROR_SYNTAX);
+        }
+        String previousParameter = optionalParameters.get(i - 1);
+        if (!previousOptionIsValidAndExpectsANumber(previousParameter)) {
+          throw new IllegalArgumentException(ERROR_SYNTAX);
+        }
+      }
+    }
+  }
+
+  private boolean isANumber(String parameter) {
+    try {
+      Long.parseLong(parameter);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+  }
+
+  private void throwExceptionIfIncompatableParameterOptions(List<String> passedParametersStrings) {
 
     if (passedParametersStrings.contains("PX")
         && passedParametersStrings.contains("EX")) {
@@ -198,7 +218,7 @@ public class SetExecutor extends StringExecutor {
 
   private long convertToLongOrThrowException(String expirationTime) {
     try {
-      return Long.parseLong(expirationTime);
+      return parseLong(expirationTime);
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(ERROR_NOT_INTEGER);
     }
