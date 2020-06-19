@@ -35,5 +35,6 @@ public class AppendNativeRedisAcceptanceTest extends AppendIntegrationTest {
     GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
     jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);
+    jedis2 = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);
   }
 }
