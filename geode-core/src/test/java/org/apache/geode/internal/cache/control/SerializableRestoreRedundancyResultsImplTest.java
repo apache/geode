@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
-import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.FAILURE;
-import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.SUCCESS;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFERS_COMPLETED;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.PRIMARY_TRANSFER_TIME;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.REDUNDANCY_NOT_SATISFIED_FOR_REGIONS;
-import static org.apache.geode.internal.cache.control.RestoreRedundancyResultsImpl.REDUNDANCY_SATISFIED_FOR_REGIONS;
+import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
+import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.PRIMARY_TRANSFERS_COMPLETED;
+import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.PRIMARY_TRANSFER_TIME;
+import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.REDUNDANCY_NOT_SATISFIED_FOR_REGIONS;
+import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.REDUNDANCY_SATISFIED_FOR_REGIONS;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
+import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.FAILURE;
+import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.SUCCESS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
@@ -39,24 +39,24 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.control.RegionRedundancyStatus;
-import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
+import org.apache.geode.management.runtime.RegionRedundancyStatus;
+import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
-public class RestoreRedundancyResultsImplTest {
+public class SerializableRestoreRedundancyResultsImplTest {
   private final RegionRedundancyStatus successfulRegionResult =
-      mock(RegionRedundancyStatusImpl.class);
+      mock(SerializableRegionRedundancyStatusImpl.class);
   private final String successfulRegionName = "successfulRegion";
   private final RegionRedundancyStatus underRedundancyRegionResult =
-      mock(RegionRedundancyStatusImpl.class);
+      mock(SerializableRegionRedundancyStatusImpl.class);
   private final String underRedundancyRegionName = "underRedundancyRegion";
   private final RegionRedundancyStatus zeroRedundancyRegionResult =
-      mock(RegionRedundancyStatusImpl.class);
+      mock(SerializableRegionRedundancyStatusImpl.class);
   private final String zeroRedundancyRegionName = "zeroRedundancyRegion";
-  private PartitionRebalanceInfo details = mock(PartitionRebalanceInfo.class);
-  private int transfersCompleted = 5;
-  private long transferTime = 1234;
-  private RestoreRedundancyResultsImpl results;
+  private final PartitionRebalanceInfo details = mock(PartitionRebalanceInfo.class);
+  private final int transfersCompleted = 5;
+  private final long transferTime = 1234;
+  private SerializableRestoreRedundancyResultsImpl results;
 
   @Before
   public void setUp() {
@@ -68,14 +68,20 @@ public class RestoreRedundancyResultsImplTest {
     when(zeroRedundancyRegionResult.getRegionName()).thenReturn(zeroRedundancyRegionName);
     when(details.getPrimaryTransfersCompleted()).thenReturn(transfersCompleted);
     when(details.getPrimaryTransferTime()).thenReturn(transferTime);
-    results = new RestoreRedundancyResultsImpl();
+    results = new SerializableRestoreRedundancyResultsImpl();
+  }
+
+  @Test
+  public void initialStateIsSuccess() {
+    results = new SerializableRestoreRedundancyResultsImpl();
+    assertThat(results.getRegionOperationStatus(), is(SUCCESS));
   }
 
   @Test
   public void getStatusReturnsSuccessWhenAllRegionsHaveFullySatisfiedRedundancy() {
     results.addRegionResult(successfulRegionResult);
 
-    assertThat(results.getStatus(), is(SUCCESS));
+    assertThat(results.getRegionOperationStatus(), is(SUCCESS));
   }
 
   @Test
@@ -83,7 +89,7 @@ public class RestoreRedundancyResultsImplTest {
     results.addRegionResult(successfulRegionResult);
     results.addRegionResult(underRedundancyRegionResult);
 
-    assertThat(results.getStatus(), is(FAILURE));
+    assertThat(results.getRegionOperationStatus(), is(FAILURE));
   }
 
   @Test
@@ -91,7 +97,7 @@ public class RestoreRedundancyResultsImplTest {
     results.addRegionResult(successfulRegionResult);
     results.addRegionResult(zeroRedundancyRegionResult);
 
-    assertThat(results.getStatus(), is(FAILURE));
+    assertThat(results.getRegionOperationStatus(), is(FAILURE));
   }
 
   @Test
@@ -99,11 +105,10 @@ public class RestoreRedundancyResultsImplTest {
     results.addRegionResult(successfulRegionResult);
     results.addRegionResult(underRedundancyRegionResult);
     results.addRegionResult(zeroRedundancyRegionResult);
-
     results.addPrimaryReassignmentDetails(details);
 
-    String message = results.getMessage();
-    List<String> messageLines = Arrays.asList(message.split("\n"));
+    String message = results.getRegionOperationMessage();
+    List<String> messageLines = Arrays.asList(message.split(System.lineSeparator()));
 
     assertThat(messageLines, contains(NO_REDUNDANT_COPIES_FOR_REGIONS,
         zeroRedundancyRegionResult.toString(),

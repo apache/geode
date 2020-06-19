@@ -45,6 +45,6 @@ public class RestoreRedundancyCommand extends RedundancyCommand {
       @CliOption(key = REDUNDANCY_REASSIGN_PRIMARIES, help = REDUNDANCY_REASSIGN_PRIMARIES_HELP,
           specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "true") boolean reassignPrimaries) {
-    return super.execute(includeRegions, excludeRegions, reassignPrimaries);
+    return super.execute(includeRegions, excludeRegions, reassignPrimaries, false);
   }
 }

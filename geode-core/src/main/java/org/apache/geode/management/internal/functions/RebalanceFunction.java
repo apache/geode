@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
-public class RebalanceFunction implements InternalFunction {
+public class RebalanceFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = RebalanceFunction.class.getName();
@@ -40,21 +40,18 @@ public class RebalanceFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
-
-    RebalanceOperation op = null;
-    String[] str = new String[0];
-
+  public void execute(FunctionContext<Object[]> context) {
+    RebalanceOperation op;
     Cache cache = context.getCache();
     ResourceManager manager = cache.getResourceManager();
-    Object[] args = (Object[]) context.getArguments();
+    Object[] args = context.getArguments();
     String simulate = ((String) args[0]);
     Set<String> includeRegionNames = (Set<String>) args[1];
     Set<String> excludeRegionNames = (Set<String>) args[2];
     RebalanceFactory rbFactory = manager.createRebalanceFactory();
     rbFactory.excludeRegions(excludeRegionNames);
     rbFactory.includeRegions(includeRegionNames);
-    RebalanceResults results = null;
+    RebalanceResults results;
 
     if (simulate.equals("true")) {
       op = rbFactory.simulate();
@@ -66,17 +63,21 @@ public class RebalanceFunction implements InternalFunction {
       results = op.getResults();
       logger.info("Starting RebalanceFunction got results = {}", results);
       StringBuilder str1 = new StringBuilder();
-      str1.append(results.getTotalBucketCreateBytes() + "," + results.getTotalBucketCreateTime()
-          + "," + results.getTotalBucketCreatesCompleted() + ","
-          + results.getTotalBucketTransferBytes() + "," + results.getTotalBucketTransferTime() + ","
-          + results.getTotalBucketTransfersCompleted() + "," + results.getTotalPrimaryTransferTime()
-          + "," + results.getTotalPrimaryTransfersCompleted() + "," + results.getTotalTime() + ","
-          + results.getTotalMembersExecutedOn() + "," + String.join(",", includeRegionNames));
+      str1.append(results.getTotalBucketCreateBytes()).append(",")
+          .append(results.getTotalBucketCreateTime()).append(",")
+          .append(results.getTotalBucketCreatesCompleted()).append(",")
+          .append(results.getTotalBucketTransferBytes()).append(",")
+          .append(results.getTotalBucketTransferTime()).append(",")
+          .append(results.getTotalBucketTransfersCompleted()).append(",")
+          .append(results.getTotalPrimaryTransferTime()).append(",")
+          .append(results.getTotalPrimaryTransfersCompleted()).append(",")
+          .append(results.getTotalTime()).append(",").append(results.getTotalMembersExecutedOn())
+          .append(",").append(String.join(",", includeRegionNames));
 
       logger.info("Starting RebalanceFunction str1={}", str1);
       context.getResultSender().lastResult(str1.toString());
     } catch (CancellationException e) {
-      logger.info("Starting RebalanceFunction CancellationException: ", e.getMessage(), e);
+      logger.info("Starting RebalanceFunction CancellationException: {} {}", e.getMessage(), e);
       context.getResultSender().lastResult("CancellationException1 " + e.getMessage());
     } catch (InterruptedException e) {
       logger.info("Starting RebalanceFunction InterruptedException: {}", e.getMessage(), e);

@@ -13,23 +13,26 @@
  * the License.
  */
 
-package org.apache.geode.management.runtime;
+package org.apache.geode.management.operation;
 
-import org.apache.geode.annotations.Experimental;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@Experimental
-public class IndexInfo extends RuntimeInfo {
-  @Override
-  public boolean equals(Object o) {
-    if (o instanceof IndexInfo) {
-      return super.equals(o);
-    } else {
-      return false;
-    }
+import org.junit.Before;
+import org.junit.Test;
+
+public class RestoreRedundancyRequestTest {
+  private RestoreRedundancyRequest request;
+
+  @Before
+  public void before() throws Exception {
+    request = new RestoreRedundancyRequest();
   }
 
-  @Override
-  public int hashCode() {
-    return super.hashCode();
+  @Test
+  public void initialState() throws Exception {
+    assertThat(request.getExcludeRegions()).isNull();
+    assertThat(request.getIncludeRegions()).isNull();
+    assertThat(request.getReassignPrimaries()).isTrue();
+    assertThat(request.getOperator()).isNull();
   }
 }

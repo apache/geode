@@ -24,6 +24,7 @@ import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
 /**
  * Provides support for managing resources used by the local {@link org.apache.geode.cache.Cache}.
