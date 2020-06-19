@@ -16,8 +16,6 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.ExecutionException;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
