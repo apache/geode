@@ -22,7 +22,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.session.StandardSession;
 
-public class Tomcat9DeltaSessionManager extends DeltaSessionManager {
+public class Tomcat9DeltaSessionManager extends DeltaSessionManager<Tomcat9CommitSessionValve> {
 
   /**
    * Prepare for the beginning of active use of the public methods of this component. This method
@@ -135,6 +135,11 @@ public class Tomcat9DeltaSessionManager extends DeltaSessionManager {
   @Override
   protected Pipeline getPipeline() {
     return getTheContext().getPipeline();
+  }
+
+  @Override
+  protected Tomcat9CommitSessionValve createCommitSessionValve() {
+    return new Tomcat9CommitSessionValve();
   }
 
   @Override
