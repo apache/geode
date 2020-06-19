@@ -25,6 +25,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.pdx.internal.PdxInputStream;
 
 /**
@@ -77,7 +78,7 @@ public class BlobHelper {
   /**
    * A blob is a serialized Object. This method returns the deserialized object.
    */
-  public static Object deserializeBlob(byte[] blob, Version version, ByteArrayDataInput in)
+  public static Object deserializeBlob(byte[] blob, VersionOrdinal version, ByteArrayDataInput in)
       throws IOException, ClassNotFoundException {
     Object result;
     final long start = startDeserialization();

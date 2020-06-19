@@ -80,6 +80,7 @@ import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -237,7 +238,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
     Set<InternalDistributedMember> remoteMembers = region.getRegionAdvisor().adviseAllPRNodes();
-    Version localVersion =
+    final VersionOrdinal localVersion =
         cache.getDistributionManager().getDistributionManagerId().getVersionObject();
     if (!remoteMembers.isEmpty()) {
       for (InternalDistributedMember remoteMember : remoteMembers) {

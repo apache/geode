@@ -76,6 +76,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -938,7 +939,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     return hasFlagsField(StaticSerialization.getVersionForDataStream(in));
   }
 
-  private boolean hasFlagsField(final Version version) {
+  private boolean hasFlagsField(final VersionOrdinal version) {
     return version.compareTo(Version.GEODE_1_7_0) >= 0;
   }
 
@@ -1521,7 +1522,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         this.preserializedBuffer.rewind();
         this.preserializedBuffer.sendTo(out);
       } else if (this.refCount > 1) {
-        Version v = StaticSerialization.getVersionForDataStream(out);
+        final VersionOrdinal v = StaticSerialization.getVersionForDataStream(out);
         HeapDataOutputStream hdos = new HeapDataOutputStream(1024, v);
         basicToData(hdos, context, useShadowKey);
         this.preserializedBuffer = hdos;

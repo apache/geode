@@ -60,6 +60,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -512,7 +513,7 @@ public abstract class StreamingOperation {
       this.msgNum = in.readInt();
       this.lastMsg = in.readBoolean();
       this.pdxReadSerialized = in.readBoolean();
-      Version senderVersion = StaticSerialization.getVersionForDataStream(in);
+      final VersionOrdinal senderVersion = StaticSerialization.getVersionForDataStream(in);
       boolean isSenderAbove_8_1 = senderVersion.compareTo(Version.GFE_81) > 0;
       InternalCache cache = null;
       Boolean initialPdxReadSerialized = false;

@@ -50,7 +50,7 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
   protected LinkedList<ByteBuffer> chunks = null;
   protected int size = 0;
   protected boolean ignoreWrites = false; // added for bug 39569
-  protected Version version;
+  protected VersionOrdinal version;
   protected boolean doNotCopy;
   protected ByteBuffer buffer;
   /**
@@ -62,11 +62,11 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
   private Error expansionException = null;
   private int memoPosition;
 
-  public BufferDataOutputStream(int initialCapacity, Version version) {
+  public BufferDataOutputStream(int initialCapacity, VersionOrdinal version) {
     this(initialCapacity, version, false);
   }
 
-  public BufferDataOutputStream(Version version) {
+  public BufferDataOutputStream(VersionOrdinal version) {
     this(INITIAL_CAPACITY, version, false);
   }
 
@@ -89,9 +89,8 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
 
   /**
    * @param doNotCopy if true then byte arrays/buffers/sources will not be copied to this hdos but
-   *        instead referenced.
    */
-  public BufferDataOutputStream(int allocSize, Version version, boolean doNotCopy) {
+  public BufferDataOutputStream(int allocSize, VersionOrdinal version, boolean doNotCopy) {
     if (allocSize < SMALLEST_CHUNK_SIZE) {
       this.MIN_CHUNK_SIZE = SMALLEST_CHUNK_SIZE;
     } else {
@@ -102,7 +101,7 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
     this.doNotCopy = doNotCopy;
   }
 
-  public BufferDataOutputStream(ByteBuffer initialBuffer, Version version,
+  public BufferDataOutputStream(ByteBuffer initialBuffer, VersionOrdinal version,
       boolean doNotCopy) {
     if (initialBuffer.position() != 0) {
       initialBuffer = initialBuffer.slice();
@@ -163,7 +162,7 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * {@inheritDoc}
    */
   @Override
-  public Version getVersion() {
+  public VersionOrdinal getVersion() {
     return version;
   }
 

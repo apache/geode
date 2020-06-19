@@ -23,6 +23,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.pdx.FieldType;
 
 public class PdxField implements DataSerializable, Comparable<PdxField> {
@@ -172,7 +173,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
       // to set identityField to true.
       // For this reason the pdx delete-field command should only be used after
       // all member have been upgraded to 8.1 or later.
-      Version sourceVersion = StaticSerialization.getVersionForDataStream(out);
+      final VersionOrdinal sourceVersion = StaticSerialization.getVersionForDataStream(out);
       if (sourceVersion.compareTo(Version.GFE_81) >= 0) {
         if (this.deleted) {
           bits |= DELETED_BIT;

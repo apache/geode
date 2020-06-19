@@ -46,6 +46,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 
 /**
  * An implementation of {@link MemberIdentifier}
@@ -514,7 +515,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       return version;
     } else {
       // prior to 7.1 member IDs did not serialize their version information
-      Version v = StaticSerialization.getVersionForDataStreamOrNull(in);
+      final VersionOrdinal v = StaticSerialization.getVersionForDataStreamOrNull(in);
       if (v != null) {
         return v.ordinal();
       }
@@ -925,7 +926,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     // write name last to fix bug 45160
     StaticSerialization.writeString(memberData.getName(), out);
 
-    Version outputVersion = StaticSerialization.getVersionForDataStream(out);
+    final VersionOrdinal outputVersion = StaticSerialization.getVersionForDataStream(out);
     if (0 <= outputVersion.compareTo(Version.GFE_90)
         && outputVersion.compareTo(Version.GEODE_1_1_0) < 0) {
       memberData.writeAdditionalData(out);
@@ -983,7 +984,8 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     memberData.setVersion(v);
   }
 
-  public Version getVersionObject() {
+  @Override
+  public VersionOrdinal getVersionObject() {
     return memberData.getVersion();
   }
 

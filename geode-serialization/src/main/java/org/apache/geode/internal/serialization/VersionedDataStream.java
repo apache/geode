@@ -37,5 +37,5 @@ public interface VersionedDataStream {
    * {@link Version}, then this member cannot do any adjustment to serialization and its the remote
    * peer's responsibility to adjust the serialization/deserialization according to this peer.
    */
-  Version getVersion();
+  VersionOrdinal getVersion();
 }

@@ -45,7 +45,7 @@ public class VersionedDataInputStream extends DataInputStream implements Version
    * {@inheritDoc}
    */
   @Override
-  public Version getVersion() {
+  public VersionOrdinal getVersion() {
     return this.version;
   }
 

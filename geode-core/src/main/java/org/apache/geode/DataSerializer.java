@@ -64,6 +64,7 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -1235,7 +1236,7 @@ public abstract class DataSerializer {
       if (object instanceof HeapDataOutputStream) {
         hdos = (HeapDataOutputStream) object;
       } else {
-        Version v = StaticSerialization.getVersionForDataStreamOrNull(out);
+        VersionOrdinal v = StaticSerialization.getVersionForDataStreamOrNull(out);
         if (v == null) {
           v = Version.CURRENT;
         }
