@@ -119,7 +119,7 @@ public class RestoreRedundancyPerformer
       DistributedMember targetMember) {
     ResultCollector<?, ?> rc =
         ManagementUtils.executeFunction(function, args, Collections.singleton(targetMember));
-    List<RestoreRedundancyResults> results = (List<RestoreRedundancyResults>)(rc.getResult());
+    List<RestoreRedundancyResults> results = (List<RestoreRedundancyResults>) (rc.getResult());
     return results.isEmpty() ? null : results.get(0);
   }
 
