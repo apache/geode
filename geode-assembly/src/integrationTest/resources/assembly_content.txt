@@ -840,7 +840,11 @@ javadoc/org/apache/geode/modules/session/catalina/AbstractCacheLifecycleListener
 javadoc/org/apache/geode/modules/session/catalina/AbstractSessionCache.html
 javadoc/org/apache/geode/modules/session/catalina/ClientServerCacheLifecycleListener.html
 javadoc/org/apache/geode/modules/session/catalina/ClientServerSessionCache.html
-javadoc/org/apache/geode/modules/session/catalina/CommitSessionValve.html
+javadoc/org/apache/geode/modules/session/catalina/AbstractCommitSessionValve.html
+javadoc/org/apache/geode/modules/session/catalina/Tomcat6CommitSessionValve.html
+javadoc/org/apache/geode/modules/session/catalina/Tomcat7CommitSessionValve.html
+javadoc/org/apache/geode/modules/session/catalina/Tomcat8CommitSessionValve.html
+javadoc/org/apache/geode/modules/session/catalina/Tomcat9CommitSessionValve.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession7.html
 javadoc/org/apache/geode/modules/session/catalina/DeltaSession8.html
