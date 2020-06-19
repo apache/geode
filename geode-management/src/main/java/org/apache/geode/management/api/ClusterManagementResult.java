@@ -61,7 +61,8 @@ public class ClusterManagementResult {
     /** async operation launched successfully */
     ACCEPTED,
     /** async operation has not yet completed */
-    IN_PROGRESS
+    IN_PROGRESS,
+    LOCATOR_IS_OFFLINE
   }
 
   // we will always have statusCode when the object is created
@@ -145,7 +146,7 @@ public class ClusterManagementResult {
   @JsonIgnore
   public boolean isSuccessful() {
     return statusCode == StatusCode.OK || statusCode == StatusCode.ACCEPTED
-        || statusCode == StatusCode.IN_PROGRESS;
+        || statusCode == StatusCode.IN_PROGRESS || statusCode == StatusCode.LOCATOR_IS_OFFLINE;
   }
 
   /**

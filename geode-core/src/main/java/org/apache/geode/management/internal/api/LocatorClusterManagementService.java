@@ -480,6 +480,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (operationState == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }
+
     return toClusterManagementOperationResult(operationState);
   }
 
@@ -493,7 +494,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
       OperationState<A, V> operationState) {
     StatusCode resultStatus = StatusCode.OK;
     String resultMessage = "";
-    if (operationState.getOperationEnd() == null) {
+    if (cache.getMyId() != operationState.getLocator() && (!cache.getDistributedSystem().getAllOtherMembers().contains(operationState.getLocator()))) {
+      resultStatus = StatusCode.LOCATOR_IS_OFFLINE;
+    }
+    else if (operationState.getOperationEnd() == null) {
       resultStatus = StatusCode.IN_PROGRESS;
     } else if (operationState.getThrowable() != null) {
       resultStatus = StatusCode.ERROR;

@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.operation;
 import java.util.Date;
 import java.util.Objects;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
@@ -35,6 +36,17 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
   private V result;
   private Throwable throwable;
 
+  public InternalDistributedMember getLocator() {
+    return locator;
+  }
+
+  public void setLocator(
+      InternalDistributedMember locator) {
+    this.locator = locator;
+  }
+
+  private InternalDistributedMember locator;
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -49,7 +61,8 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
         Objects.equals(getOperationStart(), that.getOperationStart()) &&
         Objects.equals(getOperationEnd(), that.getOperationEnd()) &&
         Objects.equals(getResult(), that.getResult()) &&
-        Objects.equals(getThrowable(), that.getThrowable());
+        Objects.equals(getThrowable(), that.getThrowable()) &&
+        Objects.equals(getLocator(), that.getLocator());
   }
 
   @Override

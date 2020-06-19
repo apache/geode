@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.management.api.ClusterManagementOperation;
@@ -74,6 +75,7 @@ public class RegionOperationStateStore
     String opId = uniqueIdSupplier.get();
 
     OperationState operationInstance = new OperationState(opId, operation, new Date());
+
     region.put(opId, operationInstance);
 
     return opId;
@@ -109,6 +111,13 @@ public class RegionOperationStateStore
     OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationState =
         region.get(opId);
     operationState.setOperationEnd(new Date(), result, exception);
+    region.put(opId, operationState);
+  }
+
+  public void recordLocator(String opId, InternalDistributedMember member) {
+    OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationState =
+        region.get(opId);
+    operationState.setLocator(member);
     region.put(opId, operationState);
   }
 

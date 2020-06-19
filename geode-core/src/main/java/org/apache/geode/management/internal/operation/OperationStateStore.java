@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.List;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -52,6 +53,8 @@ public interface OperationStateStore {
    * Records that the given operation has completed with the given result or exception.
    */
   <V extends OperationResult> void recordEnd(String opId, V result, Throwable exception);
+
+  void recordLocator(String opId, InternalDistributedMember member);
 
   /**
    * Removes an existing {@link OperationState}.

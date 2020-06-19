@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -104,6 +105,10 @@ public class OperationHistoryManager {
    */
   public void recordEnd(String opId, OperationResult result, Throwable cause) {
     operationStateStore.recordEnd(opId, result, cause);
+  }
+
+  public void recordLocator(String opId, InternalDistributedMember member) {
+    operationStateStore.recordLocator(opId, member);
   }
 
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list(
