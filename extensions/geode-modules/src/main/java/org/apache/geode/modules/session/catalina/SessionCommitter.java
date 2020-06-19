@@ -15,26 +15,13 @@
 
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.catalina.Manager;
-
-
-@SuppressWarnings("serial")
-public class DeltaSession8 extends DeltaSession {
-  /**
-   * Construct a new <code>Session</code> associated with no <code>Manager</code>. The
-   * <code>Manager</code> will be assigned later using {@link #setOwner(Object)}.
-   */
-  @SuppressWarnings("unused")
-  public DeltaSession8() {
-    super();
-  }
+/**
+ * Lambda interface for committing session data.
+ */
+interface SessionCommitter {
 
   /**
-   * Construct a new Session associated with the specified Manager.
-   *
-   * @param manager The manager with which this Session is associated
+   * Invoked to commit session data.
    */
-  DeltaSession8(Manager manager) {
-    super(manager);
-  }
+  void commit();
 }

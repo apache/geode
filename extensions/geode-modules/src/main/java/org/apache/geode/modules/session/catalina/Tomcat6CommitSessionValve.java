@@ -15,26 +15,13 @@
 
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.catalina.Manager;
+import org.apache.catalina.connector.Response;
 
+@Deprecated
+public final class Tomcat6CommitSessionValve extends AbstractCommitSessionValve {
 
-@SuppressWarnings("serial")
-public class DeltaSession8 extends DeltaSession {
-  /**
-   * Construct a new <code>Session</code> associated with no <code>Manager</code>. The
-   * <code>Manager</code> will be assigned later using {@link #setOwner(Object)}.
-   */
-  @SuppressWarnings("unused")
-  public DeltaSession8() {
-    super();
-  }
-
-  /**
-   * Construct a new Session associated with the specified Manager.
-   *
-   * @param manager The manager with which this Session is associated
-   */
-  DeltaSession8(Manager manager) {
-    super(manager);
+  @Override
+  protected Response wrapResponse(Response response) {
+    return response;
   }
 }
