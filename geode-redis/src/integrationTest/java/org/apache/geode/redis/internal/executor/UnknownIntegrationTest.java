@@ -13,9 +13,9 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.key;
+package org.apache.geode.redis.internal.executor;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -27,10 +27,11 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public class PexpireIntegrationTest {
+public class UnknownIntegrationTest {
 
   public static Jedis jedis;
-  public static int REDIS_CLIENT_TIMEOUT = 10000000;
+  public static int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -46,54 +47,13 @@ public class PexpireIntegrationTest {
   }
 
   @AfterClass
-  public static void classLevelTearDown() {
+  public static void tearDown() {
     jedis.close();
   }
 
   @Test
-  public void should_SetExpiration_givenKeyTo_StringValueInMilliSeconds() {
-
-    String key = "key";
-    String value = "value";
-    long millisecondsToLive = 20000L;
-
-    jedis.set(key, value);
-    Long timeToLive = jedis.ttl(key);
-    assertThat(timeToLive).isEqualTo(-1);
-
-    jedis.pexpire(key, millisecondsToLive);
-
-    timeToLive = jedis.ttl(key);
-    assertThat(timeToLive).isLessThanOrEqualTo(20);
-    assertThat(timeToLive).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void should_removeKey_AfterExpirationPeriod() {
-    String key = "key";
-    String value = "value";
-    jedis.set(key, value);
-
-    jedis.pexpire(key, 10);
-
-    GeodeAwaitility.await().until(() -> jedis.get(key) == null);
-  }
-
-  @Test
-  public void should_removeSetKey_AfterExpirationPeriod() {
-    String key = "key";
-    String value = "value";
-    jedis.sadd(key, value);
-
-    jedis.pexpire(key, 10);
-    GeodeAwaitility.await().until(() -> !jedis.exists(key));
-  }
-
-  @Test
-  public void should_passivelyExpireKeys() {
-    jedis.sadd("key", "value");
-    jedis.pexpire("key", 100);
-
-    GeodeAwaitility.await().until(() -> jedis.keys("key").isEmpty());
+  public void shouldReturnUnknownCommandError() {
+    assertThatThrownBy(() -> jedis.sendCommand(() -> "fhqwhgads".getBytes()))
+        .hasMessageContaining("Unable to process unknown command fhqwhgads");
   }
 }

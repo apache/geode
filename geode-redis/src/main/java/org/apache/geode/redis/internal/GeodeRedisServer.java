@@ -49,7 +49,6 @@ import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -342,7 +341,6 @@ public class GeodeRedisServer {
     this.cache = cache;
   }
 
-  @VisibleForTesting
   public RegionProvider getRegionProvider() {
     return regionProvider;
   }
@@ -354,7 +352,6 @@ public class GeodeRedisServer {
   public EventLoopGroup getSubscriberGroup() {
     return subscriberGroup;
   }
-
 
   private void initializeRedis() {
     synchronized (cache) {

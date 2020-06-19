@@ -84,12 +84,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.isAuthenticated = password == null;
   }
 
-  private void flushChannel() {
-    while (needChannelFlush.getAndSet(false)) {
-      channel.flush();
-    }
-  }
-
   public ChannelFuture writeToChannel(ByteBuf message) {
     return channel.writeAndFlush(message, channel.newPromise());
   }

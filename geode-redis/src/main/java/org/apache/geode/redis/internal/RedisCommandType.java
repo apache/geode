@@ -122,7 +122,7 @@ public enum RedisCommandType {
 
   /*************** Connection ****************/
   AUTH(new AuthExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  PING(new PingExecutor(), SUPPORTED),
+  PING(new PingExecutor(), SUPPORTED, new MaximumParameterRequirements(2)),
   QUIT(new QuitExecutor(), SUPPORTED),
 
   /*************** Keys ******************/
