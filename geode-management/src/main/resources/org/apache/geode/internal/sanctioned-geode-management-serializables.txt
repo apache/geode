@@ -7,6 +7,8 @@ org/apache/geode/management/configuration/AbstractConfiguration,true,-6612840641
 org/apache/geode/management/configuration/AutoSerializer,true,1,patterns:java/util/List,portable:java/lang/Boolean
 org/apache/geode/management/configuration/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties
 org/apache/geode/management/configuration/Deployment,true,6992732279452865384,deployedBy:java/lang/String,deployedTime:java/lang/String,jarFileName:java/lang/String
+org/apache/geode/management/configuration/DiskDir,false,dirSize:java/lang/String,name:java/lang/String
+org/apache/geode/management/configuration/DiskStore,false,allowForceCompaction:java/lang/Boolean,autoCompact:java/lang/Boolean,compactionThreshold:java/lang/Integer,directories:java/util/List,diskUsageCriticalPercentage:java/lang/Float,diskUsageWarningPercentage:java/lang/Float,id:java/lang/String,maxOplogSizeInBytes:java/lang/Long,name:java/lang/String,queueSize:java/lang/Integer,timeInterval:java/lang/Long,writeBufferSize:java/lang/Integer
 org/apache/geode/management/configuration/GatewayReceiver,false,endPort:java/lang/Integer,gatewayTransportFilters:java/util/List,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
 org/apache/geode/management/configuration/GroupableConfiguration,false,group:java/lang/String
 org/apache/geode/management/configuration/Index,false,expression:java/lang/String,indexType:org/apache/geode/management/configuration/IndexType,name:java/lang/String,regionPath:java/lang/String
@@ -28,6 +30,7 @@ org/apache/geode/management/operation/RebalanceOperation,false,excludeRegions:ja
 org/apache/geode/management/operation/RestoreRedundancyRequest,true,-3896185413062876188,excludeRegions:java/util/List,includeRegions:java/util/List,operator:java/lang/String,reassignPrimaries:boolean
 org/apache/geode/management/runtime/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,maxConnections:int,maxThreads:int,port:int
 org/apache/geode/management/runtime/DeploymentInfo,false,jarLocation:java/lang/String,lastModified:java/lang/String
+org/apache/geode/management/runtime/DiskStoreInfo,false
 org/apache/geode/management/runtime/GatewayReceiverInfo,false,bindAddress:java/lang/String,connectedSenders:java/lang/String[],hostnameForSenders:java/lang/String,port:int,running:boolean,senderCount:int
 org/apache/geode/management/runtime/IndexInfo,false
 org/apache/geode/management/runtime/MemberInformation,true,1,cacheServerList:java/util/List,cacheXmlFilePath:java/lang/String,clientCount:int,cpuUsage:double,groups:java/lang/String,heapUsage:long,host:java/lang/String,hostedRegions:java/util/Set,httpServiceBindAddress:java/lang/String,httpServicePort:int,id:java/lang/String,initHeapSize:long,isCoordinator:boolean,isSecured:boolean,isServer:boolean,locatorPort:int,locators:java/lang/String,logFilePath:java/lang/String,maxHeapSize:long,offHeapMemorySize:java/lang/String,processId:int,serverBindAddress:java/lang/String,statArchiveFilePath:java/lang/String,status:java/lang/String,webSSL:boolean,workingDirPath:java/lang/String

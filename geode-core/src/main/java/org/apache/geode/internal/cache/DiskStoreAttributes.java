@@ -247,4 +247,64 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
       this.diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
     }
   }
+
+  public static void checkMinAndMaxOplogSize(long maxOplogSize) {
+    long MAX = Long.MAX_VALUE / (1024 * 1024);
+    if (maxOplogSize > MAX) {
+      throw new IllegalArgumentException(
+          String.format(
+              "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
+              new Object[] {"max oplog size", maxOplogSize, MAX}));
+    }
+    checkMinOplogSize(maxOplogSize);
+  }
+
+  public static void checkMinOplogSize(long maxOplogSize) {
+    if (maxOplogSize < 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
+              maxOplogSize));
+    }
+  }
+
+  public static void checkQueueSize(int queueSize) {
+    if (queueSize < 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Queue size specified has to be a non-negative number and the value given %s is not acceptable",
+              queueSize));
+    }
+  }
+
+  public static void checkWriteBufferSize(int writeBufferSize) {
+    if (writeBufferSize < 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Write buffer size specified has to be a non-negative number and the value given %s is not acceptable",
+              writeBufferSize));
+    }
+  }
+
+  /**
+   * Verify all directory sizes are positive
+   */
+  public static void verifyNonNegativeDirSize(int[] sizes) {
+    for (int size : sizes) {
+      if (size < 0) {
+        throw new IllegalArgumentException(
+            String.format("Dir size cannot be negative : %s",
+                size));
+      }
+    }
+  }
+
+  public static void checkTimeInterval(long timeInterval) {
+    if (timeInterval < 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Time Interval specified has to be a non-negative number and the value given %s is not acceptable",
+              timeInterval));
+    }
+  }
 }
