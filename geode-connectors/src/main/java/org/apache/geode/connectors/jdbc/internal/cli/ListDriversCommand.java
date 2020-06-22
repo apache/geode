@@ -24,7 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -32,7 +32,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class ListDriversCommand extends SingleGfshCommand {
+public class ListDriversCommand extends GfshCommand {
 
   static final String LIST_DRIVERS = "list drivers";
   static final String LIST_DRIVERS__HELP = EXPERIMENTAL

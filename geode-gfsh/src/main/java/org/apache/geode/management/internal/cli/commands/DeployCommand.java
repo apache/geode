@@ -227,4 +227,9 @@ public class DeployCommand extends GfshCommand {
       return result;
     }
   }
+
+  @Override
+  public boolean affectsClusterConfiguration() {
+    return true;
+  }
 }

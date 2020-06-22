@@ -22,7 +22,10 @@ import org.apache.geode.cache.configuration.CacheConfig;
 
 /**
  * Command class that extends this class can only have one single command method,
- * i.e only one method that is annotated with @CliCommand.
+ * * i.e only one method that is annotated with @CliCommand.
+ *
+ * this is also specific for commands that will need to update cluster configuration. Child classes
+ * are required to implement the "updateConfigForGroup" method.
  */
 @Experimental
 public abstract class SingleGfshCommand extends GfshCommand {
@@ -39,7 +42,11 @@ public abstract class SingleGfshCommand extends GfshCommand {
    *        return value of your command method.
    * @return a boolean indicating whether a change to the cluster configuration was persisted.
    */
-  public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
-    return false;
+  public abstract boolean updateConfigForGroup(String group, CacheConfig config,
+      Object configObject);
+
+  @Override
+  public boolean affectsClusterConfiguration() {
+    return true;
   }
 }

@@ -17,12 +17,14 @@ package org.apache.geode.management.internal.cli.remote;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,9 +39,11 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
@@ -53,6 +57,7 @@ public class CommandExecutorTest {
 
   private GfshParseResult parseResult;
   private CommandExecutor executor;
+  private DistributedLockService dlockService;
   private ResultModel result;
   private SingleGfshCommand testCommand;
   private InternalConfigurationPersistenceService ccService;
@@ -62,7 +67,9 @@ public class CommandExecutorTest {
   public void setUp() {
     parseResult = mock(GfshParseResult.class);
     result = new ResultModel();
-    executor = spy(CommandExecutor.class);
+    dlockService = mock(DistributedLockService.class);
+    when(dlockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
+    executor = spy(new CommandExecutor(dlockService));
     testCommand = mock(SingleGfshCommand.class,
         withSettings().extraInterfaces(UpdateAllConfigurationGroupsMarker.class));
     ccService =
@@ -88,6 +95,8 @@ public class CommandExecutorTest {
     doReturn(result).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(thisResult).isSameAs(result);
+    verify(executor).lockCMS(any());
+    verify(executor).unlockCMS(false);
   }
 
   @Test
@@ -103,6 +112,8 @@ public class CommandExecutorTest {
     Object thisResult = executor.execute(parseResult);
     assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
+    verify(executor).lockCMS(any());
+    verify(executor).unlockCMS(false);
   }
 
   @Test
@@ -111,6 +122,8 @@ public class CommandExecutorTest {
         any());
     assertThatThrownBy(() -> executor.execute(parseResult))
         .isInstanceOf(NotAuthorizedException.class);
+    verify(executor).lockCMS(any());
+    verify(executor).unlockCMS(false);
   }
 
   @Test
@@ -120,6 +133,8 @@ public class CommandExecutorTest {
     Object thisResult = executor.execute(parseResult);
     assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
+    verify(executor).lockCMS(any());
+    verify(executor).unlockCMS(false);
   }
 
   @Test
@@ -129,6 +144,8 @@ public class CommandExecutorTest {
     Object thisResult = executor.execute(parseResult);
     assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
+    verify(executor).lockCMS(any());
+    verify(executor).unlockCMS(false);
   }
 
   @Test
@@ -137,6 +154,8 @@ public class CommandExecutorTest {
     Object thisResult = executor.execute(parseResult);
     assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
+    verify(executor).lockCMS(any());
+    verify(executor).unlockCMS(false);
   }
 
   @Test
@@ -146,6 +165,8 @@ public class CommandExecutorTest {
     Object thisResult = executor.execute(parseResult);
     assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.OK);
     assertThat(thisResult.toString()).contains("Skipping: my message here");
+    verify(executor).lockCMS(any());
+    verify(executor).unlockCMS(false);
   }
 
   @Test
@@ -155,6 +176,8 @@ public class CommandExecutorTest {
     Object thisResult = executor.execute(parseResult);
     assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
+    verify(executor).lockCMS(any());
+    verify(executor).unlockCMS(false);
   }
 
   @Test
@@ -212,5 +235,46 @@ public class CommandExecutorTest {
     Object thisResult = executor.invokeCommand(testCommand, parseResult);
 
     verify(testCommand, times(1)).updateConfigForGroup(eq("cluster"), any(), any());
+  }
+
+  @Test
+  public void nullDlockServiceWillNotLock() throws Exception {
+    CommandExecutor nullLockServiceExecutor = new CommandExecutor(null);
+    assertThat(nullLockServiceExecutor.lockCMS(new Object())).isEqualTo(false);
+  }
+
+  @Test
+  public void lockCms() throws Exception {
+    assertThat(executor.lockCMS(null)).isEqualTo(false);
+    assertThat(executor.lockCMS(new Object())).isEqualTo(false);
+    GfshCommand gfshCommand = mock(GfshCommand.class);
+    when(gfshCommand.getConfigurationPersistenceService()).thenReturn(null);
+    assertThat(executor.lockCMS(gfshCommand)).isEqualTo(false);
+
+    when(gfshCommand.getConfigurationPersistenceService()).thenReturn(ccService);
+    when(gfshCommand.affectsClusterConfiguration()).thenReturn(false);
+    assertThat(executor.lockCMS(gfshCommand)).isEqualTo(false);
+
+    when(gfshCommand.affectsClusterConfiguration()).thenReturn(true);
+    assertThat(executor.lockCMS(gfshCommand)).isEqualTo(true);
+    verify(dlockService).lock(any(), eq(-1L), eq(-1L));
+  }
+
+  @Test
+  public void verifyLockUnlockIsCalledWhenCommandUpdatesCC() throws Exception {
+    when(testCommand.getConfigurationPersistenceService()).thenReturn(ccService);
+    when(testCommand.affectsClusterConfiguration()).thenReturn(true);
+    executor.execute(testCommand, parseResult);
+    verify(dlockService).lock(any(), eq(-1L), eq(-1L));
+    verify(dlockService).unlock(any());
+  }
+
+  @Test
+  public void verifyLockUnlockIsNotCalledWhenCommandDoesNotUpdatesCC() throws Exception {
+    when(testCommand.getConfigurationPersistenceService()).thenReturn(ccService);
+    when(testCommand.affectsClusterConfiguration()).thenReturn(false);
+    executor.execute(testCommand, parseResult);
+    verify(dlockService, never()).lock(any(), eq(-1L), eq(-1L));
+    verify(dlockService, never()).unlock(any());
   }
 }
