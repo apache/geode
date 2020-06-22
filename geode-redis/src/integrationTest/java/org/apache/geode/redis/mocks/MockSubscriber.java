@@ -19,6 +19,7 @@ package org.apache.geode.redis.mocks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import redis.clients.jedis.JedisPubSub;
 
@@ -33,6 +34,58 @@ public class MockSubscriber extends JedisPubSub {
   public List<String> getReceivedPMessages() {
     return new ArrayList<>(receivedPMessages);
   }
+
+  public final List<UnsubscribeInfo> unsubscribeInfos =
+      Collections.synchronizedList(new ArrayList<>());
+  public final List<UnsubscribeInfo> punsubscribeInfos =
+      Collections.synchronizedList(new ArrayList<>());
+
+  @Override
+  public void onUnsubscribe(String channel, int subscribedChannels) {
+    unsubscribeInfos.add(new UnsubscribeInfo(channel, subscribedChannels));
+  }
+
+  @Override
+  public void onPUnsubscribe(String pattern, int subscribedChannels) {
+    punsubscribeInfos.add(new UnsubscribeInfo(pattern, subscribedChannels));
+  }
+
+  public static class UnsubscribeInfo {
+    public final String channel;
+    public final int count;
+
+    public UnsubscribeInfo(String channel, int count) {
+      this.channel = channel;
+      this.count = count;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof UnsubscribeInfo)) {
+        return false;
+      }
+      UnsubscribeInfo that = (UnsubscribeInfo) o;
+      return count == that.count &&
+          Objects.equals(channel, that.channel);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(channel, count);
+    }
+
+    @Override
+    public String toString() {
+      return "UnsubscribeInfo{" +
+          "channel='" + channel + '\'' +
+          ", count=" + count +
+          '}';
+    }
+  }
+
 
   @Override
   public void onMessage(String channel, String message) {
