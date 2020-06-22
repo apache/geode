@@ -56,7 +56,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
   }
 
   private Collection<Collection<?>> punsubscribe(ExecutionHandlerContext context,
-                                                List<String> channelNames) {
+      List<String> channelNames) {
     Collection<Collection<?>> response = new ArrayList<>();
     for (String channel : channelNames) {
       long subscriptionCount =
