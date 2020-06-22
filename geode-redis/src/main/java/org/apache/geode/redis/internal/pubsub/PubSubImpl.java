@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -143,6 +144,20 @@ public class PubSubImpl implements PubSub {
   public long punsubscribe(GlobPattern pattern, Client client) {
     subscriptions.remove(pattern, client);
     return subscriptions.findSubscriptions(client).size();
+  }
+
+  @Override
+  public List<String> findSubscribedChannels(Client client) {
+    return subscriptions.findSubscriptions(client).stream()
+        .map(Subscription::getChannelName)
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<String> findPsubscribedChannels(Client client) {
+    return subscriptions.findSubscriptions(client).stream()
+        .map(Subscription::getChannelName)
+        .collect(Collectors.toList());
   }
 
   @VisibleForTesting

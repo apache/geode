@@ -47,4 +47,9 @@ public class DummySubscription implements Subscription {
   public List<Object> createResponse(String channel, byte[] message) {
     return null;
   }
+
+  @Override
+  public String getChannelName() {
+    return null;
+  }
 }

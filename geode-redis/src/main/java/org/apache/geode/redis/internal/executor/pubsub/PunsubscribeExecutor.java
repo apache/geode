@@ -17,10 +17,14 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -33,17 +37,38 @@ public class PunsubscribeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    byte[] pattern = command.getProcessedCommand().get(1);
-    long subscriptionCount =
-        context
-            .getPubSub()
-            .punsubscribe(new GlobPattern(new String(pattern)), context.getClient());
 
-    ArrayList<Object> items = new ArrayList<>();
-    items.add("punsubscribe");
-    items.add(pattern);
-    items.add(subscriptionCount);
+    List<String> channelNames = extractChannelNames(command);
+    if (channelNames.isEmpty()) {
+      channelNames = context.getPubSub().findSubscribedChannels(context.getClient());
+    }
 
-    return RedisResponse.array(items);
+    Collection<Collection<?>> response = punsubscribe(context, channelNames);
+
+    return RedisResponse.flattenedArray(response);
+  }
+
+  private List<String> extractChannelNames(Command command) {
+    return command.getProcessedCommandWrappers().stream()
+        .skip(1)
+        .map(ByteArrayWrapper::toString)
+        .collect(Collectors.toList());
+  }
+
+  private Collection<Collection<?>> punsubscribe(ExecutionHandlerContext context,
+                                                List<String> channelNames) {
+    Collection<Collection<?>> response = new ArrayList<>();
+    for (String channel : channelNames) {
+      long subscriptionCount =
+          context.getPubSub().punsubscribe(new GlobPattern(channel), context.getClient());
+
+      ArrayList<Object> oneItem = new ArrayList<>();
+      oneItem.add("punsubscribe");
+      oneItem.add(channel);
+      oneItem.add(subscriptionCount);
+
+      response.add(oneItem);
+    }
+    return response;
   }
 }

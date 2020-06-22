@@ -16,34 +16,57 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class UnsubscribeExecutor extends AbstractExecutor {
-  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
 
-    byte[] channelName = commandElems.get(1);
-    long subscriptionCount =
-        context.getPubSub().unsubscribe(new String(channelName), context.getClient());
+    List<String> channelNames = extractChannelNames(command);
+    if (channelNames.isEmpty()) {
+      channelNames = context.getPubSub().findSubscribedChannels(context.getClient());
+    }
 
-    ArrayList<Object> items = new ArrayList<>();
-    items.add("unsubscribe");
-    items.add(channelName);
-    items.add(subscriptionCount);
+    Collection<Collection<?>> response = unsubscribe(context, channelNames);
 
-    return RedisResponse.array(items);
+    return RedisResponse.flattenedArray(response);
+  }
+
+  private List<String> extractChannelNames(Command command) {
+    return command.getProcessedCommandWrappers().stream()
+        .skip(1)
+        .map(ByteArrayWrapper::toString)
+        .collect(Collectors.toList());
+  }
+
+  private Collection<Collection<?>> unsubscribe(ExecutionHandlerContext context,
+                                                List<String> channelNames) {
+    Collection<Collection<?>> response = new ArrayList<>();
+    for (String channel : channelNames) {
+      long subscriptionCount =
+          context.getPubSub().unsubscribe(channel, context.getClient());
+
+      ArrayList<Object> oneItem = new ArrayList<>();
+      oneItem.add("unsubscribe");
+      oneItem.add(channel);
+      oneItem.add(subscriptionCount);
+
+      response.add(oneItem);
+    }
+    return response;
   }
 
 }

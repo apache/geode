@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -90,6 +91,23 @@ public class PubSubIntegrationTest {
   }
 
   @Test
+  public void testSubscriberAndPUnsubscribe_shouldNotWork() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> {
+      subscriber.subscribe(mockSubscriber, "salutations");
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    mockSubscriber.punsubscribe("salutations");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
   public void testPublishBinaryData() {
     byte[] expectedMessage = new byte[256];
     for (int i = 0; i < 256; i++) {
@@ -117,6 +135,33 @@ public class PubSubIntegrationTest {
   }
 
   @Test
+  public void testSubscribeAndPublishUsingBinaryData() {
+    byte[] binaryBlob = new byte[256];
+    for (int i = 0; i < 256; i++) {
+      binaryBlob[i] = (byte) i;
+    }
+
+    MockBinarySubscriber mockSubscriber = new MockBinarySubscriber();
+
+    Runnable runnable = () -> {
+      subscriber.subscribe(mockSubscriber, binaryBlob);
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    Long result = publisher.publish(binaryBlob, binaryBlob);
+    assertThat(result).isEqualTo(1);
+
+    mockSubscriber.unsubscribe(binaryBlob);
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
+
+    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(binaryBlob);
+  }
+
+  @Test
   public void testOneSubscriberSubscribingToTwoChannels() {
     List<String> expectedMessages = Arrays.asList("hello", "howdy");
     MockSubscriber mockSubscriber = new MockSubscriber();
@@ -140,6 +185,70 @@ public class PubSubIntegrationTest {
     waitFor(() -> !subscriberThread.isAlive());
 
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
+  }
+
+  @Test
+  public void testSubscribingAndUnsubscribingFromMultipleChannels() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations", "yuletide");
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
+    mockSubscriber.unsubscribe("yuletide", "salutations");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
+  public void testUnsubscribingImplicitlyFromAllChannels() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations", "yuletide");
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
+    mockSubscriber.unsubscribe();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
+  public void testPsubscribingAndPunsubscribingFromMultipleChannels() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "sal*", "yul*");
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
+    mockSubscriber.punsubscribe("yul*", "sal*");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
+  public void testPunsubscribingImplicitlyFromAllChannels() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "sal*", "yul*");
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
+    mockSubscriber.punsubscribe();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
   }
 
   @Test

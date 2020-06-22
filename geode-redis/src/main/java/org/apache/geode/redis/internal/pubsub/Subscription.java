@@ -51,4 +51,10 @@ public interface Subscription {
    * The response dependent on the type of the subscription
    */
   List<Object> createResponse(String channel, byte[] message);
+
+  /**
+   * Return the subscription name. In the case of a pattern the string representation of the
+   * pattern is returned.
+   */
+  String getChannelName();
 }
