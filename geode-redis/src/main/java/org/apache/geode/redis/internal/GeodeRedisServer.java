@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,7 +25,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -64,6 +64,7 @@ import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -255,8 +256,7 @@ public class GeodeRedisServer {
     numWorkerThreads = setNumWorkerThreads();
     singleThreadPerConnection = numWorkerThreads == 0;
     numSelectorThreads = 1;
-    expirationExecutor = Executors.newSingleThreadScheduledExecutor(
-        new NamedThreadFactory("GemFireRedis-ExpirationExecutor-", true));
+    expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
     shutdown = false;
     started = false;
 
@@ -426,13 +426,13 @@ public class GeodeRedisServer {
   @SuppressWarnings("deprecation")
   private Class<? extends ServerChannel> initializeEventLoopGroups() {
     ThreadFactory selectorThreadFactory =
-        new NamedThreadFactory("GeodeRedisServer-SelectorThread-", false);
+        new LoggingThreadFactory("GeodeRedisServer-SelectorThread-", false);
 
     ThreadFactory workerThreadFactory =
-        new NamedThreadFactory("GeodeRedisServer-WorkerThread-", true);
+        new LoggingThreadFactory("GeodeRedisServer-WorkerThread-", true);
 
     ThreadFactory subscriberThreadFactory =
-        new NamedThreadFactory("GeodeRedisServer-SubscriberThread-", true);
+        new LoggingThreadFactory("GeodeRedisServer-SubscriberThread-", true);
 
     Class<? extends ServerChannel> socketClass;
     if (singleThreadPerConnection) {
