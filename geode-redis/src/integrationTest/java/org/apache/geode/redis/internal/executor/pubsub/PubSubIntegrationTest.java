@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -125,7 +126,8 @@ public class PubSubIntegrationTest {
       waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
       mockSubscriber.unsubscribe("salutations");
-      assertThat(mockSubscriber.unsubscribeInfos).isEmpty();
+      assertThat(mockSubscriber.unsubscribeInfos).hasSize(1);
+      assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(1);
     } finally {
       // now cleanup the actual subscription
       mockSubscriber.punsubscribe("salutations");
@@ -293,9 +295,10 @@ public class PubSubIntegrationTest {
     mockSubscriber.unsubscribe();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-    assertThat(mockSubscriber.unsubscribeInfos).containsExactly(
-        new MockSubscriber.UnsubscribeInfo("salutations", 1),
-        new MockSubscriber.UnsubscribeInfo("yuletide", 0));
+
+    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.channel).collect(Collectors.toList());
+    assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
   }
 
   @Test

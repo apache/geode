@@ -88,11 +88,4 @@ public interface PubSub {
    */
   List<String> findSubscribedChannels(Client client);
 
-  /**
-   * Return a list of channel names that a client has psubscribed to
-   *
-   * @param client the Client which is to be queried
-   * @return the list of channels
-   */
-  List<String> findPsubscribedChannels(Client client);
 }
