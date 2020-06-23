@@ -99,32 +99,6 @@ public class RebalanceManagementDunitTest {
         e.printStackTrace();
       }
     }).start();
-//    new Thread(() -> {
-//      ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> startResult =
-//          client2.start(new RebalanceOperation());
-//      assertThat(startResult.isSuccessful()).isTrue();
-//      long now = System.currentTimeMillis();
-//      assertThat(startResult.getOperationStart().getTime()).isBetween(now - 60000, now);
-//
-//      ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> endResult =
-//          null;
-//      try {
-//        endResult = client2.getFuture(new RebalanceOperation(), startResult.getOperationId()).get();
-//      } catch (InterruptedException e) {
-//        e.printStackTrace();
-//      } catch (ExecutionException e) {
-//        e.printStackTrace();
-//      }
-//      long end = endResult.getOperationEnd().getTime();
-//      now = System.currentTimeMillis();
-//      assertThat(end).isBetween(now - 60000, now)
-//          .isGreaterThanOrEqualTo(endResult.getOperationStart().getTime());
-//      RebalanceResult result = endResult.getOperationResult();
-//      assertThat(result.getRebalanceRegionResults().size()).isEqualTo(2);
-//      RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
-//      assertThat(firstRegionSummary.getRegionName()).isIn("customers1", "customers2");
-//      System.out.println("Thread DONE");
-//    }).start();
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> startResult =
         client1.start(op);
     assertThat(startResult.isSuccessful()).isTrue();

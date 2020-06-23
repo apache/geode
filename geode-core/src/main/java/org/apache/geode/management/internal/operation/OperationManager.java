@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.operation;
 
-import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -73,6 +72,7 @@ public class OperationManager implements AutoCloseable {
           Throwable cause = exception == null ? null : exception.getCause();
           historyManager.recordEnd(opId, result, cause);
         });
+
     return operationState;
   }
 

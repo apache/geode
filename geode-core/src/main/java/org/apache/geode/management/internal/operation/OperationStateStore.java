@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.List;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 

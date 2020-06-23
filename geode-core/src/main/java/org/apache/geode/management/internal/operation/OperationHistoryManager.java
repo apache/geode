@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -90,7 +89,7 @@ public class OperationHistoryManager {
 
     return operationEnd.getTime() <= expirationTime;
   }
-  
+
   /**
    * Stores a new operation in the history and returns its unique identifier.
    */
