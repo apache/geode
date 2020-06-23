@@ -30,7 +30,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
-                                      ExecutionHandlerContext context) {
+      ExecutionHandlerContext context) {
 
     List<String> channelNames = extractChannelNames(command);
     if (channelNames.isEmpty()) {
@@ -50,7 +50,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
   }
 
   private Collection<Collection<?>> unsubscribe(ExecutionHandlerContext context,
-                                                List<String> channelNames) {
+      List<String> channelNames) {
     Collection<Collection<?>> response = new ArrayList<>();
 
     if (channelNames.isEmpty()) {
