@@ -167,10 +167,6 @@ public class IndexUsageInJoinQueryDistributedTest implements Serializable {
       this.productId = productId;
     }
 
-    public String getProductId() {
-      return this.productId;
-    }
-
     @Override
     public void toData(PdxWriter writer) {
       writer.writeString("productId", productId);
@@ -194,10 +190,6 @@ public class IndexUsageInJoinQueryDistributedTest implements Serializable {
       this.instrumentId = instrumentId;
       this.productId = productId;
       this.types = types;
-    }
-
-    public Map<String, String> gettypes() {
-      return this.types;
     }
 
     @Override
