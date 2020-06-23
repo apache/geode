@@ -54,7 +54,7 @@ public interface OperationStateStore {
    */
   <V extends OperationResult> void recordEnd(String opId, V result, Throwable exception);
 
-  void recordLocator(String opId, InternalDistributedMember member);
+  void recordLocator(String opId, String locator);
 
   /**
    * Removes an existing {@link OperationState}.

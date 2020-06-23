@@ -114,10 +114,11 @@ public class RegionOperationStateStore
     region.put(opId, operationState);
   }
 
-  public void recordLocator(String opId, InternalDistributedMember member) {
+  @Override
+  public void recordLocator(String opId, String locator) {
     OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationState =
         region.get(opId);
-    operationState.setLocator(member);
+    operationState.setLocator(locator);
     region.put(opId, operationState);
   }
 

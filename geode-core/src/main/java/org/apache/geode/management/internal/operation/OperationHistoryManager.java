@@ -90,7 +90,7 @@ public class OperationHistoryManager {
 
     return operationEnd.getTime() <= expirationTime;
   }
-
+  
   /**
    * Stores a new operation in the history and returns its unique identifier.
    */
@@ -107,8 +107,8 @@ public class OperationHistoryManager {
     operationStateStore.recordEnd(opId, result, cause);
   }
 
-  public void recordLocator(String opId, InternalDistributedMember member) {
-    operationStateStore.recordLocator(opId, member);
+  public void recordLocator(String opId, String locator) {
+    operationStateStore.recordLocator(opId, locator);
   }
 
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list(

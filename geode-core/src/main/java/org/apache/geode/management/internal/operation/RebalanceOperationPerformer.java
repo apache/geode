@@ -97,11 +97,6 @@ public class RebalanceOperationPerformer
               (InternalCache) cache,
               String.valueOf(simulate), excludeRegions, new FunctionExecutor());
     }
-    try {
-      Thread.sleep(10000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
     return result;
   }
 

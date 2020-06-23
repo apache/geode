@@ -63,24 +63,16 @@ public class OperationManager implements AutoCloseable {
     }
 
     String opId = historyManager.recordStart(op);
-    historyManager.recordLocator(opId, cache.getMyId());
+    historyManager.recordLocator(opId, cache.getMyId().toString());
     // get the operationState BEFORE we start the async thread
     // so that start will return a result that is not influenced
     // by how far the async thread gets in its execution.
     OperationState<A, V> operationState = historyManager.get(opId);
-
-    System.out.println("JC submit locator pid:" + ManagementFactory.getRuntimeMXBean().getName() + " tid:" + Thread.currentThread().getId());
-    System.out.println("JC submit cache.getDistributedSystem().getDistributedMember():" + cache.getDistributedSystem().getDistributedMember());
-    System.out.println("JC submit cache.getMyId()" + cache.getMyId());
-    System.out.println("JC submit cache.getInternalDistributedSystem().getDistributedMember().getId()" + cache.getInternalDistributedSystem().getDistributedMember().getId());
-    System.out.println("JC submit cache.getDistributedSystem().getAllOtherMembers()" + cache.getDistributedSystem().getAllOtherMembers());
-
     CompletableFuture.supplyAsync(() -> performer.perform(cache, op), executor)
         .whenComplete((result, exception) -> {
           Throwable cause = exception == null ? null : exception.getCause();
           historyManager.recordEnd(opId, result, cause);
         });
-
     return operationState;
   }
 
@@ -95,11 +87,6 @@ public class OperationManager implements AutoCloseable {
    */
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String opId) {
-    System.out.println("JC get locator pid:" + ManagementFactory.getRuntimeMXBean().getName() + " tid:" + Thread.currentThread().getId());
-    System.out.println("JC get cache.getDistributedSystem().getDistributedMember():" + cache.getDistributedSystem().getDistributedMember());
-    System.out.println("JC get cache.getMyId()" + cache.getMyId());
-    System.out.println("JC get cache.getInternalDistributedSystem().getDistributedMember().getId()" + cache.getInternalDistributedSystem().getDistributedMember().getId());
-    System.out.println("JC get cache.getDistributedSystem().getAllOtherMembers()" + cache.getDistributedSystem().getAllOtherMembers());
     return historyManager.get(opId);
   }
 

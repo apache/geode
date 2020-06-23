@@ -35,17 +35,18 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
   private Date operationEnd;
   private V result;
   private Throwable throwable;
+  private String locator;
 
-  public InternalDistributedMember getLocator() {
-    return locator;
+  public String getLocator() {
+    return this.locator;
   }
 
   public void setLocator(
-      InternalDistributedMember locator) {
-    this.locator = locator;
+      String locator) {
+    synchronized (this) {
+      this.locator = locator;
+    }
   }
-
-  private InternalDistributedMember locator;
 
   @Override
   public boolean equals(Object o) {
@@ -110,6 +111,7 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
       result.operationEnd = this.operationEnd;
       result.result = this.result;
       result.throwable = this.throwable;
+      result.locator = this.locator;
     }
     return result;
   }
@@ -124,5 +126,18 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
 
   public Throwable getThrowable() {
     return this.throwable;
+  }
+
+  @Override
+  public String toString() {
+    return "OperationState{" +
+        "opId='" + opId + '\'' +
+        ", operation=" + operation +
+        ", operationStart=" + operationStart +
+        ", operationEnd=" + operationEnd +
+        ", result=" + result +
+        ", throwable=" + throwable +
+        ", locator=" + locator +
+        '}';
   }
 }
