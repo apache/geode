@@ -68,18 +68,21 @@ public class PubSubIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void punsubscribe_whenNonexistent() {
     assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.PUNSUBSCRIBE, "Nonexistent"))
         .containsExactly("punsubscribe".getBytes(), "Nonexistent".getBytes(), 0L);
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void unsubscribe_whenNoSubscriptionsExist_shouldNotHang() {
     assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.UNSUBSCRIBE))
         .containsExactly("unsubscribe".getBytes(), null, 0L);
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void punsubscribe_whenNoSubscriptionsExist_shouldNotHang() {
     assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.PUNSUBSCRIBE))
         .containsExactly("punsubscribe".getBytes(), null, 0L);
