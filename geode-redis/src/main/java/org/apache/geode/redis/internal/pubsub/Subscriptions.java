@@ -20,7 +20,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Class that manages both channel and pattern subscriptions.
@@ -34,7 +37,8 @@ public class Subscriptions {
    * @param channelOrPattern channel or pattern
    * @param client a client connection
    */
-  public boolean exists(Object channelOrPattern, Client client) {
+  @VisibleForTesting
+  boolean exists(Object channelOrPattern, Client client) {
     return subscriptions.stream()
         .anyMatch(subscription -> subscription.isEqualTo(channelOrPattern, client));
   }
@@ -66,7 +70,8 @@ public class Subscriptions {
   /**
    * Add a new subscription
    */
-  public void add(Subscription subscription) {
+  @VisibleForTesting
+  void add(Subscription subscription) {
     subscriptions.add(subscription);
   }
 
@@ -80,14 +85,38 @@ public class Subscriptions {
   /**
    * Remove a single subscription
    */
-  public boolean remove(Object channel, Client client) {
+  @VisibleForTesting
+  boolean remove(Object channel, Client client) {
     return subscriptions.removeIf(subscription -> subscription.isEqualTo(channel, client));
   }
 
   /**
    * @return the total number of all local subscriptions
    */
-  public int size() {
+  @VisibleForTesting
+  int size() {
     return subscriptions.size();
   }
+
+  public synchronized long subscribe(String channel, ExecutionHandlerContext context,
+      Client client) {
+    if (!exists(channel, client)) {
+      add(new ChannelSubscription(client, channel, context));
+    }
+    return findSubscriptions(client).size();
+  }
+
+  public synchronized long psubscribe(GlobPattern pattern, ExecutionHandlerContext context,
+      Client client) {
+    if (!exists(pattern, client)) {
+      add(new PatternSubscription(client, pattern, context));
+    }
+    return findSubscriptions(client).size();
+  }
+
+  public synchronized long unsubscribe(Object channelOrPattern, Client client) {
+    remove(channelOrPattern, client);
+    return findSubscriptions(client).size();
+  }
+
 }
