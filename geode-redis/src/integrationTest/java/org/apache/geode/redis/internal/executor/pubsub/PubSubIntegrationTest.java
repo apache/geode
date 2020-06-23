@@ -99,13 +99,16 @@ public class PubSubIntegrationTest {
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    try {
+      waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    mockSubscriber.punsubscribe("salutations");
-    assertThat(mockSubscriber.punsubscribeInfos).isEmpty();
-    // now cleanup the actual subscription
-    mockSubscriber.unsubscribe("salutations");
-    waitFor(() -> !subscriberThread.isAlive());
+      mockSubscriber.punsubscribe("salutations");
+      assertThat(mockSubscriber.punsubscribeInfos).isEmpty();
+    } finally {
+      // now cleanup the actual subscription
+      mockSubscriber.unsubscribe("salutations");
+      waitFor(() -> !subscriberThread.isAlive());
+    }
   }
 
   @Test
@@ -118,13 +121,16 @@ public class PubSubIntegrationTest {
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    try {
+      waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    mockSubscriber.unsubscribe("salutations");
-    assertThat(mockSubscriber.unsubscribeInfos).isEmpty();
-    // now cleanup the actual subscription
-    mockSubscriber.punsubscribe("salutations");
-    waitFor(() -> !subscriberThread.isAlive());
+      mockSubscriber.unsubscribe("salutations");
+      assertThat(mockSubscriber.unsubscribeInfos).isEmpty();
+    } finally {
+      // now cleanup the actual subscription
+      mockSubscriber.punsubscribe("salutations");
+      waitFor(() -> !subscriberThread.isAlive());
+    }
   }
 
   @Test
@@ -136,12 +142,15 @@ public class PubSubIntegrationTest {
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
-    mockSubscriber.unsubscribe("NonExistent");
-    assertThat(mockSubscriber.unsubscribeInfos).isEmpty();
-    // now cleanup the actual subscription
-    mockSubscriber.unsubscribe("salutations");
-    waitFor(() -> !subscriberThread.isAlive());
+    try {
+      waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+      mockSubscriber.unsubscribe("NonExistent");
+      assertThat(mockSubscriber.unsubscribeInfos).isEmpty();
+    } finally {
+      // now cleanup the actual subscription
+      mockSubscriber.unsubscribe("salutations");
+      waitFor(() -> !subscriberThread.isAlive());
+    }
   }
 
   @Test
@@ -153,12 +162,15 @@ public class PubSubIntegrationTest {
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
-    mockSubscriber.punsubscribe("NonExistent");
-    assertThat(mockSubscriber.punsubscribeInfos).isEmpty();
-    // now cleanup the actual subscription
-    mockSubscriber.punsubscribe("salutations");
-    waitFor(() -> !subscriberThread.isAlive());
+    try {
+      waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+      mockSubscriber.punsubscribe("NonExistent");
+      assertThat(mockSubscriber.punsubscribeInfos).isEmpty();
+    } finally {
+      // now cleanup the actual subscription
+      mockSubscriber.punsubscribe("salutations");
+      waitFor(() -> !subscriberThread.isAlive());
+    }
   }
 
   @Test
