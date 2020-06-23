@@ -49,7 +49,6 @@ import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -92,12 +91,6 @@ import org.apache.geode.redis.internal.pubsub.Subscriptions;
 
 @Experimental
 public class GeodeRedisServer {
-  /**
-   * Thread used to start main method
-   */
-  @MakeNotStatic
-  private static Thread mainThread = null;
-
   /**
    * The default Redis port as specified by their protocol, {@code DEFAULT_REDIS_SERVER_PORT}
    */
@@ -559,9 +552,6 @@ public class GeodeRedisServer {
         serverChannel.close();
       }
       bossFuture.syncUninterruptibly();
-      if (mainThread != null) {
-        mainThread.interrupt();
-      }
       expirationExecutor.shutdownNow();
       if (closeFuture != null) {
         closeFuture.syncUninterruptibly();
@@ -573,98 +563,4 @@ public class GeodeRedisServer {
   public int getPort() {
     return serverPort;
   }
-
-  /**
-   * Static main method that allows the {@code GeodeRedisServer} to be started from the command
-   * line. The supported command line arguments are
-   * <p>
-   * -port= <br>
-   * -bind-address= <br>
-   * -log-level=
-   *
-   * @param args Command line args
-   */
-  public static void main(String[] args) {
-    int port = DEFAULT_REDIS_SERVER_PORT;
-    String bindAddress = null;
-    String logLevel = null;
-    for (String arg : args) {
-      if (arg.startsWith("-port")) {
-        port = getPort(arg);
-      } else if (arg.startsWith("-bind-address")) {
-        bindAddress = getBindAddress(arg);
-      } else if (arg.startsWith("-log-level")) {
-        logLevel = getLogLevel(arg);
-      }
-    }
-    mainThread = Thread.currentThread();
-    GeodeRedisServer server = new GeodeRedisServer(bindAddress, port, logLevel);
-    server.start();
-    while (true) {
-      try {
-        Thread.sleep(Long.MAX_VALUE);
-      } catch (InterruptedException e1) {
-        break;
-      } catch (Exception ignored) {
-      }
-    }
-  }
-
-  /**
-   * Helper method to parse the port to a number
-   *
-   * @param arg String where the argument is
-   * @return The port number when the correct syntax was used, otherwise will return {@link
-   *         #DEFAULT_REDIS_SERVER_PORT}
-   */
-  private static int getPort(String arg) {
-    int port = DEFAULT_REDIS_SERVER_PORT;
-    if (arg != null && arg.length() > 6) {
-      if (arg.startsWith("-port")) {
-        String p = arg.substring(arg.indexOf('=') + 1);
-        p = p.trim();
-        try {
-          port = Integer.parseInt(p);
-        } catch (NumberFormatException e) {
-          System.out.println("Unable to parse port, using default port");
-        }
-      }
-    }
-    return port;
-  }
-
-  /**
-   * Helper method to parse bind address
-   *
-   * @param arg String holding bind address
-   * @return Bind address
-   */
-  private static String getBindAddress(String arg) {
-    String address = null;
-    if (arg != null && arg.length() > 14) {
-      if (arg.startsWith("-bind-address")) {
-        String p = arg.substring(arg.indexOf('=') + 1);
-        address = p.trim();
-      }
-    }
-    return address;
-  }
-
-  /**
-   * Helper method to parse log level
-   *
-   * @param arg String holding log level
-   * @return Log level
-   */
-  private static String getLogLevel(String arg) {
-    String logLevel = null;
-    if (arg != null && arg.length() > 11) {
-      if (arg.startsWith("-log-level")) {
-        String p = arg.substring(arg.indexOf('=') + 1);
-        logLevel = p.trim();
-      }
-    }
-    return logLevel;
-  }
-
 }
