@@ -14,9 +14,10 @@
  */
 package org.apache.geode.management.runtime;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
 
@@ -43,6 +44,7 @@ public interface RestoreRedundancyResults extends OperationResult {
    *
    * @return The {@link Status} of this restore redundancy operation.
    */
+  @JsonIgnore
   Status getRegionOperationStatus();
 
   /**
@@ -50,6 +52,7 @@ public interface RestoreRedundancyResults extends OperationResult {
    *
    * @return A {@link String} describing the results of this restore redundancy operation.
    */
+  @JsonIgnore
   String getRegionOperationMessage();
 
   /**
@@ -114,9 +117,9 @@ public interface RestoreRedundancyResults extends OperationResult {
    * Returns the total time spent transferring primaries as part of the restore redundancy
    * operations.
    *
-   * @return A {@link Duration} representing the total time spent transferring primaries
+   * @return A {@link long} representing the total time in milliseconds spent transferring primaries
    */
-  Duration getTotalPrimaryTransferTime();
+  long getTotalPrimaryTransferTime();
 
   /**
    * If user specified "includedRegion" list, but some of the regions in the list are not found in

@@ -39,7 +39,8 @@ public class SerializableRestoreRedundancyResultsImpl
   public void addPrimaryReassignmentDetails(PartitionRebalanceInfo details) {
     totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
     totalPrimaryTransferTime =
-        totalPrimaryTransferTime.plusMillis(details.getPrimaryTransferTime());
+        totalPrimaryTransferTime + details.getPrimaryTransferTime();
+
   }
 
   @Override
@@ -49,9 +50,9 @@ public class SerializableRestoreRedundancyResultsImpl
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    DataSerializer.writeHashMap(satisfiedRedundancyRegions, out);
-    DataSerializer.writeHashMap(underRedundancyRegions, out);
-    DataSerializer.writeHashMap(zeroRedundancyRegions, out);
+    DataSerializer.writeHashMap(satisfiedRedundancyRegionsResults, out);
+    DataSerializer.writeHashMap(underRedundancyRegionsResults, out);
+    DataSerializer.writeHashMap(zeroRedundancyRegionsResults, out);
     out.writeInt(totalPrimaryTransfersCompleted);
     DataSerializer.writeObject(totalPrimaryTransferTime, out);
     out.writeBoolean(success);
@@ -61,9 +62,9 @@ public class SerializableRestoreRedundancyResultsImpl
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    satisfiedRedundancyRegions = DataSerializer.readHashMap(in);
-    underRedundancyRegions = DataSerializer.readHashMap(in);
-    zeroRedundancyRegions = DataSerializer.readHashMap(in);
+    satisfiedRedundancyRegionsResults = DataSerializer.readHashMap(in);
+    underRedundancyRegionsResults = DataSerializer.readHashMap(in);
+    zeroRedundancyRegionsResults = DataSerializer.readHashMap(in);
     totalPrimaryTransfersCompleted = in.readInt();
     totalPrimaryTransferTime = DataSerializer.readObject(in);
     success = DataSerializer.readBoolean(in);
