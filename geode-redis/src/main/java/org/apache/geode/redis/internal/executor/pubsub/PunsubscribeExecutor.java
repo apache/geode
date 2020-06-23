@@ -61,13 +61,13 @@ public class PunsubscribeExecutor extends AbstractExecutor {
     for (String channel : channelNames) {
       long subscriptionCount =
           context.getPubSub().punsubscribe(new GlobPattern(channel), context.getClient());
-
-      ArrayList<Object> oneItem = new ArrayList<>();
-      oneItem.add("punsubscribe");
-      oneItem.add(channel);
-      oneItem.add(subscriptionCount);
-
-      response.add(oneItem);
+      if (subscriptionCount != -1) {
+        ArrayList<Object> oneItem = new ArrayList<>();
+        oneItem.add("punsubscribe");
+        oneItem.add(channel);
+        oneItem.add(subscriptionCount);
+        response.add(oneItem);
+      }
     }
     return response;
   }

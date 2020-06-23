@@ -55,13 +55,13 @@ public class UnsubscribeExecutor extends AbstractExecutor {
     for (String channel : channelNames) {
       long subscriptionCount =
           context.getPubSub().unsubscribe(channel, context.getClient());
-
-      ArrayList<Object> oneItem = new ArrayList<>();
-      oneItem.add("unsubscribe");
-      oneItem.add(channel);
-      oneItem.add(subscriptionCount);
-
-      response.add(oneItem);
+      if (subscriptionCount != -1) {
+        ArrayList<Object> oneItem = new ArrayList<>();
+        oneItem.add("unsubscribe");
+        oneItem.add(channel);
+        oneItem.add(subscriptionCount);
+        response.add(oneItem);
+      }
     }
     return response;
   }

@@ -136,13 +136,18 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public long unsubscribe(String channel, Client client) {
-    subscriptions.remove(channel, client);
+    // TODO: make this thread safe. It needs to atomically remove and find.
+    if (!subscriptions.remove(channel, client)) {
+      return -1;
+    }
     return subscriptions.findSubscriptions(client).size();
   }
 
   @Override
   public long punsubscribe(GlobPattern pattern, Client client) {
-    subscriptions.remove(pattern, client);
+    if (!subscriptions.remove(pattern, client)) {
+      return -1;
+    }
     return subscriptions.findSubscriptions(client).size();
   }
 

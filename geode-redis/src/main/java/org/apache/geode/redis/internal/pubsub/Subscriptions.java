@@ -80,8 +80,8 @@ public class Subscriptions {
   /**
    * Remove a single subscription
    */
-  public void remove(Object channel, Client client) {
-    subscriptions.removeIf(subscription -> subscription.isEqualTo(channel, client));
+  public boolean remove(Object channel, Client client) {
+    return subscriptions.removeIf(subscription -> subscription.isEqualTo(channel, client));
   }
 
   /**

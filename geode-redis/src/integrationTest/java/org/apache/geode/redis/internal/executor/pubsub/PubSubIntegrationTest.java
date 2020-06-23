@@ -90,7 +90,7 @@ public class PubSubIntegrationTest {
   }
 
   @Test
-  public void testSubscriberAndPUnsubscribe_shouldNotWork() {
+  public void punsubscribe_givenSubscribe_hasNoEvent() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
@@ -102,7 +102,62 @@ public class PubSubIntegrationTest {
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
     mockSubscriber.punsubscribe("salutations");
+    assertThat(mockSubscriber.punsubscribeInfos).isEmpty();
+    // now cleanup the actual subscription
+    mockSubscriber.unsubscribe("salutations");
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
+  public void unsubscribe_givenPsubscribe_hasNoEvent() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> {
+      subscriber.psubscribe(mockSubscriber, "salutations");
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    mockSubscriber.unsubscribe("salutations");
+    assertThat(mockSubscriber.unsubscribeInfos).isEmpty();
+    // now cleanup the actual subscription
+    mockSubscriber.punsubscribe("salutations");
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
+  public void unsubscribe_onNonExistentSubscription_doesNotReportEvent() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+    Runnable runnable = () -> {
+      subscriber.subscribe(mockSubscriber, "salutations");
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    mockSubscriber.unsubscribe("NonExistent");
+    assertThat(mockSubscriber.unsubscribeInfos).isEmpty();
+    // now cleanup the actual subscription
+    mockSubscriber.unsubscribe("salutations");
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
+  public void punsubscribe_onNonExistentSubscription_doesNotReportEvent() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+    Runnable runnable = () -> {
+      subscriber.psubscribe(mockSubscriber, "salutations");
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    mockSubscriber.punsubscribe("NonExistent");
+    assertThat(mockSubscriber.punsubscribeInfos).isEmpty();
+    // now cleanup the actual subscription
+    mockSubscriber.punsubscribe("salutations");
     waitFor(() -> !subscriberThread.isAlive());
   }
 
@@ -179,8 +234,15 @@ public class PubSubIntegrationTest {
     assertThat(result).isEqualTo(1);
     mockSubscriber.unsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    assertThat(mockSubscriber.unsubscribeInfos).hasSize(1);
+    assertThat(mockSubscriber.unsubscribeInfos.get(0).channel).isEqualTo("salutations");
+    assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(1);
+    mockSubscriber.unsubscribeInfos.clear();
     mockSubscriber.unsubscribe("yuletide");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    assertThat(mockSubscriber.unsubscribeInfos).hasSize(1);
+    assertThat(mockSubscriber.unsubscribeInfos.get(0).channel).isEqualTo("yuletide");
+    assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(0);
     waitFor(() -> !subscriberThread.isAlive());
 
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
@@ -200,6 +262,9 @@ public class PubSubIntegrationTest {
     mockSubscriber.unsubscribe("yuletide", "salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
+    assertThat(mockSubscriber.unsubscribeInfos).containsExactly(
+        new MockSubscriber.UnsubscribeInfo("yuletide", 1),
+        new MockSubscriber.UnsubscribeInfo("salutations", 0));
   }
 
   @Test
@@ -216,6 +281,9 @@ public class PubSubIntegrationTest {
     mockSubscriber.unsubscribe();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
+    assertThat(mockSubscriber.unsubscribeInfos).containsExactly(
+        new MockSubscriber.UnsubscribeInfo("salutations", 1),
+        new MockSubscriber.UnsubscribeInfo("yuletide", 0));
   }
 
   @Test
@@ -232,6 +300,9 @@ public class PubSubIntegrationTest {
     mockSubscriber.punsubscribe("yul*", "sal*");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
+    assertThat(mockSubscriber.punsubscribeInfos).containsExactly(
+        new MockSubscriber.UnsubscribeInfo("yul*", 1),
+        new MockSubscriber.UnsubscribeInfo("sal*", 0));
   }
 
   @Test
@@ -248,6 +319,9 @@ public class PubSubIntegrationTest {
     mockSubscriber.punsubscribe();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
+    assertThat(mockSubscriber.punsubscribeInfos).containsExactly(
+        new MockSubscriber.UnsubscribeInfo("sal*", 1),
+        new MockSubscriber.UnsubscribeInfo("yul*", 0));
   }
 
   @Test
@@ -272,12 +346,18 @@ public class PubSubIntegrationTest {
     mockSubscriber1.unsubscribe("salutations");
     waitFor(() -> mockSubscriber1.getSubscribedChannels() == 0);
     waitFor(() -> !subscriber1Thread.isAlive());
+    assertThat(mockSubscriber1.unsubscribeInfos).hasSize(1);
+    assertThat(mockSubscriber1.unsubscribeInfos.get(0).channel).isEqualTo("salutations");
+    assertThat(mockSubscriber1.unsubscribeInfos.get(0).count).isEqualTo(0);
 
     result = publisher.publish("salutations", "goodbye");
     assertThat(result).isEqualTo(1);
     mockSubscriber2.unsubscribe("salutations");
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 0);
     waitFor(() -> !subscriber2Thread.isAlive());
+    assertThat(mockSubscriber2.unsubscribeInfos).hasSize(1);
+    assertThat(mockSubscriber2.unsubscribeInfos.get(0).channel).isEqualTo("salutations");
+    assertThat(mockSubscriber2.unsubscribeInfos.get(0).count).isEqualTo(0);
 
     assertThat(mockSubscriber1.getReceivedMessages()).isEqualTo(Collections.singletonList("hello"));
     assertThat(mockSubscriber2.getReceivedMessages()).isEqualTo(Arrays.asList("hello", "goodbye"));
@@ -309,6 +389,8 @@ public class PubSubIntegrationTest {
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
 
     waitFor(() -> !subscriberThread.isAlive());
+    assertThat(mockSubscriber.unsubscribeInfos)
+        .containsExactly(new MockSubscriber.UnsubscribeInfo("salutations", 0));
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(Collections.singletonList("hello"));
   }
 
@@ -360,6 +442,8 @@ public class PubSubIntegrationTest {
     mockSubscriber.punsubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
+    assertThat(mockSubscriber.punsubscribeInfos)
+        .containsExactly(new MockSubscriber.UnsubscribeInfo("sal*s", 0));
   }
 
   @Test
@@ -391,6 +475,8 @@ public class PubSubIntegrationTest {
     mockSubscriber.punsubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
+    assertThat(mockSubscriber.punsubscribeInfos)
+        .containsExactly(new MockSubscriber.UnsubscribeInfo("sal*s", 0));
   }
 
   @Test
@@ -413,11 +499,17 @@ public class PubSubIntegrationTest {
 
     mockSubscriber.punsubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    assertThat(mockSubscriber.punsubscribeInfos).hasSize(1);
+    assertThat(mockSubscriber.punsubscribeInfos.get(0).channel).isEqualTo("sal*s");
+    assertThat(mockSubscriber.punsubscribeInfos.get(0).count).isEqualTo(1);
 
     mockSubscriber.unsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
 
     waitFor(() -> !subscriberThread.isAlive());
+    assertThat(mockSubscriber.unsubscribeInfos).hasSize(1);
+    assertThat(mockSubscriber.unsubscribeInfos.get(0).channel).isEqualTo("salutations");
+    assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(0);
 
     assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello");
     assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
