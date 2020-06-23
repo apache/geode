@@ -31,9 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.commands.ProtocolCommand;
 
-import org.apache.geode.internal.net.SocketUtils;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
@@ -72,7 +70,7 @@ public class PubSubIntegrationTest {
   @Test
   public void punsubscribe_whenNonexistent() {
     assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.PUNSUBSCRIBE, "Nonexistent"))
-        .containsExactly("punsubscribe".getBytes(), null, 0L);
+        .containsExactly("punsubscribe".getBytes(), "Nonexistent".getBytes(), 0L);
   }
 
   @Test
@@ -112,7 +110,7 @@ public class PubSubIntegrationTest {
   }
 
   @Test
-  public void punsubscribe_givenSubscribe_hasNoEvent() {
+  public void punsubscribe_givenSubscribe_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
@@ -125,7 +123,11 @@ public class PubSubIntegrationTest {
       waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
       mockSubscriber.punsubscribe("salutations");
-      assertThat(mockSubscriber.punsubscribeInfos).isEmpty();
+      waitFor(() -> mockSubscriber.punsubscribeInfos.size() == 1);
+
+      assertThat(mockSubscriber.punsubscribeInfos.get(0).channel).isEqualTo("salutations");
+      assertThat(mockSubscriber.punsubscribeInfos.get(0).count).isEqualTo(1);
+      assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(1);
     } finally {
       // now cleanup the actual subscription
       mockSubscriber.unsubscribe("salutations");
@@ -134,7 +136,7 @@ public class PubSubIntegrationTest {
   }
 
   @Test
-  public void unsubscribe_givenPsubscribe_hasNoEvent() {
+  public void unsubscribe_givenPsubscribe_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
@@ -147,7 +149,10 @@ public class PubSubIntegrationTest {
       waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
       mockSubscriber.unsubscribe("salutations");
-      assertThat(mockSubscriber.unsubscribeInfos).hasSize(1);
+      waitFor(() -> mockSubscriber.unsubscribeInfos.size() == 1);
+
+      assertThat(mockSubscriber.unsubscribeInfos.get(0).channel).isEqualTo("salutations");
+      assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(1);
       assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(1);
     } finally {
       // now cleanup the actual subscription
@@ -297,9 +302,15 @@ public class PubSubIntegrationTest {
     mockSubscriber.unsubscribe("yuletide", "salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-    assertThat(mockSubscriber.unsubscribeInfos).containsExactly(
-        new MockSubscriber.UnsubscribeInfo("yuletide", 1),
-        new MockSubscriber.UnsubscribeInfo("salutations", 0));
+
+    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.channel).collect(Collectors.toList());
+    assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
+
+    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.count).collect(Collectors.toList());
+    assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
+
   }
 
   @Test
@@ -320,6 +331,10 @@ public class PubSubIntegrationTest {
     List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
         .map(x -> x.channel).collect(Collectors.toList());
     assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
+
+    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.count).collect(Collectors.toList());
+    assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
 
     Long result = publisher.publish("salutations", "greetings");
     assertThat(result).isEqualTo(0);
