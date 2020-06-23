@@ -2277,11 +2277,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
    */
   public static void invokeFromData(Object deserializableObject, DataInput in)
       throws IOException, ClassNotFoundException {
-    if (deserializableObject instanceof BasicSerializable) {
-      dsfidSerializer.invokeFromData(deserializableObject, in);
-      return;
-    }
     try {
+      if (deserializableObject instanceof BasicSerializable) {
+        dsfidSerializer.invokeFromData(deserializableObject, in);
+        return;
+      }
       boolean invoked = false;
       Version v = StaticSerialization.getVersionForDataStreamOrNull(in);
       if (Version.CURRENT != v && v != null) {
@@ -2653,6 +2653,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
         default:
           throw new IOException("Unknown header byte: " + header);
       }
+    } catch (CacheClosedException e) {
+      throw e;
     } catch (RuntimeException rte) {
       throw new SerializationException("Unexpected serialization failure", rte);
     }
