@@ -230,9 +230,9 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
-        <groupId>io.github.classgraph</groupId>
-        <artifactId>classgraph</artifactId>
-        <version>4.8.52</version>
+        <groupId>org.reflections</groupId>
+        <artifactId>reflections</artifactId>
+        <version>0.9.12</version>
         <scope>compile</scope>
       </dependency>
       <dependency>

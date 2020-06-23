@@ -301,7 +301,7 @@ dependencies {
 
     //Classgraph is used by the gfsh cli, and also for function deployment (which happens in a server
     //in response to a gfsh command)
-    implementation('io.github.classgraph:classgraph')
+    implementation('org.reflections:reflections')
 
     //RMIIO is used for uploading jar files and copying them between locator an servers
     implementation('com.healthmarketscience.rmiio:rmiio')

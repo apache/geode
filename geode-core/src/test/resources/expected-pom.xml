@@ -203,8 +203,8 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.github.classgraph</groupId>
-      <artifactId>classgraph</artifactId>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>

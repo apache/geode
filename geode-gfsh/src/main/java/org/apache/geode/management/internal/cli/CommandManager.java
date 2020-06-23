@@ -182,12 +182,11 @@ public class CommandManager {
     packagesToScan.add(VersionCommand.class.getPackage().getName());
 
     // Create one scanner to be used everywhere
-    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan)) {
-      loadUserCommands(scanner, userCommandPackages);
-      loadPluginCommands();
-      loadGeodeCommands(scanner);
-      loadConverters(scanner);
-    }
+    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
+    loadUserCommands(scanner, userCommandPackages);
+    loadPluginCommands();
+    loadGeodeCommands(scanner);
+    loadConverters(scanner);
   }
 
   private void loadConverters(ClasspathScanLoadHelper scanner) {

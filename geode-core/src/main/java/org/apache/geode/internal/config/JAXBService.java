@@ -106,10 +106,8 @@ public class JAXBService {
   private static Set<Class<?>> scanForClasses() {
     // scan the classpath to find all the classes annotated with XSDRootElement
     Set<String> packages = getPackagesToScan();
-    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages)) {
-      return scanner.scanClasspathForAnnotation(XSDRootElement.class,
-          packages.toArray(new String[] {}));
-    }
+    return new ClasspathScanLoadHelper(packages)
+        .scanClasspathForAnnotation(XSDRootElement.class, packages.toArray(new String[] {}));
   }
 
   private void validateWith(URL url) {

@@ -7,7 +7,7 @@ antlr
 asm
 byte-buddy
 checker-qual
-classgraph
+reflections
 classmate
 commons-beanutils
 commons-codec

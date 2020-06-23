@@ -16,51 +16,48 @@
  */
 package org.apache.geode.management.internal.util;
 
-import static java.util.stream.Collectors.toSet;
+import static java.lang.reflect.Modifier.isAbstract;
+import static java.lang.reflect.Modifier.isInterface;
+import static java.lang.reflect.Modifier.isPublic;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
+import org.reflections.Reflections;
 
 /**
  * Utility class to scan class-path & load classes.
  *
  * @since GemFire 7.0
  */
-public class ClasspathScanLoadHelper implements AutoCloseable {
-
-  private final ScanResult scanResult;
+public class ClasspathScanLoadHelper {
+  private final Reflections reflections;
 
   public ClasspathScanLoadHelper(Collection<String> packagesToScan) {
-    scanResult = new ClassGraph().whitelistPackages(packagesToScan.toArray(new String[] {}))
-        .enableClassInfo()
-        .enableAnnotationInfo().scan(1);
+    reflections = new Reflections(packagesToScan);
   }
 
   public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
       String... onlyFromPackages) {
-    ClassInfoList classInfoList = scanResult.getClassesImplementing(implementedInterface.getName())
-        .filter(ci -> !ci.isAbstract() && !ci.isInterface() && ci.isPublic());
-
-    classInfoList = classInfoList
+    return reflections.getSubTypesOf(implementedInterface)
+        .stream()
+        .filter(ci -> !isAbstract(ci.getModifiers()) && !isInterface(ci.getModifiers())
+            && isPublic(ci.getModifiers()))
         .filter(ci -> Arrays.stream(onlyFromPackages)
-            .anyMatch(p -> classMatchesPackage(ci.getName(), p)));
-
-    return classInfoList.loadClasses().stream().collect(toSet());
+            .anyMatch(p -> classMatchesPackage(ci.getName(), p)))
+        .collect(Collectors.toSet());
   }
 
-  public Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation, String... onlyFromPackages) {
-    ClassInfoList classInfoList = scanResult.getClassesWithAnnotation(annotation.getName());
-
-    classInfoList = classInfoList
+  public Set<Class<?>> scanClasspathForAnnotation(Class<? extends Annotation> annotation,
+      String... onlyFromPackages) {
+    return reflections.getTypesAnnotatedWith(annotation)
+        .stream()
         .filter(ci -> Arrays.stream(onlyFromPackages)
-            .anyMatch(p -> classMatchesPackage(ci.getName(), p)));
-
-    return classInfoList.loadClasses().stream().collect(toSet());
+            .anyMatch(p -> classMatchesPackage(ci.getName(), p)))
+        .collect(Collectors.toSet());
   }
 
   /**
@@ -76,11 +73,5 @@ public class ClasspathScanLoadHelper implements AutoCloseable {
     }
 
     return className.matches(globToRegex(packageSpec));
-  }
-
-  @Override
-  public void close() {
-    if (scanResult != null)
-      scanResult.close();
   }
 }

@@ -16,30 +16,30 @@ package org.apache.geode.management.internal.deployment;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
+import org.reflections.Reflections;
+import org.reflections.util.ConfigurationBuilder;
 
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionAdapter;
 
 public class FunctionScanner {
 
   public Collection<String> findFunctionsInJar(File jarFile) throws IOException {
-    ClassGraph fastClasspathScanner = new ClassGraph().disableDirScanning()
-        .removeTemporaryFilesAfterScan().overrideClasspath(jarFile.getAbsolutePath());
-    try (ScanResult scanResult = fastClasspathScanner.enableClassInfo().scan(1)) {
+    URL jarFileUrl = jarFile.toURI().toURL();
+    ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 
-      Set<String> functionClasses = new HashSet<>();
+    ClassLoader jarClassLoader = new URLClassLoader(new URL[] {jarFileUrl});
+    configurationBuilder.setUrls(jarFileUrl);
+    configurationBuilder.setClassLoaders(new ClassLoader[] {jarClassLoader});
+    Reflections reflections = new Reflections(configurationBuilder);
 
-      functionClasses
-          .addAll(scanResult.getClassesImplementing(Function.class.getName()).getNames());
-      functionClasses.addAll(scanResult.getSubclasses(FunctionAdapter.class.getName()).getNames());
-
-      return functionClasses;
-    }
+    return reflections.getSubTypesOf(Function.class)
+        .stream()
+        .map(Class::getCanonicalName)
+        .collect(Collectors.toSet());
   }
 }
