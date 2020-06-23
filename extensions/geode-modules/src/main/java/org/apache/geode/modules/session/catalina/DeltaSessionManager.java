@@ -112,7 +112,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   private static final boolean DEFAULT_ENABLE_COMMIT_VALVE_FAILFAST = false;
 
   /**
-   * @deprecated No replacement. Always refer deserialized form.
+   * @deprecated No replacement. Always prefer deserialized form.
    */
   @Deprecated
   private static final boolean DEFAULT_PREFER_DESERIALIZED_FORM = true;
@@ -139,7 +139,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   private boolean enableDebugListener = DEFAULT_ENABLE_DEBUG_LISTENER;
 
   /**
-   * @deprecated No replacement. Always refer deserialized form.
+   * @deprecated No replacement. Always prefer deserialized form.
    */
   @Deprecated
   private boolean preferDeserializedForm = DEFAULT_PREFER_DESERIALIZED_FORM;
@@ -278,7 +278,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   }
 
   /**
-   * @deprecated No replacement. Always refer deserialized form.
+   * @deprecated No replacement. Always prefer deserialized form.
    */
   @Deprecated
   @Override
@@ -292,7 +292,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   }
 
   /**
-   * @deprecated No replacement. Always refer deserialized form.
+   * @deprecated No replacement. Always prefer deserialized form.
    */
   @Deprecated
   @Override

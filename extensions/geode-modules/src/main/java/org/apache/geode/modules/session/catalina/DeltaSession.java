@@ -78,7 +78,7 @@ public class DeltaSession extends StandardSession
   private transient boolean expired = false;
 
   /**
-   * @deprecated No replacement. Always refer deserialized form.
+   * @deprecated No replacement. Always prefer deserialized form.
    */
   @Deprecated
   private transient boolean preferDeserializedForm = true;

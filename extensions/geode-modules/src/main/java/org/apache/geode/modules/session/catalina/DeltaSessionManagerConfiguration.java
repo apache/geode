@@ -60,13 +60,13 @@ interface DeltaSessionManagerConfiguration {
   boolean isBackingCacheAvailable();
 
   /**
-   * @deprecated No replacement. Always refer deserialized form.
+   * @deprecated No replacement. Always prefer deserialized form.
    */
   @Deprecated
   void setPreferDeserializedForm(boolean enable);
 
   /**
-   * @deprecated No replacement. Always refer deserialized form.
+   * @deprecated No replacement. Always prefer deserialized form.
    */
   @Deprecated
   boolean getPreferDeserializedForm();
