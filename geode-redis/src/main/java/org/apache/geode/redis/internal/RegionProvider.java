@@ -15,18 +15,33 @@
 package org.apache.geode.redis.internal;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 
 public class RegionProvider {
+  /**
+   * The name of the region that holds data stored in redis.
+   */
+  private static final String REDIS_DATA_REGION = "__REDIS_DATA";
+  private static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
 
   private final Region<ByteArrayWrapper, RedisData> dataRegion;
   private final Region<String, Object> configRegion;
 
-  public RegionProvider(Region<ByteArrayWrapper, RedisData> dataRegion,
-      Region<String, Object> configRegion) {
-    this.dataRegion = dataRegion;
-    this.configRegion = configRegion;
+  public RegionProvider(InternalCache cache) {
+
+    InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
+        cache.createInternalRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
+    redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+    dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
+
+    InternalRegionFactory<String, Object> redisConfigRegionFactory =
+        cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
+    redisConfigRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+    configRegion = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
   }
 
   public Region<ByteArrayWrapper, RedisData> getDataRegion() {
