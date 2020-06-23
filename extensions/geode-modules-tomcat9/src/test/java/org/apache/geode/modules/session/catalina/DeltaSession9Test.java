@@ -89,9 +89,9 @@ public class DeltaSession9Test extends AbstractDeltaSessionTest {
   }
 
   @Test
-  public void serializedAttributesLeakedInAttributeReplaceEventWhenPreferSerializedFormFalse()
+  public void serializedAttributesLeakedInAttributeReplaceEventWhenPreferDeserializedFormFalse()
       throws IOException {
-    setPreferSeserializedForm();
+    setPreferDeserializedFormFalse();
 
     final DeltaSession9 session = spy(new DeltaSession9(manager));
     session.setValid(true);
@@ -112,9 +112,9 @@ public class DeltaSession9Test extends AbstractDeltaSessionTest {
   }
 
   @Test
-  public void serializedAttributesLeakedInAttributeRemovedEventWhenPreferSerializedFormFalse()
+  public void serializedAttributesLeakedInAttributeRemovedEventWhenPreferDeserializedFormFalse()
       throws IOException {
-    setPreferSeserializedForm();
+    setPreferDeserializedFormFalse();
 
     final DeltaSession9 session = spy(new DeltaSession9(manager));
     session.setValid(true);
@@ -134,7 +134,7 @@ public class DeltaSession9Test extends AbstractDeltaSessionTest {
   }
 
   @SuppressWarnings("deprecation")
-  protected void setPreferSeserializedForm() {
+  protected void setPreferDeserializedFormFalse() {
     when(manager.getPreferDeserializedForm()).thenReturn(false);
   }
 
