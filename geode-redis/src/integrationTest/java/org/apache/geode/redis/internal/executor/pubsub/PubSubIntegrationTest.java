@@ -30,6 +30,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.commands.ProtocolCommand;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
@@ -299,6 +301,14 @@ public class PubSubIntegrationTest {
     List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
         .map(x -> x.channel).collect(Collectors.toList());
     assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
+
+    Long result = publisher.publish("salutations", "greetings");
+    assertThat(result).isEqualTo(0);
+  }
+
+  @Test
+  public void unsubscribe_whenNoSubscriptionsExist_shouldNotHang() {
+    subscriber.sendCommand(Protocol.Command.UNSUBSCRIBE);
   }
 
   @Test
