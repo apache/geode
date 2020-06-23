@@ -26,6 +26,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -66,6 +67,10 @@ public class CreateDiskStoreDUnitTest {
   private WebApplicationContext webApplicationContext;
 
   @Rule
+  public TemporaryFolder tmpdir = new TemporaryFolder();
+
+
+  @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule(1);
 
   private ClusterManagementService client;
@@ -77,7 +82,8 @@ public class CreateDiskStoreDUnitTest {
 
 
   @Before
-  public void before() {
+  public void before() throws Exception {
+    tmpdir.newFolder(diskStoreName);
     cluster.setSkipLocalDistributedSystemCleanup(true);
     webContext = new LocatorWebContext(webApplicationContext);
     client = new ClusterManagementServiceBuilder().setTransport(
@@ -251,9 +257,11 @@ public class CreateDiskStoreDUnitTest {
   }
 
   @Test
-  public void listDiskStoresShouldReturnAllConfiguredDiskStores() {
+  public void listDiskStoresShouldReturnAllConfiguredDiskStores() throws Exception {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
+    tmpdir.newFolder("DiskStore2");
+    tmpdir.newFolder("DiskStore3");
 
     client.create(diskStore);
     client.create(createDiskStoreConfigObject("DiskStore2"));
@@ -263,10 +271,12 @@ public class CreateDiskStoreDUnitTest {
 
 
   @Test
-  public void listDiskStoresShouldReturnNonDeletedDiskStores() {
+  public void listDiskStoresShouldReturnNonDeletedDiskStores() throws Exception {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
 
+    tmpdir.newFolder("DiskStore2");
+    tmpdir.newFolder("DiskStore3");
     client.create(diskStore);
     client.create(createDiskStoreConfigObject("DiskStore2"));
     client.create(createDiskStoreConfigObject("DiskStore3"));
