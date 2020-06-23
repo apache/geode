@@ -185,7 +185,6 @@ def print_failures(completed, expected_failed_builds, long_list_of_failures, url
                                                failure_url_base)
     print_failures_in_classes_that_share_method_names(completed, long_list_of_failures)
     print_class_and_test_failures_with_links(completed, long_list_of_failures, url)
-    print_list_of_failures(long_list_of_failures, url)
     # Then highlight any build runs that failed hard / timed out.
 
 
@@ -264,7 +263,7 @@ def print_success_rate_and_expectation_warning(completed, expected_failed_builds
     # "Build failures" will refer to jobs that went red
     # "Test failures" will refer to jobs whose output matched our parsing regex
 
-    build_failure_count = len(expected_failed_builds)
+    build_review_count = len(expected_failed_builds)
     test_failure_set = {int(failure.build_json['name']) for failure in long_list_of_test_failures}
     test_failure_count = sum(1 for _ in test_failure_set)
 
@@ -280,12 +279,9 @@ def print_success_rate_and_expectation_warning(completed, expected_failed_builds
           color(f"{rate:.5f}% ({completed - test_failure_count} of {completed})", fg='blue'))
 
     if build_failure_not_test_failure:
-        print(color(f'>>>>> {build_failure_count} jobs "went red," '
-                    f'but only {test_failure_count} were detected test failures. <<<<<',
+        print(color(f'>>>>> Analyzing {build_review_count} jobs, '
+                    f'of which {test_failure_count} were detected test failures. <<<<<',
                     fg='red', style='bold'))
-        print(f"Maybe you have some timeouts or other issues please manually inspect the following builds:")
-        for build_failure in build_failure_not_test_failure:
-            print(f"  {failure_url_base}{build_failure}")
     if test_failure_not_build_failure:
         print(color(f'>>>>> OH NO!  A test failure was detected, but the job "went green" anyway!! <<<<',
                     fg='red', style='bold'))

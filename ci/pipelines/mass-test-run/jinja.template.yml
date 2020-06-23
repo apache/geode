@@ -89,6 +89,10 @@ resources:
   type: time
   source:
     interval: 168h
+    days: [Friday]
+    start: 3PM
+    stop: 11PM
+    location: America/Los_Angeles
 - name: test-finish-time
   type: time
   source:
@@ -120,7 +124,7 @@ resources:
     driver: gcs
     initial_version: {{ metadata.initial_version }}
     json_key: ((concourse-gcp-key))
-    key: semvers/((pipeline-prefix))((geode-build-branch))/version
+    key: semvers/((pipeline-prefix))((geode-build-branch))/number
 - name: alpine-tools-image
   type: docker-image
   source:
@@ -184,14 +188,12 @@ jobs:
         CONCOURSE_TEAM: ((concourse-team))
         PIPELINE_PREFIX: ((pipeline-prefix))
         MASS_RUN_NUMBER: {{metadata.mass_test_run_iterations}}
-      {%- if repository.upstream_fork!="apache" %}
         CONCOURSE_USERNAME: ((concourse-username))
         CONCOURSE_PASSWORD: ((concourse-password))
-      {%- endif %}
       run:
         path: bash
         args:
-        - -exc
+        - -ec
         - |
           BASE_DIR=$(pwd)
           curl "${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=linux" --output fly
@@ -210,7 +212,7 @@ jobs:
       {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
     {%- endif %}
 - name: {{test.name}}Test{{java_test_version.name}}
-  max_in_flight: 5
+  max_in_flight: 10
   plan:
   - do:
     {{- plan_resource_gets(test) |indent(4) }}
@@ -340,6 +342,8 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: geode
+      passed: [{{test.name}}Test{{java_test_version.name}}]
     - get: alpine-tools-image
       passed: [TriggerMassRun]
     - get: test-finish-time
@@ -390,6 +394,8 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: geode
+      passed: [poll-for-test-completion]
     - get: geode-ci
       params:
         depth: 1
