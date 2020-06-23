@@ -165,7 +165,7 @@ public class PubSubIntegrationTest {
   }
 
   @Test
-  public void unsubscribe_onNonExistentSubscription() {
+  public void unsubscribe_onNonExistentSubscription_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
     Runnable runnable = () -> {
       subscriber.subscribe(mockSubscriber, "salutations");
@@ -176,7 +176,11 @@ public class PubSubIntegrationTest {
     try {
       waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
       mockSubscriber.unsubscribe("NonExistent");
-      assertThat(mockSubscriber.unsubscribeInfos).isEmpty();
+      waitFor(() -> mockSubscriber.unsubscribeInfos.size() == 1);
+
+      assertThat(mockSubscriber.unsubscribeInfos.get(0).channel).isEqualTo("NonExistent");
+      assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(1);
+      assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(1);
     } finally {
       // now cleanup the actual subscription
       mockSubscriber.unsubscribe("salutations");
@@ -185,7 +189,7 @@ public class PubSubIntegrationTest {
   }
 
   @Test
-  public void punsubscribe_onNonExistentSubscription() {
+  public void punsubscribe_onNonExistentSubscription_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
     Runnable runnable = () -> {
       subscriber.psubscribe(mockSubscriber, "salutations");
@@ -196,7 +200,11 @@ public class PubSubIntegrationTest {
     try {
       waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
       mockSubscriber.punsubscribe("NonExistent");
-      assertThat(mockSubscriber.punsubscribeInfos).isEmpty();
+      waitFor(() -> mockSubscriber.punsubscribeInfos.size() == 1);
+
+      assertThat(mockSubscriber.punsubscribeInfos.get(0).channel).isEqualTo("NonExistent");
+      assertThat(mockSubscriber.punsubscribeInfos.get(0).count).isEqualTo(1);
+      assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(1);
     } finally {
       // now cleanup the actual subscription
       mockSubscriber.punsubscribe("salutations");
