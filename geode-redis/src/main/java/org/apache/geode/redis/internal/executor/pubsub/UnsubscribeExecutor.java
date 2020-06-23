@@ -30,7 +30,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+                                      ExecutionHandlerContext context) {
 
     List<String> channelNames = extractChannelNames(command);
     if (channelNames.isEmpty()) {
@@ -50,20 +50,29 @@ public class UnsubscribeExecutor extends AbstractExecutor {
   }
 
   private Collection<Collection<?>> unsubscribe(ExecutionHandlerContext context,
-      List<String> channelNames) {
+                                                List<String> channelNames) {
     Collection<Collection<?>> response = new ArrayList<>();
-    for (String channel : channelNames) {
-      long subscriptionCount =
-          context.getPubSub().unsubscribe(channel, context.getClient());
-      if (subscriptionCount != -1) {
-        ArrayList<Object> oneItem = new ArrayList<>();
-        oneItem.add("unsubscribe");
-        oneItem.add(channel);
-        oneItem.add(subscriptionCount);
-        response.add(oneItem);
+
+    if (channelNames.isEmpty()) {
+      response.add(createItem(null, 0));
+    } else {
+      for (String channel : channelNames) {
+        long subscriptionCount =
+            context.getPubSub().unsubscribe(channel, context.getClient());
+
+        response.add(createItem(channel, subscriptionCount));
       }
     }
+
     return response;
+  }
+
+  private ArrayList<Object> createItem(String channelName, long subscriptionCount) {
+    ArrayList<Object> oneItem = new ArrayList<>();
+    oneItem.add("unsubscribe");
+    oneItem.add(channelName);
+    oneItem.add(subscriptionCount);
+    return oneItem;
   }
 
 }

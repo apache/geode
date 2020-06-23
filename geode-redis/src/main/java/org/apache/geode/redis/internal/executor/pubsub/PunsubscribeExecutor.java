@@ -36,7 +36,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+                                      ExecutionHandlerContext context) {
 
     List<String> channelNames = extractChannelNames(command);
     if (channelNames.isEmpty()) {
@@ -56,19 +56,26 @@ public class PunsubscribeExecutor extends AbstractExecutor {
   }
 
   private Collection<Collection<?>> punsubscribe(ExecutionHandlerContext context,
-      List<String> channelNames) {
+                                                 List<String> channelNames) {
     Collection<Collection<?>> response = new ArrayList<>();
-    for (String channel : channelNames) {
-      long subscriptionCount =
-          context.getPubSub().punsubscribe(new GlobPattern(channel), context.getClient());
-      if (subscriptionCount != -1) {
-        ArrayList<Object> oneItem = new ArrayList<>();
-        oneItem.add("punsubscribe");
-        oneItem.add(channel);
-        oneItem.add(subscriptionCount);
-        response.add(oneItem);
+
+    if (channelNames.isEmpty()) {
+      response.add(createItem(null, 0));
+    } else {
+      for (String channel : channelNames) {
+        long subscriptionCount =
+            context.getPubSub().punsubscribe(new GlobPattern(channel), context.getClient());
+        response.add(createItem(channel, subscriptionCount));
       }
     }
     return response;
+  }
+
+  private ArrayList<Object> createItem(String channel, long subscriptionCount) {
+    ArrayList<Object> oneItem = new ArrayList<>();
+    oneItem.add("punsubscribe");
+    oneItem.add(channel);
+    oneItem.add(subscriptionCount);
+    return oneItem;
   }
 }

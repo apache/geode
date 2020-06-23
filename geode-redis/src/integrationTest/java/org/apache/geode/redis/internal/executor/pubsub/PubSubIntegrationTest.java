@@ -33,6 +33,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.commands.ProtocolCommand;
 
+import org.apache.geode.internal.net.SocketUtils;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
@@ -66,6 +67,24 @@ public class PubSubIntegrationTest {
 
   public int getPort() {
     return server.getPort();
+  }
+
+  @Test
+  public void punsubscribe_whenNonexistent() {
+    assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.PUNSUBSCRIBE, "Nonexistent"))
+        .containsExactly("punsubscribe".getBytes(), null, 0L);
+  }
+
+  @Test
+  public void unsubscribe_whenNoSubscriptionsExist_shouldNotHang() {
+    assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.UNSUBSCRIBE))
+        .containsExactly("unsubscribe".getBytes(), null, 0L);
+  }
+
+  @Test
+  public void punsubscribe_whenNoSubscriptionsExist_shouldNotHang() {
+    assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.PUNSUBSCRIBE))
+        .containsExactly("punsubscribe".getBytes(), null, 0L);
   }
 
   @Test
@@ -138,7 +157,7 @@ public class PubSubIntegrationTest {
   }
 
   @Test
-  public void unsubscribe_onNonExistentSubscription_doesNotReportEvent() {
+  public void unsubscribe_onNonExistentSubscription() {
     MockSubscriber mockSubscriber = new MockSubscriber();
     Runnable runnable = () -> {
       subscriber.subscribe(mockSubscriber, "salutations");
@@ -158,7 +177,7 @@ public class PubSubIntegrationTest {
   }
 
   @Test
-  public void punsubscribe_onNonExistentSubscription_doesNotReportEvent() {
+  public void punsubscribe_onNonExistentSubscription() {
     MockSubscriber mockSubscriber = new MockSubscriber();
     Runnable runnable = () -> {
       subscriber.psubscribe(mockSubscriber, "salutations");
@@ -304,11 +323,6 @@ public class PubSubIntegrationTest {
 
     Long result = publisher.publish("salutations", "greetings");
     assertThat(result).isEqualTo(0);
-  }
-
-  @Test
-  public void unsubscribe_whenNoSubscriptionsExist_shouldNotHang() {
-    subscriber.sendCommand(Protocol.Command.UNSUBSCRIBE);
   }
 
   @Test
