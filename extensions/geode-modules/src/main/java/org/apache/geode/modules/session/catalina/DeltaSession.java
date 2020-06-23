@@ -352,7 +352,6 @@ public class DeltaSession extends StandardSession
   @Override
   public void invalidate() {
     super.invalidate();
-    // getOperatingRegion().destroy(this.id, true); // already done in super (remove)
     getDeltaSessionManager().getStatistics().incSessionsInvalidated();
   }
 
@@ -651,8 +650,7 @@ public class DeltaSession extends StandardSession
   @Override
   public int getSizeInBytes() {
     int size = 0;
-    @SuppressWarnings("unchecked")
-    Enumeration<String> attributeNames = (Enumeration<String>) getAttributeNames();
+    Enumeration<String> attributeNames = uncheckedCast(getAttributeNames());
     while (attributeNames.hasMoreElements()) {
       // Don't use getAttribute() because we don't want to deserialize the value.
       Object value = getAttributeWithoutDeserialize(attributeNames.nextElement());
@@ -664,13 +662,11 @@ public class DeltaSession extends StandardSession
     return size;
   }
 
-  @SuppressWarnings({"unchecked"})
   private Map<String, byte[]> getSerializedAttributes() {
     // Iterate the values and serialize them if necessary before sending them to the server. This
     // makes the application classes unnecessary on the server.
     Map<String, byte[]> serializedAttributes = new ConcurrentHashMap<>();
-    for (Object o : getAttributes().entrySet()) {
-      Map.Entry<String, Object> entry = (Map.Entry<String, Object>) o;
+    for (Map.Entry<String, Object> entry : getAttributes().entrySet()) {
       Object value = entry.getValue();
       byte[] serializedValue = value instanceof byte[] ? (byte[]) value : serialize(value);
       serializedAttributes.put(entry.getKey(), serializedValue);
