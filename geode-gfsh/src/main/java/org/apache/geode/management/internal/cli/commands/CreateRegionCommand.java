@@ -249,7 +249,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
 
         if (!regionAssociatedMembers.isEmpty()) {
           List<CliFunctionResult> regionXmlResults = executeAndGetFunctionResult(
-              FetchRegionAttributesFunction.INSTANCE, templateRegion, regionAssociatedMembers);
+              new FetchRegionAttributesFunction(), templateRegion,
+              regionAssociatedMembers);
 
           JAXBService jaxbService = new JAXBService(CacheConfig.class);
           templateRegionConfigs = regionXmlResults.stream().filter(CliFunctionResult::isSuccessful)
@@ -492,7 +493,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
         new CreateRegionFunctionArgs(regionPath, regionConfig, ifNotExists);
 
     List<CliFunctionResult> regionCreateResults = executeAndGetFunctionResult(
-        RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn);
+        new RegionCreateFunction(), functionArgs, membersToCreateRegionOn);
 
     ResultModel resultModel = ResultModel.createMemberStatusResult(regionCreateResults);
     InternalConfigurationPersistenceService service = getConfigurationPersistenceService();

@@ -19,30 +19,44 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
+
 public class GeodeEntityResolverTest {
+
+  private static final GeodeEntityResolver geodeEntityResolver = new GeodeEntityResolver();
+
+  @BeforeClass
+  public static void setup() {
+    geodeEntityResolver.init(new ServiceLoaderModuleService(LogService.getLogger()));
+  }
 
   @Test
   public void resolvesWithHttpUrl() throws IOException, SAXException {
-    InputSource inputSource = new GeodeEntityResolver().resolveEntity(null, null, null,
-        "http://geode.apache.org/schema/cache/cache-1.0.xsd");
+    InputSource inputSource =
+        geodeEntityResolver.resolveEntity(null, null, null,
+            "http://geode.apache.org/schema/cache/cache-1.0.xsd");
     assertThat(inputSource).isNotNull();
   }
 
   @Test
   public void resolvesWithHttpsUrl() throws IOException, SAXException {
-    InputSource inputSource = new GeodeEntityResolver().resolveEntity(null, null, null,
-        "https://geode.apache.org/schema/cache/cache-1.0.xsd");
+    InputSource inputSource =
+        geodeEntityResolver.resolveEntity(null, null, null,
+            "https://geode.apache.org/schema/cache/cache-1.0.xsd");
     assertThat(inputSource).isNotNull();
   }
 
   @Test
   public void doesNotResolveUnknownUrl() throws IOException, SAXException {
-    InputSource inputSource = new GeodeEntityResolver().resolveEntity(null, null, null,
-        "http://geode.apache.org/schema/should/not/exist.xsd");
+    InputSource inputSource =
+        geodeEntityResolver.resolveEntity(null, null, null,
+            "http://geode.apache.org/schema/should/not/exist.xsd");
     assertThat(inputSource).isNull();
   }
 

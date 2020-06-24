@@ -33,6 +33,9 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -125,7 +128,9 @@ public class CacheXmlRule extends AbstractDistributedRule {
   }
 
   private void invokeBefore() throws Exception {
-    DELEGATE.set(new CacheXmlCreation(createCache.get(), temporaryFolder));
+    DELEGATE.set(
+        new CacheXmlCreation(createCache.get(), temporaryFolder, new ServiceLoaderModuleService(
+            LogService.getLogger())));
   }
 
   private void invokeAfter() {
@@ -153,7 +158,8 @@ public class CacheXmlRule extends AbstractDistributedRule {
     private final SerializableTemporaryFolder temporaryFolder;
 
     CacheXmlCreation(SerializableRunnableIF createCache,
-        SerializableTemporaryFolder temporaryFolder) {
+        SerializableTemporaryFolder temporaryFolder, ModuleService moduleService) {
+      super(moduleService);
       this.createCache = createCache;
       this.temporaryFolder = temporaryFolder;
     }

@@ -67,7 +67,8 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
     Set<DistributedMember> members = getMembers(onGroups, onMember);
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
-        GatewaySenderDestroyFunction.INSTANCE, gatewaySenderDestroyFunctionArgs, members);
+        new GatewaySenderDestroyFunction(), gatewaySenderDestroyFunctionArgs,
+        members);
 
     ResultModel resultModel = ResultModel.createMemberStatusResult(functionResults);
     resultModel.setConfigObject(id);

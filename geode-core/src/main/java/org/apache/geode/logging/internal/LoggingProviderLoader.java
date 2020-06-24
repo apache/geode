@@ -28,6 +28,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Loads a {@link LoggingProvider} using this order of preference:
@@ -41,6 +42,11 @@ import org.apache.geode.logging.internal.spi.LoggingProvider;
 public class LoggingProviderLoader {
 
   private static final Logger logger = LogManager.getLogger();
+  private final ModuleService moduleService;
+
+  public LoggingProviderLoader(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   /**
    * System property that may be used to override which {@code LoggingProvider} to use.
@@ -61,7 +67,7 @@ public class LoggingProviderLoader {
 
     // 2: use ListCollectingServiceLoader and select highest priority
     SortedMap<Integer, LoggingProvider> loggingProviders = new TreeMap<>();
-    loadServiceProviders()
+    loadServiceProviders(moduleService)
         .forEach(provider -> loggingProviders.put(provider.getPriority(), provider));
 
     if (!loggingProviders.isEmpty()) {
@@ -77,8 +83,9 @@ public class LoggingProviderLoader {
     return new SimpleLoggingProvider();
   }
 
-  private Iterable<LoggingProvider> loadServiceProviders() {
-    CollectingServiceLoader<LoggingProvider> serviceLoader = new ListCollectingServiceLoader<>();
+  private Iterable<LoggingProvider> loadServiceProviders(ModuleService moduleService) {
+    CollectingServiceLoader<LoggingProvider> serviceLoader =
+        new ListCollectingServiceLoader<>(moduleService);
     Collection<LoggingProvider> loggingProviders =
         serviceLoader.loadServices(LoggingProvider.class);
     return loggingProviders;

@@ -17,59 +17,40 @@ package org.apache.geode.internal.util;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.inOrder;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ServiceConfigurationError;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
-import org.apache.geode.internal.util.ListCollectingServiceLoader.ServiceLoaderWrapper;
 import org.apache.geode.metrics.MetricsPublishingService;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.impl.Success;
 
 public class ListCollectingServiceLoaderTest {
   @Rule
   public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
-
-  @Mock
-  private ServiceLoaderWrapper<MetricsPublishingService> serviceLoaderWrapper;
-
-  @Test
-  public void loadServices_delegatesLoading() {
-    when(serviceLoaderWrapper.iterator()).thenReturn(mock(Iterator.class));
-
-    ListCollectingServiceLoader<MetricsPublishingService> collectingServiceLoader =
-        new ListCollectingServiceLoader<>(serviceLoaderWrapper);
-
-    collectingServiceLoader.loadServices(MetricsPublishingService.class);
-
-    InOrder inOrder = inOrder(serviceLoaderWrapper);
-    inOrder.verify(serviceLoaderWrapper).load(same(MetricsPublishingService.class));
-    inOrder.verify(serviceLoaderWrapper).iterator();
-  }
 
   @Test
   public void loadServices_returnsLoadedServices() {
     MetricsPublishingService service1 = mock(MetricsPublishingService.class);
     MetricsPublishingService service2 = mock(MetricsPublishingService.class);
     MetricsPublishingService service3 = mock(MetricsPublishingService.class);
-    List<MetricsPublishingService> expectedServices = asList(service1, service2, service3);
+    Set<Object> expectedServices = new HashSet<>(asList(service1, service2, service3));
+    ModuleService moduleService = mock(ModuleService.class);
 
-    when(serviceLoaderWrapper.iterator()).thenReturn(expectedServices.iterator());
+    when(moduleService.loadService(any())).thenReturn(Success.of(expectedServices));
 
     ListCollectingServiceLoader<MetricsPublishingService> collectingServiceLoader =
-        new ListCollectingServiceLoader<>(serviceLoaderWrapper);
+        new ListCollectingServiceLoader<>(moduleService);
 
     Collection<MetricsPublishingService> actualServices =
         collectingServiceLoader.loadServices(MetricsPublishingService.class);
@@ -82,15 +63,15 @@ public class ListCollectingServiceLoaderTest {
   public void loadServices_returnsLoadedServices_whenOneServiceThrows() {
     MetricsPublishingService service1 = mock(MetricsPublishingService.class);
     MetricsPublishingService service3 = mock(MetricsPublishingService.class);
-    Iterator<MetricsPublishingService> iterator = mock(Iterator.class);
-    ServiceConfigurationError error = new ServiceConfigurationError("Error message");
+    ModuleService moduleService = mock(ModuleService.class);
 
-    when(iterator.hasNext()).thenReturn(true, true, true, false);
-    when(iterator.next()).thenReturn(service1).thenThrow(error).thenReturn(service3);
-    when(serviceLoaderWrapper.iterator()).thenReturn(iterator);
+    Set<Object> services = new HashSet<>();
+    services.add(service1);
+    services.add(service3);
+    when(moduleService.loadService(any())).thenReturn(Success.of(services));
 
     ListCollectingServiceLoader<MetricsPublishingService> collectingServiceLoader =
-        new ListCollectingServiceLoader<>(serviceLoaderWrapper);
+        new ListCollectingServiceLoader<>(moduleService);
 
     Collection<MetricsPublishingService> actualServices =
         collectingServiceLoader.loadServices(MetricsPublishingService.class);

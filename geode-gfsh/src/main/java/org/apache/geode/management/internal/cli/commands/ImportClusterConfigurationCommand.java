@@ -26,14 +26,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -68,7 +64,8 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
   public static final String XML_FILE = "xml-file";
   public static final String ACTION = "action";
   public static final String ACTION_HELP =
-      "What to do with the running servers if any. APPLY would try to apply the configuration to the empty servers. STAGE would leave the running servers alone.";
+      "What to do with the running servers if any. APPLY would try to apply the "
+          + "configuration to the empty servers. STAGE would leave the running servers alone.";
 
   public enum Action {
     APPLY, STAGE
@@ -88,26 +85,26 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
       @CliOption(key = ACTION, help = ACTION_HELP, unspecifiedDefaultValue = "APPLY") Action action,
       @CliOption(key = {CliStrings.IMPORT_SHARED_CONFIG__ZIP},
           help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip)
-      throws IOException, TransformerException, SAXException, ParserConfigurationException {
+      throws IOException {
 
     if (!isSharedConfigurationRunning()) {
       return ResultModel.createError("Cluster configuration service is not running.");
     }
 
-    InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService configurationPersistenceService =
+        getConfigurationPersistenceService();
     Set<DistributedMember> servers = findMembers(group);
     File file = getUploadedFile();
 
     ResultModel result = new ResultModel();
     InfoResultModel infoSection = result.addInfo(ResultModel.INFO_SECTION);
-    ccService.lockSharedConfiguration();
+    configurationPersistenceService.lockSharedConfiguration();
     try {
       if (action == Action.APPLY && servers.size() > 0) {
         // make sure the servers are vanilla servers, users hasn't done anything on them.
         // server might belong to multiple group, so we can't just check one group's xml is null,
-        // has to make sure
-        // all group's xml are null
-        if (ccService.hasXmlConfiguration()) {
+        // has to make sure all group's xml are null
+        if (configurationPersistenceService.hasXmlConfiguration()) {
           return ResultModel.createError("Can not configure servers that are already configured.");
         }
         // if no existing cluster configuration, to be safe, further check to see if running
@@ -122,23 +119,23 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
       }
 
       // backup the old config
-      backupTheOldConfig(ccService);
+      backupTheOldConfig(configurationPersistenceService);
 
       if (zip != null) {
         Path tempDir = Files.createTempDirectory("config");
         ZipUtils.unzip(file.getAbsolutePath(), tempDir.toAbsolutePath().toString());
         // load it from the disk
-        ccService.loadSharedConfigurationFromDir(tempDir.toFile());
+        configurationPersistenceService.loadSharedConfigurationFromDir(tempDir.toFile());
         FileUtils.deleteQuietly(tempDir.toFile());
         infoSection.addLine("Cluster configuration successfully imported.");
       } else {
         // update the xml in the cluster configuration service
-        Configuration configuration = ccService.getConfiguration(group);
+        Configuration configuration = configurationPersistenceService.getConfiguration(group);
         if (configuration == null) {
           configuration = new Configuration(group);
         }
-        configuration.setCacheXmlFile(file);
-        ccService.setConfiguration(group, configuration);
+        configuration.setCacheXmlFile(file, getModuleService());
+        configurationPersistenceService.setConfiguration(group, configuration);
         logger.info(
             configuration.getConfigName() + "xml content: \n" + configuration.getCacheXmlContent());
         infoSection.addLine(
@@ -146,7 +143,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
       }
     } finally {
       FileUtils.deleteQuietly(file);
-      ccService.unlockSharedConfiguration();
+      configurationPersistenceService.unlockSharedConfiguration();
     }
 
     if (servers.size() > 0) {

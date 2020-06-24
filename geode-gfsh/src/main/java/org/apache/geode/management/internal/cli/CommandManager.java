@@ -21,10 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.springframework.shell.converters.EnumConverter;
@@ -37,7 +35,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.GfshCommand;
@@ -45,6 +42,8 @@ import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -72,21 +71,22 @@ public class CommandManager {
    * this constructor is used from Gfsh VM. We are getting the user-command-package from system
    * environment. used by Gfsh.
    */
-  public CommandManager() {
-    this(null, null);
+  public CommandManager(ModuleService moduleService) {
+    this(null, null, moduleService);
   }
 
   /**
    * this is used when getting the instance in a cache server. We are getting the
    * user-command-package from distribution properties. used by OnlineCommandProcessor.
    */
-  public CommandManager(final Properties cacheProperties, InternalCache cache) {
+  public CommandManager(final Properties cacheProperties, InternalCache cache,
+      ModuleService moduleService) {
     if (cacheProperties != null) {
       this.cacheProperties = cacheProperties;
     }
     this.cache = cache;
     logWrapper = LogWrapper.getInstance(cache);
-    loadCommands();
+    loadCommands(moduleService);
   }
 
   private static void raiseExceptionIfEmpty(Set<Class<?>> foundClasses, String errorFor)
@@ -134,11 +134,13 @@ public class CommandManager {
 
     // Load commands found in all of the packages
     try {
-      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
-          restrictedToPackages.toArray(new String[] {}));
+      Set<Class<?>> foundClasses =
+          scanner.scanPackagesForClassesImplementing(CommandMarker.class,
+              restrictedToPackages.toArray(new String[] {}));
       for (Class<?> klass : foundClasses) {
         try {
-          add((CommandMarker) klass.newInstance());
+          CommandMarker commandMarker = (CommandMarker) klass.newInstance();
+          add(commandMarker);
         } catch (Exception e) {
           logWrapper.warning("Could not load User Commands from: " + klass + " due to "
               + e.getLocalizedMessage()); // continue
@@ -152,28 +154,29 @@ public class CommandManager {
   }
 
   /**
-   * Loads commands via {@link ServiceLoader} from {@link ClassPathLoader}.
+   * Loads commands via {@link ModuleService}.
    *
    * @since GemFire 8.1
    */
-  private void loadPluginCommands() {
-    ServiceLoader<CommandMarker> loader =
-        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
-    Iterator<CommandMarker> iterator = loader.iterator();
-    try {
-      while (iterator.hasNext()) {
+  private void loadPluginCommands(ModuleService moduleService) {
+    ModuleServiceResult<Set<CommandMarker>> serviceLoadResult =
+        moduleService.loadService(CommandMarker.class);
+
+    serviceLoadResult.ifSuccessful(commandMarkers -> {
+      commandMarkers.forEach(commandMarker -> {
         try {
-          add(iterator.next());
+          add(commandMarker);
         } catch (Throwable t) {
           logWrapper.warning("Could not load plugin command: " + t.getMessage());
         }
-      }
-    } catch (Throwable th) {
-      logWrapper.severe("Could not load plugin commands in the latest classLoader.", th);
-    }
+      });
+    });
+    serviceLoadResult.ifFailure(errorMessage -> logWrapper
+        .severe(String.format("Could not load plugin commands in the latest classLoader. %s",
+            errorMessage)));
   }
 
-  private void loadCommands() {
+  private void loadCommands(ModuleService moduleService) {
     Set<String> userCommandPackages = getUserCommandPackages();
     Set<String> packagesToScan = new HashSet<>(userCommandPackages);
     packagesToScan.add("org.apache.geode.management.internal.cli.converters");
@@ -184,7 +187,7 @@ public class CommandManager {
     // Create one scanner to be used everywhere
     try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan)) {
       loadUserCommands(scanner, userCommandPackages);
-      loadPluginCommands();
+      loadPluginCommands(moduleService);
       loadGeodeCommands(scanner);
       loadConverters(scanner);
     }
@@ -239,7 +242,9 @@ public class CommandManager {
 
       for (Class<?> klass : foundClasses) {
         try {
-          add((CommandMarker) klass.newInstance());
+          CommandMarker commandMarker = (CommandMarker) klass.newInstance();
+
+          add(commandMarker);
         } catch (Exception e) {
           logWrapper.warning(
               "Could not load Command from: " + klass + " due to " + e.getLocalizedMessage()); // continue

@@ -24,11 +24,18 @@ apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-logging'))
+  compileOnly(project(':geode-common-services'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-membership'))
   compile(project(':geode-core'))
   compile(project(':geode-protobuf-messages'))
+
+  testImplementation(project(":geode-modules"))
+  integrationTestImplementation(project(":geode-modules"))
+  acceptanceTestImplementation(project(":geode-modules"))
+  distributedTestImplementation(project(":geode-modules"))
+
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -41,7 +48,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-protobuf:geode-protobuf-test'))
-  distributedTestImplementation(project(':geode-dunit')){
+  distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   distributedTestImplementation(project(':geode-junit')) {

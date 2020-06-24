@@ -21,6 +21,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -28,6 +30,7 @@ public class ProtobufProtocolServiceJUnitTest {
   @Test
   public void initializeStatistics() {
     ProtobufProtocolService service = new ProtobufProtocolService();
+    service.init(new ServiceLoaderModuleService(LogService.getLogger()));
     service.initializeStatistics("first", new DummyStatisticsFactory());
     ClientStatistics firstStatistics = service.getStatistics();
     service.initializeStatistics("second", new DummyStatisticsFactory());

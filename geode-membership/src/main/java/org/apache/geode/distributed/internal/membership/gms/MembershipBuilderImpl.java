@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.membership.gms.locator.MembershipLo
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * MembershipBuilderImpl is the implementation of MembershipBuilder. It can construct
@@ -51,15 +52,19 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
 
   private MembershipLocatorImpl<ID> membershipLocator;
 
+  private ModuleService moduleService;
+
   public MembershipBuilderImpl(
       final TcpSocketCreator socketCreator,
       final TcpClient locatorClient,
       final DSFIDSerializer serializer,
-      final MemberIdentifierFactory<ID> memberFactory) {
+      final MemberIdentifierFactory<ID> memberFactory,
+      final ModuleService moduleService) {
     this.socketCreator = socketCreator;
     this.locatorClient = locatorClient;
     this.serializer = serializer;
     this.memberFactory = memberFactory;
+    this.moduleService = moduleService;
   }
 
   @Override
@@ -116,7 +121,7 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
     if (membershipLocator != null) {
       services.setLocators(membershipLocator.getGMSLocator(), membershipLocator);
     }
-    services.init();
+    services.init(moduleService);
     return gmsMembership;
   }
 

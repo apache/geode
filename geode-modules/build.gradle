@@ -50,7 +50,7 @@ def moduleCopyTasks = []
 def geodeProjects = ['geode-common-services', 'geode-common']
 
 facets.each { thisConfig ->
-    if (thisConfig.name.contains("WithoutManifest")) {
+    if (thisConfig.name.contains("WithManifest")) {
         tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
             into "$buildDir/libs"
             from configurations.getByName("${thisConfig.name}RuntimeClasspath")
@@ -60,29 +60,12 @@ facets.each { thisConfig ->
             description 'Assembles the jar archive that contains the $it classes without a manifest file'
             from sourceSets.getByName(thisConfig.name).output
 
-            def ss = sourceSets.getByName(thisConfig.name)
-            ss.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
-            ss.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
-
-            archiveName "${thisConfig.name}-1.0".concat(".jar")
-            moduleTasks.add(it.name)
-        }
-
-
-    }
-    if (thisConfig.name.contains("WithManifest")) {
-        tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
-            into "$buildDir/libs"
-            from configurations.getByName("${thisConfig.name}RuntimeClasspath")
-            moduleCopyTasks.add(it.name)
-        }
-        tasks.create("${thisConfig.name}Jar", Jar) {
-            description 'Assembles the jar archive that contains the $it classes with a manifest file'
-            from sourceSets.getByName(thisConfig.name).output
-
             def sourceSet = sourceSets.getByName(thisConfig.name)
             sourceSet.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
             sourceSet.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
+
+            archiveName "${thisConfig.name}-1.0".concat(".jar")
+            moduleTasks.add(it.name)
 
             doFirst {
                 def projectDependencies = []
@@ -116,6 +99,28 @@ facets.each { thisConfig ->
                     attributes("Dependent-Modules": projectDependencies.join(' '))
                 }
             }
+        }
+
+    }
+    if (thisConfig.name.contains("WithoutManifest")) {
+        tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
+            into "$buildDir/libs"
+            from configurations.getByName("${thisConfig.name}RuntimeClasspath")
+            moduleCopyTasks.add(it.name)
+        }
+        tasks.create("${thisConfig.name}Jar", Jar) {
+            description 'Assembles the jar archive that contains the $it classes with a manifest file'
+            from sourceSets.getByName(thisConfig.name).output
+
+            def sourceSet = sourceSets.getByName(thisConfig.name)
+            sourceSet.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
+            sourceSet.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
+
+            doFirst {
+                manifest {
+                   attributes.clear()
+                }
+            }
             archiveName "${thisConfig.name}-1.0".concat(".jar")
             moduleTasks.add(it.name)
         }
@@ -143,15 +148,24 @@ tasks.test.dependsOn(moduleTasks)
 tasks.test.dependsOn(moduleCopyTasks)
 
 dependencies {
+    compile(platform(project(':boms:geode-all-bom')))
     testCompile(group: 'junit', name: 'junit', version: '4.12')
     testImplementation('org.assertj:assertj-core')
 
     testImplementation('org.mockito:mockito-core')
 
-    compile(project(':geode-common-services'))
+    implementation(project(':geode-common-services'))
+
+    implementation(project(':geode-common'))
+
+    implementation('org.apache.commons:commons-lang3')
+
+    implementation(project(':geode-common'))
+
+    implementation('org.apache.commons:commons-lang3')
 
     implementation('org.apache.logging.log4j:log4j-core')
-    compile('org.jboss.modules:jboss-modules')
+    implementation('org.jboss.modules:jboss-modules')
 
     module1WithoutManifestCompileOnly(sourceSets.test.output)
     module2WithoutManifestCompileOnly(sourceSets.test.output)
@@ -163,7 +177,7 @@ dependencies {
     module4WithManifestCompileOnly(sourceSets.test.output)
     module5WithManifestCompileOnly(sourceSets.test.output)
 
-    module1WithManifestCompile('com.google.guava:guava:29.0-jre')
+    module1WithManifestCompile('com.google.guava:guava')
 
     testCompile(project(":geode-core"))
 }

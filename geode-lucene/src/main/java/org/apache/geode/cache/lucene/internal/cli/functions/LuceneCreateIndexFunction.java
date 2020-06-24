@@ -35,6 +35,7 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -42,6 +43,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.ManagementUtils;
+import org.apache.geode.services.module.ModuleService;
 
 
 /**
@@ -107,7 +109,10 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       if (LuceneServiceImpl.LUCENE_REINDEX) {
         indexFactory.create(indexName, regionPath, true);
         if (cache.getRegion(regionPath) != null) {
-          xmlEntity = getXmlEntity(regionPath);
+          ModuleService moduleService =
+              ((InternalCache) context.getCache()).getInternalDistributedSystem()
+                  .getModuleService();
+          xmlEntity = getXmlEntity(regionPath, moduleService);
         }
       } else {
         indexFactory.create(indexName, regionPath, false);
@@ -121,9 +126,9 @@ public class LuceneCreateIndexFunction implements InternalFunction {
     }
   }
 
-  protected XmlEntity getXmlEntity(String regionPath) {
+  protected XmlEntity getXmlEntity(String regionPath, ModuleService moduleService) {
     String regionName = StringUtils.stripStart(regionPath, SEPARATOR);
-    return new XmlEntity(CacheXml.REGION, "name", regionName);
+    return new XmlEntity(CacheXml.REGION, "name", regionName, moduleService);
   }
 
   private LuceneSerializer toSerializer(String serializerName)

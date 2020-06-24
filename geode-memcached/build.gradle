@@ -22,6 +22,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+  compileOnly(project(':geode-common-services'))
 
   implementation(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-core'))

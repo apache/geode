@@ -52,6 +52,8 @@ import org.apache.geode.internal.util.JavaCommandBuilder;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 /**
  * A command line utility that is responsible for administering a stand-alone GemFire JMX
@@ -363,7 +365,9 @@ public class AgentLauncher {
 
     writeStatus(createStatus(this.basename, STARTING, OSProcess.getId()));
 
-    final Agent agent = createAgent((Properties) options.get(AGENT_PROPS));
+    final Agent agent =
+        createAgent((Properties) options.get(AGENT_PROPS), new ServiceLoaderModuleService(
+            LogService.getLogger()));
 
     final Thread thread = createAgentProcessThread(agent);
     thread.start();
@@ -372,7 +376,8 @@ public class AgentLauncher {
     pollAgentForPendingShutdown(agent);
   }
 
-  private Agent createAgent(final Properties props) throws IOException, AdminException {
+  private Agent createAgent(final Properties props, ModuleService moduleService)
+      throws IOException, AdminException {
     ClusterDistributionManager.setIsDedicatedAdminVM(true);
     SystemFailure.setExitOK(true);
 
@@ -387,7 +392,7 @@ public class AgentLauncher {
     OSProcess.redirectOutput(new File(config.getLogFile())); // redirect output to the configured
                                                              // log file
 
-    return AgentFactory.getAgent(config);
+    return AgentFactory.getAgent(config, moduleService);
   }
 
   private UncaughtExceptionHandler createUncaughtExceptionHandler() {

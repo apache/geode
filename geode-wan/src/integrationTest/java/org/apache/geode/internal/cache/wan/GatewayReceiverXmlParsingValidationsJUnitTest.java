@@ -20,13 +20,13 @@ import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -44,6 +44,9 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -81,14 +84,19 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
         createTempFileFromResource(getClass(),
             getClass().getSimpleName() + "." + testName.getMethodName() + ".cache.xml")
                 .getAbsolutePath();
-    cache = new CacheFactory().set(MCAST_PORT, "0").set(CACHE_XML_FILE, cacheXmlFileName).create();
+    cache =
+        new CacheFactory().setModuleService(new ServiceLoaderModuleService(LogService.getLogger()))
+            .set(MCAST_PORT, "0")
+            .set(CACHE_XML_FILE, cacheXmlFileName).create();
 
     assertThat(cache.getGatewayReceivers()).isNotEmpty();
     GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
 
-    ServiceLoader<WANFactory> loader = ServiceLoader.load(WANFactory.class);
-    Iterator<WANFactory> itr = loader.iterator();
-    assertThat(itr.hasNext()).isTrue();
+    ModuleServiceResult<Set<WANFactory>> serviceLoadResult =
+        new ServiceLoaderModuleService(LogService.getLogger()).loadService(WANFactory.class);
+
+    assertTrue(serviceLoadResult.isSuccessful());
+    assertFalse(serviceLoadResult.getMessage().isEmpty());
 
     assertEquals(1501, receiver.getEndPort());
     assertEquals(1500, receiver.getStartPort());

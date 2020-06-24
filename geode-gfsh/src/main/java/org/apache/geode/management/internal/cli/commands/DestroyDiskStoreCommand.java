@@ -58,7 +58,8 @@ public class DestroyDiskStoreCommand extends SingleGfshCommand {
     DestroyDiskStoreFunctionArgs functionArgs = new DestroyDiskStoreFunctionArgs(name, ifExist);
 
     List<CliFunctionResult> results =
-        executeAndGetFunctionResult(new DestroyDiskStoreFunction(), functionArgs, targetMembers);
+        executeAndGetFunctionResult(new DestroyDiskStoreFunction(), functionArgs,
+            targetMembers);
 
     ResultModel result = ResultModel.createMemberStatusResult(results, ifExist);
     result.setConfigObject(name);

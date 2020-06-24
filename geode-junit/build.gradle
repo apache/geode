@@ -23,7 +23,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
 
-  testImplementation(project(':geode-common'))
+  compileOnly(project(':geode-common-services'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-logging'))
@@ -46,18 +46,20 @@ dependencies {
   api('com.google.guava:guava')
   api('com.jayway.jsonpath:json-path')
   api('commons-io:commons-io')
-  
+
   api('org.apache.commons:commons-lang3')
   api('org.apache.logging.log4j:log4j-api')
-  
+
   api('org.awaitility:awaitility')
   api('org.bouncycastle:bcpkix-jdk15on')
   api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
-  
+
   api('org.skyscreamer:jsonassert')
 
   testImplementation('pl.pragmatists:JUnitParams')
+  testImplementation(project(':geode-common'))
+  testCompileOnly(project(':geode-common-services'))
 
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

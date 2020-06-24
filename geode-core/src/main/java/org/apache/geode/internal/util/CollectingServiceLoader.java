@@ -15,11 +15,12 @@
 package org.apache.geode.internal.util;
 
 import java.util.Collection;
-import java.util.ServiceLoader;
+
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Loads and returns a collection of all currently loadable implementations of the given service
- * interface using {@link ServiceLoader}.
+ * interface using {@link ModuleService}.
  */
 public interface CollectingServiceLoader<S> {
 

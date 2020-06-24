@@ -75,7 +75,8 @@ public class DestroyRegionCommand extends GfshCommand {
     // deem the destroy action successful, since if one member destroy successfully, the subsequent
     // destroy on a another member would probably throw RegionDestroyedException
     List<CliFunctionResult> resultsList =
-        executeAndGetFunctionResult(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
+        executeAndGetFunctionResult(new RegionDestroyFunction(), regionPath,
+            regionMembersList);
 
 
     ResultModel result = ResultModel.createMemberStatusResult(resultsList);

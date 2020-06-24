@@ -68,7 +68,8 @@ public class DestroyAsyncEventQueueCommand extends GfshCommand {
 
     Set<DistributedMember> members = getMembers(onGroups, null);
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
-        new DestroyAsyncEventQueueFunction(), asyncEventQueueDestoryFunctionArgs, members);
+        new DestroyAsyncEventQueueFunction(), asyncEventQueueDestoryFunctionArgs,
+        members);
 
     ResultModel result = ResultModel.createMemberStatusResult(functionResults);
     XmlEntity xmlEntity = getXmlEntity(functionResults);

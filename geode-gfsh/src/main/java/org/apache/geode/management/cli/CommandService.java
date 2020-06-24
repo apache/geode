@@ -22,8 +22,11 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DependenciesNotFoundException;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 /**
  * Processes remote GemFire Command Line Interface (CLI) commands. Refer to the vFabric GemFire
@@ -105,6 +108,7 @@ public abstract class CommandService {
   /* ************** Methods to be implemented by sub-classes END ************ */
 
   /* **************************** factory methods *************************** */
+
   /**
    * Returns a newly created or existing instance of the
    * <code>CommandService<code> associated with the
@@ -114,6 +118,20 @@ public abstract class CommandService {
    * @throws CommandServiceException If command service could not be initialized.
    */
   public static CommandService createLocalCommandService(Cache cache)
+      throws CommandServiceException {
+    return createLocalCommandService(cache, new ServiceLoaderModuleService(LogService.getLogger()));
+  }
+
+  /**
+   * Returns a newly created or existing instance of the
+   * <code>CommandService<code> associated with the
+   * specified <code>Cache</code>.
+   *
+   * @param cache Underlying <code>Cache</code> instance to be used to create a Command Service.
+   * @param moduleService the {@link ModuleService} to load services and resources
+   * @throws CommandServiceException If command service could not be initialized.
+   */
+  public static CommandService createLocalCommandService(Cache cache, ModuleService moduleService)
       throws CommandServiceException {
     if (cache == null) {
       throw new CacheClosedException("Can not create command service as cache doesn't exist.");
@@ -133,7 +151,7 @@ public abstract class CommandService {
 
       localCommandService =
           new org.apache.geode.management.internal.cli.remote.MemberCommandService(
-              (InternalCache) cache);
+              (InternalCache) cache, moduleService);
     }
 
     return localCommandService;

@@ -100,6 +100,7 @@ import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.logging.internal.LoggingSession;
 import org.apache.geode.logging.internal.NullLoggingSession;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Represents a GemFire distributed system for remote administration/management.
@@ -204,7 +205,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    *
    * @param config configuration defining this distributed system
    */
-  public AdminDistributedSystemImpl(DistributedSystemConfigImpl config) {
+  public AdminDistributedSystemImpl(DistributedSystemConfigImpl config,
+      ModuleService moduleService) {
     loggingSession = createLoggingSession();
 
     // init from config...
@@ -235,7 +237,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       this.logWriter = LogWriterFactory.createLogWriterLogger(this.config.createLogConfig(), false);
       if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
         // LOG: changed statement from config to info
-        this.logWriter.info(new Banner().getString());
+        this.logWriter.info(new Banner(moduleService).getString());
       } else {
         logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
       }

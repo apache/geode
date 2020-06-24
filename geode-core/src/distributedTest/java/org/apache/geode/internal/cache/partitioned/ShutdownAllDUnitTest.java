@@ -57,6 +57,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -620,7 +622,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         try {
           config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
           adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
-              .getDistributedSystem(config);
+              .getDistributedSystem(config, new ServiceLoaderModuleService(LogService.getLogger()));
           adminDS.connect();
           Set members = adminDS.shutDownAllMembers();
           int num = members == null ? 0 : members.size();
@@ -846,7 +848,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         try {
           config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
           adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
-              .getDistributedSystem(config);
+              .getDistributedSystem(config, new ServiceLoaderModuleService(LogService.getLogger()));
           adminDS.connect();
           Set members = adminDS.shutDownAllMembers(timeout);
           int num = members == null ? 0 : members.size();
