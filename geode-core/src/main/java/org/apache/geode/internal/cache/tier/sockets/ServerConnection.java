@@ -1248,8 +1248,11 @@ public abstract class ServerConnection implements Runnable {
   }
 
   void registerWithSelector2(Selector s) throws ClosedChannelException {
-    // getSelectableChannel().register(s, SelectionKey.OP_READ, this);
-    getSelectableChannel().register(s, SelectionKey.OP_WRITE | SelectionKey.OP_READ, this);
+    if (getSSLEngine() == null) {
+      getSelectableChannel().register(s, SelectionKey.OP_READ, this);
+    } else {
+      getSelectableChannel().register(s, SelectionKey.OP_WRITE | SelectionKey.OP_READ, this);
+    }
   }
 
   /**
