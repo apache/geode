@@ -28,3 +28,41 @@ publishing {
     }
   }
 }
+
+gradle.taskGraph.whenReady({ graph ->
+  tasks.withType(Jar).each { jar ->
+    jar.doFirst {
+      def projectDependencies = []
+      def runtimeList = []
+
+      configurations.runtimeClasspath
+              .collect { it.name - ".jar" }
+              .each { dependency ->
+                if (dependency.startsWith("geode-")) {
+                  projectDependencies.add(dependency)
+                } else {
+                  runtimeList.add(dependency)
+                }
+              }
+
+      projectDependencies.clone().each { projectDependency ->
+        def geodeProject = projectDependency - "-${version}.jar"
+        if (projectDependencies.contains(geodeProject)) {
+          def parentProject = project(":$geodeProject" - "-$version")
+          if (parentProject != null) {
+            def collect = parentProject.configurations.runtimeClasspath.collect { it.name - ".jar" }
+            runtimeList.removeAll(collect)
+            projectDependencies.removeAll(collect)
+          }
+        }
+      }
+
+      manifest {
+        attributes.put("Class-Path", runtimeList.join(' '))
+        attributes.put("Dependent-Modules", projectDependencies.join(' '))
+        attributes.put("Module-Name", project.name)
+      }
+    }
+  }
+})
+
