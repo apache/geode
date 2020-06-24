@@ -113,7 +113,8 @@ public class DiskStoreManagementIntegrationTest {
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
     assertThatThrownBy(() -> client.create(diskStore))
-        .hasMessageContaining("ENTITY_EXISTS: DiskStore 'storeone' already exists in group cluster");
+        .hasMessageContaining(
+            "ENTITY_EXISTS: DiskStore 'storeone' already exists in group cluster");
 
     assertManagementResult(client.delete(diskStore))
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
@@ -127,7 +128,8 @@ public class DiskStoreManagementIntegrationTest {
     diskStore.setDiskUsageCriticalPercentage(120.0F);
 
     assertThatThrownBy(() -> client.create(diskStore))
-        .hasMessageContaining("ILLEGAL_ARGUMENT: Disk usage critical percentage must be set to a value between 0-100.  The value 120.0 is invalid");
+        .hasMessageContaining(
+            "ILLEGAL_ARGUMENT: Disk usage critical percentage must be set to a value between 0-100.  The value 120.0 is invalid");
   }
 
   @Test
@@ -139,7 +141,8 @@ public class DiskStoreManagementIntegrationTest {
     assertManagementResult(client.create(diskStore))
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
-    ClusterManagementGetResult<DiskStore, DiskStoreInfo> clusterManagementGetResult = client.get(diskStore);
+    ClusterManagementGetResult<DiskStore, DiskStoreInfo> clusterManagementGetResult =
+        client.get(diskStore);
     assertThat(clusterManagementGetResult.isSuccessful());
     assertThat(clusterManagementGetResult.getResult().getId()).isEqualTo("storeone");
 
