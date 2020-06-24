@@ -141,7 +141,7 @@ public class GeodeRedisServer {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
       passiveExpirationManager.stop();
-      nettyRedisServer.close();
+      nettyRedisServer.stop();
       shutdown = true;
     }
   }

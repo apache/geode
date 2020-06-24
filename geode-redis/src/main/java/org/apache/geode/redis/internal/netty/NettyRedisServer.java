@@ -136,7 +136,7 @@ public class NettyRedisServer {
     }
   }
 
-  public void close() {
+  public void stop() {
     ChannelFuture closeFuture = null;
     if (serverChannel != null) {
       closeFuture = serverChannel.closeFuture();
