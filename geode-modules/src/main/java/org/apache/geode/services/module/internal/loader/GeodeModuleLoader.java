@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.jboss.modules.DelegatingModuleLoader;
 import org.jboss.modules.GeodeModuleFinder;
 import org.jboss.modules.Module;
@@ -62,7 +61,7 @@ import org.apache.geode.services.result.impl.Success;
 public class GeodeModuleLoader extends DelegatingModuleLoader {
   private final DelegatingModuleFinder moduleFinder;
   private final Map<String, ModuleSpec> moduleSpecs = new ConcurrentHashMap<>();
-  private final Logger logger;
+  // private final Logger logger;
 
   /**
    * Construct a {@link GeodeModuleLoader} with a {@link Logger}
@@ -72,10 +71,11 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
     this(new DelegatingModuleFinder(logger), logger);
   }
 
-  private GeodeModuleLoader(DelegatingModuleFinder moduleFinder, Logger logger) {
+  // private GeodeModuleLoader(DelegatingModuleFinder moduleFinder, Logger logger) {
+  private GeodeModuleLoader(DelegatingModuleFinder moduleFinder) {
     super(Module.getSystemModuleLoader(), moduleFinder);
     this.moduleFinder = moduleFinder;
-    this.logger = logger;
+    // this.logger = logger;
   }
 
 
@@ -93,7 +93,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
     } else {
       String errorMessage =
           "Module could not be unloaded because either the module or module name is null";
-      logger.debug(errorMessage);
+      // logger.debug(errorMessage);
       return Failure.of(errorMessage);
     }
   }

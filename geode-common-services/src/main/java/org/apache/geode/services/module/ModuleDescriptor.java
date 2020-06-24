@@ -85,6 +85,10 @@ public class ModuleDescriptor {
     return name + (version != null ? "-" + version : "");
   }
 
+  public boolean requiresJDKPaths() {
+    return requiresJDKPaths;
+  }
+
   /**
    * Returns {@literal true} if this {@link ModuleDescriptor} is dependent on JDK path and
    * {@literal false} otherwise.

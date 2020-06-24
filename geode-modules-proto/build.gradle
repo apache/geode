@@ -19,22 +19,17 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
-apply from: "${project.projectDir}/../gradle/jmh.gradle"
+
+repositories {
+    mavenCentral()
+}
 
 dependencies {
-  // main
-  implementation(platform(project(':boms:geode-all-bom')))
-  implementation('com.fasterxml.jackson.core:jackson-databind')
-  implementation('org.apache.commons:commons-lang3')
+    testCompile(group: 'junit', name: 'junit', version: '4.12')
+    testImplementation('org.assertj:assertj-core')
 
+    compile(platform(project(':boms:geode-all-bom')))
 
-  // test
-  implementation('org.apache.commons:commons-lang3')
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-
-
-  // jmhTest
-  jmhTestImplementation('junit:junit')
-  jmhTestImplementation('org.assertj:assertj-core')
+    implementation(project(':geode-modules'))
+    implementation(project(':geode-common-services'))
 }
