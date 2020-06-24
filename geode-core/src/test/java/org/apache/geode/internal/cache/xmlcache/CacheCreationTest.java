@@ -51,6 +51,7 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.services.module.ModuleService;
 
 public class CacheCreationTest {
 
@@ -290,7 +291,7 @@ public class CacheCreationTest {
     when(internalCache.createGatewayReceiverFactory()).thenReturn(receiverFactory);
     when(receiverFactory.create()).thenReturn(receiver);
 
-    cacheCreation.create(internalCache);
+    cacheCreation.create(internalCache, ModuleService.DEFAULT);
 
     InOrder inOrder = inOrder(internalCache, receiverFactory);
     inOrder.verify(internalCache).createGatewayReceiverFactory();

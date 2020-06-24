@@ -138,25 +138,21 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   public static final int MAX_POOL_SIZE =
       Integer.getInteger(GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
   public static final int POOL_IDLE_TIMEOUT = 60 * 1000;
-
-  private static final Logger logger = LogService.getLogger();
-
   /**
    * system property name for forcing an locator distribution manager type
    */
   public static final String FORCE_LOCATOR_DM_TYPE = "Locator.forceLocatorDMType";
-
   /**
    * system property name for inhibiting DM banner
    */
   public static final String INHIBIT_DM_BANNER = "Locator.inhibitDMBanner";
-
   /**
    * system property name for forcing locators to be preferred as coordinators
    */
   public static final String LOCATORS_PREFERRED_AS_COORDINATORS =
       GEMFIRE_PREFIX + "disable-floating-coordinator";
-
+  private static final Logger logger = LogService.getLogger();
+  private static final Object locatorLock = new Object();
   /**
    * the locator hosted by this JVM. As of 7.0 it is a singleton.
    *
@@ -164,9 +160,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   @MakeNotStatic
   private static InternalLocator locator;
-
-  private static final Object locatorLock = new Object();
-
   private final Set<RestartHandler> restartHandlers = new CopyOnWriteHashSet<>();
   private final LocatorMembershipListener locatorListener;
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
@@ -174,32 +167,30 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private final LocatorStats locatorStats;
   private final Path workingDirectory;
   private final MembershipLocator<InternalDistributedMember> membershipLocator;
-
+  // synchronization lock that ensures we only have one thread performing location services
+  // restart at a time
+  private final Object servicesRestartLock = new Object();
   /**
    * whether the locator was stopped during forced-disconnect processing but a reconnect will occur
    */
   private volatile boolean stoppedForReconnect;
   private volatile boolean reconnected;
-
   /**
    * whether the locator was stopped during forced-disconnect processing
    */
   private volatile boolean forcedDisconnect;
   private volatile boolean isSharedConfigurationStarted;
   private volatile Thread restartThread;
-
   /**
    * The distributed system owned by this locator, if any. Note that if a ds already exists because
    * the locator is being colocated in a normal member this field will be null.
    */
   private InternalDistributedSystem internalDistributedSystem;
-
   /**
    * The cache owned by this locator, if any. Note that if a cache already exists because the
    * locator is being colocated in a normal member this field will be null.
    */
   private InternalCache internalCache;
-
   /**
    * product use logging
    */
@@ -207,18 +198,149 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private boolean peerLocator;
   private ServerLocator serverLocator;
   private Properties env;
-
   private DistributionConfigImpl distributionConfig;
   private WanLocatorDiscoverer locatorDiscoverer;
   private InternalConfigurationPersistenceService configurationPersistenceService;
   private ClusterManagementService clusterManagementService;
-  // synchronization lock that ensures we only have one thread performing location services
-  // restart at a time
-  private final Object servicesRestartLock = new Object();
+
+  /**
+   * Creates a new {@code Locator} with the given port, log file, logWriter, and bind address.
+   *
+   * @param port the tcp/ip port to listen on
+   * @param logFile the file that log messages should be written to
+   * @param logWriter a log writer that should be used (logFile parameter is ignored)
+   * @param securityLogWriter the log writer to be used for security related log messages
+   * @param hostnameForClients the name to give to clients for connecting to this locator
+   * @param distributedSystemProperties optional properties to configure the distributed system
+   *        (e.g., mcast addr/port, other locators)
+   * @param distributionConfig the config if being called from a distributed system; otherwise null.
+   * @param workingDirectory the working directory to use for files
+   */
+  @VisibleForTesting
+  InternalLocator(int port, LoggingSession loggingSession, File logFile,
+      InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
+      String hostnameForClients, Properties distributedSystemProperties,
+      DistributionConfigImpl distributionConfig, Path workingDirectory) {
+    this.logFile = logFile;
+    this.bindAddress = bindAddress;
+    this.hostnameForClients = hostnameForClients;
+
+    this.workingDirectory = workingDirectory;
+
+
+    env = new Properties();
+
+    // set bind-address explicitly only if not wildcard and let any explicit
+    // value in distributedSystemProperties take precedence
+    if (bindAddress != null && !bindAddress.isAnyLocalAddress()) {
+      env.setProperty(BIND_ADDRESS, bindAddress.getHostAddress());
+    }
+
+    if (distributedSystemProperties != null) {
+      env.putAll(distributedSystemProperties);
+    }
+    env.setProperty(CACHE_XML_FILE, "");
+
+    // create a DC so that all of the lookup rules, gemfire.properties, etc,
+    // are considered and we have a config object we can trust
+    if (distributionConfig == null) {
+      distributionConfig = new DistributionConfigImpl(env);
+      env.clear();
+      env.putAll(distributionConfig.getProps());
+    }
+    this.distributionConfig = distributionConfig;
+
+    boolean hasLogFileButConfigDoesNot =
+        this.logFile != null && this.distributionConfig.getLogFile()
+            .toString().equals(DistributionConfig.DEFAULT_LOG_FILE.toString());
+    if (logWriter == null && hasLogFileButConfigDoesNot) {
+      // LOG: this is(was) a hack for when logFile and config don't match -- if config specifies a
+      // different log-file things will break!
+      this.distributionConfig.unsafeSetLogFile(this.logFile);
+    }
+
+    if (loggingSession == null) {
+      throw new Error("LoggingSession must not be null");
+    }
+    this.loggingSession = loggingSession;
+
+    // LOG: create LogWriters for GemFireTracer (or use whatever was passed in)
+    if (logWriter == null) {
+      LogWriterFactory.createLogWriterLogger(this.distributionConfig, false);
+      if (logger.isDebugEnabled()) {
+        logger.debug("LogWriter for locator is created.");
+      }
+    }
+
+    if (securityLogWriter == null) {
+      securityLogWriter = LogWriterFactory.createLogWriterLogger(this.distributionConfig, true);
+      securityLogWriter.fine("SecurityLogWriter for locator is created.");
+    }
+
+    SocketCreatorFactory.setDistributionConfig(this.distributionConfig);
+
+    locatorListener = WANServiceProvider
+        .createLocatorMembershipListener(internalDistributedSystem.getModuleService());
+    if (locatorListener != null) {
+      // We defer setting the port until the handler is init'd - that way we'll have an actual port
+      // in the case where we're starting with port = 0.
+      locatorListener.setConfig(getConfig());
+    }
+
+    locatorStats = new LocatorStats();
+
+    InternalLocatorTcpHandler handler = new InternalLocatorTcpHandler();
+    try {
+      MembershipConfig config = new ServiceConfig(
+          new RemoteTransportConfig(distributionConfig, MemberIdentifier.LOCATOR_DM_TYPE),
+          distributionConfig);
+      Supplier<ExecutorService> executor = () -> CoreLoggingExecutors
+          .newThreadPoolWithSynchronousFeed("locator request thread ",
+              MAX_POOL_SIZE, new DelayedPoolStatHelper(),
+              POOL_IDLE_TIMEOUT,
+              new ThreadPoolExecutor.CallerRunsPolicy());
+      final TcpSocketCreator socketCreator = SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
+      membershipLocator =
+          MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
+              socketCreator,
+              InternalDataSerializer.getDSFIDSerializer(),
+              workingDirectory,
+              executor)
+              .setConfig(config)
+              .setPort(port)
+              .setBindAddress(bindAddress)
+              .setProtocolChecker(new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader()))
+              .setFallbackHandler(handler)
+              .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
+              .setLocatorStats(locatorStats)
+              .create();
+    } catch (MembershipConfigurationException | UnknownHostException e) {
+      throw new GemFireConfigException(e.getMessage());
+    }
+
+    membershipLocator.addHandler(InfoRequest.class, new InfoRequestHandler());
+    restartHandlers.add((ds, cache, sharedConfig) -> {
+      final InternalDistributedSystem ids = (InternalDistributedSystem) ds;
+      // let old locator know about new membership object
+      membershipLocator.setMembership(ids.getDM().getDistribution().getMembership());
+    });
+  }
 
   public static InternalLocator getLocator() {
     synchronized (locatorLock) {
       return locator;
+    }
+  }
+
+  private static void setLocator(InternalLocator locator) {
+    synchronized (locatorLock) {
+      if (InternalLocator.locator != null && InternalLocator.locator != locator) {
+        throw new IllegalStateException(
+            "A locator can not be created because one already exists in this JVM.");
+      }
+
+      InternalLocator.locator = locator;
     }
   }
 
@@ -301,17 +423,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               workingDirectory);
       InternalLocator.locator = locator;
       return locator;
-    }
-  }
-
-  private static void setLocator(InternalLocator locator) {
-    synchronized (locatorLock) {
-      if (InternalLocator.locator != null && InternalLocator.locator != locator) {
-        throw new IllegalStateException(
-            "A locator can not be created because one already exists in this JVM.");
-      }
-
-      InternalLocator.locator = locator;
     }
   }
 
@@ -452,126 +563,37 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   /**
-   * Creates a new {@code Locator} with the given port, log file, logWriter, and bind address.
+   * For backward-compatibility we retain this method
    *
-   * @param port the tcp/ip port to listen on
-   * @param logFile the file that log messages should be written to
-   * @param logWriter a log writer that should be used (logFile parameter is ignored)
-   * @param securityLogWriter the log writer to be used for security related log messages
-   * @param hostnameForClients the name to give to clients for connecting to this locator
-   * @param distributedSystemProperties optional properties to configure the distributed system
-   *        (e.g., mcast addr/port, other locators)
-   * @param distributionConfig the config if being called from a distributed system; otherwise null.
-   * @param workingDirectory the working directory to use for files
+   * @deprecated use a form of the method that does not have peerLocator/serverLocator parameters
    */
-  @VisibleForTesting
-  InternalLocator(int port, LoggingSession loggingSession, File logFile,
+  @Deprecated
+  public static InternalLocator startLocator(int locatorPort, File logFile,
       InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
-      String hostnameForClients, Properties distributedSystemProperties,
-      DistributionConfigImpl distributionConfig, Path workingDirectory) {
-    this.logFile = logFile;
-    this.bindAddress = bindAddress;
-    this.hostnameForClients = hostnameForClients;
+      Properties distributedSystemProperties, boolean peerLocator, boolean serverLocator,
+      String hostnameForClients, boolean b1) throws IOException {
+    return startLocator(locatorPort, logFile, logWriter, securityLogWriter, bindAddress, true,
+        distributedSystemProperties, hostnameForClients);
+  }
 
-    this.workingDirectory = workingDirectory;
-
-
-    env = new Properties();
-
-    // set bind-address explicitly only if not wildcard and let any explicit
-    // value in distributedSystemProperties take precedence
-    if (bindAddress != null && !bindAddress.isAnyLocalAddress()) {
-      env.setProperty(BIND_ADDRESS, bindAddress.getHostAddress());
-    }
-
-    if (distributedSystemProperties != null) {
-      env.putAll(distributedSystemProperties);
-    }
-    env.setProperty(CACHE_XML_FILE, "");
-
-    // create a DC so that all of the lookup rules, gemfire.properties, etc,
-    // are considered and we have a config object we can trust
-    if (distributionConfig == null) {
-      distributionConfig = new DistributionConfigImpl(env);
-      env.clear();
-      env.putAll(distributionConfig.getProps());
-    }
-    this.distributionConfig = distributionConfig;
-
-    boolean hasLogFileButConfigDoesNot =
-        this.logFile != null && this.distributionConfig.getLogFile()
-            .toString().equals(DistributionConfig.DEFAULT_LOG_FILE.toString());
-    if (logWriter == null && hasLogFileButConfigDoesNot) {
-      // LOG: this is(was) a hack for when logFile and config don't match -- if config specifies a
-      // different log-file things will break!
-      this.distributionConfig.unsafeSetLogFile(this.logFile);
-    }
-
-    if (loggingSession == null) {
-      throw new Error("LoggingSession must not be null");
-    }
-    this.loggingSession = loggingSession;
-
-    // LOG: create LogWriters for GemFireTracer (or use whatever was passed in)
-    if (logWriter == null) {
-      LogWriterFactory.createLogWriterLogger(this.distributionConfig, false);
-      if (logger.isDebugEnabled()) {
-        logger.debug("LogWriter for locator is created.");
-      }
-    }
-
-    if (securityLogWriter == null) {
-      securityLogWriter = LogWriterFactory.createLogWriterLogger(this.distributionConfig, true);
-      securityLogWriter.fine("SecurityLogWriter for locator is created.");
-    }
-
-    SocketCreatorFactory.setDistributionConfig(this.distributionConfig);
-
-    locatorListener = WANServiceProvider.createLocatorMembershipListener();
-    if (locatorListener != null) {
-      // We defer setting the port until the handler is init'd - that way we'll have an actual port
-      // in the case where we're starting with port = 0.
-      locatorListener.setConfig(getConfig());
-    }
-
-    locatorStats = new LocatorStats();
-
-    InternalLocatorTcpHandler handler = new InternalLocatorTcpHandler();
+  /**
+   * Returns collection of locator strings representing every locator instance hosted by this
+   * member.
+   *
+   * @see #getLocators()
+   */
+  public static Collection<String> getLocatorStrings() {
+    Collection<String> locatorStrings;
     try {
-      MembershipConfig config = new ServiceConfig(
-          new RemoteTransportConfig(distributionConfig, MemberIdentifier.LOCATOR_DM_TYPE),
-          distributionConfig);
-      Supplier<ExecutorService> executor = () -> CoreLoggingExecutors
-          .newThreadPoolWithSynchronousFeed("locator request thread ",
-              MAX_POOL_SIZE, new DelayedPoolStatHelper(),
-              POOL_IDLE_TIMEOUT,
-              new ThreadPoolExecutor.CallerRunsPolicy());
-      final TcpSocketCreator socketCreator = SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
-      membershipLocator =
-          MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
-              socketCreator,
-              InternalDataSerializer.getDSFIDSerializer(),
-              workingDirectory,
-              executor)
-              .setConfig(config)
-              .setPort(port)
-              .setBindAddress(bindAddress)
-              .setProtocolChecker(new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader()))
-              .setFallbackHandler(handler)
-              .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
-              .setLocatorStats(locatorStats)
-              .create();
-    } catch (MembershipConfigurationException | UnknownHostException e) {
-      throw new GemFireConfigException(e.getMessage());
+      Collection<DistributionLocatorId> locatorIds = asDistributionLocatorIds(getLocators());
+      locatorStrings = DistributionLocatorId.asStrings(locatorIds);
+    } catch (UnknownHostException ignored) {
+      locatorStrings = null;
     }
-
-    membershipLocator.addHandler(InfoRequest.class, new InfoRequestHandler());
-    restartHandlers.add((ds, cache, sharedConfig) -> {
-      final InternalDistributedSystem ids = (InternalDistributedSystem) ds;
-      // let old locator know about new membership object
-      membershipLocator.setMembership(ids.getDM().getDistribution().getMembership());
-    });
+    if (locatorStrings == null || locatorStrings.isEmpty()) {
+      return null;
+    }
+    return locatorStrings;
   }
 
   public boolean isSharedConfigurationEnabled() {
@@ -667,20 +689,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public MembershipLocator<InternalDistributedMember> getMembershipLocator() {
     return membershipLocator;
-  }
-
-  /**
-   * For backward-compatibility we retain this method
-   *
-   * @deprecated use a form of the method that does not have peerLocator/serverLocator parameters
-   */
-  @Deprecated
-  public static InternalLocator startLocator(int locatorPort, File logFile,
-      InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
-      Properties distributedSystemProperties, boolean peerLocator, boolean serverLocator,
-      String hostnameForClients, boolean b1) throws IOException {
-    return startLocator(locatorPort, logFile, logWriter, securityLogWriter, bindAddress, true,
-        distributedSystemProperties, hostnameForClients);
   }
 
   /**
@@ -860,7 +868,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       InternalDistributedSystem.addConnectListener(this);
     }
 
-    locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
+    locatorDiscoverer =
+        WANServiceProvider.createLocatorDiscoverer(internalDistributedSystem.getModuleService());
     if (locatorDiscoverer != null) {
       locatorDiscoverer.discover(getPort(), distributionConfig, locatorListener,
           hostnameForClients);
@@ -1334,26 +1343,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     } catch (UnknownHostException e) {
       logger.warn(e);
     }
-  }
-
-  /**
-   * Returns collection of locator strings representing every locator instance hosted by this
-   * member.
-   *
-   * @see #getLocators()
-   */
-  public static Collection<String> getLocatorStrings() {
-    Collection<String> locatorStrings;
-    try {
-      Collection<DistributionLocatorId> locatorIds = asDistributionLocatorIds(getLocators());
-      locatorStrings = DistributionLocatorId.asStrings(locatorIds);
-    } catch (UnknownHostException ignored) {
-      locatorStrings = null;
-    }
-    if (locatorStrings == null || locatorStrings.isEmpty()) {
-      return null;
-    }
-    return locatorStrings;
   }
 
   private void startConfigurationPersistenceService() throws IOException {

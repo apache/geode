@@ -4399,7 +4399,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       } else {
         xml = CacheXmlParser.parse(is);
       }
-      xml.create(this);
+      xml.create(this, modulesService);
     } catch (IOException e) {
       throw new CacheXmlException(
           "Input Stream could not be read for system property substitutions.", e);
@@ -4779,12 +4779,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory() {
-    return WANServiceProvider.createGatewaySenderFactory(this);
+    return WANServiceProvider.createGatewaySenderFactory(this, modulesService);
   }
 
   @Override
   public GatewayReceiverFactory createGatewayReceiverFactory() {
-    return WANServiceProvider.createGatewayReceiverFactory(this);
+    return WANServiceProvider.createGatewayReceiverFactory(this, modulesService);
   }
 
   @Override

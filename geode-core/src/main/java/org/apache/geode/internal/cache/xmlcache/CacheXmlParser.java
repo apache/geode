@@ -121,6 +121,7 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Parses an XML file and creates a {@link Cache}/{@link ClientCache} and {@link Region}s from it.
@@ -329,14 +330,14 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   /**
    * Creates cache artifacts ({@link Cache}s, etc.) based upon the XML parsed by this parser.
    */
-  public void create(InternalCache cache)
+  public void create(InternalCache cache, ModuleService moduleService)
       throws TimeoutException, GatewayException, CacheWriterException, RegionExistsException {
     if (this.cache == null) {
       String s = "A cache or client-cache element is required";
       throw new CacheXmlException(
           "No cache element specified.");
     }
-    this.cache.create(cache);
+    this.cache.create(cache, moduleService);
   }
 
   /**

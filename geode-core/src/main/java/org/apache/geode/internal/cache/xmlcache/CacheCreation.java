@@ -177,6 +177,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Represents a {@link Cache} that is created declaratively. Notice that it implements the
@@ -324,6 +325,7 @@ public class CacheCreation implements InternalCache {
   private final InternalQueryService queryService = createInternalQueryService();
 
   private QueryConfigurationServiceCreation queryConfigurationServiceCreation;
+  private ModuleService moduleService;
 
   /**
    * Creates a new {@code CacheCreation} with no root regions
@@ -476,9 +478,11 @@ public class CacheCreation implements InternalCache {
   /**
    * Fills in the contents of a {@link Cache} based on this creation object's state.
    */
-  void create(InternalCache cache)
+  void create(InternalCache cache, ModuleService moduleService)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException,
       QueryConfigurationServiceException {
+
+    this.moduleService = moduleService;
     extensionPoint.beforeCreate(cache);
 
     cache.setDeclarativeCacheConfig(cacheConfig);
@@ -1707,12 +1711,12 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory() {
-    return WANServiceProvider.createGatewaySenderFactory(this);
+    return WANServiceProvider.createGatewaySenderFactory(this, moduleService);
   }
 
   @Override
   public GatewayReceiverFactory createGatewayReceiverFactory() {
-    return WANServiceProvider.createGatewayReceiverFactory(this);
+    return WANServiceProvider.createGatewayReceiverFactory(this, moduleService);
   }
 
   @Override

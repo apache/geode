@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Represents a {@link ClientCache} that is created declaratively. Notice that it implements the
@@ -169,7 +170,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
    * Fills in the contents of a {@link Cache} based on this creation object's state.
    */
   @Override
-  void create(InternalCache cache)
+  void create(InternalCache cache, ModuleService moduleService)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
     cache.setDeclarativeCacheConfig(this.getCacheConfig());
     if (!cache.isClient()) {
