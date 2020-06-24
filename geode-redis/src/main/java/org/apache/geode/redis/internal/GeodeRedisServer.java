@@ -51,12 +51,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -142,18 +140,13 @@ public class GeodeRedisServer {
 
   private static final Logger logger = LogService.getLogger();
 
-  private RegionProvider regionProvider;
+  private final RegionProvider regionProvider;
 
   private EventLoopGroup bossGroup;
 
   private EventLoopGroup workerGroup;
   private EventLoopGroup subscriberGroup;
   private final ScheduledExecutorService expirationExecutor;
-  /**
-   * The name of the region that holds data stored in redis.
-   */
-  public static final String REDIS_DATA_REGION = "__REDIS_DATA";
-  public static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
 
   /**
    * System property name that can be used to set the number of threads to be used by the
@@ -161,15 +154,10 @@ public class GeodeRedisServer {
    */
   public static final String NUM_THREADS_SYS_PROP_NAME = "gemfireredis.numthreads";
 
-  /**
-   * The default region type
-   */
-  public final RegionShortcut DEFAULT_REGION_TYPE = RegionShortcut.PARTITION_REDUNDANT;
-
   private boolean shutdown;
 
   private boolean started;
-  private PubSub pubSub;
+  private final PubSub pubSub;
 
 
   /**
@@ -220,6 +208,15 @@ public class GeodeRedisServer {
     if (ENABLE_REDIS_UNSUPPORTED_COMMANDS) {
       logUnsupportedCommandWarning();
     }
+
+    pubSub = new PubSubImpl(new Subscriptions());
+    regionProvider = new RegionProvider(cache);
+
+    StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+
+    CommandFunction.register(stripedExecutor);
+    RenameFunction.register(stripedExecutor);
+    RedisCommandFunction.register();
   }
 
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
@@ -263,7 +260,7 @@ public class GeodeRedisServer {
   public synchronized void start() {
     if (!started) {
       try {
-        initializeRedis();
+        scheduleDataExpiration(regionProvider.getDataRegion());
         startRedisServer();
       } catch (IOException | InterruptedException e) {
         throw new ManagementException("Could not start Server", e);
@@ -282,32 +279,6 @@ public class GeodeRedisServer {
 
   public EventLoopGroup getSubscriberGroup() {
     return subscriberGroup;
-  }
-
-  private void initializeRedis() {
-    synchronized (cache) {
-
-      Region<ByteArrayWrapper, RedisData> redisData;
-      InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
-          cache.createInternalRegionFactory(DEFAULT_REGION_TYPE);
-      redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
-      redisData = redisDataRegionFactory.create(REDIS_DATA_REGION);
-
-      InternalRegionFactory<String, Object> redisConfigRegionFactory =
-          cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
-      redisConfigRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
-      Region<String, Object> redisConfig = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
-
-      pubSub = new PubSubImpl(new Subscriptions());
-      regionProvider = new RegionProvider(redisData, redisConfig);
-
-      StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
-
-      CommandFunction.register(stripedExecutor);
-      RenameFunction.register(stripedExecutor);
-      RedisCommandFunction.register();
-      scheduleDataExpiration(redisData);
-    }
   }
 
   private void scheduleDataExpiration(
