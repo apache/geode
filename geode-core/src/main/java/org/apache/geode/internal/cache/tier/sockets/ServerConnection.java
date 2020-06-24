@@ -1422,7 +1422,10 @@ public abstract class ServerConnection implements Runnable {
     }
 
     if (getSSLEngine() != null) {
-      getSSLEngine().close(theSocket.getChannel());
+      try {
+        getSSLEngine().close(theSocket.getChannel());
+      } catch (Exception ignored) {
+      }
       this.nioSslEngine = null;
     }
 
