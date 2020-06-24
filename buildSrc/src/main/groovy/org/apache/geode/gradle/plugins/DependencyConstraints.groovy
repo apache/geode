@@ -21,14 +21,14 @@ import org.gradle.api.Project
 class DependencyConstraints implements Plugin<Project> {
   /** By necessity, the version of those plugins used in the build-scripts are defined in the
    * buildscript {} configuration in the root project's build.gradle. */
-  static Map<String,String> disparateDependencies = initExternalDependencies()
+  static Map<String, String> disparateDependencies = initExternalDependencies()
 
   static String get(String name) {
     return disparateDependencies.get(name)
   }
 
   static private Map<String, String> initExternalDependencies() {
-    Map<String,String> deps = new HashMap<>()
+    Map<String, String> deps = new HashMap<>()
     // These versions are consumed beyond the scope of source set dependencies.
 
     deps.put("jboss-modules.version", "1.10.1.Final")
@@ -77,7 +77,7 @@ class DependencyConstraints implements Plugin<Project> {
   void apply(Project project) {
     def dependencySet = { Map<String, String> group_and_version, Closure closure ->
       DependencySetHandler delegate =
-          new DependencySetHandler(group_and_version.get("group"), group_and_version.get("version"), project)
+              new DependencySetHandler(group_and_version.get("group"), group_and_version.get("version"), project)
       closure.setDelegate(delegate)
       closure.call(delegate)
     }
@@ -100,12 +100,12 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.google.protobuf', name: 'protobuf-java', version: get('protobuf-java.version'))
         api(group: 'com.healthmarketscience.rmiio', name: 'rmiio', version: '2.1.2')
         api(group: 'com.mockrunner', name: 'mockrunner-servlet', version: '2.0.4')
-        api(group: 'com.nimbusds', name:'nimbus-jose-jwt', version:'8.11')
+        api(group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '8.11')
         api(group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0')
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '3.0.11')
         api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
-        api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.12.0')
+        api(group: 'com.tngtech.archunit', name: 'archunit-junit4', version: '0.12.0')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '3.4.2')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
         api(group: 'commons-codec', name: 'commons-codec', version: '1.14')
@@ -172,6 +172,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.2.0')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
+        api(group: 'org.graphstream', name: 'gs-core', version: '1.3')
       }
     }
 

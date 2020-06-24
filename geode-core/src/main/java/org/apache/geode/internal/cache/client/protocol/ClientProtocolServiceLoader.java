@@ -17,24 +17,24 @@ package org.apache.geode.internal.cache.client.protocol;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
+import org.apache.geode.services.module.ModuleService;
 
 public class ClientProtocolServiceLoader {
   private final List<ClientProtocolService> clientProtocolServices;
 
-  public ClientProtocolServiceLoader() {
-    clientProtocolServices = initializeProtocolServices();
+  public ClientProtocolServiceLoader(ModuleService moduleService) {
+    clientProtocolServices = initializeProtocolServices(moduleService);
   }
 
-  private static List<ClientProtocolService> initializeProtocolServices() {
+  private List<ClientProtocolService> initializeProtocolServices(ModuleService moduleService) {
     List<ClientProtocolService> resultList = new LinkedList<>();
-    for (ClientProtocolService clientProtocolService : ServiceLoader
-        .load(ClientProtocolService.class)) {
-      resultList.add(clientProtocolService);
-    }
-
+    moduleService.loadService(ClientProtocolService.class)
+        .ifSuccessful(clientProtocolServices -> clientProtocolServices.forEach((service -> {
+          service.init(moduleService);
+          resultList.add(service);
+        })));
     return resultList;
   }
 

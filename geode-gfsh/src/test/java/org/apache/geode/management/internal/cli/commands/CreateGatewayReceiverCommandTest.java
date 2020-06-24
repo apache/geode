@@ -23,6 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +34,13 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
@@ -55,6 +59,11 @@ public class CreateGatewayReceiverCommandTest {
     command = spy(CreateGatewayReceiverCommand.class);
     ccService = mock(InternalConfigurationPersistenceService.class);
     InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getModuleService())
+        .thenReturn(new ServiceLoaderModuleService(LogService.getLogger()));
     doReturn(cache).when(command).getCache();
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     functionResults = new ArrayList<>();

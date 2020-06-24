@@ -31,8 +31,10 @@ import org.w3c.dom.NodeList;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -84,7 +86,9 @@ public class DestroySecondJndiBindingCommandDUnitTest {
       InternalConfigurationPersistenceService ccService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
-      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+      Document document =
+          XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(),
+              new ServiceLoaderModuleService(LogService.getLogger()));
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
       assertThat(jndiBindings.getLength()).isEqualTo(1);

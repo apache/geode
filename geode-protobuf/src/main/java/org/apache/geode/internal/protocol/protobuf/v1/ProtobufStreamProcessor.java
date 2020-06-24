@@ -27,6 +27,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperation
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * This object handles an incoming stream containing protobuf messages. It parses the protobuf
@@ -39,9 +40,10 @@ public class ProtobufStreamProcessor {
   private final ProtobufOpsProcessor protobufOpsProcessor;
   private static final Logger logger = LogService.getLogger();
 
-  public ProtobufStreamProcessor() {
+  public ProtobufStreamProcessor(ModuleService moduleService) {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufOperationContextRegistry());
+    protobufOpsProcessor =
+        new ProtobufOpsProcessor(new ProtobufOperationContextRegistry(moduleService));
   }
 
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,

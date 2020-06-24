@@ -50,6 +50,7 @@ public class MembershipAPIArchUnitTest {
               // Serialization is a dependency of membership
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
+              .or(resideInAPackage("org.apache.geode.services.module.."))
               // allowed implementation class accesses
               .or(type(MembershipBuilderImpl.class))
               .or(type(MembershipLocatorBuilderImpl.class))

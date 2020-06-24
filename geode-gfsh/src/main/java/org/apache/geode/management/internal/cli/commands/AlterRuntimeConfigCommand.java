@@ -221,7 +221,7 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
       successInfo.addLine(successMessageBuilder.toString());
       // Set the Cache attributes to be modified
       final XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.CACHE)
-          .withAttributes(rumTimeCacheAttributes).build();
+          .withAttributes(rumTimeCacheAttributes).build(getModuleService());
       InternalConfigurationPersistenceService cps = getConfigurationPersistenceService();
       if (cps == null) {
         successInfo.addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);

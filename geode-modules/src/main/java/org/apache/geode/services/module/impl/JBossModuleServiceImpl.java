@@ -15,9 +15,11 @@
 
 package org.apache.geode.services.module.impl;
 
-import java.util.HashMap;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,12 +52,10 @@ public class JBossModuleServiceImpl implements ModuleService {
   private final Map<String, Module> modules = new ConcurrentHashMap<>();
 
   private final GeodeModuleLoader moduleLoader;
+  private Logger logger;
 
-  private final Logger logger;
-
-  public JBossModuleServiceImpl(Logger logger) {
-    this.logger = logger;
-    this.moduleLoader = new GeodeModuleLoader(logger);
+  public JBossModuleServiceImpl() {
+    this.moduleLoader = new GeodeModuleLoader();
   }
 
   /**
@@ -76,11 +76,11 @@ public class JBossModuleServiceImpl implements ModuleService {
     }
 
     String versionedName = moduleDescriptor.getName();
-    logger.debug(String.format("Beginning to load module %s", versionedName));
+    logDebug(String.format("Beginning to load module %s", versionedName));
 
     if (modules.containsKey(versionedName)) {
       String errorMessage = String.format("Module %s is already loaded.", versionedName);
-      logger.warn(errorMessage);
+      logWarn(errorMessage);
       return Failure.of(errorMessage);
     }
 
@@ -103,8 +103,8 @@ public class JBossModuleServiceImpl implements ModuleService {
       modules.put(versionedName, moduleLoader.loadModule(versionedName));
       return Success.of(true);
     } catch (ModuleLoadException e) {
-      logger.error(e.getMessage(), e);
-      return Failure.of(e.getMessage());
+      logError(e.getMessage());
+      return Failure.of(e.toString());
     }
   }
 
@@ -113,11 +113,11 @@ public class JBossModuleServiceImpl implements ModuleService {
    */
   @Override
   public ModuleServiceResult<Boolean> unloadModule(String moduleName) {
-    logger.debug(String.format("Unloading module %s", moduleName));
+    logDebug(String.format("Unloading module %s", moduleName));
     if (!modules.containsKey(moduleName)) {
       String errorMessage =
           String.format("Module %s could not be unloaded because it is not loaded", moduleName);
-      logger.warn(errorMessage);
+      logWarn(errorMessage);
       return Failure.of(errorMessage);
     }
 
@@ -125,7 +125,7 @@ public class JBossModuleServiceImpl implements ModuleService {
         moduleLoader.unloadModule(modules.get(moduleName));
     if (unloadModuleResult.isSuccessful()) {
       modules.remove(moduleName);
-      logger.debug(String.format("Module %s was successfully unloaded", moduleName));
+      logDebug(String.format("Module %s was successfully unloaded", moduleName));
     }
 
     return unloadModuleResult;
@@ -133,23 +133,25 @@ public class JBossModuleServiceImpl implements ModuleService {
 
   /**
    * {@inheritDoc}
+   *
    */
   @Override
-  public <T> ModuleServiceResult<Map<String, Set<T>>> loadService(Class<T> service) {
-    Map<String, Set<T>> serviceImpls = new HashMap<>();
+  public <T> ModuleServiceResult<Set<T>> loadService(Class<T> service) {
+    Set<T> result = createTreeSetWithClassLoaderComparator();
 
     // Iterate over all the modules looking for implementations of service.
     modules.values().forEach((module) -> {
-      module.loadService(service).forEach((serviceImpl) -> {
-        String moduleName = ((ModuleClassLoader) serviceImpl.getClass().getClassLoader()).getName();
-        Set<T> listOfServices = Optional.ofNullable(serviceImpls.get(moduleName))
-            .orElseGet(() -> createTreeSetWithClassLoaderComparator());
-        listOfServices.add(serviceImpl);
-        serviceImpls.put(moduleName, listOfServices);
-      });
+      Iterator<T> loadedServices = module.loadService(service).iterator();
+      while (loadedServices.hasNext()) {
+        try {
+          result.add(loadedServices.next());
+        } catch (Error e) {
+          logError(e.getMessage());
+        }
+      }
     });
 
-    return Success.of(serviceImpls);
+    return Success.of(result);
   }
 
   /**
@@ -194,7 +196,7 @@ public class JBossModuleServiceImpl implements ModuleService {
         module = moduleLoader.loadModule(moduleDescriptor.getName());
         return loadClassFromModule(className, module);
       } catch (ModuleLoadException e) {
-        logger.error(e);
+        logError(e.getMessage());
         return Failure.of(e.getMessage());
       }
     }
@@ -220,7 +222,7 @@ public class JBossModuleServiceImpl implements ModuleService {
       String errorMessage =
           String.format("Could not find class for name: %s in module: %s", className,
               module.getName());
-      logger.debug(errorMessage);
+      logDebug(errorMessage);
       return Failure.of(errorMessage);
     }
   }
@@ -229,18 +231,63 @@ public class JBossModuleServiceImpl implements ModuleService {
    * {@inheritDoc}
    */
   @Override
-  public ModuleServiceResult<Map<String, Class<?>>> loadClass(String className) {
-    Map<String, Class<?>> classes = new HashMap<>();
+  public ModuleServiceResult<List<Class<?>>> loadClass(String className) {
+    List<Class<?>> result = new ArrayList<>();
     modules.values().forEach((module) -> {
       try {
-        Class<?> loadedClass = module.getClassLoader().loadClass(className);
-        classes.put(module.getName(), loadedClass);
+        result.add(module.getClassLoader().loadClass(className));
       } catch (ClassNotFoundException e) {
-        logger.debug(String.format("Could not find class for name: %s in module: %s", className,
+        logDebug(String.format("Could not find class for name: %s in module: %s", className,
             module.getName()));
       }
     });
 
-    return Success.of(classes);
+    return Success.of(result);
+  }
+
+  @Override
+  public ModuleServiceResult<List<InputStream>> findResourceAsStream(String resourceFile) {
+    List<InputStream> results = new ArrayList<>();
+    modules.values().forEach(module -> {
+      InputStream resourceAsStream =
+          module.getClassLoader().findResourceAsStream(resourceFile, false);
+
+      if (resourceAsStream != null) {
+        results.add(resourceAsStream);
+      }
+    });
+
+    return results.isEmpty()
+        ? Failure.of(String.format("No resource for path: %s could be found", resourceFile))
+        : Success.of(results);
+  }
+
+  @Override
+  public void setLogger(Logger logger) {
+    this.logger = logger;
+  }
+
+  private void logWarn(String message) {
+    if (logger != null) {
+      logger.warn(message);
+    }
+  }
+
+  private void logInfo(String message) {
+    if (logger != null) {
+      logger.info(message);
+    }
+  }
+
+  private void logDebug(String message) {
+    if (logger != null) {
+      logger.debug(message);
+    }
+  }
+
+  private void logError(String message) {
+    if (logger != null) {
+      logger.error(message);
+    }
   }
 }

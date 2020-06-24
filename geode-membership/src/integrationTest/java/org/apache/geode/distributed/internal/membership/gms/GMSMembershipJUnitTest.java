@@ -60,6 +60,8 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -149,7 +151,7 @@ public class GMSMembershipJUnitTest {
     messageListener = mock(MessageListener.class);
     directChannelCallback = mock(LifecycleListener.class);
     manager = new GMSMembership(listener, messageListener, directChannelCallback);
-    manager.getGMSManager().init(services);
+    manager.getGMSManager().init(services, new ServiceLoaderModuleService(LogService.getLogger()));
     when(services.getManager()).thenReturn(manager.getGMSManager());
 
     DSFIDSerializer serializer = new DSFIDSerializerImpl();

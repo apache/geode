@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -125,6 +124,8 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -202,6 +203,8 @@ public class InternalDistributedSystem extends DistributedSystem
   // captured in initialize() when starting so that we can hand it to new instance when restarting
   private MembershipLocator<InternalDistributedMember> membershipLocator;
 
+  private ModuleService moduleService;
+
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
    *
@@ -212,8 +215,8 @@ public class InternalDistributedSystem extends DistributedSystem
   public static InternalDistributedSystem connectInternal(
       Properties config,
       SecurityConfig securityConfig,
-      MetricsService.Builder metricsSessionBuilder) {
-    return connectInternal(config, securityConfig, metricsSessionBuilder, null);
+      MetricsService.Builder metricsSessionBuilder, ModuleService moduleService) {
+    return connectInternal(config, securityConfig, metricsSessionBuilder, moduleService, null);
   }
 
   /**
@@ -227,13 +230,15 @@ public class InternalDistributedSystem extends DistributedSystem
       Properties config,
       SecurityConfig securityConfig,
       MetricsService.Builder metricsSessionBuilder,
+      ModuleService moduleService,
       final MembershipLocator<InternalDistributedMember> locator) {
+
     if (config == null) {
       config = new Properties();
     }
 
     if (Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY)) {
-      return new Builder(config, metricsSessionBuilder)
+      return new Builder(config, metricsSessionBuilder, moduleService)
           .setSecurityConfig(securityConfig)
           .setLocator(locator)
           .build();
@@ -284,10 +289,11 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       // Make a new connection to the distributed system
-      InternalDistributedSystem newSystem = new Builder(config, metricsSessionBuilder)
-          .setSecurityConfig(securityConfig)
-          .setLocator(locator)
-          .build();
+      InternalDistributedSystem newSystem =
+          new Builder(config, metricsSessionBuilder, moduleService)
+              .setSecurityConfig(securityConfig)
+              .setLocator(locator)
+              .build();
       addSystem(newSystem);
       return newSystem;
     }
@@ -568,15 +574,17 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   private InternalDistributedSystem(ConnectionConfig config,
       StatisticsManagerFactory statisticsManagerFactory,
-      FunctionStatsManager.Factory functionStatsManagerFactory) {
+      FunctionStatsManager.Factory functionStatsManagerFactory,
+      ModuleService moduleService) {
     alertingSession = AlertingSession.create();
     alertingService = new InternalAlertingServiceFactory().create();
     LoggingUncaughtExceptionHandler
         .setFailureSetter(error -> SystemFailure.setFailure((VirtualMachineError) error));
-    loggingSession = LoggingSession.create();
+    loggingSession = LoggingSession.create(moduleService);
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();
     quorumChecker = config.quorumChecker();
+    this.moduleService = moduleService;
 
     // throws IllegalStateEx
     ((DistributionConfigImpl) originalConfig).checkForDisallowedDefaults();
@@ -661,12 +669,15 @@ public class InternalDistributedSystem extends DistributedSystem
    * mechanism.
    */
   private void initializeServices() {
-    ServiceLoader<DistributedSystemService> loader =
-        ServiceLoader.load(DistributedSystemService.class);
-    for (DistributedSystemService service : loader) {
-      service.init(this);
-      services.put(service.getInterface(), service);
-    }
+    ModuleServiceResult<Set<DistributedSystemService>> loadService =
+        moduleService.loadService(DistributedSystemService.class);
+    loadService
+        .ifSuccessful(distributedSystemServices -> distributedSystemServices.stream()
+            .forEach(distributedSystemService -> {
+              distributedSystemService.init(this);
+              services.put(distributedSystemService.getInterface(), distributedSystemService);
+            }));
+    loadService.ifFailure(errorMessage -> logger.info(errorMessage));
   }
 
 
@@ -776,7 +787,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (!isLoner) {
         try {
-          dm = ClusterDistributionManager.create(this, membershipLocator);
+          dm = ClusterDistributionManager.create(this, membershipLocator, moduleService);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator internalLocator = InternalLocator.getLocator();
@@ -824,7 +835,7 @@ public class InternalDistributedSystem extends DistributedSystem
       alertingSession.createSession(alertingService);
       alertingSession.startSession();
 
-      metricsService = metricsServiceBuilder.build(this);
+      metricsService = metricsServiceBuilder.build(this, moduleService);
       metricsService.start();
 
       // Log any instantiators that were registered before the log writer
@@ -915,7 +926,7 @@ public class InternalDistributedSystem extends DistributedSystem
       startedLocator =
           InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
               logWriter, securityLogWriter, locId.getHost().getAddress(),
-              locId.getHostnameForClients(), originalConfig.toProperties(), false);
+              locId.getHostnameForClients(), originalConfig.toProperties(), false, moduleService);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       startedLocator.getConfig().setEnableClusterConfiguration(false);
@@ -2603,7 +2614,7 @@ public class InternalDistributedSystem extends DistributedSystem
           try {
 
             newDS = connectInternal(configProps, null, metricsService.getRebuilder(),
-                membershipLocator);
+                moduleService, membershipLocator);
 
           } catch (CancelException e) {
             if (isReconnectCancelled()) {
@@ -2661,7 +2672,7 @@ public class InternalDistributedSystem extends DistributedSystem
             do {
               retry = false;
               try {
-                cache = new InternalCacheBuilder()
+                cache = new InternalCacheBuilder(moduleService)
                     .setCacheXMLDescription(cacheXML)
                     .create(reconnectDS);
 
@@ -2998,9 +3009,13 @@ public class InternalDistributedSystem extends DistributedSystem
 
     private MembershipLocator<InternalDistributedMember> locator;
 
-    public Builder(Properties configProperties, MetricsService.Builder metricsServiceBuilder) {
+    private ModuleService moduleService;
+
+    public Builder(Properties configProperties, MetricsService.Builder metricsServiceBuilder,
+        ModuleService moduleService) {
       this.configProperties = configProperties;
       this.metricsServiceBuilder = metricsServiceBuilder;
+      this.moduleService = moduleService;
     }
 
     public Builder setSecurityConfig(SecurityConfig securityConfig) {
@@ -3029,7 +3044,7 @@ public class InternalDistributedSystem extends DistributedSystem
         InternalDistributedSystem newSystem =
             new InternalDistributedSystem(new ConnectionConfigImpl(
                 configProperties), defaultStatisticsManagerFactory(),
-                FunctionStatsManager::new);
+                FunctionStatsManager::new, moduleService);
         newSystem
             .initialize(securityConfig.getSecurityManager(), securityConfig.getPostProcessor(),
                 metricsServiceBuilder, locator);
@@ -3052,8 +3067,11 @@ public class InternalDistributedSystem extends DistributedSystem
     private DistributionManager distributionManager;
     private StatisticsManagerFactory statisticsManagerFactory = defaultStatisticsManagerFactory();
 
-    public BuilderForTesting(Properties configProperties) {
+    private ModuleService moduleService;
+
+    public BuilderForTesting(Properties configProperties, ModuleService moduleService) {
       this.configProperties = configProperties;
+      this.moduleService = moduleService;
     }
 
     public BuilderForTesting setDistributionManager(DistributionManager distributionManager) {
@@ -3075,7 +3093,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
       InternalDistributedSystem internalDistributedSystem =
           new InternalDistributedSystem(connectionConfig, statisticsManagerFactory,
-              FunctionStatsManager::new);
+              FunctionStatsManager::new, moduleService);
 
       internalDistributedSystem.config =
           new RuntimeDistributionConfigImpl(internalDistributedSystem);
@@ -3084,5 +3102,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
       return internalDistributedSystem;
     }
+  }
+
+  public ModuleService getModuleService() {
+    return moduleService;
   }
 }

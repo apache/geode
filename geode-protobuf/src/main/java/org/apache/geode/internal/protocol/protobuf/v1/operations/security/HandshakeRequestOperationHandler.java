@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations.security;
 
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -34,10 +33,17 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 public class HandshakeRequestOperationHandler implements
     ProtobufOperationHandler<ConnectionAPI.HandshakeRequest, ConnectionAPI.HandshakeResponse> {
   private static final Logger logger = LogService.getLogger();
+  private final ModuleService moduleService;
+
+  public HandshakeRequestOperationHandler(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   @Override
   public Result<ConnectionAPI.HandshakeResponse> process(
@@ -72,12 +78,15 @@ public class HandshakeRequestOperationHandler implements
         .of(ConnectionAPI.HandshakeResponse.newBuilder().setAuthenticated(authenticated).build());
   }
 
-  private ValueSerializer loadSerializer(String valueFormat) throws ConnectionStateException {
-    ServiceLoader<ValueSerializer> serviceLoader = ServiceLoader.load(ValueSerializer.class);
-    for (Iterator<ValueSerializer> iterator = serviceLoader.iterator(); iterator.hasNext();) {
-      ValueSerializer serializer = iterator.next();
-      if (serializer.getID().equals(valueFormat)) {
-        return serializer;
+  private ValueSerializer loadSerializer(String valueFormat)
+      throws ConnectionStateException {
+    ModuleServiceResult<Set<ValueSerializer>> valueSerializerServiceResult =
+        moduleService.loadService(ValueSerializer.class);
+    if (valueSerializerServiceResult.isSuccessful()) {
+      for (ValueSerializer serializer : valueSerializerServiceResult.getMessage()) {
+        if (serializer.getID().equals(valueFormat)) {
+          return serializer;
+        }
       }
     }
 

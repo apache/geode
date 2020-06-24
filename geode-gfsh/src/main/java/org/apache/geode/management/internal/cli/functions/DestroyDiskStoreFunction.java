@@ -23,6 +23,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Function used by the 'destroy disk-store' gfsh command to destroy a disk store on each member.
@@ -53,9 +54,13 @@ public class DestroyDiskStoreFunction implements InternalFunction<DestroyDiskSto
     DiskStore diskStore = cache.findDiskStore(args.getId());
 
     CliFunctionResult result;
+
+    ModuleService moduleService =
+        cache.getInternalDistributedSystem().getModuleService();
     try {
       if (diskStore != null) {
-        XmlEntity xmlEntity = new XmlEntity(CacheXml.DISK_STORE, "name", args.getId());
+        XmlEntity xmlEntity =
+            new XmlEntity(CacheXml.DISK_STORE, "name", args.getId(), moduleService);
         diskStore.destroy();
         result = new CliFunctionResult(memberId, xmlEntity, "Success");
       } else {

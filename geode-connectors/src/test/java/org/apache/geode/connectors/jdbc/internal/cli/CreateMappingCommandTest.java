@@ -54,13 +54,16 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 public class CreateMappingCommandTest {
 
@@ -97,6 +100,11 @@ public class CreateMappingCommandTest {
     group1Name = "group1";
     group2Name = "group2";
     cache = mock(InternalCache.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getModuleService())
+        .thenReturn(new ServiceLoaderModuleService(LogService.getLogger()));
     DistributionManager dm = mock(DistributionManager.class);
     when(cache.getDistributionManager()).thenReturn(dm);
     members = new HashSet<>();

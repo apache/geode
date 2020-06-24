@@ -40,6 +40,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.module.ModuleService;
 
 public class ConfigurationResponse implements DataSerializableFixedID {
 
@@ -90,7 +91,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
     return sb.toString();
   }
 
-  public String describeConfig() {
+  public String describeConfig(ModuleService moduleService) {
     StringBuffer sb = new StringBuffer();
     if (requestedConfiguration.isEmpty()) {
       sb.append("Received an empty shared configuration");
@@ -118,7 +119,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
           try {
             String cacheXmlContent = config.getCacheXmlContent();
             if (StringUtils.isNotBlank(cacheXmlContent)) {
-              sb.append("\n" + XmlUtils.prettyXml(cacheXmlContent));
+              sb.append("\n" + XmlUtils.prettyXml(cacheXmlContent, moduleService));
             }
           } catch (IOException | TransformerFactoryConfigurationError | TransformerException
               | SAXException | ParserConfigurationException e) {

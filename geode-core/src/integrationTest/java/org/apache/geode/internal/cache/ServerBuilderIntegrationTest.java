@@ -36,6 +36,8 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -66,8 +68,9 @@ public class ServerBuilderIntegrationTest {
   @Test
   public void byDefaultCreatesServerWithCacheServerAcceptor() throws IOException {
     server = new ServerBuilder(cache, cache.getSecurityService(),
-        StatisticsClockFactory.disabledClock())
-            .createServer();
+        StatisticsClockFactory.disabledClock(), new ServiceLoaderModuleService(
+            LogService.getLogger()))
+                .createServer();
     server.setPort(0);
 
     server.start();
@@ -81,9 +84,10 @@ public class ServerBuilderIntegrationTest {
     when(gatewayReceiver.getGatewayTransportFilters())
         .thenReturn(singletonList(mock(GatewayTransportFilter.class)));
     server = new ServerBuilder(cache, cache.getSecurityService(),
-        StatisticsClockFactory.disabledClock())
-            .forGatewayReceiver(gatewayReceiver)
-            .createServer();
+        StatisticsClockFactory.disabledClock(), new ServiceLoaderModuleService(
+            LogService.getLogger()))
+                .forGatewayReceiver(gatewayReceiver)
+                .createServer();
     server.setPort(0);
 
     server.start();
@@ -98,8 +102,9 @@ public class ServerBuilderIntegrationTest {
     String membershipGroup = "group-m0";
     cache = (InternalCache) new CacheFactory().set(GROUPS, membershipGroup).create();
     server = new ServerBuilder(cache, cache.getSecurityService(),
-        StatisticsClockFactory.disabledClock())
-            .createServer();
+        StatisticsClockFactory.disabledClock(), new ServiceLoaderModuleService(
+            LogService.getLogger()))
+                .createServer();
 
     assertThat(server.getCombinedGroups()).containsExactly(membershipGroup);
   }
@@ -112,9 +117,10 @@ public class ServerBuilderIntegrationTest {
     String membershipGroup = "group-m0";
     cache = (InternalCache) new CacheFactory().set(GROUPS, membershipGroup).create();
     server = new ServerBuilder(cache, cache.getSecurityService(),
-        StatisticsClockFactory.disabledClock())
-            .forGatewayReceiver(gatewayReceiver)
-            .createServer();
+        StatisticsClockFactory.disabledClock(), new ServiceLoaderModuleService(
+            LogService.getLogger()))
+                .forGatewayReceiver(gatewayReceiver)
+                .createServer();
 
     assertThat(server.getCombinedGroups()).doesNotContain(membershipGroup);
   }

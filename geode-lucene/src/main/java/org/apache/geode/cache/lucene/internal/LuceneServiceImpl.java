@@ -85,6 +85,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -120,7 +121,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   @Override
-  public boolean init(final Cache cache) {
+  public boolean init(final Cache cache,
+      ModuleService moduleService) {
     if (cache == null) {
       throw new IllegalStateException("cache is null");
     }

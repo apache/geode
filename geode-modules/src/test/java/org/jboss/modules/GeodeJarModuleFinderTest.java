@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -46,10 +45,14 @@ public class GeodeJarModuleFinderTest {
       System.getProperty("user.dir") + "/../libs/geode-common-services-" + gemFireVersion + ".jar";
   private static final String GEODE_COMMONS_PATH =
       System.getProperty("user.dir") + "/../libs/geode-common-" + gemFireVersion + ".jar";
+  private static final String GEODE_LOGGING_PATH =
+      System.getProperty("user.dir") + "/../libs/geode-logging-" + gemFireVersion + ".jar";
 
   private static ModuleDescriptor geodeCommonsServiceDescriptor;
 
   private static ModuleDescriptor geodeCommonDescriptor;
+
+  private static ModuleDescriptor geodeLoggingDescriptor;
 
   @BeforeClass
   public static void setup() {
@@ -62,6 +65,10 @@ public class GeodeJarModuleFinderTest {
         new ModuleDescriptor.Builder("geode-common", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_PATH)
             .build();
+
+    geodeLoggingDescriptor = new ModuleDescriptor.Builder("geode-logging", gemFireVersion)
+        .fromResourcePaths(GEODE_LOGGING_PATH)
+        .build();
   }
 
   @Test
@@ -70,13 +77,13 @@ public class GeodeJarModuleFinderTest {
         new ModuleDescriptor.Builder("module1WithManifest", "1.0").fromResourcePaths(MODULE1_PATH)
             .build();
 
-    ModuleFinder moduleFinder = new GeodeJarModuleFinder(LogManager.getLogger(), moduleDescriptor);
+    ModuleFinder moduleFinder = new GeodeModuleFinder(moduleDescriptor);
     ConcreteModuleSpec moduleSpec = (ConcreteModuleSpec) moduleFinder
         .findModule(moduleDescriptor.getName(), Module.getSystemModuleLoader());
 
     assertThat(moduleSpec.getName()).isEqualTo(moduleDescriptor.getName());
     assertThat(moduleSpec.getDependencies().length).isEqualTo(4);
-    String[] expectedDependencies = new String[] {"log4j-core", "log4j-api", "jboss-modules",
+    String[] expectedDependencies = new String[] {"log4j-core", "jboss-modules",
         "module1WithManifest", "guava", "failureaccess", "listenablefuture",
         "jsr305", "checker-qual", "error_prone_annotations", "j2objc-annotations"};
     assertModuleResourcesEqual(moduleSpec, expectedDependencies);
@@ -89,7 +96,7 @@ public class GeodeJarModuleFinderTest {
             .fromResourcePaths(MODULE1_PATH, MODULE2_PATH)
             .build();
 
-    ModuleFinder moduleFinder = new GeodeJarModuleFinder(LogManager.getLogger(), moduleDescriptor);
+    ModuleFinder moduleFinder = new GeodeModuleFinder(moduleDescriptor);
     ConcreteModuleSpec moduleSpec = (ConcreteModuleSpec) moduleFinder
         .findModule(moduleDescriptor.getName(), Module.getSystemModuleLoader());
 
@@ -97,7 +104,7 @@ public class GeodeJarModuleFinderTest {
     // This contain duplicate entries for 'geode-common-services'. This is because the underlying
     // moduleBuilder does check for duplicates
     assertThat(moduleSpec.getDependencies().length).isEqualTo(5);
-    String[] expectedDependencies = new String[] {"log4j-core", "log4j-api", "jboss-modules",
+    String[] expectedDependencies = new String[] {"log4j-core", "jboss-modules",
         "module1WithManifest", "module2WithManifest", "guava", "failureaccess", "listenablefuture",
         "jsr305", "checker-qual", "error_prone_annotations", "j2objc-annotations"};
 
@@ -129,13 +136,13 @@ public class GeodeJarModuleFinderTest {
             .dependsOnModules("exampleModule")
             .build();
 
-    ModuleFinder moduleFinder = new GeodeJarModuleFinder(LogManager.getLogger(), moduleDescriptor);
+    ModuleFinder moduleFinder = new GeodeModuleFinder(moduleDescriptor);
     ConcreteModuleSpec moduleSpec = (ConcreteModuleSpec) moduleFinder
         .findModule(moduleDescriptor.getName(), Module.getSystemModuleLoader());
 
     assertThat(moduleSpec.getName()).isEqualTo(moduleDescriptor.getName());
     assertThat(moduleSpec.getDependencies().length).isEqualTo(5);
-    String[] expectedDependencies = new String[] {"log4j-core", "log4j-api", "jboss-modules",
+    String[] expectedDependencies = new String[] {"log4j-core", "jboss-modules",
         "module1WithManifest", "guava", "failureaccess", "listenablefuture",
         "jsr305", "checker-qual", "error_prone_annotations", "j2objc-annotations"};
     assertModuleResourcesEqual(moduleSpec, expectedDependencies);
@@ -149,12 +156,10 @@ public class GeodeJarModuleFinderTest {
 
     ModuleLoader moduleLoader = new TestModuleLoader(Module.getSystemModuleLoader(),
         new ModuleFinder[] {
-            new GeodeJarModuleFinder(LogManager.getLogger(),
-                moduleDescriptor),
-            new GeodeJarModuleFinder(LogManager.getLogger(),
-                geodeCommonsServiceDescriptor),
-            new GeodeJarModuleFinder(LogManager.getLogger(),
-                geodeCommonDescriptor)
+            new GeodeModuleFinder(moduleDescriptor),
+            new GeodeModuleFinder(geodeCommonsServiceDescriptor),
+            new GeodeModuleFinder(geodeCommonDescriptor),
+            new GeodeModuleFinder(geodeLoggingDescriptor)
         });
     Module module = moduleLoader.loadModule(moduleDescriptor.getName());
     assertThat(module).isNotNull();
@@ -169,9 +174,10 @@ public class GeodeJarModuleFinderTest {
 
     ModuleLoader moduleLoader = new TestModuleLoader(Module.getSystemModuleLoader(),
         new ModuleFinder[] {
-            new GeodeJarModuleFinder(LogManager.getLogger(), moduleDescriptor),
-            new GeodeJarModuleFinder(LogManager.getLogger(), geodeCommonsServiceDescriptor),
-            new GeodeJarModuleFinder(LogManager.getLogger(), geodeCommonDescriptor)
+            new GeodeModuleFinder(moduleDescriptor),
+            new GeodeModuleFinder(geodeCommonsServiceDescriptor),
+            new GeodeModuleFinder(geodeCommonDescriptor),
+            new GeodeModuleFinder(geodeLoggingDescriptor)
         });
     Module module = moduleLoader.loadModule(moduleDescriptor.getName());
     assertThat(module).isNotNull();
@@ -191,11 +197,11 @@ public class GeodeJarModuleFinderTest {
 
     ModuleLoader moduleLoader = new TestModuleLoader(Module.getSystemModuleLoader(),
         new ModuleFinder[] {
-            new GeodeJarModuleFinder(LogManager.getLogger(), geodeCommonDescriptor),
-            new GeodeJarModuleFinder(LogManager.getLogger(), geodeCommonsServiceDescriptor),
-            new GeodeJarModuleFinder(LogManager.getLogger(),
-                module1Descriptor),
-            new GeodeJarModuleFinder(LogManager.getLogger(), module2Descriptor)
+            new GeodeModuleFinder(geodeCommonDescriptor),
+            new GeodeModuleFinder(geodeCommonsServiceDescriptor),
+            new GeodeModuleFinder(geodeLoggingDescriptor),
+            new GeodeModuleFinder(module1Descriptor),
+            new GeodeModuleFinder(module2Descriptor)
         });
 
     assertThat(moduleLoader.loadModule(geodeCommonDescriptor.getName())).isNotNull();

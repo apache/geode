@@ -36,6 +36,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Builds instances of {@link InternalCacheServer}.
@@ -60,11 +61,14 @@ class ServerBuilder implements ServerFactory {
 
   private List<GatewayTransportFilter> gatewayTransportFilters = Collections.emptyList();
 
+  private ModuleService moduleService;
+
   ServerBuilder(InternalCache cache, SecurityService securityService,
-      StatisticsClock statisticsClock) {
+      StatisticsClock statisticsClock, ModuleService moduleService) {
     this.cache = cache;
     this.securityService = securityService;
     this.statisticsClock = statisticsClock;
+    this.moduleService = moduleService;
   }
 
   /**
@@ -115,7 +119,7 @@ class ServerBuilder implements ServerFactory {
 
     return new CacheServerImpl(cache, securityService, statisticsClock, acceptorBuilder,
         sendResourceEvents, includeMemberGroups, socketCreatorSupplier, cacheClientNotifierProvider,
-        clientHealthMonitorProvider, cacheServerAdvisorProvider);
+        clientHealthMonitorProvider, cacheServerAdvisorProvider, moduleService);
   }
 
   @VisibleForTesting

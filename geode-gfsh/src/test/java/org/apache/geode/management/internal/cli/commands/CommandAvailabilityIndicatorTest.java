@@ -19,15 +19,17 @@ package org.apache.geode.management.internal.cli.commands;
 
 import org.junit.Test;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.CommandManager;
-
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 
 public class CommandAvailabilityIndicatorTest {
 
   @Test
   public void allOnlineCommandsHaveAvailabilityIndicator() {
-    CommandManager manager = new CommandManager();
+    CommandManager manager = new CommandManager(new ServiceLoaderModuleService(
+        LogService.getLogger()));
     CommandAvailabilityIndicatorTestHelper.assertOnlineCommandsHasAvailabilityIndicator(manager);
   }
 

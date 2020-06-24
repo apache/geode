@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.functions.AlterRuntimeConfigFunction;
 import org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction;
 import org.apache.geode.management.internal.cli.functions.CloseDurableClientFunction;
@@ -80,6 +81,7 @@ import org.apache.geode.management.internal.configuration.functions.RecreateCach
 import org.apache.geode.management.internal.functions.GetMemberInformationFunction;
 import org.apache.geode.management.internal.functions.RebalanceFunction;
 import org.apache.geode.management.internal.functions.RestoreRedundancyFunction;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -101,6 +103,8 @@ public class CoreFunctionSecurityTest {
 
   @BeforeClass
   public static void setupClass() {
+    ServiceLoaderModuleService moduleService = new ServiceLoaderModuleService(
+        LogService.getLogger());
     functionStringMap.put(new AlterRuntimeConfigFunction(), "*");
     functionStringMap.put(new ChangeLogLevelFunction(), "*");
     functionStringMap.put(new CloseDurableClientFunction(), "*");

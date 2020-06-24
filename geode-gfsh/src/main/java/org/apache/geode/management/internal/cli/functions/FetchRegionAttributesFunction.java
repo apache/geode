@@ -16,14 +16,15 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  *
@@ -36,9 +37,6 @@ public class FetchRegionAttributesFunction extends CliFunction<String> {
 
   private static final String ID = FetchRegionAttributesFunction.class.getName();
 
-  @Immutable
-  public static final FetchRegionAttributesFunction INSTANCE = new FetchRegionAttributesFunction();
-
   @Override
   public boolean isHA() {
     return false;
@@ -49,12 +47,15 @@ public class FetchRegionAttributesFunction extends CliFunction<String> {
    */
   @Override
   public CliFunctionResult executeFunction(FunctionContext<String> context) throws Exception {
+    ModuleService moduleService =
+        ((InternalCache) context.getCache()).getInternalDistributedSystem().getModuleService();
     String regionPath = context.getArguments();
     if (regionPath == null) {
       throw new IllegalArgumentException(
           CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
     }
-    XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionPath.substring(1));
+    XmlEntity xmlEntity =
+        new XmlEntity(CacheXml.REGION, "name", regionPath.substring(1), moduleService);
     return new CliFunctionResult(context.getMemberName(), xmlEntity.getXmlDefinition());
   }
 

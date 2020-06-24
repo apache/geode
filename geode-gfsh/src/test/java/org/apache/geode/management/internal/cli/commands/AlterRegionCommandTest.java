@@ -42,11 +42,14 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
@@ -63,11 +66,16 @@ public class AlterRegionCommandTest {
   public void before() {
     command = spy(AlterRegionCommand.class);
     InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getModuleService())
+        .thenReturn(new ServiceLoaderModuleService(LogService.getLogger()));
     command.setCache(cache);
     when(cache.getSecurityService()).thenReturn(mock(SecurityService.class));
-    InternalConfigurationPersistenceService ccService =
+    InternalConfigurationPersistenceService configurationPersistenceService =
         mock(InternalConfigurationPersistenceService.class);
-    doReturn(ccService).when(command).getConfigurationPersistenceService();
+    doReturn(configurationPersistenceService).when(command).getConfigurationPersistenceService();
     Set<DistributedMember> members =
         Stream.of(mock(DistributedMember.class)).collect(Collectors.toSet());
     doReturn(members).when(command).findMembers(any(), any());
@@ -81,7 +89,7 @@ public class AlterRegionCommandTest {
     existingRegionConfig.setName(SEPARATOR + "regionA");
     existingRegionConfig.setType(RegionShortcut.REPLICATE.name());
     cacheConfig.getRegions().add(existingRegionConfig);
-    when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
+    when(configurationPersistenceService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }
 
   @Test

@@ -26,6 +26,8 @@ dependencies {
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-pulse'))
   compileOnly(project(':geode-junit'))
+  implementation(project(':geode-common'))
+  implementation(project(':geode-common-services'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation('javax.servlet:javax.servlet-api')
