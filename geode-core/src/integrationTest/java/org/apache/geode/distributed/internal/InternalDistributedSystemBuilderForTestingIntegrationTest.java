@@ -46,7 +46,7 @@ public class InternalDistributedSystemBuilderForTestingIntegrationTest {
 
     InternalDistributedSystem system =
         new InternalDistributedSystem.BuilderForTesting(configProperties,
-            ModuleService.getDefaultModuleService())
+            ModuleService.DEFAULT)
                 .setDistributionManager(distributionManager)
                 .setStatisticsManagerFactory(statisticsManagerFactory)
                 .build();

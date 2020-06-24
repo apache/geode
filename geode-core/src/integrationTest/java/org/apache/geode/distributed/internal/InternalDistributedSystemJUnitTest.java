@@ -95,7 +95,7 @@ public class InternalDistributedSystemJUnitTest {
   private InternalDistributedSystem createSystem(Properties props,
       MetricsService.Builder metricsSessionBuilder) {
     this.system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder,
-        ModuleService.getDefaultModuleService())
+        ModuleService.DEFAULT)
             .build();
     return this.system;
   }
@@ -662,7 +662,7 @@ public class InternalDistributedSystemJUnitTest {
     when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
     InternalDistributedSystem sys =
         new InternalDistributedSystem.Builder(config1.toProperties(), metricsSessionBuilder,
-            ModuleService.getDefaultModuleService())
+            ModuleService.DEFAULT)
                 .build();
     try {
 

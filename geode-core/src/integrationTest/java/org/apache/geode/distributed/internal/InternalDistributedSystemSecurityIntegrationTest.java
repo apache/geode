@@ -59,7 +59,7 @@ public class InternalDistributedSystemSecurityIntegrationTest {
 
     system =
         InternalDistributedSystem.connectInternal(configProperties, securityConfig,
-            metricsSessionBuilder, ModuleService.getDefaultModuleService());
+            metricsSessionBuilder, ModuleService.DEFAULT);
 
     system.disconnect();
 
@@ -76,7 +76,7 @@ public class InternalDistributedSystemSecurityIntegrationTest {
 
     system = InternalDistributedSystem.connectInternal(
         configProperties, securityConfig, metricsSessionBuilder,
-        ModuleService.getDefaultModuleService());
+        ModuleService.DEFAULT);
 
     system.disconnect();
 

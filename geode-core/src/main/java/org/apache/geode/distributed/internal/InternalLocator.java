@@ -743,7 +743,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           InternalDistributedSystem
               .connectInternal(distributedSystemProperties, null,
                   new InternalDistributedSystemMetricsService.Builder(),
-                  ModuleService.getDefaultModuleService(),
+                  ModuleService.DEFAULT,
                   membershipLocator);
 
       if (peerLocator) {

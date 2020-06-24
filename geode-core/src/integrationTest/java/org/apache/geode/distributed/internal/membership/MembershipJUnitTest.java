@@ -78,6 +78,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.services.module.ModuleService;
 
 @Category({MembershipJUnitTest.class})
 public class MembershipJUnitTest {
@@ -294,7 +295,8 @@ public class MembershipJUnitTest {
             mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter());
     final Membership<InternalDistributedMember> m1 =
         MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
-            socketCreator, locatorClient, serializer, memberIdentifierFactory)
+            socketCreator, locatorClient, serializer, memberIdentifierFactory,
+            ModuleService.DEFAULT)
             .setMembershipLocator(locator)
             .setAuthenticator(authenticator)
             .setStatistics(stats1)

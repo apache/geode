@@ -61,7 +61,7 @@ public class InternalDistributedSystemLockMemoryIntegrationTest {
   public void lockMemoryAllowedIfAllowMemoryOverCommitIsSet() {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT", "true");
     system = spy(new InternalDistributedSystem.Builder(new Properties(), builder,
-        ModuleService.getDefaultModuleService()).build());
+        ModuleService.DEFAULT).build());
     doNothing().when(system).lockMemory();
 
     system.lockMemory(100, 200);
@@ -74,7 +74,7 @@ public class InternalDistributedSystemLockMemoryIntegrationTest {
     System.setProperty(
         GeodeGlossary.GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT", "true");
     system = spy(new InternalDistributedSystem.Builder(new Properties(), builder,
-        ModuleService.getDefaultModuleService()).build());
+        ModuleService.DEFAULT).build());
 
     system.lockMemory(100, 200);
 
@@ -87,7 +87,7 @@ public class InternalDistributedSystemLockMemoryIntegrationTest {
     System.setProperty(
         GeodeGlossary.GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT", "true");
     system = spy(new InternalDistributedSystem.Builder(new Properties(), builder,
-        ModuleService.getDefaultModuleService()).build());
+        ModuleService.DEFAULT).build());
 
     system.lockMemory(100, 200);
 
@@ -98,7 +98,7 @@ public class InternalDistributedSystemLockMemoryIntegrationTest {
   @Test
   public void lockMemoryThrowsIfMemoryOverCommit() {
     system = spy(new InternalDistributedSystem.Builder(new Properties(), builder,
-        ModuleService.getDefaultModuleService()).build());
+        ModuleService.DEFAULT).build());
 
     Throwable caughtException = catchThrowable(() -> system.lockMemory(100, 200));
 
@@ -109,7 +109,7 @@ public class InternalDistributedSystemLockMemoryIntegrationTest {
   @Test
   public void locksMemoryIfMemoryNotOverCommit() {
     system = spy(new InternalDistributedSystem.Builder(new Properties(), builder,
-        ModuleService.getDefaultModuleService()).build());
+        ModuleService.DEFAULT).build());
     doNothing().when(system).lockMemory();
 
     system.lockMemory(200, 100);

@@ -15,6 +15,7 @@
 
 package org.apache.geode.services.module;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -34,51 +35,72 @@ import org.apache.geode.services.result.impl.Success;
 @Experimental
 public interface ModuleService {
 
-  static ModuleService getDefaultModuleService() {
-    return new ModuleService() {
-      @Override
-      public ModuleServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor) {
-        return Failure.of("This features is not implemented for a default ModuleService");
+  /**
+   * Default instance of ModuleService using "standard" ClassLoader resolution.
+   */
+  ModuleService DEFAULT = new ModuleService() {
+    @Override
+    public ModuleServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor) {
+      return Failure.of("This features is not implemented for a default ModuleService");
+    }
+
+    @Override
+    public ModuleServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor) {
+      return Failure.of("This features is not implemented for a default ModuleService");
+    }
+
+    @Override
+    public ModuleServiceResult<Boolean> unloadModule(String moduleName) {
+      return Failure.of("This features is not implemented for a default ModuleService");
+    }
+
+    @Override
+    public <T> ModuleServiceResult<Set<T>> loadService(Class<T> service) {
+      Set<T> result1 = new HashSet<>();
+      try {
+        ServiceLoader.load(service).forEach(result1::add);
+      } catch (Exception e) {
+        return Failure.of(e.toString());
+      }
+      return Success.of(result1);
+    }
+
+    @Override
+    public ModuleServiceResult<Class<?>> loadClass(String className,
+        ModuleDescriptor moduleDescriptor) {
+      return Failure.of("This features is not implemented for a default ModuleService");
+    }
+
+    @Override
+    public ModuleServiceResult<List<Class<?>>> loadClass(String className) {
+      try {
+        return Success.of(Collections.singletonList(
+            this.getClass().getClassLoader().loadClass(className)));
+      } catch (ClassNotFoundException e) {
+        return Failure.of(e.toString());
+      }
+    }
+
+    @Override
+    public ModuleServiceResult<List<InputStream>> findResourceAsStream(String resourceFile) {
+      InputStream inputStream = null;
+      ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+      if (contextClassLoader != null) {
+        inputStream = contextClassLoader.getResourceAsStream(resourceFile);
       }
 
-      @Override
-      public ModuleServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor) {
-        return Failure.of("This features is not implemented for a default ModuleService");
+      if (inputStream == null) {
+        inputStream = getClass().getResourceAsStream(resourceFile);
+      }
+      if (inputStream == null) {
+        inputStream = ClassLoader.getSystemResourceAsStream(resourceFile);
       }
 
-      @Override
-      public ModuleServiceResult<Boolean> unloadModule(String moduleName) {
-        return Failure.of("This features is not implemented for a default ModuleService");
-      }
-
-      @Override
-      public <T> ModuleServiceResult<Set<T>> loadService(Class<T> service) {
-        Set<T> result = new HashSet<>();
-        try {
-          ServiceLoader.load(service).forEach(result::add);
-        } catch (Exception e) {
-          return Failure.of(e.toString());
-        }
-        return Success.of(result);
-      }
-
-      @Override
-      public ModuleServiceResult<Class<?>> loadClass(String className,
-          ModuleDescriptor moduleDescriptor) {
-        return Failure.of("This features is not implemented for a default ModuleService");
-      }
-
-      @Override
-      public ModuleServiceResult<List<Class<?>>> loadClass(String className) {
-        try {
-          return Success.of(Collections.singletonList(
-              this.getClass().getClassLoader().loadClass(className)));
-        } catch (ClassNotFoundException e) {
-          return Failure.of(e.toString());
-        }
-      }
-    };
-  }
+      return inputStream == null
+          ? Failure.of(String.format("No resource for path: %s could be found", resourceFile))
+          : Success.of(Collections.singletonList(inputStream));
+    }
+  };
 
   /**
    * Loads a module from a resource.
@@ -172,4 +194,6 @@ public interface ModuleService {
    *         failure.
    */
   ModuleServiceResult<List<Class<?>>> loadClass(String className);
+
+  ModuleServiceResult<List<InputStream>> findResourceAsStream(String resourceFile);
 }

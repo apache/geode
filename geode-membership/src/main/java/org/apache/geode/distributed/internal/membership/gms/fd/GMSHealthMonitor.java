@@ -73,6 +73,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -918,19 +919,20 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   @Override
-  public void init(Services<ID> s) throws MembershipConfigurationException {
+  public void init(Services<ID> service, ModuleService moduleService)
+      throws MembershipConfigurationException {
     isStopping = false;
-    services = s;
-    memberTimeout = s.getConfig().getMemberTimeout();
-    this.stats = services.getStatistics();
+    this.services = service;
+    memberTimeout = service.getConfig().getMemberTimeout();
+    this.stats = this.services.getStatistics();
 
-    services.getMessenger().addHandler(HeartbeatRequestMessage.class,
+    this.services.getMessenger().addHandler(HeartbeatRequestMessage.class,
         this::processMessage);
-    services.getMessenger().addHandler(HeartbeatMessage.class,
+    this.services.getMessenger().addHandler(HeartbeatMessage.class,
         this::processMessage);
-    services.getMessenger().addHandler(SuspectMembersMessage.class,
+    this.services.getMessenger().addHandler(SuspectMembersMessage.class,
         this::processMessage);
-    services.getMessenger().addHandler(FinalCheckPassedMessage.class,
+    this.services.getMessenger().addHandler(FinalCheckPassedMessage.class,
         this::processMessage);
   }
 

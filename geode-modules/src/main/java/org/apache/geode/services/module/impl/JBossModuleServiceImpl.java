@@ -15,6 +15,7 @@
 
 package org.apache.geode.services.module.impl;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -235,5 +236,22 @@ public class JBossModuleServiceImpl implements ModuleService {
     });
 
     return Success.of(result);
+  }
+
+  @Override
+  public ModuleServiceResult<List<InputStream>> findResourceAsStream(String resourceFile) {
+    List<InputStream> results = new ArrayList<>();
+    modules.values().forEach(module -> {
+      InputStream resourceAsStream =
+          module.getClassLoader().findResourceAsStream(resourceFile, false);
+
+      if (resourceAsStream != null) {
+        results.add(resourceAsStream);
+      }
+    });
+
+    return results.isEmpty()
+        ? Failure.of(String.format("No resource for path: %s could be found", resourceFile))
+        : Success.of(results);
   }
 }

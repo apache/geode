@@ -159,7 +159,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   public static DistributedSystem connect(Properties config) {
     return InternalDistributedSystem.connectInternal(config, null,
         new InternalDistributedSystemMetricsService.Builder(),
-        ModuleService.getDefaultModuleService());
+        ModuleService.DEFAULT);
   }
 
   protected static void addSystem(InternalDistributedSystem newSystem) {
@@ -671,4 +671,6 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Returns the new DistributedSystem if there was an auto-reconnect
    */
   public abstract DistributedSystem getReconnectedSystem();
+
+  public abstract ModuleService getModuleService();
 }

@@ -139,7 +139,8 @@ public class DistributionImpl implements Distribution {
           socketCreator,
           locatorClient,
           InternalDataSerializer.getDSFIDSerializer(),
-          new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
+          new ClusterDistributionManager.ClusterDistributionManagerIDFactory(),
+          system.getModuleService())
           .setMembershipLocator(locator)
           .setAuthenticator(
               new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),

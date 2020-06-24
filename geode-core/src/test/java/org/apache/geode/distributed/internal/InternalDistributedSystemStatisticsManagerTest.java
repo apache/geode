@@ -69,11 +69,10 @@ public class InternalDistributedSystemStatisticsManagerTest {
     when(statisticsManagerFactory.create(any(), anyLong(), anyBoolean()))
         .thenReturn(statisticsManager);
     internalDistributedSystem =
-        new InternalDistributedSystem.BuilderForTesting(new Properties(), ModuleService
-            .getDefaultModuleService())
-                .setDistributionManager(distributionManager)
-                .setStatisticsManagerFactory(statisticsManagerFactory)
-                .build();
+        new InternalDistributedSystem.BuilderForTesting(new Properties(), ModuleService.DEFAULT)
+            .setDistributionManager(distributionManager)
+            .setStatisticsManagerFactory(statisticsManagerFactory)
+            .build();
   }
 
   @Test
@@ -88,7 +87,7 @@ public class InternalDistributedSystemStatisticsManagerTest {
 
     InternalDistributedSystem result =
         new InternalDistributedSystem.BuilderForTesting(new Properties(),
-            ModuleService.getDefaultModuleService())
+            ModuleService.DEFAULT)
                 .setDistributionManager(distributionManager)
                 .setStatisticsManagerFactory(statisticsManagerFactory)
                 .build();

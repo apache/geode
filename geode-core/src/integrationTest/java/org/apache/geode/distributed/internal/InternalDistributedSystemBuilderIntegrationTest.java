@@ -54,8 +54,8 @@ public class InternalDistributedSystemBuilderIntegrationTest {
     configProperties.setProperty(NAME, theName);
 
     system =
-        new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder, ModuleService
-            .getDefaultModuleService())
+        new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder,
+            ModuleService.DEFAULT)
                 .build();
 
     assertThat(system.isConnected()).isTrue();
@@ -71,7 +71,7 @@ public class InternalDistributedSystemBuilderIntegrationTest {
     Properties configProperties = new Properties();
 
     system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder,
-        ModuleService.getDefaultModuleService())
+        ModuleService.DEFAULT)
             .setSecurityConfig(securityConfig)
             .build();
 

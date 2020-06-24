@@ -54,6 +54,7 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Tests of using the membership APIs to make multiple Membership systems that communicate
@@ -299,7 +300,7 @@ public class MembershipIntegrationTest {
             dsfidSerializer.getObjectDeserializer(), TcpSocketFactory.DEFAULT);
 
     return MembershipBuilder.<MemberIdentifier>newMembershipBuilder(
-        socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
+        socketCreator, locatorClient, dsfidSerializer, memberIdFactory, ModuleService.DEFAULT)
         .setMembershipLocator(embeddedLocator)
         .setConfig(config)
         .create();

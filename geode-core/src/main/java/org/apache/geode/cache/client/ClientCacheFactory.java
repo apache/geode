@@ -281,7 +281,7 @@ public class ClientCacheFactory {
         new InternalDistributedSystemMetricsService.Builder()
             .setIsClient(true);
     return InternalDistributedSystem.connectInternal(dsProps, null, metricsServiceBuilder,
-        ModuleService.getDefaultModuleService());
+        ModuleService.DEFAULT);
   }
 
   private PoolFactory getPoolFactory() {

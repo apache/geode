@@ -2954,6 +2954,11 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   @Override
+  public ModuleService getModuleService() {
+    return moduleService;
+  }
+
+  @Override
   public void stopReconnecting() {
     reconnectCancelled = true;
     synchronized (reconnectLock) {
