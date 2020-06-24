@@ -34,6 +34,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Function to destroy {@link MockRegionExtension} on a {@link Region}.
@@ -54,7 +55,12 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 public class DestroyMockRegionExtensionFunction implements Function, DataSerializable {
 
   private static final long serialVersionUID = 1L;
-  public static final Function INSTANCE = new DestroyMockRegionExtensionFunction();
+
+  private final ModuleService moduleService;
+
+  public DestroyMockRegionExtensionFunction(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   @Override
   public void execute(FunctionContext context) {
@@ -74,7 +80,8 @@ public class DestroyMockRegionExtensionFunction implements Function, DataSeriali
       }
     }
 
-    XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", region.getName());
+    XmlEntity xmlEntity =
+        new XmlEntity(CacheXml.REGION, "name", region.getName(), moduleService);
 
     final ResultSender<Object> resultSender = context.getResultSender();
     final String memberNameOrId =

@@ -70,6 +70,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigListener;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 /**
  * The GemFire JMX Agent provides the ability to administrate one GemFire distributed system via
@@ -185,8 +187,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * @throws org.apache.geode.admin.AdminException TODO-javadocs
    * @throws IllegalArgumentException if agentConfig is null
    */
-  public AgentImpl(AgentConfigImpl agentConfig) throws AdminException, IllegalArgumentException {
-    loggingSession = LoggingSession.create();
+  public AgentImpl(AgentConfigImpl agentConfig, ModuleService moduleService)
+      throws AdminException, IllegalArgumentException {
+    loggingSession = LoggingSession.create(moduleService);
 
     shutdownHook = new LoggingThread("Shutdown", false, () -> disconnectFromSystem());
     addShutdownHook();
@@ -1045,7 +1048,8 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     }
 
     try {
-      Agent agent = AgentFactory.getAgent(ac);
+      Agent agent =
+          AgentFactory.getAgent(ac, new ServiceLoaderModuleService(LogService.getLogger()));
       agent.start();
 
     } catch (VirtualMachineError err) {

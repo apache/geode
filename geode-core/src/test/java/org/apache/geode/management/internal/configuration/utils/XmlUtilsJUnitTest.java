@@ -40,12 +40,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 /**
  * Unit tests for {@link XmlUtils}. See Also {@link XmlUtilsAddNewNodeJUnitTest} for tests related
- * to {@link XmlUtils#addNewNode(Document, XmlEntity)}
+ * to {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)}
  *
  * @since GemFire 8.1
  */
@@ -62,7 +65,8 @@ public class XmlUtilsJUnitTest {
   @Test
   public void testBuildSchemaLocationMapAttribute() throws Exception {
     final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass()
-        .getResourceAsStream("XmlUtilsJUnitTest.testBuildSchemaLocationMapAttribute.xml")));
+        .getResourceAsStream("XmlUtilsJUnitTest.testBuildSchemaLocationMapAttribute.xml")),
+        new ServiceLoaderModuleService(LogService.getLogger()));
     final String schemaLocationAttribute = XmlUtils.getAttribute(doc.getDocumentElement(),
         W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);
     final Map<String, String> schemaLocationMap =
@@ -88,7 +92,8 @@ public class XmlUtilsJUnitTest {
   @Test
   public void testBuildSchemaLocationMapNullAttribute() throws Exception {
     final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass()
-        .getResourceAsStream("XmlUtilsJUnitTest.testBuildSchemaLocationMapNullAttribute.xml")));
+        .getResourceAsStream("XmlUtilsJUnitTest.testBuildSchemaLocationMapNullAttribute.xml")),
+        new ServiceLoaderModuleService(LogService.getLogger()));
     final String schemaLocationAttribute = XmlUtils.getAttribute(doc.getDocumentElement(),
         W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);
     assertNull(schemaLocationAttribute);
@@ -103,7 +108,8 @@ public class XmlUtilsJUnitTest {
   @Test
   public void testBuildSchemaLocationMapEmptyAttribute() throws Exception {
     final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass()
-        .getResourceAsStream("XmlUtilsJUnitTest.testBuildSchemaLocationMapEmptyAttribute.xml")));
+        .getResourceAsStream("XmlUtilsJUnitTest.testBuildSchemaLocationMapEmptyAttribute.xml")),
+        new ServiceLoaderModuleService(LogService.getLogger()));
     final String schemaLocationAttribute = XmlUtils.getAttribute(doc.getDocumentElement(),
         W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);
     assertNotNull(schemaLocationAttribute);
@@ -115,7 +121,8 @@ public class XmlUtilsJUnitTest {
   @Test
   public void testQuerySingleElement() throws Exception {
     final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(
-        getClass().getResourceAsStream("XmlUtilsJUnitTest.testQuerySingleElement.xml")));
+        getClass().getResourceAsStream("XmlUtilsJUnitTest.testQuerySingleElement.xml")),
+        new ServiceLoaderModuleService(LogService.getLogger()));
     final Element root = doc.getDocumentElement();
     final String cacheNamespace = "http://geode.apache.org/schema/cache";
     final XPathContext cacheXPathContext = new XPathContext("cache", cacheNamespace);
@@ -159,7 +166,8 @@ public class XmlUtilsJUnitTest {
    */
   @Test
   public void testChangeNamespaceWithNoRootNamespace() throws Exception {
-    Document doc = XmlUtils.getDocumentBuilder().newDocument();
+    Document doc = XmlUtils.getDocumentBuilder(new ServiceLoaderModuleService(
+        LogService.getLogger())).newDocument();
     Element root = doc.createElement("root");
     root = (Element) doc.appendChild(root);
     final Element child = doc.createElement("child");
@@ -183,7 +191,8 @@ public class XmlUtilsJUnitTest {
 
   @Test
   public void testChangeNamespaceWithExistingRootNamespace() throws Exception {
-    Document doc = XmlUtils.getDocumentBuilder().newDocument();
+    Document doc = XmlUtils.getDocumentBuilder(new ServiceLoaderModuleService(
+        LogService.getLogger())).newDocument();
 
     final String ns0 = "urn:namespace0";
     Element root = doc.createElementNS(ns0, "root");
@@ -211,7 +220,8 @@ public class XmlUtilsJUnitTest {
   @Test
   public void testCreateAndUpgradeDocumentFromXml() throws Exception {
     Document doc = XmlUtils.createAndUpgradeDocumentFromXml(IOUtils.toString(
-        this.getClass().getResourceAsStream("SharedConfigurationJUnitTest.xml"), "UTF-8"));
+        this.getClass().getResourceAsStream("SharedConfigurationJUnitTest.xml"), "UTF-8"),
+        new ServiceLoaderModuleService(LogService.getLogger()));
 
     String schemaLocation = XmlUtils.getAttribute(doc.getDocumentElement(),
         W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);
@@ -238,14 +248,16 @@ public class XmlUtilsJUnitTest {
 
   @Test
   public void testUpgradeSchemaFromGemfireNamespace() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(CLUSTER8_XML);
+    Document doc = XmlUtils.createDocumentFromXml(CLUSTER8_XML, new ServiceLoaderModuleService(
+        LogService.getLogger()));
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("8.1");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(CacheXml.GEMFIRE_NAMESPACE);
     assertThat(oldRoot.getAttribute("xsi:schemaLocation")).isEqualTo(GEMFIRE_SCHEMA_LOCATION);
 
     String version = "1.0";
-    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version);
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version,
+        new ServiceLoaderModuleService(LogService.getLogger()));
 
     Element root = doc.getDocumentElement();
 
@@ -260,10 +272,12 @@ public class XmlUtilsJUnitTest {
   @Test
   public void testUpgradeSchemaFromOtherInvaidNS() throws Exception {
     String xml = "<cache version=\"8.1\" xmlns=\"http://test.org/cache\"></cache>";
-    Document doc = XmlUtils.createDocumentFromXml(xml);
+    Document doc = XmlUtils.createDocumentFromXml(xml, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     String version = "1.0";
-    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version);
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version,
+        new ServiceLoaderModuleService(LogService.getLogger()));
 
     Element root = doc.getDocumentElement();
     assertThat(root.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
@@ -274,13 +288,15 @@ public class XmlUtilsJUnitTest {
   @Test
   public void testUpgradeSchemaFromGemfireNamespaceWithNoLocation() throws Exception {
     String xml = "<cache version=\"8.1\" xmlns=\"http://schema.pivotal.io/gemfire/cache\"></cache>";
-    Document doc = XmlUtils.createDocumentFromXml(xml);
+    Document doc = XmlUtils.createDocumentFromXml(xml, new ServiceLoaderModuleService(
+        LogService.getLogger()));
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("8.1");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(CacheXml.GEMFIRE_NAMESPACE);
 
     String version = "1.0";
-    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version);
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version,
+        new ServiceLoaderModuleService(LogService.getLogger()));
 
     Element root = doc.getDocumentElement();
     assertThat(root.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
@@ -294,12 +310,14 @@ public class XmlUtilsJUnitTest {
         + "    <a:region name=\"one\">\n"
         + "        <a:region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
         + "    </a:region>\n" + "</a:cache>";
-    Document doc = XmlUtils.createDocumentFromXml(xml);
+    Document doc = XmlUtils.createDocumentFromXml(xml, new ServiceLoaderModuleService(
+        LogService.getLogger()));
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(CacheXml.GEMFIRE_NAMESPACE);
 
     String version = "1.0";
-    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version);
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version,
+        new ServiceLoaderModuleService(LogService.getLogger()));
 
     Element root = doc.getDocumentElement();
 
@@ -317,10 +335,12 @@ public class XmlUtilsJUnitTest {
         + "    <a:region name=\"one\">\n"
         + "        <a:region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
         + "    </a:region>\n" + "</a:cache>";
-    Document doc = XmlUtils.createDocumentFromXml(xml);
+    Document doc = XmlUtils.createDocumentFromXml(xml, new ServiceLoaderModuleService(
+        LogService.getLogger()));
     String schemaLocation2 = "http://geode.apache.org/schema/cache/cache-2.0.xsd";
     String version = "2.0";
-    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, schemaLocation2, version);
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, schemaLocation2, version,
+        new ServiceLoaderModuleService(LogService.getLogger()));
 
     Element root = doc.getDocumentElement();
 
@@ -335,14 +355,16 @@ public class XmlUtilsJUnitTest {
 
   @Test
   public void testUpgradeSchemaFromGeodeNamespace() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(CLUSTER9_XML);
+    Document doc = XmlUtils.createDocumentFromXml(CLUSTER9_XML, new ServiceLoaderModuleService(
+        LogService.getLogger()));
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("1.0");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
     assertThat(oldRoot.getAttribute("xsi:schemaLocation")).isEqualTo(GEODE_SCHEMA_LOCATION);
 
     String version = "1.0";
-    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version);
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version,
+        new ServiceLoaderModuleService(LogService.getLogger()));
     Element root = doc.getDocumentElement();
 
     assertThat(root.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
@@ -352,14 +374,17 @@ public class XmlUtilsJUnitTest {
 
   @Test
   public void testUpgradeSchemaFromGeodeNamespaceToAnotherVersion() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(CLUSTER9_XML);
+    Document doc = XmlUtils.createDocumentFromXml(CLUSTER9_XML, new ServiceLoaderModuleService(
+        LogService.getLogger()));
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("1.0");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
     assertThat(oldRoot.getAttribute("xsi:schemaLocation")).isEqualTo(GEODE_SCHEMA_LOCATION);
 
     String schemaLocation2 = "http://geode.apache.org/schema/cache/cache-2.0.xsd";
-    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, schemaLocation2, "2.0");
+    doc =
+        XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, schemaLocation2, "2.0",
+            new ServiceLoaderModuleService(LogService.getLogger()));
     Element root = doc.getDocumentElement();
 
     assertThat(root.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
@@ -375,11 +400,13 @@ public class XmlUtilsJUnitTest {
         + "       xmlns:aop=\"http://aop\"\n" + "       version=\"8.1\"\n"
         + "       xsi:schemaLocation=\"http://cache http://test.org/cache.xsd "
         + "        http://aop http://test.org/aop.xsd\">\n" + "</cache>";
-    Document doc = XmlUtils.createDocumentFromXml(xml);
+    Document doc = XmlUtils.createDocumentFromXml(xml, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     String version = "1.0";
     String namespace = "http://geode.apache.org/schema/cache";
-    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, "1.0");
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, "1.0",
+        new ServiceLoaderModuleService(LogService.getLogger()));
 
     Element root = doc.getDocumentElement();
 

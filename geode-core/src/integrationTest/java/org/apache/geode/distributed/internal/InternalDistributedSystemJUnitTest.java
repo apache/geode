@@ -74,7 +74,9 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -93,8 +95,9 @@ public class InternalDistributedSystemJUnitTest {
 
   private InternalDistributedSystem createSystem(Properties props,
       MetricsService.Builder metricsSessionBuilder) {
-    this.system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder)
-        .build();
+    this.system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder,
+        new ServiceLoaderModuleService(LogService.getLogger()))
+            .build();
     return this.system;
   }
 
@@ -103,7 +106,7 @@ public class InternalDistributedSystemJUnitTest {
    */
   private InternalDistributedSystem createSystem(Properties props) {
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(mock(MetricsService.class));
     return createSystem(props, metricsSessionBuilder);
   }
 
@@ -657,10 +660,11 @@ public class InternalDistributedSystemJUnitTest {
     props.setProperty(LOCATORS, "");
     Config config1 = new DistributionConfigImpl(props, false);
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(mock(MetricsService.class));
     InternalDistributedSystem sys =
-        new InternalDistributedSystem.Builder(config1.toProperties(), metricsSessionBuilder)
-            .build();
+        new InternalDistributedSystem.Builder(config1.toProperties(), metricsSessionBuilder,
+            new ServiceLoaderModuleService(LogService.getLogger()))
+                .build();
     try {
 
       props.put(MCAST_PORT, "1");
@@ -794,18 +798,19 @@ public class InternalDistributedSystemJUnitTest {
   public void usesSessionBuilderToCreateMetricsSession() {
     MetricsService metricsSession = mock(MetricsService.class);
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(metricsSession);
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(metricsSession);
 
     createSystem(getCommonProperties(), metricsSessionBuilder);
 
-    verify(metricsSessionBuilder).build(system);
+    verify(metricsSessionBuilder).build(system, new ServiceLoaderModuleService(
+        LogService.getLogger()));
   }
 
   @Test
   public void startsMetricsSession() {
     MetricsService metricsSession = mock(MetricsService.class);
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(metricsSession);
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(metricsSession);
     when(metricsSession.getMeterRegistry()).thenReturn(mock(MeterRegistry.class));
 
     createSystem(getCommonProperties(), metricsSessionBuilder);
@@ -821,7 +826,7 @@ public class InternalDistributedSystemJUnitTest {
     when(metricsSession.getMeterRegistry()).thenReturn(sessionMeterRegistry);
 
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(metricsSession);
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(metricsSession);
     when(metricsSession.getMeterRegistry()).thenReturn(sessionMeterRegistry);
 
     createSystem(getCommonProperties(), metricsSessionBuilder);

@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -31,8 +32,10 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.fake.Fakes;
 
 public class DestroyAsyncEventQueueFunctionTest {
@@ -53,7 +56,8 @@ public class DestroyAsyncEventQueueFunctionTest {
     mockContext = mock(FunctionContext.class);
     mockArgs = mock(DestroyAsyncEventQueueFunctionArgs.class);
     cache = Fakes.cache();
-    function = spy(DestroyAsyncEventQueueFunction.class);
+    function = spy(new DestroyAsyncEventQueueFunction(new ServiceLoaderModuleService(
+        LogService.getLogger())));
     resultSender = mock(ResultSender.class);
 
     when(mockContext.getCache()).thenReturn(cache);
@@ -68,7 +72,7 @@ public class DestroyAsyncEventQueueFunctionTest {
   @SuppressWarnings("deprecation")
   public void execute_validAeqId_OK() {
     XmlEntity xmlEntity = mock(XmlEntity.class);
-    doReturn(xmlEntity).when(function).getAEQXmlEntity(anyString(), anyString());
+    doReturn(xmlEntity).when(function).getAEQXmlEntity(anyString(), anyString(), any());
     when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(mockAEQ);
 
     function.execute(mockContext);

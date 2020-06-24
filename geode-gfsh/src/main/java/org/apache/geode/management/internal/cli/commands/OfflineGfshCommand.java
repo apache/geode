@@ -24,15 +24,26 @@ import java.util.Properties;
 
 import javax.management.remote.JMXServiceURL;
 
-import org.springframework.shell.core.CommandMarker;
-
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 
-public abstract class OfflineGfshCommand implements CommandMarker {
+public abstract class OfflineGfshCommand implements GeodeCommandMarker {
+
+  private ModuleService moduleService;
+
+  protected ModuleService getModuleService() {
+    return moduleService;
+  }
+
+  @Override
+  public void init(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   public boolean isDebugging() {
     return getGfsh() != null && getGfsh().getDebug();

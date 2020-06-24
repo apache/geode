@@ -84,6 +84,8 @@ import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifie
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -174,7 +176,7 @@ public class GMSJoinLeaveJUnitTest {
     } else {
       gmsJoinLeave = new GMSJoinLeave(locatorClient);
     }
-    gmsJoinLeave.init(services);
+    gmsJoinLeave.init(services, new ServiceLoaderModuleService(LogService.getLogger()));
     gmsJoinLeave.start();
     gmsJoinLeave.started();
     gmsJoinLeave.setLocalAddress(gmsJoinLeaveMemberId);
@@ -1562,7 +1564,7 @@ public class GMSJoinLeaveJUnitTest {
 
     GMSJoinLeave joinLeave = new GMSJoinLeave(null);
     try {
-      joinLeave.init(services);
+      joinLeave.init(services, new ServiceLoaderModuleService(LogService.getLogger()));
       throw new Error(
           "expected a GemFireConfigException to be thrown because no locators are configured");
     } catch (MembershipConfigurationException e) {

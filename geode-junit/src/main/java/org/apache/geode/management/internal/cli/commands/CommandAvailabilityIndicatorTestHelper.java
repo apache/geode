@@ -20,10 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 
@@ -31,8 +31,8 @@ import org.apache.geode.management.internal.cli.CommandManager;
 public class CommandAvailabilityIndicatorTestHelper {
 
   public static void assertOnlineCommandsHasAvailabilityIndicator(CommandManager manager) {
-    List<CommandMarker> commandMarkers = manager.getCommandMarkers();
-    for (CommandMarker commandMarker : commandMarkers) {
+    List<GeodeCommandMarker> commandMarkers = manager.getCommandMarkers();
+    for (GeodeCommandMarker commandMarker : commandMarkers) {
       // ignore all the other commands beside GfshCommand
       if (!GfshCommand.class.isAssignableFrom(commandMarker.getClass())) {
         continue;

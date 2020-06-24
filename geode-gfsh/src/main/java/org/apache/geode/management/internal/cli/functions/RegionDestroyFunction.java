@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -27,6 +26,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  *
@@ -35,10 +35,13 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class RegionDestroyFunction implements InternalFunction<String> {
   private static final long serialVersionUID = 9172773671865750685L;
 
-  @Immutable
-  public static final RegionDestroyFunction INSTANCE = new RegionDestroyFunction();
-
   private static final String ID = RegionDestroyFunction.class.getName();
+
+  private final ModuleService moduleService;
+
+  public RegionDestroyFunction(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   @Override
   public boolean hasResult() {
@@ -73,7 +76,8 @@ public class RegionDestroyFunction implements InternalFunction<String> {
 
       String regionName =
           regionPath.startsWith(SEPARATOR) ? regionPath.substring(1) : regionPath;
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
+      XmlEntity xmlEntity =
+          new XmlEntity(CacheXml.REGION, "name", regionName, moduleService);
       context.getResultSender().lastResult(new CliFunctionResult(memberName, xmlEntity,
           String.format("Region '%s' destroyed successfully", regionPath)));
 

@@ -23,6 +23,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
 
+  compileOnly(project(':geode-common-services'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-serialization'))

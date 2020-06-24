@@ -40,8 +40,10 @@ import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunction;
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -70,7 +72,8 @@ public class LuceneFunctionSecurityTest {
 
   @BeforeClass
   public static void setupFunctions() {
-    functions.add(new LuceneCreateIndexFunction());
+    functions.add(new LuceneCreateIndexFunction(new ServiceLoaderModuleService(
+        LogService.getLogger())));
     functions.add(new LuceneDescribeIndexFunction());
     functions.add(new LuceneDestroyIndexFunction());
     functions.add(new LuceneListIndexFunction());

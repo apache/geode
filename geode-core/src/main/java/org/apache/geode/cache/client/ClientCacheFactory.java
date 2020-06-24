@@ -34,6 +34,7 @@ import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.net.SSLParameterExtension;
@@ -41,6 +42,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 /**
  * Factory class used to create the singleton {@link ClientCache client cache} and connect to one or
@@ -267,10 +269,11 @@ public class ClientCacheFactory {
         return instance;
       } else {
 
-        return (InternalClientCache) new InternalCacheBuilder(cacheConfig)
-            .setIsClient(true)
-            .setPoolFactory(pf)
-            .create(system);
+        return (InternalClientCache) new InternalCacheBuilder(cacheConfig,
+            new ServiceLoaderModuleService(LogService.getLogger()))
+                .setIsClient(true)
+                .setPoolFactory(pf)
+                .create(system);
       }
     }
   }
@@ -279,7 +282,8 @@ public class ClientCacheFactory {
     MetricsService.Builder metricsServiceBuilder =
         new InternalDistributedSystemMetricsService.Builder()
             .setIsClient(true);
-    return InternalDistributedSystem.connectInternal(dsProps, null, metricsServiceBuilder);
+    return InternalDistributedSystem.connectInternal(dsProps, null, metricsServiceBuilder,
+        new ServiceLoaderModuleService(LogService.getLogger()));
   }
 
   private PoolFactory getPoolFactory() {

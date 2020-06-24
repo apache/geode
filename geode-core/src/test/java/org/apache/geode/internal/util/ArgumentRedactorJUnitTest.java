@@ -32,6 +32,8 @@ import java.util.List;
 import org.junit.Test;
 
 import org.apache.geode.internal.logging.Banner;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 public class ArgumentRedactorJUnitTest {
   private static final String someProperty = "redactorTest.someProperty";
@@ -210,7 +212,9 @@ public class ArgumentRedactorJUnitTest {
 
       List<String> args = ArrayUtils.asList("--user=me", "--password=isRedacted",
           "--another-password-for-some-reason =isRedacted", "--yet-another-password = isRedacted");
-      String banner = new Banner().getString(args.toArray(new String[0]));
+      String banner =
+          new Banner(new ServiceLoaderModuleService(LogService.getLogger()))
+              .getString(args.toArray(new String[0]));
       assertThat(banner).doesNotContain("isRedacted");
     } finally {
       System.clearProperty(someProperty);

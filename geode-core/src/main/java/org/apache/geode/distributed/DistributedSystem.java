@@ -42,7 +42,9 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -157,7 +159,8 @@ public abstract class DistributedSystem implements StatisticsFactory {
    */
   public static DistributedSystem connect(Properties config) {
     return InternalDistributedSystem.connectInternal(config, null,
-        new InternalDistributedSystemMetricsService.Builder());
+        new InternalDistributedSystemMetricsService.Builder(),
+        new ServiceLoaderModuleService(LogService.getLogger()));
   }
 
   protected static void addSystem(InternalDistributedSystem newSystem) {

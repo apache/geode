@@ -177,6 +177,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Represents a {@link Cache} that is created declaratively. Notice that it implements the
@@ -324,12 +325,13 @@ public class CacheCreation implements InternalCache {
   private final InternalQueryService queryService = createInternalQueryService();
 
   private QueryConfigurationServiceCreation queryConfigurationServiceCreation;
+  private ModuleService moduleService;
 
   /**
    * Creates a new {@code CacheCreation} with no root regions
    */
-  public CacheCreation() {
-    this(false);
+  public CacheCreation(ModuleService moduleService) {
+    this(false, moduleService);
   }
 
   /**
@@ -338,7 +340,8 @@ public class CacheCreation implements InternalCache {
    *
    * @since GemFire 5.7
    */
-  public CacheCreation(boolean forParsing) {
+  public CacheCreation(boolean forParsing, ModuleService moduleService) {
+    this.moduleService = moduleService;
     initializeRegionShortcuts();
     if (!forParsing) {
       createInProgress.set(poolManager);
@@ -479,6 +482,7 @@ public class CacheCreation implements InternalCache {
   void create(InternalCache cache)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException,
       QueryConfigurationServiceException {
+
     extensionPoint.beforeCreate(cache);
 
     cache.setDeclarativeCacheConfig(cacheConfig);
@@ -1707,12 +1711,12 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory() {
-    return WANServiceProvider.createGatewaySenderFactory(this);
+    return WANServiceProvider.createGatewaySenderFactory(this, moduleService);
   }
 
   @Override
   public GatewayReceiverFactory createGatewayReceiverFactory() {
-    return WANServiceProvider.createGatewayReceiverFactory(this);
+    return WANServiceProvider.createGatewayReceiverFactory(this, moduleService);
   }
 
   @Override

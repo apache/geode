@@ -21,15 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.springframework.shell.converters.EnumConverter;
 import org.springframework.shell.converters.SimpleFileConverter;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
@@ -37,14 +34,16 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Disabled;
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -62,7 +61,7 @@ public class CommandManager {
   private final Helper helper = new Helper();
 
   private final List<Converter<?>> converters = new ArrayList<>();
-  private final List<CommandMarker> commandMarkers = new ArrayList<>();
+  private final List<GeodeCommandMarker> commandMarkers = new ArrayList<>();
 
   private Properties cacheProperties;
   private LogWrapper logWrapper;
@@ -72,21 +71,22 @@ public class CommandManager {
    * this constructor is used from Gfsh VM. We are getting the user-command-package from system
    * environment. used by Gfsh.
    */
-  public CommandManager() {
-    this(null, null);
+  public CommandManager(ModuleService moduleService) {
+    this(null, null, moduleService);
   }
 
   /**
    * this is used when getting the instance in a cache server. We are getting the
    * user-command-package from distribution properties. used by OnlineCommandProcessor.
    */
-  public CommandManager(final Properties cacheProperties, InternalCache cache) {
+  public CommandManager(final Properties cacheProperties, InternalCache cache,
+      ModuleService moduleService) {
     if (cacheProperties != null) {
       this.cacheProperties = cacheProperties;
     }
     this.cache = cache;
     logWrapper = LogWrapper.getInstance(cache);
-    loadCommands();
+    loadCommands(moduleService);
   }
 
   private static void raiseExceptionIfEmpty(Set<Class<?>> foundClasses, String errorFor)
@@ -127,18 +127,22 @@ public class CommandManager {
     return userCommandPackages;
   }
 
-  private void loadUserCommands(ClasspathScanLoadHelper scanner, Set<String> restrictedToPackages) {
+  private void loadUserCommands(ClasspathScanLoadHelper scanner, Set<String> restrictedToPackages,
+      ModuleService moduleService) {
     if (restrictedToPackages.size() == 0) {
       return;
     }
 
     // Load commands found in all of the packages
     try {
-      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
-          restrictedToPackages.toArray(new String[] {}));
+      Set<Class<?>> foundClasses =
+          scanner.scanPackagesForClassesImplementing(GeodeCommandMarker.class,
+              restrictedToPackages.toArray(new String[] {}));
       for (Class<?> klass : foundClasses) {
         try {
-          add((CommandMarker) klass.newInstance());
+          GeodeCommandMarker geodeCommandMarker = (GeodeCommandMarker) klass.newInstance();
+          geodeCommandMarker.init(moduleService);
+          add(geodeCommandMarker);
         } catch (Exception e) {
           logWrapper.warning("Could not load User Commands from: " + klass + " due to "
               + e.getLocalizedMessage()); // continue
@@ -152,28 +156,31 @@ public class CommandManager {
   }
 
   /**
-   * Loads commands via {@link ServiceLoader} from {@link ClassPathLoader}.
+   * Loads commands via {@link ModuleService}.
    *
    * @since GemFire 8.1
    */
-  private void loadPluginCommands() {
-    ServiceLoader<CommandMarker> loader =
-        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
-    Iterator<CommandMarker> iterator = loader.iterator();
-    try {
-      while (iterator.hasNext()) {
+  private void loadPluginCommands(ModuleService moduleService) {
+    ModuleServiceResult<Set<GeodeCommandMarker>> serviceLoadResult =
+        moduleService.loadService(GeodeCommandMarker.class);
+
+    if (serviceLoadResult.isSuccessful()) {
+      for (GeodeCommandMarker geodeCommandMarker : serviceLoadResult.getMessage()) {
         try {
-          add(iterator.next());
+          geodeCommandMarker.init(moduleService);
+          add(geodeCommandMarker);
         } catch (Throwable t) {
           logWrapper.warning("Could not load plugin command: " + t.getMessage());
         }
       }
-    } catch (Throwable th) {
-      logWrapper.severe("Could not load plugin commands in the latest classLoader.", th);
+    } else {
+      logWrapper
+          .severe(String.format("Could not load plugin commands in the latest classLoader. %s",
+              serviceLoadResult.getErrorMessage()));
     }
   }
 
-  private void loadCommands() {
+  private void loadCommands(ModuleService moduleService) {
     Set<String> userCommandPackages = getUserCommandPackages();
     Set<String> packagesToScan = new HashSet<>(userCommandPackages);
     packagesToScan.add("org.apache.geode.management.internal.cli.converters");
@@ -183,9 +190,9 @@ public class CommandManager {
 
     // Create one scanner to be used everywhere
     try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan)) {
-      loadUserCommands(scanner, userCommandPackages);
-      loadPluginCommands();
-      loadGeodeCommands(scanner);
+      loadUserCommands(scanner, userCommandPackages, moduleService);
+      loadPluginCommands(moduleService);
+      loadGeodeCommands(scanner, moduleService);
       loadConverters(scanner);
     }
   }
@@ -228,18 +235,21 @@ public class CommandManager {
     }
   }
 
-  private void loadGeodeCommands(ClasspathScanLoadHelper scanner) {
+  private void loadGeodeCommands(ClasspathScanLoadHelper scanner, ModuleService moduleService) {
     // CommandMarkers
     Set<Class<?>> foundClasses;
     try {
       // geode's commands
-      foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
+      foundClasses = scanner.scanPackagesForClassesImplementing(GeodeCommandMarker.class,
           GfshCommand.class.getPackage().getName(),
           VersionCommand.class.getPackage().getName());
 
       for (Class<?> klass : foundClasses) {
         try {
-          add((CommandMarker) klass.newInstance());
+          GeodeCommandMarker geodeCommandMarker = (GeodeCommandMarker) klass.newInstance();
+          geodeCommandMarker.init(moduleService);
+
+          add(geodeCommandMarker);
         } catch (Exception e) {
           logWrapper.warning(
               "Could not load Command from: " + klass + " due to " + e.getLocalizedMessage()); // continue
@@ -268,7 +278,7 @@ public class CommandManager {
     return converters;
   }
 
-  public List<CommandMarker> getCommandMarkers() {
+  public List<GeodeCommandMarker> getCommandMarkers() {
     return commandMarkers;
   }
 
@@ -285,7 +295,7 @@ public class CommandManager {
   /**
    * Method to add new Commands to the parser
    */
-  void add(CommandMarker commandMarker) {
+  void add(GeodeCommandMarker commandMarker) {
     Disabled classDisabled = commandMarker.getClass().getAnnotation(Disabled.class);
     if (classDisabled != null && (classDisabled.unlessPropertyIsSet().isEmpty()
         || System.getProperty(classDisabled.unlessPropertyIsSet()) == null)) {

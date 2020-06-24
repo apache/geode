@@ -26,6 +26,7 @@ import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Provides logging configuration by managing a {@link LoggingProvider} for the logging backend.
@@ -70,9 +71,17 @@ public class Configuration implements LogConfigListener {
    */
   private LogConfigSupplier logConfigSupplier;
 
-  public static Configuration create() {
-    return create(getLogLevelUpdateOccurs(), getLogLevelUpdateScope(), new LoggingProviderLoader()
-        .load());
+  private Configuration(final LogLevelUpdateOccurs logLevelUpdateOccurs,
+      final LogLevelUpdateScope logLevelUpdateScope, final LoggingProvider loggingProvider) {
+    this.logLevelUpdateOccurs = logLevelUpdateOccurs;
+    this.logLevelUpdateScope = logLevelUpdateScope;
+    this.loggingProvider = loggingProvider;
+  }
+
+  public static Configuration create(ModuleService moduleService) {
+    return create(getLogLevelUpdateOccurs(), getLogLevelUpdateScope(),
+        new LoggingProviderLoader(moduleService)
+            .load());
   }
 
   @VisibleForTesting
@@ -82,22 +91,15 @@ public class Configuration implements LogConfigListener {
 
   @VisibleForTesting
   public static Configuration create(final LogLevelUpdateOccurs logLevelUpdateOccurs,
-      final LogLevelUpdateScope logLevelUpdateScope) {
+      final LogLevelUpdateScope logLevelUpdateScope, ModuleService moduleService) {
     return create(logLevelUpdateOccurs, logLevelUpdateScope,
-        new LoggingProviderLoader().load());
+        new LoggingProviderLoader(moduleService).load());
   }
 
   @VisibleForTesting
   public static Configuration create(final LogLevelUpdateOccurs logLevelUpdateOccurs,
       final LogLevelUpdateScope logLevelUpdateScope, final LoggingProvider loggingProvider) {
     return new Configuration(logLevelUpdateOccurs, logLevelUpdateScope, loggingProvider);
-  }
-
-  private Configuration(final LogLevelUpdateOccurs logLevelUpdateOccurs,
-      final LogLevelUpdateScope logLevelUpdateScope, final LoggingProvider loggingProvider) {
-    this.logLevelUpdateOccurs = logLevelUpdateOccurs;
-    this.logLevelUpdateScope = logLevelUpdateScope;
-    this.loggingProvider = loggingProvider;
   }
 
   static LogLevelUpdateOccurs getLogLevelUpdateOccurs() {

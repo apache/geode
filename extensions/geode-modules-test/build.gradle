@@ -53,5 +53,7 @@ dependencies {
     exclude module: 'annotations-api'
     exclude module: 'tribes'
   }
+
+  testImplementation(project(':geode-common-services'))
 }
 

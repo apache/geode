@@ -89,6 +89,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -140,7 +141,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
    */
   public AdminDistributedSystemJmxImpl(AgentConfigImpl config)
       throws org.apache.geode.admin.AdminException {
-    super(config);
+    super(config, new ServiceLoaderModuleService(LogService.getLogger()));
     this.mbeanName = "GemFire:type=AdminDistributedSystem,id="
         + MBeanUtil.makeCompliantMBeanNameProperty(getId());
     this.objectName = MBeanUtil.createMBean(this);

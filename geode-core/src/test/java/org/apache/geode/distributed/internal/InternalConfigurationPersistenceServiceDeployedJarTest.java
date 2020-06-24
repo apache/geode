@@ -45,8 +45,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 public class InternalConfigurationPersistenceServiceDeployedJarTest {
   @Rule
@@ -70,7 +72,8 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
     stagingDir = tempDir.newFolder("stagingDir").toPath();
     workingDir = tempDir.newFolder("workingDir").toPath();
     service =
-        new InternalConfigurationPersistenceService(cache, lockService, null, workingDir, null);
+        new InternalConfigurationPersistenceService(cache, lockService, null, workingDir, null,
+            new ServiceLoaderModuleService(LogService.getLogger()));
   }
 
   @Test

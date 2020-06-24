@@ -26,8 +26,10 @@ import org.w3c.dom.NodeList;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -74,7 +76,9 @@ public class CreatePooledJndiBindingDUnitTest {
       Configuration configuration = ccService.getConfiguration("cluster");
       String xmlContent = configuration.getCacheXmlContent();
 
-      Document document = XmlUtils.createDocumentFromXml(xmlContent);
+      Document document =
+          XmlUtils.createDocumentFromXml(xmlContent, new ServiceLoaderModuleService(
+              LogService.getLogger()));
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
       assertThat(jndiBindings.getLength()).isEqualTo(1);

@@ -25,12 +25,15 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheFactoryStatics;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire
@@ -109,7 +112,8 @@ public class CacheFactory {
    * @since GemFire 6.5
    */
   public CacheFactory(Properties props) {
-    internalCacheBuilder = new InternalCacheBuilder(props);
+    internalCacheBuilder = new InternalCacheBuilder(props, new ServiceLoaderModuleService(
+        LogService.getLogger()));
   }
 
   /**
@@ -349,7 +353,8 @@ public class CacheFactory {
   @Deprecated
   public static Cache create(DistributedSystem system) throws CacheExistsException,
       TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
-    return CacheFactoryStatics.create(system);
+    return CacheFactoryStatics.create(system,
+        new ServiceLoaderModuleService(LogService.getLogger()));
   }
 
   /**
@@ -403,5 +408,10 @@ public class CacheFactory {
    */
   public static String getVersion() {
     return GemFireVersion.getGemFireVersion();
+  }
+
+  public CacheFactory setModuleService(ModuleService moduleService) {
+    internalCacheBuilder.setModuleService(moduleService);
+    return this;
   }
 }

@@ -41,8 +41,10 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -180,13 +182,15 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
   private void addMultipleGatewayReceiverElementsToClusterConfiguration()
       throws Exception {
     // Create empty xml document
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
     final StringWriter stringWriter = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(stringWriter);
     CacheXmlGenerator.generate(creation, printWriter, true, false, false);
     printWriter.close();
     String baseXml = stringWriter.toString();
-    Document document = XmlUtils.createDocumentFromXml(baseXml);
+    Document document = XmlUtils.createDocumentFromXml(baseXml, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     // Add gateway-receiver for each attribute
     for (Attribute attribute : attributes) {
@@ -220,7 +224,9 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
         configurationRegion.get(ConfigurationPersistenceService.CLUSTER_CONFIG);
 
     // Verify the configuration contains no gateway-receiver elements
-    Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+    Document document =
+        XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(),
+            new ServiceLoaderModuleService(LogService.getLogger()));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectedReceivers);
   }

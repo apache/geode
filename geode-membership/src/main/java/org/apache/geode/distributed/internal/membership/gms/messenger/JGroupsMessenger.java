@@ -95,6 +95,8 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 
@@ -128,37 +130,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   private static final short JGROUPS_TYPE_JGADDRESS = 2000;
   private static final short JGROUPS_PROTOCOL_TRANSPORT = 1000;
 
-  protected String jgStackConfig;
-
-  JChannel myChannel;
-  ID localAddress;
-  JGAddress jgAddress;
-  private Services<ID> services;
-
-  public JGroupsMessenger() {}
-
-  /** handlers that receive certain classes of messages instead of the Manager */
-  private final Map<Class<?>, MessageHandler<?>> handlers = new ConcurrentHashMap<>();
-
-  private volatile GMSMembershipView<ID> view;
-
-  protected final GMSPingPonger pingPonger = new GMSPingPonger();
-
-  protected final AtomicLong pongsReceived = new AtomicLong(0);
-
-  /** tracks multicast messages that have been scheduled for processing */
-  protected final Map<ID, MessageTracker> scheduledMcastSeqnos = new HashMap<>();
-
-  protected short nackack2HeaderId;
-
-  /**
-   * A set that contains addresses that we have logged JGroups IOExceptions for in the current
-   * membership view and possibly initiated suspect processing. This reduces the amount of suspect
-   * processing initiated by IOExceptions and the amount of exceptions logged
-   */
-  private final Set<Address> addressesWithIoExceptionsProcessed =
-      Collections.synchronizedSet(new HashSet<>());
-
   static {
     // register classes that we've added to jgroups that are put on the wire
     // or need a header ID
@@ -166,6 +137,31 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     ClassConfigurator.addProtocol(JGROUPS_PROTOCOL_TRANSPORT, Transport.class);
   }
 
+  protected final GMSPingPonger pingPonger = new GMSPingPonger();
+  protected final AtomicLong pongsReceived = new AtomicLong(0);
+  /** tracks multicast messages that have been scheduled for processing */
+  protected final Map<ID, MessageTracker> scheduledMcastSeqnos = new HashMap<>();
+  /** handlers that receive certain classes of messages instead of the Manager */
+  private final Map<Class<?>, MessageHandler<?>> handlers = new ConcurrentHashMap<>();
+  /**
+   * A set that contains addresses that we have logged JGroups IOExceptions for in the current
+   * membership view and possibly initiated suspect processing. This reduces the amount of suspect
+   * processing initiated by IOExceptions and the amount of exceptions logged
+   */
+  private final Set<Address> addressesWithIoExceptionsProcessed =
+      Collections.synchronizedSet(new HashSet<>());
+  protected String jgStackConfig;
+  protected short nackack2HeaderId;
+  /**
+   * The JGroupsReceiver is handed messages by the JGroups Channel. It is responsible
+   * for deserializating and dispatching those messages to the appropriate handler
+   */
+  protected JGroupsReceiver jgroupsReceiver;
+  JChannel myChannel;
+  ID localAddress;
+  JGAddress jgAddress;
+  private Services<ID> services;
+  private volatile GMSMembershipView<ID> view;
   private GMSEncrypt<ID> encrypt;
 
   /**
@@ -174,12 +170,10 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
    * to be delivered to handlers after membership services have been rebuilt.
    */
   private Queue<org.jgroups.Message> queuedMessagesFromReconnect;
+  private AtomicInteger requestId = new AtomicInteger((new Random().nextInt()));
+  private HashMap<Integer, ID> requestIdVsRecipients = new HashMap<>();
 
-  /**
-   * The JGroupsReceiver is handed messages by the JGroups Channel. It is responsible
-   * for deserializating and dispatching those messages to the appropriate handler
-   */
-  protected JGroupsReceiver jgroupsReceiver;
+  public JGroupsMessenger() {}
 
   public static void setChannelReceiver(JChannel channel, Receiver r) {
     try {
@@ -197,7 +191,8 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-  public void init(Services<ID> s) throws MembershipConfigurationException {
+  public void init(Services<ID> s, ModuleService moduleService)
+      throws MembershipConfigurationException {
     this.services = s;
 
     MembershipConfig config = services.getConfig();
@@ -205,44 +200,17 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     boolean enableNetworkPartitionDetection = config.isNetworkPartitionDetectionEnabled();
     System.setProperty("jgroups.resolve_dns", String.valueOf(!enableNetworkPartitionDetection));
 
-    InputStream is = null;
-
-    String r;
-    if (config.isMulticastEnabled()) {
-      r = JGROUPS_MCAST_CONFIG_FILE_NAME;
-    } else {
-      r = DEFAULT_JGROUPS_TCP_CONFIG;
-    }
-    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-    if (contextClassLoader != null) {
-      is = contextClassLoader.getResourceAsStream(r);
-    }
-    if (is == null) {
-      is = getClass().getResourceAsStream(r);
-    }
-    if (is == null) {
-      is = ClassLoader.getSystemResourceAsStream(r);
-    }
-    if (is == null) {
-      throw new MembershipConfigurationException(
-          String.format("Cannot find %s", r));
-    }
-
     String properties;
-    try {
-      StringBuilder sb = new StringBuilder(3000);
-      BufferedReader br;
-      br = new BufferedReader(new InputStreamReader(is, "US-ASCII"));
-      String input;
-      while ((input = br.readLine()) != null) {
-        sb.append(input);
-      }
-      br.close();
-      properties = sb.toString();
-    } catch (Exception ex) {
-      throw new MembershipConfigurationException(
-          "An Exception was thrown while reading JGroups config.",
-          ex);
+
+    ModuleServiceResult<List<InputStream>> resourceStreamResult = moduleService
+        .findResourceAsStream(config.isMulticastEnabled()
+            ? JGROUPS_MCAST_CONFIG_FILE_NAME
+            : DEFAULT_JGROUPS_TCP_CONFIG);
+
+    if (resourceStreamResult.isSuccessful()) {
+      properties = getPropertiesFromInputStream(resourceStreamResult.getMessage().get(0));
+    } else {
+      throw new MembershipConfigurationException(resourceStreamResult.getErrorMessage());
     }
 
     if (properties.startsWith("<!--")) {
@@ -316,6 +284,26 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       } catch (Exception e) {
         throw new MembershipConfigurationException("problem initializing encryption protocol", e);
       }
+    }
+  }
+
+  private String getPropertiesFromInputStream(InputStream inputStream)
+      throws MembershipConfigurationException {
+
+    try {
+      StringBuilder sb = new StringBuilder(3000);
+      BufferedReader br;
+      br = new BufferedReader(new InputStreamReader(inputStream, "US-ASCII"));
+      String input;
+      while ((input = br.readLine()) != null) {
+        sb.append(input);
+      }
+      br.close();
+      return sb.toString();
+    } catch (Exception ex) {
+      throw new MembershipConfigurationException(
+          "An Exception was thrown while reading JGroups config.",
+          ex);
     }
   }
 
@@ -475,7 +463,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       }
     }
   }
-
 
   /**
    * If JGroups is unable to send a message it may mean that the network is down. If so we need to
@@ -997,7 +984,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     msg.setTransientFlag(org.jgroups.Message.TransientFlag.DONT_LOOPBACK);
   }
 
-
   /**
    * deserialize a jgroups payload. If it's a DistributionMessage find the ID of the sender and
    * establish it as the message's sender
@@ -1224,7 +1210,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     return this.services.getJoinLeave().getMemberID(jgId);
   }
 
-
   @Override
   public void emergencyClose() {
     this.view = null;
@@ -1254,6 +1239,89 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
             encrypt);
     qc.initialize();
     return qc;
+  }
+
+  @Override
+  public Set<ID> send(Message<ID> msg, GMSMembershipView<ID> alternateView) {
+    if (this.encrypt != null) {
+      this.encrypt.installView(alternateView);
+    }
+    return send(msg, true);
+  }
+
+  @Override
+  public byte[] getPublicKey(ID mbr) {
+    if (encrypt != null) {
+      return encrypt.getPublicKey(mbr);
+    }
+    return null;
+  }
+
+  @Override
+  public void setPublicKey(byte[] publickey, ID mbr) {
+    if (encrypt != null) {
+      logger.debug("Setting PK for member " + mbr);
+      encrypt.setPublicKey(publickey, mbr);
+    }
+  }
+
+  @Override
+  public byte[] getClusterSecretKey() {
+    if (encrypt != null) {
+      return encrypt.getClusterSecretKey();
+    }
+    return null;
+  }
+
+  @Override
+  public void setClusterSecretKey(byte[] clusterSecretKey) {
+    if (encrypt != null) {
+      logger.debug("Setting cluster key");
+      encrypt.setClusterKey(clusterSecretKey);
+    }
+  }
+
+  ID getRequestedMember(int requestId) {
+    return requestIdVsRecipients.remove(requestId);
+  }
+
+  void addRequestId(int requestId, ID mbr) {
+    requestIdVsRecipients.put(requestId, mbr);
+  }
+
+  @Override
+  public int getRequestId() {
+    return requestId.incrementAndGet();
+  }
+
+  @Override
+  public void initClusterKey() {
+    if (encrypt != null) {
+      try {
+        logger.info("Initializing cluster key");
+        encrypt.initClusterSecretKey();
+      } catch (Exception e) {
+        throw new RuntimeException("unable to create cluster key ", e);
+      }
+    }
+  }
+
+  static class MessageTracker {
+    long highestSeqno;
+
+    MessageTracker(long seqno) {
+      highestSeqno = seqno;
+    }
+
+    long get() {
+      return highestSeqno;
+    }
+
+    void record(long seqno) {
+      if (seqno > highestSeqno) {
+        highestSeqno = seqno;
+      }
+    }
   }
 
   /**
@@ -1377,92 +1445,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         h = services.getManager();
       }
       return (MessageHandler<Message<ID>>) h;
-    }
-  }
-
-  @Override
-  public Set<ID> send(Message<ID> msg, GMSMembershipView<ID> alternateView) {
-    if (this.encrypt != null) {
-      this.encrypt.installView(alternateView);
-    }
-    return send(msg, true);
-  }
-
-  @Override
-  public byte[] getPublicKey(ID mbr) {
-    if (encrypt != null) {
-      return encrypt.getPublicKey(mbr);
-    }
-    return null;
-  }
-
-  @Override
-  public void setPublicKey(byte[] publickey, ID mbr) {
-    if (encrypt != null) {
-      logger.debug("Setting PK for member " + mbr);
-      encrypt.setPublicKey(publickey, mbr);
-    }
-  }
-
-  @Override
-  public void setClusterSecretKey(byte[] clusterSecretKey) {
-    if (encrypt != null) {
-      logger.debug("Setting cluster key");
-      encrypt.setClusterKey(clusterSecretKey);
-    }
-  }
-
-  @Override
-  public byte[] getClusterSecretKey() {
-    if (encrypt != null) {
-      return encrypt.getClusterSecretKey();
-    }
-    return null;
-  }
-
-  private AtomicInteger requestId = new AtomicInteger((new Random().nextInt()));
-  private HashMap<Integer, ID> requestIdVsRecipients = new HashMap<>();
-
-  ID getRequestedMember(int requestId) {
-    return requestIdVsRecipients.remove(requestId);
-  }
-
-  void addRequestId(int requestId, ID mbr) {
-    requestIdVsRecipients.put(requestId, mbr);
-  }
-
-  @Override
-  public int getRequestId() {
-    return requestId.incrementAndGet();
-  }
-
-  @Override
-  public void initClusterKey() {
-    if (encrypt != null) {
-      try {
-        logger.info("Initializing cluster key");
-        encrypt.initClusterSecretKey();
-      } catch (Exception e) {
-        throw new RuntimeException("unable to create cluster key ", e);
-      }
-    }
-  }
-
-  static class MessageTracker {
-    long highestSeqno;
-
-    MessageTracker(long seqno) {
-      highestSeqno = seqno;
-    }
-
-    long get() {
-      return highestSeqno;
-    }
-
-    void record(long seqno) {
-      if (seqno > highestSeqno) {
-        highestSeqno = seqno;
-      }
     }
   }
 }

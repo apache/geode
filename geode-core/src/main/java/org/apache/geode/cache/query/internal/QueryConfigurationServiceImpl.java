@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.services.module.ModuleService;
 
 public class QueryConfigurationServiceImpl implements QueryConfigurationService {
   private static final Logger logger = LogService.getLogger();
@@ -84,7 +85,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   }
 
   @Override
-  public boolean init(Cache cache) {
+  public boolean init(Cache cache, ModuleService moduleService) {
     if (cache == null) {
       throw new IllegalArgumentException(NULL_CACHE_ERROR_MESSAGE);
     }

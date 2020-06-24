@@ -29,6 +29,7 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionN
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Creates instances of ServerConnection based on the connection mode provided.
@@ -38,8 +39,8 @@ public class ServerConnectionFactory {
   private final ClientProtocolServiceLoader clientProtocolServiceLoader;
   private volatile ClientProtocolService clientProtocolService;
 
-  public ServerConnectionFactory() {
-    clientProtocolServiceLoader = new ClientProtocolServiceLoader();
+  public ServerConnectionFactory(ModuleService moduleService) {
+    clientProtocolServiceLoader = new ClientProtocolServiceLoader(moduleService);
   }
 
   private synchronized ClientProtocolService getClientProtocolService(

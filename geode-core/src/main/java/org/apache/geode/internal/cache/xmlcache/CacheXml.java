@@ -16,7 +16,8 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ServiceLoader;
+import java.util.List;
+import java.util.Set;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
@@ -24,11 +25,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link org.apache.geode.cache.Cache}
@@ -36,7 +37,7 @@ import org.apache.geode.internal.ClassPathLoader;
  *
  * @since GemFire 3.0
  */
-public abstract class CacheXml implements EntityResolver2, ErrorHandler {
+public abstract class CacheXml implements GeodeEntityResolver2, ErrorHandler {
 
   /**
    * This always refers to the latest GemFire version, in those cases where we default to the
@@ -772,6 +773,8 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /** the version of the DTD being used by the document being parsed */
   CacheXmlVersion version;
 
+  protected ModuleService moduleService;
+
 
   ///////////////////// Instance Methods /////////////////////
   /**
@@ -837,15 +840,14 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
                                                                  // assume the latest
       return resolveEntityByEntityResolvers(name, publicId, baseURI, systemId);
     }
-    InputSource result;
-    InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
-    if (stream != null) {
-      result = new InputSource(stream);
-    } else {
-      throw new SAXNotRecognizedException(
-          String.format("DTD not found: %s", location));
+
+    ModuleServiceResult<List<InputStream>> resourceResult =
+        moduleService.findResourceAsStream(location);
+    if (resourceResult.isSuccessful()) {
+      return new InputSource(resourceResult.getMessage().get(0));
     }
-    return result;
+    throw new SAXNotRecognizedException(
+        String.format("DTD not found: %s", location));
   }
 
   /*
@@ -862,7 +864,8 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /*
    * (non-Javadoc)
    *
-   * @see org.xml.sax.ext.EntityResolver2#getExternalSubset(java.lang.String, java.lang.String)
+   * @see org.apache.geode.internal.cache.xmlcache.GeodeEntityResolver2#getExternalSubset(java.lang.
+   * String, java.lang.String)
    */
   @Override
   public InputSource getExternalSubset(String name, String baseURI)
@@ -870,21 +873,29 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
     return null;
   }
 
+  @Override
+  public void init(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
+
   /**
-   * Resolve entity using discovered {@link EntityResolver2}s.
+   * Resolve entity using discovered {@link GeodeEntityResolver2}s.
    *
    * @return {@link InputSource} for resolved entity if found, otherwise null.
    * @since GemFire 8.1
    */
   private InputSource resolveEntityByEntityResolvers(String name, String publicId, String baseURI,
       String systemId) throws SAXException, IOException {
-    final ServiceLoader<EntityResolver2> entityResolvers =
-        ServiceLoader.load(EntityResolver2.class, ClassPathLoader.getLatest().asClassLoader());
-    for (final EntityResolver2 entityResolver : entityResolvers) {
-      final InputSource inputSource =
-          entityResolver.resolveEntity(name, publicId, baseURI, systemId);
-      if (null != inputSource) {
-        return inputSource;
+    ModuleServiceResult<Set<GeodeEntityResolver2>> serviceLoadResult =
+        moduleService.loadService(GeodeEntityResolver2.class);
+    if (serviceLoadResult.isSuccessful()) {
+      for (GeodeEntityResolver2 entityResolver : serviceLoadResult.getMessage()) {
+        entityResolver.init(moduleService);
+        final InputSource inputSource =
+            entityResolver.resolveEntity(name, publicId, baseURI, systemId);
+        if (null != inputSource) {
+          return inputSource;
+        }
       }
     }
     return null;

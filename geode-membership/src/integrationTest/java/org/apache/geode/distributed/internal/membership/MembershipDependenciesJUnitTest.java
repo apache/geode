@@ -57,6 +57,8 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
               .or(resideInAPackage("org.apache.geode.internal.inet.."))
               .or(resideInAPackage("org.apache.geode.internal.lang.."))
+              .or(resideInAPackage("org.apache.geode.services.module.."))
+              .or(resideInAPackage("org.apache.geode.services.result.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(type(AvailablePortHelper.class))

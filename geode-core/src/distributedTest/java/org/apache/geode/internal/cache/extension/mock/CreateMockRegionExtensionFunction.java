@@ -33,6 +33,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Function to create {@link MockRegionExtension} on a {@link Region}.
@@ -56,7 +57,11 @@ public class CreateMockRegionExtensionFunction implements Function, DataSerializ
 
   private static final long serialVersionUID = 1L;
 
-  public static final Function INSTANCE = new CreateMockRegionExtensionFunction();
+  private final ModuleService moduleService;
+
+  public CreateMockRegionExtensionFunction(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   @Override
   public void execute(FunctionContext context) {
@@ -75,7 +80,8 @@ public class CreateMockRegionExtensionFunction implements Function, DataSerializ
     extension.beforeCreate(extensible, cache);
     extension.onCreate(extensible, extensible);
 
-    XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", region.getName());
+    XmlEntity xmlEntity =
+        new XmlEntity(CacheXml.REGION, "name", region.getName(), moduleService);
 
     final ResultSender<Object> resultSender = context.getResultSender();
     final String memberNameOrId =

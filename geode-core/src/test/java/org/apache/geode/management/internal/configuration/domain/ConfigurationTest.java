@@ -33,7 +33,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 public class ConfigurationTest {
 
@@ -51,8 +53,10 @@ public class ConfigurationTest {
   public void setInvalidCacheXmlFile() throws IOException {
     File file = folder.newFile("test.xml");
     FileUtils.writeStringToFile(file, "invalid xml content", "UTF-8");
-    assertThatThrownBy(() -> configuration.setCacheXmlFile(file)).isInstanceOf(IOException.class)
-        .hasMessageContaining("Unable to parse");
+    assertThatThrownBy(() -> configuration.setCacheXmlFile(file, new ServiceLoaderModuleService(
+        LogService.getLogger())))
+            .isInstanceOf(IOException.class)
+            .hasMessageContaining("Unable to parse");
   }
 
   @Test

@@ -42,7 +42,9 @@ import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.util.CollectingServiceLoader;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.MetricsPublishingService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 public class InternalDistributedSystemMetricsServiceBuilderTest {
 
@@ -64,7 +66,8 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
     when(system.getName()).thenReturn("some-system-name");
     when(system.getDistributedMember().getHost()).thenReturn("some-host-name");
 
-    MetricsService metricsService = serviceBuilder.build(system);
+    MetricsService metricsService = serviceBuilder.build(system, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     try {
       assertThat(metricsService).isInstanceOf(InternalDistributedSystemMetricsService.class);
@@ -83,7 +86,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     MetricsService metricsService = serviceBuilder
         .setMetricsServiceFactory(metricsServiceFactory)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     assertThat(metricsService)
         .isSameAs(metricsServiceCreatedByFactory);
@@ -92,7 +95,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   @Test
   public void passesItselfToFactory() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(same(serviceBuilder), any(), any(), any(), any(), any(), any(), anyBoolean(),
@@ -106,7 +109,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
         .setServiceLoader(theServiceLoader)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), same(theServiceLoader), any(), any(), any(), any(), anyBoolean(),
@@ -117,7 +120,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   public void constructsServiceLoader_ifServiceLoaderNotSet() {
     serviceBuilder
         .setMetricsServiceFactory(metricsServiceFactory)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(CollectingServiceLoader.class), any(), any(), any(), any(),
@@ -130,7 +133,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
         .setCompositeMeterRegistry(theMetricsServiceMeterRegistry)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), same(theMetricsServiceMeterRegistry), any(), any(), any(),
@@ -140,7 +143,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   @Test
   public void constructsCompositeMeterRegistry_ifMetricsServiceMeterRegistryNotSet() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(CompositeMeterRegistry.class), any(), any(), any(),
@@ -153,7 +156,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory);
     individuallyAddedClientMeterRegistries.forEach(serviceBuilder::addPersistentMeterRegistry);
-    serviceBuilder.build(system);
+    serviceBuilder.build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     @SuppressWarnings("unchecked")
     ArgumentCaptor<Collection<MeterRegistry>> clientMeterRegistriesPassedToFactory =
@@ -173,7 +176,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
         .addPersistentMeterRegistries(bulkAddedClientMeterRegistries)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     @SuppressWarnings("unchecked")
     ArgumentCaptor<Collection<MeterRegistry>> clientMeterRegistriesPassedToFactory =
@@ -190,7 +193,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   @Test
   public void passesEmptyClientMeterRegistriesCollectionToFactory_ifNoClientMeterRegistriesAdded() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     @SuppressWarnings("unchecked")
     ArgumentCaptor<Collection<MeterRegistry>> clientMeterRegistriesPassedToFactory =
@@ -210,7 +213,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
         .setBinder(theBinder)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), same(theBinder), any(), anyBoolean(),
@@ -220,7 +223,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   @Test
   public void passesStandardMeterBinderToFactory_ifMeterBinderNotSet() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(StandardMeterBinder.class), any(),
@@ -233,7 +236,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
         .setLogger(theLogger)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), same(theLogger), any(), any(), any(), any(), any(), anyBoolean(),
@@ -244,14 +247,14 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   public void usesGivenLocatorDetectorToDetectLocator() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
         .setLocatorDetector(() -> true)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), eq(true),
             anyBoolean());
 
     serviceBuilder.setLocatorDetector(() -> false)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), eq(false),
@@ -262,7 +265,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   public void usesGivenCacheServerDetectorToDetectCacheServer() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
         .setCacheServerDetector(() -> true)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(),
@@ -270,7 +273,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     serviceBuilder
         .setCacheServerDetector(() -> false)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(),
@@ -280,7 +283,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   @Test
   public void constructsLogger_ifLoggerNotSet() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(Logger.class), any(), any(), any(), any(), any(), anyBoolean(),
@@ -291,7 +294,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   public void passesIsClientToFactory() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
         .setIsClient(true)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(), any(), eq(true), anyBoolean(),
@@ -301,7 +304,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   @Test
   public void passesIsNotClientToFactory_ifIsClientNotGiven() {
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
-        .build(system);
+        .build(system, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(), any(), eq(false), anyBoolean(),
@@ -313,7 +316,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
     InternalDistributedSystem theSystem = mock(InternalDistributedSystem.class);
 
     serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
-        .build(theSystem);
+        .build(theSystem, new ServiceLoaderModuleService(LogService.getLogger()));
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(), same(theSystem), anyBoolean(),

@@ -46,6 +46,7 @@ import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -94,7 +95,8 @@ public class ConfigurationWithLogLevelChangesIntegrationTest {
     LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
     when(logConfigSupplier.getLogConfig()).thenReturn(config);
 
-    configuration = create(LogLevelUpdateOccurs.ALWAYS, LogLevelUpdateScope.GEODE_LOGGERS);
+    configuration = create(LogLevelUpdateOccurs.ALWAYS, LogLevelUpdateScope.GEODE_LOGGERS,
+        new ServiceLoaderModuleService(LogService.getLogger()));
     configuration.initialize(logConfigSupplier);
 
     geodeLogger = LogService.getLogger();

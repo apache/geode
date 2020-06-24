@@ -23,20 +23,23 @@ import java.util.Properties;
 import com.examples.UserGfshCommand;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Disabled;
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
@@ -89,7 +92,7 @@ public class CommandManagerJUnitTest {
 
   @Before
   public void before() {
-    commandManager = new CommandManager();
+    commandManager = new CommandManager(new ServiceLoaderModuleService(LogService.getLogger()));
   }
 
   /**
@@ -127,7 +130,8 @@ public class CommandManagerJUnitTest {
   public void testCommandManagerLoadsUserCommand() throws Exception {
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.USER_COMMAND_PACKAGES, "com.examples");
-    CommandManager commandManager = new CommandManager(props, null);
+    CommandManager commandManager =
+        new CommandManager(props, null, new ServiceLoaderModuleService(LogService.getLogger()));
 
     assertThat(
         commandManager.getCommandMarkers().stream().anyMatch(c -> c instanceof UserGfshCommand));
@@ -137,10 +141,10 @@ public class CommandManagerJUnitTest {
   public void commandManagerDoesNotAddUnsatisfiedFeatureFlaggedCommands() {
     System.setProperty("enabled.flag", "true");
     try {
-      CommandMarker accessibleCommand = new AccessibleCommand();
-      CommandMarker enabledCommand = new FeatureFlaggedAndEnabledCommand();
-      CommandMarker reachableButDisabledCommand = new FeatureFlaggedReachableCommand();
-      CommandMarker unreachableCommand = new FeatureFlaggedUnreachableCommand();
+      GeodeCommandMarker accessibleCommand = new AccessibleCommand();
+      GeodeCommandMarker enabledCommand = new FeatureFlaggedAndEnabledCommand();
+      GeodeCommandMarker reachableButDisabledCommand = new FeatureFlaggedReachableCommand();
+      GeodeCommandMarker unreachableCommand = new FeatureFlaggedUnreachableCommand();
 
       commandManager.add(accessibleCommand);
       commandManager.add(enabledCommand);
@@ -158,7 +162,7 @@ public class CommandManagerJUnitTest {
   /**
    * class that represents dummy commands
    */
-  public static class Commands implements CommandMarker {
+  public static class Commands implements GeodeCommandMarker {
 
     @CliCommand(value = {COMMAND1_NAME, COMMAND1_NAME_ALIAS}, help = COMMAND1_HELP)
     @CliMetaData(shellOnly = true, relatedTopic = {"relatedTopicOfCommand1"})
@@ -206,26 +210,41 @@ public class CommandManagerJUnitTest {
     public boolean isAvailable() {
       return true; // always available on server
     }
+
+    @Override
+    public void init(ModuleService moduleService) {
+
+    }
   }
 
-  public static class MockPluginCommand implements CommandMarker {
+  public static class MockPluginCommand implements GeodeCommandMarker {
     @CliCommand(value = "mock plugin command")
     @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public Result mockPluginCommand() {
       return null;
     }
+
+    @Override
+    public void init(ModuleService moduleService) {
+
+    }
   }
 
-  public static class MockPluginCommandUnlisted implements CommandMarker {
+  public static class MockPluginCommandUnlisted implements GeodeCommandMarker {
     @CliCommand(value = "mock plugin command unlisted")
     @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public Result mockPluginCommandUnlisted() {
       return null;
     }
+
+    @Override
+    public void init(ModuleService moduleService) {
+
+    }
   }
 
 
-  class AccessibleCommand implements CommandMarker {
+  class AccessibleCommand implements GeodeCommandMarker {
     @CliCommand(value = "test-command")
     public Result ping() {
       return CommandResult.createInfo("pong");
@@ -235,29 +254,49 @@ public class CommandManagerJUnitTest {
     public boolean always() {
       return true;
     }
+
+    @Override
+    public void init(ModuleService moduleService) {
+
+    }
   }
 
   @Disabled
-  class FeatureFlaggedUnreachableCommand implements CommandMarker {
+  class FeatureFlaggedUnreachableCommand implements GeodeCommandMarker {
     @CliCommand(value = "unreachable")
     public Result nothing() {
       throw new RuntimeException("You reached the body of a feature-flagged command.");
     }
+
+    @Override
+    public void init(ModuleService moduleService) {
+
+    }
   }
 
   @Disabled(unlessPropertyIsSet = "reachable.flag")
-  class FeatureFlaggedReachableCommand implements CommandMarker {
+  class FeatureFlaggedReachableCommand implements GeodeCommandMarker {
     @CliCommand(value = "reachable")
     public Result nothing() {
       throw new RuntimeException("You reached the body of a feature-flagged command.");
     }
+
+    @Override
+    public void init(ModuleService moduleService) {
+
+    }
   }
 
   @Disabled(unlessPropertyIsSet = "enabled.flag")
-  class FeatureFlaggedAndEnabledCommand implements CommandMarker {
+  class FeatureFlaggedAndEnabledCommand implements GeodeCommandMarker {
     @CliCommand(value = "reachable")
     public Result nothing() {
       throw new RuntimeException("You reached the body of a feature-flagged command.");
+    }
+
+    @Override
+    public void init(ModuleService moduleService) {
+
     }
   }
 

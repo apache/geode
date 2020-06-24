@@ -59,6 +59,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.management.internal.configuration.domain.CacheElement;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.services.module.ModuleService;
 
 public class XmlUtils {
 
@@ -69,12 +70,12 @@ public class XmlUtils {
    * @return {@link Document} if successful, otherwise false.
    * @since GemFire 8.1
    */
-  public static Document createDocumentFromReader(final Reader reader)
+  public static Document createDocumentFromReader(final Reader reader, ModuleService moduleService)
       throws SAXException, ParserConfigurationException, IOException {
     Document doc;
     InputSource inputSource = new InputSource(reader);
 
-    doc = getDocumentBuilder().parse(inputSource);
+    doc = getDocumentBuilder(moduleService).parse(inputSource);
 
     return doc;
   }
@@ -103,12 +104,15 @@ public class XmlUtils {
     }
   }
 
-  public static DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
+  public static DocumentBuilder getDocumentBuilder(ModuleService moduleService)
+      throws ParserConfigurationException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true);
     // the actual builder or parser
     DocumentBuilder builder = factory.newDocumentBuilder();
-    builder.setEntityResolver(new CacheXmlParser());
+    CacheXmlParser cacheXmlParser = new CacheXmlParser();
+    cacheXmlParser.init(moduleService);
+    builder.setEntityResolver(cacheXmlParser);
     return builder;
   }
 
@@ -118,12 +122,14 @@ public class XmlUtils {
    * @param doc Target document where the node will added
    * @param xmlEntity contains definition of the xml entity
    */
-  public static void addNewNode(final Document doc, final XmlEntity xmlEntity)
+  public static void addNewNode(final Document doc, final XmlEntity xmlEntity,
+      ModuleService moduleService)
       throws IOException, XPathExpressionException, SAXException, ParserConfigurationException {
     // Build up map per call to avoid issues with caching wrong version of the map.
-    final LinkedHashMap<String, CacheElement> elementOrderMap = CacheElement.buildElementMap(doc);
+    final LinkedHashMap<String, CacheElement> elementOrderMap =
+        CacheElement.buildElementMap(doc, moduleService);
 
-    final Node newNode = createNode(doc, xmlEntity.getXmlDefinition());
+    final Node newNode = createNode(doc, xmlEntity.getXmlDefinition(), moduleService);
     final Node root = doc.getDocumentElement();
     final int incomingElementOrder =
         getElementOrder(elementOrderMap, xmlEntity.getNamespace(), xmlEntity.getType());
@@ -219,10 +225,10 @@ public class XmlUtils {
    *
    * @return Node representing the xml definition
    */
-  private static Node createNode(Document owner, String xmlDefinition)
+  private static Node createNode(Document owner, String xmlDefinition, ModuleService moduleService)
       throws SAXException, IOException, ParserConfigurationException {
     InputSource inputSource = new InputSource(new StringReader(xmlDefinition));
-    Document document = getDocumentBuilder().parse(inputSource);
+    Document document = getDocumentBuilder(moduleService).parse(inputSource);
     Node newNode = document.getDocumentElement();
     return owner.importNode(newNode, true);
   }
@@ -377,10 +383,10 @@ public class XmlUtils {
    *
    * @return pretty xml string
    */
-  public static String prettyXml(String xmlContent)
+  public static String prettyXml(String xmlContent, ModuleService moduleService)
       throws IOException, TransformerFactoryConfigurationError, TransformerException, SAXException,
       ParserConfigurationException {
-    Document doc = createDocumentFromXml(xmlContent);
+    Document doc = createDocumentFromXml(xmlContent, moduleService);
     return prettyXml(doc);
   }
 
@@ -388,13 +394,14 @@ public class XmlUtils {
    * Create a document from the xml
    *
    */
-  public static Document createDocumentFromXml(String xmlContent)
+  public static Document createDocumentFromXml(String xmlContent, ModuleService moduleService)
       throws SAXException, ParserConfigurationException, IOException {
-    return createDocumentFromReader(new StringReader(xmlContent));
+    return createDocumentFromReader(new StringReader(xmlContent), moduleService);
   }
 
   /**
-   * Create a {@link Document} using {@link XmlUtils#createDocumentFromXml(String)} and if the
+   * Create a {@link Document} using {@link XmlUtils#createDocumentFromXml(String, ModuleService)}
+   * and if the
    * version attribute is not equal to the current version then update the XML to the current schema
    * and return the document.
    *
@@ -402,13 +409,14 @@ public class XmlUtils {
    * @return {@link Document} from xmlContent.
    * @since GemFire 8.1
    */
-  public static Document createAndUpgradeDocumentFromXml(String xmlContent)
+  public static Document createAndUpgradeDocumentFromXml(String xmlContent,
+      ModuleService moduleService)
       throws SAXException, ParserConfigurationException, IOException, XPathExpressionException {
-    Document doc = XmlUtils.createDocumentFromXml(xmlContent);
+    Document doc = XmlUtils.createDocumentFromXml(xmlContent, moduleService);
     if (!CacheXml.VERSION_LATEST.equals(XmlUtils.getAttribute(doc.getDocumentElement(),
         CacheXml.VERSION, CacheXml.GEODE_NAMESPACE))) {
       doc = upgradeSchema(doc, CacheXml.GEODE_NAMESPACE, CacheXml.LATEST_SCHEMA_LOCATION,
-          CacheXml.VERSION_LATEST);
+          CacheXml.VERSION_LATEST, moduleService);
     }
     return doc;
   }
@@ -423,7 +431,7 @@ public class XmlUtils {
    * @since GemFire 8.1
    */
   public static Document upgradeSchema(Document document, final String namespaceUri,
-      final String schemaLocation, String schemaVersion)
+      final String schemaLocation, String schemaVersion, ModuleService moduleService)
       throws XPathExpressionException, ParserConfigurationException {
     if (StringUtils.isBlank(namespaceUri)) {
       throw new IllegalArgumentException("namespaceUri");
@@ -437,7 +445,7 @@ public class XmlUtils {
 
     if (null != document.getDoctype()) {
       Node root = document.getDocumentElement();
-      Document copiedDocument = getDocumentBuilder().newDocument();
+      Document copiedDocument = getDocumentBuilder(moduleService).newDocument();
       Node copiedRoot = copiedDocument.importNode(root, true);
       copiedDocument.appendChild(copiedRoot);
       document = copiedDocument;

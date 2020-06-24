@@ -32,6 +32,7 @@ import org.apache.geode.management.internal.configuration.realizers.RegionConfig
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.RegionPath;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  *
@@ -47,10 +48,13 @@ public class RegionCreateFunction implements InternalFunction {
   private static final String ID = RegionCreateFunction.class.getName();
 
   @Immutable
-  public static final RegionCreateFunction INSTANCE = new RegionCreateFunction();
-
-  @Immutable
   private static final RegionConfigRealizer realizer = new RegionConfigRealizer();
+
+  private final ModuleService moduleService;
+
+  public RegionCreateFunction(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   @Override
   public boolean isHA() {
@@ -71,7 +75,9 @@ public class RegionCreateFunction implements InternalFunction {
     try {
       RegionPath regionPath = new RegionPath(regionCreateArgs.getRegionPath());
       getRealizer().create(regionCreateArgs.getConfig(), regionCreateArgs.getRegionPath(), cache);
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionPath.getRootRegionName());
+      XmlEntity xmlEntity =
+          new XmlEntity(CacheXml.REGION, "name", regionPath.getRootRegionName(),
+              moduleService);
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity.getXmlDefinition(),
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
               regionCreateArgs.getRegionPath(), memberNameOrId)));

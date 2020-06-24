@@ -32,6 +32,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Implementation of static methods in {@link CacheFactory} including factory create methods and
@@ -54,9 +55,10 @@ public class CacheFactoryStatics {
    * @deprecated as of 6.5 use {@link CacheFactory#CacheFactory(Properties)} instead.
    */
   @Deprecated
-  public static Cache create(DistributedSystem system) throws CacheExistsException,
+  public static Cache create(DistributedSystem system, ModuleService moduleService)
+      throws CacheExistsException,
       TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
-    return new InternalCacheBuilder()
+    return new InternalCacheBuilder(moduleService)
         .setIsExistingOk(false)
         .create((InternalDistributedSystem) system);
   }

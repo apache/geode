@@ -42,6 +42,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.ManagementUtils;
+import org.apache.geode.services.module.ModuleService;
 
 
 /**
@@ -59,6 +60,12 @@ import org.apache.geode.management.internal.util.ManagementUtils;
 public class LuceneCreateIndexFunction implements InternalFunction {
 
   private static final long serialVersionUID = 3061443846664615818L;
+
+  private final ModuleService moduleService;
+
+  public LuceneCreateIndexFunction(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   @Override
   public String getId() {
@@ -107,7 +114,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       if (LuceneServiceImpl.LUCENE_REINDEX) {
         indexFactory.create(indexName, regionPath, true);
         if (cache.getRegion(regionPath) != null) {
-          xmlEntity = getXmlEntity(regionPath);
+          xmlEntity = getXmlEntity(regionPath, moduleService);
         }
       } else {
         indexFactory.create(indexName, regionPath, false);
@@ -121,9 +128,9 @@ public class LuceneCreateIndexFunction implements InternalFunction {
     }
   }
 
-  protected XmlEntity getXmlEntity(String regionPath) {
+  protected XmlEntity getXmlEntity(String regionPath, ModuleService moduleService) {
     String regionName = StringUtils.stripStart(regionPath, SEPARATOR);
-    return new XmlEntity(CacheXml.REGION, "name", regionName);
+    return new XmlEntity(CacheXml.REGION, "name", regionName, moduleService);
   }
 
   private LuceneSerializer toSerializer(String serializerName)

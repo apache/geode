@@ -44,11 +44,13 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * @since GemFire 7.0
  */
 public class OnlineCommandProcessor implements CommandProcessor {
+  private ModuleService moduleService;
   protected CommandExecutor executor;
   private GfshParser gfshParser;
 
@@ -62,10 +64,11 @@ public class OnlineCommandProcessor implements CommandProcessor {
   @VisibleForTesting
   public OnlineCommandProcessor(GfshParser gfshParser,
       SecurityService securityService,
-      CommandExecutor commandExecutor) {
+      CommandExecutor commandExecutor, ModuleService moduleService) {
     this.gfshParser = gfshParser;
     this.executor = commandExecutor;
     this.securityService = securityService;
+    this.moduleService = moduleService;
   }
 
   protected CommandExecutor getCommandExecutor() {
@@ -137,10 +140,12 @@ public class OnlineCommandProcessor implements CommandProcessor {
   }
 
   @Override
-  public boolean init(Cache cache) {
+  public boolean init(Cache cache, ModuleService moduleService) {
     Properties cacheProperties = cache.getDistributedSystem().getProperties();
+    this.moduleService = moduleService;
     this.securityService = ((InternalCache) cache).getSecurityService();
-    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache));
+    this.gfshParser =
+        new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache, moduleService));
     DistributedLockService cmsDlockService = DLockService.getOrCreateService(
         CMS_DLOCK_SERVICE_NAME,
         ((InternalCache) cache).getInternalDistributedSystem());

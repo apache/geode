@@ -66,6 +66,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -124,176 +125,114 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   private static final Logger logger = Services.getLogger();
   private static final boolean ALLOW_OLD_VERSION_FOR_TESTING = Boolean
       .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing");
-
   /**
-   * the view ID where I entered into membership
+   * state of collected artifacts during discovery
    */
-  private int birthViewId;
-
+  final SearchState<ID> searchState = new SearchState<>();
   /**
-   * my address
+   * a synch object that guards view installation
    */
-  private ID localAddress;
-
-  private Services<ID> services;
-
+  private final Object viewInstallationLock = new Object();
   /**
-   * have I connected to the distributed system?
+   * members who we have been declared dead in the current view
    */
-  private volatile boolean isJoined;
-
+  private final Set<ID> removedMembers = new HashSet<>();
+  /**
+   * members who we've received a leave message from
+   **/
+  private final Set<ID> leftMembers = new HashSet<>();
+  /**
+   * a list of join/leave/crashes
+   */
+  private final List<AbstractGMSMessage<ID>> viewRequests = new LinkedList<>();
+  /**
+   * collects the response to a join request
+   */
+  private final JoinResponseMessage<ID>[] joinResponse = new JoinResponseMessage[1];
+  /**
+   * for messaging locator
+   */
+  private final TcpClient locatorClient;
   /**
    * guarded by viewInstallationLock
    */
   @VisibleForTesting
   volatile boolean isCoordinator;
-
-  /**
-   * a synch object that guards view installation
-   */
-  private final Object viewInstallationLock = new Object();
-
   /**
    * the currently installed view. Guarded by viewInstallationLock
    */
   @VisibleForTesting
   volatile GMSMembershipView<ID> currentView;
-
-  /**
-   * the previous view
-   **/
-  private volatile GMSMembershipView<ID> previousView;
-
-  /**
-   * members who we have been declared dead in the current view
-   */
-  private final Set<ID> removedMembers = new HashSet<>();
-
-  /**
-   * members who we've received a leave message from
-   **/
-  private final Set<ID> leftMembers = new HashSet<>();
-
-  /**
-   * a new view being installed
-   */
-  private volatile GMSMembershipView<ID> preparedView;
-
-  /**
-   * the last view that conflicted with view preparation
-   */
-  private GMSMembershipView<ID> lastConflictingView;
-
-  private List<HostAndPort> locators;
-
-  /**
-   * a list of join/leave/crashes
-   */
-  private final List<AbstractGMSMessage<ID>> viewRequests = new LinkedList<>();
-
   /**
    * the established request collection jitter. This can be overridden for testing with
    * delayViewCreationForTest
    */
   long requestCollectionInterval = MEMBER_REQUEST_COLLECTION_INTERVAL;
-
-  /**
-   * collects the response to a join request
-   */
-  private final JoinResponseMessage<ID>[] joinResponse = new JoinResponseMessage[1];
-
   /**
    * collects responses to new views
    */
   ViewReplyProcessor viewProcessor = new ViewReplyProcessor(false);
-
   /**
    * collects responses to view preparation messages
    */
   ViewReplyProcessor prepareProcessor = new ViewReplyProcessor(true);
-
-  /**
-   * whether quorum checks can cause a forced-disconnect
-   */
-  private boolean quorumRequired = false;
-
-  /**
-   * timeout in receiving view acknowledgement
-   */
-  private long viewAckTimeout;
-
-  /**
-   * background thread that creates new membership views
-   */
-  private ViewCreator viewCreator;
-
-  /**
-   * am I shutting down?
-   */
-  private volatile boolean isStopping;
-
-  /**
-   * state of collected artifacts during discovery
-   */
-  final SearchState<ID> searchState = new SearchState<>();
-
   /**
    * a collection used to detect unit testing
    */
   Set<String> unitTesting = new HashSet<>();
-
+  /**
+   * the view where quorum was most recently lost
+   */
+  GMSMembershipView<ID> quorumLostView;
+  /**
+   * the view ID where I entered into membership
+   */
+  private int birthViewId;
+  /**
+   * my address
+   */
+  private ID localAddress;
+  private Services<ID> services;
+  /**
+   * have I connected to the distributed system?
+   */
+  private volatile boolean isJoined;
+  /**
+   * the previous view
+   **/
+  private volatile GMSMembershipView<ID> previousView;
+  /**
+   * a new view being installed
+   */
+  private volatile GMSMembershipView<ID> preparedView;
+  /**
+   * the last view that conflicted with view preparation
+   */
+  private GMSMembershipView<ID> lastConflictingView;
+  private List<HostAndPort> locators;
+  /**
+   * whether quorum checks can cause a forced-disconnect
+   */
+  private boolean quorumRequired = false;
+  /**
+   * timeout in receiving view acknowledgement
+   */
+  private long viewAckTimeout;
+  /**
+   * background thread that creates new membership views
+   */
+  private ViewCreator viewCreator;
+  /**
+   * am I shutting down?
+   */
+  private volatile boolean isStopping;
   /**
    * a test hook to make this member unresponsive
    */
   private volatile boolean playingDead;
 
-  /**
-   * the view where quorum was most recently lost
-   */
-  GMSMembershipView<ID> quorumLostView;
-
-  /**
-   * for messaging locator
-   */
-  private final TcpClient locatorClient;
-
   public GMSJoinLeave(final TcpClient locatorClient) {
     this.locatorClient = locatorClient;
-  }
-
-  static class SearchState<ID extends MemberIdentifier> {
-    public int joinedMembersContacted;
-    Set<ID> alreadyTried = new HashSet<>();
-    Set<ID> registrants = new HashSet<>();
-    ID possibleCoordinator;
-    int viewId = -100;
-    int locatorsContacted = 0;
-    boolean hasContactedAJoinedLocator;
-    GMSMembershipView<ID> view;
-    int lastFindCoordinatorInViewId = -1000;
-    final Set<FindCoordinatorResponse<ID>> responses = new HashSet<>();
-    public int responsesExpected;
-
-    void cleanup() {
-      alreadyTried.clear();
-      possibleCoordinator = null;
-      view = null;
-      synchronized (responses) {
-        responses.clear();
-      }
-    }
-
-    public String toString() {
-      StringBuffer sb = new StringBuffer(200);
-      sb.append("locatorsContacted=").append(locatorsContacted)
-          .append("; findInViewResponses=").append(joinedMembersContacted)
-          .append("; alreadyTried=").append(alreadyTried).append("; registrants=")
-          .append(registrants).append("; possibleCoordinator=").append(possibleCoordinator)
-          .append("; viewId=").append(viewId).append("; hasContactedAJoinedLocator=")
-          .append(hasContactedAJoinedLocator).append("; view=").append(view).append("; responses=")
-          .append(responses);
-      return sb.toString();
-    }
   }
 
   Object getViewInstallationLock() {
@@ -1811,7 +1750,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   @Override
-  public void init(Services<ID> s) throws MembershipConfigurationException {
+  public void init(Services<ID> s, ModuleService moduleService)
+      throws MembershipConfigurationException {
     this.services = s;
 
     MembershipConfig config = services.getConfig();
@@ -1882,14 +1822,52 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     return prepareProcessor.isWaiting();
   }
 
+  static class SearchState<ID extends MemberIdentifier> {
+    final Set<FindCoordinatorResponse<ID>> responses = new HashSet<>();
+    public int joinedMembersContacted;
+    public int responsesExpected;
+    Set<ID> alreadyTried = new HashSet<>();
+    Set<ID> registrants = new HashSet<>();
+    ID possibleCoordinator;
+    int viewId = -100;
+    int locatorsContacted = 0;
+    boolean hasContactedAJoinedLocator;
+    GMSMembershipView<ID> view;
+    int lastFindCoordinatorInViewId = -1000;
+
+    void cleanup() {
+      alreadyTried.clear();
+      possibleCoordinator = null;
+      view = null;
+      synchronized (responses) {
+        responses.clear();
+      }
+    }
+
+    public String toString() {
+      StringBuffer sb = new StringBuffer(200);
+      sb.append("locatorsContacted=").append(locatorsContacted)
+          .append("; findInViewResponses=").append(joinedMembersContacted)
+          .append("; alreadyTried=").append(alreadyTried).append("; registrants=")
+          .append(registrants).append("; possibleCoordinator=").append(possibleCoordinator)
+          .append("; viewId=").append(viewId).append("; hasContactedAJoinedLocator=")
+          .append(hasContactedAJoinedLocator).append("; view=").append(view).append("; responses=")
+          .append(responses);
+      return sb.toString();
+    }
+  }
+
+  static class ViewAbandonedException extends Exception {
+  }
+
   class ViewReplyProcessor {
-    volatile int viewId = -1;
     final Set<ID> notRepliedYet = new HashSet<>();
+    final boolean isPrepareViewProcessor;
+    final Set<ID> pendingRemovals = new HashSet<>();
+    volatile int viewId = -1;
     GMSMembershipView<ID> conflictingView;
     ID conflictingViewSender;
     volatile boolean waiting;
-    final boolean isPrepareViewProcessor;
-    final Set<ID> pendingRemovals = new HashSet<>();
 
     ViewReplyProcessor(boolean forPreparation) {
       this.isPrepareViewProcessor = forPreparation;
@@ -2077,9 +2055,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     volatile boolean testFlagForRemovalRequest = false;
     // count of number of views abandoned due to conflicts
     volatile int abandonedViews = 0;
-    private boolean markViewCreatorForShutdown = false; // see GEODE-870
-
-
     /**
      * initial view to install. guarded by synch on ViewCreator
      */
@@ -2096,6 +2071,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
      * initial crashed members. guarded by synch on ViewCreator
      */
     Set<ID> initialRemovals;
+    private boolean markViewCreatorForShutdown = false; // see GEODE-870
 
     ViewCreator(String name) {
       super(name);
@@ -2808,9 +2784,5 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       return testFlagForRemovalRequest;
     }
 
-  }
-
-
-  static class ViewAbandonedException extends Exception {
   }
 }

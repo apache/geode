@@ -23,6 +23,9 @@ jackson-annotations-2.10.1.jar
 jackson-core-2.10.1.jar
 geode-membership-0.0.0.jar
 geode-http-service-0.0.0.jar
+geode-module-management-0.0.0.jar
+geode-module-bootstrapping-0.0.0.jar
+geode-launcher-0.0.0.jar
 geode-unsafe-0.0.0.jar
 antlr-2.7.7.jar
 rmiio-2.1.2.jar

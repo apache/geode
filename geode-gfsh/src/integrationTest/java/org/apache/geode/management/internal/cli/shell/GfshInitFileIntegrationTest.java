@@ -47,7 +47,9 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 /**
  * Unit tests for supplying an init file to Gfsh.
@@ -127,7 +129,8 @@ public class GfshInitFileIntegrationTest {
   public void initFile_isNull() {
     GfshConfig gfshConfig = new GfshConfig(gfshHistoryFilePath.toString(), "", 0,
         gfshLogDirPath.toString(), null, null, null, null);
-    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig);
+    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     assertThat(gfsh.getLastExecutionStatus())
         .as("gfsh last execution status (success is zero)")
@@ -146,7 +149,8 @@ public class GfshInitFileIntegrationTest {
   public void initFile_doesNotExist() {
     GfshConfig gfshConfig = new GfshConfig(gfshHistoryFilePath.toString(), "", 0,
         gfshLogDirPath.toString(), null, null, null, initFilePath.toString());
-    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig);
+    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     assertThat(gfsh.getLastExecutionStatus())
         .as("gfsh last execution status (failure is non-zero)")
@@ -166,7 +170,8 @@ public class GfshInitFileIntegrationTest {
     createFile(initFilePath);
     GfshConfig gfshConfig = new GfshConfig(gfshHistoryFilePath.toString(), "", 0,
         gfshLogDirPath.toString(), null, null, null, initFilePath.toString());
-    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig);
+    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     assertThat(gfsh.getLastExecutionStatus())
         .as("gfsh last execution status (success is zero)")
@@ -187,7 +192,8 @@ public class GfshInitFileIntegrationTest {
         defaultCharset());
     GfshConfig gfshConfig = new GfshConfig(gfshHistoryFilePath.toString(), "", 0,
         gfshLogDirPath.toString(), null, null, null, initFilePath.toString());
-    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig);
+    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     assertThat(gfsh.getLastExecutionStatus())
         .as("gfsh last execution status (success is zero)")
@@ -210,7 +216,8 @@ public class GfshInitFileIntegrationTest {
         defaultCharset(), true);
     GfshConfig gfshConfig = new GfshConfig(gfshHistoryFilePath.toString(), "", 0,
         gfshLogDirPath.toString(), null, null, null, initFilePath.toString());
-    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig);
+    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     assertThat(gfsh.getLastExecutionStatus())
         .as("gfsh last execution status (success is zero)")
@@ -230,7 +237,8 @@ public class GfshInitFileIntegrationTest {
     writeStringToFile(initFilePath.toFile(), "fail" + lineSeparator(), defaultCharset());
     GfshConfig gfshConfig = new GfshConfig(gfshHistoryFilePath.toString(), "", 0,
         gfshLogDirPath.toString(), null, null, null, initFilePath.toString());
-    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig);
+    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     assertThat(gfsh.getLastExecutionStatus())
         .as("gfsh last execution status (failure is non-zero)")
@@ -248,7 +256,8 @@ public class GfshInitFileIntegrationTest {
     writeStringToFile(initFilePath.toFile(), "fail" + lineSeparator(), defaultCharset(), true);
     GfshConfig gfshConfig = new GfshConfig(gfshHistoryFilePath.toString(), "", 0,
         gfshLogDirPath.toString(), null, null, null, initFilePath.toString());
-    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig);
+    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     assertThat(gfsh.getLastExecutionStatus())
         .as("gfsh last execution status (failure is non-zero)")
@@ -267,7 +276,8 @@ public class GfshInitFileIntegrationTest {
         defaultCharset(), true);
     GfshConfig gfshConfig = new GfshConfig(gfshHistoryFilePath.toString(), "", 0,
         gfshLogDirPath.toString(), null, null, null, initFilePath.toString());
-    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig);
+    Gfsh gfsh = Gfsh.getInstance(false, null, gfshConfig, new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     assertThat(gfsh.getLastExecutionStatus())
         .as("gfsh last execution status (failure is non-zero)")

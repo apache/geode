@@ -25,6 +25,7 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
@@ -34,6 +35,7 @@ import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 public class GfshParserRule extends ExternalResource {
@@ -44,7 +46,7 @@ public class GfshParserRule extends ExternalResource {
 
   @Override
   public void before() {
-    commandManager = new CommandManager();
+    commandManager = new CommandManager(new ServiceLoaderModuleService(LogService.getLogger()));
     parser = new GfshParser(commandManager);
     // GfshParserRule doesn't need dlock service
     commandExecutor = new CommandExecutor(null);

@@ -42,8 +42,10 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
@@ -91,7 +93,8 @@ public class LuceneCreateIndexFunctionJUnitTest {
         new String[] {"field1", "field2", "field3"}, analyzers, null);
     when(context.getArguments()).thenReturn(indexInfo);
 
-    LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
+    LuceneCreateIndexFunction function =
+        new LuceneCreateIndexFunction(new ServiceLoaderModuleService(LogService.getLogger()));
     function.execute(context);
 
     ArgumentCaptor<Map> analyzersCaptor = ArgumentCaptor.forClass(Map.class);
@@ -116,7 +119,8 @@ public class LuceneCreateIndexFunctionJUnitTest {
         new LuceneIndexInfo("index1", SEPARATOR + "region1", fields, null, null);
     when(context.getArguments()).thenReturn(indexInfo);
 
-    LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
+    LuceneCreateIndexFunction function =
+        new LuceneCreateIndexFunction(new ServiceLoaderModuleService(LogService.getLogger()));
     function.execute(context);
 
     verify(factory).addField(eq("field1"));
@@ -139,7 +143,8 @@ public class LuceneCreateIndexFunctionJUnitTest {
         PrimitiveSerializer.class.getCanonicalName());
     when(context.getArguments()).thenReturn(indexInfo);
 
-    LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
+    LuceneCreateIndexFunction function =
+        new LuceneCreateIndexFunction(new ServiceLoaderModuleService(LogService.getLogger()));
     function.execute(context);
 
     verify(factory).addField(eq("field1"));

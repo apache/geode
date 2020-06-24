@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
@@ -42,12 +41,22 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.module.ModuleService;
 
 @Experimental
-public abstract class GfshCommand implements CommandMarker {
+public abstract class GfshCommand implements GeodeCommandMarker {
   public static final String EXPERIMENTAL = "(Experimental) ";
   private InternalCache cache;
+  private ModuleService moduleService;
 
+  protected ModuleService getModuleService() {
+    return moduleService;
+  }
+
+  @Override
+  public void init(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   public boolean isOnlineCommandAvailable() {
     Gfsh gfsh = Gfsh.getCurrentInstance();

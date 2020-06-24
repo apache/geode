@@ -134,6 +134,8 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 import org.apache.geode.internal.cache.xmlcache.ResourceManagerCreation;
 import org.apache.geode.internal.cache.xmlcache.SerializerCreation;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -179,7 +181,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testDefaultConnectionPool() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     PoolFactory f = cache.createPoolFactory();
     f.addLocator(ALIAS2, 3777);
     f.create("mypool");
@@ -221,7 +223,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testDiskStore() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File[] dirs1 = new File[] {new File("").getAbsoluteFile()};
     DiskStore ds1 =
@@ -264,7 +266,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testExplicitConnectionPool() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     PoolFactory f = cache.createPoolFactory();
     f.addServer(ALIAS2, 3777).addServer(ALIAS1, 3888);
     f.setFreeConnectionTimeout(12345).setServerConnectionTimeout(111)
@@ -319,7 +321,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testDiskStoreValidation() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     DiskStore ds1 = dsf.create(getUniqueName());
 
@@ -375,7 +377,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testDiskStoreFactory() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
 
     dsf.setDiskDirs(new File[] {new File("non_exist_dir")});
@@ -416,7 +418,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testRedefineOfDefaultDiskStore() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setAutoCompact(!DiskStoreFactory.DEFAULT_AUTO_COMPACT);
     DiskStore ds1 = dsf.create(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
@@ -444,7 +446,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testPersistentPartition() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
 
@@ -468,7 +470,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testBridgeAttributesRelatedToHAOverFlow65() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setMessageSyncInterval(3445);
     CacheServer bs = cache.addCacheServer();
     ClientSubscriptionConfig csc = bs.getClientSubscriptionConfig();
@@ -509,7 +511,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testClientSubscriptionQueueUsingDefaultDS() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setMessageSyncInterval(3445);
     CacheServer bs = cache.addCacheServer();
     ClientSubscriptionConfig csc = bs.getClientSubscriptionConfig();
@@ -543,7 +545,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testTransactionWriter() throws Exception {
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
     CacheTransactionManagerCreation ctmc = new CacheTransactionManagerCreation();
     ctmc.setWriter(new TestTransactionWriter());
     creation.addCacheTransactionManagerCreation(ctmc);
@@ -628,7 +631,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testBackupFiles() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     File backup1 = new File("/back/me/up");
     File backup2 = new File("/me/too/please");
     cache.addBackup(backup1);
@@ -654,7 +657,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testNormalCache() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setCopyOnRead(true);
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -668,7 +671,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("partition", "PARTITION");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -682,7 +685,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_REDUNDANT() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("rpartition", "PARTITION_REDUNDANT");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -696,7 +699,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_PERSISTENT() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("ppartition", "PARTITION_PERSISTENT");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -710,7 +713,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_REDUNDANT_PERSISTENT() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root =
         (RegionCreation) cache.createRegion("prpartition", "PARTITION_REDUNDANT_PERSISTENT");
     testXml(cache);
@@ -725,7 +728,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_OVERFLOW() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     ResourceManagerCreation rmc = new ResourceManagerCreation();
     rmc.setEvictionHeapPercentage(55.0f);
     rmc.setCriticalHeapPercentage(80.0f);
@@ -748,7 +751,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_REDUNDANT_OVERFLOW() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root =
         (RegionCreation) cache.createRegion("rpartitionoverflow", "PARTITION_REDUNDANT_OVERFLOW");
     testXml(cache);
@@ -767,7 +770,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_PERSISTENT_OVERFLOW() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     ResourceManagerCreation rmc = new ResourceManagerCreation();
     rmc.setCriticalHeapPercentage(80.0f);
     cache.setResourceManagerCreation(rmc);
@@ -789,7 +792,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_REDUNDANT_PERSISTENT_OVERFLOW() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     ResourceManagerCreation rmc = new ResourceManagerCreation();
     rmc.setEvictionHeapPercentage(0.0f); // test bug 42130
     cache.setResourceManagerCreation(rmc);
@@ -810,7 +813,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_HEAP_LRU() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("partitionlru", "PARTITION_HEAP_LRU");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -827,7 +830,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_REDUNDANT_HEAP_LRU() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root =
         (RegionCreation) cache.createRegion("rpartitionlru", "PARTITION_REDUNDANT_HEAP_LRU");
     testXml(cache);
@@ -845,7 +848,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testREPLICATE() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("replicate", "REPLICATE");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -858,7 +861,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testREPLICATE_PERSISTENT() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("preplicate", "REPLICATE_PERSISTENT");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -871,7 +874,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testREPLICATE_OVERFLOW() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root =
         (RegionCreation) cache.createRegion("replicateoverflow", "REPLICATE_OVERFLOW");
     testXml(cache);
@@ -889,7 +892,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testREPLICATE_PERSISTENT_OVERFLOW() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root =
         (RegionCreation) cache.createRegion("preplicateoverflow", "REPLICATE_PERSISTENT_OVERFLOW");
     testXml(cache);
@@ -907,7 +910,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testREPLICATE_HEAP_LRU() throws Exception, IOException {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("replicatelru", "REPLICATE_HEAP_LRU");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -924,7 +927,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testLOCAL() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("local", "LOCAL");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -937,7 +940,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testLOCAL_PERSISTENT() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("plocal", "LOCAL_PERSISTENT");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -950,7 +953,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testLOCAL_HEAP_LRU() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("locallru", "LOCAL_HEAP_LRU");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -966,7 +969,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testLOCAL_OVERFLOW() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("localoverflow", "LOCAL_OVERFLOW");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -983,7 +986,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testLOCAL_PERSISTENT_OVERFLOW() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root =
         (RegionCreation) cache.createRegion("cpolocal", "LOCAL_PERSISTENT_OVERFLOW");
     testXml(cache);
@@ -1001,7 +1004,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_PROXY() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("partitionProxy", "PARTITION_PROXY");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -1016,7 +1019,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPARTITION_PROXY_REDUNDANT() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root =
         (RegionCreation) cache.createRegion("rpartitionProxy", "PARTITION_PROXY_REDUNDANT");
     testXml(cache);
@@ -1032,7 +1035,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testREPLICATE_PROXY() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root = (RegionCreation) cache.createRegion("replicateProxy", "REPLICATE_PROXY");
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
@@ -1206,7 +1209,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testFixedPartitioning() throws Exception {
 
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation();
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes.createFixedPartition("Q1");
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes.createFixedPartition("Q2", true);
@@ -1241,7 +1244,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testFixedPartitioning_colocation_WithAttributes() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes.createFixedPartition("Q1");
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes.createFixedPartition("Q2", true);
     FixedPartitionAttributes fpa3 = FixedPartitionAttributes.createFixedPartition("Q3", 3);
@@ -1347,7 +1350,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPdxDefaults() throws Exception {
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
     testXml(creation);
 
     Cache c = getCache();
@@ -1363,7 +1367,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPdxAttributes() throws Exception {
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
     creation.setPdxPersistent(true);
     creation.setPdxReadSerialized(true);
     creation.setPdxIgnoreUnreadFields(true);
@@ -1452,7 +1457,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testTXManagerOnClientCache() throws Exception {
     ClientCacheCreation cc = new ClientCacheCreation();
-    // CacheCreation cc = new CacheCreation();
+    // CacheCreation cc = new CacheCreation(new ServiceLoaderModuleService());
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     txMgrCreation.addListener(new TestTXListener());
     cc.addCacheTransactionManagerCreation(txMgrCreation);
@@ -1507,7 +1512,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     final String r1 = rNameBase + "1";
 
     // Setting multi-cast via nested region attributes
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
     attrs.setScope(Scope.LOCAL);
     attrs.setEarlyAck(false);
@@ -1552,7 +1558,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testRecoveryDelayAttributes() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -1597,7 +1603,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testDefaultRecoveryDelayAttributes() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -1639,7 +1645,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testResourceManagerThresholds() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     final float low = 90.0f;
     final float high = 95.0f;
 
@@ -1789,7 +1795,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testSerializationRegistration() throws Exception {
-    CacheCreation cc = new CacheCreation();
+    CacheCreation cc = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     SerializerCreation sc = new SerializerCreation();
 
     cc.setSerializerCreation(sc);
@@ -1842,7 +1848,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testPartitionedRegionAttributesForCustomPartitioning() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     CacheXMLPartitionResolver partitionResolver = new CacheXMLPartitionResolver();
@@ -1892,7 +1898,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testCacheCreationWithFunctionService() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     FunctionServiceCreation fsc = new FunctionServiceCreation();
     TestFunction function1 = new TestFunction(true, TestFunction.TEST_FUNCTION2);
     TestFunction function2 = new TestFunction(true, TestFunction.TEST_FUNCTION3);
@@ -1919,7 +1925,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testPartitionedRegionAttributesForExpiration() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setStatisticsEnabled(true);
     RegionAttributes rootAttrs = null;
@@ -1984,7 +1990,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testPartitionedRegionAttributesForEviction() throws Exception {
     final int redundantCopies = 1;
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     if (getGemFireVersion().equals(CacheXml.VERSION_6_0)) {
       ResourceManagerCreation rm = new ResourceManagerCreation();
       rm.setCriticalHeapPercentage(95);
@@ -2072,7 +2078,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testPartitionedRegionAttributesForCoLocation() throws Exception {
     closeCache();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation custAttrs = new RegionAttributesCreation(cache);
     RegionAttributesCreation orderAttrs = new RegionAttributesCreation(cache);
     PartitionAttributesFactory custPaf = new PartitionAttributesFactory();
@@ -2122,7 +2128,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testPartitionedRegionAttributesForMemLruWithoutMaxMem() throws Exception {
     final int redundantCopies = 1;
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setStatisticsEnabled(true);
@@ -2162,7 +2168,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testPartitionedRegionAttributesForMemLruWithMaxMem() throws Exception {
     final int redundantCopies = 1;
     final int maxMem = 25;
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setStatisticsEnabled(true);
@@ -2202,7 +2208,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testReplicatedRegionAttributesForMemLruWithoutMaxMem() throws Exception {
     final int redundantCopies = 1;
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     AttributesFactory fac = new AttributesFactory();
     fac.setDataPolicy(DataPolicy.REPLICATE);
@@ -2230,7 +2236,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testReplicatedRegionAttributesForMemLruWithMaxMem() throws Exception {
     final int redundantCopies = 1;
     final int maxMem = 25;
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     AttributesFactory fac = new AttributesFactory();
     fac.setDataPolicy(DataPolicy.REPLICATE);
@@ -2258,7 +2264,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testDefaultCacheServerGroups() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     bs.setGroups(CacheServer.DEFAULT_GROUPS);
@@ -2272,7 +2278,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testOneCacheServerGroups() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     String[] groups = new String[] {"group1"};
@@ -2287,7 +2293,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testTwoCacheServerGroups() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     String[] groups = new String[] {"group1", "group2"};
@@ -2302,7 +2308,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testDefaultCacheServerBindAddress() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     testXml(cache);
@@ -2315,7 +2321,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testCacheServerBindAddress() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     final String BA = ALIAS1;
@@ -2330,7 +2336,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testCacheServerHostnameForClients() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheServer bs = cache.addCacheServer();
     bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     final String BA = ALIAS1;
@@ -2348,7 +2354,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testTwoConnectionPools() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     PoolFactory f = cache.createPoolFactory();
     f.addLocator(ALIAS2, 3777).create("mypool");
     f.reset().addLocator(ALIAS1, 3888).create("mypool2");
@@ -2385,7 +2391,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testNoConnectionPools() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setPoolName("mypool");
     cache.createVMRegion("rootNORMAL", attrs);
@@ -2408,7 +2414,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     f.setStartDisabled(true).addLocator(ALIAS2, 12345).create("mypool");
     try {
       // now make sure declarative cache can't create the same pool
-      CacheCreation cache = new CacheCreation();
+      CacheCreation cache =
+          new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
       cache.createPoolFactory().addLocator(ALIAS2, 12345).create("mypool");
       IgnoredException expectedException = addIgnoredException(
           String.format("A pool named %s already exists", "mypool"));
@@ -2445,7 +2452,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         return null;
       }
     });
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.createPoolFactory().addServer(NetworkUtils.getServerHostName(vm0.getHost()), port)
         .setSubscriptionEnabled(true).create("connectionPool");
     cache.setDynamicRegionFactoryConfig(
@@ -2475,7 +2482,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testBridgeAttributesRelatedToHAOverFlow() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setMessageSyncInterval(3445);
     CacheServer bs = cache.addCacheServer();
     ClientSubscriptionConfig csc = bs.getClientSubscriptionConfig();
@@ -2502,7 +2509,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testBridgeLoadProbe() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheServer server = cache.addCacheServer();
     server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     server.setLoadProbe(new MyLoadProbe());
@@ -2516,7 +2523,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testLoadPollInterval() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheServer server = cache.addCacheServer();
     server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
     server.setLoadPollInterval(12345);
@@ -2621,7 +2628,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testCustomEntryXml() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -2666,7 +2673,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testPreloadDataPolicy() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     {
       RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -2717,7 +2724,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testEnableSubscriptionConflationAttribute() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEnableSubscriptionConflation(true);
     cache.createRegion("root", attrs);
@@ -2806,7 +2813,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testMessageSyncInterval() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setMessageSyncInterval(123);
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.NORMAL);
@@ -2823,7 +2830,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testBridgeAttributesRelatedToClientQueuesHA() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setMessageSyncInterval(3445);
     CacheServer bs = cache.addCacheServer();
     bs.setMaximumMessageCount(12345);
@@ -2851,7 +2858,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testPartitionedRegionInstantiation() {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -2866,7 +2873,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testBridgeMaxThreads() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     CacheServer bs = cache.addCacheServer();
     bs.setMaxThreads(37);
@@ -2889,7 +2896,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     final String r3 = rNameBase + "3";
 
     // Setting multi-cast via nested region attributes
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
     attrs.setScope(Scope.LOCAL);
     attrs.setEarlyAck(false);
@@ -2910,7 +2918,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     testXml(creation);
 
-    creation = new CacheCreation();
+    creation = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     attrs = new RegionAttributesCreation(creation);
     attrs.setScope(Scope.DISTRIBUTED_ACK);
     attrs.setEarlyAck(false);
@@ -2948,7 +2956,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testRollOplogs() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     // Set properties for Asynch writes
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -2979,7 +2987,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testMaxOplogSize() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     // Set properties for Asynch writes
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -3010,7 +3018,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testDataPolicy() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     {
       RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -3081,7 +3089,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     final ResumptionAction[] actions = (ResumptionAction[]) ResumptionAction.VALUES
         .toArray(new ResumptionAction[ResumptionAction.VALUES.size()]);
 
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     // for each policy, try each action and each role...
     for (int policy = 0; policy < policies.length; policy++) {
@@ -3130,7 +3138,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testMultipleCacheListener() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     CacheListener l1 = new MyTestCacheListener();
@@ -3214,7 +3222,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testMultipleTXListener() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     TransactionListener l1 = new MyTestTransactionListener();
     TransactionListener l2 = new MySecondTestTransactionListener();
@@ -3275,7 +3283,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testRegisteringNamedRegionAttributes() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs;
 
     String id1 = "id1";
@@ -3370,7 +3378,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testCreateSameRegionTwice() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     String name = "root";
 
@@ -3410,7 +3418,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testCreateSameSubregionTwice() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     String name = getUniqueName();
 
@@ -3474,7 +3482,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     int lockTimeout1 = 345;
     int searchTimeout1 = 567;
 
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
     creation.setCopyOnRead(copyOnRead1);
     creation.setIsServer(isServer1);
     creation.setLockLease(lockLease1);
@@ -3496,7 +3505,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     int lockTimeout2 = 456;
     int searchTimeout2 = 678;
 
-    creation = new CacheCreation();
+    creation = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     creation.setCopyOnRead(copyOnRead2);
     creation.setIsServer(isServer2);
     creation.setLockLease(lockLease2);
@@ -3517,14 +3526,15 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testAddRegionViaCacheXml() throws Exception {
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     testXml(creation);
 
     Cache cache = getCache();
     assertTrue(cache.rootRegions().isEmpty());
 
-    creation = new CacheCreation();
+    creation = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
     attrs.setScope(Scope.GLOBAL);
@@ -3555,7 +3565,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     // Create a subregion of a region that already exists
 
-    creation = new CacheCreation();
+    creation = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     attrs = new RegionAttributesCreation(creation);
     root = creation.createRegion("root", attrs);
 
@@ -3579,7 +3589,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testModifyRegionViaCacheXml() throws Exception {
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     int timeout1a = 123;
     ExpirationAction action1a = ExpirationAction.LOCAL_DESTROY;
@@ -3608,7 +3619,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(timeout1b, subregion.getAttributes().getEntryIdleTimeout().getTimeout());
     assertEquals(action1b, subregion.getAttributes().getEntryIdleTimeout().getAction());
 
-    creation = new CacheCreation();
+    creation = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     int timeout2a = 234;
     ExpirationAction action2a = ExpirationAction.LOCAL_INVALIDATE;
@@ -3647,7 +3658,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     String key1 = "KEY1";
     String value1 = "VALUE1";
 
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(new ServiceLoaderModuleService(
+        LogService.getLogger()));
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
     attrs.setScope(Scope.LOCAL);
@@ -3662,7 +3674,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(1, root.entrySet(false).size());
     assertEquals(value1, root.get(key1));
 
-    creation = new CacheCreation();
+    creation = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     attrs = new RegionAttributesCreation(creation);
     attrs.setScope(Scope.LOCAL);
@@ -3690,7 +3702,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testEnableBridgeConflationAttribute() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEnableBridgeConflation(true);
     cache.createRegion("root", attrs);
@@ -3705,7 +3717,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testEnableAsyncConflationAttribute() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEnableAsyncConflation(true);
     cache.createRegion("root", attrs);
@@ -3718,7 +3730,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testDynamicRegionFactoryDefault() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setDynamicRegionFactoryConfig(new DynamicRegionFactory.Config());
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     cache.createRegion("root", attrs);
@@ -3737,7 +3749,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   @Test
   public void testDynamicRegionFactoryNonDefault() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setDynamicRegionFactoryConfig(
         new DynamicRegionFactory.Config((File) null, null, false, false));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -3760,7 +3772,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testDynamicRegionFactoryDiskDir() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     File f = new File("diskDir");
     f.mkdirs();
     cache.setDynamicRegionFactoryConfig(new DynamicRegionFactory.Config(f, null, true, true));
@@ -3784,7 +3796,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testServer() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setIsServer(true);
     assertTrue(cache.isServer());
 
@@ -3798,7 +3810,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testBridgeServers() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     CacheServer bridge1 = cache.addCacheServer();
     setBridgeAttributes(bridge1);
@@ -3814,7 +3826,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testIsLockGrantorAttribute() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     attrs.setLockGrantor(true);
@@ -3834,7 +3846,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testTransactionListener() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     txMgrCreation.setListener(new MyTestTransactionListener());
     cache.addCacheTransactionManagerCreation(txMgrCreation);
@@ -3848,7 +3860,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testCacheTransactionManager() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
     cache.addCacheTransactionManagerCreation(txMgrCreation);
     testXml(cache);
@@ -3861,7 +3873,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testConstrainedValues() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setValueConstraint(String.class);
 
@@ -3925,7 +3937,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testDefaultCache() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     testXml(cache);
   }
@@ -3935,7 +3947,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testNonDefaultCache() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     cache.setLockTimeout(42);
     cache.setLockLease(43);
     cache.setSearchTimeout(44);
@@ -3952,7 +3964,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testEntriesInRootRegion() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionCreation root =
         (RegionCreation) cache.createRegion("root", new RegionAttributesCreation(cache));
     root.put("KEY1", "VALUE1");
@@ -3967,7 +3979,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testConstrainedKeys() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setKeyConstraint(String.class);
     cache.createRegion("root", attrs);
@@ -3980,7 +3992,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testExpirationAttriubutes() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setStatisticsEnabled(true);
 
@@ -4014,7 +4026,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testCacheLoaderWithDeclarables() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     CacheLoaderWithDeclarables loader = new CacheLoaderWithDeclarables();
@@ -4030,7 +4042,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testCacheWriter() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     CacheWriter writer = new MyTestCacheWriter();
@@ -4046,7 +4058,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testCacheListener() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     CacheListener listener = new MyTestCacheListener();
@@ -4062,7 +4074,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testNonDefaultRegionAttributes() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
 
     attrs.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -4239,7 +4251,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testNestedRegions() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -4291,7 +4303,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testDiskDirs() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     File[] dirs = new File[] {new File(getUniqueName() + "-dir1"),
@@ -4314,7 +4326,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testOverflowAndBackup() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setMirrorType(MirrorType.KEYS_VALUES);
@@ -4330,7 +4342,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
    */
   @Test
   public void testDiskWriteAttributes() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     // Set properties for Asynch writes
 
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -4387,7 +4399,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         LogWriterUtils.getLogWriter().info("Parsing " + xmlFile);
 
         FileInputStream fis = new FileInputStream(xmlFile);
-        CacheXmlParser.parse(fis);
+        CacheXmlParser.parse(fis, new ServiceLoaderModuleService(LogService.getLogger()));
       }
 
     } else {
@@ -4395,24 +4407,24 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       File example = new File(createTempFileFromResource(getClass(),
           "/org/apache/geode/cache/doc-files/example-cache.xml").getAbsolutePath());
       FileInputStream fis = new FileInputStream(example);
-      CacheXmlParser.parse(fis);
+      CacheXmlParser.parse(fis, new ServiceLoaderModuleService(LogService.getLogger()));
 
       File example2 = new File(createTempFileFromResource(getClass(),
           "/org/apache/geode/cache/doc-files/example2-cache.xml").getAbsolutePath());
       fis = new FileInputStream(example2);
-      CacheXmlParser.parse(fis);
+      CacheXmlParser.parse(fis, new ServiceLoaderModuleService(LogService.getLogger()));
 
       File example3 = new File(createTempFileFromResource(getClass(),
           "/org/apache/geode/cache/doc-files/example3-cache.xml").getAbsolutePath());
       fis = new FileInputStream(example3);
-      CacheXmlParser.parse(fis);
+      CacheXmlParser.parse(fis, new ServiceLoaderModuleService(LogService.getLogger()));
     }
   }
 
   @Test
   public void testEvictionLRUEntryAttributes() throws Exception {
     final String rName = getUniqueName();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEvictionAttributes(
         EvictionAttributes.createLRUEntryAttributes(80, EvictionAction.LOCAL_DESTROY));
@@ -4461,7 +4473,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testEvictionLRUMemoryAttributes() throws Exception {
     final String rName = getUniqueName();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEvictionAttributes(
         EvictionAttributes.createLRUMemoryAttributes(10, new EvictionObjectSizer()));
@@ -4472,7 +4484,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   @Test
   public void testEvictionLRUHeapAttributes() throws Exception {
     final String rName = getUniqueName();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(new ServiceLoaderModuleService(LogService.getLogger()));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setEvictionAttributes(EvictionAttributes
         .createLRUHeapAttributes(new EvictionObjectSizer(), EvictionAction.LOCAL_DESTROY));

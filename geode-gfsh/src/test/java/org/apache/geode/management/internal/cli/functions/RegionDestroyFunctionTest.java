@@ -33,7 +33,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 
 public class RegionDestroyFunctionTest {
@@ -47,7 +49,8 @@ public class RegionDestroyFunctionTest {
   @Before
   @SuppressWarnings("unchecked")
   public void before() {
-    function = spy(RegionDestroyFunction.class);
+    function =
+        spy(new RegionDestroyFunction(new ServiceLoaderModuleService(LogService.getLogger())));
     context = mock(FunctionContext.class);
     InternalCache cache = mock(InternalCache.class);
     filterCache = mock(InternalCacheForClientAccess.class);

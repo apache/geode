@@ -81,8 +81,10 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoad
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -90,6 +92,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @Category(ClientServerTest.class)
 public class AutoConnectionSourceImplJUnitTest {
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   private Cache cache;
   private int port;
   private FakeHandler handler;
@@ -98,9 +102,6 @@ public class AutoConnectionSourceImplJUnitTest {
   private TcpServer server;
   private ScheduledExecutorService background;
   private PoolStats poolStats;
-
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
@@ -299,7 +300,8 @@ public class AutoConnectionSourceImplJUnitTest {
 
     TcpServer server2 =
         new TcpServer(secondPort, InetAddress.getLocalHost(), handler,
-            "tcp server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
+            "tcp server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader(
+                new ServiceLoaderModuleService(LogService.getLogger()))),
             DistributionStats::getStatTime,
             Executors::newCachedThreadPool,
             SocketCreatorFactory
@@ -386,7 +388,10 @@ public class AutoConnectionSourceImplJUnitTest {
   private void startFakeLocator() throws IOException, InterruptedException {
 
     server = new TcpServer(port, InetAddress.getLocalHost(), handler,
-        "Tcp Server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
+        "Tcp Server",
+        new ProtocolCheckerImpl(null,
+            new ClientProtocolServiceLoader(
+                new ServiceLoaderModuleService(LogService.getLogger()))),
         DistributionStats::getStatTime,
         Executors::newCachedThreadPool,
         SocketCreatorFactory

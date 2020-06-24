@@ -19,30 +19,41 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
+
 public class PivotalEntityResolverTest {
+
+  private static final PivotalEntityResolver pivotalEntityResolver = new PivotalEntityResolver();
+
+  @BeforeClass
+  public static void setup() {
+    pivotalEntityResolver.init(new ServiceLoaderModuleService(LogService.getLogger()));
+  }
+
   @Test
   public void resolvesWithHttpUrl() throws IOException, SAXException {
-    InputSource inputSource = new PivotalEntityResolver().resolveEntity(null, null, null,
+    InputSource inputSource = pivotalEntityResolver.resolveEntity(null, null, null,
         "http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd");
     assertThat(inputSource).isNotNull();
   }
 
   @Test
   public void resolvesWithHttpsUrl() throws IOException, SAXException {
-    InputSource inputSource = new PivotalEntityResolver().resolveEntity(null, null, null,
+    InputSource inputSource = pivotalEntityResolver.resolveEntity(null, null, null,
         "https://schema.pivotal.io/gemfire/cache/cache-8.1.xsd");
     assertThat(inputSource).isNotNull();
   }
 
   @Test
   public void doesNotResolveUnknownUrl() throws IOException, SAXException {
-    InputSource inputSource = new PivotalEntityResolver().resolveEntity(null, null, null,
+    InputSource inputSource = pivotalEntityResolver.resolveEntity(null, null, null,
         "http://schema.pivotal.io/gemfire/should/not/exist.xsd");
     assertThat(inputSource).isNull();
   }
-
 }

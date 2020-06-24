@@ -53,6 +53,8 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
@@ -299,7 +301,8 @@ public class MembershipIntegrationTest {
             dsfidSerializer.getObjectDeserializer(), TcpSocketFactory.DEFAULT);
 
     return MembershipBuilder.<MemberIdentifier>newMembershipBuilder(
-        socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
+        socketCreator, locatorClient, dsfidSerializer, memberIdFactory,
+        new ServiceLoaderModuleService(LogService.getLogger()))
         .setMembershipLocator(embeddedLocator)
         .setConfig(config)
         .create();

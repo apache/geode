@@ -22,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -35,7 +37,7 @@ public class BannerTest {
 
   @Before
   public void setUp() {
-    banner = new Banner().getString();
+    banner = new Banner(new ServiceLoaderModuleService(LogService.getLogger())).getString();
   }
 
   @Test

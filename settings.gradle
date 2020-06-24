@@ -70,6 +70,11 @@ include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
 include 'geode-common-services'
 include 'geode-modules'
+include 'geode-modules-proto'
+include 'geode-module-management'
+include 'geode-module-bootstrapping'
+include 'geode-dep-graph'
+
 
 
 ['1.0.0-incubating',
@@ -88,11 +93,11 @@ include 'geode-modules'
  '1.10.0',
  '1.11.0',
  '1.12.0'].each {
-  include 'geode-old-versions:'.concat(it)
+    include 'geode-old-versions:'.concat(it)
 }
 
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
-  throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
+    throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
 }
 
 buildCache {
@@ -100,3 +105,4 @@ buildCache {
     enabled = true
   }
 }
+

@@ -137,7 +137,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
         if (configuration == null) {
           configuration = new Configuration(group);
         }
-        configuration.setCacheXmlFile(file);
+        configuration.setCacheXmlFile(file, getModuleService());
         ccService.setConfiguration(group, configuration);
         logger.info(
             configuration.getConfigName() + "xml content: \n" + configuration.getCacheXmlContent());

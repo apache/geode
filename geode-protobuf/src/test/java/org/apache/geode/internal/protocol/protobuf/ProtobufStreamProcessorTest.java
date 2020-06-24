@@ -29,6 +29,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufStreamProcessor;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -38,7 +40,8 @@ public class ProtobufStreamProcessorTest {
     InputStream inputStream = new ByteArrayInputStream(new byte[0]);
     OutputStream outputStream = new ByteArrayOutputStream(2);
 
-    ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
+    ProtobufStreamProcessor protobufStreamProcessor =
+        new ProtobufStreamProcessor(new ServiceLoaderModuleService(LogService.getLogger()));
     InternalCacheForClientAccess mockInternalCache = mock(InternalCacheForClientAccess.class);
     when(mockInternalCache.getCacheForProcessingClientRequests()).thenReturn(mockInternalCache);
     protobufStreamProcessor.receiveMessage(inputStream, outputStream,

@@ -56,8 +56,10 @@ import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
@@ -233,7 +235,7 @@ public class GemFireCacheImplCloseTest {
         (properties, cacheConfigArg) -> mock(SecurityService.class),
         () -> true,
         mock(Function.class),
-        mock(Function.class),
+        mock(GemFireCacheImpl.InternalCqServiceFactory.class),
         (factory, clock) -> mock(CachePerfStats.class),
         mock(GemFireCacheImpl.TXManagerImplFactory.class),
         mock(Supplier.class),
@@ -259,6 +261,6 @@ public class GemFireCacheImplCloseTest {
         mock(Function.class),
         mock(Function.class),
         mock(TXEntryStateFactory.class),
-        replyProcessor21Factory);
+        replyProcessor21Factory, new ServiceLoaderModuleService(LogService.getLogger()));
   }
 }

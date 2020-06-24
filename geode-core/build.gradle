@@ -185,9 +185,16 @@ dependencies {
     //Commons IO is used in persistence and management
     api('commons-io:commons-io')
 
-    //tools.jar seems to be used by gfsh is some cases to control processes using
-    //the sun attach API? But this code path may not even be used?
-    compileOnly(files("${System.getProperty('java.home')}/../lib/tools.jar"))
+  compileOnly(project(":geode-modules"))
+  api(project(':geode-common-services'))
+  testImplementation(project(":geode-common-services"))
+  integrationTestImplementation(project(":geode-modules"))
+  acceptanceTestImplementation(project(":geode-modules"))
+  distributedTestImplementation(project(":geode-modules"))
+
+  //tools.jar seems to be used by gfsh is some cases to control processes using
+  //the sun attach API? But this code path may not even be used?
+  compileOnly(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
     //Find bugs is used in multiple places in the code to suppress findbugs warnings
     compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
@@ -343,7 +350,8 @@ dependencies {
     testRuntime('commons-validator:commons-validator')
     testRuntime('com.pholser:junit-quickcheck-generators')
 
-    integrationTestImplementation(project(':geode-gfsh'))
+  integrationTestImplementation(project(":geode-common-services"))
+  integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }

@@ -30,6 +30,8 @@ import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -188,7 +190,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
           config = AdminDistributedSystemFactory
               .defineDistributedSystem(cache.getDistributedSystem(), "");
           adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
-              .getDistributedSystem(config);
+              .getDistributedSystem(config, new ServiceLoaderModuleService(LogService.getLogger()));
           adminDS.connect();
           Set members = adminDS.shutDownAllMembers(timeout);
           int num = members == null ? 0 : members.size();

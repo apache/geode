@@ -17,19 +17,19 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.shell.core.CommandMarker;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
@@ -40,7 +40,7 @@ public class ConnectionsCommandManagerTest {
 
   @Before
   public void before() {
-    commandManager = new CommandManager();
+    commandManager = new CommandManager(new ServiceLoaderModuleService(LogService.getLogger()));
   }
 
   /**
@@ -52,26 +52,26 @@ public class ConnectionsCommandManagerTest {
     packagesToScan.add(GfshCommand.class.getPackage().getName());
     packagesToScan.add(VersionCommand.class.getPackage().getName());
 
-    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
-    ServiceLoader<CommandMarker> loader =
-        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
-    loader.reload();
-    Iterator<CommandMarker> iterator = loader.iterator();
-
     Set<Class<?>> foundClasses;
 
+    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
     // geode's commands
-    foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
+    foundClasses = scanner.scanPackagesForClassesImplementing(GeodeCommandMarker.class,
         GfshCommand.class.getPackage().getName(),
         VersionCommand.class.getPackage().getName());
 
-    while (iterator.hasNext()) {
-      foundClasses.add(iterator.next().getClass());
+    ModuleServiceResult<Set<GeodeCommandMarker>> serviceLoadResult =
+        new ServiceLoaderModuleService(LogService.getLogger())
+            .loadService(GeodeCommandMarker.class);
+
+    if (serviceLoadResult.isSuccessful()) {
+      serviceLoadResult.getMessage()
+          .forEach(geodeCommandMarker -> foundClasses.add(geodeCommandMarker.getClass()));
     }
 
     Set<Class<?>> expectedClasses = new HashSet<>();
 
-    for (CommandMarker commandMarker : commandManager.getCommandMarkers()) {
+    for (GeodeCommandMarker commandMarker : commandManager.getCommandMarkers()) {
       expectedClasses.add(commandMarker.getClass());
     }
 

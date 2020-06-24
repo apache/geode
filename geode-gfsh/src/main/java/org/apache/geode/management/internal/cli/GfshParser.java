@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.converters.ArrayConverter;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.Parser;
@@ -29,6 +28,7 @@ import org.springframework.shell.core.SimpleParser;
 import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 /**
@@ -55,7 +55,7 @@ public class GfshParser extends SimpleParser {
   public GfshParser(CommandManager commandManager) {
     this.commandManager = commandManager;
 
-    for (CommandMarker command : commandManager.getCommandMarkers()) {
+    for (GeodeCommandMarker command : commandManager.getCommandMarkers()) {
       add(command);
     }
 

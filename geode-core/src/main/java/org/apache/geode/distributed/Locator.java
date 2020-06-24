@@ -23,6 +23,8 @@ import java.util.Properties;
 
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 /**
  * Represents a distribution locator server that provides discovery information to members and
@@ -250,7 +252,7 @@ public abstract class Locator {
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
     return InternalLocator.startLocator(port, logFile, null, null, bindAddress, true, dsProperties,
-        hostnameForClients);
+        hostnameForClients, new ServiceLoaderModuleService(LogService.getLogger()));
   }
 
   /**
@@ -261,7 +263,8 @@ public abstract class Locator {
       InetAddress bindAddress, java.util.Properties dsProperties, boolean peerLocator,
       boolean serverLocator, String hostnameForClients) throws IOException {
     return InternalLocator.startLocator(port, logFile, null, null, bindAddress,
-        startDistributedSystem, dsProperties, hostnameForClients);
+        startDistributedSystem, dsProperties, hostnameForClients, new ServiceLoaderModuleService(
+            LogService.getLogger()));
   }
 
   /**
@@ -311,6 +314,45 @@ public abstract class Locator {
   ///////////////////// Instance Methods /////////////////////
 
   /**
+   * Starts a distribution locator from the command line.
+   * <p>
+   * This method of starting the locator is provided as an alternative to the <i>gemfire
+   * start-locator</i> command to give you complete control over the java virtual machine's
+   * configuration.
+   * <p>
+   * The <i>gemfire stop-locator</i> command can be used to stop a locator that is started with this
+   * class.
+   * <p>
+   * java org.apache.geode.distributed.Locator port [bind-address] [gemfire-properties-file] [peer]
+   * [server]
+   * <p>
+   * port - the tcp/ip port that the locator should listen on. This is the port number that
+   * applications will refer to in their <i>locators</i> property in gemfire.properties
+   * <p>
+   * bind-address - the tcp/ip address that the locator should bind to. This can be missing or be an
+   * empty string, which causes the locator to listen on all host addresses.
+   * <p>
+   * gemfire-properties-file - the location of a gemfire.properties file to be used in configuring
+   * the locator's distributed system. This can be missing or be an empty string, which will cause
+   * the locator to use the default search for gemfire.properties.
+   * <p>
+   * peer - true to start the peer locator service, false to disable it. If unspecified, default to
+   * true.
+   * <p>
+   * server - true to start the cache server locator service, false to disable it. If unspecified,
+   * defaults to true.
+   * <p>
+   * hostname-for-clients - the ip address or host name that clients will be told to use to connect
+   * to this locator. If unspecified, defaults to the bind-address.
+   *
+   * @deprecated as of Geode 1.4 use {@link org.apache.geode.distributed.LocatorLauncher
+   *             "LocatorLauncher" to start a locator}
+   */
+  public static void main(String args[]) {
+    org.apache.geode.internal.DistributionLocator.main(args);
+  }
+
+  /**
    * Returns the port on which this locator runs
    */
   public abstract Integer getPort();
@@ -319,7 +361,6 @@ public abstract class Locator {
    * Returns the distributed system started by this locator, if any
    */
   public abstract DistributedSystem getDistributedSystem();
-
 
   /**
    * Returns the log file to which this locator's output is written
@@ -363,7 +404,6 @@ public abstract class Locator {
    */
   public abstract boolean isServerLocator();
 
-
   /**
    * Stops this distribution locator.
    */
@@ -395,45 +435,6 @@ public abstract class Locator {
       locatorString.append('[').append(this.getPort()).append(']');
     }
     return locatorString.toString();
-  }
-
-  /**
-   * Starts a distribution locator from the command line.
-   * <p>
-   * This method of starting the locator is provided as an alternative to the <i>gemfire
-   * start-locator</i> command to give you complete control over the java virtual machine's
-   * configuration.
-   * <p>
-   * The <i>gemfire stop-locator</i> command can be used to stop a locator that is started with this
-   * class.
-   * <p>
-   * java org.apache.geode.distributed.Locator port [bind-address] [gemfire-properties-file] [peer]
-   * [server]
-   * <p>
-   * port - the tcp/ip port that the locator should listen on. This is the port number that
-   * applications will refer to in their <i>locators</i> property in gemfire.properties
-   * <p>
-   * bind-address - the tcp/ip address that the locator should bind to. This can be missing or be an
-   * empty string, which causes the locator to listen on all host addresses.
-   * <p>
-   * gemfire-properties-file - the location of a gemfire.properties file to be used in configuring
-   * the locator's distributed system. This can be missing or be an empty string, which will cause
-   * the locator to use the default search for gemfire.properties.
-   * <p>
-   * peer - true to start the peer locator service, false to disable it. If unspecified, default to
-   * true.
-   * <p>
-   * server - true to start the cache server locator service, false to disable it. If unspecified,
-   * defaults to true.
-   * <p>
-   * hostname-for-clients - the ip address or host name that clients will be told to use to connect
-   * to this locator. If unspecified, defaults to the bind-address.
-   *
-   * @deprecated as of Geode 1.4 use {@link org.apache.geode.distributed.LocatorLauncher
-   *             "LocatorLauncher" to start a locator}
-   */
-  public static void main(String args[]) {
-    org.apache.geode.internal.DistributionLocator.main(args);
   }
 
 }

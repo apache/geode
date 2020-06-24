@@ -253,5 +253,4 @@ public class CacheConfig {
       this.pdxIgnoreUnreadFieldsUserSet = cacheConfig.pdxIgnoreUnreadFieldsUserSet;
     }
   }
-
 }

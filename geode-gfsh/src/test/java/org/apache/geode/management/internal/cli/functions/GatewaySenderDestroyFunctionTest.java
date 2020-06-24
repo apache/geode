@@ -30,7 +30,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 
 public class GatewaySenderDestroyFunctionTest {
@@ -45,7 +47,8 @@ public class GatewaySenderDestroyFunctionTest {
   @Before
   @SuppressWarnings("unchecked")
   public void before() {
-    function = spy(GatewaySenderDestroyFunction.class);
+    function = spy(new GatewaySenderDestroyFunction(new ServiceLoaderModuleService(
+        LogService.getLogger())));
     context = mock(FunctionContext.class);
     cache = mock(InternalCache.class);
     args = mock(GatewaySenderDestroyFunctionArgs.class);

@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
@@ -24,23 +23,32 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 public class WANServiceProvider {
   @Immutable
-  private static final WANFactory factory;
+  private static WANFactory factory;
 
-  static {
-    ServiceLoader<WANFactory> loader = ServiceLoader.load(WANFactory.class);
-    Iterator<WANFactory> itr = loader.iterator();
-    if (!itr.hasNext()) {
-      factory = null;
-    } else {
-      factory = itr.next();
-      factory.initialize();
+  private static void setup(ModuleService moduleService) {
+    if (factory == null) {
+      ModuleServiceResult<Set<WANFactory>> loadServiceResult =
+          moduleService.loadService(WANFactory.class);
+      if (loadServiceResult.isSuccessful()) {
+        for (WANFactory wanFactory : loadServiceResult.getMessage()) {
+          factory = wanFactory;
+          factory.initialize();
+          break;
+        }
+      } else {
+        factory = null;
+      }
     }
   }
 
-  public static GatewaySenderFactory createGatewaySenderFactory(InternalCache cache) {
+  public static GatewaySenderFactory createGatewaySenderFactory(InternalCache cache,
+      ModuleService moduleService) {
+    setup(moduleService);
     if (factory == null) {
       throw new IllegalStateException("WAN service is not available.");
     }
@@ -48,21 +56,26 @@ public class WANServiceProvider {
 
   }
 
-  public static GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache) {
+  public static GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache,
+      ModuleService moduleService) {
+    setup(moduleService);
     if (factory == null) {
       throw new IllegalStateException("WAN service is not available.");
     }
     return factory.createGatewayReceiverFactory(cache);
   }
 
-  public static WanLocatorDiscoverer createLocatorDiscoverer() {
+  public static WanLocatorDiscoverer createLocatorDiscoverer(ModuleService moduleService) {
+    setup(moduleService);
     if (factory == null) {
       return null;
     }
     return factory.createLocatorDiscoverer();
   }
 
-  public static LocatorMembershipListener createLocatorMembershipListener() {
+  public static LocatorMembershipListener createLocatorMembershipListener(
+      ModuleService moduleService) {
+    setup(moduleService);
     if (factory == null) {
       return null;
     }

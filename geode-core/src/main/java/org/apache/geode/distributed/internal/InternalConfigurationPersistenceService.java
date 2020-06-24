@@ -86,6 +86,7 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
   private static final Logger logger = LogService.getLogger();
@@ -124,33 +125,37 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   private final InternalCache cache;
   private final DistributedLockService sharedConfigLockingService;
   private final JAXBService jaxbService;
+  private final ModuleService moduleService;
 
   public InternalConfigurationPersistenceService(InternalCache cache, Path workingDirectory,
-      JAXBService jaxbService) {
+      JAXBService jaxbService, ModuleService moduleService) {
     this(cache,
         DLockService.getOrCreateService(SHARED_CONFIG_LOCK_SERVICE_NAME,
             cache.getInternalDistributedSystem()),
         jaxbService,
         workingDirectory.resolve(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME),
         workingDirectory
-            .resolve(CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName()));
+            .resolve(CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName()),
+        moduleService);
   }
 
   @VisibleForTesting
-  public InternalConfigurationPersistenceService(JAXBService jaxbService) {
-    this(null, null, jaxbService, null, null);
+  public InternalConfigurationPersistenceService(JAXBService jaxbService,
+      ModuleService moduleService) {
+    this(null, null, jaxbService, null, null, moduleService);
   }
 
   @VisibleForTesting
   InternalConfigurationPersistenceService(InternalCache cache,
       DistributedLockService sharedConfigLockingService, JAXBService jaxbService,
-      Path configDirPath, Path configDiskDirPath) {
+      Path configDirPath, Path configDiskDirPath, ModuleService moduleService) {
     this.cache = cache;
     this.configDirPath = configDirPath;
     this.configDiskDirPath = configDiskDirPath;
     this.sharedConfigLockingService = sharedConfigLockingService;
     status.set(SharedConfigurationStatus.NOT_STARTED);
     this.jaxbService = jaxbService;
+    this.moduleService = moduleService;
   }
 
   public JAXBService getJaxbService() {
@@ -175,8 +180,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           xmlContent = generateInitialXmlContent();
         }
         try {
-          Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
-          XmlUtils.addNewNode(doc, xmlEntity);
+          final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, moduleService);
+          XmlUtils.addNewNode(doc, xmlEntity, moduleService);
           configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
           configRegion.put(group, configuration);
         } catch (Exception e) {
@@ -206,7 +211,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           String xmlContent = configuration.getCacheXmlContent();
           try {
             if (xmlContent != null && !xmlContent.isEmpty()) {
-              Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+              Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, moduleService);
               XmlUtils.deleteNode(doc, xmlEntity);
               configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
               configRegion.put(group, configuration);
@@ -244,7 +249,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
             xmlContent = sw.toString();
           }
           try {
-            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, moduleService);
             // Modify the cache attributes
             XmlUtils.modifyRootAttributes(doc, xmlEntity);
             // Change the xml content of the configuration and put it the config region
@@ -491,7 +496,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       String configurationXml = configuration.getCacheXmlContent();
       if (configurationXml != null && !configurationXml.isEmpty()) {
         try {
-          Document document = XmlUtils.createDocumentFromXml(configurationXml);
+          Document document = XmlUtils.createDocumentFromXml(configurationXml, moduleService);
           boolean removedInvalidReceivers = removeInvalidGatewayReceivers(document);
           boolean removedDuplicateReceivers = removeDuplicateGatewayReceivers(document);
           if (removedInvalidReceivers || removedDuplicateReceivers) {
@@ -818,7 +823,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     File cacheXmlFull = new File(groupConfigDir, configuration.getCacheXmlFileName());
     File propertiesFull = new File(groupConfigDir, configuration.getPropertiesFileName());
 
-    configuration.setCacheXmlFile(cacheXmlFull);
+    configuration.setCacheXmlFile(cacheXmlFull, moduleService);
     configuration.setPropertiesFile(propertiesFull);
 
     String deployedBy = getDeployedBy();

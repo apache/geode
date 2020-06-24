@@ -554,6 +554,12 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>org.graphstream</groupId>
+        <artifactId>gs-core</artifactId>
+        <version>1.3</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
         <version>2.10.1</version>
@@ -927,6 +933,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-dep-graph</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -952,6 +964,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-junit</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-launcher</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>
@@ -993,7 +1011,25 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-module-bootstrapping</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-module-management</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-modules</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-modules-proto</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.functions.AlterRuntimeConfigFunction;
 import org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction;
 import org.apache.geode.management.internal.cli.functions.CloseDurableClientFunction;
@@ -80,6 +81,7 @@ import org.apache.geode.management.internal.configuration.functions.RecreateCach
 import org.apache.geode.management.internal.functions.GetMemberInformationFunction;
 import org.apache.geode.management.internal.functions.RebalanceFunction;
 import org.apache.geode.management.internal.functions.RestoreRedundancyFunction;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -101,6 +103,8 @@ public class CoreFunctionSecurityTest {
 
   @BeforeClass
   public static void setupClass() {
+    ServiceLoaderModuleService moduleService = new ServiceLoaderModuleService(
+        LogService.getLogger());
     functionStringMap.put(new AlterRuntimeConfigFunction(), "*");
     functionStringMap.put(new ChangeLogLevelFunction(), "*");
     functionStringMap.put(new CloseDurableClientFunction(), "*");
@@ -113,18 +117,18 @@ public class CoreFunctionSecurityTest {
     functionStringMap.put(new DataCommandFunction(), "*");
     functionStringMap.put(new DeployFunction(), "*");
     functionStringMap.put(new DescribeDiskStoreFunction(), "*");
-    functionStringMap.put(new DestroyAsyncEventQueueFunction(), "*");
-    functionStringMap.put(new DestroyDiskStoreFunction(), "*");
+    functionStringMap.put(new DestroyAsyncEventQueueFunction(moduleService), "*");
+    functionStringMap.put(new DestroyDiskStoreFunction(moduleService), "*");
     functionStringMap.put(new DestroyIndexFunction(), "*");
     functionStringMap.put(new ExportConfigFunction(), "*");
     functionStringMap.put(new ExportDataFunction(), "*");
     functionStringMap.put(new ExportLogsFunction(), "*");
-    functionStringMap.put(new FetchRegionAttributesFunction(), "*");
+    functionStringMap.put(new FetchRegionAttributesFunction(moduleService), "*");
     functionStringMap.put(new FetchSharedConfigurationStatusFunction(), "*");
     functionStringMap.put(new GarbageCollectionFunction(), "*");
     functionStringMap.put(new GatewayReceiverCreateFunction(), "*");
     functionStringMap.put(new GatewaySenderCreateFunction(), "*");
-    functionStringMap.put(new GatewaySenderDestroyFunction(), "*");
+    functionStringMap.put(new GatewaySenderDestroyFunction(moduleService), "*");
     functionStringMap.put(new GetClusterConfigurationFunction(), "*");
     functionStringMap.put(new GetMemberConfigInformationFunction(), "*");
     functionStringMap.put(new GetMemberInformationFunction(), "*");
@@ -143,8 +147,8 @@ public class CoreFunctionSecurityTest {
     functionStringMap.put(new RebalanceFunction(), "*");
     functionStringMap.put(new RestoreRedundancyFunction(), "*");
     functionStringMap.put(new RegionAlterFunction(), "*");
-    functionStringMap.put(new RegionCreateFunction(), "*");
-    functionStringMap.put(new RegionDestroyFunction(), "*");
+    functionStringMap.put(new RegionCreateFunction(moduleService), "*");
+    functionStringMap.put(new RegionDestroyFunction(moduleService), "*");
     functionStringMap.put(new ShowMissingDiskStoresFunction(), "*");
     functionStringMap.put(new ShutDownFunction(), "*");
     functionStringMap.put(new SizeExportLogsFunction(), "*");

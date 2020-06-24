@@ -73,6 +73,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipManagerHel
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
@@ -434,7 +435,9 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
   private void createAlertListener() throws Exception {
     DistributedSystemConfig config =
         AdminDistributedSystemFactory.defineDistributedSystem(getSystemStatic(), null);
-    AdminDistributedSystem adminSystem = AdminDistributedSystemFactory.getDistributedSystem(config);
+    AdminDistributedSystem adminSystem =
+        AdminDistributedSystemFactory.getDistributedSystem(config,
+            new ServiceLoaderModuleService(LogService.getLogger()));
     adminSystem.setAlertLevel(AlertLevel.SEVERE);
     adminSystem.addAlertListener(alert -> {
       try {

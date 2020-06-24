@@ -57,6 +57,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-common-services</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-core</artifactId>
       <scope>compile</scope>

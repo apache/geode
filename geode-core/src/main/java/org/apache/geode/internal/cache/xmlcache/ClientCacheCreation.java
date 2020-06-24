@@ -51,6 +51,8 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 /**
  * Represents a {@link ClientCache} that is created declaratively. Notice that it implements the
@@ -75,7 +77,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
    * @since GemFire 5.7
    */
   ClientCacheCreation(boolean forParsing) {
-    super(forParsing);
+    super(forParsing, new ServiceLoaderModuleService(LogService.getLogger()));
   }
 
   @Immutable

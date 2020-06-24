@@ -55,6 +55,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
@@ -86,6 +87,7 @@ import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
+import org.apache.geode.services.module.impl.ServiceLoaderModuleService;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -107,7 +109,8 @@ public class LocatorClusterManagementServiceTest {
   @Before
   public void before() throws Exception {
     persistenceService = spy(new InternalConfigurationPersistenceService(
-        JAXBService.create(CacheConfig.class)));
+        JAXBService.create(CacheConfig.class), new ServiceLoaderModuleService(
+            LogService.getLogger())));
 
     cache = mock(InternalCache.class);
     regionValidator = mock(RegionConfigValidator.class);
