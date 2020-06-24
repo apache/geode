@@ -15,14 +15,15 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_ILLEGAL_GLOB;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -32,6 +33,7 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class KeysExecutor extends AbstractExecutor {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -45,7 +47,10 @@ public class KeysExecutor extends AbstractExecutor {
     try {
       pattern = GlobPattern.compile(glob);
     } catch (PatternSyntaxException e) {
-      return RedisResponse.error(ERROR_ILLEGAL_GLOB);
+      logger.warn(
+          "Could not compile the pattern: '{}' due to the following exception: '{}'. KEYS will return an empty list.",
+          glob, e.getMessage());
+      return RedisResponse.emptyArray();
     }
 
     for (ByteArrayWrapper bytesKey : allKeys) {

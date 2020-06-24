@@ -52,7 +52,7 @@ public class KeysIntegrationTest {
   }
 
   @Test
-  public void keys_givenSplat_withASCIIdata_returnsExpectedMatches() {
+  public void givenSplat_withASCIIdata_returnsExpectedMatches() {
     jedis.set("string1", "v1");
     jedis.sadd("set1", "member1");
     jedis.hset("hash1", "key1", "field1");
@@ -63,7 +63,7 @@ public class KeysIntegrationTest {
   }
 
   @Test
-  public void keys_givenSplat_withBinaryData_returnsExpectedMatches() {
+  public void givenSplat_withBinaryData_returnsExpectedMatches() {
     byte[] stringKey =
         new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
     byte[] value = new byte[] {'v', '1'};
@@ -86,11 +86,15 @@ public class KeysIntegrationTest {
   }
 
   @Test
-  public void keys_givenBinaryValue_withExactMatch_preservesBinaryData() {
+  public void givenBinaryValue_withExactMatch_preservesBinaryData() {
     byte[] stringKey =
         new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
     jedis.set(stringKey, stringKey);
     assertThat(jedis.keys(stringKey)).containsExactlyInAnyOrder(stringKey);
   }
 
+  @Test
+  public void givenMalformedGlobPattern_returnsEmptySet() {
+    assertThat(jedis.keys("[][]")).isEmpty();
+  }
 }

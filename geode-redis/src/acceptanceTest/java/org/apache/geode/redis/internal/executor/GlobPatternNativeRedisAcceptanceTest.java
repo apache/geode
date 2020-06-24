@@ -13,20 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.key;
+package org.apache.geode.redis.internal.executor;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
-@Category({RedisTest.class})
-public class KeysNativeRedisAcceptanceTest extends KeysIntegrationTest {
+public class GlobPatternNativeRedisAcceptanceTest extends GlobPatternIntegrationTest {
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -39,5 +36,4 @@ public class KeysNativeRedisAcceptanceTest extends KeysIntegrationTest {
     redisContainer.start();
     jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
   }
-
 }
