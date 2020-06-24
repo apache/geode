@@ -19,9 +19,12 @@ package org.apache.geode.management.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.test.junit.rules.TemporaryFileRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -67,6 +70,9 @@ public class CreateDiskStoreDUnitTest {
   private WebApplicationContext webApplicationContext;
 
   @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule(1);
 
   private ClusterManagementService client;
@@ -74,8 +80,6 @@ public class CreateDiskStoreDUnitTest {
   private DiskStore diskStore;
   private final String diskStoreName = "testDiskStore";
   private MemberVM server;
-
-
 
   @Before
   public void before() throws Exception {
@@ -101,10 +105,10 @@ public class CreateDiskStoreDUnitTest {
     }
   }
 
-  private DiskStore createDiskStoreConfigObject(String diskStoreName) {
+  private DiskStore createDiskStoreConfigObject(String diskStoreName) throws IOException {
     DiskStore diskStore = new DiskStore();
     diskStore.setName(diskStoreName);
-    DiskDir diskDir = new DiskDir(diskStoreName, null);
+    DiskDir diskDir = new DiskDir(temporaryFolder.getRoot().getAbsolutePath() + File.pathSeparator + diskStoreName, null);
     List<DiskDir> directories = new ArrayList<>();
     directories.add(diskDir);
     diskStore.setDirectories(directories);
