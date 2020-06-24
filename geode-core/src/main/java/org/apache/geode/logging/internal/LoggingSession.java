@@ -29,6 +29,7 @@ import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.LogFile;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Configures the logging {@code Configuration} and provides lifecycle to Geode logging.
@@ -49,8 +50,8 @@ public class LoggingSession implements InternalSessionContext {
 
   private State state = STOPPED;
 
-  public static LoggingSession create() {
-    return create(Configuration.create(), LoggingSessionRegistryProvider.get());
+  public static LoggingSession create(ModuleService moduleService) {
+    return create(Configuration.create(moduleService), LoggingSessionRegistryProvider.get());
   }
 
   @VisibleForTesting

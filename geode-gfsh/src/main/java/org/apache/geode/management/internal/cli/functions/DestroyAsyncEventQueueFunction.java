@@ -16,11 +16,13 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.commands.DestroyAsyncEventQueueCommand;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Function used by the 'destroy async-event-queue' gfsh command to destroy an asynchronous event
@@ -53,8 +55,10 @@ public class DestroyAsyncEventQueueFunction
               DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND, aeqId)));
         }
       } else {
+        ModuleService moduleService =
+            ((InternalCache) context.getCache()).getInternalDistributedSystem().getModuleService();
         // this is the XmlEntity that needs to be removed from the cluster config
-        XmlEntity xmlEntity = getAEQXmlEntity("id", aeqId);
+        XmlEntity xmlEntity = getAEQXmlEntity("id", aeqId, moduleService);
 
         aeq.stop();
         aeq.destroy();
@@ -71,8 +75,8 @@ public class DestroyAsyncEventQueueFunction
     }
   }
 
-  XmlEntity getAEQXmlEntity(String key, String value) {
-    return new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, key, value);
+  XmlEntity getAEQXmlEntity(String key, String value, ModuleService moduleService) {
+    return new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, key, value, moduleService);
   }
 
   @Override

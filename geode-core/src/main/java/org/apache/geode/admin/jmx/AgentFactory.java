@@ -17,6 +17,9 @@ package org.apache.geode.admin.jmx;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.jmx.internal.AgentConfigImpl;
 import org.apache.geode.admin.jmx.internal.AgentImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 /**
  * A factory class that creates JMX administration entities.
@@ -40,8 +43,19 @@ public class AgentFactory {
    *
    * @see Agent#start
    */
-  public static Agent getAgent(AgentConfig config) throws AdminException {
-    return new AgentImpl((AgentConfigImpl) config);
+  public static Agent getAgent(AgentConfig config)
+      throws AdminException {
+    return getAgent(config, new ServiceLoaderModuleService(LogService.getLogger()));
+  }
+
+  /**
+   * Creates an unstarted GemFire JMX administration agent with the given configuration.
+   *
+   * @see Agent#start
+   */
+  public static Agent getAgent(AgentConfig config, ModuleService moduleService)
+      throws AdminException {
+    return new AgentImpl((AgentConfigImpl) config, moduleService);
   }
 
 }

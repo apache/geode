@@ -24,6 +24,9 @@ import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
+
 
 public class GfshHeadlessModeUnitTest extends GfshAbstractUnitTest {
 
@@ -31,12 +34,12 @@ public class GfshHeadlessModeUnitTest extends GfshAbstractUnitTest {
   @Before
   public void before() {
     super.before();
-    gfsh = new Gfsh(false, null, new GfshConfig());
+    gfsh = new Gfsh(false, null, new GfshConfig(), new ServiceLoaderModuleService(
+        LogService.getLogger()));
   }
 
   @Test
   public void headlessModeShouldRedirectBothJDKAndGFSHLoggers() {
-    gfsh = new Gfsh(false, null, new GfshConfig());
     LogManager logManager = LogManager.getLogManager();
     Enumeration<String> loggerNames = logManager.getLoggerNames();
     while (loggerNames.hasMoreElements()) {

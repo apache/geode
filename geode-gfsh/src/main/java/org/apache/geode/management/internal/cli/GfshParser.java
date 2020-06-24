@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.converters.ArrayConverter;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.Parser;
@@ -55,9 +54,7 @@ public class GfshParser extends SimpleParser {
   public GfshParser(CommandManager commandManager) {
     this.commandManager = commandManager;
 
-    for (CommandMarker command : commandManager.getCommandMarkers()) {
-      add(command);
-    }
+    commandManager.getCommandMarkers().forEach(this::add);
 
     for (Converter<?> converter : commandManager.getConverters()) {
       if (converter.getClass().isAssignableFrom(ArrayConverter.class)) {

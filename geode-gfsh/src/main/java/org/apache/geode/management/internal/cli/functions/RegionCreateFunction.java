@@ -47,9 +47,6 @@ public class RegionCreateFunction implements InternalFunction {
   private static final String ID = RegionCreateFunction.class.getName();
 
   @Immutable
-  public static final RegionCreateFunction INSTANCE = new RegionCreateFunction();
-
-  @Immutable
   private static final RegionConfigRealizer realizer = new RegionConfigRealizer();
 
   @Override
@@ -64,6 +61,7 @@ public class RegionCreateFunction implements InternalFunction {
 
     InternalCache cache =
         ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
+
     String memberNameOrId = context.getMemberName();
 
     CreateRegionFunctionArgs regionCreateArgs = (CreateRegionFunctionArgs) context.getArguments();
@@ -71,7 +69,9 @@ public class RegionCreateFunction implements InternalFunction {
     try {
       RegionPath regionPath = new RegionPath(regionCreateArgs.getRegionPath());
       getRealizer().create(regionCreateArgs.getConfig(), regionCreateArgs.getRegionPath(), cache);
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionPath.getRootRegionName());
+      XmlEntity xmlEntity =
+          new XmlEntity(CacheXml.REGION, "name", regionPath.getRootRegionName(),
+              cache.getInternalDistributedSystem().getModuleService());
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity.getXmlDefinition(),
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
               regionCreateArgs.getRegionPath(), memberNameOrId)));

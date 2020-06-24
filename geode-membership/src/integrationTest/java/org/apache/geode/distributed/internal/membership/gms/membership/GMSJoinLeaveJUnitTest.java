@@ -174,7 +174,7 @@ public class GMSJoinLeaveJUnitTest {
     } else {
       gmsJoinLeave = new GMSJoinLeave(locatorClient);
     }
-    gmsJoinLeave.init(services);
+    gmsJoinLeave.init(services, new ServiceLoaderModuleService(LogService.getLogger()));
     gmsJoinLeave.start();
     gmsJoinLeave.started();
     gmsJoinLeave.setLocalAddress(gmsJoinLeaveMemberId);
@@ -1562,7 +1562,7 @@ public class GMSJoinLeaveJUnitTest {
 
     GMSJoinLeave joinLeave = new GMSJoinLeave(null);
     try {
-      joinLeave.init(services);
+      joinLeave.init(services, new ServiceLoaderModuleService(LogService.getLogger()));
       throw new Error(
           "expected a GemFireConfigException to be thrown because no locators are configured");
     } catch (MembershipConfigurationException e) {

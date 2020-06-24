@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,8 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 public class DefaultEntityResolver2Test {
 
@@ -31,9 +34,11 @@ public class DefaultEntityResolver2Test {
     InputSource inputSource = new InputSource();
 
     when(mockDefaultEntityResolver2.getClassPathInputSource(eq("publicId"), eq("systemId"),
-        eq("path"))).thenReturn(inputSource);
+        eq("path"), any())).thenReturn(inputSource);
 
-    assertThat(mockDefaultEntityResolver2.getClassPathInputSource("publicId", "systemId", "path"))
-        .isSameAs(inputSource);
+    assertThat(
+        mockDefaultEntityResolver2.getClassPathInputSource("publicId", "systemId", "path",
+            new ServiceLoaderModuleService(LogService.getLogger())))
+                .isSameAs(inputSource);
   }
 }

@@ -52,6 +52,8 @@ import org.apache.geode.distributed.internal.membership.api.MembershipManagerHel
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -98,7 +100,8 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
           Properties props = getDistributedSystemProperties();
           locator = InternalLocator.startLocator(locatorPorts[locatorNumber], new File(""),
               null, null, LocalHostUtil.getLocalHost(), true,
-              props, null, Paths.get(workingDir));
+              props, null, Paths.get(workingDir), new ServiceLoaderModuleService(
+                  LogService.getLogger()));
           system = locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
           IgnoredException.addIgnoredException(

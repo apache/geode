@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class CliUtilDUnitTest {
 
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule(5);
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(2);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

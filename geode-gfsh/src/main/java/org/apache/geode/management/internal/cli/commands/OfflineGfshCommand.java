@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +32,6 @@ import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public abstract class OfflineGfshCommand implements CommandMarker {
-
   public boolean isDebugging() {
     return getGfsh() != null && getGfsh().getDebug();
   }

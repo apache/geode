@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.LogWrapper;
@@ -35,6 +36,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
@@ -102,7 +104,8 @@ public class GfshCommandRule extends DescribedExternalResource {
     } catch (IOException e) {
       workingDir = temporaryFolder.getRoot();
     }
-    this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath());
+    this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath(),
+        new ServiceLoaderModuleService(LogService.getLogger()));
     ignoredException =
         addIgnoredException("java.rmi.NoSuchObjectException: no such object in table");
 
@@ -198,7 +201,8 @@ public class GfshCommandRule extends DescribedExternalResource {
         absolutePath = temporaryFolder.getRoot().getAbsolutePath();
       }
 
-      this.gfsh = new HeadlessGfsh(getClass().getName(), 30, absolutePath);
+      this.gfsh = new HeadlessGfsh(getClass().getName(), 30, absolutePath,
+          new ServiceLoaderModuleService(LogService.getLogger()));
     }
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
     String endpoint;

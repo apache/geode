@@ -77,7 +77,7 @@ public class MockExtensionCommands implements CommandMarker {
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        CreateMockRegionExtensionFunction.INSTANCE, true,
+        new CreateMockRegionExtensionFunction(), true,
         CreateMockRegionExtensionFunction.toArgs(regionName, value));
   }
 
@@ -95,7 +95,7 @@ public class MockExtensionCommands implements CommandMarker {
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        AlterMockRegionExtensionFunction.INSTANCE, true,
+        new AlterMockRegionExtensionFunction(), true,
         AlterMockRegionExtensionFunction.toArgs(regionName, value));
   }
 
@@ -111,7 +111,7 @@ public class MockExtensionCommands implements CommandMarker {
   public Result destroyMockRegionExtension(
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        DestroyMockRegionExtensionFunction.INSTANCE, true,
+        new DestroyMockRegionExtensionFunction(), true,
         DestroyMockRegionExtensionFunction.toArgs(regionName));
   }
 
@@ -127,7 +127,7 @@ public class MockExtensionCommands implements CommandMarker {
   public Result createMockCacheExtension(
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        CreateMockCacheExtensionFunction.INSTANCE, true,
+        new CreateMockCacheExtensionFunction(), true,
         CreateMockCacheExtensionFunction.toArgs(value));
   }
 
@@ -143,7 +143,7 @@ public class MockExtensionCommands implements CommandMarker {
   public Result alterMockCacheExtension(
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        AlterMockCacheExtensionFunction.INSTANCE, true,
+        new AlterMockCacheExtensionFunction(), true,
         AlterMockCacheExtensionFunction.toArgs(value));
   }
 
@@ -157,7 +157,7 @@ public class MockExtensionCommands implements CommandMarker {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result destroyMockCacheExtension() {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        DestroyMockCacheExtensionFunction.INSTANCE, false);
+        new DestroyMockCacheExtensionFunction(), false);
   }
 
   /**
@@ -200,5 +200,4 @@ public class MockExtensionCommands implements CommandMarker {
 
     return new CommandResult(resultModel);
   }
-
 }

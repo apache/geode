@@ -23,17 +23,23 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
     api(platform(project(':boms:geode-all-bom')))
 
-    api(project(':geode-core'))
-    api(project(':geode-common'))
+    implementation(project(':geode-core'))
+    implementation(project(':geode-common'))
 
     implementation(project(':geode-logging'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-serialization'))
     implementation(project(':geode-unsafe'))
+    compileOnly(project(':geode-common-services'))
     implementation('org.springframework:spring-web')
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')
     implementation('com.fasterxml.jackson.core:jackson-databind')
+
+    testImplementation(project(":geode-modules"))
+    integrationTestImplementation(project(":geode-modules"))
+    acceptanceTestImplementation(project(":geode-modules"))
+
 
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
@@ -45,7 +51,9 @@ dependencies {
     integrationTestImplementation(project(':geode-dunit'))
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntimeOnly('org.apache.derby:derby')
-    
+
+    distributedTestImplementation(project(":geode-modules"))
+    distributedTestImplementation(project(":geode-common-services"))
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')

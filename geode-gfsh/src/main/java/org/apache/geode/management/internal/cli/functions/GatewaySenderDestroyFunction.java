@@ -14,30 +14,28 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.ModuleService;
 
 public class GatewaySenderDestroyFunction
     implements InternalFunction<GatewaySenderDestroyFunctionArgs> {
   private static final long serialVersionUID = 1L;
   private static final String ID = GatewaySenderDestroyFunction.class.getName();
-  @Immutable
-  public static final GatewaySenderDestroyFunction INSTANCE = new GatewaySenderDestroyFunction();
 
   @Override
   @SuppressWarnings("deprecation")
   public void execute(FunctionContext<GatewaySenderDestroyFunctionArgs> context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
-    Cache cache = context.getCache();
+    InternalCache cache = (InternalCache) context.getCache();
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
@@ -59,9 +57,12 @@ public class GatewaySenderDestroyFunction
     }
 
     try {
+      ModuleService moduleService =
+          cache.getInternalDistributedSystem().getModuleService();
       gatewaySender.stop();
       gatewaySender.destroy();
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.GATEWAY_SENDER, "id", senderId);
+      XmlEntity xmlEntity =
+          new XmlEntity(CacheXml.GATEWAY_SENDER, "id", senderId, moduleService);
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           String.format("GatewaySender \"%s\" destroyed on \"%s\"", senderId, memberNameOrId)));
     } catch (Exception e) {

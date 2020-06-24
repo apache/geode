@@ -172,6 +172,7 @@ import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.pdx.SimpleClass1;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestCase;
@@ -998,7 +999,7 @@ public class WANTestBase extends DistributedTestCase {
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
 
-    cache = new InternalCacheBuilder(props)
+    cache = new InternalCacheBuilder(props, new ServiceLoaderModuleService(LogService.getLogger()))
         .setPdxPersistent(true)
         .setPdxDiskStore("PDX_TEST")
         .setIsExistingOk(false)
@@ -2240,7 +2241,7 @@ public class WANTestBase extends DistributedTestCase {
     InternalDistributedSystem ds = test.getSystem(props);
     File pdxDir = new File(CacheTestCase.getDiskDir(), "pdx");
 
-    cache = new InternalCacheBuilder(props)
+    cache = new InternalCacheBuilder(props, new ServiceLoaderModuleService(LogService.getLogger()))
         .setPdxPersistent(true)
         .setPdxDiskStore("pdxStore")
         .setIsExistingOk(false)

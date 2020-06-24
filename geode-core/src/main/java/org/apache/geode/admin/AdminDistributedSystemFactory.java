@@ -24,6 +24,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 /**
  * Factory for creating GemFire administration entities.
@@ -129,7 +132,20 @@ public class AdminDistributedSystemFactory {
    * @return administrative interface for a distributed system
    */
   public static AdminDistributedSystem getDistributedSystem(DistributedSystemConfig config) {
-    return new AdminDistributedSystemImpl((DistributedSystemConfigImpl) config);
+    return getDistributedSystem(config, new ServiceLoaderModuleService(LogService.getLogger()));
+  }
+
+  /**
+   * Returns the distributed system for administrative monitoring and managing. You must then call
+   * {@link AdminDistributedSystem#connect} before interacting with the actual system.
+   *
+   * @param config configuration definition of the system to administer
+   * @param moduleService the {@link ModuleService} which is used to load services
+   * @return administrative interface for a distributed system
+   */
+  public static AdminDistributedSystem getDistributedSystem(DistributedSystemConfig config,
+      ModuleService moduleService) {
+    return new AdminDistributedSystemImpl((DistributedSystemConfigImpl) config, moduleService);
   }
 
   /**

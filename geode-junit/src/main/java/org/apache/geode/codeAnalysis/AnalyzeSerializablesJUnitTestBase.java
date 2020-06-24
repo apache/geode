@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.junit.Before;
@@ -55,6 +54,8 @@ import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
 
@@ -65,7 +66,8 @@ import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
 @Category({SerializationTest.class})
 public abstract class AnalyzeSerializablesJUnitTestBase extends
     AnalyzeDataSerializablesJUnitTestBase {
-  protected static final String ACTUAL_SERIALIZABLES_DAT = "actualSerializables.dat";
+  protected static final String ACTUAL_SERIALIZABLES_DAT =
+      "sanctioned-geode-gfsh-serializables.txt";
 
   protected String expectedSerializablesFileName =
       "sanctioned-" + getModuleName() + "-serializables.txt";
@@ -320,12 +322,15 @@ public abstract class AnalyzeSerializablesJUnitTestBase extends
   }
 
   private List<DistributedSystemService> initializeServices() {
-    ServiceLoader<DistributedSystemService> loader =
-        ServiceLoader.load(DistributedSystemService.class);
     List<DistributedSystemService> services = new ArrayList<>();
-    for (DistributedSystemService service : loader) {
-      services.add(service);
+
+    ModuleServiceResult<Set<DistributedSystemService>> serviceLoadResult =
+        new ServiceLoaderModuleService(LogService.getLogger())
+            .loadService(DistributedSystemService.class);
+    if (serviceLoadResult.isSuccessful()) {
+      services.addAll(serviceLoadResult.getMessage());
     }
+
     return services;
   }
 

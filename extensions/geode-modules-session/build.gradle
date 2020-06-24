@@ -43,6 +43,8 @@ dependencies {
     exclude group: 'jboss'
     exclude group: 'xerces'
   }
+
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation('commons-io:commons-io')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
   integrationTestImplementation('junit:junit')

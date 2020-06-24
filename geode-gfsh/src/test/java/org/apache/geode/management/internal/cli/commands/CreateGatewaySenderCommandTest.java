@@ -37,6 +37,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -44,6 +45,7 @@ import org.apache.geode.management.internal.cli.functions.GatewaySenderFunctionA
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
@@ -61,6 +63,11 @@ public class CreateGatewaySenderCommandTest {
   public void before() {
     command = spy(CreateGatewaySenderCommand.class);
     InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getModuleService())
+        .thenReturn(new ServiceLoaderModuleService(LogService.getLogger()));
     doReturn(cache).when(command).getCache();
     doReturn(true).when(command).waitForGatewaySenderMBeanCreation(any(), any());
     functionResults = new ArrayList<>();

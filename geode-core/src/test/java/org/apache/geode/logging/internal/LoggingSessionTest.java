@@ -32,8 +32,10 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -52,7 +54,8 @@ public class LoggingSessionTest {
   public void setUp() {
     loggingSessionNotifier = spy(new LoggingSessionRegistryProvider());
     logConfigSupplier = spy(LogConfigSupplier.class);
-    configuration = spy(Configuration.create());
+    configuration =
+        spy(Configuration.create(new ServiceLoaderModuleService(LogService.getLogger())));
     LogConfig config = mock(LogConfig.class);
 
     when(logConfigSupplier.getLogConfig()).thenReturn(config);
@@ -65,7 +68,7 @@ public class LoggingSessionTest {
 
   @Test
   public void createUsesLoggingSessionListenersGetByDefault() {
-    loggingSession = LoggingSession.create();
+    loggingSession = LoggingSession.create(new ServiceLoaderModuleService(LogService.getLogger()));
 
     assertThat(loggingSession.getLoggingSessionNotifier())
         .isEqualTo(LoggingSessionRegistryProvider.get());

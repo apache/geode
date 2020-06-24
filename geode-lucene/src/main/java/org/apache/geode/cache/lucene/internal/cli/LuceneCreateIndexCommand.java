@@ -45,9 +45,6 @@ import org.apache.geode.security.ResourcePermission.Resource;
 @SuppressWarnings("unused")
 public class LuceneCreateIndexCommand extends LuceneCommandBase {
 
-  private static final LuceneCreateIndexFunction createIndexFunction =
-      new LuceneCreateIndexFunction();
-
   /**
    * On the server, we also verify the resource operation permissions CLUSTER:WRITE:DISK
    */
@@ -83,7 +80,7 @@ public class LuceneCreateIndexCommand extends LuceneCommandBase {
         new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers, serializer);
 
     final ResultCollector<?, ?> rc =
-        this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
+        this.executeFunctionOnAllMembers(new LuceneCreateIndexFunction(), indexInfo);
     final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
     final XmlEntity xmlEntity = funcResults.stream().filter(CliFunctionResult::isSuccessful)
         .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);

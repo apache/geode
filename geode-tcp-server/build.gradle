@@ -24,8 +24,6 @@ dependencies {
     implementation(project(':geode-logging'))
     implementation(project(':geode-serialization'))
 
-    implementation('org.apache.logging.log4j:log4j-api')
-
     //Commons validator is used to validate inet addresses
     implementation('commons-validator:commons-validator')
     testImplementation(project(':geode-junit')) {
@@ -40,6 +38,7 @@ dependencies {
     integrationTestImplementation(project(':geode-junit'))
 
     distributedTestImplementation(project(':geode-gfsh'))
+    distributedTestImplementation(project(':geode-core'))
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation(project(':geode-membership'))
     distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))

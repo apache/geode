@@ -46,12 +46,15 @@ public class ModuleDescriptor {
   // A collection of module names on which this module depends on
   private final Set<String> dependencies;
 
+  private final boolean requiresJDKPaths;
+
   private ModuleDescriptor(String name, String version, Set<String> resourceJarPaths,
-      Set<String> dependencies) {
+      Set<String> dependencies, boolean requiresJDKPaths) {
     this.name = name;
     this.version = version;
     this.resourceJarPaths = resourceJarPaths;
     this.dependencies = dependencies;
+    this.requiresJDKPaths = requiresJDKPaths;
   }
 
   /**
@@ -82,6 +85,10 @@ public class ModuleDescriptor {
     return name + (version != null ? "-" + version : "");
   }
 
+  public boolean requiresJDKPaths() {
+    return requiresJDKPaths;
+  }
+
   /**
    * A Builder used to construct a {@link ModuleDescriptor}
    */
@@ -91,6 +98,7 @@ public class ModuleDescriptor {
     private final String version;
     private final Set<String> dependencies = new HashSet<>();
     private final Set<String> sources = new HashSet<>();
+    private boolean requiresJDKPaths = false;
 
     public Builder(String name) {
       this(name, null);
@@ -116,7 +124,7 @@ public class ModuleDescriptor {
     }
 
     public Builder dependsOnModules(String... dependencies) {
-      return this.dependsOnModules(Arrays.asList(dependencies));
+      return dependsOnModules(Arrays.asList(dependencies));
     }
 
     public Builder dependsOnModules(Collection<String> dependencies) {
@@ -124,8 +132,13 @@ public class ModuleDescriptor {
       return this;
     }
 
+    public Builder requiresJDKPaths(boolean requiresJDKPaths) {
+      this.requiresJDKPaths = requiresJDKPaths;
+      return this;
+    }
+
     public ModuleDescriptor build() {
-      return new ModuleDescriptor(name, version, sources, dependencies);
+      return new ModuleDescriptor(name, version, sources, dependencies, requiresJDKPaths);
     }
   }
 }

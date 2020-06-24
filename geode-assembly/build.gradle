@@ -19,7 +19,6 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
 import org.apache.geode.gradle.plugins.DependencyConstraints
-import org.apache.tools.ant.taskdefs.condition.Os
 
 import java.nio.file.Paths
 
@@ -47,6 +46,8 @@ def dependentProjectNames = [
   ':geode-serialization',
   ':geode-tcp-server',
   ':geode-wan'
+  ':geode-module-management',
+  ':geode-module-bootstrapping'
 ]
 
 // These other dependencies are explicitly referenced throughout other copySpec

@@ -45,6 +45,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * @since GemFire 7.0
@@ -142,10 +143,11 @@ public class OnlineCommandProcessor implements CommandProcessor {
   }
 
   @Override
-  public boolean init(Cache cache) {
+  public boolean init(Cache cache, ModuleService moduleService) {
     Properties cacheProperties = cache.getDistributedSystem().getProperties();
     this.securityService = ((InternalCache) cache).getSecurityService();
-    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache));
+    this.gfshParser =
+        new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache, moduleService));
     DistributedLockService cmsDlockService = DLockService.getOrCreateService(
         CMS_DLOCK_SERVICE_NAME,
         ((InternalCache) cache).getInternalDistributedSystem());
