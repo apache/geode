@@ -46,6 +46,7 @@ import org.apache.geode.management.runtime.RestoreRedundancyResults;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class SerializableRestoreRedundancyResultsImplTest {
+  public static final String TEST_STRING = "Test";
   private final RegionRedundancyStatus successfulRegionResult =
       mock(SerializableRegionRedundancyStatusImpl.class);
   private final String successfulRegionName = "successfulRegion";
@@ -198,7 +199,7 @@ public class SerializableRestoreRedundancyResultsImplTest {
   public void testSerializable() throws JsonProcessingException {
 
     RestoreRedundancyResultsImpl restoreRedundancyResults = new RestoreRedundancyResultsImpl();
-    restoreRedundancyResults.setStatusMessage("Test");
+    restoreRedundancyResults.setStatusMessage(TEST_STRING);
     restoreRedundancyResults.setSuccess(true);
     restoreRedundancyResults.setTotalPrimaryTransfersCompleted(150);
     restoreRedundancyResults.setTotalPrimaryTransferTime(250);
@@ -210,10 +211,12 @@ public class SerializableRestoreRedundancyResultsImplTest {
     restoreRedundancyResults.addRegionResult(regionRedundancyStatus);
     String jsonString = geodeMapper.writeValueAsString(restoreRedundancyResults);
     // deserialize the class
+
+
     RestoreRedundancyResultsImpl value =
         geodeMapper.readValue(jsonString, RestoreRedundancyResultsImpl.class);
-    assertThat(value.getStatusMessage()).isEqualTo("Test");
-    assertThat(value.getSuccess()).isTrue();
+
+    assertThat(value).usingRecursiveComparison().isEqualTo(restoreRedundancyResults);
 
 
   }

@@ -84,8 +84,7 @@ public class RestoreRedundancyResultsImpl implements RestoreRedundancyResults {
     underRedundancyRegionsResults.putAll(results.getUnderRedundancyRegionResults());
     zeroRedundancyRegionsResults.putAll(results.getZeroRedundancyRegionResults());
     totalPrimaryTransfersCompleted += results.getTotalPrimaryTransfersCompleted();
-    totalPrimaryTransferTime =
-        totalPrimaryTransferTime + results.getTotalPrimaryTransferTime();
+    totalPrimaryTransferTime += results.getTotalPrimaryTransferTime();
   }
 
   public void addRegionResult(RegionRedundancyStatus regionResult) {

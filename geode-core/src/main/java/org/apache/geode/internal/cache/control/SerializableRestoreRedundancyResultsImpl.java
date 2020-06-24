@@ -38,8 +38,7 @@ public class SerializableRestoreRedundancyResultsImpl
 
   public void addPrimaryReassignmentDetails(PartitionRebalanceInfo details) {
     totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
-    totalPrimaryTransferTime =
-        totalPrimaryTransferTime + details.getPrimaryTransferTime();
+    totalPrimaryTransferTime += details.getPrimaryTransferTime();
 
   }
 
