@@ -27,6 +27,7 @@ import static org.apache.geode.internal.cache.DiskStoreAttributes.verifyNonNegat
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.internal.cache.DiskStoreMonitor;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.DiskStore;
 import org.apache.geode.management.internal.CacheElementOperation;
 
@@ -39,6 +40,16 @@ public class DiskStoreValidator implements ConfigurationValidator<DiskStore> {
       case UPDATE:
         checkRequiredItems(config);
         checkValueRanges(config);
+        break;
+      case DELETE:
+        validateDelete(config);
+    }
+  }
+
+  private void validateDelete(AbstractConfiguration config) {
+    if (StringUtils.isNotBlank(config.getGroup())) {
+      throw new IllegalArgumentException(
+          "Group is an invalid option when deleting disk store.");
     }
   }
 

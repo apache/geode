@@ -23,8 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
-import org.apache.geode.test.junit.rules.TemporaryFileRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,6 +39,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.api.ClusterManagementException;
@@ -96,10 +97,14 @@ public class CreateDiskStoreDUnitTest {
   public void after() {
     // for the test to be run multiple times, we need to clean out the cluster config
     InternalConfigurationPersistenceService cps = getLocator().getConfigurationPersistenceService();
-    cps.updateCacheConfig("cluster", config -> {
+    UnaryOperator<CacheConfig> mutator = config -> {
       config.getDiskStores().clear();
       return config;
-    });
+    };
+
+    cps.updateCacheConfig("cluster", mutator);
+    cps.updateCacheConfig("SameGroup", mutator);
+    cps.updateCacheConfig("OtherGroup", mutator);
     if (server != null) {
       server.stop(true);
     }
@@ -108,7 +113,8 @@ public class CreateDiskStoreDUnitTest {
   private DiskStore createDiskStoreConfigObject(String diskStoreName) throws IOException {
     DiskStore diskStore = new DiskStore();
     diskStore.setName(diskStoreName);
-    DiskDir diskDir = new DiskDir(temporaryFolder.getRoot().getAbsolutePath() + File.pathSeparator + diskStoreName, null);
+    DiskDir diskDir = new DiskDir(
+        temporaryFolder.getRoot().getAbsolutePath() + File.pathSeparator + diskStoreName, null);
     List<DiskDir> directories = new ArrayList<>();
     directories.add(diskDir);
     diskStore.setDirectories(directories);
@@ -266,7 +272,6 @@ public class CreateDiskStoreDUnitTest {
     assertThat(client.list(new DiskStore()).getResult().size()).isEqualTo(3);
   }
 
-
   @Test
   public void listDiskStoresShouldReturnNonDeletedDiskStores() throws Exception {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
@@ -300,5 +305,42 @@ public class CreateDiskStoreDUnitTest {
     client.delete(region);
     ClusterManagementRealizationResult deleteResult = client.delete(diskStore);
     assertThat(deleteResult.isSuccessful()).isTrue();
+  }
+
+  @Test
+  public void createDiskStoreOnGroupShouldOnlyExecuteOnServersInThatGroup() throws Exception {
+    assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ENTITY_NOT_FOUND");
+
+    server = cluster.startServerVM(1, "OtherGroup", webContext.getLocator().getPort());
+
+    diskStore.setGroup("SameGroup");
+    ClusterManagementRealizationResult createResult = client.create(diskStore);
+    assertThat(createResult.getMemberStatuses().size()).isEqualTo(0);
+    assertThat(client.list(new DiskStore()).getResult().size()).isEqualTo(1);
+  }
+
+  @Test
+  public void deleteDiskStoreShouldThrowExceptionIfGroupSpecified() throws Exception {
+    assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ENTITY_NOT_FOUND");
+
+    server = cluster.startServerVM(1, "SameGroup", webContext.getLocator().getPort());
+    diskStore.setGroup("SameGroup");
+    client.create(diskStore);
+
+    assertThatThrownBy(() -> client.delete(diskStore))
+        .hasMessageContaining(
+            "ILLEGAL_ARGUMENT: Group is an invalid option when deleting disk store");
+  }
+
+  @Test
+  public void createDiskStoreByGroupShouldSucceed() throws Exception {
+    assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ENTITY_NOT_FOUND");
+
+    diskStore.setGroup("SameGroup");
+    client.create(diskStore);
+    assertThat(client.list(new DiskStore()).getResult().size()).isEqualTo(1);
   }
 }
