@@ -19,13 +19,17 @@ package org.apache.geode.management.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.test.junit.rules.TemporaryFileRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -66,6 +70,9 @@ public class CreateDiskStoreDUnitTest {
   private WebApplicationContext webApplicationContext;
 
   @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule(1);
 
   private ClusterManagementService client;
@@ -74,10 +81,8 @@ public class CreateDiskStoreDUnitTest {
   private final String diskStoreName = "testDiskStore";
   private MemberVM server;
 
-
-
   @Before
-  public void before() {
+  public void before() throws Exception {
     cluster.setSkipLocalDistributedSystemCleanup(true);
     webContext = new LocatorWebContext(webApplicationContext);
     client = new ClusterManagementServiceBuilder().setTransport(
@@ -96,14 +101,14 @@ public class CreateDiskStoreDUnitTest {
       return config;
     });
     if (server != null) {
-      server.stop();
+      server.stop(true);
     }
   }
 
-  private DiskStore createDiskStoreConfigObject(String diskStoreName) {
+  private DiskStore createDiskStoreConfigObject(String diskStoreName) throws IOException {
     DiskStore diskStore = new DiskStore();
     diskStore.setName(diskStoreName);
-    DiskDir diskDir = new DiskDir("DiskStoreDirectory", null);
+    DiskDir diskDir = new DiskDir(temporaryFolder.getRoot().getAbsolutePath() + File.pathSeparator + diskStoreName, null);
     List<DiskDir> directories = new ArrayList<>();
     directories.add(diskDir);
     diskStore.setDirectories(directories);
@@ -160,7 +165,7 @@ public class CreateDiskStoreDUnitTest {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
 
-    cluster.startServerVM(1, webContext.getLocator().getPort());
+    server = cluster.startServerVM(1, webContext.getLocator().getPort());
 
     ClusterManagementRealizationResult result = client.create(diskStore);
     assertThat(result.isSuccessful()).isTrue();
@@ -177,7 +182,7 @@ public class CreateDiskStoreDUnitTest {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
 
-    cluster.startServerVM(1, webContext.getLocator().getPort());
+    server = cluster.startServerVM(1, webContext.getLocator().getPort());
 
     client.create(diskStore);
 
@@ -193,7 +198,7 @@ public class CreateDiskStoreDUnitTest {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
 
-    cluster.startServerVM(1, webContext.getLocator().getPort());
+    server = cluster.startServerVM(1, webContext.getLocator().getPort());
 
     client.create(diskStore);
 
@@ -251,7 +256,7 @@ public class CreateDiskStoreDUnitTest {
   }
 
   @Test
-  public void listDiskStoresShouldReturnAllConfiguredDiskStores() {
+  public void listDiskStoresShouldReturnAllConfiguredDiskStores() throws Exception {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
 
@@ -263,7 +268,7 @@ public class CreateDiskStoreDUnitTest {
 
 
   @Test
-  public void listDiskStoresShouldReturnNonDeletedDiskStores() {
+  public void listDiskStoresShouldReturnNonDeletedDiskStores() throws Exception {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
 
