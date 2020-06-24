@@ -31,6 +31,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.categories.RedisTest;
 
@@ -61,7 +62,7 @@ public class AuthIntegrationTest {
     cf.set(LOCATORS, "");
     cf.set(ConfigurationProperties.REDIS_PASSWORD, PASSWORD);
     cache = cf.create();
-    server = new GeodeRedisServer("localhost", port);
+    server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
     server.start();
     this.jedis = new Jedis("localhost", port, 100000);
   }
@@ -73,7 +74,7 @@ public class AuthIntegrationTest {
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cache = cf.create();
-    server = new GeodeRedisServer("localhost", port);
+    server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
     server.start();
     this.jedis = new Jedis("localhost", port, 100000);
   }

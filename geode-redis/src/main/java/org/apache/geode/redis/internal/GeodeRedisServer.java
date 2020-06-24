@@ -47,17 +47,14 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -89,7 +86,6 @@ import org.apache.geode.redis.internal.pubsub.Subscriptions;
  * through gfsh or started through the provided static main class.
  */
 
-@Experimental
 public class GeodeRedisServer {
   /**
    * The default Redis port as specified by their protocol, {@code DEFAULT_REDIS_SERVER_PORT}
@@ -137,7 +133,7 @@ public class GeodeRedisServer {
   /**
    * The cache instance pointer on this vm
    */
-  private Cache cache;
+  private InternalCache cache;
 
   /**
    * Channel to be closed when shutting down
@@ -198,36 +194,20 @@ public class GeodeRedisServer {
   }
 
   /**
-   * Constructor for {@code GeodeRedisServer} that will start the server on a random port and bind
-   * to all local addresses
-   */
-  public GeodeRedisServer() {
-    this(null, RANDOM_PORT_INDICATOR);
-  }
-
-  /**
-   * Constructor for {@code GeodeRedisServer} that will start the server on the given port and bind
-   * to all local addresses
-   *
-   * @param port The port the server will bind to
-   */
-  public GeodeRedisServer(int port) {
-    this(null, port);
-  }
-
-  /**
-   * Constructor for {@code GeodeRedisServer} that will start the server and bind to the given
+   * Constructor for {@code GeodeRedisServer} that will configure the server to bind to the given
    * address and port.
    *
-   * @param bindAddress The address to which the server will attempt to bind to
+   * @param bindAddress The address to which the server will attempt to bind to; null
+   *        causes it to bind to all local addresses.
    * @param port The port the server will bind to, will throw an IllegalArgumentException if
    *        argument is less than 0. If the port is
    *        {@value #RANDOM_PORT_INDICATOR} a random port is assigned.
    */
-  public GeodeRedisServer(String bindAddress, int port) {
+  public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException("Redis port cannot be less than 0");
     }
+    this.cache = cache;
     serverPort = port;
     this.bindAddress = bindAddress;
     numWorkerThreads = setNumWorkerThreads();
@@ -283,7 +263,6 @@ public class GeodeRedisServer {
   public synchronized void start() {
     if (!started) {
       try {
-        startGemFire();
         initializeRedis();
         startRedisServer();
       } catch (IOException | InterruptedException e) {
@@ -291,21 +270,6 @@ public class GeodeRedisServer {
       }
       started = true;
     }
-  }
-
-  @SuppressWarnings("deprecation")
-  private void startGemFire() {
-    Cache cache = GemFireCacheImpl.getInstance();
-    if (cache == null) {
-      synchronized (GeodeRedisServer.class) {
-        cache = GemFireCacheImpl.getInstance();
-        if (cache == null) {
-          CacheFactory cacheFactory = new CacheFactory();
-          cache = cacheFactory.create();
-        }
-      }
-    }
-    this.cache = cache;
   }
 
   public RegionProvider getRegionProvider() {
@@ -324,15 +288,13 @@ public class GeodeRedisServer {
     synchronized (cache) {
 
       Region<ByteArrayWrapper, RedisData> redisData;
-      InternalCache gemFireCache = (InternalCache) cache;
-
       InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
-          gemFireCache.createInternalRegionFactory(DEFAULT_REGION_TYPE);
+          cache.createInternalRegionFactory(DEFAULT_REGION_TYPE);
       redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
       redisData = redisDataRegionFactory.create(REDIS_DATA_REGION);
 
       InternalRegionFactory<String, Object> redisConfigRegionFactory =
-          gemFireCache.createInternalRegionFactory(RegionShortcut.REPLICATE);
+          cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
       redisConfigRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
       Region<String, Object> redisConfig = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
 

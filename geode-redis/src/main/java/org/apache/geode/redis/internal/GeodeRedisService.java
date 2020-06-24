@@ -77,7 +77,7 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
           String.format("Starting GeodeRedisServer on bind address %s on port %s",
               new Object[] {bindAddress, port}));
 
-      this.redisServer = new GeodeRedisServer(bindAddress, port);
+      this.redisServer = new GeodeRedisServer(bindAddress, port, cache);
       this.redisServer.start();
     }
   }
