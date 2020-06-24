@@ -211,6 +211,29 @@ public class PubSubIntegrationTest {
   }
 
   @Test
+  public void unsubscribeWithEmptyChannel_doesNotUnsubscribeExistingChannels() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    try {
+      waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+      mockSubscriber.unsubscribe("");
+      waitFor(() -> mockSubscriber.unsubscribeInfos.size() == 1);
+
+      Long result = publisher.publish("salutations", "heyho");
+
+      assertThat(result).isEqualTo(1);
+      assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo("heyho");
+    } finally {
+      // now cleanup the actual subscription
+      mockSubscriber.unsubscribe();
+      waitFor(() -> !subscriberThread.isAlive());
+    }
+  }
+
+  @Test
   public void canSubscribeToAnEmptyString() {
     MockSubscriber mockSubscriber = new MockSubscriber();
     Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "");
