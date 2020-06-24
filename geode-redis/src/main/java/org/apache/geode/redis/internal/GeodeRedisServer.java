@@ -14,17 +14,12 @@
  */
 package org.apache.geode.redis.internal;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
-import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -48,10 +43,7 @@ import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCache;
@@ -61,13 +53,9 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.key.RenameFunction;
 import org.apache.geode.redis.internal.gfsh.RedisCommandFunction;
 import org.apache.geode.redis.internal.netty.ByteToCommandDecoder;
@@ -95,6 +83,14 @@ public class GeodeRedisServer {
   public static final String ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM =
       "enable-redis-unsupported-commands";
 
+  /**
+   * Connection timeout in milliseconds
+   */
+  private static final int connectTimeoutMillis = 1000;
+
+  private static final Logger logger = LogService.getLogger();
+
+
   private final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
       Boolean.getBoolean(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM);
 
@@ -108,6 +104,8 @@ public class GeodeRedisServer {
    */
   private final int numSelectorThreads;
 
+  private final PassiveExpirationManager passiveExpirationManager;
+
   /**
    * The actual port being used by the server
    */
@@ -117,11 +115,6 @@ public class GeodeRedisServer {
    * The address to bind to
    */
   private final String bindAddress;
-
-  /**
-   * Connection timeout in milliseconds
-   */
-  private static final int connectTimeoutMillis = 1000;
 
   /**
    * Temporary constant whether to use old single thread per connection model for worker group
@@ -138,15 +131,12 @@ public class GeodeRedisServer {
    */
   private Channel serverChannel;
 
-  private static final Logger logger = LogService.getLogger();
-
   private final RegionProvider regionProvider;
 
   private EventLoopGroup bossGroup;
 
   private EventLoopGroup workerGroup;
   private EventLoopGroup subscriberGroup;
-  private final ScheduledExecutorService expirationExecutor;
 
   /**
    * System property name that can be used to set the number of threads to be used by the
@@ -201,7 +191,6 @@ public class GeodeRedisServer {
     numWorkerThreads = setNumWorkerThreads();
     singleThreadPerConnection = numWorkerThreads == 0;
     numSelectorThreads = 1;
-    expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
     shutdown = false;
     started = false;
 
@@ -217,6 +206,7 @@ public class GeodeRedisServer {
     CommandFunction.register(stripedExecutor);
     RenameFunction.register(stripedExecutor);
     RedisCommandFunction.register();
+    passiveExpirationManager = new PassiveExpirationManager(regionProvider.getDataRegion());
   }
 
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
@@ -260,7 +250,6 @@ public class GeodeRedisServer {
   public synchronized void start() {
     if (!started) {
       try {
-        scheduleDataExpiration(regionProvider.getDataRegion());
         startRedisServer();
       } catch (IOException | InterruptedException e) {
         throw new ManagementException("Could not start Server", e);
@@ -279,32 +268,6 @@ public class GeodeRedisServer {
 
   public EventLoopGroup getSubscriberGroup() {
     return subscriberGroup;
-  }
-
-  private void scheduleDataExpiration(
-      Region<ByteArrayWrapper, RedisData> redisData) {
-    int INTERVAL = 1;
-    expirationExecutor.scheduleAtFixedRate(() -> doDataExpiration(redisData), INTERVAL, INTERVAL,
-        SECONDS);
-  }
-
-  private void doDataExpiration(
-      Region<ByteArrayWrapper, RedisData> redisData) {
-    try {
-      final long now = System.currentTimeMillis();
-      Region<ByteArrayWrapper, RedisData> localPrimaryData =
-          PartitionRegionHelper.getLocalPrimaryData(redisData);
-      RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(redisData);
-      for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
-        if (entry.getValue().hasExpired(now)) {
-          // pttl will do its own check using active expiration and expire the key if needed
-          redisKeyCommands.pttl(entry.getKey());
-        }
-      }
-    } catch (CacheClosedException | EntryDestroyedException ignore) {
-    } catch (RuntimeException | Error ex) {
-      logger.warn("Passive Redis expiration failed. Will try again in 1 second.", ex);
-    }
   }
 
   /**
@@ -371,7 +334,7 @@ public class GeodeRedisServer {
     return channelFuture.channel();
   }
 
-  private void logStartupMessage(InetAddress bindAddress) throws UnknownHostException {
+  private void logStartupMessage(InetAddress bindAddress) {
     String logMessage = "GeodeRedisServer started {" + bindAddress + ":" + serverPort
         + "}, Selector threads: " + numSelectorThreads;
     if (singleThreadPerConnection) {
@@ -449,6 +412,7 @@ public class GeodeRedisServer {
   public synchronized void shutdown() {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
+      passiveExpirationManager.close();
       ChannelFuture closeFuture = null;
       if (serverChannel != null) {
         closeFuture = serverChannel.closeFuture();
@@ -459,7 +423,6 @@ public class GeodeRedisServer {
         serverChannel.close();
       }
       bossFuture.syncUninterruptibly();
-      expirationExecutor.shutdownNow();
       if (closeFuture != null) {
         closeFuture.syncUninterruptibly();
       }
