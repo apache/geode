@@ -25,12 +25,15 @@ import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.services.module.ModuleDescriptor;
 import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.services.result.ModuleServiceResult;
 import org.apache.geode.services.result.impl.Failure;
 
 public class JBossModulesServiceImplWithPopulatedManifestFileTest {
+
+  private static String gemFireVersion = GemFireVersion.getGemFireVersion();
 
   private static final String MODULE1_PATH =
       System.getProperty("user.dir") + "/../libs/module1WithManifest-1.0.jar";
@@ -43,9 +46,9 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
   private static final String MODULE5_PATH =
       System.getProperty("user.dir") + "/../libs/module5WithManifest-1.0.jar";
   private static final String GEODE_COMMONS_SERVICES_PATH =
-      System.getProperty("user.dir") + "/../libs/geode-common-services-1.14.0-build.0.jar";
+      System.getProperty("user.dir") + "/../libs/geode-common-services-" + gemFireVersion + ".jar";
   private static final String GEODE_COMMONS_PATH =
-      System.getProperty("user.dir") + "/../libs/geode-common-1.14.0-build.0.jar";
+      System.getProperty("user.dir") + "/../libs/geode-common-" + gemFireVersion + ".jar";
 
   private ModuleService moduleService;
   private ModuleDescriptor geodeCommonsServiceDescriptor;
@@ -55,11 +58,11 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
   public void setup() {
     moduleService = new JBossModuleServiceImpl(LogManager.getLogger());
     geodeCommonsServiceDescriptor =
-        new ModuleDescriptor.Builder("geode-common-services-1.14.0-build.0")
+        new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)
             .build();
 
-    geodeCommonDescriptor = new ModuleDescriptor.Builder("geode-common-1.14.0-build.0")
+    geodeCommonDescriptor = new ModuleDescriptor.Builder("geode-common", gemFireVersion)
         .fromResourcePaths(GEODE_COMMONS_PATH)
         .build();
   }
@@ -84,7 +87,7 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
     loadModuleAndAssert(module2Descriptor);
 
     ModuleServiceResult<Map<String, Class<?>>> loadClassResult =
-        moduleService.loadClass("org.springframework.util.StringUtils");
+        moduleService.loadClass("com.google.common.base.Strings");
 
     assertThat(loadClassResult.isSuccessful()).isTrue();
 
