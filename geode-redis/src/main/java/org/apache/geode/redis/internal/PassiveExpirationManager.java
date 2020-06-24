@@ -37,13 +37,23 @@ import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionExec
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
 
-  private final ScheduledExecutorService expirationExecutor =
-      newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
+  private final Region<ByteArrayWrapper, RedisData> dataRegion;
+  private final ScheduledExecutorService expirationExecutor;
+
 
   public PassiveExpirationManager(Region<ByteArrayWrapper, RedisData> dataRegion) {
+    this.dataRegion = dataRegion;
+    expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
+  }
+
+  public void start() {
     int INTERVAL = 1;
     expirationExecutor.scheduleAtFixedRate(() -> doDataExpiration(dataRegion), INTERVAL, INTERVAL,
         SECONDS);
+  }
+
+  public void stop() {
+    expirationExecutor.shutdownNow();
   }
 
   private void doDataExpiration(
@@ -66,9 +76,5 @@ public class PassiveExpirationManager {
     } catch (RuntimeException | Error ex) {
       logger.warn("Passive Redis expiration failed. Will try again in 1 second.", ex);
     }
-  }
-
-  public void close() {
-    expirationExecutor.shutdownNow();
   }
 }

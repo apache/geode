@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.netty;
 
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -57,12 +57,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final GeodeRedisServer server;
   private final Client client;
   private final Channel channel;
-  private final AtomicBoolean needChannelFlush;
+  private final RegionProvider regionProvider;
+  private final PubSub pubsub;
+  private final EventLoopGroup subscriberGroup;
   private final ByteBufAllocator byteBufAllocator;
   private final byte[] authPassword;
+  private final Supplier<Boolean> allowUnsupportedSupplier;
+  private final Runnable shutdownInvoker;
 
   private boolean isAuthenticated;
 
@@ -70,15 +73,18 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * Default constructor for execution contexts.
    *
    * @param channel Channel used by this context, should be one to one
-   * @param server Instance of the server it is attached to, only used so that any execution
-   *        can initiate a shutdown
    * @param password Authentication password for each context, can be null
    */
-  public ExecutionHandlerContext(Channel channel, GeodeRedisServer server, byte[] password) {
-    this.server = server;
+  public ExecutionHandlerContext(Channel channel, RegionProvider regionProvider, PubSub pubsub,
+      EventLoopGroup subscriberGroup, Supplier<Boolean> allowUnsupportedSupplier,
+      Runnable shutdownInvoker, byte[] password) {
     this.channel = channel;
+    this.regionProvider = regionProvider;
+    this.pubsub = pubsub;
+    this.subscriberGroup = subscriberGroup;
+    this.allowUnsupportedSupplier = allowUnsupportedSupplier;
+    this.shutdownInvoker = shutdownInvoker;
     this.client = new Client(channel);
-    this.needChannelFlush = new AtomicBoolean(false);
     this.byteBufAllocator = this.channel.alloc();
     this.authPassword = password;
     this.isAuthenticated = password == null;
@@ -206,7 +212,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private boolean allowUnsupportedCommands() {
-    return this.server.allowUnsupportedCommands();
+    return allowUnsupportedSupplier.get();
   }
 
 
@@ -221,7 +227,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public EventLoopGroup getSubscriberGroup() {
-    return server.getSubscriberGroup();
+    return subscriberGroup;
   }
 
   public void changeChannelEventLoopGroup(EventLoopGroup newGroup) {
@@ -256,7 +262,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * Gets the provider of Regions
    */
   public RegionProvider getRegionProvider() {
-    return server.getRegionProvider();
+    return regionProvider;
   }
 
   /**
@@ -294,12 +300,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return client;
   }
 
-  public GeodeRedisServer getServer() {
-    return server;
+  public void shutdown() {
+    shutdownInvoker.run();
   }
 
   public PubSub getPubSub() {
-    return server.getPubSub();
+    return pubsub;
   }
 
 
