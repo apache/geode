@@ -20,11 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.test.junit.rules.TemporaryFileRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -82,7 +80,7 @@ public class CreateDiskStoreDUnitTest {
   private MemberVM server;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     cluster.setSkipLocalDistributedSystemCleanup(true);
     webContext = new LocatorWebContext(webApplicationContext);
     client = new ClusterManagementServiceBuilder().setTransport(
@@ -105,10 +103,11 @@ public class CreateDiskStoreDUnitTest {
     }
   }
 
-  private DiskStore createDiskStoreConfigObject(String diskStoreName) throws IOException {
+  private DiskStore createDiskStoreConfigObject(String diskStoreName) {
     DiskStore diskStore = new DiskStore();
     diskStore.setName(diskStoreName);
-    DiskDir diskDir = new DiskDir(temporaryFolder.getRoot().getAbsolutePath() + File.pathSeparator + diskStoreName, null);
+    DiskDir diskDir = new DiskDir(
+        temporaryFolder.getRoot().getAbsolutePath() + File.pathSeparator + diskStoreName, null);
     List<DiskDir> directories = new ArrayList<>();
     directories.add(diskDir);
     diskStore.setDirectories(directories);
@@ -256,7 +255,7 @@ public class CreateDiskStoreDUnitTest {
   }
 
   @Test
-  public void listDiskStoresShouldReturnAllConfiguredDiskStores() throws Exception {
+  public void listDiskStoresShouldReturnAllConfiguredDiskStores() {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
 
@@ -268,7 +267,7 @@ public class CreateDiskStoreDUnitTest {
 
 
   @Test
-  public void listDiskStoresShouldReturnNonDeletedDiskStores() throws Exception {
+  public void listDiskStoresShouldReturnNonDeletedDiskStores() {
     assertThatThrownBy(() -> client.get(diskStore)).isInstanceOf(ClusterManagementException.class)
         .hasMessageContaining("ENTITY_NOT_FOUND");
 
