@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 
 import javax.net.ssl.SSLSocket;
 
@@ -96,6 +97,7 @@ public abstract class SocketUtils {
     int amountRead;
     if (socket instanceof SSLSocket) {
       amountRead = readFromStream(socketInputStream, inputBuffer);
+//      amountRead = Channels.newChannel(socketInputStream).read(inputBuffer);
     } else {
       amountRead = socket.getChannel().read(inputBuffer);
     }
@@ -104,41 +106,26 @@ public abstract class SocketUtils {
 
   private static int readFromStream(InputStream stream, ByteBuffer inputBuffer) throws IOException {
     int amountRead;
-    if (inputBuffer.position() == 0 && inputBuffer.limit() == 0) {
+//    if (inputBuffer.position() == 0 && inputBuffer.limit() == 0) {
       inputBuffer.limit(inputBuffer.capacity());
-    }
+//    }
     // if bytes are available we read that number of bytes. Otherwise we do a blocking read
     // of buffer.remaining() bytes
     int amountToRead =
         stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
             : inputBuffer.remaining();
-    try {
-      if (inputBuffer.hasArray()) {
-        // logger.info("BRUCE: hasArray, amountToRead={}, stream.available()={}, inputBuffer={}",
-        // amountToRead, stream.available(), inputBuffer);
-        amountRead =
-            stream.read(inputBuffer.array(),
-                inputBuffer.arrayOffset() + inputBuffer.position(), amountToRead);
-        if (amountRead > 0) {
-          inputBuffer.position(inputBuffer.position() + amountRead);
-        }
-      } else {
-        // logger.info(
-        // "BRUCE: does not have Array, amountToRead={}, stream.available()={}, inputBuffer={}",
-        // amountToRead, stream.available(), inputBuffer);
-        byte[] buffer = new byte[amountToRead];
-        amountRead = stream.read(buffer);
-        if (amountRead > 0) {
-          inputBuffer.put(buffer, 0, amountRead);
-        }
+    if (inputBuffer.hasArray()) {
+      amountRead = stream.read(inputBuffer.array(),
+              inputBuffer.arrayOffset() + inputBuffer.position(), amountToRead);
+      if (amountRead > 0) {
+        inputBuffer.position(inputBuffer.position() + amountRead);
       }
-    } catch (RuntimeException | Error x) {
-      logger.info("BRUCE: caught exception in readFromStream", x);
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
+    } else {
+      byte[] buffer = new byte[amountToRead];
+      amountRead = stream.read(buffer);
+      if (amountRead > 0) {
+        inputBuffer.put(buffer, 0, amountRead);
       }
-      throw x;
     }
     return amountRead;
   }

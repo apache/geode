@@ -241,6 +241,8 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   private void createCacheAndRegion(VM memberVM, int locatorPort) {
     memberVM.invoke("start cache and create region", () -> {
       cache = createCache(locatorPort);
+      DistributedMember dm = cache.getDistributedSystem().getDistributedMember();
+      System.out.println("BRUCE: host is " + dm.getHost());
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
   }

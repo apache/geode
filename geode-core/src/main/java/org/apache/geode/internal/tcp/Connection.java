@@ -20,10 +20,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 import static org.apache.geode.distributed.internal.DistributionConfigImpl.SECURITY_SYSTEM_PREFIX;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
-import java.io.BufferedInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
@@ -32,6 +32,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
+import java.nio.channels.Channels;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SocketChannel;
@@ -483,9 +484,6 @@ public class Connection implements Runnable {
    */
   private volatile boolean hasResidualReaderThread;
 
-  /** for "old IO" we use a buffered input stream to read from the socket */
-  private BufferedInputStream inputStream;
-
   /**
    * creates a "reader" connection that we accepted (it was initiated by an explicit connect being
    * done on the other side).
@@ -844,7 +842,7 @@ public class Connection implements Runnable {
         Socket s = socket;
         if (s != null && !s.isClosed()) {
           prepareForAsyncClose();
-          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr), null);
+          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr), () -> ioFilter.close(s));
         }
       }
     }
@@ -1154,8 +1152,6 @@ public class Connection implements Runnable {
     int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
     boolean useTLSOverOldIO = getConduit().useTLSOverOldIO();
     if (useTLSOverOldIO) {
-      // socket = javax.net.ssl.SSLSocketFactory.getDefault()
-      // .createSocket(remoteId.getInetAddress(), remoteId.getPort());
       int socketBufferSize =
           sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
       socket = getConduit().getSocketCreator().forAdvancedUse().connect(
@@ -1618,11 +1614,11 @@ public class Connection implements Runnable {
           }
           int amountRead;
           if (!isInitialRead) {
-            amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
+            amountRead = SocketUtils.readFromSocket(socket, buff, socket.getInputStream());
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
-              amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
+              amountRead = SocketUtils.readFromSocket(socket, buff, socket.getInputStream());
             } else {
               amountRead = buff.position();
             }
@@ -1737,8 +1733,7 @@ public class Connection implements Runnable {
 
   private void createIoFilter(Socket socket, boolean clientSocket) throws IOException {
     SocketChannel channel = socket.getChannel();
-    inputStream = new BufferedInputStream(socket.getInputStream(),
-        getConduit().getConfig().getSocketBufferSize());
+    InputStream inputStream = socket.getInputStream();
     if (getConduit().useTLSOverNIO()) {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
       SSLEngine engine =
@@ -2628,28 +2623,18 @@ public class Connection implements Runnable {
           long start = stats.startSocketWrite(true);
           try {
             if (socket instanceof SSLSocket) {
-              try {
-                OutputStream output = socket.getOutputStream();
-                if (buffer.hasArray()) {
-                  // logger.info("BRUCE: writeFully writing {} with array, offset={} position={}
-                  // limit={}",
-                  // buffer, buffer.arrayOffset(), buffer.position(), buffer.limit());
-                  output.write(buffer.array(), buffer.arrayOffset(),
-                      buffer.limit() - buffer.position());
-                  buffer.position(buffer.limit());
-                } else {
-                  // logger.info("BRUCE: writeFully writing {} with no array",
-                  // buffer);
-                  byte[] bytesToWrite = getBytesToWrite(buffer);
-                  output.write(bytesToWrite);
-                  output.flush();
-                }
-              } catch (Exception | Error e) {
-                logger.info("BRUCE: caught exception while writing", e);
-                try {
-                  Thread.sleep(1000);
-                } catch (InterruptedException ie) {
-                }
+              OutputStream output = socket.getOutputStream();
+              if (buffer.hasArray()) {
+                output.write(buffer.array(), buffer.arrayOffset(),
+                    buffer.limit() - buffer.position());
+                buffer.position(buffer.limit());
+              } else {
+                // socket output streams are FileOutputStreams and have a Channel.
+                // This code merely fetches that channel and writes to it.
+                Channels.newChannel(output).write(buffer);
+//                byte[] bytesToWrite = getBytesToWrite(buffer);
+//                output.write(bytesToWrite);
+//                output.flush();
               }
             } else {
               amtWritten = socket.getChannel().write(wrappedBuffer);

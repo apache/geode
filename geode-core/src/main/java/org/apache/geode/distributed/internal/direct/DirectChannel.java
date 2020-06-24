@@ -296,7 +296,7 @@ public class DirectChannel {
 
         final BaseMsgStreamer ms =
             MsgStreamer.create(cons, msg, directReply, stats, getConduit().getBufferPool(),
-                conduit.useDirectBuffers());
+                /*BRUCE: conduit.useDirectBuffers()*/ true);
         try {
           startTime = 0;
           if (ackTimeout > 0) {
