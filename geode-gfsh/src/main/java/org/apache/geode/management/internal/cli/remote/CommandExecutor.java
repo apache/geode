@@ -222,22 +222,30 @@ public class CommandExecutor {
 
   @VisibleForTesting
   boolean lockCMS(Object command) {
+    // no lock if this is executing an offline command
     if (cmsDlockService == null) {
       return false;
     }
+
+    // no lock if this command does not implement GfshCommand, i.e. custom
+    // commands. All commands that affects cluster config shoudl be a subclass
+    // of GfshCommand
     if (!(command instanceof GfshCommand)) {
       return false;
     }
 
     GfshCommand gfshCommand = (GfshCommand) command;
+    // no lock if cluster configuration service is not started
     if (gfshCommand.getConfigurationPersistenceService() == null) {
       return false;
     }
 
+    // no lock if the command itself doesn't update cluster configuration
     if (!gfshCommand.affectsClusterConfiguration()) {
       return false;
     }
 
+    // otherwise, ok to get the lock
     return cmsDlockService.lock(CMS_DLOCK_SERVICE_NAME, -1, -1);
   }
 
