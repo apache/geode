@@ -229,34 +229,5 @@ public class StringSetExecutorJUnitTest {
     assertThat(response.toString()).contains(RedisConstants.ERROR_SYNTAX);
   }
 
-  @Test
-  public void testSET_unknownOption_ReturnsError() {
-    List<byte[]> commandArgumentWithUnknownParameter = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes(),
-        "value".getBytes(),
-        "blah".getBytes());
-
-    Command command = new Command(commandArgumentWithUnknownParameter);
-    RedisResponse response = executor.executeCommand(command, context);
-
-    assertThat(response.toString())
-        .contains(RedisConstants.ERROR_SYNTAX);
-  }
-
-  @Test
-  public void testSET_numberInUnexpectedPosition_ReturnsError() {
-    List<byte[]> commandArgumentWithUnknownParameter = Arrays.asList(
-        "SET".getBytes(),
-        "key".getBytes(),
-        "value".getBytes(),
-        "30".getBytes());
-
-    Command command = new Command(commandArgumentWithUnknownParameter);
-    RedisResponse response = executor.executeCommand(command, context);
-
-    assertThat(response.toString())
-        .contains(RedisConstants.ERROR_SYNTAX);
-  }
 
 }
