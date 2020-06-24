@@ -83,7 +83,8 @@ public class IndexUsageInJoinQueryDistributedTest implements Serializable {
     client.invoke(() -> createClientRegions());
 
     // Load regions
-    int numProducts = 1000, numInstruments = 100;
+    int numProducts = 1000;
+    int numInstruments = 100;
     client.invoke(() -> loadRegions(numProducts, numInstruments));
 
     // Get number of deserializations before query
