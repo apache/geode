@@ -43,7 +43,7 @@ gradle.taskGraph.whenReady({ graph ->
                 if (dependency.startsWith("geode-")) {
                   projectDependencies.add(dependency)
                 } else {
-                  runtimeList.add(dependency+".jar")
+                  runtimeList.add(dependency)
                 }
               }
 
@@ -57,9 +57,9 @@ gradle.taskGraph.whenReady({ graph ->
         if (projectDependencies.contains(geodeProject)) {
           def parentProject = project(":$geodeProject" - "-$version")
           if (parentProject != null) {
-            def collect = parentProject.configurations.runtimeClasspath.collect { it.name }
+            def collect = parentProject.configurations.runtimeClasspath.collect { it.name - ".jar" }
             runtimeList.removeAll(collect)
-            projectDependencies.removeAll(collect.collect {it-".jar"})
+            projectDependencies.removeAll(collect)
           }
         }
       }
