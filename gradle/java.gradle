@@ -62,16 +62,14 @@ gradle.taskGraph.whenReady({ graph ->
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Jar).each { jar ->
     jar.doFirst {
-      manifest {
-        attributes(
-            "Manifest-Version": "1.0",
-            "Created-By": System.getProperty("user.name"),
-            "Title": rootProject.name,
-            "Version": version,
-            "Organization": productOrg
-        )
+        manifest {
+          attributes.put("Manifest-Version", "1.0")
+          attributes.put("Created-By", System.getProperty("user.name"))
+          attributes.put("Title", rootProject.name)
+          attributes.put("Version", version)
+          attributes.put("Organization", productOrg)
+        }
       }
-    }
     jar.metaInf {
       from("$rootDir/geode-assembly/src/main/dist/LICENSE")
       if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
