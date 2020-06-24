@@ -1637,9 +1637,29 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
       if (inbuffer.position() == 0) {
         int res = socketChannel.read(inbuffer);
+        socketChannel.configureBlocking(true);
         if (res < 0) {
           throw new EOFException();
         }
+        if (res == 0) {
+          // now do a blocking read so setup a timer to close the socket if the
+          // the read takes too long
+          SystemTimer.SystemTimerTask timerTask = new SystemTimer.SystemTimerTask() {
+            @Override
+            public void run2() {
+              logger.warn("Cache server: timed out waiting for handshake from {}",
+                  socket.getRemoteSocketAddress());
+              closeSocket(socket);
+            }
+          };
+          hsTimer.schedule(timerTask, acceptTimeout);
+          res = socketChannel.read(inbuffer);
+          if (!timerTask.cancel() || res <= 0) {
+            throw new EOFException();
+          }
+        }
+      } else {
+        socketChannel.configureBlocking(true);
       }
       inbuffer.flip();
       ByteBuffer unwrapbuff = sslengine.unwrap(inbuffer);
@@ -1647,7 +1667,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
       bufferPool.releaseReceiveBuffer(inbuffer);
       unwrapbuff.flip();
       byte modeNumber = unwrapbuff.get();
-      socketChannel.configureBlocking(true);
 
       return CommunicationMode.fromModeNumber(modeNumber);
     }

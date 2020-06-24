@@ -1421,6 +1421,11 @@ public abstract class ServerConnection implements Runnable {
       getAcceptor().decClientServerConnectionCount();
     }
 
+    if (getSSLEngine() != null) {
+      getSSLEngine().close(theSocket.getChannel());
+      this.nioSslEngine = null;
+    }
+
     if (!theSocket.isClosed()) {
       // Here we direct closing of sockets to one of two executors. Use of an executor
       // keeps us from causing an explosion of new threads when a server is shut down.
@@ -1431,6 +1436,7 @@ public abstract class ServerConnection implements Runnable {
       },
           () -> cleanupAfterSocketClose());
       return true;
+
     }
     cleanupAfterSocketClose();
     return true;
@@ -1474,6 +1480,14 @@ public abstract class ServerConnection implements Runnable {
     terminated = true;
     Socket s = theSocket;
     if (s != null) {
+      if (getSSLEngine() != null) {
+        try {
+          getSSLEngine().close(s.getChannel());
+        } catch (Exception e) {
+          // ignore
+        }
+        this.nioSslEngine = null;
+      }
       try {
         s.close();
       } catch (IOException e) {
