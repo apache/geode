@@ -98,7 +98,7 @@ public class JAXBService {
     if (sysProperty != null) {
       packages = Arrays.stream(sysProperty.split(",")).collect(Collectors.toSet());
     } else {
-      packages.add("*");
+      packages.add("");
     }
     return packages;
   }
