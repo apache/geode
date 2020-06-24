@@ -46,6 +46,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -419,7 +420,8 @@ public class GeodeRedisServer {
 
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
     String redisPassword = system.getConfig().getRedisPassword();
-    final byte[] redisPasswordBytes = Coder.stringToBytes(redisPassword);
+    final byte[] redisPasswordBytes =
+        StringUtils.isBlank(redisPassword) ? null : Coder.stringToBytes(redisPassword);
     ServerBootstrap serverBootstrap = new ServerBootstrap();
 
     serverBootstrap.group(bossGroup, workerGroup).channel(socketClass)

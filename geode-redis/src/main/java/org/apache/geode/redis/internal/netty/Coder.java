@@ -348,7 +348,7 @@ public class Coder {
   }
 
   public static byte[] stringToBytes(String string) {
-    if (string == null || string.equals("")) {
+    if (string == null) {
       return null;
     }
     try {

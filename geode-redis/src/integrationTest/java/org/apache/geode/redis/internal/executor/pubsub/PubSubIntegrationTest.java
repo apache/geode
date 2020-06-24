@@ -189,6 +189,46 @@ public class PubSubIntegrationTest {
   }
 
   @Test
+  public void unsubscribe_whenGivenAnEmptyString() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    try {
+      waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+      mockSubscriber.unsubscribe("");
+      waitFor(() -> mockSubscriber.unsubscribeInfos.size() == 1);
+
+      assertThat(mockSubscriber.unsubscribeInfos.get(0).channel).isEqualTo("");
+      assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(1);
+      assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(1);
+    } finally {
+      // now cleanup the actual subscription
+      mockSubscriber.unsubscribe();
+      waitFor(() -> !subscriberThread.isAlive());
+    }
+  }
+
+  @Test
+  public void canSubscribeToAnEmptyString() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "");
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    Long result = publisher.publish("", "blank");
+    assertThat(result).isEqualTo(1);
+
+    mockSubscriber.unsubscribe("");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
+
+    assertThat(mockSubscriber.getReceivedMessages()).containsExactly("blank");
+  }
+
+  @Test
   public void punsubscribe_onNonExistentSubscription_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
     Runnable runnable = () -> {
