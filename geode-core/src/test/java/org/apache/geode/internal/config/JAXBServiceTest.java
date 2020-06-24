@@ -63,7 +63,7 @@ public class JAXBServiceTest {
   @Test
   public void getPackagesToScanWithoutSystemProperty() {
     Set<String> packages = JAXBService.getPackagesToScan();
-    assertThat(packages).containsExactly("*");
+    assertThat(packages).containsExactly("");
   }
 
   @Test
