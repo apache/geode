@@ -675,7 +675,7 @@ public class GemFireCacheImplTest {
         (properties, cacheConfigArg) -> mock(SecurityService.class),
         () -> true,
         mock(Function.class),
-        mock(Function.class),
+        mock(GemFireCacheImpl.InternalCqServiceFactory.class),
         (factory, clock) -> mock(CachePerfStats.class),
         mock(GemFireCacheImpl.TXManagerImplFactory.class),
         mock(Supplier.class),
