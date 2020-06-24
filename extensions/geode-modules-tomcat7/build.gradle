@@ -29,6 +29,7 @@ dependencies {
   compile(project(':geode-core'))
   implementation('mx4j:mx4j')
   implementation('javax.servlet:javax.servlet-api')
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation('org.httpunit:httpunit')
   integrationTestImplementation('junit:junit')
   compile(project(':extensions:geode-modules')) {
@@ -49,6 +50,7 @@ dependencies {
   }
   implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
 
+  testImplementation(project(':geode-common-services'))
   testImplementation('org.httpunit:httpunit')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
@@ -57,6 +59,8 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':extensions:geode-modules-test'))
 
   integrationTestRuntimeOnly('javax.annotation:jsr250-api')

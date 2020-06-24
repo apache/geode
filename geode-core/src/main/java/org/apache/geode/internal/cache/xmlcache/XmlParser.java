@@ -15,16 +15,17 @@
 
 package org.apache.geode.internal.cache.xmlcache;
 
-import java.util.ServiceLoader;
 import java.util.Stack;
 
 import org.xml.sax.ContentHandler;
+
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Interface for configuration XML parsers. Used by {@link CacheXmlParser} to parse entities defined
  * in the XML Namespace returned by {@link #getNamespaceUri()} .
  *
- * Loaded by {@link ServiceLoader} on {@link XmlParser} class. See file
+ * Loaded by {@link ModuleService} on {@link XmlParser} class. See file
  * <code>META-INF/services/org.apache.geode.internal.cache.xmlcache.XmlParser</code>
  *
  *

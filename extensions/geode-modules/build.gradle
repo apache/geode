@@ -31,6 +31,7 @@ dependencies {
   integrationTestImplementation(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'
   }
+  testImplementation(project(':geode-common-services'))
   testImplementation(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'
   }
@@ -59,6 +60,7 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
 
 
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 

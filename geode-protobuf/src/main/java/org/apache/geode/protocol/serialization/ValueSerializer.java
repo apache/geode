@@ -15,13 +15,13 @@
 package org.apache.geode.protocol.serialization;
 
 import java.io.IOException;
-import java.util.ServiceLoader;
 
 import com.google.protobuf.ByteString;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Interface for controlling serialization format of all values transmitted using the
@@ -30,7 +30,7 @@ import org.apache.geode.pdx.PdxInstance;
  * To use a custom format, implement this interface and register your format by
  * adding a META-INF/services/org.apache.geode.protocol.serialization.ValueSerializer file
  * that contains the full qualified name of your serializer. It will be loaded and registered
- * using Java's {@link ServiceLoader} mechanism.
+ * using {@link ModuleService} mechanism.
  *
  * Clients can than elect to use the registered format by sending a HandshakeRequest with
  * and setting the valueFormat field in the request to match the string returned by {@link #getID()}

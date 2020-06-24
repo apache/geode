@@ -14,17 +14,17 @@
  */
 package org.apache.geode.internal.util;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * Implements {@link CollectingServiceLoader} by returning a {@link List} of all currently loadable
@@ -33,54 +33,23 @@ import org.apache.geode.annotations.VisibleForTesting;
 public class ListCollectingServiceLoader<S> implements CollectingServiceLoader<S> {
   private static final Logger logger = LogManager.getLogger();
 
-  private final ServiceLoaderWrapper<S> serviceLoaderWrapper;
-
-  public ListCollectingServiceLoader() {
-    this(new DefaultServiceLoader<>());
-  }
+  private final ModuleService moduleService;
 
   @VisibleForTesting
-  ListCollectingServiceLoader(ServiceLoaderWrapper<S> serviceLoaderWrapper) {
-    this.serviceLoaderWrapper = serviceLoaderWrapper;
+  public ListCollectingServiceLoader(ModuleService moduleService) {
+    this.moduleService = moduleService;
   }
 
   @Override
   public Collection<S> loadServices(Class<S> service) {
-    serviceLoaderWrapper.load(service);
+    ModuleServiceResult<Set<S>> moduleServiceResult = moduleService.loadService(service);
 
-    Collection<S> services = new ArrayList<>();
-    for (Iterator<S> iterator = serviceLoaderWrapper.iterator(); iterator.hasNext();) {
-      try {
-        S instance = iterator.next();
-        services.add(instance);
-      } catch (ServiceConfigurationError serviceConfigurationError) {
-        logger.error("Error while loading implementations of {}", service.getName(),
-            serviceConfigurationError);
-      }
+    if (moduleServiceResult.isSuccessful()) {
+      return moduleServiceResult.getMessage();
+    } else {
+      logger.warn(moduleServiceResult.getErrorMessage());
     }
 
-    return services;
-  }
-
-  interface ServiceLoaderWrapper<S> {
-
-    void load(Class<S> service);
-
-    Iterator<S> iterator() throws ServiceConfigurationError;
-  }
-
-  private static class DefaultServiceLoader<S> implements ServiceLoaderWrapper<S> {
-
-    private ServiceLoader<S> actualServiceLoader;
-
-    @Override
-    public void load(Class<S> service) {
-      actualServiceLoader = ServiceLoader.load(service);
-    }
-
-    @Override
-    public Iterator<S> iterator() throws ServiceConfigurationError {
-      return actualServiceLoader.iterator();
-    }
+    return Collections.EMPTY_LIST;
   }
 }

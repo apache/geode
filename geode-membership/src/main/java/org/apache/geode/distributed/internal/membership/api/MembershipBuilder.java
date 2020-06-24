@@ -19,6 +19,7 @@ import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImp
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * A builder for creating a new {@link Membership}. Use this builder to configure a
@@ -46,8 +47,8 @@ public interface MembershipBuilder<ID extends MemberIdentifier> {
       final TcpSocketCreator socketCreator,
       final TcpClient locatorClient,
       final DSFIDSerializer serializer,
-      final MemberIdentifierFactory<ID> memberFactory) {
+      final MemberIdentifierFactory<ID> memberFactory, ModuleService moduleService) {
     return new MembershipBuilderImpl<>(
-        socketCreator, locatorClient, serializer, memberFactory);
+        socketCreator, locatorClient, serializer, memberFactory, moduleService);
   }
 }

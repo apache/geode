@@ -40,6 +40,13 @@ dependencies {
   implementation('commons-codec:commons-codec')
   implementation('org.apache.commons:commons-lang3')
 
+  compileOnly(project(':geode-common-services'))
+
+  testImplementation(project(":geode-modules"))
+  integrationTestImplementation(project(":geode-modules"))
+  acceptanceTestImplementation(project(":geode-modules"))
+  distributedTestImplementation(project(":geode-modules"))
+
   testImplementation(project(':geode-junit'))
   testImplementation('org.mockito:mockito-core')
 

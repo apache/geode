@@ -46,11 +46,14 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class DestroyDataSourceCommandTest {
@@ -67,6 +70,11 @@ public class DestroyDataSourceCommandTest {
   @Before
   public void setUp() {
     InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getModuleService())
+        .thenReturn(new ServiceLoaderModuleService(LogService.getLogger()));
     command = spy(DestroyDataSourceCommand.class);
     doReturn(cache).when(command).getCache();
     cacheConfig = mock(CacheConfig.class);

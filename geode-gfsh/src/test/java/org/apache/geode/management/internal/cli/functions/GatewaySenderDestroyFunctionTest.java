@@ -45,7 +45,7 @@ public class GatewaySenderDestroyFunctionTest {
   @Before
   @SuppressWarnings("unchecked")
   public void before() {
-    function = spy(GatewaySenderDestroyFunction.class);
+    function = spy(new GatewaySenderDestroyFunction());
     context = mock(FunctionContext.class);
     cache = mock(InternalCache.class);
     args = mock(GatewaySenderDestroyFunctionArgs.class);

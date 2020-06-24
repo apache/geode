@@ -36,6 +36,7 @@ import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.MetricsPublishingService;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Manages metrics on behalf of an {@code InternalDistributedSystem}.
@@ -61,17 +62,6 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
   private final Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
   private final MetricsService.Builder builder;
 
-  @FunctionalInterface
-  @VisibleForTesting
-  interface Factory {
-    MetricsService create(MetricsService.Builder builder, Logger logger,
-        CollectingServiceLoader<MetricsPublishingService> publishingServiceLoader,
-        CompositeMeterRegistry metricsServiceMeterRegistry,
-        Collection<MeterRegistry> persistentMeterRegistries, CloseableMeterBinder binder,
-        InternalDistributedSystem system, boolean isClient, boolean hasLocator,
-        boolean hasCacheServer);
-  }
-
   @VisibleForTesting
   InternalDistributedSystemMetricsService(MetricsService.Builder builder, Logger logger,
       CollectingServiceLoader<MetricsPublishingService> publishingServiceLoader,
@@ -86,6 +76,22 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     this.binder = binder;
     this.persistentMeterRegistries.addAll(persistentMeterRegistries);
     addCommonTags(system, isClient, hasLocator, hasCacheServer);
+  }
+
+  private static String memberTypeFor(boolean hasLocator, boolean hasCacheServer) {
+    if (hasCacheServer && hasLocator) {
+      return "server-locator";
+    }
+
+    if (hasCacheServer) {
+      return "server";
+    }
+
+    if (hasLocator) {
+      return "locator";
+    }
+
+    return "embedded-cache";
   }
 
   /**
@@ -177,22 +183,6 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     meterRegistry.config().commonTags(tags);
   }
 
-  private static String memberTypeFor(boolean hasLocator, boolean hasCacheServer) {
-    if (hasCacheServer && hasLocator) {
-      return "server-locator";
-    }
-
-    if (hasCacheServer) {
-      return "server";
-    }
-
-    if (hasLocator) {
-      return "locator";
-    }
-
-    return "embedded-cache";
-  }
-
   private void startMetricsPublishingService(MetricsPublishingService service) {
     try {
       service.start(this);
@@ -231,6 +221,17 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     }
   }
 
+  @FunctionalInterface
+  @VisibleForTesting
+  interface Factory {
+    MetricsService create(MetricsService.Builder builder, Logger logger,
+        CollectingServiceLoader<MetricsPublishingService> publishingServiceLoader,
+        CompositeMeterRegistry metricsServiceMeterRegistry,
+        Collection<MeterRegistry> persistentMeterRegistries, CloseableMeterBinder binder,
+        InternalDistributedSystem system, boolean isClient, boolean hasLocator,
+        boolean hasCacheServer);
+  }
+
   public static class Builder implements MetricsService.Builder {
     private boolean isClient = false;
     private Supplier<Logger> loggerSupplier = LogService::getLogger;
@@ -238,15 +239,18 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     private Factory metricsServiceFactory = InternalDistributedSystemMetricsService::new;
     private Supplier<CompositeMeterRegistry> compositeRegistrySupplier =
         CompositeMeterRegistry::new;
-    private Supplier<CollectingServiceLoader<MetricsPublishingService>> serviceLoaderSupplier =
-        ListCollectingServiceLoader::new;
+    private Supplier<CollectingServiceLoader<MetricsPublishingService>> serviceLoaderSupplier;
     private Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
     private BooleanSupplier hasLocator = Locator::hasLocator;
     private BooleanSupplier hasCacheServer = () -> ServerLauncher.getInstance() != null;
 
     @Override
-    public MetricsService build(InternalDistributedSystem system) {
-      return metricsServiceFactory.create(this, loggerSupplier.get(), serviceLoaderSupplier.get(),
+    public MetricsService build(InternalDistributedSystem system, ModuleService moduleService) {
+      CollectingServiceLoader<MetricsPublishingService> loaderSupplier =
+          serviceLoaderSupplier != null ? serviceLoaderSupplier.get()
+              : new ListCollectingServiceLoader<>(moduleService);
+
+      return metricsServiceFactory.create(this, loggerSupplier.get(), loaderSupplier,
           compositeRegistrySupplier.get(), persistentMeterRegistries, meterBinderSupplier.get(),
           system, isClient, hasLocator.getAsBoolean(), hasCacheServer.getAsBoolean());
     }

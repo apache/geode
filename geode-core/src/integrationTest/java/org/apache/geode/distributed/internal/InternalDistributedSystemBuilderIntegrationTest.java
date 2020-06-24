@@ -26,9 +26,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 public class InternalDistributedSystemBuilderIntegrationTest {
 
@@ -38,7 +40,7 @@ public class InternalDistributedSystemBuilderIntegrationTest {
   @Before
   public void setup() {
     metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(mock(MetricsService.class));
   }
 
   @After
@@ -52,8 +54,10 @@ public class InternalDistributedSystemBuilderIntegrationTest {
     Properties configProperties = new Properties();
     configProperties.setProperty(NAME, theName);
 
-    system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder)
-        .build();
+    system =
+        new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder,
+            new ServiceLoaderModuleService(LogService.getLogger()))
+                .build();
 
     assertThat(system.isConnected()).isTrue();
     assertThat(system.getName()).isEqualTo(theName);
@@ -67,9 +71,10 @@ public class InternalDistributedSystemBuilderIntegrationTest {
     SecurityConfig securityConfig = new SecurityConfig(theSecurityManager, thePostProcessor);
     Properties configProperties = new Properties();
 
-    system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder)
-        .setSecurityConfig(securityConfig)
-        .build();
+    system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder,
+        new ServiceLoaderModuleService(LogService.getLogger()))
+            .setSecurityConfig(securityConfig)
+            .build();
 
     assertThat(system.getSecurityService().getSecurityManager())
         .isSameAs(theSecurityManager);

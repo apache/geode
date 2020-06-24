@@ -37,8 +37,12 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class ImportClusterConfigurationCommandTest {
@@ -54,9 +58,16 @@ public class ImportClusterConfigurationCommandTest {
   private InternalConfigurationPersistenceService ccService;
   private String commandWithFile;
   private Configuration configuration;
+  private InternalCache cache;
 
   @Before
   public void setUp() throws Exception {
+    cache = mock(InternalCache.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getModuleService())
+        .thenReturn(new ServiceLoaderModuleService(LogService.getLogger()));
     command = spy(ImportClusterConfigurationCommand.class);
     ccService = mock(InternalConfigurationPersistenceService.class);
     xmlFile = tempFolder.newFile("my.xml");
@@ -144,6 +155,7 @@ public class ImportClusterConfigurationCommandTest {
 
   @Test
   public void noMemberFound() throws IOException {
+    doReturn(cache).when(command).getCache();
     String xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><cache/>";
     FileUtils.write(xmlFile, xmlContent, Charset.defaultCharset());
     when(ccService.getConfiguration(any())).thenReturn(configuration);
@@ -182,6 +194,7 @@ public class ImportClusterConfigurationCommandTest {
 
   @Test
   public void existingMembersWithIgnore() {
+    doReturn(cache).when(command).getCache();
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(any());
     when(ccService.getConfiguration(any())).thenReturn(configuration);
 

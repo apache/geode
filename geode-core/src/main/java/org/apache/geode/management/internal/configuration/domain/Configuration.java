@@ -44,6 +44,7 @@ import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Domain object for all the configuration related data.
@@ -88,12 +89,12 @@ public class Configuration implements DataSerializable {
     this.cacheXmlContent = cacheXmlContent;
   }
 
-  public void setCacheXmlFile(File cacheXmlFile) throws IOException {
+  public void setCacheXmlFile(File cacheXmlFile, ModuleService moduleService) throws IOException {
     if (cacheXmlFile.length() == 0) {
       cacheXmlContent = "";
     } else {
       try {
-        Document doc = XmlUtils.getDocumentBuilder().parse(cacheXmlFile);
+        Document doc = XmlUtils.getDocumentBuilder(moduleService).parse(cacheXmlFile);
         cacheXmlContent = XmlUtils.elementToString(doc);
       } catch (SAXException | TransformerException | ParserConfigurationException e) {
         throw new IOException("Unable to parse existing cluster configuration from file: "

@@ -23,7 +23,6 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
 
-
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
@@ -31,7 +30,12 @@ dependencies {
   implementation(project(':geode-core'))
 
   compileOnly('org.apache.logging.log4j:log4j-api:2.13.1')
-  
+
+  testImplementation(project(":geode-modules"))
+  integrationTestImplementation(project(":geode-modules"))
+  acceptanceTestImplementation(project(":geode-modules"))
+  distributedTestImplementation(project(":geode-modules"))
+
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
   testImplementation('junit:junit')
@@ -40,7 +44,6 @@ dependencies {
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('junit:junit')
-
 
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-dunit'))
@@ -58,7 +61,7 @@ dependencies {
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-
+  upgradeTestImplementation(project(':geode-common-services'))
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-junit'))
   upgradeTestImplementation(project(':geode-dunit'))

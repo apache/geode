@@ -15,8 +15,11 @@
 
 package org.apache.geode.services.module;
 
-import java.util.Map;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.services.result.ModuleServiceResult;
@@ -90,7 +93,7 @@ public interface ModuleService {
    *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  <T> ModuleServiceResult<Map<String, Set<T>>> loadService(Class<T> service);
+  <T> ModuleServiceResult<Set<T>> loadService(Class<T> service);
 
   /**
    * Returns the Class for the provided name for a specific module.
@@ -120,5 +123,9 @@ public interface ModuleService {
    *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  ModuleServiceResult<Map<String, Class<?>>> loadClass(String className);
+  ModuleServiceResult<List<Class<?>>> loadClass(String className);
+
+  ModuleServiceResult<List<InputStream>> findResourceAsStream(String resourceFile);
+
+  void setLogger(Logger logger);
 }

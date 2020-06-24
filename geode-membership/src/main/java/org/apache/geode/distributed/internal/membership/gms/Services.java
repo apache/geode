@@ -75,6 +75,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Services holds all of the membership services of a GMSMembership. It serves as a
@@ -184,11 +185,11 @@ public class Services<ID extends MemberIdentifier> {
   /**
    * Initialize services - do this before invoking start()
    */
-  public void init() throws MembershipConfigurationException {
-    this.messenger.init(this);
-    this.manager.init(this);
-    this.joinLeave.init(this);
-    this.healthMon.init(this);
+  public void init(ModuleService moduleService) throws MembershipConfigurationException {
+    this.messenger.init(this, moduleService);
+    this.manager.init(this, moduleService);
+    this.joinLeave.init(this, moduleService);
+    this.healthMon.init(this, moduleService);
   }
 
   /**

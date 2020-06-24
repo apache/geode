@@ -31,11 +31,13 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Function to create {@link MockCacheExtension} on a {@link Region}.
@@ -46,8 +48,6 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 public class CreateMockCacheExtensionFunction implements Function, DataSerializable {
 
   private static final long serialVersionUID = 1L;
-
-  public static final Function INSTANCE = new CreateMockCacheExtensionFunction();
 
   @Override
   public void execute(FunctionContext context) {
@@ -65,8 +65,13 @@ public class CreateMockCacheExtensionFunction implements Function, DataSerializa
     extension.beforeCreate(extensible, cache);
     extension.onCreate(extensible, extensible);
 
+    ModuleService moduleService =
+        ((InternalCache) context.getCache()).getInternalDistributedSystem()
+            .getModuleService();
+
     final XmlEntity xmlEntity =
-        XmlEntity.builder().withType(ELEMENT_CACHE).withNamespace(PREFIX, NAMESPACE).build();
+        XmlEntity.builder().withType(ELEMENT_CACHE).withNamespace(PREFIX, NAMESPACE)
+            .build(moduleService);
 
     final ResultSender<Object> resultSender = context.getResultSender();
     final String memberNameOrId =

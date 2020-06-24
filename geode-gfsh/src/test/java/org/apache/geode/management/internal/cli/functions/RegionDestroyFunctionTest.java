@@ -47,7 +47,8 @@ public class RegionDestroyFunctionTest {
   @Before
   @SuppressWarnings("unchecked")
   public void before() {
-    function = spy(RegionDestroyFunction.class);
+    function =
+        spy(new RegionDestroyFunction());
     context = mock(FunctionContext.class);
     InternalCache cache = mock(InternalCache.class);
     filterCache = mock(InternalCacheForClientAccess.class);

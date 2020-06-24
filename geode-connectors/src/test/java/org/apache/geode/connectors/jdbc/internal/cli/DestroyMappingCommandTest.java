@@ -45,11 +45,14 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 
 public class DestroyMappingCommandTest {
 
@@ -68,6 +71,12 @@ public class DestroyMappingCommandTest {
   public void setup() {
     regionName = "regionName";
     cache = mock(InternalCache.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getModuleService())
+        .thenReturn(new ServiceLoaderModuleService(LogService.getLogger()));
+
     members = new HashSet<>();
     members.add(mock(InternalDistributedMember.class));
     destroyRegionMappingCommand = spy(DestroyMappingCommand.class);
@@ -87,6 +96,7 @@ public class DestroyMappingCommandTest {
     matchingRegionAttributes = mock(RegionAttributesType.class);
     when(matchingRegionAttributes.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
     when(matchingRegion.getRegionAttributes()).thenReturn(matchingRegionAttributes);
+
   }
 
   @Test

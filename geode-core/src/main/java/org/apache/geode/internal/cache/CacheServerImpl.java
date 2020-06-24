@@ -77,6 +77,7 @@ import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -87,63 +88,50 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 @SuppressWarnings("deprecation")
 public class CacheServerImpl extends AbstractCacheServer implements DistributionAdvisee {
-  private static final Logger logger = LogService.getLogger();
-
-  private static final int FORCE_LOAD_UPDATE_FREQUENCY = getInteger(
-      GeodeGlossary.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
-
+  public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = Boolean.getBoolean(
+      GeodeGlossary.GEMFIRE_PREFIX + "cache-server.enable-notify-by-subscription-false");
   static final String CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE =
       "A cache server's bind address is only available if it has been started";
-
+  private static final Logger logger = LogService.getLogger();
+  private static final int FORCE_LOAD_UPDATE_FREQUENCY = getInteger(
+      GeodeGlossary.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
+  @MakeNotStatic
+  private static final AtomicInteger profileSN = new AtomicInteger();
   private final SecurityService securityService;
-
   private final StatisticsClock statisticsClock;
-
   private final AcceptorBuilder acceptorBuilder;
-
   private final boolean sendResourceEvents;
-
   private final boolean includeMembershipGroups;
-
   /**
    * The server connection factory, that provides a {@link ServerConnection}.
    */
-  private final ServerConnectionFactory serverConnectionFactory = new ServerConnectionFactory();
-
+  private final ServerConnectionFactory serverConnectionFactory;
+  private final Supplier<SocketCreator> socketCreatorSupplier;
+  private final CacheClientNotifierProvider cacheClientNotifierProvider;
+  private final ClientHealthMonitorProvider clientHealthMonitorProvider;
+  private final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider;
   /** The acceptor that does the actual serving */
   private volatile Acceptor acceptor;
-
   /**
    * The advisor used by this cache server.
    *
    * @since GemFire 5.7
    */
   private volatile CacheServerAdvisor advisor;
-
   /**
    * The monitor used to monitor load on this cache server and distribute load to the locators
    *
    * @since GemFire 5.7
    */
   private volatile LoadMonitor loadMonitor;
-
   /** is this a server created by a launcher as opposed to by an application or XML? */
   private boolean isDefaultServer;
-
   /**
    * Needed because this server is an advisee
    *
    * @since GemFire 5.7
    */
   private int serialNumber; // changed on each start
-
-  private final Supplier<SocketCreator> socketCreatorSupplier;
-  private final CacheClientNotifierProvider cacheClientNotifierProvider;
-  private final ClientHealthMonitorProvider clientHealthMonitorProvider;
-  private final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider;
-
-  public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = Boolean.getBoolean(
-      GeodeGlossary.GEMFIRE_PREFIX + "cache-server.enable-notify-by-subscription-false");
 
   CacheServerImpl(final InternalCache cache,
       final SecurityService securityService,
@@ -154,7 +142,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider,
-      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
+      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider,
+      final ModuleService moduleService) {
     super(cache);
     this.securityService = securityService;
     this.statisticsClock = statisticsClock;
@@ -165,6 +154,104 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     this.cacheClientNotifierProvider = cacheClientNotifierProvider;
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
     this.cacheServerAdvisorProvider = cacheServerAdvisorProvider;
+    this.serverConnectionFactory =
+        new ServerConnectionFactory(moduleService);
+  }
+
+  /**
+   * create client subscription
+   *
+   * @return client subscription name
+   * @since GemFire 5.7
+   */
+  public static String clientMessagesRegion(InternalCache cache, String ePolicy, int capacity,
+      int port, String overFlowDir, boolean isDiskStore) {
+    InternalRegionFactory factory =
+        getRegionFactoryForClientMessagesRegion(cache, ePolicy, capacity, overFlowDir, isDiskStore);
+    return createClientMessagesRegion(factory, port);
+  }
+
+  private static InternalRegionFactory getRegionFactoryForClientMessagesRegion(InternalCache cache,
+      String ePolicy, int capacity, String overflowDir, boolean isDiskStore)
+      throws InvalidValueException, GemFireIOException {
+    InternalRegionFactory factory = cache.createInternalRegionFactory();
+    factory.setScope(Scope.LOCAL);
+
+    if (isDiskStore) {
+      // overflowDir parameter is actually diskstore name
+      factory.setDiskStoreName(overflowDir);
+      // client subscription queue is always overflow to disk, so do async
+      // see feature request #41479
+      factory.setDiskSynchronous(true);
+    } else if (overflowDir == null
+        || overflowDir.equals(ClientSubscriptionConfig.DEFAULT_OVERFLOW_DIRECTORY)) {
+      factory.setDiskStoreName(null);
+      // client subscription queue is always overflow to disk, so do async
+      // see feature request #41479
+      factory.setDiskSynchronous(true);
+    } else {
+      File dir = new File(
+          overflowDir + File.separatorChar + generateNameForClientMsgsRegion(OSProcess.getId()));
+      // This will delete the overflow directory when virtual machine terminates.
+      dir.deleteOnExit();
+      if (!dir.mkdirs() && !dir.isDirectory()) {
+        throw new GemFireIOException(
+            "Could not create client subscription overflow directory: " + dir.getAbsolutePath());
+      }
+      File[] dirs = {dir};
+
+      DiskStoreFactory dsf = cache.createDiskStoreFactory();
+      dsf.setAutoCompact(true).setDiskDirsAndSizes(dirs, new int[] {MAX_VALUE}).create("bsi");
+
+      factory.setDiskStoreName("bsi");
+      // backward compatibility, it was sync
+      factory.setDiskSynchronous(true);
+    }
+    factory.setDataPolicy(DataPolicy.NORMAL);
+    // enable statistics
+    factory.setStatisticsEnabled(true);
+    /* setting LIFO related eviction attributes */
+    if (HARegionQueue.HA_EVICTION_POLICY_ENTRY.equals(ePolicy)) {
+      factory.setEvictionAttributes(
+          EvictionAttributes.createLIFOEntryAttributes(capacity, EvictionAction.OVERFLOW_TO_DISK));
+    } else if (HARegionQueue.HA_EVICTION_POLICY_MEMORY.equals(ePolicy)) {
+      // condition refinement
+      factory.setEvictionAttributes(
+          EvictionAttributes.createLIFOMemoryAttributes(capacity, EvictionAction.OVERFLOW_TO_DISK));
+    } else {
+      // throw invalid eviction policy exception
+      throw new InvalidValueException(
+          String.format("%s Invalid eviction policy", ePolicy));
+    }
+    return factory;
+  }
+
+  private static String createClientMessagesRegion(InternalRegionFactory factory, int port) {
+    // generating unique name in VM for ClientMessagesRegion
+    String regionName = generateNameForClientMsgsRegion(port);
+    try {
+      factory.setDestroyLockFlag(true).setRecreateFlag(false)
+          .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true);
+      factory.create(regionName);
+    } catch (RegionExistsException ree) {
+      InternalGemFireError assErr = new InternalGemFireError("unexpected exception");
+      assErr.initCause(ree);
+      throw assErr;
+    }
+    return regionName;
+  }
+
+  /**
+   * Generates the name for the client subscription using the given id.
+   *
+   * @since GemFire 5.7
+   */
+  public static String generateNameForClientMsgsRegion(int id) {
+    return ClientSubscriptionConfigImpl.CLIENT_SUBSCRIPTION + "_" + id;
+  }
+
+  private static int createSerialNumber() {
+    return profileSN.incrementAndGet();
   }
 
   @Override
@@ -236,9 +323,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   @Override
-  public void setMaximumMessageCount(int maximumMessageCount) {
-    checkRunning();
-    super.setMaximumMessageCount(maximumMessageCount);
+  public int getSocketBufferSize() {
+    return this.socketBufferSize;
   }
 
   @Override
@@ -247,20 +333,14 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   @Override
-  public int getSocketBufferSize() {
-    return this.socketBufferSize;
+  public int getMaximumTimeBetweenPings() {
+    return this.maximumTimeBetweenPings;
   }
 
   @Override
   public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) {
     this.maximumTimeBetweenPings = maximumTimeBetweenPings;
   }
-
-  @Override
-  public int getMaximumTimeBetweenPings() {
-    return this.maximumTimeBetweenPings;
-  }
-
 
   @Override
   public void setLoadPollInterval(long loadPollInterval) {
@@ -271,6 +351,12 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   @Override
   public int getMaximumMessageCount() {
     return this.maximumMessageCount;
+  }
+
+  @Override
+  public void setMaximumMessageCount(int maximumMessageCount) {
+    checkRunning();
+    super.setMaximumMessageCount(maximumMessageCount);
   }
 
   @Override
@@ -437,6 +523,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return getExternalAddress(true);
   }
 
+  // DistributionAdvisee methods
+
   public String getExternalAddress(boolean checkServerRunning) {
     if (checkServerRunning) {
       if (!this.isRunning()) {
@@ -561,8 +649,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return this.acceptor;
   }
 
-  // DistributionAdvisee methods
-
   @Override
   public DistributionManager getDistributionManager() {
     return getSystem().getDistributionManager();
@@ -581,98 +667,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   @Override
   public Set getAllClientSessions() {
     return new HashSet(getCacheClientNotifier().getClientProxies());
-  }
-
-  /**
-   * create client subscription
-   *
-   * @return client subscription name
-   * @since GemFire 5.7
-   */
-  public static String clientMessagesRegion(InternalCache cache, String ePolicy, int capacity,
-      int port, String overFlowDir, boolean isDiskStore) {
-    InternalRegionFactory factory =
-        getRegionFactoryForClientMessagesRegion(cache, ePolicy, capacity, overFlowDir, isDiskStore);
-    return createClientMessagesRegion(factory, port);
-  }
-
-  private static InternalRegionFactory getRegionFactoryForClientMessagesRegion(InternalCache cache,
-      String ePolicy, int capacity, String overflowDir, boolean isDiskStore)
-      throws InvalidValueException, GemFireIOException {
-    InternalRegionFactory factory = cache.createInternalRegionFactory();
-    factory.setScope(Scope.LOCAL);
-
-    if (isDiskStore) {
-      // overflowDir parameter is actually diskstore name
-      factory.setDiskStoreName(overflowDir);
-      // client subscription queue is always overflow to disk, so do async
-      // see feature request #41479
-      factory.setDiskSynchronous(true);
-    } else if (overflowDir == null
-        || overflowDir.equals(ClientSubscriptionConfig.DEFAULT_OVERFLOW_DIRECTORY)) {
-      factory.setDiskStoreName(null);
-      // client subscription queue is always overflow to disk, so do async
-      // see feature request #41479
-      factory.setDiskSynchronous(true);
-    } else {
-      File dir = new File(
-          overflowDir + File.separatorChar + generateNameForClientMsgsRegion(OSProcess.getId()));
-      // This will delete the overflow directory when virtual machine terminates.
-      dir.deleteOnExit();
-      if (!dir.mkdirs() && !dir.isDirectory()) {
-        throw new GemFireIOException(
-            "Could not create client subscription overflow directory: " + dir.getAbsolutePath());
-      }
-      File[] dirs = {dir};
-
-      DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      dsf.setAutoCompact(true).setDiskDirsAndSizes(dirs, new int[] {MAX_VALUE}).create("bsi");
-
-      factory.setDiskStoreName("bsi");
-      // backward compatibility, it was sync
-      factory.setDiskSynchronous(true);
-    }
-    factory.setDataPolicy(DataPolicy.NORMAL);
-    // enable statistics
-    factory.setStatisticsEnabled(true);
-    /* setting LIFO related eviction attributes */
-    if (HARegionQueue.HA_EVICTION_POLICY_ENTRY.equals(ePolicy)) {
-      factory.setEvictionAttributes(
-          EvictionAttributes.createLIFOEntryAttributes(capacity, EvictionAction.OVERFLOW_TO_DISK));
-    } else if (HARegionQueue.HA_EVICTION_POLICY_MEMORY.equals(ePolicy)) {
-      // condition refinement
-      factory.setEvictionAttributes(
-          EvictionAttributes.createLIFOMemoryAttributes(capacity, EvictionAction.OVERFLOW_TO_DISK));
-    } else {
-      // throw invalid eviction policy exception
-      throw new InvalidValueException(
-          String.format("%s Invalid eviction policy", ePolicy));
-    }
-    return factory;
-  }
-
-  private static String createClientMessagesRegion(InternalRegionFactory factory, int port) {
-    // generating unique name in VM for ClientMessagesRegion
-    String regionName = generateNameForClientMsgsRegion(port);
-    try {
-      factory.setDestroyLockFlag(true).setRecreateFlag(false)
-          .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true);
-      factory.create(regionName);
-    } catch (RegionExistsException ree) {
-      InternalGemFireError assErr = new InternalGemFireError("unexpected exception");
-      assErr.initCause(ree);
-      throw assErr;
-    }
-    return regionName;
-  }
-
-  /**
-   * Generates the name for the client subscription using the given id.
-   *
-   * @since GemFire 5.7
-   */
-  public static String generateNameForClientMsgsRegion(int id) {
-    return ClientSubscriptionConfigImpl.CLIENT_SUBSCRIPTION + "_" + id;
   }
 
   /*
@@ -719,13 +713,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   @Override
   public String getFullPath() {
     return getName();
-  }
-
-  @MakeNotStatic
-  private static final AtomicInteger profileSN = new AtomicInteger();
-
-  private static int createSerialNumber() {
-    return profileSN.incrementAndGet();
   }
 
   /**

@@ -45,6 +45,7 @@ dependencies {
   testCompileOnly(platform(project(':boms:geode-all-bom')))
   testCompileOnly('io.swagger:swagger-annotations')
 
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')

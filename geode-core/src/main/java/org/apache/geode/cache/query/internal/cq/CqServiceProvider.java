@@ -16,20 +16,22 @@ package org.apache.geode.cache.query.internal.cq;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class CqServiceProvider {
 
-  @Immutable
-  private static final CqServiceFactory factory;
-
+  /**
+   * A debug flag used for testing vMotion during CQ registration
+   */
+  public static final boolean VMOTION_DURING_CQ_REGISTRATION_FLAG = false;
   /**
    * System property to maintain the CQ event references for optimizing the updates. This will allow
    * running the CQ query only once during update events.
@@ -37,24 +39,29 @@ public class CqServiceProvider {
   @MutableForTesting
   public static boolean MAINTAIN_KEYS = Boolean
       .parseBoolean(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS", "true"));
+  @Immutable
+  private static CqServiceFactory factory;
 
-  /**
-   * A debug flag used for testing vMotion during CQ registration
-   */
-  public static final boolean VMOTION_DURING_CQ_REGISTRATION_FLAG = false;
+  private CqServiceProvider() {}
 
-  static {
-    ServiceLoader<CqServiceFactory> loader = ServiceLoader.load(CqServiceFactory.class);
-    Iterator<CqServiceFactory> itr = loader.iterator();
-    if (!itr.hasNext()) {
-      factory = null;
-    } else {
-      factory = itr.next();
-      factory.initialize();
+  private static void setup(ModuleService moduleService) {
+    if (factory == null) {
+      ModuleServiceResult<Set<CqServiceFactory>> loadServiceResult =
+          moduleService.loadService(CqServiceFactory.class);
+      if (loadServiceResult.isSuccessful()) {
+        for (CqServiceFactory cqServiceFactory : loadServiceResult.getMessage()) {
+          factory = cqServiceFactory;
+          factory.initialize();
+          break;
+        }
+      } else {
+        factory = null;
+      }
     }
   }
 
-  public static CqService create(InternalCache cache) {
+  public static synchronized CqService create(InternalCache cache, ModuleService moduleService) {
+    setup(moduleService);
     if (factory == null) {
       return new MissingCqService();
     }
@@ -69,6 +76,4 @@ public class CqServiceProvider {
       return factory.readCqQuery(in);
     }
   }
-
-  private CqServiceProvider() {}
 }

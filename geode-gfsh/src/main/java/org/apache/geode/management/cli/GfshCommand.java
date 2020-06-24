@@ -42,12 +42,12 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.module.ModuleService;
 
 @Experimental
 public abstract class GfshCommand implements CommandMarker {
   public static final String EXPERIMENTAL = "(Experimental) ";
   private InternalCache cache;
-
 
   public boolean isOnlineCommandAvailable() {
     Gfsh gfsh = Gfsh.getCurrentInstance();
@@ -260,6 +260,9 @@ public abstract class GfshCommand implements CommandMarker {
     } while (System.currentTimeMillis() - startWaitTime < waitTime);
 
     return false;
+  }
 
+  protected ModuleService getModuleService() {
+    return ((InternalCache) this.getCache()).getInternalDistributedSystem().getModuleService();
   }
 }
