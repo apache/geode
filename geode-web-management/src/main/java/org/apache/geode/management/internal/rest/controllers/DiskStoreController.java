@@ -67,7 +67,7 @@ public class DiskStoreController extends AbstractManagementController {
   @ApiOperation(value = "list disk-stores",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result[] | .groups[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
+              value = ".result[] | .groups[] | .runtimeInfo[] + .configuration | {Member:.memberName,\"Disk Store Name\":.name}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(DISK_STORE_CONFIG_ENDPOINT)
   public ClusterManagementListResult<DiskStore, DiskStoreInfo> listDiskStores(
@@ -86,7 +86,7 @@ public class DiskStoreController extends AbstractManagementController {
   @ApiOperation(value = "get disk-store",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result | .groups[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
+              value = ".result[] | .groups[] | .runtimeInfo[] + .configuration | {Member:.memberName,\"Disk Store Name\":.name}")})})
   @GetMapping(DISK_STORE_CONFIG_ENDPOINT + "/{id}")
   public ClusterManagementGetResult<DiskStore, DiskStoreInfo> getDiskStore(
       @PathVariable(name = "id") String id) {
