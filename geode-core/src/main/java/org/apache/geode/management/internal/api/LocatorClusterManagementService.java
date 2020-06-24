@@ -233,7 +233,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
         groups.add(groupName);
         targetedMembers = memberValidator.findServers(groupName);
       }
-
       ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
       // execute function on all targeted members
@@ -241,7 +240,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
           new CacheRealizationFunction(),
           config, CacheElementOperation.CREATE,
           targetedMembers);
-
       functionResults.forEach(result::addMemberStatus);
 
       // if any false result is added to the member list
