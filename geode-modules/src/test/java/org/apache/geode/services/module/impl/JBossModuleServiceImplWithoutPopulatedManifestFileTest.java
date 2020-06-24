@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
 import org.jboss.modules.ModuleClassLoader;
 import org.junit.After;
 import org.junit.Before;

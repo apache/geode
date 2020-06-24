@@ -47,7 +47,6 @@ public class ServiceLoaderModuleService implements ModuleService {
 
   private Logger logger;
 
-
   public ServiceLoaderModuleService(Logger logger) {
     this.logger = logger;
   }

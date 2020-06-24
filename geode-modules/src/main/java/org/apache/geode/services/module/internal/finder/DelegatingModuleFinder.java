@@ -42,14 +42,18 @@ import org.jboss.modules.ModuleSpec;
  * @see ModuleSpec
  */
 public class DelegatingModuleFinder implements ModuleFinder {
-  private final Logger logger;
+  // private final Logger logger;
 
   private SortedSet<Tuple2<String, ModuleFinder>> finders =
       TreeSet.of(new Tuple2<>("JDK", JDKModuleFinder.getInstance()));
 
-  public DelegatingModuleFinder(Logger logger) {
-    this.logger = logger;
+  public DelegatingModuleFinder() {
+    finders.add(JDKModuleFinder.getInstance());
   }
+
+  // public DelegatingModuleFinder(Logger logger) {
+  // this.logger = logger;
+  // }
 
   /**
    * Adds a {@link ModuleFinder} to be used for finding modules.
@@ -79,11 +83,11 @@ public class DelegatingModuleFinder implements ModuleFinder {
     for (Tuple2<String, ModuleFinder> finder : finders) {
       ModuleSpec moduleSpec = finder._2().findModule(name, delegateLoader);
       if (moduleSpec != null) {
-        logger.debug(String.format("Found module specification for module named: %s ", name));
+        // logger.debug(String.format("Found module specification for module named: %s ", name));
         return moduleSpec;
       }
     }
-    logger.debug(String.format("No module specification for module named: %s found", name));
+    // logger.debug(String.format("No module specification for module named: %s found", name));
     return null;
   }
 
