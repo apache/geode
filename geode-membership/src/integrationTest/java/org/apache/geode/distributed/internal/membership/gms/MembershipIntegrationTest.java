@@ -53,8 +53,8 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
  * Tests of using the membership APIs to make multiple Membership systems that communicate

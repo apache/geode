@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingF
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
@@ -68,7 +69,8 @@ public class ServerConnectionFactoryTest {
   @Test
   public void newClientProtocolFailsWithoutSystemPropertySet() {
     Throwable thrown = catchThrowable(
-        () -> new ServerConnectionFactory().makeServerConnection(mock(Socket.class),
+        () -> new ServerConnectionFactory(ModuleService.DEFAULT).makeServerConnection(
+            mock(Socket.class),
             mock(InternalCache.class), mock(CachedRegionHelper.class), mock(CacheServerStats.class),
             0, 0, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(),
             mock(AcceptorImpl.class), mock(SecurityService.class)));
@@ -80,7 +82,8 @@ public class ServerConnectionFactoryTest {
   public void newClientProtocolFailsWithSystemPropertySet() {
     System.setProperty("geode.feature-protobuf-protocol", "true");
     Throwable thrown = catchThrowable(
-        () -> new ServerConnectionFactory().makeServerConnection(mock(Socket.class),
+        () -> new ServerConnectionFactory(ModuleService.DEFAULT).makeServerConnection(
+            mock(Socket.class),
             mock(InternalCache.class), mock(CachedRegionHelper.class), mock(CacheServerStats.class),
             0, 0, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(),
             mock(AcceptorImpl.class), mock(SecurityService.class)));
@@ -99,7 +102,8 @@ public class ServerConnectionFactoryTest {
     when(socket.getInputStream()).thenReturn(mock(InputStream.class));
 
     ServerConnection serverConnection =
-        new ServerConnectionFactory().makeServerConnection(socket, mock(InternalCache.class),
+        new ServerConnectionFactory(ModuleService.DEFAULT).makeServerConnection(socket,
+            mock(InternalCache.class),
             mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
             communicationMode.getModeNumber(),
             mock(AcceptorImpl.class), mock(SecurityService.class));
@@ -120,7 +124,8 @@ public class ServerConnectionFactoryTest {
     when(socket.getInputStream()).thenReturn(mock(InputStream.class));
 
     ServerConnection serverConnection =
-        new ServerConnectionFactory().makeServerConnection(socket, mock(InternalCache.class),
+        new ServerConnectionFactory(ModuleService.DEFAULT).makeServerConnection(socket,
+            mock(InternalCache.class),
             mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
             communicationMode.getModeNumber(),
             mock(AcceptorImpl.class), mock(SecurityService.class));

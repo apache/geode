@@ -40,6 +40,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.LoggingSession;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalLocatorIntegrationTest {
 
@@ -99,7 +100,7 @@ public class InternalLocatorIntegrationTest {
       internalLocator =
           new InternalLocator(port, loggingSession, logFile, logWriter, securityLogWriter,
               bindAddress, hostnameForClients, distributedSystemProperties, distributionConfig,
-              workingDirectory);
+              workingDirectory, ModuleService.DEFAULT);
     }).doesNotThrowAnyException();
   }
 
@@ -107,7 +108,7 @@ public class InternalLocatorIntegrationTest {
   public void restartingClusterConfigurationDoesNotThrowException() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
-        distributedSystemProperties, hostnameForClients, workingDirectory);
+        distributedSystemProperties, hostnameForClients, workingDirectory, ModuleService.DEFAULT);
     port = internalLocator.getPort();
     internalLocator.stop(true, true, false);
     assertThat(InternalLocator.getLocator()).isNull();
@@ -121,7 +122,7 @@ public class InternalLocatorIntegrationTest {
   public void startedLocatorIsRunning() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
-        distributedSystemProperties, hostnameForClients, workingDirectory);
+        distributedSystemProperties, hostnameForClients, workingDirectory, ModuleService.DEFAULT);
     port = internalLocator.getPort();
 
     assertThat(internalLocator.isStopped()).isFalse();
@@ -131,7 +132,7 @@ public class InternalLocatorIntegrationTest {
   public void startedLocatorHasLocator() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
-        distributedSystemProperties, hostnameForClients, workingDirectory);
+        distributedSystemProperties, hostnameForClients, workingDirectory, ModuleService.DEFAULT);
     port = internalLocator.getPort();
 
     assertThat(InternalLocator.hasLocator()).isTrue();
@@ -141,7 +142,7 @@ public class InternalLocatorIntegrationTest {
   public void stoppedLocatorIsStopped() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
-        distributedSystemProperties, hostnameForClients, workingDirectory);
+        distributedSystemProperties, hostnameForClients, workingDirectory, ModuleService.DEFAULT);
     port = internalLocator.getPort();
 
     internalLocator.stop();
@@ -153,7 +154,7 @@ public class InternalLocatorIntegrationTest {
   public void stoppedLocatorDoesNotHaveLocator() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
-        distributedSystemProperties, hostnameForClients, workingDirectory);
+        distributedSystemProperties, hostnameForClients, workingDirectory, ModuleService.DEFAULT);
     port = internalLocator.getPort();
 
     internalLocator.stop();
@@ -172,7 +173,7 @@ public class InternalLocatorIntegrationTest {
     properties.put("load-cluster-configuration-from-dir", "true");
     assertThatThrownBy(() -> InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
-        properties, hostnameForClients, workingDirectory)).isInstanceOf(RuntimeException.class);
+        properties, hostnameForClients, workingDirectory, ModuleService.DEFAULT)).isInstanceOf(RuntimeException.class);
 
     assertThat(InternalLocator.hasLocator()).isFalse();
   }

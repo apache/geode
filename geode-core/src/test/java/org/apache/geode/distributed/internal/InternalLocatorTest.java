@@ -40,6 +40,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.LoggingSession;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.BaseManagementService;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalLocatorTest {
   private InternalLocator internalLocator; // the instance under test
@@ -48,9 +49,11 @@ public class InternalLocatorTest {
   private BaseManagementService managementService;
   private AgentUtil agentUtil;
   private HttpService httpService;
+  private InternalDistributedSystem internalDistributedSystem;
 
   @Before
   public void setup() throws URISyntaxException {
+    internalDistributedSystem = mock(InternalDistributedSystem.class);
     distributionConfig = mock(DistributionConfigImpl.class);
     cache = mock(InternalCacheForClientAccess.class);
     managementService = mock(BaseManagementService.class);
@@ -71,11 +74,13 @@ public class InternalLocatorTest {
     when(cache.getOptionalService(HttpService.class))
         .thenReturn(Optional.of(httpService));
     when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
+    // when(internalLocator.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getModuleService()).thenReturn(ModuleService.DEFAULT);
     when(agentUtil.findWarLocation("geode-web-management")).thenReturn(uri);
     BaseManagementService.setManagementService(cache, managementService);
 
     internalLocator = new InternalLocator(0, loggingSession, null, null, null, null,
-        null, null, distributionConfig, null);
+        null, null, distributionConfig, null, ModuleService.DEFAULT);
   }
 
   @After

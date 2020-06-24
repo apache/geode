@@ -144,7 +144,7 @@ public class MembershipJUnitTest {
       // to be created
       internalLocator =
           InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
-              new Properties(), null, temporaryFolder.getRoot().toPath());
+              new Properties(), null, temporaryFolder.getRoot().toPath(), ModuleService.DEFAULT);
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -337,7 +337,7 @@ public class MembershipJUnitTest {
       // to be created
       internalLocator =
           InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
-              temporaryFolder.getRoot().toPath());
+              temporaryFolder.getRoot().toPath(), ModuleService.DEFAULT);
 
       // create configuration objects
       Properties nonDefault = new Properties();

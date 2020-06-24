@@ -61,6 +61,7 @@ import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
@@ -69,19 +70,16 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
  */
 public class GemFireCacheImplTest {
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
   private CacheConfig cacheConfig;
   private InternalDistributedSystem internalDistributedSystem;
   private PoolFactory poolFactory;
   private ReplyProcessor21Factory replyProcessor21Factory;
   private TypeRegistry typeRegistry;
-
   private GemFireCacheImpl gemFireCacheImpl;
-
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-
-  @Rule
-  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Before
   public void setUp() {
@@ -103,6 +101,7 @@ public class GemFireCacheImplTest {
         .thenReturn(distributionManager);
     when(internalDistributedSystem.getCancelCriterion())
         .thenReturn(mock(CancelCriterion.class));
+    when(internalDistributedSystem.getModuleService()).thenReturn(ModuleService.DEFAULT);
     when(replyProcessor21.getProcessorId())
         .thenReturn(21);
     when(replyProcessor21Factory.create(any(), any()))

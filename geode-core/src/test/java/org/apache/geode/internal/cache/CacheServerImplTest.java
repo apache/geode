@@ -46,6 +46,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.statistics.StatisticsManager;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -89,6 +90,7 @@ public class CacheServerImplTest {
     when(system.getConfig()).thenReturn(config);
     when(system.getProperties()).thenReturn(new Properties());
     when(system.getStatisticsManager()).thenReturn(statisticsManager);
+    when(cache.getInternalDistributedSystem().getModuleService()).thenReturn(ModuleService.DEFAULT);
   }
 
   @Test
