@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.io.FileInputStream;
@@ -136,11 +135,6 @@ public class GeodeRedisServer {
   private boolean singleThreadPerConnection;
 
   /**
-   * Logging level
-   */
-  private final String logLevel;
-
-  /**
    * The cache instance pointer on this vm
    */
   private Cache cache;
@@ -205,54 +199,37 @@ public class GeodeRedisServer {
 
   /**
    * Constructor for {@code GeodeRedisServer} that will start the server on a random port and bind
-   * to the first non-loopback address
+   * to all local addresses
    */
   public GeodeRedisServer() {
-    this(null, RANDOM_PORT_INDICATOR, null);
+    this(null, RANDOM_PORT_INDICATOR);
   }
 
   /**
    * Constructor for {@code GeodeRedisServer} that will start the server on the given port and bind
-   * to the first non-loopback address
+   * to all local addresses
    *
-   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by
-   *        default
+   * @param port The port the server will bind to
    */
   public GeodeRedisServer(int port) {
-    this(null, port, null);
+    this(null, port);
   }
 
   /**
    * Constructor for {@code GeodeRedisServer} that will start the server and bind to the given
-   * address and port
-   *
-   * @param bindAddress The address to which the server will attempt to bind to
-   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
-   *        by default, and will throw IllegalArgumentException if argument is less than 0
-   */
-  public GeodeRedisServer(String bindAddress, int port) {
-    this(bindAddress, port, null);
-  }
-
-  /**
-   * Constructor for {@code GeodeRedisServer} that will start the server and bind to the given
-   * address and port. Keep in mind that the log level configuration will only be set if a {@link
-   * Cache} does not already exist, if one already exists then setting that property will have no
-   * effect.
+   * address and port.
    *
    * @param bindAddress The address to which the server will attempt to bind to
    * @param port The port the server will bind to, will throw an IllegalArgumentException if
    *        argument is less than 0. If the port is
    *        {@value #RANDOM_PORT_INDICATOR} a random port is assigned.
-   * @param logLevel The logging level to be used by GemFire
    */
-  public GeodeRedisServer(String bindAddress, int port, String logLevel) {
+  public GeodeRedisServer(String bindAddress, int port) {
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException("Redis port cannot be less than 0");
     }
     serverPort = port;
     this.bindAddress = bindAddress;
-    this.logLevel = logLevel;
     numWorkerThreads = setNumWorkerThreads();
     singleThreadPerConnection = numWorkerThreads == 0;
     numSelectorThreads = 1;
@@ -324,9 +301,6 @@ public class GeodeRedisServer {
         cache = GemFireCacheImpl.getInstance();
         if (cache == null) {
           CacheFactory cacheFactory = new CacheFactory();
-          if (logLevel != null) {
-            cacheFactory.set(LOG_LEVEL, logLevel);
-          }
           cache = cacheFactory.create();
         }
       }
