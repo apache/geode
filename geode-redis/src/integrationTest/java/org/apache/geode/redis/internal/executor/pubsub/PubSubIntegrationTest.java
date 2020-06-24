@@ -223,6 +223,7 @@ public class PubSubIntegrationTest {
       waitFor(() -> mockSubscriber.unsubscribeInfos.size() == 1);
 
       Long result = publisher.publish("salutations", "heyho");
+      waitFor(() -> mockSubscriber.getReceivedMessages().size() == 1);
 
       assertThat(result).isEqualTo(1);
       assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo("heyho");
