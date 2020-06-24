@@ -19,9 +19,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ConfigurationBuilder;
 
 import org.apache.geode.cache.execute.Function;
@@ -30,16 +32,20 @@ public class FunctionScanner {
 
   public Collection<String> findFunctionsInJar(File jarFile) throws IOException {
     URL jarFileUrl = jarFile.toURI().toURL();
-    ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-
     ClassLoader jarClassLoader = new URLClassLoader(new URL[] {jarFileUrl});
-    configurationBuilder.setUrls(jarFileUrl);
-    configurationBuilder.setClassLoaders(new ClassLoader[] {jarClassLoader});
-    Reflections reflections = new Reflections(configurationBuilder);
 
-    return reflections.getSubTypesOf(Function.class)
-        .stream()
-        .map(Class::getCanonicalName)
-        .collect(Collectors.toSet());
+    Reflections reflections = new Reflections(new ConfigurationBuilder()
+        .setUrls(jarFileUrl)
+        .addClassLoader(jarClassLoader)
+        .setScanners(new SubTypesScanner()));
+
+    if (reflections.getStore().keySet().isEmpty()) {
+      return Collections.emptyList();
+    } else {
+      return reflections.getSubTypesOf(Function.class)
+          .stream()
+          .map(Class::getCanonicalName)
+          .collect(Collectors.toSet());
+    }
   }
 }
