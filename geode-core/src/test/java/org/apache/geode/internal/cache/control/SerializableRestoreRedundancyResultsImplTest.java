@@ -24,26 +24,29 @@ import static org.apache.geode.management.runtime.RegionRedundancyStatus.Redunda
 import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.FAILURE;
 import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.SUCCESS;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
+import org.apache.geode.management.internal.operation.RegionRedundancyStatusImpl;
+import org.apache.geode.management.internal.operation.RestoreRedundancyResultsImpl;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
 import org.apache.geode.management.runtime.RestoreRedundancyResults;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class SerializableRestoreRedundancyResultsImplTest {
+  public static final String TEST_STRING = "Test";
   private final RegionRedundancyStatus successfulRegionResult =
       mock(SerializableRegionRedundancyStatusImpl.class);
   private final String successfulRegionName = "successfulRegion";
@@ -57,6 +60,7 @@ public class SerializableRestoreRedundancyResultsImplTest {
   private final int transfersCompleted = 5;
   private final long transferTime = 1234;
   private SerializableRestoreRedundancyResultsImpl results;
+  private final ObjectMapper geodeMapper = GeodeJsonMapper.getMapper();
 
   @Before
   public void setUp() {
@@ -74,14 +78,14 @@ public class SerializableRestoreRedundancyResultsImplTest {
   @Test
   public void initialStateIsSuccess() {
     results = new SerializableRestoreRedundancyResultsImpl();
-    assertThat(results.getRegionOperationStatus(), is(SUCCESS));
+    assertThat(results.getRegionOperationStatus()).isEqualTo(SUCCESS);
   }
 
   @Test
   public void getStatusReturnsSuccessWhenAllRegionsHaveFullySatisfiedRedundancy() {
     results.addRegionResult(successfulRegionResult);
 
-    assertThat(results.getRegionOperationStatus(), is(SUCCESS));
+    assertThat(results.getRegionOperationStatus()).isEqualTo(SUCCESS);
   }
 
   @Test
@@ -89,7 +93,7 @@ public class SerializableRestoreRedundancyResultsImplTest {
     results.addRegionResult(successfulRegionResult);
     results.addRegionResult(underRedundancyRegionResult);
 
-    assertThat(results.getRegionOperationStatus(), is(FAILURE));
+    assertThat(results.getRegionOperationStatus()).isEqualTo(FAILURE);
   }
 
   @Test
@@ -97,7 +101,7 @@ public class SerializableRestoreRedundancyResultsImplTest {
     results.addRegionResult(successfulRegionResult);
     results.addRegionResult(zeroRedundancyRegionResult);
 
-    assertThat(results.getRegionOperationStatus(), is(FAILURE));
+    assertThat(results.getRegionOperationStatus()).isEqualTo(FAILURE);
   }
 
   @Test
@@ -110,14 +114,14 @@ public class SerializableRestoreRedundancyResultsImplTest {
     String message = results.getRegionOperationMessage();
     List<String> messageLines = Arrays.asList(message.split(System.lineSeparator()));
 
-    assertThat(messageLines, contains(NO_REDUNDANT_COPIES_FOR_REGIONS,
+    assertThat(messageLines).contains(NO_REDUNDANT_COPIES_FOR_REGIONS,
         zeroRedundancyRegionResult.toString(),
         REDUNDANCY_NOT_SATISFIED_FOR_REGIONS,
         underRedundancyRegionResult.toString(),
         REDUNDANCY_SATISFIED_FOR_REGIONS,
         successfulRegionResult.toString(),
         PRIMARY_TRANSFERS_COMPLETED + transfersCompleted,
-        PRIMARY_TRANSFER_TIME + transferTime));
+        PRIMARY_TRANSFER_TIME + transferTime);
   }
 
   @Test
@@ -128,19 +132,20 @@ public class SerializableRestoreRedundancyResultsImplTest {
 
     Map<String, RegionRedundancyStatus> zeroRedundancyResults =
         results.getZeroRedundancyRegionResults();
-    assertThat(zeroRedundancyResults.size(), is(1));
-    assertThat(zeroRedundancyResults.get(zeroRedundancyRegionName), is(zeroRedundancyRegionResult));
+    assertThat(zeroRedundancyResults.size()).isEqualTo(1);
+    assertThat(zeroRedundancyResults.get(zeroRedundancyRegionName))
+        .isEqualTo(zeroRedundancyRegionResult);
 
     Map<String, RegionRedundancyStatus> underRedundancyResults =
         results.getUnderRedundancyRegionResults();
-    assertThat(underRedundancyResults.size(), is(1));
-    assertThat(underRedundancyResults.get(underRedundancyRegionName),
-        is(underRedundancyRegionResult));
+    assertThat(underRedundancyResults.size()).isEqualTo(1);
+    assertThat(underRedundancyResults.get(underRedundancyRegionName))
+        .isEqualTo(underRedundancyRegionResult);
 
     Map<String, RegionRedundancyStatus> successfulRegionResults =
         results.getSatisfiedRedundancyRegionResults();
-    assertThat(successfulRegionResults.size(), is(1));
-    assertThat(successfulRegionResults.get(successfulRegionName), is(successfulRegionResult));
+    assertThat(successfulRegionResults.size()).isEqualTo(1);
+    assertThat(successfulRegionResults.get(successfulRegionName)).isEqualTo(successfulRegionResult);
   }
 
   @Test
@@ -153,39 +158,66 @@ public class SerializableRestoreRedundancyResultsImplTest {
     when(regionResults.getSatisfiedRedundancyRegionResults())
         .thenReturn(Collections.singletonMap(successfulRegionName, successfulRegionResult));
     when(regionResults.getTotalPrimaryTransfersCompleted()).thenReturn(transfersCompleted);
-    when(regionResults.getTotalPrimaryTransferTime()).thenReturn(Duration.ofMillis(transferTime));
+    when(regionResults.getTotalPrimaryTransferTime()).thenReturn(transferTime);
 
     results.addRegionResults(regionResults);
 
     Map<String, RegionRedundancyStatus> zeroRedundancyResults =
         results.getZeroRedundancyRegionResults();
-    assertThat(zeroRedundancyResults.size(), is(1));
-    assertThat(zeroRedundancyResults.get(zeroRedundancyRegionName), is(zeroRedundancyRegionResult));
+    assertThat(zeroRedundancyResults.size()).isEqualTo(1);
+    assertThat(zeroRedundancyResults.get(zeroRedundancyRegionName))
+        .isEqualTo(zeroRedundancyRegionResult);
 
     Map<String, RegionRedundancyStatus> underRedundancyResults =
         results.getUnderRedundancyRegionResults();
-    assertThat(underRedundancyResults.size(), is(1));
-    assertThat(underRedundancyResults.get(underRedundancyRegionName),
-        is(underRedundancyRegionResult));
+    assertThat(underRedundancyResults.size()).isEqualTo(1);
+    assertThat(underRedundancyResults.get(underRedundancyRegionName))
+        .isEqualTo(underRedundancyRegionResult);
 
     Map<String, RegionRedundancyStatus> successfulRegionResults =
         results.getSatisfiedRedundancyRegionResults();
-    assertThat(successfulRegionResults.size(), is(1));
-    assertThat(successfulRegionResults.get(successfulRegionName), is(successfulRegionResult));
+    assertThat(successfulRegionResults.size()).isEqualTo(1);
+    assertThat(successfulRegionResults.get(successfulRegionName)).isEqualTo(successfulRegionResult);
 
-    assertThat(results.getTotalPrimaryTransfersCompleted(), is(transfersCompleted));
-    assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(transferTime));
+    assertThat(results.getTotalPrimaryTransfersCompleted()).isEqualTo(transfersCompleted);
+    assertThat(results.getTotalPrimaryTransferTime()).isEqualTo(transferTime);
   }
 
   @Test
   public void addPrimaryDetailsUpdatesValue() {
-    assertThat(results.getTotalPrimaryTransfersCompleted(), is(0));
-    assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(0L));
+    assertThat(results.getTotalPrimaryTransfersCompleted()).isEqualTo(0);
+    assertThat(results.getTotalPrimaryTransferTime()).isEqualTo(0L);
     results.addPrimaryReassignmentDetails(details);
-    assertThat(results.getTotalPrimaryTransfersCompleted(), is(transfersCompleted));
-    assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(transferTime));
+    assertThat(results.getTotalPrimaryTransfersCompleted()).isEqualTo(transfersCompleted);
+    assertThat(results.getTotalPrimaryTransferTime()).isEqualTo(transferTime);
     results.addPrimaryReassignmentDetails(details);
-    assertThat(results.getTotalPrimaryTransfersCompleted(), is(transfersCompleted * 2));
-    assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(transferTime * 2));
+    assertThat(results.getTotalPrimaryTransfersCompleted()).isEqualTo(transfersCompleted * 2);
+    assertThat(results.getTotalPrimaryTransferTime()).isEqualTo(transferTime * 2);
+  }
+
+  @Test
+  public void testSerializable() throws JsonProcessingException {
+
+    RestoreRedundancyResultsImpl restoreRedundancyResults = new RestoreRedundancyResultsImpl();
+    restoreRedundancyResults.setStatusMessage(TEST_STRING);
+    restoreRedundancyResults.setSuccess(true);
+    restoreRedundancyResults.setTotalPrimaryTransfersCompleted(150);
+    restoreRedundancyResults.setTotalPrimaryTransferTime(250);
+    RegionRedundancyStatusImpl regionRedundancyStatus = new RegionRedundancyStatusImpl();
+    regionRedundancyStatus.setActualRedundancy(1);
+    regionRedundancyStatus.setConfiguredRedundancy(1);
+    regionRedundancyStatus.setRegionName("/foo");
+    regionRedundancyStatus.setStatus(SATISFIED);
+    restoreRedundancyResults.addRegionResult(regionRedundancyStatus);
+    String jsonString = geodeMapper.writeValueAsString(restoreRedundancyResults);
+    // deserialize the class
+
+
+    RestoreRedundancyResultsImpl value =
+        geodeMapper.readValue(jsonString, RestoreRedundancyResultsImpl.class);
+
+    assertThat(value).usingRecursiveComparison().isEqualTo(restoreRedundancyResults);
+
+
   }
 }
