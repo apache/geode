@@ -144,8 +144,13 @@ public class IndexUsageInJoinQueryDistributedTest implements Serializable {
   }
 
   private void executeQuery(int numInstruments) throws Exception {
+    ClientCache cache = ClusterStartupRule.getClientCache();
+    Region productRegion = cache.getRegion(PRODUCT_REGION_NAME);
+    Region instrumentRegion = cache.getRegion(INSTRUMENT_REGION_NAME);
     String queryString =
-        "<trace> select i,p from /instrument i, /product p where i.productId = p.productId and i.types['TYPE']=$1";
+        "<trace> select i,p from " + instrumentRegion.getFullPath() + " i, "
+            + productRegion.getFullPath()
+            + " p where i.productId = p.productId and i.types['TYPE']=$1";
     Query query = ClusterStartupRule.getClientCache().getQueryService().newQuery(queryString);
     Collection results = (Collection) query.execute(new Object[] {"TYPE1"});
     assertThat(results.size()).isEqualTo(numInstruments);
