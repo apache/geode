@@ -24,10 +24,15 @@ import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.services.module.ModuleService;
 
 public class ProtobufProtocolService implements ClientProtocolService {
   private volatile ClientStatistics statistics;
-  private final ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
+  private final ProtobufStreamProcessor protobufStreamProcessor;
+
+  public ProtobufProtocolService(ModuleService moduleService) {
+    this.protobufStreamProcessor = new ProtobufStreamProcessor(moduleService);;
+  }
 
   @Override
   public synchronized void initializeStatistics(String statisticsName, StatisticsFactory factory) {

@@ -1853,7 +1853,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     ModuleServiceResult<Set<CacheService>> loadedServices =
         modulesService.loadService(CacheService.class);
     if (loadedServices.isSuccessful()) {
-      // ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
       for (CacheService service : loadedServices.getMessage()) {
         try {
           if (service.init(this)) {
