@@ -44,7 +44,7 @@ public class DiskStoreValidatorTest {
     String dirName = "diskdir";
     diskDir.setName(dirName);
     int dirSizeInteger = 1024;
-    diskDir.setDirSize(Integer.toString(dirSizeInteger));
+    diskDir.setDirSize(dirSizeInteger);
     diskStore.setDirectories(Collections.singletonList(diskDir));
   }
 
@@ -158,7 +158,7 @@ public class DiskStoreValidatorTest {
   public void dirSizesMustBePositiveNumber() {
     diskStoreValidator.validate(CacheElementOperation.CREATE, diskStore);
 
-    diskDir.setDirSize("-1");
+    diskDir.setDirSize(-1);
     diskStore.setDirectories(Collections.singletonList(diskDir));
     assertThatThrownBy(() -> diskStoreValidator.validate(CacheElementOperation.CREATE, diskStore))
         .isInstanceOf(IllegalArgumentException.class)

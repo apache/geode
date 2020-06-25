@@ -68,7 +68,9 @@ public class DiskStoreConverter extends ConfigurationConverter<DiskStore, DiskSt
 
     diskStore.setDirectories(xmlObject.getDiskDirs().stream().map(diskDirType -> {
       DiskDir diskDir = new DiskDir();
-      diskDir.setDirSize(diskDirType.getDirSize());
+      if (diskDirType.getDirSize() != null) {
+        diskDir.setDirSize(Integer.parseInt(diskDirType.getDirSize()));
+      }
       diskDir.setName(diskDirType.getContent());
       return diskDir;
     }).collect(Collectors.toList()));
@@ -113,7 +115,9 @@ public class DiskStoreConverter extends ConfigurationConverter<DiskStore, DiskSt
     diskStoreType.setDiskDirs(configObject.getDirectories().stream().map(diskDir -> {
       DiskDirType diskDirType = new DiskDirType();
       diskDirType.setContent(diskDir.getName());
-      diskDirType.setDirSize(diskDir.getDirSize());
+      if (diskDir.getDirSize() != null) {
+        diskDirType.setDirSize(diskDir.getDirSize().toString());
+      }
       return diskDirType;
     }).collect(Collectors.toList()));
 

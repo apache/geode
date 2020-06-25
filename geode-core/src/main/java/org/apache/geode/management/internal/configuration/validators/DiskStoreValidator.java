@@ -76,10 +76,10 @@ public class DiskStoreValidator implements ConfigurationValidator<DiskStore> {
       checkWriteBufferSize(config.getWriteBufferSize());
     }
     verifyNonNegativeDirSize(config.getDirectories().stream().mapToInt(diskDir -> {
-      if (StringUtils.isEmpty(diskDir.getDirSize())) {
-        return Integer.MAX_VALUE;
+      if (diskDir.getDirSize() != null) {
+        return diskDir.getDirSize();
       } else {
-        return Integer.parseInt(diskDir.getDirSize());
+        return Integer.MAX_VALUE;
       }
     }).toArray());
   }
