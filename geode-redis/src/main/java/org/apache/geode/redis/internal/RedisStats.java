@@ -39,6 +39,9 @@ public class RedisStats {
       new EnumMap<>(RedisCommandType.class);
 
   private static final int clientId;
+  private static final int passiveExpirationChecksCompletedId;
+  private static final int passiveExpirationChecksTimeId;
+  private static final int passiveExpirationsCompletedId;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -47,6 +50,14 @@ public class RedisStats {
     fillListWithTimeCommandDescriptors(f, descriptorList);
     descriptorList.add(f.createLongGauge("clients",
         "Current number of clients connected to this redis server.", "clients"));
+    descriptorList.add(f.createLongCounter("passiveExpirationChecksCompleted",
+        "Total number of passive expiration checks that have completed. Checks include scanning and expiring.",
+        "checks"));
+    descriptorList.add(f.createLongCounter("passiveExpirationChecksTime",
+        "Total amount of time, in nanoseconds, spent executing doing passive expiration on this server.",
+        "nanoseconds"));
+    descriptorList.add(f.createLongCounter("passiveExpirationsCompleted",
+        "Total number of keys that have been passively expired on this server.", "expirations"));
     StatisticDescriptor[] descriptorArray =
         descriptorList.toArray(new StatisticDescriptor[descriptorList.size()]);
 
@@ -55,6 +66,9 @@ public class RedisStats {
     fillCompletedIdMap();
     fillTimeIdMap();
     clientId = type.nameToId("clients");
+    passiveExpirationChecksCompletedId = type.nameToId("passiveExpirationChecksCompleted");
+    passiveExpirationChecksTimeId = type.nameToId("passiveExpirationChecksTime");
+    passiveExpirationsCompletedId = type.nameToId("passiveExpirationsCompleted");
   }
 
   private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory f,
@@ -151,6 +165,24 @@ public class RedisStats {
 
   public void removeClient() {
     stats.incLong(clientId, -1);
+  }
+
+  public long startPassiveExpirationCheck() {
+    return getTime();
+  }
+
+  public void endPassiveExpirationCheck(long start, long expireCount) {
+    if (expireCount > 0) {
+      incPassiveExpirations(expireCount);
+    }
+    if (clock.isEnabled()) {
+      stats.incLong(passiveExpirationChecksTimeId, getTime() - start);
+    }
+    stats.incLong(passiveExpirationChecksCompletedId, 1);
+  }
+
+  public void incPassiveExpirations(long count) {
+    stats.incLong(passiveExpirationsCompletedId, count);
   }
 
   public void close() {

@@ -92,7 +92,8 @@ public class GeodeRedisServer {
     CommandFunction.register(stripedExecutor);
     RenameFunction.register(stripedExecutor);
     RedisCommandFunction.register();
-    passiveExpirationManager = new PassiveExpirationManager(regionProvider.getDataRegion());
+    passiveExpirationManager =
+        new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats);
