@@ -238,7 +238,7 @@ public class RedundancyCommand extends GfshCommand {
     primaries
         .addLine(PRIMARY_TRANSFERS_COMPLETED + resultCollector.getTotalPrimaryTransfersCompleted());
     primaries
-        .addLine(PRIMARY_TRANSFER_TIME + resultCollector.getTotalPrimaryTransferTime().toMillis());
+        .addLine(PRIMARY_TRANSFER_TIME + resultCollector.getTotalPrimaryTransferTime());
   }
 
   // Extracted for testing
