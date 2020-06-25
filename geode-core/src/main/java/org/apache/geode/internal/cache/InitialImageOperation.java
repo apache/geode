@@ -509,7 +509,11 @@ public class InitialImageOperation {
         }
 
         // do not remove the following log statement
-          logger.info("BR InitalImageOperation trace:" + Thread.currentThread().getStackTrace().toString());
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        logger.info("BR InitalImageOperation trace:");
+        for(int i = 0; i < stackTrace.length; i++) {
+          logger.info(stackTrace[i].toString());
+        }
         logger.info("Region {} requesting initial image from {}",
             new Object[] {this.region.getName(), recipient});
 
