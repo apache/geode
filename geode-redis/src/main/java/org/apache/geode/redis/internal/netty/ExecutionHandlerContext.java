@@ -38,6 +38,7 @@ import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -66,6 +67,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final byte[] authPassword;
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
+  private final RedisStats redisStats;
 
   private boolean isAuthenticated;
 
@@ -76,18 +78,23 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param password Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel channel, RegionProvider regionProvider, PubSub pubsub,
-      EventLoopGroup subscriberGroup, Supplier<Boolean> allowUnsupportedSupplier,
-      Runnable shutdownInvoker, byte[] password) {
+      EventLoopGroup subscriberGroup,
+      Supplier<Boolean> allowUnsupportedSupplier,
+      Runnable shutdownInvoker,
+      RedisStats redisStats,
+      byte[] password) {
     this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.subscriberGroup = subscriberGroup;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
+    this.redisStats = redisStats;
     this.client = new Client(channel);
     this.byteBufAllocator = this.channel.alloc();
     this.authPassword = password;
     this.isAuthenticated = password == null;
+    redisStats.addClient();
   }
 
   public ChannelFuture writeToChannel(ByteBuf message) {
@@ -175,11 +182,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (logger.isDebugEnabled()) {
       logger.debug("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
     }
+    redisStats.removeClient();
     ctx.channel().close();
     ctx.close();
   }
 
-  private void executeCommand(ChannelHandlerContext ctx, Command command) throws Exception {
+  private void executeCommand(ChannelHandlerContext ctx, Command command) {
     RedisResponse response;
 
     if (!isAuthenticated()) {
@@ -207,11 +215,14 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return;
     }
 
-    response = command.execute(this);
-
-    logResponse(response);
-
-    writeToChannel(response);
+    final long start = redisStats.startCommand(command.getCommandType());
+    try {
+      response = command.execute(this);
+      logResponse(response);
+      writeToChannel(response);
+    } finally {
+      redisStats.endCommand(command.getCommandType(), start);
+    }
 
     if (command.isOfType(RedisCommandType.QUIT)) {
       channelInactive(ctx);

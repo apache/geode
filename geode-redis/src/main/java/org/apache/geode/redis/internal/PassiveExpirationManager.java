@@ -39,10 +39,13 @@ public class PassiveExpirationManager {
 
   private final Region<ByteArrayWrapper, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
+  private final RedisStats redisStats;
 
 
-  public PassiveExpirationManager(Region<ByteArrayWrapper, RedisData> dataRegion) {
+  public PassiveExpirationManager(Region<ByteArrayWrapper, RedisData> dataRegion,
+      RedisStats redisStats) {
     this.dataRegion = dataRegion;
+    this.redisStats = redisStats;
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
   }
 
@@ -59,6 +62,8 @@ public class PassiveExpirationManager {
 
   private void doDataExpiration(
       Region<ByteArrayWrapper, RedisData> redisData) {
+    final long start = redisStats.startPassiveExpirationCheck();
+    long expireCount = 0;
     try {
       final long now = System.currentTimeMillis();
       Region<ByteArrayWrapper, RedisData> localPrimaryData =
@@ -68,7 +73,9 @@ public class PassiveExpirationManager {
         try {
           if (entry.getValue().hasExpired(now)) {
             // pttl will do its own check using active expiration and expire the key if needed
-            redisKeyCommands.pttl(entry.getKey());
+            if (-2 == redisKeyCommands.pttl(entry.getKey())) {
+              expireCount++;
+            }
           }
         } catch (EntryDestroyedException ignore) {
         }
@@ -76,6 +83,8 @@ public class PassiveExpirationManager {
     } catch (CacheClosedException ignore) {
     } catch (RuntimeException | Error ex) {
       logger.warn("Passive Redis expiration failed. Will try again in 1 second.", ex);
+    } finally {
+      redisStats.endPassiveExpirationCheck(start, expireCount);
     }
   }
 }
