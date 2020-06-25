@@ -18,6 +18,7 @@ package org.apache.geode.management;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,6 +37,8 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.DiskDir;
+import org.apache.geode.management.configuration.DiskStore;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 import org.apache.geode.management.configuration.Region;
@@ -59,7 +62,7 @@ public class JQFilterVerificationDUnitTest {
   public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   private static GeodeDevRestClient client;
-  private static Map<String, JsonNode> apiWithJQFilters = new HashMap<>();
+  private static final Map<String, JsonNode> apiWithJQFilters = new HashMap<>();
   private static JqLibrary library;
 
   @BeforeClass
@@ -79,6 +82,12 @@ public class JQFilterVerificationDUnitTest {
     index1.setRegionPath("/regionA");
     index1.setIndexType(IndexType.RANGE);
     cms.create(index1);
+
+    DiskStore diskStore = new DiskStore();
+    diskStore.setName("diskstore1");
+    DiskDir diskDir = new DiskDir("./diskDir", null);
+    diskStore.setDirectories(Collections.singletonList(diskDir));
+    cms.create(diskStore);
 
     client = new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
     JsonNode jsonObject =
@@ -180,5 +189,28 @@ public class JQFilterVerificationDUnitTest {
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\": \"index1\"");
+  }
+
+  @Test
+  public void listDiskStores() throws Exception {
+    String uri = "/v1/diskstores";
+    JqResponse response =
+        getJqResponse(uri, apiWithJQFilters.remove(uri).get("jqFilter").textValue());
+    Assertions.assertThat(response.hasErrors()).isFalse();
+    System.out.println("JQ output: " + response.getOutput());
+    Assertions.assertThat(response.getOutput()).contains("\"Member\": \"server-1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"Disk Store Name\": \"diskstore1\"");
+  }
+
+  @Test
+  public void getDiskStore() throws Exception {
+    String uri = "/v1/diskstores/diskstore1";
+    JqResponse response =
+        getJqResponse(uri, apiWithJQFilters.remove("/v1/diskstores/{id}").get("jqFilter").textValue());
+    response.getErrors().forEach(System.out::println);
+    Assertions.assertThat(response.hasErrors()).isFalse();
+    System.out.println("JQ output: " + response.getOutput());
+    Assertions.assertThat(response.getOutput()).contains("\"Member\": \"server-1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"Disk Store Name\": \"diskstore1\"");
   }
 }
