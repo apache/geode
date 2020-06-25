@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWOR
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -43,7 +44,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   @Override
   protected void before() throws Throwable {
     cache = cacheFactory.create();
-    server = new GeodeRedisServer("localhost", 0);
+    server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
     server.start();
     server.setAllowUnsupportedCommands(true);
   }
