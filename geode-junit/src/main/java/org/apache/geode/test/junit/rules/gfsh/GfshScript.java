@@ -18,6 +18,7 @@ import static java.lang.Long.toHexString;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -153,6 +154,13 @@ public class GfshScript {
 
   public GfshExecution execute(GfshRule gfshRule) {
     return gfshRule.execute(this);
+  }
+
+  /**
+   * this will allow you to specify a gfsh workingDir when executing the script
+   */
+  public GfshExecution execute(GfshRule gfshRule, File workingDir) {
+    return gfshRule.execute(this, workingDir);
   }
 
   public List<DebuggableCommand> getCommands() {
