@@ -241,7 +241,7 @@ public class LocatorWithCustomLogConfigAcceptanceTest {
 
   @Test
   public void locatorLauncherUsesConfigFileInClasspathWithGeodePlugins() throws Exception {
-    copy(configWithGeodePluginsFile, temporaryFolder.getRoot().toPath().resolve("log4j2.xml"));
+    copy(configWithGeodePluginsFile, workingDir.resolve("log4j2.xml"));
 
     String classpath = workingDir.toFile().getAbsolutePath();
 

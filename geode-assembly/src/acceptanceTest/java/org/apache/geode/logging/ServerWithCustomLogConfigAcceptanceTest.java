@@ -78,13 +78,13 @@ public class ServerWithCustomLogConfigAcceptanceTest {
 
   @Test
   public void serverLauncherUsesDefaultLoggingConfig() {
-    String startLocatorCommand = String.join(" ",
+    String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server");
 
-    gfshRule.execute(startLocatorCommand);
+    gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
       assertThat(serverLogFile.toFile())
@@ -101,14 +101,14 @@ public class ServerWithCustomLogConfigAcceptanceTest {
 
   @Test
   public void serverLauncherUsesSpecifiedConfigFileWithoutGeodePlugins() {
-    String startLocatorCommand = String.join(" ",
+    String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server",
         "--J=-Dlog4j.configurationFile=" + configWithoutGeodePluginsFile.toAbsolutePath());
 
-    gfshRule.execute(startLocatorCommand);
+    gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
       assertThat(serverLogFile.toFile())
@@ -129,14 +129,14 @@ public class ServerWithCustomLogConfigAcceptanceTest {
 
     String classpath = workingDir.toFile().getAbsolutePath();
 
-    String startLocatorCommand = String.join(" ",
+    String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server",
         "--classpath", classpath);
 
-    gfshRule.execute(startLocatorCommand);
+    gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
       assertThat(serverLogFile.toFile())
@@ -153,14 +153,14 @@ public class ServerWithCustomLogConfigAcceptanceTest {
 
   @Test
   public void serverLauncherUsesSpecifiedConfigFileWithGeodePlugins() {
-    String startLocatorCommand = String.join(" ",
+    String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server",
         "--J=-Dlog4j.configurationFile=" + configWithGeodePluginsFile.toAbsolutePath());
 
-    gfshRule.execute(startLocatorCommand);
+    gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
       assertThat(serverLogFile.toFile())
@@ -179,18 +179,18 @@ public class ServerWithCustomLogConfigAcceptanceTest {
 
   @Test
   public void serverLauncherUsesConfigFileInClasspathWithGeodePlugins() throws Exception {
-    copy(configWithGeodePluginsFile, temporaryFolder.getRoot().toPath().resolve("log4j2.xml"));
+    copy(configWithGeodePluginsFile, workingDir.resolve("log4j2.xml"));
 
     String classpath = workingDir.toFile().getAbsolutePath();
 
-    String startLocatorCommand = String.join(" ",
+    String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server",
         "--classpath", classpath);
 
-    gfshRule.execute(startLocatorCommand);
+    gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
       assertThat(serverLogFile.toFile())
