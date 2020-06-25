@@ -206,7 +206,8 @@ public class JQFilterVerificationDUnitTest {
   public void getDiskStore() throws Exception {
     String uri = "/v1/diskstores/diskstore1";
     JqResponse response =
-        getJqResponse(uri, apiWithJQFilters.remove("/v1/diskstores/{id}").get("jqFilter").textValue());
+        getJqResponse(uri,
+            apiWithJQFilters.remove("/v1/diskstores/{id}").get("jqFilter").textValue());
     response.getErrors().forEach(System.out::println);
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());

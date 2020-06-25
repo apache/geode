@@ -44,7 +44,7 @@ public class DiskStoreConverterTest {
     config.setWriteBufferSize(1);
 
     ArrayList<DiskDir> directories = new ArrayList<>();
-    directories.add(new DiskDir("directoryName", "1"));
+    directories.add(new DiskDir("directoryName", 1));
     config.setDirectories(directories);
 
     DiskStoreType diskStoreType = diskStoreConverter.fromNonNullConfigObject(config);
