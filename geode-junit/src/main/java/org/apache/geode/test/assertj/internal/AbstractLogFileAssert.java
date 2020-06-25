@@ -51,11 +51,6 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
     return myself;
   }
 
-  public SELF doesNotExist() {
-    files.assertDoesNotExist(info, actual);
-    return myself;
-  }
-
   public SELF contains(String... value) {
     assertContains(info, actual, charset, value);
     return myself;
