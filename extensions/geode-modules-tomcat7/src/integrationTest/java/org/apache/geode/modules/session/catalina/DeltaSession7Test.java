@@ -14,37 +14,27 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.juli.logging.Log;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public interface SessionManager {
 
-  String getRegionName();
 
-  String getRegionAttributesId();
+public class DeltaSession7Test
+    extends AbstractDeltaSessionIntegrationTest<Tomcat7DeltaSessionManager, DeltaSession7> {
 
-  int getMaxInactiveInterval();
+  public DeltaSession7Test() {
+    super(mock(Tomcat7DeltaSessionManager.class));
+  }
 
-  boolean getEnableGatewayReplication();
+  @Override
+  public void before() {
+    super.before();
+    when(manager.getContainer()).thenReturn(context);
+  }
 
-  boolean getEnableGatewayDeltaReplication();
+  @Override
+  protected DeltaSession7 newSession(Tomcat7DeltaSessionManager manager) {
+    return new DeltaSession7(manager);
+  }
 
-  boolean getEnableDebugListener();
-
-  boolean getEnableLocalCache();
-
-  boolean isCommitValveEnabled();
-
-  boolean isCommitValveFailfastEnabled();
-
-  boolean isBackingCacheAvailable();
-
-  /**
-   * @deprecated no replacement. Always prefer deserialized form.
-   */
-  @Deprecated
-  boolean getPreferDeserializedForm();
-
-  String getStatisticsName();
-
-  Log getLogger();
 }

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -36,6 +39,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -63,9 +68,9 @@ import org.apache.geode.modules.util.ContextMapper;
 import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.RegionHelper;
 
-public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCommitSessionValve>
+public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCommitSessionValve<?>>
     extends ManagerBase
-    implements Lifecycle, PropertyChangeListener, SessionManager {
+    implements Lifecycle, PropertyChangeListener, SessionManager, DeltaSessionManagerConfiguration {
 
   static final String catalinaBaseSystemProperty = "catalina.base";
   static final String javaTempDirSystemProperty = "java.io.tmpdir";
@@ -73,7 +78,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   /**
    * The number of rejected sessions.
    */
-  private AtomicInteger rejectedSessions;
+  private final AtomicInteger rejectedSessions;
 
   /**
    * The maximum number of active Sessions allowed, or -1 for no limit.
@@ -106,6 +111,10 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   private static final boolean DEFAULT_ENABLE_COMMIT_VALVE_FAILFAST = false;
 
+  /**
+   * @deprecated No replacement. Always prefer deserialized form.
+   */
+  @Deprecated
   private static final boolean DEFAULT_PREFER_DESERIALIZED_FORM = true;
 
   /*
@@ -117,7 +126,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   protected String regionName = DEFAULT_REGION_NAME;
 
   private String regionAttributesId; // the default is different for client-server and
-                                     // peer-to-peer
+  // peer-to-peer
 
   private Boolean enableLocalCache; // the default is different for client-server and peer-to-peer
 
@@ -129,6 +138,10 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   private boolean enableDebugListener = DEFAULT_ENABLE_DEBUG_LISTENER;
 
+  /**
+   * @deprecated No replacement. Always prefer deserialized form.
+   */
+  @Deprecated
   private boolean preferDeserializedForm = DEFAULT_PREFER_DESERIALIZED_FORM;
 
   private Timer timer;
@@ -142,16 +155,17 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
       Long.getLong("gemfiremodules.sessionTimerTaskDelay", 10000);
 
   public DeltaSessionManager() {
-    this.rejectedSessions = new AtomicInteger(0);
+    rejectedSessions = new AtomicInteger(0);
     // Create the set to store sessions to be touched after get attribute requests
-    this.sessionsToTouch = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    sessionsToTouch = Collections.newSetFromMap(new ConcurrentHashMap<>());
   }
 
   @Override
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
+  @Override
   public void setRegionName(String regionName) {
     this.regionName = regionName;
   }
@@ -166,15 +180,15 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     // This property will be null if it hasn't been set in the context.xml file.
     // Since its default is dependent on the session cache, get the default from
     // the session cache.
-    if (this.regionAttributesId == null) {
-      this.regionAttributesId = getSessionCache().getDefaultRegionAttributesId();
+    if (regionAttributesId == null) {
+      regionAttributesId = getSessionCache().getDefaultRegionAttributesId();
     }
-    return this.regionAttributesId;
+    return regionAttributesId;
   }
 
-  @SuppressWarnings("unused")
+  @Override
   public void setRegionAttributesId(String regionType) {
-    this.regionAttributesId = regionType;
+    regionAttributesId = regionType;
   }
 
   @Override
@@ -182,23 +196,23 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     // This property will be null if it hasn't been set in the context.xml file.
     // Since its default is dependent on the session cache, get the default from
     // the session cache.
-    if (this.enableLocalCache == null) {
-      this.enableLocalCache = getSessionCache().getDefaultEnableLocalCache();
+    if (enableLocalCache == null) {
+      enableLocalCache = getSessionCache().getDefaultEnableLocalCache();
     }
-    return this.enableLocalCache;
+    return enableLocalCache;
   }
 
-  @SuppressWarnings("unused")
+  @Override
   public void setEnableLocalCache(boolean enableLocalCache) {
     this.enableLocalCache = enableLocalCache;
   }
 
-  @SuppressWarnings("unused")
+  @Override
   public int getMaxActiveSessions() {
-    return this.maxActiveSessions;
+    return maxActiveSessions;
   }
 
-  @SuppressWarnings("unused")
+  @Override
   public void setMaxActiveSessions(int maxActiveSessions) {
     int oldMaxActiveSessions = this.maxActiveSessions;
     this.maxActiveSessions = maxActiveSessions;
@@ -212,7 +226,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     return false; // disabled
   }
 
-  @SuppressWarnings("unused")
+  @Override
   public void setEnableGatewayDeltaReplication(boolean enableGatewayDeltaReplication) {
     // this.enableGatewayDeltaReplication = enableGatewayDeltaReplication;
     // Disabled. Keeping the method for backward compatibility.
@@ -220,41 +234,42 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   @Override
   public boolean getEnableGatewayReplication() {
-    return this.enableGatewayReplication;
+    return enableGatewayReplication;
   }
 
-  @SuppressWarnings("unused")
+  @Override
   public void setEnableGatewayReplication(boolean enableGatewayReplication) {
     this.enableGatewayReplication = enableGatewayReplication;
   }
 
   @Override
   public boolean getEnableDebugListener() {
-    return this.enableDebugListener;
+    return enableDebugListener;
   }
 
-  @SuppressWarnings("unused")
+  @Override
   public void setEnableDebugListener(boolean enableDebugListener) {
     this.enableDebugListener = enableDebugListener;
   }
 
   @Override
   public boolean isCommitValveEnabled() {
-    return this.enableCommitValve;
+    return enableCommitValve;
   }
 
+  @Override
   public void setEnableCommitValve(boolean enable) {
-    this.enableCommitValve = enable;
+    enableCommitValve = enable;
   }
 
   @Override
   public boolean isCommitValveFailfastEnabled() {
-    return this.enableCommitValveFailfast;
+    return enableCommitValveFailfast;
   }
 
-  @SuppressWarnings("unused")
+  @Override
   public void setEnableCommitValveFailfast(boolean enable) {
-    this.enableCommitValveFailfast = enable;
+    enableCommitValveFailfast = enable;
   }
 
   @Override
@@ -262,14 +277,27 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     return sessionCache.isBackingCacheAvailable();
   }
 
-  @SuppressWarnings("unused")
+  /**
+   * @deprecated No replacement. Always prefer deserialized form.
+   */
+  @Deprecated
+  @Override
   public void setPreferDeserializedForm(boolean enable) {
-    this.preferDeserializedForm = enable;
+    log.warn("Use of deprecated preferDeserializedForm property to be removed in future release.");
+    if (!enable) {
+      log.warn(
+          "Use of HttpSessionAttributeListener may result in serialized form in HttpSessionBindingEvent.");
+    }
+    preferDeserializedForm = enable;
   }
 
+  /**
+   * @deprecated No replacement. Always prefer deserialized form.
+   */
+  @Deprecated
   @Override
   public boolean getPreferDeserializedForm() {
-    return this.preferDeserializedForm;
+    return preferDeserializedForm;
   }
 
   @Override
@@ -286,7 +314,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   }
 
   public SessionCache getSessionCache() {
-    return this.sessionCache;
+    return sessionCache;
   }
 
   public DeltaSessionStatistics getStatistics() {
@@ -297,7 +325,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     return getSessionCache().isPeerToPeer();
   }
 
-  @SuppressWarnings("unused")
   public boolean isClientServer() {
     return getSessionCache().isClientServer();
   }
@@ -330,7 +357,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   }
 
   @Override
-  public Session findSession(String id) throws IOException {
+  public Session findSession(String id) {
     if (id == null) {
       return null;
     }
@@ -386,7 +413,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     }
 
     // Create the appropriate session cache
-    this.sessionCache = cache.isClient() ? new ClientServerSessionCache(this, cache)
+    sessionCache = cache.isClient() ? new ClientServerSessionCache(this, cache)
         : new PeerToPeerSessionCache(this, cache);
 
     // Initialize the session cache
@@ -394,7 +421,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   }
 
   void initSessionCache() {
-    this.sessionCache.initialize();
+    sessionCache.initialize();
   }
 
   Cache getAnyCacheInstance() {
@@ -408,11 +435,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   @Override
   public void remove(Session session) {
-    remove(session, false);
-  }
-
-  public void remove(Session session, @SuppressWarnings("unused") boolean update) {
-    // super.remove(session);
     // Remove the session from the region if necessary.
     // It will have already been removed if it expired implicitly.
     DeltaSessionInterface ds = (DeltaSessionInterface) session;
@@ -451,7 +473,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   @Override
   public int getRejectedSessions() {
-    return this.rejectedSessions.get();
+    return rejectedSessions.get();
   }
 
   @Override
@@ -498,20 +520,20 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
    * expiration.
    */
   void addSessionToTouch(String sessionId) {
-    this.sessionsToTouch.add(sessionId);
+    sessionsToTouch.add(sessionId);
   }
 
   protected Set<String> getSessionsToTouch() {
-    return this.sessionsToTouch;
+    return sessionsToTouch;
   }
 
-  boolean removeTouchedSession(String sessionId) {
-    return this.sessionsToTouch.remove(sessionId);
+  void removeTouchedSession(String sessionId) {
+    sessionsToTouch.remove(sessionId);
   }
 
   protected void scheduleTimerTasks() {
     // Create the timer
-    this.timer = new Timer("Timer for " + toString(), true);
+    timer = new Timer("Timer for " + toString(), true);
 
     // Schedule the task to handle sessions to be touched
     scheduleTouchSessionsTask();
@@ -538,12 +560,12 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
         }
       }
     };
-    this.timer.schedule(task, TIMER_TASK_DELAY, TIMER_TASK_PERIOD);
+    timer.schedule(task, TIMER_TASK_DELAY, TIMER_TASK_PERIOD);
   }
 
   protected void cancelTimer() {
     if (timer != null) {
-      this.timer.cancel();
+      timer.cancel();
     }
   }
 
@@ -562,7 +584,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
       }
     };
 
-    this.timer.schedule(task, TIMER_TASK_DELAY, TIMER_TASK_PERIOD);
+    timer.schedule(task, TIMER_TASK_DELAY, TIMER_TASK_PERIOD);
   }
 
   @Override
@@ -685,10 +707,10 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     }
 
     String regionName;
-    if (getRegionName().startsWith("/")) {
+    if (getRegionName().startsWith(SEPARATOR)) {
       regionName = getRegionName();
     } else {
-      regionName = "/" + getRegionName();
+      regionName = SEPARATOR + getRegionName();
     }
 
     Query query = querySvc.newQuery("select s.id from " + regionName
@@ -698,9 +720,9 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
       getLogger().debug("Query: " + query.getQueryString());
     }
 
-    SelectResults results;
+    SelectResults<String> results;
     try {
-      results = (SelectResults) query.execute();
+      results = uncheckedCast(query.execute());
     } catch (Exception ex) {
       getLogger().error("Unable to perform query during doUnload", ex);
       return;
@@ -721,7 +743,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     }
     FileOutputStream fos = null;
     BufferedOutputStream bos = null;
-    ObjectOutputStream oos = null;
+    final ObjectOutputStream oos;
     boolean error = false;
     try {
       fos = getFileOutputStream(store);
@@ -733,13 +755,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
       throw e;
     } finally {
       if (error) {
-        if (oos != null) {
-          try {
-            oos.close();
-          } catch (IOException ioe) {
-            // Ignore
-          }
-        }
         if (bos != null) {
           try {
             bos.close();
@@ -758,10 +773,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     }
 
     ArrayList<DeltaSessionInterface> list = new ArrayList<>();
-    @SuppressWarnings("unchecked")
-    Iterator<String> elements = (Iterator<String>) results.iterator();
-    while (elements.hasNext()) {
-      String id = elements.next();
+    for (final String id : results) {
       DeltaSessionInterface session = (DeltaSessionInterface) findSession(id);
       if (session != null) {
         list.add(session);
@@ -769,8 +781,9 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     }
 
     // Write the number of active sessions, followed by the details
-    if (getLogger().isDebugEnabled())
+    if (getLogger().isDebugEnabled()) {
       getLogger().debug("Unloading " + list.size() + " sessions");
+    }
     try {
       writeToObjectOutputStream(oos, list);
       for (DeltaSessionInterface session : list) {
@@ -828,7 +841,8 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   /**
    * Load any currently active sessions that were previously unloaded to the appropriate persistence
-   * mechanism, if any. If persistence is not supported, this method returns without doing anything.
+   * mechanism, if any. If persistence is not supported, this method returns without doing
+   * anything.
    *
    * @throws ClassNotFoundException if a serialized class cannot be found during the reload
    * @throws IOException if an input/output error occurs
@@ -904,8 +918,9 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
         session.readObjectData(ois);
         session.setManager(this);
 
-        Region region = getSessionCache().getOperatingRegion();
-        DeltaSessionInterface existingSession = (DeltaSessionInterface) region.get(session.getId());
+        final Region<String, HttpSession> region = getSessionCache().getOperatingRegion();
+        final DeltaSessionInterface existingSession =
+            (DeltaSessionInterface) region.get(session.getId());
         // Check whether the existing session is newer
         if (existingSession != null
             && existingSession.getLastAccessedTime() > session.getLastAccessedTime()) {
@@ -998,7 +1013,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     return new ObjectOutputStream(bos);
   }
 
-  void writeToObjectOutputStream(ObjectOutputStream oos, List listToWrite) throws IOException {
+  void writeToObjectOutputStream(ObjectOutputStream oos, List<?> listToWrite) throws IOException {
     oos.writeObject(listToWrite.size());
   }
 
@@ -1010,8 +1025,8 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   @Override
   public String toString() {
     return getClass().getSimpleName() + "[" + "container="
-        + getTheContext() + "; regionName=" + this.regionName
-        + "; regionAttributesId=" + this.regionAttributesId + "]";
+        + getTheContext() + "; regionName=" + regionName
+        + "; regionAttributesId=" + regionAttributesId + "]";
   }
 
   String getContextName() {

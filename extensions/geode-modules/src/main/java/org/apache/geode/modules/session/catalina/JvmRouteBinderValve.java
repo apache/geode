@@ -64,15 +64,7 @@ public class JvmRouteBinderValve extends ValveBase {
           manager.getLogger().debug(builder);
         }
         // Get the original session
-        Session session = null;
-        try {
-          session = manager.findSession(sessionId);
-        } catch (IOException e) {
-          String builder = this + ": Caught exception attempting to find session "
-              + sessionId + " in " + manager;
-          manager.getLogger().warn(builder, e);
-        }
-
+        final Session session = manager.findSession(sessionId);
         if (session == null) {
           String builder = this + ": Did not find session " + sessionId
               + " to failover in " + manager;
