@@ -19,7 +19,6 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -87,12 +86,23 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public long subscribe(String channel, ExecutionHandlerContext context, Client client) {
-    return subscriptions.subscribe(channel, context, client);
+    if (subscriptions.exists(channel, client)) {
+      return subscriptions.findSubscriptions(client).size();
+    }
+    Subscription subscription = new ChannelSubscription(client, channel, context);
+    subscriptions.add(subscription);
+    return subscriptions.findSubscriptions(client).size();
   }
 
   @Override
   public long psubscribe(GlobPattern pattern, ExecutionHandlerContext context, Client client) {
-    return subscriptions.psubscribe(pattern, context, client);
+    if (subscriptions.exists(pattern, client)) {
+      return subscriptions.findSubscriptions(client).size();
+    }
+    Subscription subscription = new PatternSubscription(client, pattern, context);
+    subscriptions.add(subscription);
+
+    return subscriptions.findSubscriptions(client).size();
   }
 
   private void registerPublishFunction() {
@@ -125,19 +135,14 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public long unsubscribe(String channel, Client client) {
-    return subscriptions.unsubscribe(channel, client);
+    subscriptions.remove(channel, client);
+    return subscriptions.findSubscriptions(client).size();
   }
 
   @Override
   public long punsubscribe(GlobPattern pattern, Client client) {
-    return subscriptions.unsubscribe(pattern, client);
-  }
-
-  @Override
-  public List<String> findSubscribedChannels(Client client) {
-    return subscriptions.findSubscriptions(client).stream()
-        .map(Subscription::getChannelName)
-        .collect(Collectors.toList());
+    subscriptions.remove(pattern, client);
+    return subscriptions.findSubscriptions(client).size();
   }
 
   @VisibleForTesting

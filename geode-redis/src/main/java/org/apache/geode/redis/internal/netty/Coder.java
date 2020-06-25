@@ -352,7 +352,7 @@ public class Coder {
   }
 
   public static byte[] stringToBytes(String string) {
-    if (string == null) {
+    if (string == null || string.equals("")) {
       return null;
     }
     try {

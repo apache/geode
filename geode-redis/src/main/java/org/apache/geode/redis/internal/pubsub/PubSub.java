@@ -16,8 +16,6 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.List;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
@@ -79,13 +77,4 @@ public interface PubSub {
    * @return the number of channels still subscribed to by the client
    */
   long punsubscribe(GlobPattern pattern, Client client);
-
-  /**
-   * Return a list of channel names that a client has subscribed to
-   *
-   * @param client the Client which is to be queried
-   * @return the list of channels
-   */
-  List<String> findSubscribedChannels(Client client);
-
 }
