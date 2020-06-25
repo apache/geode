@@ -88,8 +88,7 @@ public class ServerWithCustomLogConfigAcceptanceTest {
         "start server",
         "--name=" + serverName,
         "--dir=" + workingDir,
-        "--disable-default-server",
-        "--locators=\"\"");
+        "--disable-default-server");
 
     gfshRule.execute(startLocatorCommand);
 
@@ -113,7 +112,6 @@ public class ServerWithCustomLogConfigAcceptanceTest {
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server",
-        "--locators=\"\"",
         "--J=-Dlog4j.configurationFile=" + configWithoutGeodePluginsFile.toAbsolutePath());
 
     gfshRule.execute(startLocatorCommand);
@@ -142,7 +140,6 @@ public class ServerWithCustomLogConfigAcceptanceTest {
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server",
-        "--locators=\"\"",
         "--classpath", classpath);
 
     gfshRule.execute(startLocatorCommand);
@@ -167,7 +164,6 @@ public class ServerWithCustomLogConfigAcceptanceTest {
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server",
-        "--locators=\"\"",
         "--J=-Dlog4j.configurationFile=" + configWithGeodePluginsFile.toAbsolutePath());
 
     gfshRule.execute(startLocatorCommand);
@@ -198,7 +194,6 @@ public class ServerWithCustomLogConfigAcceptanceTest {
         "--name=" + serverName,
         "--dir=" + workingDir,
         "--disable-default-server",
-        "--locators=\"\"",
         "--classpath", classpath);
 
     gfshRule.execute(startLocatorCommand);
