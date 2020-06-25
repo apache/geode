@@ -12,39 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.modules.session.catalina;
+package org.apache.geode.modules.session;
 
-import org.apache.juli.logging.Log;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
 
-public interface SessionManager {
+public class AccessAttributeValueListener implements HttpSessionAttributeListener {
+  @Override
+  public void attributeAdded(HttpSessionBindingEvent event) {
+    System.out.println("event created value is " + (String) event.getValue());
+  }
 
-  String getRegionName();
+  @Override
+  public void attributeRemoved(HttpSessionBindingEvent event) {
+    System.out.println("event removed value is " + (String) event.getValue());
+  }
 
-  String getRegionAttributesId();
-
-  int getMaxInactiveInterval();
-
-  boolean getEnableGatewayReplication();
-
-  boolean getEnableGatewayDeltaReplication();
-
-  boolean getEnableDebugListener();
-
-  boolean getEnableLocalCache();
-
-  boolean isCommitValveEnabled();
-
-  boolean isCommitValveFailfastEnabled();
-
-  boolean isBackingCacheAvailable();
-
-  /**
-   * @deprecated no replacement. Always prefer deserialized form.
-   */
-  @Deprecated
-  boolean getPreferDeserializedForm();
-
-  String getStatisticsName();
-
-  Log getLogger();
+  @Override
+  public void attributeReplaced(HttpSessionBindingEvent event) {
+    System.out.println("event replaced value is " + (String) event.getValue());
+  }
 }

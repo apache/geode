@@ -38,16 +38,17 @@ dependencies {
     testImplementation('junit:junit')
     testImplementation('org.assertj:assertj-core')
     testImplementation('org.mockito:mockito-core')
+    testImplementation('pl.pragmatists:JUnitParams')
     testImplementation(project(':extensions:geode-modules-test'))
     distributedTestImplementation('org.httpunit:httpunit')
     distributedTestImplementation('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
     distributedTestImplementation('org.springframework:spring-core')
     compile(project(':geode-core'))
     compile(project(':extensions:geode-modules')) {
-        exclude group: 'org.apache.tomcat'
+      exclude group: 'org.apache.tomcat'
     }
     testImplementation(project(':extensions:geode-modules')) {
-        exclude group: 'org.apache.tomcat'
+      exclude group: 'org.apache.tomcat'
     }
 
 

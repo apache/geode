@@ -64,9 +64,9 @@ import org.apache.geode.cache.query.internal.LinkedResultSet;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 
-public abstract class AbstractDeltaSessionManagerTest {
+public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT extends DeltaSessionManager<?>> {
 
-  protected DeltaSessionManager manager;
+  protected DeltaSessionManagerT manager;
   protected AbstractSessionCache sessionCache;
   protected Cache cache;
   protected Log logger;

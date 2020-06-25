@@ -12,39 +12,63 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.juli.logging.Log;
+/**
+ * Method used by Catalina XML configuration.
+ */
+@SuppressWarnings("unused")
+interface DeltaSessionManagerConfiguration {
 
-public interface SessionManager {
+  void setRegionName(String regionName);
 
   String getRegionName();
 
-  String getRegionAttributesId();
-
-  int getMaxInactiveInterval();
-
-  boolean getEnableGatewayReplication();
-
-  boolean getEnableGatewayDeltaReplication();
-
-  boolean getEnableDebugListener();
+  void setEnableLocalCache(boolean enableLocalCache);
 
   boolean getEnableLocalCache();
 
+  void setMaxActiveSessions(int maxActiveSessions);
+
+  int getMaxActiveSessions();
+
+  void setRegionAttributesId(String regionType);
+
+  String getRegionAttributesId();
+
+  void setEnableGatewayDeltaReplication(boolean enableGatewayDeltaReplication);
+
+  boolean getEnableGatewayDeltaReplication();
+
+  void setEnableGatewayReplication(boolean enableGatewayReplication);
+
+  boolean getEnableGatewayReplication();
+
+  void setEnableDebugListener(boolean enableDebugListener);
+
+  boolean getEnableDebugListener();
+
   boolean isCommitValveEnabled();
 
+  void setEnableCommitValve(boolean enable);
+
   boolean isCommitValveFailfastEnabled();
+
+  void setEnableCommitValveFailfast(boolean enable);
 
   boolean isBackingCacheAvailable();
 
   /**
-   * @deprecated no replacement. Always prefer deserialized form.
+   * @deprecated No replacement. Always prefer deserialized form.
+   */
+  @Deprecated
+  void setPreferDeserializedForm(boolean enable);
+
+  /**
+   * @deprecated No replacement. Always prefer deserialized form.
    */
   @Deprecated
   boolean getPreferDeserializedForm();
 
-  String getStatisticsName();
-
-  Log getLogger();
 }

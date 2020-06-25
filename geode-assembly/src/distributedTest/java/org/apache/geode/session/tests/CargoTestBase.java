@@ -18,6 +18,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -210,6 +211,8 @@ public abstract class CargoTestBase {
     manager.stopContainer(0);
     manager.removeContainer(0);
     await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+
+    checkLogs();
   }
 
   /**
@@ -228,6 +231,8 @@ public abstract class CargoTestBase {
     client.invalidate();
 
     verifySessionIsRemoved(key);
+
+    checkLogs();
   }
 
   protected void verifySessionIsRemoved(String key) throws IOException, URISyntaxException {
@@ -256,6 +261,8 @@ public abstract class CargoTestBase {
       verifySessionIsRemoved(key);
       Thread.sleep(1000);
     });
+
+    checkLogs();
   }
 
   /**
@@ -279,6 +286,7 @@ public abstract class CargoTestBase {
     client.setMaxInactive(63);
     verifyMaxInactiveInterval(63);
 
+    checkLogs();
   }
 
   protected void verifyMaxInactiveInterval(int expected) throws IOException, URISyntaxException {
@@ -330,6 +338,8 @@ public abstract class CargoTestBase {
     });
 
     getKeyValueDataOnAllClients(key, value, workingResponse.getSessionCookie());
+
+    checkLogs();
   }
 
   /**
@@ -343,13 +353,13 @@ public abstract class CargoTestBase {
     String value = "Foo";
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    await().untilAsserted(() -> {
-      getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
-    });
+    await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     client.remove(key);
 
     getKeyValueDataOnAllClients(key, "", resp.getSessionCookie());
+
+    checkLogs();
   }
 
   /**
@@ -376,6 +386,31 @@ public abstract class CargoTestBase {
     // Check that a container was added
     assertEquals(numContainers + 1, manager.numContainers());
     await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+  }
+
+  @Test
+  public void attributesCanBeReplaced() throws IOException, URISyntaxException {
+    manager.startAllInactiveContainers();
+    String key = "value_testSessionUpdate";
+    String value = "Foo";
+    String updateValue = "Bar";
+    client.setPort(Integer.parseInt(manager.getContainerPort(0)));
+    Client.Response response = client.set(key, value);
+    await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(key, value, response.getSessionCookie()));
+    client.setPort(Integer.parseInt(manager.getContainerPort(0)));
+    Client.Response updateResponse = client.set(key, updateValue);
+    await().untilAsserted(
+        () -> getKeyValueDataOnAllClients(key, updateValue, updateResponse.getSessionCookie()));
+
+    checkLogs();
+  }
+
+  private void checkLogs() {
+    for (int i = 0; i < manager.numContainers(); i++) {
+      File cargo_dir = manager.getContainer(i).cargoLogDir;
+      LogChecker.checkLogs(cargo_dir);
+    }
   }
 
   private void announceTest(String status) {

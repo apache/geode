@@ -18,7 +18,8 @@ package org.apache.geode.modules.session.catalina;
 import org.apache.catalina.connector.Response;
 
 @Deprecated
-public final class Tomcat6CommitSessionValve extends AbstractCommitSessionValve {
+public final class Tomcat6CommitSessionValve
+    extends AbstractCommitSessionValve<Tomcat6CommitSessionValve> {
 
   @Override
   protected Response wrapResponse(Response response) {
