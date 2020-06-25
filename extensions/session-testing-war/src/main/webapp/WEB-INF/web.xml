@@ -48,4 +48,8 @@ limitations under the License.
     <listener-class>org.apache.geode.modules.session.SessionCountingListener</listener-class>
   </listener>
 
+  <listener>
+    <listener-class>org.apache.geode.modules.session.AccessAttributeValueListener</listener-class>
+  </listener>
+
 </web-app>
