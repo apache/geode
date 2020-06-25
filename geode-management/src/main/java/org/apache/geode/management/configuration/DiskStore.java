@@ -31,8 +31,6 @@ import org.apache.geode.management.runtime.DiskStoreInfo;
 public class DiskStore extends GroupableConfiguration<DiskStoreInfo> {
   public static final String DISK_STORE_CONFIG_ENDPOINT = "/diskstores";
 
-  @JsonIgnore
-  private String id;
   private String name;
   private Integer compactionThreshold;
   private Float diskUsageCriticalPercentage;
@@ -53,7 +51,6 @@ public class DiskStore extends GroupableConfiguration<DiskStoreInfo> {
     this.autoCompact = autoCompact;
   }
 
-
   public String getName() {
     return name;
   }
@@ -70,6 +67,7 @@ public class DiskStore extends GroupableConfiguration<DiskStoreInfo> {
     this.directories = directories;
   }
 
+  @JsonIgnore
   @Override
   public String getId() {
     return name;
