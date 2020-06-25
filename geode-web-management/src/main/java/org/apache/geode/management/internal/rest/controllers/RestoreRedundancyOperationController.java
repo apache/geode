@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
