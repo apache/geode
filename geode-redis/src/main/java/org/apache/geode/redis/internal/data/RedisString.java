@@ -602,6 +602,15 @@ public class RedisString extends AbstractRedisData {
     return returnBit;
   }
 
+  /**
+   * Since GII (getInitialImage) can come in and call toData while other threads
+   * are modifying this object, the striped executor will not protect toData.
+   * So any methods that modify "value" need to be thread safe with toData.
+   * But currently all of them are because we never modify the existing byte
+   * array owned by "value" in place. Instead we create a new byte array
+   * and call setBytes. So toData will see either the old or new value but
+   * not a mix of both.
+   */
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
