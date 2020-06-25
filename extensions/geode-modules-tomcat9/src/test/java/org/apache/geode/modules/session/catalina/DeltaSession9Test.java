@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import org.apache.catalina.Context;
+import org.apache.catalina.Manager;
 import org.apache.juli.logging.Log;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +36,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.internal.util.BlobHelper;
 
-public class DeltaSession9Test extends AbstractDeltaSessionTest {
+public class DeltaSession9Test extends AbstractDeltaSessionTest<DeltaSession9> {
   final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
 
   @Before
@@ -47,6 +48,11 @@ public class DeltaSession9Test extends AbstractDeltaSessionTest {
     when(manager.getContext()).thenReturn(context);
     when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
     when(context.getLogger()).thenReturn(mock(Log.class));
+  }
+
+  @Override
+  protected DeltaSession9 newDeltaSession(Manager manager) {
+    return new DeltaSession9(manager);
   }
 
   @Test

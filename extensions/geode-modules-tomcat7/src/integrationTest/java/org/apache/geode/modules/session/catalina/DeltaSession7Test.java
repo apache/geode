@@ -12,17 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.catalina.connector.Response;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@Deprecated
-public final class Tomcat6CommitSessionValve
-    extends AbstractCommitSessionValve<Tomcat6CommitSessionValve> {
+
+
+public class DeltaSession7Test
+    extends AbstractDeltaSessionIntegrationTest<Tomcat7DeltaSessionManager, DeltaSession7> {
+
+  public DeltaSession7Test() {
+    super(mock(Tomcat7DeltaSessionManager.class));
+  }
 
   @Override
-  protected Response wrapResponse(Response response) {
-    return response;
+  public void before() {
+    super.before();
+    when(manager.getContainer()).thenReturn(context);
   }
+
+  @Override
+  protected DeltaSession7 newSession(Tomcat7DeltaSessionManager manager) {
+    return new DeltaSession7(manager);
+  }
+
 }

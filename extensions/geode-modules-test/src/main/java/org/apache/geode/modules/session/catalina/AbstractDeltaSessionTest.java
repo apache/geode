@@ -47,9 +47,9 @@ import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEvent;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 
-public abstract class AbstractDeltaSessionTest {
+public abstract class AbstractDeltaSessionTest<SessionT extends DeltaSession> {
 
-  protected final DeltaSessionManager manager = mock(DeltaSessionManager.class);
+  protected final DeltaSessionManager<?> manager = mock(DeltaSessionManager.class);
   private final Region<String, HttpSession> sessionRegion = uncheckedCast(mock(Region.class));
   private final SessionCache sessionCache = mock(ClientServerSessionCache.class);
   private final DeltaSessionStatistics stats = mock(DeltaSessionStatistics.class);
@@ -77,24 +77,26 @@ public abstract class AbstractDeltaSessionTest {
     when(manager.getPreferDeserializedForm()).thenReturn(true);
   }
 
+  protected abstract SessionT newDeltaSession(Manager manager);
+
   @Test
   public void sessionConstructionThrowsIllegalArgumentExceptionIfProvidedManagerIsNotDeltaSessionManager() {
     final Manager invalidManager = mock(Manager.class);
 
-    assertThatThrownBy(() -> new DeltaSession(invalidManager))
+    assertThatThrownBy(() -> newDeltaSession(invalidManager))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("The Manager must be an AbstractManager");
   }
 
   @Test
   public void sessionConstructionDoesNotThrowExceptionWithValidArgument() {
-    new DeltaSession(manager);
+    newDeltaSession(manager);
     verify(logger).debug(anyString());
   }
 
   @Test
   public void getSessionCreatesFacadeWhenFacadeIsNullAndPackageProtectionDisabled() {
-    final DeltaSession session = new DeltaSession(manager);
+    final DeltaSession session = newDeltaSession(manager);
 
     final HttpSession returnedSession = session.getSession();
 
@@ -103,7 +105,7 @@ public abstract class AbstractDeltaSessionTest {
 
   @Test
   public void getSessionCreatesFacadeWhenFacadeIsNullAndPackageProtectionEnabled() {
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(newDeltaSession(manager));
     final DeltaSessionFacade facade = mock(DeltaSessionFacade.class);
     doReturn(true).when(session).isPackageProtectionEnabled();
     doReturn(facade).when(session).getNewFacade(any(DeltaSession.class));
@@ -115,7 +117,7 @@ public abstract class AbstractDeltaSessionTest {
 
   @Test
   public void processExpiredIncrementsStatisticsCountForExpiredSessions() {
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(newDeltaSession(manager));
 
     doNothing().when((StandardSession) session).expire(false);
     session.processExpired();
@@ -131,7 +133,7 @@ public abstract class AbstractDeltaSessionTest {
     events.add(event1);
     events.add(event2);
     final Region<String, DeltaSessionInterface> region = uncheckedCast(mock(Region.class));
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(newDeltaSession(manager));
 
     session.applyAttributeEvents(region, events);
 
@@ -145,7 +147,7 @@ public abstract class AbstractDeltaSessionTest {
 
   @Test
   public void commitThrowsIllegalStateExceptionWhenCalledOnInvalidSession() {
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(newDeltaSession(manager));
     final String sessionId = "invalidatedSession";
     doReturn(sessionId).when(session).getId();
 
@@ -167,7 +169,7 @@ public abstract class AbstractDeltaSessionTest {
     final byte[] value2 = {0, 0, 0, 0, 0};
     final int totalSize = value1.length + value2.length;
 
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(newDeltaSession(manager));
     doReturn(attrNames).when(session).getAttributeNames();
     doReturn(value1).when(session).getAttributeWithoutDeserialize(attrName1);
     doReturn(value2).when(session).getAttributeWithoutDeserialize(attrName2);
@@ -183,7 +185,7 @@ public abstract class AbstractDeltaSessionTest {
     final String exceptionMessaage = "Serialization failed.";
     final IOException exception = new IOException(exceptionMessaage);
 
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(newDeltaSession(manager));
     doThrow(exception).when(session).serializeViaBlobHelper(obj);
     session.serialize(obj);
 
@@ -195,7 +197,7 @@ public abstract class AbstractDeltaSessionTest {
     final Object obj = "unserialized object";
     final byte[] serializedObj = BlobHelper.serializeToBlob(obj);
 
-    final DeltaSession session = spy(new DeltaSession(manager));
+    final DeltaSession session = spy(newDeltaSession(manager));
     final byte[] result = session.serialize(obj);
 
     assertThat(result).isEqualTo(serializedObj);

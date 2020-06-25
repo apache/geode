@@ -68,7 +68,7 @@ import org.apache.geode.modules.util.ContextMapper;
 import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.RegionHelper;
 
-public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCommitSessionValve>
+public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCommitSessionValve<?>>
     extends ManagerBase
     implements Lifecycle, PropertyChangeListener, SessionManager, DeltaSessionManagerConfiguration {
 
