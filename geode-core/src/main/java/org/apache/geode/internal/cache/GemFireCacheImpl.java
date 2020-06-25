@@ -4023,7 +4023,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public <K, V> RegionAttributes<K, V> getRegionAttributes(String id) {
-    return GemFireCacheImpl.UncheckedUtils.<K, V>uncheckedCast(namedRegionAttributes).get(id);
+    return (RegionAttributes<K, V>) namedRegionAttributes.get(id);
   }
 
   @Override

@@ -30,7 +30,7 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
 
   @Override
   public void afterDestroy(EntryEvent<String, HttpSession> event) {
-    // A Session expired. If it was destroyed by GemFire expiration, process it.
+    // A Session expired. If it was destroyed by Geode expiration, process it.
     // If it was destroyed via Session.invalidate, ignore it since it has
     // already been processed.
     DeltaSessionInterface session = null;
