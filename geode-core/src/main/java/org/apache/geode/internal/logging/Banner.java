@@ -46,6 +46,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.logging.internal.ConfigurationInfo;
 import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -66,8 +67,8 @@ public class Banner {
    *             Logging package or from Logging tests.
    */
   @Deprecated
-  public Banner() {
-    this(ConfigurationInfo.getConfigurationInfo());
+  public Banner(ModuleService moduleService) {
+    this(ConfigurationInfo.getConfigurationInfo(moduleService));
   }
 
   public Banner(final String configurationInfo) {

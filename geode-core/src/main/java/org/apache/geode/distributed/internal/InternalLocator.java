@@ -489,7 +489,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
       // if startDistributedSystem is true then Locator uses a NullLoggingSession (does nothing)
       LoggingSession loggingSession =
-          startDistributedSystem ? NullLoggingSession.create() : LoggingSession.create();
+          startDistributedSystem ? NullLoggingSession.create()
+              : LoggingSession.create(moduleService);
 
       newLocator = createLocator(port, loggingSession, logFile, logWriter, securityLogWriter,
           bindAddress, hostnameForClients, distributedSystemProperties,

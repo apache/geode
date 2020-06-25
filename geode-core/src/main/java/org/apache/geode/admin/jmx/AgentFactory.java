@@ -17,6 +17,7 @@ package org.apache.geode.admin.jmx;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.jmx.internal.AgentConfigImpl;
 import org.apache.geode.admin.jmx.internal.AgentImpl;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * A factory class that creates JMX administration entities.
@@ -40,8 +41,9 @@ public class AgentFactory {
    *
    * @see Agent#start
    */
-  public static Agent getAgent(AgentConfig config) throws AdminException {
-    return new AgentImpl((AgentConfigImpl) config);
+  public static Agent getAgent(AgentConfig config, ModuleService moduleService)
+      throws AdminException {
+    return new AgentImpl((AgentConfigImpl) config, moduleService);
   }
 
 }

@@ -35,6 +35,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
@@ -102,7 +103,8 @@ public class GfshCommandRule extends DescribedExternalResource {
     } catch (IOException e) {
       workingDir = temporaryFolder.getRoot();
     }
-    this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath());
+    this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath(),
+        ModuleService.DEFAULT);
     ignoredException =
         addIgnoredException("java.rmi.NoSuchObjectException: no such object in table");
 
@@ -198,7 +200,7 @@ public class GfshCommandRule extends DescribedExternalResource {
         absolutePath = temporaryFolder.getRoot().getAbsolutePath();
       }
 
-      this.gfsh = new HeadlessGfsh(getClass().getName(), 30, absolutePath);
+      this.gfsh = new HeadlessGfsh(getClass().getName(), 30, absolutePath, ModuleService.DEFAULT);
     }
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
     String endpoint;

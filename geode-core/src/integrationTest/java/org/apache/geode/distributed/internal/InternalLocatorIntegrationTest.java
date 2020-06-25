@@ -173,7 +173,8 @@ public class InternalLocatorIntegrationTest {
     properties.put("load-cluster-configuration-from-dir", "true");
     assertThatThrownBy(() -> InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
-        properties, hostnameForClients, workingDirectory, ModuleService.DEFAULT)).isInstanceOf(RuntimeException.class);
+        properties, hostnameForClients, workingDirectory, ModuleService.DEFAULT))
+            .isInstanceOf(RuntimeException.class);
 
     assertThat(InternalLocator.hasLocator()).isFalse();
   }

@@ -24,6 +24,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Factory for creating GemFire administration entities.
@@ -128,8 +129,9 @@ public class AdminDistributedSystemFactory {
    * @param config configuration definition of the system to administer
    * @return administrative interface for a distributed system
    */
-  public static AdminDistributedSystem getDistributedSystem(DistributedSystemConfig config) {
-    return new AdminDistributedSystemImpl((DistributedSystemConfigImpl) config);
+  public static AdminDistributedSystem getDistributedSystem(DistributedSystemConfig config,
+      ModuleService moduleService) {
+    return new AdminDistributedSystemImpl((DistributedSystemConfigImpl) config, moduleService);
   }
 
   /**

@@ -97,6 +97,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -246,7 +247,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     vm2.invoke(() -> {
       DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-      AdminDistributedSystem adminDS = getDistributedSystem(config);
+      AdminDistributedSystem adminDS = getDistributedSystem(config, ModuleService.DEFAULT);
       adminDS.connect();
       try {
         adminDS.waitToBeConnected(MINUTES.toMillis(2));
@@ -375,7 +376,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       vm2.invoke("revoke disk store should fail", () -> {
         assertThatThrownBy(() -> {
           DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-          AdminDistributedSystem adminDS = getDistributedSystem(config);
+          AdminDistributedSystem adminDS = getDistributedSystem(config, ModuleService.DEFAULT);
           adminDS.connect();
 
           try {
@@ -398,7 +399,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     vm2.invoke(() -> {
       DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-      AdminDistributedSystem adminDS = getDistributedSystem(config);
+      AdminDistributedSystem adminDS = getDistributedSystem(config, ModuleService.DEFAULT);
       adminDS.connect();
       try {
         adminDS.waitToBeConnected(MINUTES.toMillis(2));
@@ -1651,7 +1652,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   private void revokeKnownMissingMembers(final int numExpectedMissing)
       throws AdminException, InterruptedException {
     DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-    AdminDistributedSystem adminDS = getDistributedSystem(config);
+    AdminDistributedSystem adminDS = getDistributedSystem(config, ModuleService.DEFAULT);
     adminDS.connect();
     try {
       adminDS.waitToBeConnected(MINUTES.toMillis(2));

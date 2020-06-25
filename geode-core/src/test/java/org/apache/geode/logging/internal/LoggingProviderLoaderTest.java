@@ -27,6 +27,7 @@ import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -42,7 +43,7 @@ public class LoggingProviderLoaderTest {
 
   @Before
   public void setUp() {
-    loggingProviderLoader = new LoggingProviderLoader();
+    loggingProviderLoader = new LoggingProviderLoader(ModuleService.DEFAULT);
   }
 
   @Test
@@ -83,7 +84,7 @@ public class LoggingProviderLoaderTest {
 
   @Test
   public void getLoggingProviderReturnsSimpleLoggingProviderByDefault() {
-    LoggingProvider loggingProvider = new LoggingProviderLoader().load();
+    LoggingProvider loggingProvider = new LoggingProviderLoader(ModuleService.DEFAULT).load();
 
     assertThat(loggingProvider).isInstanceOf(SimpleLoggingProvider.class);
   }

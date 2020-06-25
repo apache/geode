@@ -47,7 +47,7 @@ public class InternalDistributedSystemLockMemoryIntegrationTest {
   @Before
   public void setUp() {
     builder = mock(MetricsService.Builder.class);
-    when(builder.build(any())).thenReturn(mock(MetricsService.class));
+    when(builder.build(any(), any())).thenReturn(mock(MetricsService.class));
   }
 
   @After

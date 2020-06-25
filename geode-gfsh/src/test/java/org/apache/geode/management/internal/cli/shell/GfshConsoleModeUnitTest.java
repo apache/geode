@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.services.module.ModuleService;
+
 
 public class GfshConsoleModeUnitTest extends GfshAbstractUnitTest {
 
@@ -31,12 +33,11 @@ public class GfshConsoleModeUnitTest extends GfshAbstractUnitTest {
   @Before
   public void before() {
     super.before();
-    gfsh = new Gfsh(true, null, new GfshConfig());
+    gfsh = new Gfsh(true, null, new GfshConfig(), ModuleService.DEFAULT);
   }
 
   @Test
   public void consoleModeShouldRedirectOnlyJDKLoggers() {
-    gfsh = new Gfsh(true, null, new GfshConfig());
     LogManager logManager = LogManager.getLogManager();
     Enumeration<String> loggerNames = logManager.getLoggerNames();
     // when initialized in console mode, all log messages will show up in console

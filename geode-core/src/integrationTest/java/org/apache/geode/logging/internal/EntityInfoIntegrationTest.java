@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -30,6 +31,6 @@ public class EntityInfoIntegrationTest {
 
   @Test
   public void getConfigurationInfoContainsLog4j2Xml() {
-    assertThat(getConfigurationInfo()).contains("log4j2.xml");
+    assertThat(getConfigurationInfo(ModuleService.DEFAULT)).contains("log4j2.xml");
   }
 }

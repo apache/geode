@@ -69,6 +69,7 @@ import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTermi
 import org.apache.geode.management.internal.cli.shell.unsafe.GfshSignalHandler;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Extends an interactive shell provided by
@@ -172,7 +173,7 @@ public class Gfsh extends JLineShell {
    * @param args arguments to be used to create a GemFire shell instance
    */
   protected Gfsh(String[] args) {
-    this(true, args, new GfshConfig());
+    this(true, args, new GfshConfig(), ModuleService.DEFAULT);
   }
 
   /**
@@ -182,7 +183,8 @@ public class Gfsh extends JLineShell {
    * @param launchShell whether to make Console available
    * @param args arguments to be used to create a GemFire shell instance or execute command
    */
-  protected Gfsh(boolean launchShell, String[] args, GfshConfig gfshConfig) {
+  protected Gfsh(boolean launchShell, String[] args, GfshConfig gfshConfig,
+      ModuleService moduleService) {
     // 1. Disable suppressing of duplicate messages
     JLineLogHandler.setSuppressDuplicateMessages(false);
 
@@ -195,7 +197,7 @@ public class Gfsh extends JLineShell {
 
     // 3. log system properties & gfsh environment TODO: change GFSH to use Geode logging
     @SuppressWarnings("deprecation")
-    final Banner banner = new Banner();
+    final Banner banner = new Banner(moduleService);
     this.gfshFileLogger.info(banner.getString());
 
     // 4. Customized History implementation
@@ -248,13 +250,14 @@ public class Gfsh extends JLineShell {
     redirectInternalJavaLoggers();
   }
 
-  public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig) {
+  public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig,
+      ModuleService moduleService) {
     Gfsh localGfshInstance = instance;
     if (localGfshInstance == null) {
       synchronized (INSTANCE_LOCK) {
         localGfshInstance = instance;
         if (localGfshInstance == null) {
-          localGfshInstance = new Gfsh(launchShell, args, gfshConfig);
+          localGfshInstance = new Gfsh(launchShell, args, gfshConfig, moduleService);
           localGfshInstance.executeInitFileIfPresent();
           instance = localGfshInstance;
         }

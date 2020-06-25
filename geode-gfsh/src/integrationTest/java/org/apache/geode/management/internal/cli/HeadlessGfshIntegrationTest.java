@@ -43,6 +43,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.GfshTest;
 
 /**
@@ -76,7 +77,7 @@ public class HeadlessGfshIntegrationTest {
     legacyConnect(properties);
 
     gfsh = new HeadlessGfsh("Test", 25,
-        this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath());
+        this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath(), ModuleService.DEFAULT);
   }
 
   @SuppressWarnings("deprecation")

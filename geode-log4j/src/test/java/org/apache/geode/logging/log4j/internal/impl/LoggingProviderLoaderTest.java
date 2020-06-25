@@ -24,6 +24,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.logging.internal.LoggingProviderLoader;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -39,7 +40,7 @@ public class LoggingProviderLoaderTest {
 
   @Before
   public void setUp() {
-    loggingProviderLoader = new LoggingProviderLoader();
+    loggingProviderLoader = new LoggingProviderLoader(ModuleService.DEFAULT);
   }
 
   @Test

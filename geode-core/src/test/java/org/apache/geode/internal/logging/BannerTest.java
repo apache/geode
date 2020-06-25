@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -35,7 +36,7 @@ public class BannerTest {
 
   @Before
   public void setUp() {
-    banner = new Banner().getString();
+    banner = new Banner(ModuleService.DEFAULT).getString();
   }
 
   @Test

@@ -105,7 +105,7 @@ public class InternalDistributedSystemJUnitTest {
    */
   private InternalDistributedSystem createSystem(Properties props) {
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(mock(MetricsService.class));
     return createSystem(props, metricsSessionBuilder);
   }
 
@@ -659,7 +659,7 @@ public class InternalDistributedSystemJUnitTest {
     props.setProperty(LOCATORS, "");
     Config config1 = new DistributionConfigImpl(props, false);
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(mock(MetricsService.class));
     InternalDistributedSystem sys =
         new InternalDistributedSystem.Builder(config1.toProperties(), metricsSessionBuilder,
             ModuleService.DEFAULT)
@@ -797,18 +797,18 @@ public class InternalDistributedSystemJUnitTest {
   public void usesSessionBuilderToCreateMetricsSession() {
     MetricsService metricsSession = mock(MetricsService.class);
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(metricsSession);
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(metricsSession);
 
     createSystem(getCommonProperties(), metricsSessionBuilder);
 
-    verify(metricsSessionBuilder).build(system);
+    verify(metricsSessionBuilder).build(system, any());
   }
 
   @Test
   public void startsMetricsSession() {
     MetricsService metricsSession = mock(MetricsService.class);
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(metricsSession);
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(metricsSession);
     when(metricsSession.getMeterRegistry()).thenReturn(mock(MeterRegistry.class));
 
     createSystem(getCommonProperties(), metricsSessionBuilder);
@@ -824,7 +824,7 @@ public class InternalDistributedSystemJUnitTest {
     when(metricsSession.getMeterRegistry()).thenReturn(sessionMeterRegistry);
 
     MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(metricsSession);
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(metricsSession);
     when(metricsSession.getMeterRegistry()).thenReturn(sessionMeterRegistry);
 
     createSystem(getCommonProperties(), metricsSessionBuilder);

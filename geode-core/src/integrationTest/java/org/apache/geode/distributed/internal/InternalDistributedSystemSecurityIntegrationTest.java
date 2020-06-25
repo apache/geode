@@ -41,7 +41,7 @@ public class InternalDistributedSystemSecurityIntegrationTest {
   @Before
   public void setup() {
     metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    when(metricsSessionBuilder.build(any(), any())).thenReturn(mock(MetricsService.class));
   }
 
   @After

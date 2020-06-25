@@ -580,7 +580,7 @@ public class InternalDistributedSystem extends DistributedSystem
     alertingService = new InternalAlertingServiceFactory().create();
     LoggingUncaughtExceptionHandler
         .setFailureSetter(error -> SystemFailure.setFailure((VirtualMachineError) error));
-    loggingSession = LoggingSession.create();
+    loggingSession = LoggingSession.create(moduleService);
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();
     quorumChecker = config.quorumChecker();
@@ -835,7 +835,7 @@ public class InternalDistributedSystem extends DistributedSystem
       alertingSession.createSession(alertingService);
       alertingSession.startSession();
 
-      metricsService = metricsServiceBuilder.build(this);
+      metricsService = metricsServiceBuilder.build(this, moduleService);
       metricsService.start();
 
       // Log any instantiators that were registered before the log writer
