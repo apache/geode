@@ -20,6 +20,8 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.time.Duration;
+
 import org.junit.Test;
 
 import org.apache.geode.cache.Operation;
@@ -117,7 +119,6 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
     InternalDistributedMember server2ID = server2.invoke("get ID", () -> cache.getMyId());
     pool = (PoolImpl) createClientCache(NetworkUtils.getServerHostName(), PORT1);
     // send the ping to server1 but use server2's identifier so the ping will be forwarded
-
     ClientProxyMembershipID proxyID = server1.invoke(
         () -> CacheClientNotifier.getInstance().getClientProxies().iterator().next().getProxyID());
     logger.info("ProxyID is : " + proxyID);
@@ -129,7 +130,9 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
     PingOp.execute(pool, new ServerLocation(NetworkUtils.getServerHostName(), PORT1), server2ID);
     // if the ping made it to server2 it will have the client's ID in its health monitor
     server2.invoke(() -> {
-      assertEquals(1, ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size());
+      await("For heartbeat to be received").timeout(Duration.ofMinutes(1))
+          .untilAsserted(() -> assertEquals(1,
+              ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size()));
       ClientProxyMembershipID proxyIDFound =
           ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().iterator().next();
       logger.info("ProxyID found in clientHealthMonitor: " + proxyIDFound);
