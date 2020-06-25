@@ -25,13 +25,13 @@ import org.apache.geode.management.api.JsonSerializable;
 
 public class DiskDir implements Serializable, JsonSerializable {
   private String name;
-  private String dirSize;
+  private Integer dirSize;
 
   public DiskDir() {
 
   }
 
-  public DiskDir(String name, String dirSize) {
+  public DiskDir(String name, Integer dirSize) {
     this.name = name;
     this.dirSize = dirSize;
   }
@@ -44,11 +44,11 @@ public class DiskDir implements Serializable, JsonSerializable {
     this.name = name;
   }
 
-  public String getDirSize() {
+  public Integer getDirSize() {
     return dirSize;
   }
 
-  public void setDirSize(String dirSize) {
+  public void setDirSize(Integer dirSize) {
     this.dirSize = dirSize;
   }
 }

@@ -23,8 +23,6 @@ import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.InternalCache;
@@ -70,10 +68,10 @@ public class DiskStoreRealizer implements ConfigurationRealizer<DiskStore, DiskS
             .collect(Collectors.toList());
     diskStoreAttributes.diskDirs = fileList.toArray(diskStoreAttributes.diskDirs);
     diskStoreAttributes.diskDirSizes = config.getDirectories().stream().mapToInt(diskDir -> {
-      if (StringUtils.isEmpty(diskDir.getDirSize())) {
-        return Integer.MAX_VALUE;
+      if (diskDir.getDirSize() != null) {
+        return diskDir.getDirSize();
       } else {
-        return Integer.parseInt(diskDir.getDirSize());
+        return Integer.MAX_VALUE;
       }
     }).toArray();
 
