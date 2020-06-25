@@ -118,7 +118,6 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
     // send the ping to server1 but use server2's identifier so the ping will be forwarded
     ClientProxyMembershipID proxyID = server1.invoke(
         () -> CacheClientNotifier.getInstance().getClientProxies().iterator().next().getProxyID());
-    logger.info("ProxyID is : " + proxyID);
     server2.invoke(() -> {
       assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
           .isFalse();
@@ -133,7 +132,6 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
               .isEqualTo(1));
       ClientProxyMembershipID proxyIDFound =
           ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().iterator().next();
-      logger.info("ProxyID found in clientHealthMonitor: " + proxyIDFound);
       assertThat(
           ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
               .isTrue();
