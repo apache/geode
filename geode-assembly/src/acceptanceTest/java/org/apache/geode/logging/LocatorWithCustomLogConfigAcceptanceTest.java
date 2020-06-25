@@ -23,14 +23,12 @@ import static org.apache.geode.test.util.ResourceUtils.getResource;
 
 import java.nio.file.Path;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class LocatorWithCustomLogConfigAcceptanceTest {
@@ -50,18 +48,17 @@ public class LocatorWithCustomLogConfigAcceptanceTest {
   private Path locatorLogFile;
   private Path pulseLogFile;
   private Path customLogFile;
+  private TemporaryFolder temporaryFolder;
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
-  @Rule
-  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule
   public TestName testName = new TestName();
 
   @Before
   public void setUpLogConfigFiles() {
+    temporaryFolder = gfshRule.getTemporaryFolder();
+
     configWithGeodePluginsFile = createFileFromResource(
         getResource(CONFIG_WITH_GEODE_PLUGINS_FILE_NAME), temporaryFolder.getRoot(),
         CONFIG_WITH_GEODE_PLUGINS_FILE_NAME)
@@ -75,6 +72,8 @@ public class LocatorWithCustomLogConfigAcceptanceTest {
 
   @Before
   public void setUpOutputFiles() {
+    temporaryFolder = gfshRule.getTemporaryFolder();
+
     locatorName = testName.getMethodName();
 
     workingDir = temporaryFolder.getRoot().toPath().toAbsolutePath();
@@ -90,11 +89,6 @@ public class LocatorWithCustomLogConfigAcceptanceTest {
     locatorPort = ports[0];
     httpPort = ports[1];
     rmiPort = ports[2];
-  }
-
-  @After
-  public void stopLocator() {
-    gfshRule.execute("stop locator --dir=" + workingDir);
   }
 
   @Test

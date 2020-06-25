@@ -145,9 +145,7 @@ public class GfshRule extends ExternalResource {
 
   public GfshExecution execute(GfshScript gfshScript) {
     try {
-      File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
-      workingDir.mkdirs();
-      return execute(gfshScript, workingDir);
+      return execute(gfshScript, temporaryFolder.getRoot());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

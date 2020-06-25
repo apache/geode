@@ -22,14 +22,12 @@ import static org.apache.geode.test.util.ResourceUtils.getResource;
 
 import java.nio.file.Path;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerWithCustomLogConfigAcceptanceTest {
@@ -45,18 +43,17 @@ public class ServerWithCustomLogConfigAcceptanceTest {
   private Path configWithoutGeodePluginsFile;
   private Path serverLogFile;
   private Path customLogFile;
+  private TemporaryFolder temporaryFolder;
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
-  @Rule
-  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule
   public TestName testName = new TestName();
 
   @Before
   public void setUpLogConfigFiles() {
+    temporaryFolder = gfshRule.getTemporaryFolder();
+
     configWithGeodePluginsFile = createFileFromResource(
         getResource(CONFIG_WITH_GEODE_PLUGINS_FILE_NAME), temporaryFolder.getRoot(),
         CONFIG_WITH_GEODE_PLUGINS_FILE_NAME)
@@ -70,16 +67,13 @@ public class ServerWithCustomLogConfigAcceptanceTest {
 
   @Before
   public void setUpOutputFiles() {
+    temporaryFolder = gfshRule.getTemporaryFolder();
+
     serverName = testName.getMethodName();
 
     workingDir = temporaryFolder.getRoot().toPath().toAbsolutePath();
     serverLogFile = workingDir.resolve(serverName + ".log");
     customLogFile = workingDir.resolve("custom.log");
-  }
-
-  @After
-  public void stopServer() {
-    gfshRule.execute("stop server --dir=" + workingDir);
   }
 
   @Test
