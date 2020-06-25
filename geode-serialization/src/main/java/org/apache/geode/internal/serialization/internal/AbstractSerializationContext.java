@@ -17,6 +17,7 @@ package org.apache.geode.internal.serialization.internal;
 
 
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -25,10 +26,10 @@ import org.apache.geode.internal.serialization.VersionedDataStream;
  */
 public abstract class AbstractSerializationContext {
 
-  <IO> Version getVersionForDataStream(final IO in) {
+  <IO> VersionOrdinal getVersionForDataStream(final IO in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) in).getVersion();
+      final VersionOrdinal v = ((VersionedDataStream) in).getVersion();
       return v != null ? v : Version.getCurrentVersion();
     } else {
       // assume latest version

@@ -508,7 +508,7 @@ public class StaticSerialization {
    * {@link DataInput}. Returns
    * null if the version is same as this member's.
    */
-  public static Version getVersionForDataStreamOrNull(DataInput in) {
+  public static VersionOrdinal getVersionForDataStreamOrNull(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
       return ((VersionedDataStream) in).getVersion();
@@ -522,10 +522,10 @@ public class StaticSerialization {
    * Get the {@link Version} of the peer or disk store that created this
    * {@link DataInput}.
    */
-  public static Version getVersionForDataStream(DataInput in) {
+  public static VersionOrdinal getVersionForDataStream(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) in).getVersion();
+      final VersionOrdinal v = ((VersionedDataStream) in).getVersion();
       return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
@@ -537,10 +537,10 @@ public class StaticSerialization {
    * Get the {@link Version} of the peer or disk store that created this
    * {@link DataOutput}.
    */
-  public static Version getVersionForDataStream(DataOutput out) {
+  public static VersionOrdinal getVersionForDataStream(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) out).getVersion();
+      final VersionOrdinal v = ((VersionedDataStream) out).getVersion();
       return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
@@ -553,7 +553,7 @@ public class StaticSerialization {
    * {@link DataOutput}. Returns
    * null if the version is same as this member's.
    */
-  public static Version getVersionForDataStreamOrNull(DataOutput out) {
+  public static VersionOrdinal getVersionForDataStreamOrNull(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
       return ((VersionedDataStream) out).getVersion();

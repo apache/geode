@@ -19,7 +19,7 @@ import java.io.DataOutput;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 
 public class SerializationContextImpl extends AbstractSerializationContext
     implements SerializationContext {
@@ -33,7 +33,7 @@ public class SerializationContextImpl extends AbstractSerializationContext
   }
 
   @Override
-  public Version getSerializationVersion() {
+  public VersionOrdinal getSerializationVersion() {
     return getVersionForDataStream(dataOutput);
   }
 

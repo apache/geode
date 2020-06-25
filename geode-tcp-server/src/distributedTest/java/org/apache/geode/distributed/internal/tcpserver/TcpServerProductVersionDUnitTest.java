@@ -49,7 +49,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -143,10 +142,12 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
 
   @Test
   public void testAllMessageTypes() {
-    int clientVMNumber = versions.clientProductVersion.isSameAs(Version.CURRENT)
-        ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
-    int locatorVMNumber = versions.locatorProductVersion.isSameAs(Version.CURRENT)
-        ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
+    int clientVMNumber =
+        versions.clientProductVersion.equals(TestVersion.CURRENT_VERSION)
+            ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
+    int locatorVMNumber =
+        versions.locatorProductVersion.equals(TestVersion.CURRENT_VERSION)
+            ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
     VM clientVM = Host.getHost(0).getVM(versions.clientProductVersion.toString(), clientVMNumber);
     VM locatorVM =
         Host.getHost(0).getVM(versions.locatorProductVersion.toString(), locatorVMNumber);

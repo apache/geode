@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -94,6 +95,13 @@ public class VersionJUnitTest {
   public void testFromOrdinalForCurrentVersionSucceeds()
       throws UnsupportedSerializationVersionException {
     Version.fromOrdinal(Version.CURRENT_ORDINAL);
+  }
+
+  @Test
+  public void ordinalImplMatchesVersion() {
+    final VersionOrdinalImpl versionOrdinal = new VersionOrdinalImpl(Version.GFE_82.ordinal);
+    assertThat(Version.GFE_82).isEqualTo(versionOrdinal);
+    assertThat(versionOrdinal).isEqualTo(Version.GFE_82);
   }
 
 }

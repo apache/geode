@@ -98,6 +98,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -815,7 +816,7 @@ public class InitialImageOperation {
    * @param entries entries to add to the region
    * @return false if should abort (region was destroyed or cache was closed)
    */
-  boolean processChunk(List entries, InternalDistributedMember sender, Version remoteVersion)
+  boolean processChunk(List entries, InternalDistributedMember sender, VersionOrdinal remoteVersion)
       throws IOException, ClassNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final boolean isTraceEnabled = logger.isTraceEnabled();
@@ -2803,7 +2804,7 @@ public class InitialImageOperation {
     private Map<VersionSource, Long> gcVersions;
 
     /** the {@link Version} of the remote peer */
-    private transient Version remoteVersion;
+    private transient VersionOrdinal remoteVersion;
 
     /** The versions in which this message was modified */
     @Immutable

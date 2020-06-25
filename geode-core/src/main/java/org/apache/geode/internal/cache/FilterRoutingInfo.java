@@ -36,6 +36,7 @@ import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 
 /**
  * This class is used to hold the information about the servers and their Filters (CQs and Interest
@@ -320,7 +321,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     private transient byte[] myData;
 
     /** version of creator of myData, needed for deserialization */
-    private transient Version myDataVersion;
+    private transient VersionOrdinal myDataVersion;
 
     /** Clients that are interested in the event and want values */
     private Set interestedClients;

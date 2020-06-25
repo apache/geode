@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 
 /**
  * A disk region that is created when doing offline validation.
@@ -351,7 +351,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
 
     @Override
     public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
-        DistributionManager distributionManager, final Version version) {
+        DistributionManager distributionManager, final VersionOrdinal version) {
       return false;
     }
 

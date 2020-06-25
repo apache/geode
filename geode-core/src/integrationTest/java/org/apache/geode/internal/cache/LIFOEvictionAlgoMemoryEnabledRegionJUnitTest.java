@@ -63,7 +63,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 
 /**
  * This is a test verifies region is LIFO enabled by MEMORY verifies correct stats updating and
@@ -649,7 +649,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
     @Override
     public boolean fillInValue(final InternalRegion region, final Entry entry,
         final ByteArrayDataInput in, final DistributionManager distributionManager,
-        final Version version) {
+        final VersionOrdinal version) {
       return false;
     }
 

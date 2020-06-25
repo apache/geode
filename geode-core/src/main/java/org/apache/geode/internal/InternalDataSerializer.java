@@ -119,6 +119,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -352,7 +353,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     if (out instanceof VersionedDataStream) {
       VersionedDataStream vout = (VersionedDataStream) out;
-      Version version = vout.getVersion();
+      final VersionOrdinal version = vout.getVersion();
       if (null != version) {
         if (version.isOlderThan(Version.GEODE_1_9_0)) {
           if (name.equals(POST_GEODE_190_SERVER_CQIMPL)) {
@@ -2181,7 +2182,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       try {
         ObjectOutput oos = new ObjectOutputStream(stream);
         if (stream instanceof VersionedDataStream) {
-          Version v = ((VersionedDataStream) stream).getVersion();
+          final VersionOrdinal v = ((VersionedDataStream) stream).getVersion();
           if (v != null && v != Version.CURRENT) {
             oos = new VersionedObjectOutput(oos, v);
           }
@@ -2214,7 +2215,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return;
       }
       boolean invoked = false;
-      Version v = StaticSerialization.getVersionForDataStreamOrNull(out);
+      final VersionOrdinal v = StaticSerialization.getVersionForDataStreamOrNull(out);
 
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
@@ -2283,7 +2284,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
     try {
       boolean invoked = false;
-      Version v = StaticSerialization.getVersionForDataStreamOrNull(in);
+      final VersionOrdinal v = StaticSerialization.getVersionForDataStreamOrNull(in);
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
         Version[] versions = null;
@@ -2682,7 +2683,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       ObjectInput ois = new DSObjectInputStream(stream);
       serializationFilter.setFilterOn((ObjectInputStream) ois);
       if (stream instanceof VersionedDataStream) {
-        Version v = ((VersionedDataStream) stream).getVersion();
+        final VersionOrdinal v = ((VersionedDataStream) stream).getVersion();
         if (Version.CURRENT != v && v != null) {
           ois = new VersionedObjectInput(ois, v);
         }
