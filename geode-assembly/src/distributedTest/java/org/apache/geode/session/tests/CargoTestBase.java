@@ -16,6 +16,7 @@ package org.apache.geode.session.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -99,7 +100,7 @@ public abstract class CargoTestBase {
    * Stops all containers that were previously started and cleans up their configurations
    */
   @After
-  public void stop() throws IOException, InterruptedException {
+  public void stop() throws IOException {
     try {
       manager.stopAllActiveContainers();
     } finally {
@@ -119,7 +120,7 @@ public abstract class CargoTestBase {
    * Gets the specified key from all the containers within the container manager and check that each
    * container has the associated expected value
    */
-  public void getKeyValueDataOnAllClients(String key, String expectedValue, String expectedCookie)
+  private void getKeyValueDataOnAllClients(String key, String expectedValue, String expectedCookie)
       throws IOException, URISyntaxException {
     for (int i = 0; i < manager.numContainers(); i++) {
       // Set the port for this server
@@ -128,9 +129,10 @@ public abstract class CargoTestBase {
       Client.Response resp = client.get(key);
 
       // Null would mean we don't expect the same cookie as before
-      if (expectedCookie != null)
+      if (expectedCookie != null) {
         assertEquals("Sessions are not replicating properly", expectedCookie,
             resp.getSessionCookie());
+      }
 
       // Check that the response from this server is correct
       if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
@@ -208,6 +210,8 @@ public abstract class CargoTestBase {
     manager.removeContainer(0);
 
     getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+
+    checkLogs();
   }
 
   /**
@@ -226,6 +230,8 @@ public abstract class CargoTestBase {
     client.invalidate();
 
     verifySessionIsRemoved(key);
+
+    checkLogs();
   }
 
   protected void verifySessionIsRemoved(String key) throws IOException, URISyntaxException {
@@ -253,6 +259,8 @@ public abstract class CargoTestBase {
     Thread.sleep(5000);
 
     verifySessionIsRemoved(key);
+
+    checkLogs();
   }
 
   /**
@@ -261,7 +269,7 @@ public abstract class CargoTestBase {
    */
   @Test
   public void sessionPicksUpSessionTimeoutConfiguredInWebXml()
-      throws IOException, URISyntaxException, InterruptedException {
+      throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
 
     String key = "value_testSessionExpiration";
@@ -276,6 +284,7 @@ public abstract class CargoTestBase {
     client.setMaxInactive(63);
     verifyMaxInactiveInterval(63);
 
+    checkLogs();
   }
 
   protected void verifyMaxInactiveInterval(int expected) throws IOException, URISyntaxException {
@@ -326,6 +335,7 @@ public abstract class CargoTestBase {
     }
 
     getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    checkLogs();
   }
 
   /**
@@ -347,6 +357,8 @@ public abstract class CargoTestBase {
     client.remove(key);
 
     getKeyValueDataOnAllClients(key, "", resp.getSessionCookie());
+
+    checkLogs();
   }
 
   /**
@@ -375,6 +387,31 @@ public abstract class CargoTestBase {
     assertEquals(numContainers + 1, manager.numContainers());
 
     getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+  }
+
+  @Test
+  public void attributesCanBeReplaced() throws IOException, URISyntaxException {
+    manager.startAllInactiveContainers();
+    String key = "value_testSessionUpdate";
+    String value = "Foo";
+    String updateValue = "Bar";
+    client.setPort(Integer.parseInt(manager.getContainerPort(0)));
+    Client.Response response = client.set(key, value);
+    GeodeAwaitility.await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(key, value, response.getSessionCookie()));
+    client.setPort(Integer.parseInt(manager.getContainerPort(0)));
+    Client.Response updateResponse = client.set(key, updateValue);
+    GeodeAwaitility.await().untilAsserted(
+        () -> getKeyValueDataOnAllClients(key, updateValue, updateResponse.getSessionCookie()));
+
+    checkLogs();
+  }
+
+  private void checkLogs() {
+    for (int i = 0; i < manager.numContainers(); i++) {
+      File cargo_dir = manager.getContainer(i).cargoLogDir;
+      LogChecker.checkLogs(cargo_dir);
+    }
   }
 
   private void announceTest(String status) {

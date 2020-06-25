@@ -34,7 +34,8 @@ import org.junit.Test;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
-public class Tomcat7DeltaSessionManagerTest extends AbstractDeltaSessionManagerTest {
+public class Tomcat7DeltaSessionManagerTest
+    extends AbstractDeltaSessionManagerTest<Tomcat7DeltaSessionManager> {
   private Pipeline pipeline;
 
   @Before
