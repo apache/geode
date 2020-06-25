@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
+import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
+import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -80,8 +82,8 @@ public class RollingUpgradeWithGfshDUnitTest {
     int server2Port = portSupplier.getAvailablePort();
 
     GfshExecution startupExecution =
-        GfshScript.of(startLocatorCommand("loc1", locatorPort, locatorJmxPort, -1))
-            .and(startLocatorCommand("loc2", locator2Port, locator2JmxPort, locatorPort))
+        GfshScript.of(startLocatorCommand("loc1", locatorPort, locatorJmxPort, 0, -1))
+            .and(startLocatorCommand("loc2", locator2Port, locator2JmxPort, 0, locatorPort))
             .and(startServerCommand("server1", server1Port, locatorPort))
             .and(startServerCommand("server2", server2Port, locatorPort))
             .and(deployDirCommand())
@@ -89,12 +91,12 @@ public class RollingUpgradeWithGfshDUnitTest {
 
     // doing rolling upgrades
     oldGfsh.stopLocator(startupExecution, "loc1");
-    GfshScript.of(startLocatorCommand("loc1", locatorPort, locatorJmxPort, locator2Port))
+    GfshScript.of(startLocatorCommand("loc1", locatorPort, locatorJmxPort, 0, locator2Port))
         .execute(currentGfsh);
     verifyListDeployed(locatorPort);
 
     oldGfsh.stopLocator(startupExecution, "loc2");
-    GfshScript.of(startLocatorCommand("loc2", locator2Port, locator2JmxPort, locatorPort))
+    GfshScript.of(startLocatorCommand("loc2", locator2Port, locator2JmxPort, 0, locatorPort))
         .execute(currentGfsh);
     verifyListDeployed(locator2Port);
 
@@ -122,24 +124,5 @@ public class RollingUpgradeWithGfshDUnitTest {
     String class1 = "DeployCommandsDUnitA";
     classBuilder.writeJarFromName(class1, jar1);
     return "deploy --dir=" + jarsDir.getAbsolutePath();
-  }
-
-  private String startServerCommand(String name, int port, int connectedLocatorPort) {
-    String command = "start server --name=" + name
-        + " --server-port=" + port
-        + " --locators=localhost[" + connectedLocatorPort + "]";
-    return command;
-  }
-
-  private String startLocatorCommand(String name, int port, int jmxPort,
-      int connectedLocatorPort) {
-    String command = "start locator --name=" + name
-        + " --port=" + port
-        + " --http-service-port=0";
-    if (connectedLocatorPort > 0) {
-      command += " --locators=localhost[" + connectedLocatorPort + "]";
-    }
-    command += " --J=-Dgemfire.jmx-manager-port=" + jmxPort;
-    return command;
   }
 }
