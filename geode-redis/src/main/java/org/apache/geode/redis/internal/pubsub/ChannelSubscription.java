@@ -53,4 +53,8 @@ class ChannelSubscription extends AbstractSubscription {
     return this.channel.equals(channel);
   }
 
+  @Override
+  public String getChannelName() {
+    return channel;
+  }
 }

@@ -54,4 +54,8 @@ class PatternSubscription extends AbstractSubscription {
     return pattern.matches(channel);
   }
 
+  @Override
+  public String getChannelName() {
+    return pattern.globPattern();
+  }
 }
