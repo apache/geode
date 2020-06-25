@@ -70,7 +70,6 @@ public class RestoreRedundancyOperationController extends AbstractManagementCont
       @PathVariable String id) {
     ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResults> result =
         clusterManagementService.get(new RestoreRedundancyRequest(), id);
-    LogService.getLogger().info("MLH getRebalance Result =  " + result);
     return result;
   }
 }
