@@ -35,6 +35,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -950,11 +951,10 @@ public class Message {
       int bytesReadThisTime = readPartChunk(bytesRemaining);
       bytesRemaining -= bytesReadThisTime;
 
-      if (unwrapbuffer == null) {
+      if (this.sslEngine == null) {
         commonBuffer = cb;
       } else {
         unwrapbuffer = this.sslEngine.getUnwrappedBuffer(null);
-        cbremaining = unwrapbuffer.remaining();
         commonBuffer = unwrapbuffer;
       }
 
@@ -983,59 +983,57 @@ public class Message {
         // now we need to read partLen - alreadyReadBytes off the wire
         int off = alreadyReadBytes;
         int remaining = partLen - off;
-        while (remaining > 0) {
-          if (this.socketChannel != null) {
-            int bytesThisTime = remaining;
-            cb.clear();
-            if (bytesThisTime > cb.capacity()) {
-              bytesThisTime = cb.capacity();
-            }
-            if (unwrapbuffer == null) {
+
+        if (this.sslEngine == null) {
+          while (remaining > 0) {
+            if (this.socketChannel != null) {
+              int bytesThisTime = remaining;
+              cb.clear();
+              if (bytesThisTime > cb.capacity()) {
+                bytesThisTime = cb.capacity();
+              }
               cb.limit(bytesThisTime);
-            }
 
-            int res = this.socketChannel.read(cb);
-            if (res != -1) {
-              cb.flip();
+              int res = this.socketChannel.read(cb);
+              if (res != -1) {
+                cb.flip();
 
-              if (unwrapbuffer == null) {
                 commonBuffer = cb;
+                bytesRemaining -= res;
+                remaining -= res;
+                commonBuffer.get(partBytes, off, res);
+                off += res;
+                if (this.messageStats != null) {
+                  this.messageStats.incReceivedBytes(res);
+                }
               } else {
-                unwrapbuffer = this.sslEngine.unwrap(cb);
-                unwrapbuffer.flip();
-                res = unwrapbuffer.remaining();
-                commonBuffer = unwrapbuffer;
-              }
-
-              bytesRemaining -= res;
-              remaining -= res;
-              commonBuffer.get(partBytes, off, res);
-              off += res;
-              if (this.messageStats != null) {
-                this.messageStats.incReceivedBytes(res);
-              }
-              cbremaining = commonBuffer.remaining();
-            } else {
-              throw new EOFException(
-                  "The connection has been reset while reading a part");
-            }
-          } else {
-            int res = this.inputStream.read(partBytes, off, remaining);
-            if (res != -1) {
-              bytesRemaining -= res;
-              remaining -= res;
-              off += res;
-              if (this.messageStats != null) {
-                this.messageStats.incReceivedBytes(res);
+                throw new EOFException(
+                    "The connection has been reset while reading a part");
               }
             } else {
-              throw new EOFException(
-                  "The connection has been reset while reading a part");
+              int res = this.inputStream.read(partBytes, off, remaining);
+              if (res != -1) {
+                bytesRemaining -= res;
+                remaining -= res;
+                off += res;
+                if (this.messageStats != null) {
+                  this.messageStats.incReceivedBytes(res);
+                }
+              } else {
+                throw new EOFException(
+                    "The connection has been reset while reading a part");
+              }
             }
-            cbremaining = commonBuffer.remaining();
+          }
+        } else {
+          if (remaining > 0) {
+            this.sslEngine.ensureWrappedCapacity(remaining, cb,
+                BufferPool.BufferType.TRACKED_RECEIVER);
+            commonBuffer = this.sslEngine.readAtLeast(this.socketChannel, remaining, cb);
           }
         }
       }
+      cbremaining = commonBuffer.remaining();
       part.init(partBytes, partType);
     }
   }
@@ -1061,17 +1059,16 @@ public class Message {
         // we already have the next part header in commBuffer so just return
         return 0;
       }
+      if (commBuffer.position() != 0) {
+        commBuffer.compact();
+      } else {
+        commBuffer.position(commBuffer.limit());
+        commBuffer.limit(commBuffer.capacity());
+      }
     } else {
       if (this.sslEngine.getUnwrappedBuffer(null).remaining() >= PART_HEADER_SIZE) {
         return 0;
       }
-    }
-
-    if (commBuffer.position() != 0) {
-      commBuffer.compact();
-    } else {
-      commBuffer.position(commBuffer.limit());
-      commBuffer.limit(commBuffer.capacity());
     }
 
     if (this.serverConnection != null) {
@@ -1081,6 +1078,13 @@ public class Message {
     int bytesRead = 0;
 
     if (this.socketChannel != null) {
+      if (this.sslEngine != null) {
+        this.sslEngine.ensureWrappedCapacity(bytesRemaining, commBuffer,
+            BufferPool.BufferType.TRACKED_RECEIVER);
+        int unwrapread =
+            this.sslEngine.readAtLeast(this.socketChannel, bytesRemaining, commBuffer).remaining();
+        return unwrapread;
+      }
       int remaining = commBuffer.remaining();
       if (remaining > bytesRemaining) {
         remaining = bytesRemaining;
@@ -1097,10 +1101,6 @@ public class Message {
         } else {
           throw new EOFException(
               "The connection has been reset while reading the payload");
-        }
-        // improve this
-        if (this.sslEngine != null) {
-          this.sslEngine.unwrap(commBuffer);
         }
       }
 
