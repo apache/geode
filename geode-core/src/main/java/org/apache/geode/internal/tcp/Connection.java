@@ -32,10 +32,12 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
+import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -506,7 +508,9 @@ public class Connection implements Runnable {
     try {
       socket.setTcpNoDelay(true);
       socket.setKeepAlive(true);
-      setSendBufferSize(socket, SMALL_BUFFER_SIZE);
+      if (!(socket instanceof SSLSocket)) {
+        setSendBufferSize(socket, SMALL_BUFFER_SIZE);
+      }
       setReceiveBufferSize(socket);
     } catch (SocketException e) {
       // unable to get the settings we want. Don't log an error because it will likely happen a lot
@@ -1171,7 +1175,7 @@ public class Connection implements Runnable {
       // receive buffer accordingly.
       if (!sharedResource) {
         setReceiveBufferSize(socket, owner.getConduit().tcpBufferSize);
-      } else {
+      } else if (!(socket instanceof SSLSocket)) {
         setReceiveBufferSize(socket, SMALL_BUFFER_SIZE); // make small since only
         // receive ack messages
       }
@@ -2629,12 +2633,12 @@ public class Connection implements Runnable {
                     buffer.limit() - buffer.position());
                 buffer.position(buffer.limit());
               } else {
-                // socket output streams are FileOutputStreams and have a Channel.
+                // socket output streams are FileOutputStreams and have a writeable Channel.
                 // This code merely fetches that channel and writes to it.
-                Channels.newChannel(output).write(buffer);
-//                byte[] bytesToWrite = getBytesToWrite(buffer);
-//                output.write(bytesToWrite);
-//                output.flush();
+//                Channels.newChannel(output).write(buffer);
+                byte[] bytesToWrite = getBytesToWrite(buffer);
+                output.write(bytesToWrite);
+                output.flush();
               }
             } else {
               amtWritten = socket.getChannel().write(wrappedBuffer);

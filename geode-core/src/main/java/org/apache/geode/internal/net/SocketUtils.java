@@ -95,9 +95,9 @@ public abstract class SocketUtils {
   public static int readFromSocket(Socket socket, ByteBuffer inputBuffer,
       InputStream socketInputStream) throws IOException {
     int amountRead;
+    inputBuffer.limit(inputBuffer.capacity());
     if (socket instanceof SSLSocket) {
       amountRead = readFromStream(socketInputStream, inputBuffer);
-//      amountRead = Channels.newChannel(socketInputStream).read(inputBuffer);
     } else {
       amountRead = socket.getChannel().read(inputBuffer);
     }
@@ -106,13 +106,9 @@ public abstract class SocketUtils {
 
   private static int readFromStream(InputStream stream, ByteBuffer inputBuffer) throws IOException {
     int amountRead;
-//    if (inputBuffer.position() == 0 && inputBuffer.limit() == 0) {
-      inputBuffer.limit(inputBuffer.capacity());
-//    }
     // if bytes are available we read that number of bytes. Otherwise we do a blocking read
     // of buffer.remaining() bytes
-    int amountToRead =
-        stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
+    int amountToRead = stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
             : inputBuffer.remaining();
     if (inputBuffer.hasArray()) {
       amountRead = stream.read(inputBuffer.array(),
@@ -121,10 +117,10 @@ public abstract class SocketUtils {
         inputBuffer.position(inputBuffer.position() + amountRead);
       }
     } else {
-      byte[] buffer = new byte[amountToRead];
-      amountRead = stream.read(buffer);
+      byte[] bytesRead = new byte[amountToRead];
+      amountRead = stream.read(bytesRead);
       if (amountRead > 0) {
-        inputBuffer.put(buffer, 0, amountRead);
+        inputBuffer.put(bytesRead, 0, amountRead);
       }
     }
     return amountRead;
