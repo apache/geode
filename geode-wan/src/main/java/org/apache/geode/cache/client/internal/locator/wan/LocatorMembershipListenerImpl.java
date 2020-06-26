@@ -18,6 +18,7 @@ package org.apache.geode.cache.client.internal.locator.wan;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -291,15 +292,15 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     public void run() {
       Map<DistributionLocatorId, Set<LocatorJoinMessage>> failedMessages = new HashMap<>();
       for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : remoteLocators.entrySet()) {
-        for (DistributionLocatorId value : entry.getValue()) {
+        for (DistributionLocatorId remoteLocator : entry.getValue()) {
           // Notify known remote locator about the advertised locator.
           LocatorJoinMessage advertiseNewLocatorMessage = new LocatorJoinMessage(
               joiningLocatorDistributedSystemId, joiningLocator, localLocatorId, "");
-          sendMessage(value, advertiseNewLocatorMessage, failedMessages);
+          sendMessage(remoteLocator, advertiseNewLocatorMessage, failedMessages);
 
           // Notify the advertised locator about remote known locator.
           LocatorJoinMessage advertiseKnownLocatorMessage =
-              new LocatorJoinMessage(entry.getKey(), value, localLocatorId, "");
+              new LocatorJoinMessage(entry.getKey(), remoteLocator, localLocatorId, "");
           sendMessage(joiningLocator, advertiseKnownLocatorMessage, failedMessages);
         }
       }
@@ -313,9 +314,11 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
             DistributionLocatorId targetLocator = entry.getKey();
             Set<LocatorJoinMessage> joinMessages = entry.getValue();
 
-            for (LocatorJoinMessage locatorJoinMessage : joinMessages) {
+            for (Iterator<LocatorJoinMessage> iterator = joinMessages.iterator(); iterator
+                .hasNext();) {
+              LocatorJoinMessage locatorJoinMessage = iterator.next();
               if (retryMessage(targetLocator, locatorJoinMessage, attempt)) {
-                joinMessages.remove(locatorJoinMessage);
+                iterator.remove();
               } else {
                 // Sleep between retries.
                 try {
@@ -324,6 +327,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
                   Thread.currentThread().interrupt();
                   logger.warn(
                       "Locator Membership listener permanently failed to exchange locator information due to interruption.");
+                  return;
                 }
               }
             }
