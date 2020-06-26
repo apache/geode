@@ -280,6 +280,9 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       Boolean groupTransactionEvents =
           (Boolean) parseResult
               .getParamValue(CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS);
+      Boolean batchConflationEnabled =
+          (Boolean) parseResult
+              .getParamValue(CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION);
 
       if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
         return ResultModel.createError(
@@ -295,6 +298,11 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           && groupTransactionEvents) {
         return ResultModel.createError(
             "Serial Gateway Sender cannot be created with --group-transaction-events when --dispatcher-threads is greater than 1.");
+      }
+
+      if (groupTransactionEvents && batchConflationEnabled) {
+        return ResultModel.createError(
+            "Gateway Sender cannot be created with --group-transaction-events and --enable-batch-conflation.");
       }
 
       return ResultModel.createInfo("");

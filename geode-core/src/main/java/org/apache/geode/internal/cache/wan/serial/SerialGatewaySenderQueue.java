@@ -784,7 +784,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         logger.trace("{}: Trying head key + offset: {}", this, currentKey);
       }
       currentKey = inc(currentKey);
-      if (this.stats != null) {
+      if (!mustGroupTransactionEvents() && this.stats != null) {
         this.stats.incEventsNotQueuedConflated();
       }
     }

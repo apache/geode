@@ -39,6 +39,7 @@ ensure that events belonging to the same transaction are sent together in the sa
 <b>Note:</b> This setting is supported only on serial senders with just one dispatcher
 thread, or on parallel senders. In addition, the regions to which the transaction events belong must
 be replicated by the same set of gateway senders that also have this setting enabled.
+Furthermore, this setting cannot be enabled if batch conflation is enabled.
 
 By default, potential WAN conflicts are resolved using a timestamp mechanism. You can optionally install a custom conflict resolver to apply custom logic when determining whether to apply a potentially conflicting update received over a WAN.
 

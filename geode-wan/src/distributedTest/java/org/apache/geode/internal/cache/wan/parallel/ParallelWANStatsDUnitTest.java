@@ -462,6 +462,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     assertEquals(1, v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4));
     // batches redistributed:
     assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5));
+    // events not queued conflated:
+    assertEquals(0, v4List.get(7) + v5List.get(7) + v6List.get(7) + v7List.get(7));
   }
 
   @Test
@@ -605,6 +607,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     assertEquals(2, (int) v4List.get(4));
     // batches redistributed:
     assertTrue("Batch was not redistributed", (v4List.get(5)) > 0);
+    // events not queued conflated:
+    assertEquals(0, (int) v4List.get(7));
   }
 
   @Test
@@ -782,19 +786,19 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     int batchSize = 9;
     boolean groupTransactionEvents = true;
     vm4.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
+        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, false, false, null, true,
             groupTransactionEvents,
             -1));
     vm5.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
+        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, false, false, null, true,
             groupTransactionEvents,
             -1));
     vm6.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
+        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, false, false, null, true,
             groupTransactionEvents,
             -1));
     vm7.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, true, false, null, true,
+        () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, false, false, null, true,
             groupTransactionEvents,
             -1));
 

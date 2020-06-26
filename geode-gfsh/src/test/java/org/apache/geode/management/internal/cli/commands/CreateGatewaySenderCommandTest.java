@@ -171,6 +171,19 @@ public class CreateGatewaySenderCommandTest {
   }
 
   @Test
+  public void testInvalidGroupTransactionEventsDueToConflationEnabled() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult = new CliFunctionResult("member",
+        CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --member=xyz --id=1 --remote-distributed-system-id=1 " +
+            "--group-transaction-events --enable-batch-conflation --order-policy=THREAD")
+        .statusIsError().containsOutput(
+            "Gateway Sender cannot be created with --group-transaction-events and --enable-batch-conflation");
+  }
+
+  @Test
   public void testFunctionArgs() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     cliFunctionResult = new CliFunctionResult("member",
@@ -277,8 +290,7 @@ public class CreateGatewaySenderCommandTest {
             + " --manual-start"
             + " --disk-synchronous"
             + " --enable-persistence"
-            + " --enable-batch-conflation"
-            + " --group-transaction-events")
+            + " --enable-batch-conflation")
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
 
@@ -289,8 +301,23 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isTrue();
-    assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isTrue();
+  }
 
+  @Test
+  public void groupTransactionEventsShouldBeSetAsTrueWhenSpecifiedWithoutValue() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult =
+        new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --member=xyz --id=testGateway --remote-distributed-system-id=1"
+            + " --parallel"
+            + " --group-transaction-events")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
+
+    assertThat(argsArgumentCaptor.getValue().getId()).isEqualTo("testGateway");
+    assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isTrue();
   }
 
   @Test
