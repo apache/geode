@@ -346,11 +346,16 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
+      byte[] newBytes = value;
       if (value.length != 0) {
-        redisString = new RedisString(new ByteArrayWrapper(value));
+        if (offset != 0) {
+          newBytes = new byte[offset + value.length];
+          System.arraycopy(value, 0, newBytes, offset, value.length);
+        }
+        redisString = new RedisString(new ByteArrayWrapper(newBytes));
         region.put(key, redisString);
       }
-      return value.length;
+      return newBytes.length;
     }
     return redisString.setrange(region, key, offset, value);
   }
