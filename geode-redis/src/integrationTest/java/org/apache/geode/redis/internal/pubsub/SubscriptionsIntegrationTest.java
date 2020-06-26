@@ -22,13 +22,13 @@ import static org.mockito.Mockito.mock;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import io.netty.channel.Channel;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.mocks.DummySubscription;
@@ -52,84 +52,55 @@ public class SubscriptionsIntegrationTest {
   }
 
   @Test
-  public void add_doesNotThrowException_whenListIsConcurrentlyModified()
-      throws Exception {
+  public void add_doesNotThrowException_whenListIsConcurrentlyModified() {
     final Subscriptions subscriptions = new Subscriptions();
 
-    Callable<Void> addingCallable1 =
-        functionSpinner(x -> subscriptions.add(new DummySubscription()));
-    Callable<Void> addingCallable2 =
-        functionSpinner(x -> subscriptions.add(new DummySubscription()));
-
-    Future<Void> addingFuture = executor.submit(addingCallable1);
-    Future<Void> existsFuture = executor.submit(addingCallable2);
-
-    addingFuture.get();
-    existsFuture.get();
+    new ConcurrentLoopingThreads(ITERATIONS,
+        i -> subscriptions.add(new DummySubscription()),
+        i -> subscriptions.add(new DummySubscription()))
+            .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS * 2);
   }
 
   @Test
-  public void exists_doesNotThrowException_whenListIsConcurrentlyModified()
-      throws Exception {
+  public void exists_doesNotThrowException_whenListIsConcurrentlyModified() {
     final Subscriptions subscriptions = new Subscriptions();
 
-    Callable<Void> addingCallable =
-        functionSpinner(x -> subscriptions.add(new DummySubscription()));
-    Callable<Void> existsCallable =
-        functionSpinner(x -> subscriptions.exists("channel", mock(Client.class)));
-
-    Future<Void> addingFuture = executor.submit(addingCallable);
-    Future<Void> existsFuture = executor.submit(existsCallable);
-
-    addingFuture.get();
-    existsFuture.get();
+    new ConcurrentLoopingThreads(ITERATIONS,
+        i -> subscriptions.add(new DummySubscription()),
+        i -> subscriptions.exists("channel", mock(Client.class)))
+            .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);
   }
 
   @Test
-  public void findSubscriptionsByClient_doesNotThrowException_whenListIsConcurrentlyModified()
-      throws Exception {
+  public void findSubscriptionsByClient_doesNotThrowException_whenListIsConcurrentlyModified() {
     final Subscriptions subscriptions = new Subscriptions();
 
-    Callable<Void> addingCallable =
-        functionSpinner(x -> subscriptions.add(new DummySubscription()));
-    Callable<Void> findSubscriptionsCallable =
-        functionSpinner(x -> subscriptions.findSubscriptions(mock(Client.class)));
-
-    Future<Void> addingFuture = executor.submit(addingCallable);
-    Future<Void> existsFuture = executor.submit(findSubscriptionsCallable);
-
-    addingFuture.get();
-    existsFuture.get();
+    new ConcurrentLoopingThreads(ITERATIONS,
+        i -> subscriptions.add(new DummySubscription()),
+        i -> subscriptions.findSubscriptions(mock(Client.class)))
+            .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);
   }
 
   @Test
-  public void findSubscriptionsByChannel_doesNotThrowException_whenListIsConcurrentlyModified()
-      throws Exception {
+  public void findSubscriptionsByChannel_doesNotThrowException_whenListIsConcurrentlyModified() {
     final Subscriptions subscriptions = new Subscriptions();
 
-    Callable<Void> addingCallable =
-        functionSpinner(x -> subscriptions.add(new DummySubscription()));
-    Callable<Void> findSubscriptionsCallable =
-        functionSpinner(x -> subscriptions.findSubscriptions("channel".getBytes()));
-
-    Future<Void> addingFuture = executor.submit(addingCallable);
-    Future<Void> existsFuture = executor.submit(findSubscriptionsCallable);
-
-    addingFuture.get();
-    existsFuture.get();
+    new ConcurrentLoopingThreads(ITERATIONS,
+        i -> subscriptions.add(new DummySubscription()),
+        i -> subscriptions.findSubscriptions("channel".getBytes()))
+            .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);
   }
 
   @Test
-  public void removeByClient_doesNotThrowException_whenListIsConcurrentlyModified()
-      throws Exception {
+  public void removeByClient_doesNotThrowException_whenListIsConcurrentlyModified() {
     final Subscriptions subscriptions = new Subscriptions();
 
     List<Client> clients = new LinkedList<>();
@@ -140,27 +111,16 @@ public class SubscriptionsIntegrationTest {
       subscriptions.add(new ChannelSubscription(client, "channel".getBytes(), context));
     }
 
-    Callable<Void> removeCallable = () -> {
-      clients.forEach(subscriptions::remove);
-      return null;
-    };
-    Callable<Void> existsCallable = () -> {
-      clients.forEach(c -> subscriptions.exists("channel", c));
-      return null;
-    };
-
-    Future<Void> removeFuture = executor.submit(removeCallable);
-    Future<Void> existsFuture = executor.submit(existsCallable);
-
-    removeFuture.get();
-    existsFuture.get();
+    new ConcurrentLoopingThreads(1,
+        i -> clients.forEach(subscriptions::remove),
+        i -> clients.forEach(c -> subscriptions.exists("channel", c)))
+            .run();
 
     assertThat(subscriptions.size()).isEqualTo(0);
   }
 
   @Test
-  public void removeByChannelAndClient_doesNotThrowException_whenListIsConcurrentlyModified()
-      throws Exception {
+  public void removeByChannelAndClient_doesNotThrowException_whenListIsConcurrentlyModified() {
     final Subscriptions subscriptions = new Subscriptions();
 
     List<Client> clients = new LinkedList<>();
@@ -171,20 +131,10 @@ public class SubscriptionsIntegrationTest {
       subscriptions.add(new ChannelSubscription(client, "channel".getBytes(), context));
     }
 
-    Callable<Void> removeCallable = () -> {
-      clients.forEach(c -> subscriptions.remove("channel", c));
-      return null;
-    };
-    Callable<Void> existsCallable = () -> {
-      clients.forEach(c -> subscriptions.exists("channel", c));
-      return null;
-    };
-
-    Future<Void> removeFuture = executor.submit(removeCallable);
-    Future<Void> existsFuture = executor.submit(existsCallable);
-
-    removeFuture.get();
-    existsFuture.get();
+    new ConcurrentLoopingThreads(1,
+        i -> clients.forEach(c -> subscriptions.remove("channel".getBytes(), c)),
+        i -> clients.forEach(c -> subscriptions.remove("channel".getBytes(), c)))
+            .run();
 
     assertThat(subscriptions.size()).isEqualTo(0);
   }
