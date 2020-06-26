@@ -63,7 +63,6 @@ public class AuthIntegrationTest {
     cf.set(ConfigurationProperties.REDIS_PASSWORD, PASSWORD);
     cache = cf.create();
     server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
-    server.start();
     this.jedis = new Jedis("localhost", port, 100000);
   }
 
@@ -75,7 +74,6 @@ public class AuthIntegrationTest {
     cf.set(LOCATORS, "");
     cache = cf.create();
     server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
-    server.start();
     this.jedis = new Jedis("localhost", port, 100000);
   }
 
