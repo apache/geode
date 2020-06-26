@@ -81,7 +81,8 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
         localRouting = filterRoutingInfo.getLocalFilterInfo();
         if (localRouting != null) {
           // routing was computed in this VM but may need to perform local interest processing
-          computeFilterInfo = !filterRoutingInfo.hasLocalInterestBeenComputed();
+          computeFilterInfo = !filterRoutingInfo.hasLocalInterestBeenComputed()
+              && !localRouting.filterProcessedLocally;
         } else {
           // routing was computed elsewhere and is in the "remote" routing table
           localRouting = filterRoutingInfo.getFilterInfo(internalRegion.getMyId());

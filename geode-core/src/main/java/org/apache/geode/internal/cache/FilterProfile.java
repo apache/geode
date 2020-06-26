@@ -1083,21 +1083,32 @@ public class FilterProfile implements DataSerializableFixedID {
     }
 
     FilterRoutingInfo frInfo = null;
+    // bug #50809 - local routing for transactional ops must be done here
+    // because the event isn't available later and we lose the old value for the entry
+    boolean processLocalProfile = false;
 
     CqService cqService = getCqService(event.getRegion());
     if (cqService.isRunning()) {
-      frInfo = new FilterRoutingInfo();
-      // bug #50809 - local routing for transactional ops must be done here
-      // because the event isn't available later and we lose the old value for the entry
-      final boolean processLocalProfile =
+      processLocalProfile =
           event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
+      frInfo = new FilterRoutingInfo();
       fillInCQRoutingInfo(event, processLocalProfile, peerProfiles, frInfo);
+    }
+
+    Profile[] tempProfiles = peerProfiles;
+
+    if (processLocalProfile) {
+      tempProfiles = new Profile[peerProfiles.length + 1];
+      for (int i = 0; i < peerProfiles.length; i++) {
+        tempProfiles[i] = peerProfiles[i];
+      }
+      tempProfiles[peerProfiles.length] = localProfile;
     }
 
     // Process InterestList.
     // return fillInInterestRoutingInfo(event, peerProfiles, frInfo, cacheOpRecipients);
-    frInfo = fillInInterestRoutingInfo(event, peerProfiles, frInfo, cacheOpRecipients);
-    if (frInfo == null || !frInfo.hasMemberWithFilterInfo()) {
+    frInfo = fillInInterestRoutingInfo(event, tempProfiles, frInfo, cacheOpRecipients);
+    if (frInfo == null || (!frInfo.hasMemberWithFilterInfo() && !processLocalProfile)) {
       return null;
     } else {
       return frInfo;
