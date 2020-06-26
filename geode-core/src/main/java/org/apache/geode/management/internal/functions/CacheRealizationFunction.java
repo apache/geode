@@ -45,6 +45,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.configuration.DiskStore;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.HasFile;
 import org.apache.geode.management.configuration.Index;
@@ -55,6 +56,7 @@ import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
 import org.apache.geode.management.internal.configuration.realizers.DeploymentRealizer;
+import org.apache.geode.management.internal.configuration.realizers.DiskStoreRealizer;
 import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
 import org.apache.geode.management.internal.configuration.realizers.IndexRealizer;
 import org.apache.geode.management.internal.configuration.realizers.MemberRealizer;
@@ -74,6 +76,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     realizers.put(Pdx.class, new PdxRealizer());
     realizers.put(Deployment.class, new DeploymentRealizer());
     realizers.put(Index.class, new IndexRealizer());
+    realizers.put(DiskStore.class, new DiskStoreRealizer());
   }
 
   @Override

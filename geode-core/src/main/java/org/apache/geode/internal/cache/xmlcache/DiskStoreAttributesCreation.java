@@ -292,8 +292,7 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
       throw new IllegalArgumentException(
           String.format(
               "Number of diskSizes is %s which is not equal to number of disk Dirs which is %s",
-
-              new Object[] {Integer.valueOf(sizes.length), Integer.valueOf(diskDirs.length)}));
+              sizes.length, diskDirs.length));
     }
     verifyNonNegativeDirSize(sizes);
     this.diskDirSizes = sizes;
@@ -317,28 +316,6 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
    *
    */
   private void checkIfDirectoriesExist(File[] disk_dirs) {
-    // for (int i=0; i < disk_dirs.length; i++) {
-    // if (! disk_dirs[i].isDirectory()) {
-    //// throw new
-    // IllegalArgumentException(String.format("%s was not an existing directory for disk store
-    // %s.",new
-    // Object[] {disk_dirs[i], name}));
-    // if (!diskDirs[i].mkdirs()) {
-    // throw new RuntimeException("Cannot create directory" + diskDirs[i].getAbsolutePath() + "Num
-    // disk dirs to be created : " + disk_dirs.length + " Dir Name " + disk_dirs[i].getName());
-    // }
-    // }
-    // }
     DiskStoreFactoryImpl.checkIfDirectoriesExist(disk_dirs);
-  }
-
-  private void verifyNonNegativeDirSize(int[] sizes) {
-    for (int i = 0; i < sizes.length; i++) {
-      if (sizes[i] < 0) {
-        throw new IllegalArgumentException(
-            String.format("Dir size cannot be negative : %s for disk store %s",
-                new Object[] {Integer.valueOf(sizes[i]), name}));
-      }
-    }
   }
 }
