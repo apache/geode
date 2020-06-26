@@ -15,6 +15,8 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
+import java.util.List;
+
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -27,6 +29,11 @@ public class PingExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    return RedisResponse.string(PING_RESPONSE);
+    List<byte[]> commandElems = command.getProcessedCommand();
+    Object result = PING_RESPONSE;
+    if (commandElems.size() > 1) {
+      result = commandElems.get(1);
+    }
+    return RedisResponse.bulkString(result);
   }
 }
