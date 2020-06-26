@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
@@ -35,8 +36,9 @@ import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExec
 public class RedisSetInRegion extends RedisKeyInRegion implements RedisSetCommands {
 
   @SuppressWarnings("unchecked")
-  public RedisSetInRegion(Region<ByteArrayWrapper, RedisData> region) {
-    super(region);
+  public RedisSetInRegion(Region<ByteArrayWrapper, RedisData> region,
+      RedisStats redisStats) {
+    super(region, redisStats);
   }
 
   @Override

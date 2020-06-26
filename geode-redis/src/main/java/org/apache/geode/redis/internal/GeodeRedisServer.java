@@ -18,7 +18,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
@@ -58,6 +61,7 @@ public class GeodeRedisServer {
 
   private final RegionProvider regionProvider;
   private final PubSub pubSub;
+  private final RedisStats redisStats;
 
   private boolean started;
 
@@ -81,16 +85,18 @@ public class GeodeRedisServer {
 
     pubSub = new PubSubImpl(new Subscriptions());
     regionProvider = new RegionProvider(cache);
+    redisStats = createStats(cache);
 
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
 
-    CommandFunction.register(stripedExecutor);
-    RenameFunction.register(stripedExecutor);
+    CommandFunction.register(stripedExecutor, redisStats);
+    RenameFunction.register(stripedExecutor, redisStats);
     RedisCommandFunction.register();
-    passiveExpirationManager = new PassiveExpirationManager(regionProvider.getDataRegion());
+    passiveExpirationManager =
+        new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
-        this::allowUnsupportedCommands, this::shutdown, port, bindAddress);
+        this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats);
   }
 
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
@@ -100,6 +106,13 @@ public class GeodeRedisServer {
     if (allowUnsupportedCommands) {
       logUnsupportedCommandWarning();
     }
+  }
+
+  private static RedisStats createStats(InternalCache cache) {
+    InternalDistributedSystem system = cache.getInternalDistributedSystem();
+    StatisticsClock statisticsClock =
+        StatisticsClockFactory.clock(system.getConfig().getEnableTimeStatistics());
+    return new RedisStats(system.getStatisticsManager(), statisticsClock);
   }
 
   /**
@@ -142,6 +155,7 @@ public class GeodeRedisServer {
       logger.info("GeodeRedisServer shutting down");
       passiveExpirationManager.stop();
       nettyRedisServer.stop();
+      redisStats.close();
       shutdown = true;
     }
   }
