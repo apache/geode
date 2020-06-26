@@ -89,8 +89,8 @@ public class GeodeRedisServer {
 
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
 
-    CommandFunction.register(stripedExecutor, redisStats);
-    RenameFunction.register(stripedExecutor, redisStats);
+    CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
+    RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RedisCommandFunction.register();
     passiveExpirationManager =
         new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);

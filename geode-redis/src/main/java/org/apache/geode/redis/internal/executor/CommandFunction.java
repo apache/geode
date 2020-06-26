@@ -28,10 +28,7 @@ import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.data.RedisHashInRegion;
-import org.apache.geode.redis.internal.data.RedisKeyInRegion;
-import org.apache.geode.redis.internal.data.RedisSetInRegion;
-import org.apache.geode.redis.internal.data.RedisStringInRegion;
+import org.apache.geode.redis.internal.data.RedisDataCommands;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 
 @SuppressWarnings("unchecked")
@@ -39,12 +36,12 @@ public class CommandFunction extends SingleResultRedisFunction {
 
   public static final String ID = "REDIS_COMMAND_FUNCTION";
 
-  private final transient StripedExecutor stripedExecutor;
-  private final RedisStats redisStats;
+  private final transient RedisDataCommands dataCommands;
 
-  public static void register(StripedExecutor stripedExecutor,
+  public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,
+      StripedExecutor stripedExecutor,
       RedisStats redisStats) {
-    FunctionService.registerFunction(new CommandFunction(stripedExecutor, redisStats));
+    FunctionService.registerFunction(new CommandFunction(dataRegion, stripedExecutor, redisStats));
   }
 
   public static <T> T execute(RedisCommandType command,
@@ -63,10 +60,11 @@ public class CommandFunction extends SingleResultRedisFunction {
   }
 
 
-  public CommandFunction(StripedExecutor stripedExecutor,
+  public CommandFunction(Region<ByteArrayWrapper, RedisData> dataRegion,
+      StripedExecutor stripedExecutor,
       RedisStats redisStats) {
-    this.stripedExecutor = stripedExecutor;
-    this.redisStats = redisStats;
+    super(dataRegion);
+    dataCommands = new RedisDataCommands(dataRegion, redisStats, stripedExecutor);
   }
 
   @Override
@@ -75,66 +73,66 @@ public class CommandFunction extends SingleResultRedisFunction {
   }
 
   @Override
-  protected Object compute(Region localRegion, ByteArrayWrapper key,
-      RedisCommandType command, Object[] args) {
+  protected Object compute(ByteArrayWrapper key, Object[] args) {
+    RedisCommandType command = (RedisCommandType) args[0];
     Callable<Object> callable;
     boolean useStripedExecutor = true;
     switch (command) {
       case DEL:
-        callable = () -> new RedisKeyInRegion(localRegion, redisStats).del(key);
+        callable = () -> dataCommands.del(key);
         break;
       case EXISTS:
-        callable = () -> new RedisKeyInRegion(localRegion, redisStats).exists(key);
+        callable = () -> dataCommands.exists(key);
         break;
       case TYPE:
-        callable = () -> new RedisKeyInRegion(localRegion, redisStats).type(key);
+        callable = () -> dataCommands.type(key);
         break;
       case PEXPIREAT: {
         long timestamp = (long) args[1];
         callable =
-            () -> new RedisKeyInRegion(localRegion, redisStats).pexpireat(key, timestamp);
+            () -> dataCommands.pexpireat(key, timestamp);
         break;
       }
       case PERSIST:
-        callable = () -> new RedisKeyInRegion(localRegion, redisStats).persist(key);
+        callable = () -> dataCommands.persist(key);
         break;
       case PTTL:
-        callable = () -> new RedisKeyInRegion(localRegion, redisStats).pttl(key);
+        callable = () -> dataCommands.pttl(key);
         break;
       case APPEND: {
         ByteArrayWrapper valueToAdd = (ByteArrayWrapper) args[1];
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).append(key, valueToAdd);
+        callable = () -> dataCommands.append(key, valueToAdd);
         break;
       }
       case GET: {
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).get(key);
+        callable = () -> dataCommands.get(key);
         break;
       }
       case MGET: {
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).mget(key);
+        callable = () -> dataCommands.mget(key);
         break;
       }
       case STRLEN: {
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).strlen(key);
+        callable = () -> dataCommands.strlen(key);
         break;
       }
       case SET: {
         Object[] argArgs = (Object[]) args[1];
         ByteArrayWrapper value = (ByteArrayWrapper) argArgs[0];
         SetOptions options = (SetOptions) argArgs[1];
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).set(key, value, options);
+        callable = () -> dataCommands.set(key, value, options);
         break;
       }
       case GETSET: {
         ByteArrayWrapper value = (ByteArrayWrapper) args[1];
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).getset(key, value);
+        callable = () -> dataCommands.getset(key, value);
         break;
       }
       case GETRANGE: {
         Object[] argArgs = (Object[]) args[1];
         long start = (long) argArgs[0];
         long end = (long) argArgs[1];
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).getrange(key, start, end);
+        callable = () -> dataCommands.getrange(key, start, end);
         break;
       }
       case SETRANGE: {
@@ -142,18 +140,18 @@ public class CommandFunction extends SingleResultRedisFunction {
         int offset = (int) argArgs[0];
         byte[] value = (byte[]) argArgs[1];
         callable =
-            () -> new RedisStringInRegion(localRegion, redisStats).setrange(key, offset, value);
+            () -> dataCommands.setrange(key, offset, value);
         break;
       }
       case BITCOUNT: {
         Object[] argArgs = (Object[]) args[1];
         if (argArgs == null) {
-          callable = () -> new RedisStringInRegion(localRegion, redisStats).bitcount(key);
+          callable = () -> dataCommands.bitcount(key);
         } else {
           int start = (int) argArgs[0];
           int end = (int) argArgs[1];
           callable =
-              () -> new RedisStringInRegion(localRegion, redisStats).bitcount(key, start, end);
+              () -> dataCommands.bitcount(key, start, end);
         }
         break;
       }
@@ -163,12 +161,12 @@ public class CommandFunction extends SingleResultRedisFunction {
         int start = (int) argArgs[1];
         Integer end = (Integer) argArgs[2];
         callable =
-            () -> new RedisStringInRegion(localRegion, redisStats).bitpos(key, bit, start, end);
+            () -> dataCommands.bitpos(key, bit, start, end);
         break;
       }
       case GETBIT: {
         int offset = (int) args[1];
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).getbit(key, offset);
+        callable = () -> dataCommands.getbit(key, offset);
         break;
       }
       case SETBIT: {
@@ -176,70 +174,68 @@ public class CommandFunction extends SingleResultRedisFunction {
         long offset = (long) argArgs[0];
         int value = (int) argArgs[1];
         callable =
-            () -> new RedisStringInRegion(localRegion, redisStats).setbit(key, offset, value);
+            () -> dataCommands.setbit(key, offset, value);
         break;
       }
       case BITOP: {
         Object[] argArgs = (Object[]) args[1];
         String operation = (String) argArgs[0];
         List<ByteArrayWrapper> sources = (List<ByteArrayWrapper>) argArgs[1];
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).bitop(stripedExecutor,
-            operation, key,
-            sources);
+        callable = () -> dataCommands.bitop(operation, key, sources);
         useStripedExecutor = false;
         break;
       }
       case INCR:
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).incr(key);
+        callable = () -> dataCommands.incr(key);
         break;
       case DECR:
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).decr(key);
+        callable = () -> dataCommands.decr(key);
         break;
       case INCRBY: {
         long increment = (long) args[1];
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).incrby(key, increment);
+        callable = () -> dataCommands.incrby(key, increment);
         break;
       }
       case INCRBYFLOAT: {
         double increment = (double) args[1];
         callable =
-            () -> new RedisStringInRegion(localRegion, redisStats).incrbyfloat(key, increment);
+            () -> dataCommands.incrbyfloat(key, increment);
         break;
       }
       case DECRBY: {
         long decrement = (long) args[1];
-        callable = () -> new RedisStringInRegion(localRegion, redisStats).decrby(key, decrement);
+        callable = () -> dataCommands.decrby(key, decrement);
         break;
       }
       case SADD: {
         ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
-        callable = () -> new RedisSetInRegion(localRegion, redisStats).sadd(key, membersToAdd);
+        callable = () -> dataCommands.sadd(key, membersToAdd);
         break;
       }
       case SREM: {
         ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
-        callable = () -> new RedisSetInRegion(localRegion, redisStats).srem(key, membersToRemove);
+        callable = () -> dataCommands.srem(key, membersToRemove);
         break;
       }
       case SMEMBERS:
-        callable = () -> new RedisSetInRegion(localRegion, redisStats).smembers(key);
+        callable = () -> dataCommands.smembers(key);
         break;
       case SCARD:
-        callable = () -> new RedisSetInRegion(localRegion, redisStats).scard(key);
+        callable = () -> dataCommands.scard(key);
         break;
       case SISMEMBER: {
         ByteArrayWrapper member = (ByteArrayWrapper) args[1];
-        callable = () -> new RedisSetInRegion(localRegion, redisStats).sismember(key, member);
+        callable = () -> dataCommands.sismember(key, member);
         break;
       }
       case SRANDMEMBER: {
         int count = (int) args[1];
-        callable = () -> new RedisSetInRegion(localRegion, redisStats).srandmember(key, count);
+        callable = () -> dataCommands.srandmember(key, count);
         break;
       }
       case SPOP: {
         int popCount = (int) args[1];
-        callable = () -> new RedisSetInRegion(localRegion, redisStats).spop(key, popCount);
+        callable = () -> dataCommands.spop(key, popCount);
         break;
       }
       case SSCAN: {
@@ -247,31 +243,27 @@ public class CommandFunction extends SingleResultRedisFunction {
         int count = (int) args[1];
         int cursor = (int) args[2];
         callable =
-            () -> new RedisSetInRegion(localRegion, redisStats).sscan(key, matchPattern, count,
+            () -> dataCommands.sscan(key, matchPattern, count,
                 cursor);
         break;
       }
       case SUNIONSTORE: {
         ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
-        callable =
-            () -> new RedisSetInRegion(localRegion, redisStats).sunionstore(stripedExecutor, key,
-                setKeys);
+        callable = () -> dataCommands.sunionstore(key, setKeys);
         useStripedExecutor = false;
         break;
       }
       case SINTERSTORE: {
         ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
         callable =
-            () -> new RedisSetInRegion(localRegion, redisStats).sinterstore(stripedExecutor, key,
-                setKeys);
+            () -> dataCommands.sinterstore(key, setKeys);
         useStripedExecutor = false;
         break;
       }
       case SDIFFSTORE: {
         ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
         callable =
-            () -> new RedisSetInRegion(localRegion, redisStats).sdiffstore(stripedExecutor, key,
-                setKeys);
+            () -> dataCommands.sdiffstore(key, setKeys);
         useStripedExecutor = false;
         break;
       }
@@ -279,48 +271,48 @@ public class CommandFunction extends SingleResultRedisFunction {
         Object[] hsetArgs = (Object[]) args[1];
         List<ByteArrayWrapper> fieldsToSet = (List<ByteArrayWrapper>) hsetArgs[0];
         boolean NX = (boolean) hsetArgs[1];
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hset(key, fieldsToSet, NX);
+        callable = () -> dataCommands.hset(key, fieldsToSet, NX);
         break;
       }
       case HDEL: {
         List<ByteArrayWrapper> fieldsToRemove = (List<ByteArrayWrapper>) args[1];
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hdel(key, fieldsToRemove);
+        callable = () -> dataCommands.hdel(key, fieldsToRemove);
         break;
       }
       case HGETALL: {
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hgetall(key);
+        callable = () -> dataCommands.hgetall(key);
         break;
       }
       case HEXISTS: {
         ByteArrayWrapper field = (ByteArrayWrapper) args[1];
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hexists(key, field);
+        callable = () -> dataCommands.hexists(key, field);
         break;
       }
       case HGET: {
         ByteArrayWrapper field = (ByteArrayWrapper) args[1];
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hget(key, field);
+        callable = () -> dataCommands.hget(key, field);
         break;
       }
       case HLEN: {
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hlen(key);
+        callable = () -> dataCommands.hlen(key);
         break;
       }
       case HSTRLEN: {
         ByteArrayWrapper field = (ByteArrayWrapper) args[1];
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hstrlen(key, field);
+        callable = () -> dataCommands.hstrlen(key, field);
         break;
       }
       case HMGET: {
         List<ByteArrayWrapper> fields = (List<ByteArrayWrapper>) args[1];
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hmget(key, fields);
+        callable = () -> dataCommands.hmget(key, fields);
         break;
       }
       case HVALS: {
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hvals(key);
+        callable = () -> dataCommands.hvals(key);
         break;
       }
       case HKEYS: {
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hkeys(key);
+        callable = () -> dataCommands.hkeys(key);
         break;
       }
       case HSCAN: {
@@ -329,7 +321,7 @@ public class CommandFunction extends SingleResultRedisFunction {
         int count = (int) hsetArgs[1];
         int cursor = (int) hsetArgs[2];
         callable =
-            () -> new RedisHashInRegion(localRegion, redisStats).hscan(key, pattern, count, cursor);
+            () -> dataCommands.hscan(key, pattern, count, cursor);
         break;
       }
       case HINCRBY: {
@@ -337,14 +329,14 @@ public class CommandFunction extends SingleResultRedisFunction {
         ByteArrayWrapper field = (ByteArrayWrapper) hsetArgs[0];
         long increment = (long) hsetArgs[1];
         callable =
-            () -> new RedisHashInRegion(localRegion, redisStats).hincrby(key, field, increment);
+            () -> dataCommands.hincrby(key, field, increment);
         break;
       }
       case HINCRBYFLOAT: {
         Object[] hsetArgs = (Object[]) args[1];
         ByteArrayWrapper field = (ByteArrayWrapper) hsetArgs[0];
         double increment = (double) hsetArgs[1];
-        callable = () -> new RedisHashInRegion(localRegion, redisStats).hincrbyfloat(key, field,
+        callable = () -> dataCommands.hincrbyfloat(key, field,
             increment);
         break;
       }
@@ -352,7 +344,7 @@ public class CommandFunction extends SingleResultRedisFunction {
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
     if (useStripedExecutor) {
-      return stripedExecutor.execute(key, callable);
+      return dataCommands.getStripedExecutor().execute(key, callable);
     } else {
       try {
         return callable.call();

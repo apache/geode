@@ -17,20 +17,21 @@ package org.apache.geode.redis.internal.executor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
-import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.data.RedisData;
 
-@SuppressWarnings("unchecked")
 public abstract class SingleResultRedisFunction implements InternalFunction<Object[]> {
 
-  protected abstract Object compute(Region<ByteArrayWrapper, RedisSet> localRegion,
-      ByteArrayWrapper key, RedisCommandType command,
-      Object[] args);
+  private final PartitionedRegion partitionedRegion;
+
+  public SingleResultRedisFunction(Region<ByteArrayWrapper, RedisData> dataRegion) {
+    this.partitionedRegion = (PartitionedRegion) dataRegion;
+  }
+
+  protected abstract Object compute(ByteArrayWrapper key, Object[] args);
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
@@ -41,18 +42,14 @@ public abstract class SingleResultRedisFunction implements InternalFunction<Obje
     ByteArrayWrapper key =
         (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
 
-    Region<ByteArrayWrapper, RedisSet> localRegion =
-        regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
-
     Object[] args = context.getArguments();
-    RedisCommandType command = (RedisCommandType) args[0];
 
     Runnable computation = () -> {
-      Object result = compute(localRegion, key, command, args);
+      Object result = compute(key, args);
       context.getResultSender().lastResult(result);
     };
 
-    computeWithPrimaryLocked(key, (LocalDataSet) localRegion, computation);
+    partitionedRegion.computeWithPrimaryLocked(key, computation);
   }
 
   @Override
@@ -64,11 +61,4 @@ public abstract class SingleResultRedisFunction implements InternalFunction<Obje
   public boolean isHA() {
     return true;
   }
-
-  public static void computeWithPrimaryLocked(Object key, LocalDataSet localDataSet, Runnable r) {
-    PartitionedRegion partitionedRegion = localDataSet.getProxy();
-
-    partitionedRegion.computeWithPrimaryLocked(key, r);
-  }
-
 }
