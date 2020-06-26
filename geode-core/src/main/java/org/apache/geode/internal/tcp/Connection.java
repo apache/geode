@@ -32,12 +32,9 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -846,7 +843,8 @@ public class Connection implements Runnable {
         Socket s = socket;
         if (s != null && !s.isClosed()) {
           prepareForAsyncClose();
-          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr), () -> ioFilter.close(s));
+          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr),
+              () -> ioFilter.close(s));
         }
       }
     }
@@ -2635,7 +2633,7 @@ public class Connection implements Runnable {
               } else {
                 // socket output streams are FileOutputStreams and have a writeable Channel.
                 // This code merely fetches that channel and writes to it.
-//                Channels.newChannel(output).write(buffer);
+                // Channels.newChannel(output).write(buffer);
                 byte[] bytesToWrite = getBytesToWrite(buffer);
                 output.write(bytesToWrite);
                 output.flush();

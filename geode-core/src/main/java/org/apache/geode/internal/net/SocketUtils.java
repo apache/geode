@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 
 import javax.net.ssl.SSLSocket;
 
@@ -108,11 +107,12 @@ public abstract class SocketUtils {
     int amountRead;
     // if bytes are available we read that number of bytes. Otherwise we do a blocking read
     // of buffer.remaining() bytes
-    int amountToRead = stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
+    int amountToRead =
+        stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
             : inputBuffer.remaining();
     if (inputBuffer.hasArray()) {
       amountRead = stream.read(inputBuffer.array(),
-              inputBuffer.arrayOffset() + inputBuffer.position(), amountToRead);
+          inputBuffer.arrayOffset() + inputBuffer.position(), amountToRead);
       if (amountRead > 0) {
         inputBuffer.position(inputBuffer.position() + amountRead);
       }
