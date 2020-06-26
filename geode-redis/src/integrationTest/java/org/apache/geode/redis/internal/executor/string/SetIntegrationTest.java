@@ -16,11 +16,13 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SET;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -442,5 +444,57 @@ public class SetIntegrationTest {
 
     String result_XX = jedis.set(key_XX, value_XX, setParamsXX);
     assertThat(result_XX).isNull();
+  }
+
+  @Test
+  public void testSET_withInvalidOptions() {
+    SoftAssertions soft = new SoftAssertions();
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET))
+        .as("invalid options #1")
+        .isInstanceOf(JedisDataException.class);
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "EX", "0"))
+        .as("invalid options #2")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("syntax error");
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "EX", "a"))
+        .as("invalid options #3")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("value is not an integer");
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "1", "EX", "0"))
+        .as("invalid options #4")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("syntax error");
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "1", "XX", "0"))
+        .as("invalid options #5")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("syntax error");
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "XX", "0"))
+        .as("invalid options #6")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("syntax error");
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "1", "PX", "1"))
+        .as("invalid options #7")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("syntax error");
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "NX", "XX"))
+        .as("invalid options #8")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("syntax error");
+
+
+    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "key", "value", "blah"))
+        .as("invalid options #9")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("syntax error");
+
+    soft.assertAll();
   }
 }
