@@ -877,7 +877,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     locatorDiscoverer =
-        WANServiceProvider.createLocatorDiscoverer(internalDistributedSystem.getModuleService());
+        WANServiceProvider.createLocatorDiscoverer(moduleService);
     if (locatorDiscoverer != null) {
       locatorDiscoverer.discover(getPort(), distributionConfig, locatorListener,
           hostnameForClients);

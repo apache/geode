@@ -547,7 +547,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final InternalCacheForClientAccess cacheForClients =
       new InternalCacheForClientAccess(this);
   private final CountDownLatch isClosedLatch = new CountDownLatch(1);
-  private final ModuleService modulesService;
+  private final ModuleService moduleService;
   private volatile ConfigurationResponse configurationResponse;
   private volatile boolean isInitialized;
   private volatile boolean isClosing;
@@ -733,7 +733,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.functionServiceRegisterFunction = functionServiceRegisterFunction;
     this.systemTimerFactory = systemTimerFactory;
     this.replyProcessor21Factory = replyProcessor21Factory;
-    this.modulesService = cacheConfig.getModuleService();
+    this.moduleService = cacheConfig.getModuleService();
 
     // Synchronized to prevent a new cache from being created before an old one finishes closing
     synchronized (GemFireCacheImpl.class) {
@@ -783,7 +783,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       rootRegions = new ConcurrentHashMap<>();
 
-      cqService = cqServiceFactory.create(this, modulesService);
+      cqService = cqServiceFactory.create(this, moduleService);
 
       // Create the CacheStatistics
       statisticsClock = StatisticsClockFactory.clock(system.getConfig().getEnableTimeStatistics());
@@ -1851,7 +1851,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private void initializeServices() {
     ModuleServiceResult<Set<CacheService>> loadedServices =
-        modulesService.loadService(CacheService.class);
+        moduleService.loadService(CacheService.class);
     if (loadedServices.isSuccessful()) {
       for (CacheService service : loadedServices.getMessage()) {
         try {
@@ -4398,7 +4398,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       } else {
         xml = CacheXmlParser.parse(is);
       }
-      xml.create(this, modulesService);
+      xml.create(this, moduleService);
     } catch (IOException e) {
       throw new CacheXmlException(
           "Input Stream could not be read for system property substitutions.", e);
@@ -4778,12 +4778,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory() {
-    return WANServiceProvider.createGatewaySenderFactory(this, modulesService);
+    return WANServiceProvider.createGatewaySenderFactory(this, moduleService);
   }
 
   @Override
   public GatewayReceiverFactory createGatewayReceiverFactory() {
-    return WANServiceProvider.createGatewayReceiverFactory(this, modulesService);
+    return WANServiceProvider.createGatewayReceiverFactory(this, moduleService);
   }
 
   @Override

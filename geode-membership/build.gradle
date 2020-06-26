@@ -27,7 +27,7 @@ dependencies {
     // Geode-common has annotations and other pieces used by geode-logging
     api(project(':geode-common'))
 
-    implementation(project(':geode-common-services'))
+    compileOnly(project(':geode-common-services'))
     testImplementation(project(':geode-common-services'))
     integrationTestImplementation(project(':geode-common-services'))
     distributedTestImplementation(project(':geode-common-services'))

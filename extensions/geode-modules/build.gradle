@@ -31,6 +31,7 @@ dependencies {
   integrationTestImplementation(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'
   }
+  testImplementation(project(':geode-common-services'))
   testImplementation(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'
   }

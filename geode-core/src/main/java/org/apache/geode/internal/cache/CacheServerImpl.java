@@ -153,7 +153,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
     this.cacheServerAdvisorProvider = cacheServerAdvisorProvider;
     this.serverConnectionFactory =
-        new ServerConnectionFactory(cache.getInternalDistributedSystem().getModuleService());
+        new ServerConnectionFactory(cache.getCacheConfig().getModuleService());
   }
 
   /**

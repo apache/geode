@@ -53,6 +53,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class CacheServerImplTest {
 
   private InternalCache cache;
+  private CacheConfig cacheConfig;
   private CacheClientNotifier cacheClientNotifier;
   private ClientHealthMonitor clientHealthMonitor;
   private DistributionConfig config;
@@ -64,6 +65,9 @@ public class CacheServerImplTest {
   @Before
   public void setUp() throws IOException {
     cache = mock(InternalCache.class);
+    cacheConfig = mock(CacheConfig.class);
+    when(cache.getCacheConfig()).thenReturn(cacheConfig);
+    when(cacheConfig.getModuleService()).thenReturn(ModuleService.DEFAULT);
     cacheClientNotifier = mock(CacheClientNotifier.class);
     clientHealthMonitor = mock(ClientHealthMonitor.class);
     config = mock(DistributionConfig.class);
@@ -90,7 +94,6 @@ public class CacheServerImplTest {
     when(system.getConfig()).thenReturn(config);
     when(system.getProperties()).thenReturn(new Properties());
     when(system.getStatisticsManager()).thenReturn(statisticsManager);
-    when(cache.getInternalDistributedSystem().getModuleService()).thenReturn(ModuleService.DEFAULT);
   }
 
   @Test

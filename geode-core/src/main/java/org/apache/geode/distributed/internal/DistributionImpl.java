@@ -78,6 +78,7 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.services.module.ModuleService;
 
 public class DistributionImpl implements Distribution {
   private static final Logger logger = LogService.getLogger();
@@ -113,7 +114,7 @@ public class DistributionImpl implements Distribution {
       final InternalDistributedSystem system,
       final MembershipListener<InternalDistributedMember> listener,
       final MessageListener<InternalDistributedMember> messageListener,
-      final MembershipLocator<InternalDistributedMember> locator) {
+      final MembershipLocator<InternalDistributedMember> locator, ModuleService moduleService) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -140,7 +141,7 @@ public class DistributionImpl implements Distribution {
           locatorClient,
           InternalDataSerializer.getDSFIDSerializer(),
           new ClusterDistributionManager.ClusterDistributionManagerIDFactory(),
-          system.getModuleService())
+          moduleService)
           .setMembershipLocator(locator)
           .setAuthenticator(
               new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
@@ -215,11 +216,11 @@ public class DistributionImpl implements Distribution {
       InternalDistributedSystem system,
       MembershipListener<InternalDistributedMember> listener,
       MessageListener<InternalDistributedMember> messageListener,
-      final MembershipLocator<InternalDistributedMember> locator) {
+      final MembershipLocator<InternalDistributedMember> locator, ModuleService moduleService) {
 
     DistributionImpl distribution =
         new DistributionImpl(clusterDistributionManager, transport, system, listener,
-            messageListener, locator);
+            messageListener, locator, moduleService);
     distribution.start();
     return distribution;
   }

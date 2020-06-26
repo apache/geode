@@ -30,7 +30,7 @@ dependencies {
     implementation(project(':geode-membership'))
     implementation(project(':geode-serialization'))
     implementation(project(':geode-unsafe'))
-    implementation(project(':geode-common-services'))
+    compileOnly(project(':geode-common-services'))
     implementation('org.springframework:spring-web')
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')

@@ -787,7 +787,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (!isLoner) {
         try {
-          dm = ClusterDistributionManager.create(this, membershipLocator);
+          dm = ClusterDistributionManager.create(this, membershipLocator, moduleService);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator internalLocator = InternalLocator.getLocator();
@@ -2951,11 +2951,6 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public DistributedSystem getReconnectedSystem() {
     return reconnectDS;
-  }
-
-  @Override
-  public ModuleService getModuleService() {
-    return moduleService;
   }
 
   @Override

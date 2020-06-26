@@ -84,6 +84,7 @@ public class GemFireCacheImplTest {
   @Before
   public void setUp() {
     cacheConfig = mock(CacheConfig.class);
+    when(cacheConfig.getModuleService()).thenReturn(ModuleService.DEFAULT);
     internalDistributedSystem = mock(InternalDistributedSystem.class);
     poolFactory = mock(PoolFactory.class);
     replyProcessor21Factory = mock(ReplyProcessor21Factory.class);
@@ -101,7 +102,6 @@ public class GemFireCacheImplTest {
         .thenReturn(distributionManager);
     when(internalDistributedSystem.getCancelCriterion())
         .thenReturn(mock(CancelCriterion.class));
-    when(internalDistributedSystem.getModuleService()).thenReturn(ModuleService.DEFAULT);
     when(replyProcessor21.getProcessorId())
         .thenReturn(21);
     when(replyProcessor21Factory.create(any(), any()))

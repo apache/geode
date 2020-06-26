@@ -75,7 +75,6 @@ public class InternalLocatorTest {
         .thenReturn(Optional.of(httpService));
     when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
     // when(internalLocator.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
-    when(internalDistributedSystem.getModuleService()).thenReturn(ModuleService.DEFAULT);
     when(agentUtil.findWarLocation("geode-web-management")).thenReturn(uri);
     BaseManagementService.setManagementService(cache, managementService);
 
