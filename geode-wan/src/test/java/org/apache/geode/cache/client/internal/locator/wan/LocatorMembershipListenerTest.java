@@ -356,7 +356,7 @@ public class LocatorMembershipListenerTest {
     // The sendMessage loop in the listener will try to send 4 messages. Two to the remoteLocators
     // and two to the joiningLocator. The retry loop will try to send the messages again and
     // fail (4 more messages) and then it will succeed (4 more messages, for a total of 12).
-    verify(tcpClient, times(12)).requestToServer(isA(HostAndPort.class),
+    verify(tcpClient, times(12)).requestToServer(isA(InetSocketAddress.class),
         isA(LocatorJoinMessage.class), isA(Integer.class), isA(Boolean.class));
   }
 
