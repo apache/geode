@@ -116,7 +116,7 @@ public class SubscriptionsIntegrationTest {
     Callable<Void> addingCallable =
         functionSpinner(x -> subscriptions.add(new DummySubscription()));
     Callable<Void> findSubscriptionsCallable =
-        functionSpinner(x -> subscriptions.findSubscriptions("channel"));
+        functionSpinner(x -> subscriptions.findSubscriptions("channel".getBytes()));
 
     Future<Void> addingFuture = executor.submit(addingCallable);
     Future<Void> existsFuture = executor.submit(findSubscriptionsCallable);
@@ -137,11 +137,11 @@ public class SubscriptionsIntegrationTest {
     for (int i = 0; i < ITERATIONS; i++) {
       Client client = new Client(mock(Channel.class));
       clients.add(client);
-      subscriptions.add(new ChannelSubscription(client, "channel", context));
+      subscriptions.add(new ChannelSubscription(client, "channel".getBytes(), context));
     }
 
     Callable<Void> removeCallable = () -> {
-      clients.forEach(c -> subscriptions.remove(c));
+      clients.forEach(subscriptions::remove);
       return null;
     };
     Callable<Void> existsCallable = () -> {
@@ -168,7 +168,7 @@ public class SubscriptionsIntegrationTest {
     for (int i = 0; i < ITERATIONS; i++) {
       Client client = new Client(mock(Channel.class));
       clients.add(client);
-      subscriptions.add(new ChannelSubscription(client, "channel", context));
+      subscriptions.add(new ChannelSubscription(client, "channel".getBytes(), context));
     }
 
     Callable<Void> removeCallable = () -> {

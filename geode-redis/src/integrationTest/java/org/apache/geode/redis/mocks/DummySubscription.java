@@ -30,7 +30,7 @@ public class DummySubscription implements Subscription {
   }
 
   @Override
-  public void publishMessage(String channel, byte[] message,
+  public void publishMessage(byte[] channel, byte[] message,
       PublishResultCollector publishResultCollector) {}
 
   @Override
@@ -39,17 +39,17 @@ public class DummySubscription implements Subscription {
   }
 
   @Override
-  public boolean matches(String channel) {
+  public boolean matches(byte[] channel) {
     return false;
   }
 
   @Override
-  public List<Object> createResponse(String channel, byte[] message) {
+  public List<Object> createResponse(byte[] channel, byte[] message) {
     return null;
   }
 
   @Override
-  public String getChannelName() {
+  public byte[] getChannelName() {
     return null;
   }
 }

@@ -39,7 +39,7 @@ class PatternSubscription extends AbstractSubscription {
   }
 
   @Override
-  public List<Object> createResponse(String channel, byte[] message) {
+  public List<Object> createResponse(byte[] channel, byte[] message) {
     return Arrays.asList("pmessage", pattern.globPattern(), channel, message);
   }
 
@@ -50,12 +50,12 @@ class PatternSubscription extends AbstractSubscription {
   }
 
   @Override
-  public boolean matches(String channel) {
-    return pattern.matches(channel);
+  public boolean matches(byte[] channel) {
+    return pattern.matches(new String(channel));
   }
 
   @Override
-  public String getChannelName() {
-    return pattern.globPattern();
+  public byte[] getChannelName() {
+    return pattern.globPattern().getBytes();
   }
 }

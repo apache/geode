@@ -32,7 +32,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    List<String> channelNames = extractChannelNames(command);
+    List<byte[]> channelNames = extractChannelNames(command);
     if (channelNames.isEmpty()) {
       channelNames = context.getPubSub().findSubscribedChannels(context.getClient());
     }
@@ -42,21 +42,21 @@ public class UnsubscribeExecutor extends AbstractExecutor {
     return RedisResponse.flattenedArray(response);
   }
 
-  private List<String> extractChannelNames(Command command) {
+  private List<byte[]> extractChannelNames(Command command) {
     return command.getProcessedCommandWrappers().stream()
         .skip(1)
-        .map(ByteArrayWrapper::toString)
+        .map(ByteArrayWrapper::toBytes)
         .collect(Collectors.toList());
   }
 
   private Collection<Collection<?>> unsubscribe(ExecutionHandlerContext context,
-      List<String> channelNames) {
+      List<byte[]> channelNames) {
     Collection<Collection<?>> response = new ArrayList<>();
 
     if (channelNames.isEmpty()) {
       response.add(createItem(null, 0));
     } else {
-      for (String channel : channelNames) {
+      for (byte[] channel : channelNames) {
         long subscriptionCount =
             context.getPubSub().unsubscribe(channel, context.getClient());
 
@@ -67,7 +67,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
     return response;
   }
 
-  private ArrayList<Object> createItem(String channelName, long subscriptionCount) {
+  private ArrayList<Object> createItem(byte[] channelName, long subscriptionCount) {
     ArrayList<Object> oneItem = new ArrayList<>();
     oneItem.add("unsubscribe");
     oneItem.add(channelName);

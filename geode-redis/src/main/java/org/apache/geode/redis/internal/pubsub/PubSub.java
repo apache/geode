@@ -40,7 +40,7 @@ public interface PubSub {
    */
   long publish(
       Region<ByteArrayWrapper, RedisData> dataRegion,
-      String channel, byte[] message);
+      byte[] channel, byte[] message);
 
   /**
    * Subscribe to a channel
@@ -50,7 +50,7 @@ public interface PubSub {
    * @param client a Client instance making the request
    * @return the number of channels subscribed to
    */
-  long subscribe(String channel, ExecutionHandlerContext context, Client client);
+  long subscribe(byte[] channel, ExecutionHandlerContext context, Client client);
 
   /**
    * Subscribe to a pattern
@@ -69,7 +69,7 @@ public interface PubSub {
    * @param client the Client which is to be unsubscribed
    * @return the number of channels still subscribed to by the client
    */
-  long unsubscribe(String channel, Client client);
+  long unsubscribe(byte[] channel, Client client);
 
   /**
    * Unsubscribe from a previously subscribed pattern
@@ -86,6 +86,6 @@ public interface PubSub {
    * @param client the Client which is to be queried
    * @return the list of channels
    */
-  List<String> findSubscribedChannels(Client client);
+  List<byte[]> findSubscribedChannels(Client client);
 
 }

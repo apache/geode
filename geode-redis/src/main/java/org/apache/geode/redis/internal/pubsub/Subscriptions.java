@@ -61,7 +61,7 @@ public class Subscriptions {
    * @param channelOrPattern the channel or pattern
    * @return a list of subscriptions
    */
-  public List<Subscription> findSubscriptions(String channelOrPattern) {
+  public List<Subscription> findSubscriptions(byte[] channelOrPattern) {
     return subscriptions.stream()
         .filter(subscription -> subscription.matches(channelOrPattern))
         .collect(Collectors.toList());
@@ -98,7 +98,7 @@ public class Subscriptions {
     return subscriptions.size();
   }
 
-  public synchronized long subscribe(String channel, ExecutionHandlerContext context,
+  public synchronized long subscribe(byte[] channel, ExecutionHandlerContext context,
       Client client) {
     if (!exists(channel, client)) {
       add(new ChannelSubscription(client, channel, context));

@@ -43,7 +43,7 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public void publishMessage(String channel, byte[] message,
+  public void publishMessage(byte[] channel, byte[] message,
       PublishResultCollector publishResultCollector) {
     ByteBuf messageByteBuffer = constructResponse(channel, message);
     writeToChannel(messageByteBuffer, publishResultCollector);
@@ -58,7 +58,7 @@ public abstract class AbstractSubscription implements Subscription {
     return this.client.equals(client);
   }
 
-  private ByteBuf constructResponse(String channel, byte[] message) {
+  private ByteBuf constructResponse(byte[] channel, byte[] message) {
     ByteBuf messageByteBuffer;
     try {
       messageByteBuffer = Coder.getArrayResponse(context.getByteBufAllocator(),
