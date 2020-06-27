@@ -37,7 +37,7 @@ public class OperationHistoryManager {
   private final OperationStateStore operationStateStore;
 
   /**
-   * set a default retention policy to keep results for 2 hours after completion
+   * set a default retention policy to keep results for 7 days after completion
    */
   public OperationHistoryManager(
       OperationStateStore operationStateStore) {

@@ -51,7 +51,10 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.api.ClusterManagementException;
@@ -90,6 +93,9 @@ public class LocatorClusterManagementServiceTest {
 
   private LocatorClusterManagementService service;
   private InternalCache cache;
+  private InternalDistributedMember member;
+  private DistributedSystem distributedSystem;
+  private DistributedMember distributedMember;
   private InternalConfigurationPersistenceService persistenceService;
   private Region regionConfig;
   private ClusterManagementResult result;
@@ -108,6 +114,14 @@ public class LocatorClusterManagementServiceTest {
         JAXBService.create(CacheConfig.class)));
 
     cache = mock(InternalCache.class);
+    member = mock(InternalDistributedMember.class);
+    distributedSystem = mock(InternalDistributedSystem.class);
+    distributedMember = mock(InternalDistributedMember.class);
+    when(cache.getMyId()).thenReturn(member);
+    when(cache.getDistributedSystem()).thenReturn(distributedSystem);
+    Set<DistributedMember> members = new HashSet<>();
+    members.add(distributedMember);
+    when(distributedSystem.getAllOtherMembers()).thenReturn(members);
     regionValidator = mock(RegionConfigValidator.class);
     doCallRealMethod().when(regionValidator).validate(eq(CacheElementOperation.DELETE), any());
     regionManager = spy(new RegionConfigManager(persistenceService));
@@ -389,6 +403,8 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void getRebalance() {
     OperationState operationState = mock(OperationState.class);
+    String locator = member.toString();
+    when(operationState.getLocator()).thenReturn(locator);
     when(operationManager.get(any())).thenReturn(operationState);
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
         service.get(rebalanceOperation, "456");

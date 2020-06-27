@@ -33,6 +33,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
@@ -46,7 +47,8 @@ public class OperationManagerTest {
   public void setUp() throws Exception {
     operationHistoryManager = mock(OperationHistoryManager.class);
     cache = mock(InternalCache.class);
-
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    when(cache.getMyId()).thenReturn(member);
     executorManager = new OperationManager(cache, operationHistoryManager);
   }
 
