@@ -556,8 +556,8 @@ public class OpExecutorImpl implements ExecutablePool {
       title = null;
       exToThrow = new ServerOperationException(e);
     } else if (e instanceof SerializationException) {
-      title = "Unexpected SerializationException";
-      // exToThrow = new ServerOperationException(e);
+      title = null; // no message
+      exToThrow = new ServerOperationException(e);
     } else if (e instanceof CopyException) {
       title = null; // no message
       exToThrow = new ServerOperationException(e);
