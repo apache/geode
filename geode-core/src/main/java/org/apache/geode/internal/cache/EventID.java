@@ -46,7 +46,6 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -352,7 +351,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   @Override
   public void toData(DataOutput dop,
       SerializationContext context) throws IOException {
-    final VersionOrdinal version = StaticSerialization.getVersionForDataStream(dop);
+    Version version = StaticSerialization.getVersionForDataStream(dop);
     // if we are sending to old clients we need to reserialize the ID
     // using the client's version to ensure it gets the proper on-wire form
     // of the identifier

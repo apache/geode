@@ -45,7 +45,7 @@ public interface MemberData {
 
   short getVersionOrdinal();
 
-  VersionOrdinal getVersion();
+  VersionOrdinal getVersionOrdinalObject();
 
   String getUniqueTag();
 

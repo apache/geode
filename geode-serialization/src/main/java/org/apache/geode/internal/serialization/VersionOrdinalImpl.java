@@ -81,7 +81,7 @@ public class VersionOrdinalImpl implements VersionOrdinal {
    * VersionOrdinalImpl. Inline this logic up in toString().
    */
   public static String toString(short ordinal) {
-    return "UNKNOWN[ordinal=" + ordinal + ']';
+    return "VersionOrdinal[ordinal=" + ordinal + ']';
   }
 
 

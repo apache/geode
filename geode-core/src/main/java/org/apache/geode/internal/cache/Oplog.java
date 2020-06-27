@@ -106,7 +106,6 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -7229,7 +7228,7 @@ public class Oplog implements CompactableOplog, Flushable {
     @Override
     public boolean fillInValue(InternalRegion region, InitialImageOperation.Entry entry,
         ByteArrayDataInput in, DistributionManager distributionManager,
-        final VersionOrdinal version) {
+        final Version version) {
       return false;
     }
 

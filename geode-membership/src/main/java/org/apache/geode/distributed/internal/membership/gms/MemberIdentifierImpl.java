@@ -515,7 +515,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       return version;
     } else {
       // prior to 7.1 member IDs did not serialize their version information
-      final VersionOrdinal v = StaticSerialization.getVersionForDataStreamOrNull(in);
+      Version v = StaticSerialization.getVersionForDataStreamOrNull(in);
       if (v != null) {
         return v.ordinal();
       }
@@ -926,7 +926,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     // write name last to fix bug 45160
     StaticSerialization.writeString(memberData.getName(), out);
 
-    final VersionOrdinal outputVersion = StaticSerialization.getVersionForDataStream(out);
+    Version outputVersion = StaticSerialization.getVersionForDataStream(out);
     if (outputVersion.isOlderThan(Version.GEODE_1_1_0)
         && outputVersion.isNotOlderThan(Version.GFE_90)) {
       memberData.writeAdditionalData(out);
@@ -986,8 +986,8 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   }
 
   @Override
-  public VersionOrdinal getVersionObject() {
-    return memberData.getVersion();
+  public VersionOrdinal getVersionOrdinalObject() {
+    return memberData.getVersionOrdinalObject();
   }
 
   @Override

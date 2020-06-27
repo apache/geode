@@ -226,7 +226,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   }
 
   @Override
-  public VersionOrdinal getVersion() {
+  public VersionOrdinal getVersionOrdinalObject() {
     return versionOrdinal;
   }
 

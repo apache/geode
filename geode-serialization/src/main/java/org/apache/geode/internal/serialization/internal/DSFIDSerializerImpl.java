@@ -41,7 +41,6 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 
 public class DSFIDSerializerImpl implements DSFIDSerializer {
 
@@ -188,7 +187,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
     try {
       boolean invoked = false;
-      final VersionOrdinal v = context.getSerializationVersion();
+      Version v = context.getSerializationVersion();
 
       if (!Version.CURRENT.equals(v)) {
         // get versions where DataOutput was upgraded
@@ -293,7 +292,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     DeserializationContextImpl context = new DeserializationContextImpl(in, this);
     try {
       boolean invoked = false;
-      final VersionOrdinal v = context.getSerializationVersion();
+      Version v = context.getSerializationVersion();
       if (!Version.CURRENT.equals(v) && ds instanceof SerializationVersions) {
         // get versions where DataOutput was upgraded
         SerializationVersions vds = (SerializationVersions) ds;

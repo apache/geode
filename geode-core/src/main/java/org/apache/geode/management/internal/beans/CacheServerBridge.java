@@ -52,7 +52,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ClientQueueDetail;
@@ -89,7 +89,7 @@ public class CacheServerBridge extends ServerBridge {
 
   private ClientMembershipListener membershipListener;
 
-  public static final ThreadLocal<VersionOrdinal> clientVersion = new ThreadLocal<>();
+  public static final ThreadLocal<Version> clientVersion = new ThreadLocal<Version>();
 
   protected static int identifyPid() {
     try {
@@ -405,7 +405,7 @@ public class CacheServerBridge extends ServerBridge {
     }
   }
 
-  public VersionOrdinal getClientVersion(ClientConnInfo connInfo) {
+  public Version getClientVersion(ClientConnInfo connInfo) {
     if (cache.getCacheServers().size() == 0) {
       return null;
     }

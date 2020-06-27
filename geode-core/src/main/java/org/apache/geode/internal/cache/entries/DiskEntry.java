@@ -60,7 +60,6 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -298,7 +297,7 @@ public interface DiskEntry extends RegionEntry {
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry, DiskRegion dr,
         DistributionManager mgr, ByteArrayDataInput in, RegionEntryContext context,
-        VersionOrdinal version) {
+        Version version) {
       @Retained
       @Released
       Object v = null;

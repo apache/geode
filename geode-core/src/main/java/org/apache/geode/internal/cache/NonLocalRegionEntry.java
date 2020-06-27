@@ -35,7 +35,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Version;
 
 public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
@@ -196,7 +196,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
-      DistributionManager distributionManager, final VersionOrdinal version) {
+      DistributionManager distributionManager, final Version version) {
     throw new UnsupportedOperationException(
         "Not appropriate for PartitionedRegion.NonLocalRegionEntry");
   }

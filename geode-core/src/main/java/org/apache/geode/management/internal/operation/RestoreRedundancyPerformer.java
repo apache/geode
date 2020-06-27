@@ -129,7 +129,7 @@ public class RestoreRedundancyPerformer
       RebalanceOperationPerformer.MemberPRInfo prInfo) {
     return prInfo.dsMemberList.stream()
         .map(InternalDistributedMember.class::cast)
-        .filter(member -> member.getVersionObject().compareTo(ADDED_VERSION) >= 0)
+        .filter(member -> member.getVersionOrdinalObject().compareTo(ADDED_VERSION) >= 0)
         .collect(Collectors.toList());
   }
 

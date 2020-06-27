@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 
 /**
@@ -467,7 +467,7 @@ class ProxyRegionMap extends BaseRegionMap {
 
     @Override
     public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
-        DistributionManager distributionManager, final VersionOrdinal version) {
+        DistributionManager distributionManager, final Version version) {
       throw new UnsupportedOperationException(
           String.format("No entry support on regions with DataPolicy %s",
               DataPolicy.EMPTY));

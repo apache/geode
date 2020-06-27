@@ -132,7 +132,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
   /**
    * Get the Geode version of this member
    */
-  VersionOrdinal getVersionObject();
+  VersionOrdinal getVersionOrdinalObject();
 
   /**
    * Replace the current member data with the given member data. This can be used to fill out a

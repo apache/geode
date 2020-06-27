@@ -667,7 +667,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
    */
   public void correctWrongVersionIn(final ID memberID) {
     final ID oldID = getCanonicalID(memberID);
-    if (!oldID.getVersionObject().equals(Version.getCurrentVersion())) {
+    if (!oldID.getVersionOrdinalObject().equals(Version.getCurrentVersion())) {
       // don't remove/add the ID lest we change it's relative position in the list
       oldID.setVersionObjectForTest(Version.getCurrentVersion());
     }

@@ -62,7 +62,6 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -336,8 +335,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      * Constructor to use when receiving a putall from someone else
      */
     public PutAllEntryData(DataInput in, DeserializationContext context, EventID baseEventID,
-        int idx, VersionOrdinal version,
-        ByteArrayDataInput bytesIn) throws IOException, ClassNotFoundException {
+        int idx) throws IOException, ClassNotFoundException {
       this.key = context.getDeserializer().readObject(in);
       byte flgs = in.readByte();
       if ((flgs & IS_OBJECT) != 0) {
@@ -1212,10 +1210,10 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       this.putAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
       this.putAllData = new PutAllEntryData[this.putAllDataSize];
       if (this.putAllDataSize > 0) {
-        final VersionOrdinal version = StaticSerialization.getVersionForDataStreamOrNull(in);
+        final Version version = StaticSerialization.getVersionForDataStreamOrNull(in);
         final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
         for (int i = 0; i < this.putAllDataSize; i++) {
-          this.putAllData[i] = new PutAllEntryData(in, context, eventId, i, version, bytesIn);
+          this.putAllData[i] = new PutAllEntryData(in, context, eventId, i);
         }
 
         boolean hasTags = in.readBoolean();

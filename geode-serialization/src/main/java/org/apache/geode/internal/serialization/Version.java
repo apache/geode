@@ -350,6 +350,11 @@ public class Version extends VersionOrdinalImpl {
     return VALUES[ordinal];
   }
 
+  public static Version fromOrdinal(final VersionOrdinal ordinal)
+      throws UnsupportedSerializationVersionException {
+    return fromOrdinal(ordinal.ordinal());
+  }
+
   /**
    * return the version corresponding to the given ordinal, or CURRENT if the ordinal isn't valid
    *
@@ -476,6 +481,11 @@ public class Version extends VersionOrdinalImpl {
     return VALUES[ordinal];
   }
 
+  public static Version fromOrdinalNoThrow(final VersionOrdinal ordinal,
+      final boolean returnNullForCurrent) {
+    return fromOrdinalNoThrow(ordinal.ordinal(), returnNullForCurrent);
+  }
+
   /**
    * Reads ordinal as written by {@link #writeOrdinal} from given {@link InputStream}. Returns -1 on
    * end of stream.
@@ -551,10 +561,6 @@ public class Version extends VersionOrdinalImpl {
       // ignored in toString()
     }
     return VersionOrdinalImpl.toString(ordinal);
-  }
-
-  public String toDottedString() {
-    return String.format("%d.%d.%d", majorVersion, minorVersion, patch);
   }
 
   public byte[] toBytes() {

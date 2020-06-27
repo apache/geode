@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -93,8 +92,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
 
   @Parameters(name = "from_v{0}")
   public static Collection<String> data() {
-    // List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    final List<String> result = Arrays.asList("1.11.0", "1.12.0");
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     }
@@ -359,7 +357,6 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
     // Roll the locator
     oldLocator.invoke(invokeStopLocator());
     VM rollLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldLocator.getId());
-    // final Properties props = new Properties();
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
     rollLocator
@@ -685,7 +682,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private static void assertVersion(Cache cache, short ordinal) {
     DistributedSystem ds = cache.getDistributedSystem();
     InternalDistributedMember member = (InternalDistributedMember) ds.getDistributedMember();
-    final VersionOrdinal thisVersion = member.getVersionObject();
+    final VersionOrdinal thisVersion = member.getVersionOrdinalObject();
     short thisOrdinal = thisVersion.ordinal();
     if (ordinal != thisOrdinal) {
       throw new Error(

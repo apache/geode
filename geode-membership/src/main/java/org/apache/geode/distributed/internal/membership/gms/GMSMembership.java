@@ -382,15 +382,15 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       for (final Entry<ID, Long> internalIDLongEntry : surpriseMembers
           .entrySet()) {
         ID mbr = internalIDLongEntry.getKey();
-        final VersionOrdinal itsVersion = mbr.getVersionObject();
+        final VersionOrdinal itsVersion = mbr.getVersionOrdinalObject();
         if (itsVersion != null && version.compareTo(itsVersion) < 0) {
           version = itsVersion;
         }
       }
       for (ID mbr : newView.getMembers()) {
-        final VersionOrdinal itsVersion = mbr.getVersionObject();
+        final VersionOrdinal itsVersion = mbr.getVersionOrdinalObject();
         if (itsVersion != null && itsVersion.compareTo(version) < 0) {
-          version = mbr.getVersionObject();
+          version = mbr.getVersionOrdinalObject();
         }
       }
       disableMulticastForRollingUpgrade = !version.equals(Version.CURRENT);

@@ -1537,7 +1537,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         this.preserializedBuffer.rewind();
         this.preserializedBuffer.sendTo(out);
       } else if (this.refCount > 1) {
-        final VersionOrdinal v = StaticSerialization.getVersionForDataStream(out);
+        Version v = StaticSerialization.getVersionForDataStream(out);
         HeapDataOutputStream hdos = new HeapDataOutputStream(1024, v);
         basicToData(hdos, context, useShadowKey);
         this.preserializedBuffer = hdos;

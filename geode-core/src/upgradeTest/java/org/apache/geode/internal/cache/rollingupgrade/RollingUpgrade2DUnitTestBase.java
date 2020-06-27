@@ -1073,7 +1073,8 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
   private static void assertVersion(GemFireCache cache, short ordinal) {
     DistributedSystem system = cache.getDistributedSystem();
     int thisOrdinal =
-        ((InternalDistributedMember) system.getDistributedMember()).getVersionObject().ordinal();
+        ((InternalDistributedMember) system.getDistributedMember()).getVersionOrdinalObject()
+            .ordinal();
     if (ordinal != thisOrdinal) {
       throw new Error(
           "Version ordinal:" + thisOrdinal + " was not the expected ordinal of:" + ordinal);

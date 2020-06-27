@@ -550,8 +550,17 @@ public class InternalDistributedMember
   }
 
   @Override
-  public VersionOrdinal getVersionObject() {
-    return memberIdentifier.getVersionObject();
+  public VersionOrdinal getVersionOrdinalObject() {
+    return memberIdentifier.getVersionOrdinalObject();
+  }
+
+  /**
+   * While an InternalDistributedMember isa MemberIdentifier its member identifier's
+   * VersionOrdinal always represents a known version (a Version.) Callers that need
+   * that known version use this method.
+   */
+  public Version getVersionObject() {
+    return Version.fromOrdinalNoThrow(getVersionOrdinalObject(), false);
   }
 
   @Override

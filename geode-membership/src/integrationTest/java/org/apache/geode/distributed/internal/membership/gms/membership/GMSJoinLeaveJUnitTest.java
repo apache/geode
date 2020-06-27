@@ -1595,8 +1595,9 @@ public class GMSJoinLeaveJUnitTest {
 
     gmsJoinLeave.installView(viewWithWrongVersion);
 
-    assertThat(gmsJoinLeave.getView().getCanonicalID(gmsJoinLeaveMemberId).getVersionObject())
-        .isEqualTo(Version.getCurrentVersion());
+    assertThat(
+        gmsJoinLeave.getView().getCanonicalID(gmsJoinLeaveMemberId).getVersionOrdinalObject())
+            .isEqualTo(Version.getCurrentVersion());
   }
 
   private void becomeCoordinatorForTest(GMSJoinLeave gmsJoinLeave) {
