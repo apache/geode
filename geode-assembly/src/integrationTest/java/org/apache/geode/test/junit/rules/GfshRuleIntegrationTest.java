@@ -12,13 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,26 +27,41 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-@Category({GfshTest.class})
-public class GfshRuleTest {
+@Category(GfshTest.class)
+public class GfshRuleIntegrationTest {
+
+  private Path gfshCurrent;
+  private Path gfsh130;
 
   @Rule
-  public GfshRule gfsh130 = new GfshRule("1.3.0");
-
+  public GfshRule gfsh130Rule = new GfshRule("1.3.0");
   @Rule
-  public GfshRule gfshDefault = new GfshRule();
+  public GfshRule gfshCurrentRule = new GfshRule();
 
-  @Test
-  public void checkGfshDefault() {
-    assertThat(gfshDefault.getGfshPath().toString())
-        .contains(Paths.get("geode-assembly/build/install/apache-geode/bin/gfsh").toString());
+  @Before
+  public void setUp() {
+    Path workingPath = Paths.get("").toAbsolutePath();
+    assertThat(workingPath).exists();
+    gfshCurrent = workingPath.resolve("build/install/apache-geode/bin/gfsh");
+    assertThat(gfshCurrent).exists();
+
+    Path parentPath = workingPath.getParent().toAbsolutePath();
+    assertThat(parentPath).exists();
+    Path geode_old_versions_Path = parentPath.resolve("geode-old-versions");
+    assertThat(geode_old_versions_Path).exists();
+    gfsh130 = geode_old_versions_Path.resolve("1.3.0/build/apache-geode-1.3.0/bin/gfsh");
+    assertThat(gfsh130).exists();
   }
 
   @Test
-  public void checkGfsh130() {
-    assertThat(gfsh130.getGfshPath().toString())
-        .contains(Paths.get("geode-old-versions/1.3.0/build/apache-geode-1.3.0/bin/gfsh")
-            .toString());
+  public void gfshCurrentRuleUsesCurrentGfsh() {
+    assertThat(gfshCurrentRule.getGfshPath())
+        .isEqualTo(gfshCurrent);
   }
 
+  @Test
+  public void gfsh130RuleUses130Gfsh() {
+    assertThat(gfsh130Rule.getGfshPath())
+        .isEqualTo(gfsh130);
+  }
 }

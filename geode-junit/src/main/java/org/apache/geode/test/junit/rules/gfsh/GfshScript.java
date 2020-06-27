@@ -15,6 +15,7 @@
 package org.apache.geode.test.junit.rules.gfsh;
 
 import static java.lang.Long.toHexString;
+import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -138,10 +139,6 @@ public class GfshScript {
     return this;
   }
 
-  public List<String> getExtendedClasspath() {
-    return extendedClasspath;
-  }
-
   public GfshScript addToClasspath(String classpath) {
     extendedClasspath.add(classpath);
     return this;
@@ -163,40 +160,45 @@ public class GfshScript {
     return gfshRule.execute(this, workingDir);
   }
 
-  public List<DebuggableCommand> getCommands() {
-    return commands;
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append(name).append(": gfsh ");
+    builder.append(commands.stream()
+        .map(debuggableCommand -> "-e " + debuggableCommand.command)
+        .collect(joining(" ")));
+    return builder.toString();
   }
 
-  public String getName() {
+  List<String> getExtendedClasspath() {
+    return unmodifiableList(extendedClasspath);
+  }
+
+  List<DebuggableCommand> getCommands() {
+    return unmodifiableList(commands);
+  }
+
+  String getName() {
     return name;
   }
 
-  public TimeUnit getTimeoutTimeUnit() {
+  TimeUnit getTimeoutTimeUnit() {
     return timeoutTimeUnit;
   }
 
-  public long getTimeout() {
+  long getTimeout() {
     return timeout;
   }
 
-  public int getExpectedExitValue() {
+  int getExpectedExitValue() {
     return expectedExitValue;
   }
 
-  public int getDebugPort() {
+  int getDebugPort() {
     return debugPort;
   }
 
   private String defaultName() {
     return toHexString(random.nextLong());
-  }
-
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(name).append(": gfsh ");
-    builder.append(commands.stream()
-        .map(c -> "-e " + c.command)
-        .collect(joining(" ")));
-    return builder.toString();
   }
 }

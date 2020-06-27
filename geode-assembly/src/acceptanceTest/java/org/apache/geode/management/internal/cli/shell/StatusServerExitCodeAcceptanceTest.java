@@ -14,188 +14,196 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.Arrays.stream;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.file.Path;
 
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.process.PidFile;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
-
-// Originally created in response to GEODE-2971
 
 /**
  * See also org.apache.geode.management.internal.cli.shell.StatusLocatorExitCodeAcceptanceTest
  */
 public class StatusServerExitCodeAcceptanceTest {
-  private static File toolsJar;
-  private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
-  private static final String memberControllerName = "member-controller";
 
-  @ClassRule
-  public static GfshRule gfsh = new GfshRule();
-  private static String locatorName;
-  private static String serverName;
+  private static final String LOCATOR_NAME = "myLocator";
+  private static final String SERVER_NAME = "myServer";
 
   private static int locatorPort;
+  private static Path toolsJar;
+  private static int serverPid;
+  private static Path serverDir;
+  private static Path rootPath;
+  private static String connectCommand;
+
+  @ClassRule
+  public static GfshRule gfshRule = new GfshRule();
 
   @BeforeClass
-  public static void classSetup() {
-    File javaHome = new File(System.getProperty("java.home"));
-    String toolsPath =
-        javaHome.getName().equalsIgnoreCase("jre") ? "../lib/tools.jar" : "lib/tools.jar";
-    toolsJar = new File(javaHome, toolsPath);
+  public static void startCluster() throws IOException {
+    rootPath = gfshRule.getTemporaryFolder().getRoot().toPath();
+    locatorPort = getRandomAvailablePort(SOCKET);
 
-    locatorName = "locator-" + nameGenerator.generate('-');
-    serverName = "server-" + nameGenerator.generate('-');
-    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    GfshExecution execution = GfshScript.of(
+        "start locator --name=" + LOCATOR_NAME + " --port=" + locatorPort,
+        "start server --disable-default-server --name=" + SERVER_NAME)
+        .execute(gfshRule);
 
-    GfshExecution exec = GfshScript.of(startLocatorCommand(), startServerCommand())
-        .withName(memberControllerName).awaitAtMost(2, MINUTES).execute(gfsh);
-    if (exec.getProcess().exitValue() != 0) {
-      throw new RuntimeException(
-          "The locator and server launcher exited with non-zero exit code.  This failure is beyond the scope of this test.");
-    }
+    assertThat(execution.getProcess().exitValue())
+        .isZero();
+
+    serverPid = readPidFile(SERVER_NAME, "server.pid");
+    serverDir = rootPath.resolve(SERVER_NAME).toAbsolutePath();
+
+    connectCommand = "connect --locator=[" + locatorPort + "]";
+  }
+
+  @BeforeClass
+  public static void setUpJavaTools() {
+    String javaHome = System.getProperty("java.home");
+    assertThat(javaHome)
+        .as("System.getProperty(\"java.home\")")
+        .isNotNull();
+
+    Path javaHomeFile = new File(javaHome).toPath();
+    assertThat(javaHomeFile).exists();
+
+    String toolsPath = javaHomeFile.toFile().getName().equalsIgnoreCase("jre")
+        ? ".." + File.separator + "lib" + File.separator + "tools.jar"
+        : "lib" + File.separator + "tools.jar";
+    toolsJar = javaHomeFile.resolve(toolsPath);
+    assertThat(toolsJar).exists();
   }
 
   @Test
   public void statusCommandWithInvalidOptionValueShouldFail() {
     String commandWithBadPid = "status server --pid=-1";
-    GfshScript.of(commandWithBadPid).withName("test-frame").awaitAtMost(1, MINUTES)
-        .expectExitCode(ExitCode.FATAL.getValue()).execute(gfsh);
-  }
 
+    GfshScript.of(commandWithBadPid)
+        .withName("test-frame")
+        .expectExitCode(ExitCode.FATAL.getValue())
+        .execute(gfshRule);
+  }
 
   @Test
   public void statusCommandWithIncorrectDirShouldFail() {
     String commandWithWrongDir = "status server --dir=.";
-    GfshScript.of(commandWithWrongDir).withName("test-frame").awaitAtMost(1, MINUTES)
-        .expectExitCode(ExitCode.FATAL.getValue()).execute(gfsh);
+
+    GfshScript.of(commandWithWrongDir)
+        .withName("test-frame")
+        .expectExitCode(ExitCode.FATAL.getValue())
+        .execute(gfshRule);
   }
 
   @Test
   public void statusCommandWithIncorrectNameShouldFail() {
     String commandWithWrongName = "status server --name=some-server-name";
-    GfshScript.of(commandWithWrongName).withName("test-frame").awaitAtMost(1, MINUTES)
-        .expectExitCode(ExitCode.FATAL.getValue()).execute(gfsh);
+
+    GfshScript.of(commandWithWrongName)
+        .withName("test-frame")
+        .expectExitCode(ExitCode.FATAL.getValue())
+        .execute(gfshRule);
   }
 
   @Test
   public void statusCommandWithIncorrectPidShouldFail() {
     String commandWithWrongPid = "status server --pid=100";
-    GfshScript.of(commandWithWrongPid).withName("test-frame").awaitAtMost(2, MINUTES)
-        .expectExitCode(ExitCode.FATAL.getValue()).execute(gfsh);
+
+    GfshScript.of(commandWithWrongPid)
+        .withName("test-frame")
+        .addToClasspath(toolsJar.toFile().getAbsolutePath())
+        .expectExitCode(ExitCode.FATAL.getValue())
+        .execute(gfshRule);
   }
 
   @Test
   public void onlineStatusCommandShouldFailWhenNotConnected_server_name() {
-    String statusCommand = statusServerCommandByName();
-    executeScriptWithExpectedExitCode(false, statusCommand, ExitCode.FATAL);
+    String statusCommand = "status server --name=" + SERVER_NAME;
+
+    GfshScript.of(statusCommand)
+        .withName("test-frame")
+        .expectExitCode(ExitCode.FATAL.getValue())
+        .execute(gfshRule);
   }
 
   @Test
   public void onlineStatusCommandShouldSucceedWhenConnected_server_name() {
-    String statusCommand = statusServerCommandByName();
-    executeScriptWithExpectedExitCode(true, statusCommand, ExitCode.NORMAL);
+    String statusCommand = "status server --name=" + SERVER_NAME;
+
+    GfshScript.of(connectCommand, statusCommand)
+        .withName("test-frame")
+        .expectExitCode(ExitCode.NORMAL.getValue())
+        .execute(gfshRule);
   }
 
   @Test
   public void offlineStatusCommandShouldSucceedWhenConnected_server_dir() {
-    String statusCommand = statusServerCommandByDir();
-    executeScriptWithExpectedExitCode(true, statusCommand, ExitCode.NORMAL);
+    String statusCommand = "status server --dir=" + serverDir;
+
+    GfshScript.of(connectCommand, statusCommand)
+        .withName("test-frame")
+        .expectExitCode(ExitCode.NORMAL.getValue())
+        .execute(gfshRule);
   }
 
   @Test
-  public void offlineStatusCommandShouldSucceedWhenConnected_server_pid() throws IOException {
-    Assume.assumeTrue(toolsJar.exists());
-    String statusCommand = statusServerCommandByPid();
-    executeScriptWithExpectedExitCode(true, statusCommand, ExitCode.NORMAL);
+  public void offlineStatusCommandShouldSucceedWhenConnected_server_pid() {
+    String statusCommand = "status server --pid=" + serverPid;
+
+    GfshScript.of(connectCommand, statusCommand)
+        .withName("test-frame")
+        .addToClasspath(toolsJar.toFile().getAbsolutePath())
+        .expectExitCode(ExitCode.NORMAL.getValue())
+        .execute(gfshRule);
   }
 
   @Test
   public void offlineStatusCommandShouldSucceedEvenWhenNotConnected_server_dir() {
+    String statusCommand = "status server --dir=" + serverDir;
 
-    String statusCommand = statusServerCommandByDir();
-    executeScriptWithExpectedExitCode(false, statusCommand, ExitCode.NORMAL);
+    GfshScript.of(statusCommand)
+        .withName("test-frame")
+        .expectExitCode(ExitCode.NORMAL.getValue())
+        .execute(gfshRule);
   }
 
   @Test
-  public void offlineStatusCommandShouldSucceedEvenWhenNotConnected_server_pid()
-      throws IOException {
-    Assume.assumeTrue(toolsJar.exists());
-    String statusCommand = statusServerCommandByPid();
-    executeScriptWithExpectedExitCode(false, statusCommand, ExitCode.NORMAL);
+  public void offlineStatusCommandShouldSucceedEvenWhenNotConnected_server_pid() {
+    String statusCommand = "status server --pid=" + serverPid;
+
+    GfshScript.of(statusCommand)
+        .withName("test-frame")
+        .expectExitCode(ExitCode.NORMAL.getValue())
+        .addToClasspath(toolsJar.toFile().getAbsolutePath())
+        .execute(gfshRule);
   }
 
-  private static String startLocatorCommand() {
-    return new CommandStringBuilder("start locator").addOption("name", locatorName)
-        .addOption("port", String.valueOf(locatorPort)).toString();
-  }
-
-  private static String startServerCommand() {
-    return new CommandStringBuilder("start server")
-        .addOption("server-port", "0")
-        .addOption("name", serverName).toString();
-  }
-
-  private String statusServerCommandByName() {
-    return new CommandStringBuilder("status server").addOption("name", serverName).toString();
-  }
-
-  private String statusServerCommandByDir() {
-    String serverDir = gfsh.getTemporaryFolder().getRoot().toPath().resolve(memberControllerName)
-        .resolve(serverName).toAbsolutePath().toString();
-    return new CommandStringBuilder("status server").addOption("dir", serverDir).toString();
-  }
-
-  private String statusServerCommandByPid() throws IOException {
-    int serverPid = snoopMemberFile(serverName, "server.pid");
-    return new CommandStringBuilder("status server").addOption("pid", String.valueOf(serverPid))
-        .toString();
-  }
-
-  private String connectCommand() {
-    return new CommandStringBuilder("connect")
-        .addOption("locator", String.format("localhost[%d]", locatorPort)).toString();
-  }
-
-  private int snoopMemberFile(String memberName, String pidFileEndsWith) throws IOException {
-    File directory = gfsh.getTemporaryFolder().getRoot().toPath().resolve(memberControllerName)
-        .resolve(memberName).toFile();
+  private static int readPidFile(String memberName, String pidFileEndsWith) throws IOException {
+    File directory = rootPath.resolve(memberName).toFile();
     File[] files = directory.listFiles();
-    if (files == null) {
-      throw new RuntimeException(String.format(
-          "Expected directory ('%s') for member '%s' either does not denote a directory, or an I/O error occurred.",
-          directory.toString(), memberName));
-    }
-    File pidFile = Arrays.stream(files).filter(file -> file.getName().endsWith(pidFileEndsWith))
-        .findFirst().orElseThrow(() -> new RuntimeException(String
+
+    assertThat(files)
+        .as(String.format("Expected directory ('%s') for member '%s'.", directory, memberName))
+        .isNotNull();
+
+    File pidFile = stream(files)
+        .filter(file -> file.getName().endsWith(pidFileEndsWith))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException(String
             .format("Expected member '%s' to have pid file but could not find it.", memberName)));
+
     return new PidFile(pidFile).readPid();
-  }
-
-  private void executeScriptWithExpectedExitCode(boolean connectToLocator, String statusCommand,
-      ExitCode expectedExit) {
-
-    String[] gfshScriptCommands = connectToLocator ? new String[] {connectCommand(), statusCommand}
-        : new String[] {statusCommand};
-    GfshScript gfshScript = GfshScript.of(gfshScriptCommands).withName("test-frame")
-        .awaitAtMost(1, MINUTES).expectExitCode(expectedExit.getValue());
-    if (toolsJar.exists()) {
-      gfshScript.addToClasspath(toolsJar.getAbsolutePath());
-    }
-    gfshScript.execute(gfsh);
   }
 }
