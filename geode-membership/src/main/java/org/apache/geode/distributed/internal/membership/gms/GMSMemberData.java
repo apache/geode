@@ -30,6 +30,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.VersionOrdinalImpl;
+import org.apache.geode.internal.serialization.Versioning;
 
 /**
  * GMSMember contains data that is required to identify a member of the cluster.
@@ -88,7 +89,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    * from members with new (unknown) versions.
    */
   private transient VersionOrdinal versionOrdinal =
-      new VersionOrdinalImpl(Version.CURRENT.ordinal());
+      Versioning.getVersionOrdinal(Version.CURRENT.ordinal());
 
   /**
    * whether this is a partial member ID (without roles, durable attributes). We use partial IDs in
@@ -136,7 +137,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.durableTimeout = durableTimeout;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.preferredForCoordinator = preferredForCoordinator;
-    this.versionOrdinal = new VersionOrdinalImpl(versionOrdinal);
+    this.versionOrdinal = Versioning.getVersionOrdinal(versionOrdinal);
     this.uuidMSBs = msbs;
     this.uuidLSBs = lsbs;
     this.memberWeight = memberWeight;
@@ -149,7 +150,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.inetAddr = i;
     this.hostName = i.getHostName();
     this.udpPort = p;
-    this.versionOrdinal = new VersionOrdinalImpl(versionOrdinal);
+    this.versionOrdinal = Versioning.getVersionOrdinal(versionOrdinal);
     this.uuidMSBs = msbs;
     this.uuidLSBs = lsbs;
     this.vmViewId = viewId;
@@ -237,7 +238,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   @Override
   public void setVersionOrdinal(short versionOrdinal) {
-    this.versionOrdinal = new VersionOrdinalImpl(versionOrdinal);
+    this.versionOrdinal = Versioning.getVersionOrdinal(versionOrdinal);
   }
 
   @Override

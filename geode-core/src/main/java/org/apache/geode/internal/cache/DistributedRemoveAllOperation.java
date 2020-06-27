@@ -990,8 +990,6 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       this.removeAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
       this.removeAllData = new RemoveAllEntryData[this.removeAllDataSize];
       if (this.removeAllDataSize > 0) {
-        final Version version = StaticSerialization.getVersionForDataStreamOrNull(in);
-        final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
         for (int i = 0; i < this.removeAllDataSize; i++) {
           this.removeAllData[i] = new RemoveAllEntryData(in, eventId, i, context);
         }

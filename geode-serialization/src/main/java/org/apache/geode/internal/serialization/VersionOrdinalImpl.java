@@ -19,7 +19,12 @@ public class VersionOrdinalImpl implements VersionOrdinal {
 
   protected final short ordinal;
 
-  public VersionOrdinalImpl(final short ordinal) {
+  /**
+   * Package-private so only the Versioning factory can access this constructor.
+   *
+   * @param ordinal
+   */
+  VersionOrdinalImpl(final short ordinal) {
     this.ordinal = ordinal;
   }
 

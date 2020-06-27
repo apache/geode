@@ -27,6 +27,14 @@ package org.apache.geode.internal.serialization;
  * Implementations must define equals() and hashCode() based on
  * ordinal() result. And since this interface extends Comparable,
  * implementations must define compareTo() as well.
+ *
+ * Unlike Version (a subtype of VersionOrdinal which acts like an
+ * enumerated type), VersionOrdinal does not, in general, guarantee
+ * that if vo1.equals(vo2) then vo1 == vo2.
+ *
+ * Use the Versioning factory class to construct objects implementing
+ * this interface. All instances of known versions are defined as
+ * constants in the Version class, e.g. Version.GEODE_1_11_0
  */
 public interface VersionOrdinal extends Comparable<VersionOrdinal> {
 

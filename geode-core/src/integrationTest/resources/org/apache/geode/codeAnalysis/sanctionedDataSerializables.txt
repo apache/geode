@@ -287,7 +287,7 @@ fromData,17
 toData,17
 
 org/apache/geode/distributed/internal/streaming/StreamingOperation$StreamingReplyMessage,2
-fromData,419
+fromData,417
 toData,86
 
 org/apache/geode/internal/DSFIDFactory,2
@@ -872,7 +872,7 @@ org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllEntryData,1
 toData,252
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllMessage,2
-fromData,217
+fromData,214
 toData,188
 
 org/apache/geode/internal/cache/DistributedRegionFunctionStreamingMessage,2
@@ -880,7 +880,7 @@ fromData,177
 toData,174
 
 org/apache/geode/internal/cache/DistributedRemoveAllOperation$RemoveAllMessage,2
-fromData,217
+fromData,194
 toData,188
 
 org/apache/geode/internal/cache/DistributedTombstoneOperation$TombstoneMessage,2
@@ -902,7 +902,7 @@ toData,22
 org/apache/geode/internal/cache/EventID,4
 fromData,53
 fromDataPre_GFE_8_0_0_0,33
-toData,108
+toData,106
 toDataPre_GFE_8_0_0_0,24
 
 org/apache/geode/internal/cache/EvictionAttributesImpl,2
@@ -1195,8 +1195,8 @@ fromData,38
 toData,35
 
 org/apache/geode/internal/cache/TXRegionLockRequestImpl,2
-fromData,99
-toData,57
+fromData,97
+toData,55
 
 org/apache/geode/internal/cache/TXRemoteCommitMessage$TXRemoteCommitReplyMessage,2
 fromData,18
@@ -1297,8 +1297,8 @@ fromData,22
 toData,19
 
 org/apache/geode/internal/cache/execute/FunctionRemoteContext,2
-fromData,126
-toData,104
+fromData,124
+toData,102
 
 org/apache/geode/internal/cache/ha/HARegionQueue$DispatchedAndCurrentEvents,2
 fromData,37
@@ -1557,8 +1557,8 @@ fromData,74
 toData,68
 
 org/apache/geode/internal/cache/partitioned/PartitionMessage,2
-fromData,62
-toData,115
+fromData,60
+toData,113
 
 org/apache/geode/internal/cache/partitioned/PartitionedRegionFunctionStreamingMessage,2
 fromData,18
@@ -1573,7 +1573,7 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/partitioned/PutAllPRMessage,2
-fromData,187
+fromData,164
 toData,201
 
 org/apache/geode/internal/cache/partitioned/PutAllPRMessage$PutAllReplyMessage,2
@@ -1601,7 +1601,7 @@ fromData,54
 toData,35
 
 org/apache/geode/internal/cache/partitioned/RemoveAllPRMessage,2
-fromData,187
+fromData,164
 toData,201
 
 org/apache/geode/internal/cache/partitioned/RemoveAllPRMessage$RemoveAllReplyMessage,2
@@ -1847,7 +1847,7 @@ fromData,45
 toData,112
 
 org/apache/geode/internal/cache/tx/RemotePutAllMessage,2
-fromData,227
+fromData,224
 toData,180
 
 org/apache/geode/internal/cache/tx/RemotePutAllMessage$PutAllReplyMessage,2
@@ -1863,7 +1863,7 @@ fromData,84
 toData,95
 
 org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage,2
-fromData,207
+fromData,204
 toData,180
 
 org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage$RemoveAllReplyMessage,2
@@ -1899,13 +1899,13 @@ fromData,214
 toData,245
 
 org/apache/geode/internal/cache/versions/VersionTag,2
-fromData,227
+fromData,225
 toData,254
 
 org/apache/geode/internal/cache/wan/GatewaySenderAdvisor$GatewaySenderProfile,4
-fromData,285
+fromData,283
 fromDataPre_GFE_8_0_0_0,188
-toData,273
+toData,271
 toDataPre_GFE_8_0_0_0,236
 
 org/apache/geode/internal/cache/wan/GatewaySenderEventCallbackArgument,2
@@ -2024,9 +2024,9 @@ toData,25
 
 org/apache/geode/pdx/internal/PdxField,2
 fromData,99
-toData,107
+toData,105
 
 org/apache/geode/pdx/internal/PdxType,2
 fromData,109
-toData,126
+toData,124
 

@@ -230,8 +230,6 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     this.putAllPRDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
     this.putAllPRData = new PutAllEntryData[putAllPRDataSize];
     if (this.putAllPRDataSize > 0) {
-      final Version version = StaticSerialization.getVersionForDataStreamOrNull(in);
-      final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.putAllPRDataSize; i++) {
         this.putAllPRData[i] = new PutAllEntryData(in, context, null, i);
       }
