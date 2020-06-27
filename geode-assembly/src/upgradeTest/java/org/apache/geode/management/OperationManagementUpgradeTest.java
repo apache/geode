@@ -16,25 +16,18 @@
 package org.apache.geode.management;
 
 import static org.apache.geode.test.dunit.Host.getHost;
-import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
 import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -43,15 +36,10 @@ import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
-import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -98,7 +86,7 @@ public class OperationManagementUpgradeTest {
             .and(startServerCommand("server", ports[6], ports[0]))
             .execute(oldGfsh);
 
-    String operationId = vm.invoke(()->{
+    String operationId = vm.invoke(() -> {
       // start a cms client that connects to locator1's http port
       ClusterManagementService cms = new ClusterManagementServiceBuilder()
           .setHost("localhost")
@@ -107,7 +95,8 @@ public class OperationManagementUpgradeTest {
 
       ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> startResult =
           cms.start(new RebalanceOperation());
-      assertThat(startResult.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
+      assertThat(startResult.getStatusCode())
+          .isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
       return startResult.getOperationId();
     });
 
@@ -122,8 +111,7 @@ public class OperationManagementUpgradeTest {
         .setHost("localhost")
         .setPort(ports[2])
         .build();
-    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>
-        operationResult =
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> operationResult =
         cms.get(new RebalanceOperation(), operationId);
     System.out.println(operationResult);
     assertThat(operationResult.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);

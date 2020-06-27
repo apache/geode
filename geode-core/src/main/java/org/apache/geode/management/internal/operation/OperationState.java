@@ -28,6 +28,7 @@ import org.apache.geode.management.runtime.OperationResult;
  */
 public class OperationState<A extends ClusterManagementOperation<V>, V extends OperationResult>
     implements Identifiable<String> {
+  private static final long serialVersionUID = 8212319653561969588L;
   private final String opId;
   private final A operation;
   private final Date operationStart;
