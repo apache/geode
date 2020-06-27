@@ -29,7 +29,6 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
-import org.apache.geode.internal.serialization.VersionOrdinalImpl;
 import org.apache.geode.internal.serialization.Versioning;
 
 /**

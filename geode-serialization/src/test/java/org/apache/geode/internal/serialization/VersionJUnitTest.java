@@ -100,9 +100,9 @@ public class VersionJUnitTest {
   @Test
   public void ordinalImplMatchesVersion() {
     /*
-     We are not using the Version.getVersionOrdinal(short) factory method here
-     because we intend to test that Version and VersionOrdinal are cross-comparable.
-     The factory would return Version.GFE_82 which would foil our testing.
+     * We are not using the Version.getVersionOrdinal(short) factory method here
+     * because we intend to test that Version and VersionOrdinal are cross-comparable.
+     * The factory would return Version.GFE_82 which would foil our testing.
      */
     final VersionOrdinalImpl versionOrdinal = new VersionOrdinalImpl(Version.GFE_82.ordinal);
     assertThat(Version.GFE_82).isEqualTo(versionOrdinal);
