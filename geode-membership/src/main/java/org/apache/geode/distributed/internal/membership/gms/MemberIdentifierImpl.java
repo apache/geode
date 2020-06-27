@@ -47,6 +47,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Versioning;
 
 /**
  * An implementation of {@link MemberIdentifier}
@@ -420,7 +421,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       // add version if not current
       short version = memberData.getVersionOrdinal();
       if (version != Version.CURRENT.ordinal()) {
-        sb.append("(version:").append(Version.toString(version)).append(')');
+        sb.append("(version:").append(Versioning.getVersionOrdinal(version)).append(')');
       }
 
       // leave out Roles on purpose
@@ -974,7 +975,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     // add version if not current
     short version = memberData.getVersionOrdinal();
     if (version != Version.CURRENT.ordinal()) {
-      sb.append("(version:").append(Version.toString(version)).append(')');
+      sb.append("(version:").append(Versioning.getVersionOrdinal(version)).append(')');
     }
 
     return sb.toString();

@@ -555,12 +555,16 @@ public class InternalDistributedMember
   }
 
   /**
-   * While an InternalDistributedMember isa MemberIdentifier its member identifier's
-   * VersionOrdinal always represents a known version (a Version.) Callers that need
-   * that known version use this method.
+   * If this member runs a version known in this JVM then return that Version.
+   * If this member does not run a known version then return Version.CURRENT.
+   *
+   * In various serialization scenarios we want the well-known version for this
+   * member, or, if it doesn't have a well-known version, we want the current
+   * (in this JVM) software version. Rather than have that logic spread around in
+   * the serialization code, it is centralized here.
    */
   public Version getVersionObject() {
-    return Version.fromOrdinalNoThrow(getVersionOrdinalObject(), false);
+    return Version.fromOrdinalNoThrow(getVersionOrdinalObject().ordinal(), false);
   }
 
   @Override

@@ -1969,7 +1969,7 @@ fromData,17
 toData,17
 
 org/apache/geode/management/internal/configuration/domain/Configuration,2
-fromData,110
+fromData,111
 toData,62
 
 org/apache/geode/management/internal/configuration/domain/ConfigurationChangeResult,2

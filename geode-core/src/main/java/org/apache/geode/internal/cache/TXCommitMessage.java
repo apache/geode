@@ -77,7 +77,6 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -954,7 +953,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     return hasFlagsField(StaticSerialization.getVersionForDataStream(in));
   }
 
-  private boolean hasFlagsField(final VersionOrdinal version) {
+  private boolean hasFlagsField(final Version version) {
     return version.isNotOlderThan(Version.GEODE_1_7_0);
   }
 
