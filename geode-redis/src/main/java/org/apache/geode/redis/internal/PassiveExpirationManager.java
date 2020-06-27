@@ -47,9 +47,6 @@ public class PassiveExpirationManager {
     this.dataRegion = dataRegion;
     this.redisStats = redisStats;
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-  }
-
-  public void start() {
     int INTERVAL = 1;
     expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(dataRegion), INTERVAL,
         INTERVAL,

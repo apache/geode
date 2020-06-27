@@ -39,7 +39,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.ServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -64,34 +63,13 @@ import org.apache.geode.redis.internal.pubsub.PubSub;
 
 public class NettyRedisServer {
 
-  /**
-   * System property name that can be used to set the number of threads to be used by the
-   * GeodeRedisServer
-   */
-  private static final String NUM_THREADS_SYS_PROP_NAME = "gemfireredis.numthreads";
-
   private static final int RANDOM_PORT_INDICATOR = 0;
 
   private static final Logger logger = LogService.getLogger();
   /**
    * Connection timeout in milliseconds
    */
-  private static final int connectTimeoutMillis = 1000;
-
-  /**
-   * The number of threads that will work on handling requests
-   */
-  private final int numWorkerThreads;
-
-  /**
-   * The number of threads that will work socket selectors
-   */
-  private final int numSelectorThreads;
-
-  /**
-   * whether to use old single thread per connection model for worker group
-   */
-  private final boolean singleThreadPerConnection;
+  private static final int CONNECT_TIMEOUT_MILLIS = 1000;
 
   private final Supplier<DistributionConfig> configSupplier;
   private final RegionProvider regionProvider;
@@ -99,15 +77,12 @@ public class NettyRedisServer {
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
-
-
-  private Channel serverChannel;
-  private EventLoopGroup bossGroup;
-  private EventLoopGroup workerGroup;
-  private EventLoopGroup subscriberGroup;
-
+  private final EventLoopGroup selectorGroup;
+  private final EventLoopGroup workerGroup;
+  private final EventLoopGroup subscriberGroup;
   private final InetAddress bindAddress;
-  private int serverPort;
+  private final Channel serverChannel;
+  private final int serverPort;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub,
@@ -123,27 +98,27 @@ public class NettyRedisServer {
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException("Redis port cannot be less than 0");
     }
-    serverPort = port;
     this.bindAddress = getBindAddress(requestedAddress);
-    numWorkerThreads = setNumWorkerThreads();
-    singleThreadPerConnection = numWorkerThreads == 0;
-    numSelectorThreads = 1;
+    selectorGroup = createEventLoopGroup("Selector", false, 1);
+    workerGroup = createEventLoopGroup("Worker", true, 0);
+    subscriberGroup = createEventLoopGroup("Subscriber", true, 0);
+    serverChannel = createChannel(port);
+    serverPort = getActualPort();
+    logStartupMessage();
   }
 
-
-  public void start() {
-    Class<? extends ServerChannel> socketClass = initializeEventLoopGroups();
+  private Channel createChannel(int port) {
     ServerBootstrap serverBootstrap = new ServerBootstrap();
 
-    serverBootstrap.group(bossGroup, workerGroup).channel(socketClass)
+    serverBootstrap.group(selectorGroup, workerGroup).channel(NioServerSocketChannel.class)
         .childHandler(createChannelInitializer())
         .option(ChannelOption.SO_REUSEADDR, true)
         .option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
-        .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
+        .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MILLIS)
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
-    serverChannel = createBoundChannel(serverBootstrap);
+    return createBoundChannel(serverBootstrap, port);
   }
 
   public void stop() {
@@ -152,7 +127,7 @@ public class NettyRedisServer {
       closeFuture = serverChannel.closeFuture();
     }
     workerGroup.shutdownGracefully();
-    Future<?> bossFuture = bossGroup.shutdownGracefully();
+    Future<?> bossFuture = selectorGroup.shutdownGracefully();
     if (serverChannel != null) {
       serverChannel.close();
     }
@@ -220,37 +195,8 @@ public class NettyRedisServer {
     p.addLast(sslContext.newHandler(ch.alloc()));
   }
 
-  private Class<? extends ServerChannel> initializeEventLoopGroups() {
-    ThreadFactory selectorThreadFactory =
-        new LoggingThreadFactory("GeodeRedisServer-SelectorThread-", false);
-
-    ThreadFactory workerThreadFactory =
-        new LoggingThreadFactory("GeodeRedisServer-WorkerThread-", true);
-
-    if (singleThreadPerConnection) {
-      return initializeOioGroups(selectorThreadFactory, workerThreadFactory);
-    } else {
-      ThreadFactory subscriberThreadFactory =
-          new LoggingThreadFactory("GeodeRedisServer-SubscriberThread-", true);
-      bossGroup = new NioEventLoopGroup(numSelectorThreads, selectorThreadFactory);
-      workerGroup = new NioEventLoopGroup(numWorkerThreads, workerThreadFactory);
-      subscriberGroup = new NioEventLoopGroup(numWorkerThreads, subscriberThreadFactory);
-      return NioServerSocketChannel.class;
-    }
-  }
-
-  @SuppressWarnings("deprecation")
-  private Class<? extends ServerChannel> initializeOioGroups(ThreadFactory selectorThreadFactory,
-      ThreadFactory workerThreadFactory) {
-    bossGroup =
-        new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, selectorThreadFactory);
-    workerGroup =
-        new io.netty.channel.oio.OioEventLoopGroup(Integer.MAX_VALUE, workerThreadFactory);
-    return io.netty.channel.socket.oio.OioServerSocketChannel.class;
-  }
-
-  private Channel createBoundChannel(ServerBootstrap serverBootstrap) {
-    int port = serverPort == RANDOM_PORT_INDICATOR ? 0 : serverPort;
+  private Channel createBoundChannel(ServerBootstrap serverBootstrap, int requestedPort) {
+    int port = requestedPort == RANDOM_PORT_INDICATOR ? 0 : requestedPort;
     ChannelFuture channelFuture =
         serverBootstrap.bind(new InetSocketAddress(bindAddress, port));
     try {
@@ -258,20 +204,15 @@ public class NettyRedisServer {
     } catch (Exception ex) {
       throw new ManagementException("Could not start Server", ex);
     }
-    Channel channel = channelFuture.channel();
-    serverPort = ((InetSocketAddress) channel.localAddress()).getPort();
-    logStartupMessage();
-    return channel;
+    return channelFuture.channel();
+  }
+
+  private int getActualPort() {
+    return ((InetSocketAddress) serverChannel.localAddress()).getPort();
   }
 
   private void logStartupMessage() {
-    String logMessage = "GeodeRedisServer started {" + bindAddress + ":" + serverPort
-        + "}, Selector threads: " + numSelectorThreads;
-    if (singleThreadPerConnection) {
-      logMessage += ", One worker thread per connection";
-    } else {
-      logMessage += ", Worker threads: " + numWorkerThreads;
-    }
+    String logMessage = "GeodeRedisServer started {" + bindAddress + ":" + serverPort + "}";
     logger.info(logMessage);
   }
 
@@ -283,7 +224,6 @@ public class NettyRedisServer {
   private int getBufferSize() {
     return configSupplier.get().getSocketBufferSize();
   }
-
 
   /**
    * Helper method to get the host name to bind to
@@ -303,25 +243,10 @@ public class NettyRedisServer {
     }
   }
 
-  /**
-   * Helper method to set the number of worker threads
-   *
-   * @return If the System property {@value #NUM_THREADS_SYS_PROP_NAME} is set then that number is
-   *         used, otherwise {@link Runtime#availableProcessors()}.
-   */
-  private static int setNumWorkerThreads() {
-    String prop = System.getProperty(NUM_THREADS_SYS_PROP_NAME);
-    int defaultThreads = Runtime.getRuntime().availableProcessors();
-    if (prop == null || prop.isEmpty()) {
-      return defaultThreads;
-    }
-    int threads;
-    try {
-      threads = Integer.parseInt(prop);
-    } catch (NumberFormatException e) {
-      return defaultThreads;
-    }
-    return threads;
+  private static EventLoopGroup createEventLoopGroup(String name, boolean isDaemon, int nThreads) {
+    String fullName = "GeodeRedisServer-" + name + "Thread-";
+    ThreadFactory threadFactory = new LoggingThreadFactory(fullName, isDaemon);
+    return new NioEventLoopGroup(nThreads, threadFactory);
   }
 
 }

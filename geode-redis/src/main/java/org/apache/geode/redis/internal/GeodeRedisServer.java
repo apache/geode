@@ -63,8 +63,6 @@ public class GeodeRedisServer {
   private final PubSub pubSub;
   private final RedisStats redisStats;
 
-  private boolean started;
-
   private boolean shutdown;
 
 
@@ -133,17 +131,6 @@ public class GeodeRedisServer {
 
   public int getPort() {
     return nettyRedisServer.getPort();
-  }
-
-  /**
-   * This is function to call on a {@code GeodeRedisServer} instance to start it running
-   */
-  public synchronized void start() {
-    if (!started) {
-      nettyRedisServer.start();
-      passiveExpirationManager.start();
-      started = true;
-    }
   }
 
   /**
