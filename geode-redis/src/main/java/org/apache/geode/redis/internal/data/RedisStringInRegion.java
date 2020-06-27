@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommandsFunctionExecutor;
@@ -31,8 +32,9 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisStringInRegion extends RedisKeyInRegion implements RedisStringCommands {
 
-  public RedisStringInRegion(Region<ByteArrayWrapper, RedisData> region) {
-    super(region);
+  public RedisStringInRegion(Region<ByteArrayWrapper, RedisData> region,
+      RedisStats redisStats) {
+    super(region, redisStats);
   }
 
   @Override
@@ -346,11 +348,16 @@ public class RedisStringInRegion extends RedisKeyInRegion implements RedisString
     RedisString redisString = getRedisString(key);
 
     if (redisString == null) {
+      byte[] newBytes = value;
       if (value.length != 0) {
-        redisString = new RedisString(new ByteArrayWrapper(value));
+        if (offset != 0) {
+          newBytes = new byte[offset + value.length];
+          System.arraycopy(value, 0, newBytes, offset, value.length);
+        }
+        redisString = new RedisString(new ByteArrayWrapper(newBytes));
         region.put(key, redisString);
       }
-      return value.length;
+      return newBytes.length;
     }
     return redisString.setrange(region, key, offset, value);
   }

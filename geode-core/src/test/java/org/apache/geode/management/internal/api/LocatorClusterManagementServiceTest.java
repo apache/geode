@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -107,6 +108,7 @@ public class LocatorClusterManagementServiceTest {
   private CacheConfigurationManager<Region> regionManager;
   private MemberValidator memberValidator;
   private RebalanceOperation rebalanceOperation;
+  private DistributedLockService dLockService;
 
   @Before
   public void before() throws Exception {
@@ -139,14 +141,39 @@ public class LocatorClusterManagementServiceTest {
     doReturn(true).when(persistenceService).lockSharedConfiguration();
     doNothing().when(persistenceService).unlockSharedConfiguration();
     operationManager = mock(OperationManager.class);
+    dLockService = mock(DistributedLockService.class);
+
     service =
         spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators,
             memberValidator, cacheElementValidator, operationManager));
+    doReturn(dLockService).when(service).getCmsDlockService();
 
     regionConfig = new Region();
     regionConfig.setName("region1");
 
     rebalanceOperation = new RebalanceOperation();
+  }
+
+  @Test
+  public void lockAndUnlockCalledAtCreateWithException() {
+    try {
+      service.create(regionConfig);
+    } catch (Exception ignore) {
+    }
+
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
+  }
+
+  @Test
+  public void lockAndUnlockCalledAtDeleteWithException() {
+    try {
+      service.delete(regionConfig);
+    } catch (Exception ignore) {
+    }
+
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
   }
 
   @Test
@@ -223,6 +250,8 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
 
     assertThat(cacheConfig.getRegions()).hasSize(1);
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
   }
 
   @Test
@@ -359,6 +388,8 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
 
     assertThat(config.getRegions()).isEmpty();
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
   }
 
   @Test

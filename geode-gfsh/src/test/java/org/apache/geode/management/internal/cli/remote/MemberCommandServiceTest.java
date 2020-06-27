@@ -17,40 +17,34 @@ package org.apache.geode.management.internal.cli.remote;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.internal.CommandProcessor;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.GfshParser;
 
 public class MemberCommandServiceTest {
   private InternalCache cache;
+  private CommandProcessor commandProcessor;
 
   @Before
   public void init() {
     cache = mock(InternalCache.class);
-    DistributedSystem distributedSystem = mock(DistributedSystem.class);
     SecurityService securityService = mock(SecurityService.class);
-    Properties cacheProperties = new Properties();
-
-    when(cache.getDistributedSystem()).thenReturn(distributedSystem);
-    when(cache.isClosed()).thenReturn(true);
-    when(cache.getSecurityService()).thenReturn(securityService);
-    when(cache.getService(CommandProcessor.class)).thenReturn(new OnlineCommandProcessor());
-    when(distributedSystem.getProperties()).thenReturn(cacheProperties);
+    GfshParser gfshParser = mock(GfshParser.class);
+    CommandExecutor executor = mock(CommandExecutor.class);
+    commandProcessor = new OnlineCommandProcessor(gfshParser,
+        securityService, executor);
   }
 
   @Test
   public void processCommandError() throws Exception {
     @SuppressWarnings("deprecation")
-    MemberCommandService memberCommandService = new MemberCommandService(cache);
+    MemberCommandService memberCommandService = new MemberCommandService(cache, commandProcessor);
 
     Result result = memberCommandService.processCommand("fake command");
 

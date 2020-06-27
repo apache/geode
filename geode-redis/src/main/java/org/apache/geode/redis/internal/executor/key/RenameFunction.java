@@ -29,6 +29,7 @@ import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
+import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKeyInRegion;
 import org.apache.geode.redis.internal.data.RedisSet;
@@ -41,14 +42,18 @@ public class RenameFunction implements InternalFunction {
   public static final String ID = "REDIS_RENAME_FUNCTION";
 
   private final transient StripedExecutor stripedExecutor;
+  private final RedisStats redisStats;
 
-  public static void register(StripedExecutor stripedExecutor) {
-    FunctionService.registerFunction(new RenameFunction(stripedExecutor));
+  public static void register(StripedExecutor stripedExecutor,
+      RedisStats redisStats) {
+    FunctionService.registerFunction(new RenameFunction(stripedExecutor, redisStats));
   }
 
 
-  public RenameFunction(StripedExecutor stripedExecutor) {
+  public RenameFunction(StripedExecutor stripedExecutor,
+      RedisStats redisStats) {
     this.stripedExecutor = stripedExecutor;
+    this.redisStats = redisStats;
   }
 
   @Override
@@ -139,7 +144,7 @@ public class RenameFunction implements InternalFunction {
   }
 
   private boolean rename(RenameContext context) {
-    return new RedisKeyInRegion(context.getDataRegion())
+    return new RedisKeyInRegion(context.getDataRegion(), redisStats)
         .rename(context.getOldKey(), context.getNewKey());
   }
 

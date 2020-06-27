@@ -14,13 +14,19 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_LOCATOR_WAIT_TIME;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.FIND_LOCATOR_RETRY_SLEEP;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.JOIN_RETRY_SLEEP;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.getMinimumRetriesBeforeBecomingCoordinator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -47,6 +53,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
  * Tests of using the membership APIs to make multiple Membership systems that communicate
@@ -59,6 +66,9 @@ public class MembershipIntegrationTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Before
   public void before() throws IOException, MembershipConfigurationException {
@@ -172,6 +182,96 @@ public class MembershipIntegrationTest {
     stop(locator2, locator1);
   }
 
+  @Test
+  public void secondMembershipPausesForLocatorWaitTime()
+      throws IOException, MemberStartupException, InterruptedException {
+
+    /*
+     * Start a locator for the coordinator (membership) so we have a port for it.
+     *
+     * Its locator-wait-time is set to 0 so it eventually (soon after membership is started) forms a
+     * distributed system and becomes a coordinator.
+     */
+
+    final MembershipLocator<MemberIdentifier> coordinatorLocator = createLocator(0);
+    coordinatorLocator.start();
+    final int coordinatorLocatorPort = coordinatorLocator.getPort();
+
+    final Membership<MemberIdentifier> coordinatorMembership =
+        createMembership(coordinatorLocator, coordinatorLocatorPort);
+
+    /*
+     * We have not even started the membership yet — connection attempts will certainly fail until
+     * we do. This is a bit like the locator (host) not being present in DNS (yet).
+     */
+
+    /*
+     * Start a second locator and membership trying to join via the coordinator (membership) that
+     * hasn't yet started behind the port.
+     *
+     * Set its locator-wait-time so it'll not become a coordinator right away, allowing time for the
+     * other member to start and become a coordinator.
+     */
+
+    final MembershipLocator<MemberIdentifier> lateJoiningLocator = createLocator(0);
+    lateJoiningLocator.start();
+    final int lateJoiningLocatorPort = lateJoiningLocator.getPort();
+
+    final int[] locatorPorts = new int[] {coordinatorLocatorPort, lateJoiningLocatorPort};
+
+    // minimum duration a locator waits to become the coordinator, regardless of locatorWaitTime
+    final Duration minimumJoinWaitTime = Duration
+        // amount of sleep time per retry in GMSJoinLeave.join()
+        .ofMillis(JOIN_RETRY_SLEEP + FIND_LOCATOR_RETRY_SLEEP)
+        // expected number of retries in GMSJoinLeave.join()
+        .multipliedBy(getMinimumRetriesBeforeBecomingCoordinator(locatorPorts.length));
+
+    /*
+     * By setting locatorWaitTime to 10x the minimumJoinWaitTime, we are trying to make sure the
+     * locatorWaitTime is sufficiently larger than the minimum so we can reliably detect whether
+     * the lateJoiningMembership is waiting for the full locatorWaitTime and not just the minimum
+     * wait time.
+     */
+    final int locatorWaitTime = (int) (10 * minimumJoinWaitTime.getSeconds());
+
+    final MembershipConfig lateJoiningMembershipConfig =
+        createMembershipConfig(true, locatorWaitTime, locatorPorts);
+    final Membership<MemberIdentifier> lateJoiningMembership =
+        createMembership(lateJoiningMembershipConfig, lateJoiningLocator);
+
+    CompletableFuture<Void> lateJoiningMembershipStartup = executorServiceRule.runAsync(() -> {
+      try {
+        start(lateJoiningMembership);
+      } catch (MemberStartupException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+    /*
+     * By sleeping for 2x the minimumJoinWaitTime, we are trying to make sure we sleep for
+     * longer than the minimum but shorter than the locatorWaitTime so we can detect whether the
+     * lateJoiningMembership is waiting for the full locatorWaitTime and not just the minimum
+     * wait time.
+     */
+    Thread.sleep(2 * minimumJoinWaitTime.toMillis());
+
+    /*
+     * Now start the coordinator (membership), after waiting longer than the minimum wait time for
+     * connecting to a locator but shorter than the locator-wait-time.
+     */
+    start(coordinatorMembership);
+
+    await().untilAsserted(() -> assertThat(lateJoiningMembershipStartup).isCompleted());
+
+    await().untilAsserted(
+        () -> assertThat(coordinatorMembership.getView().getMembers()).hasSize(2));
+    await().untilAsserted(
+        () -> assertThat(lateJoiningMembership.getView().getMembers()).hasSize(2));
+
+    stop(coordinatorMembership, lateJoiningMembership);
+    stop(coordinatorLocator, lateJoiningLocator);
+  }
+
   private void start(final Membership<MemberIdentifier> membership)
       throws MemberStartupException {
     membership.start();
@@ -183,8 +283,15 @@ public class MembershipIntegrationTest {
       final int... locatorPorts)
       throws MembershipConfigurationException {
     final boolean isALocator = embeddedLocator != null;
-    final MembershipConfig config = createMembershipConfig(isALocator, locatorPorts);
+    final MembershipConfig config =
+        createMembershipConfig(isALocator, DEFAULT_LOCATOR_WAIT_TIME, locatorPorts);
+    return createMembership(config, embeddedLocator);
+  }
 
+  private Membership<MemberIdentifier> createMembership(
+      final MembershipConfig config,
+      final MembershipLocator<MemberIdentifier> embeddedLocator)
+      throws MembershipConfigurationException {
     final MemberIdentifierFactoryImpl memberIdFactory = new MemberIdentifierFactoryImpl();
 
     final TcpClient locatorClient =
@@ -200,7 +307,8 @@ public class MembershipIntegrationTest {
 
   private MembershipConfig createMembershipConfig(
       final boolean isALocator,
-      final int[] locatorPorts) {
+      final int locatorWaitTime,
+      final int... locatorPorts) {
     return new MembershipConfig() {
       public String getLocators() {
         return getLocatorString(locatorPorts);
@@ -212,6 +320,11 @@ public class MembershipIntegrationTest {
       @Override
       public int getVmKind() {
         return isALocator ? MemberIdentifier.LOCATOR_DM_TYPE : MemberIdentifier.NORMAL_DM_TYPE;
+      }
+
+      @Override
+      public int getLocatorWaitTime() {
+        return locatorWaitTime;
       }
     };
   }
@@ -233,7 +346,8 @@ public class MembershipIntegrationTest {
         () -> LoggingExecutors.newCachedThreadPool("membership", false);
     Path locatorDirectory = temporaryFolder.newFolder().toPath();
 
-    final MembershipConfig config = createMembershipConfig(true, locatorPorts);
+    final MembershipConfig config =
+        createMembershipConfig(true, DEFAULT_LOCATOR_WAIT_TIME, locatorPorts);
 
     return MembershipLocatorBuilder.<MemberIdentifier>newLocatorBuilder(
         socketCreator,

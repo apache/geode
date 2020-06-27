@@ -253,4 +253,9 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
       return ResultModel.createInfo("");
     }
   }
+
+  @Override
+  public boolean affectsClusterConfiguration() {
+    return true;
+  }
 }

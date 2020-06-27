@@ -29,6 +29,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
@@ -52,13 +53,11 @@ public class StringSetExecutorJUnitTest {
   @Before
   public void setup() {
     context = mock(ExecutionHandlerContext.class);
-
     regionProvider = mock(RegionProvider.class);
-    when(context.getRegionProvider()).thenReturn(regionProvider);
 
+    when(context.getRegionProvider()).thenReturn(regionProvider);
     region = mock(Region.class);
     when(regionProvider.getDataRegion()).thenReturn(region);
-
     ByteBufAllocator allocator = mock(ByteBufAllocator.class);
 
     buffer = Unpooled.buffer();
@@ -70,18 +69,50 @@ public class StringSetExecutorJUnitTest {
   }
 
   @Test
-  public void testSET_EXargument_withoutParameterReturnsError() {
+  public void testSET_nonexistentArgument_returnsError() {
     List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
         "SET".getBytes(),
         "key".getBytes(),
         "value".getBytes(),
-        "EX".getBytes());
+        "OR".getBytes());
     Command command = new Command(commandArgumentWithEXNoParameter);
 
     RedisResponse response = executor.executeCommand(command, context);
 
     assertThat(response.toString())
         .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
+  public void testSET_EXargument_withoutParameterReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "EX".getBytes());
+
+    Command command = new Command(commandArgumentWithEXNoParameter);
+
+    RedisResponse response = executor.executeCommand(command, context);
+
+    assertThat(response.toString())
+        .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+
+  @Test
+  @Ignore("should pass When KeepTTL is implemented")
+  public void testSET_KEEPTTLArgument_DoesNoThrowError_givenCorrectInput() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "KEEPTTL".getBytes());
+    Command command = new Command(commandArgumentWithEXNoParameter);
+
+    RedisResponse response = executor.executeCommand(command, context);
+
+    assertThat(response.toString()).doesNotContain("-ERR");
   }
 
   @Test
@@ -151,6 +182,24 @@ public class StringSetExecutorJUnitTest {
   }
 
   @Test
+  public void testSET_EXandPX_inSameCommand_ReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "EX".getBytes(),
+        "30".getBytes(),
+        "PX".getBytes(),
+        "3000".getBytes());
+    Command command = new Command(commandArgumentWithEXNoParameter);
+
+    RedisResponse response = executor.executeCommand(command, context);
+
+    assertThat(response.toString())
+        .contains(RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
   public void testSET_NXandXX_inSameCommand_ReturnsError() {
     List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
         "SET".getBytes(),
@@ -162,8 +211,23 @@ public class StringSetExecutorJUnitTest {
 
     RedisResponse response = executor.executeCommand(command, context);
 
-    assertThat(response.toString())
-        .contains(RedisConstants.ERROR_SYNTAX);
+    assertThat(response.toString()).contains(RedisConstants.ERROR_SYNTAX);
   }
+
+  @Test
+  public void testSET_XXandNX_inSameCommand_ReturnsError() {
+    List<byte[]> commandArgumentWithEXNoParameter = Arrays.asList(
+        "SET".getBytes(),
+        "key".getBytes(),
+        "value".getBytes(),
+        "XX".getBytes(),
+        "NX".getBytes());
+    Command command = new Command(commandArgumentWithEXNoParameter);
+
+    RedisResponse response = executor.executeCommand(command, context);
+
+    assertThat(response.toString()).contains(RedisConstants.ERROR_SYNTAX);
+  }
+
 
 }

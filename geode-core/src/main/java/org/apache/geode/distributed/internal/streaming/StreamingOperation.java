@@ -513,7 +513,7 @@ public abstract class StreamingOperation {
       this.lastMsg = in.readBoolean();
       this.pdxReadSerialized = in.readBoolean();
       Version senderVersion = StaticSerialization.getVersionForDataStream(in);
-      boolean isSenderAbove_8_1 = senderVersion.compareTo(Version.GFE_81) > 0;
+      boolean isSenderAbove_8_1 = senderVersion.isNewerThan(Version.GFE_81);
       InternalCache cache = null;
       Boolean initialPdxReadSerialized = false;
       try {

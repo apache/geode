@@ -43,7 +43,7 @@ public class CloseConnection extends BaseCommand {
       final SecurityService securityService, long start) throws IOException {
     CacheServerStats stats = serverConnection.getCacheServerStats();
     long oldStart = start;
-    boolean respondToClient = serverConnection.getClientVersion().compareTo(Version.GFE_90) >= 0;
+    boolean respondToClient = serverConnection.getClientVersion().isNotOlderThan(Version.GFE_90);
     start = DistributionStats.getStatTime();
     stats.incReadCloseConnectionRequestTime(start - oldStart);
 

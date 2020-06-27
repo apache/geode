@@ -16,65 +16,18 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.Collection;
 
-import io.netty.buffer.ByteBuf;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.GeodeRedisServer;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.redis.internal.netty.CoderException;
-import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * The AbstractExecutor is the base of all {@link Executor} types for the {@link GeodeRedisServer}.
  */
 public abstract class AbstractExecutor implements Executor {
-
-  protected long getBoundedStartIndex(long index, long size) {
-    if (size < 0L) {
-      throw new IllegalArgumentException("Size < 0, really?");
-    }
-    if (index >= 0L) {
-      return Math.min(index, size);
-    } else {
-      return Math.max(index + size, 0);
-    }
-  }
-
-  protected long getBoundedEndIndex(long index, long size) {
-    if (size < 0L) {
-      throw new IllegalArgumentException("Size < 0, really?");
-    }
-    if (index >= 0L) {
-      return Math.min(index, size);
-    } else {
-      return Math.max(index + size, -1);
-    }
-  }
-
-  protected void respondBulkStrings(Command command, ExecutionHandlerContext context,
-      Object message) {
-    ByteBuf rsp;
-    try {
-      if (message instanceof Collection) {
-        rsp = Coder.getArrayResponse(context.getByteBufAllocator(),
-            (Collection<?>) message);
-      } else {
-        rsp = Coder.getBulkStringResponse(context.getByteBufAllocator(), message);
-      }
-    } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          RedisConstants.SERVER_ERROR_MESSAGE));
-      return;
-    }
-
-    command.setResponse(rsp);
-  }
 
   protected RedisResponse respondBulkStrings(Object message) {
     if (message instanceof Collection) {

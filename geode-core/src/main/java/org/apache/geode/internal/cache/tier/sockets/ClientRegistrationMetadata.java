@@ -152,7 +152,7 @@ class ClientRegistrationMetadata {
   }
 
   private boolean doesClientSupportExtractOverrides() {
-    return clientVersion.compareTo(Version.GFE_603) >= 0;
+    return clientVersion.isNotOlderThan(Version.GFE_603);
   }
 
   private boolean oldClientRequiresVersionedStreams(final Version clientVersion) {

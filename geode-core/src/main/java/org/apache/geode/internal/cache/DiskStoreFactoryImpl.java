@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.DiskStoreAttributes.checkMinAndMaxOplogSize;
+import static org.apache.geode.internal.cache.DiskStoreAttributes.checkMinOplogSize;
+import static org.apache.geode.internal.cache.DiskStoreAttributes.checkQueueSize;
+import static org.apache.geode.internal.cache.DiskStoreAttributes.checkTimeInterval;
+import static org.apache.geode.internal.cache.DiskStoreAttributes.checkWriteBufferSize;
+import static org.apache.geode.internal.cache.DiskStoreAttributes.verifyNonNegativeDirSize;
+
 import java.io.File;
 import java.util.Arrays;
 
@@ -99,14 +106,12 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     if (compactionThreshold < 0) {
       throw new IllegalArgumentException(
           String.format("%s has to be positive number and the value given %s is not acceptable",
-
-              new Object[] {CacheXml.COMPACTION_THRESHOLD, compactionThreshold}));
+              CacheXml.COMPACTION_THRESHOLD, compactionThreshold));
     } else if (compactionThreshold > 100) {
       throw new IllegalArgumentException(
           String.format(
               "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
-
-              new Object[] {CacheXml.COMPACTION_THRESHOLD, compactionThreshold, 100}));
+              CacheXml.COMPACTION_THRESHOLD, compactionThreshold, 100));
     }
     this.attrs.compactionThreshold = compactionThreshold;
     return this;
@@ -114,12 +119,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
 
   @Override
   public DiskStoreFactory setTimeInterval(long timeInterval) {
-    if (timeInterval < 0) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Time Interval specified has to be a non-negative number and the value given %s is not acceptable",
-              timeInterval));
-    }
+    checkTimeInterval(timeInterval);
     this.attrs.timeInterval = timeInterval;
     return this;
   }
@@ -197,7 +197,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
   }
 
   private DiskStore findExisting(String name) {
-    DiskStore existing = null;
+    DiskStore existing;
     if (this.cache instanceof GemFireCacheImpl) {
       existing = this.cache.findDiskStore(name);
       if (existing != null) {
@@ -208,7 +208,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
         }
       }
     }
-    return existing;
+    return null;
   }
 
   @Override
@@ -217,7 +217,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
       throw new IllegalArgumentException(
           String.format(
               "Number of diskSizes is %s which is not equal to number of disk Dirs which is %s",
-              new Object[] {diskDirSizes.length, diskDirs.length}));
+              diskDirSizes.length, diskDirs.length));
     }
     verifyNonNegativeDirSize(diskDirSizes);
     checkIfDirectoriesExist(diskDirs);
@@ -233,29 +233,18 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
    * Checks if directories exist, if they don't then create those directories
    */
   public static void checkIfDirectoriesExist(File[] diskDirs) {
-    for (int i = 0; i < diskDirs.length; i++) {
-      if (!diskDirs[i].isDirectory()) {
-        if (!diskDirs[i].mkdirs()) {
+    for (File diskDir : diskDirs) {
+      if (!diskDir.isDirectory()) {
+        if (!diskDir.mkdirs()) {
           throw new GemFireIOException(
               String.format("Unable to create directory : %s",
-                  diskDirs[i]));
+                  diskDir));
         }
       }
     }
   }
 
-  /**
-   * Verify all directory sizes are positive
-   */
-  public static void verifyNonNegativeDirSize(int[] sizes) {
-    for (int i = 0; i < sizes.length; i++) {
-      if (sizes[i] < 0) {
-        throw new IllegalArgumentException(
-            String.format("Dir size cannot be negative : %s",
-                sizes[i]));
-      }
-    }
-  }
+
 
   @Override
   public DiskStoreFactory setDiskDirs(File[] diskDirs) {
@@ -267,18 +256,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
 
   @Override
   public DiskStoreFactory setMaxOplogSize(long maxOplogSize) {
-    long MAX = Long.MAX_VALUE / (1024 * 1024);
-    if (maxOplogSize > MAX) {
-      throw new IllegalArgumentException(
-          String.format(
-              "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
-              new Object[] {"max oplog size", maxOplogSize, MAX}));
-    } else if (maxOplogSize < 0) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
-              maxOplogSize));
-    }
+    checkMinAndMaxOplogSize(maxOplogSize);
     this.attrs.maxOplogSizeInBytes = maxOplogSize * (1024 * 1024);
     return this;
   }
@@ -287,42 +265,26 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
    * Used by unit tests
    */
   public DiskStoreFactory setMaxOplogSizeInBytes(long maxOplogSizeInBytes) {
-    if (maxOplogSizeInBytes < 0) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
-              maxOplogSizeInBytes));
-    }
+    checkMinOplogSize(maxOplogSizeInBytes);
     this.attrs.maxOplogSizeInBytes = maxOplogSizeInBytes;
     return this;
   }
 
   @Override
   public DiskStoreFactory setQueueSize(int queueSize) {
-    if (queueSize < 0) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Queue size specified has to be a non-negative number and the value given %s is not acceptable",
-              queueSize));
-    }
+    checkQueueSize(queueSize);
     this.attrs.queueSize = queueSize;
     return this;
   }
 
   @Override
   public DiskStoreFactory setWriteBufferSize(int writeBufferSize) {
-    if (writeBufferSize < 0) {
-      // TODO add a message for WriteBufferSize
-      throw new IllegalArgumentException(
-          String.format(
-              "Queue size specified has to be a non-negative number and the value given %s is not acceptable",
-              writeBufferSize));
-    }
+    checkWriteBufferSize(writeBufferSize);
     this.attrs.writeBufferSize = writeBufferSize;
     return this;
   }
 
-  // used by hyda
+  // used by hydra
   public DiskStoreAttributes getDiskStoreAttributes() {
     return this.attrs;
   }

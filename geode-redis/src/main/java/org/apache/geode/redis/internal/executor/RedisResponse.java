@@ -102,6 +102,10 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getErrorResponse(bba, error));
   }
 
+  public static RedisResponse customError(String error) {
+    return new RedisResponse((bba) -> Coder.getCustomErrorResponse(bba, error));
+  }
+
   public static RedisResponse wrongType(String error) {
     return new RedisResponse((bba) -> Coder.getWrongTypeResponse(bba, error));
   }

@@ -16,26 +16,55 @@
 package org.apache.geode.management;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
+import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshScript;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
+import org.apache.geode.test.version.VersionManager;
 
+@Category({BackwardCompatibilityTest.class})
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class DeploymentManagementUpgradeTest {
+  private final String oldVersion;
+
+  @Parameterized.Parameters(name = "{0}")
+  public static Collection<String> data() {
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+    result.removeIf(s -> TestVersion.compare(s, "1.10.0") < 0);
+    return result;
+  }
+
+  public DeploymentManagementUpgradeTest(String version) {
+    oldVersion = version;
+    oldGfsh = new GfshRule(oldVersion);
+  }
+
   @Rule
-  public GfshRule oldGfsh = new GfshRule("1.10.0");
+  public GfshRule oldGfsh;
 
   @Rule
   public GfshRule gfsh = new GfshRule();
@@ -55,19 +84,22 @@ public class DeploymentManagementUpgradeTest {
 
   @Test
   public void newLocatorCanReadOldConfigurationData() throws IOException {
-    File workingDir = tempFolder.newFolder();
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    oldGfsh.execute("start locator --name=test --port=" + ports[0] + " --http-service-port="
-        + ports[1] + " --dir=" + workingDir.getAbsolutePath() + " --J=-Dgemfire.jmx-manager-port="
-        + ports[2],
-        "deploy --jar=" + clusterJar.getAbsolutePath(),
-        "shutdown --include-locators");
+    int httpPort = ports[0];
+    int locatorPort = ports[1];
+    int jmxPort = ports[2];
+    GfshExecution execute =
+        GfshScript.of(startLocatorCommand("test", locatorPort, jmxPort, httpPort, 0))
+            .and("deploy --jar=" + clusterJar.getAbsolutePath())
+            .and("shutdown --include-locators")
+            .execute(oldGfsh);
 
-    gfsh.execute("start locator --name=test --port=" + ports[0] + " --http-service-port=" + ports[1]
-        + " --dir=" + workingDir.getAbsolutePath() + " --J=-Dgemfire.jmx-manager-port=" + ports[2]);
+    // use the latest gfsh to start the locator in the same working dir
+    GfshScript.of(startLocatorCommand("test", locatorPort, jmxPort, httpPort, 0))
+        .execute(gfsh, execute.getWorkingDir());
 
     ClusterManagementService cms = new ClusterManagementServiceBuilder()
-        .setPort(ports[1])
+        .setPort(httpPort)
         .build();
     assertManagementListResult(cms.list(new Deployment())).isSuccessful()
         .hasConfigurations().hasSize(1);

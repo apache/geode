@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal.pooling;
 
 import java.util.Deque;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Predicate;
 
@@ -148,6 +149,11 @@ public class AvailableConnectionManager {
         return true;
       }
       return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(predicate, connectionThatMatched);
     }
 
     public Connection getConnectionThatMatched() {

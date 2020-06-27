@@ -57,11 +57,6 @@ public class Coder {
    * byte identifier of an integer
    */
   public static final byte INTEGER_ID = 58; // ':'
-
-  public static final byte OPEN_BRACE_ID = 0x28; // '('
-  public static final byte OPEN_BRACKET_ID = 0x5b; // '['
-  public static final byte HYPHEN_ID = 0x2d; // '-'
-  public static final byte PLUS_ID = 0x2b; // '+'
   public static final byte NUMBER_1_BYTE = 0x31; // '1'
   /**
    * byte identifier of a simple string
@@ -283,6 +278,15 @@ public class Coder {
     return response;
   }
 
+  public static ByteBuf getCustomErrorResponse(ByteBufAllocator alloc, String error) {
+    byte[] errorAr = stringToBytes(error);
+    ByteBuf response = alloc.buffer(errorAr.length + 25);
+    response.writeByte(ERROR_ID);
+    response.writeBytes(errorAr);
+    response.writeBytes(CRLFar);
+    return response;
+  }
+
   public static ByteBuf getWrongTypeResponse(ByteBufAllocator alloc, String error) {
     byte[] errorAr = stringToBytes(error);
     ByteBuf response = alloc.buffer(errorAr.length + 31);
@@ -356,10 +360,6 @@ public class Coder {
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public static ByteArrayWrapper stringToByteArrayWrapper(String s) {
-    return new ByteArrayWrapper(stringToBytes(s));
   }
 
   /*

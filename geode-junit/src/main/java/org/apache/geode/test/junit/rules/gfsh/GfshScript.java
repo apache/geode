@@ -14,48 +14,75 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
+import static java.lang.Long.toHexString;
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
- * All the commands represented in this script is executed within one gfsh session.
+ * All the commands represented in this script are executed within one gfsh session.
  *
- * all the commands in this script are executed using this bash command:
+ * <p>
+ * All the commands in this script are executed using this bash command:<br>
+ *
+ * <pre>
  * gfsh -e command1 -e command2 -e command3 ....
+ * </pre>
  *
- * You can chain commands together to create a gfshScript
+ * <p>
+ * You can chain commands together to create a GfshScript<br>
+ *
+ * <pre>
  * GfshScript.of("command1").and("command2").and("command3", "command4")
+ * </pre>
  *
- * If your command started another process and you want to that process to be debuggable, you can do
+ * <p>
+ * If your command started another process and you want that process to be debuggable, you can do:
+ *
+ * <pre>
  * GfshScript.of("start locator", 30000).and("start server", 30001)
- * this will allow locator to be debuggable at 30000 and the server to be debuggable at 30001
+ * </pre>
  *
- * By default, each scripts await at most 4 minutes for all the commands to finish
- * and will expect success. if you want to change this, you can use:
+ * This will allow locator to be debuggable at 30000 and the server to be debuggable at 30001.
+ *
+ * <p>
+ * By default, each script awaits at most 5 minutes for all the commands to finish and will expect
+ * success. If you want to change this, you can use:
+ *
+ * <pre>
  * gfshScript.awaitAtMost(1, TimeUnit.MINUTES).expectFailure()
+ * </pre>
  *
- * if you want this gfsh session to be debuggable, you can use:
+ * <p>
+ * If you want this gfsh session to be debuggable, you can use:
+ *
+ * <pre>
  * gfshScript.withDebugPort(30000)
- * This will allow gfsh to be debuggable at port 30000.
+ * </pre>
  *
+ * This will allow gfsh to be debuggable at port 30000.
  */
 public class GfshScript {
-  private List<DebuggableCommand> commands = new ArrayList<>();
+
+  private final List<DebuggableCommand> commands = new ArrayList<>();
+  private final List<String> extendedClasspath = new ArrayList<>();
+  private final Random random = new Random();
+
   private String name;
   private TimeUnit timeoutTimeUnit = TimeUnit.MINUTES;
-  private int timeout = 4;
-  private int expectedExitValue = 0;
-  private List<String> extendedClasspath = new ArrayList<>();
-  private Random random = new Random();
+  private long timeout = GeodeAwaitility.getTimeout().toMinutes();
+  private int expectedExitValue;
   private int debugPort = -1;
 
   public GfshScript() {
-    this.name = defaultName();
+    name = defaultName();
   }
 
   public static GfshScript of(String... commands) {
@@ -78,20 +105,18 @@ public class GfshScript {
   }
 
   public GfshScript and(String command, int debugPort) {
-    this.commands.add(new DebuggableCommand(command, debugPort));
+    commands.add(new DebuggableCommand(command, debugPort));
     return this;
   }
 
   public GfshScript withName(String name) {
-    assertThat(name.contains(" ")).as("argument passed to withName cannot have spaces").isFalse();
+    assertThat(name).doesNotContain(" ");
     this.name = name;
-
     return this;
   }
 
   public GfshScript expectExitCode(int expectedExitCode) {
-    this.expectedExitValue = expectedExitCode;
-
+    expectedExitValue = expectedExitCode;
     return this;
   }
 
@@ -100,16 +125,15 @@ public class GfshScript {
   }
 
   /**
-   * Will cause the thread that executes to wait, if necessary,
-   * until the subprocess executing this Gfsh script has terminated, or the specified waiting time
-   * elapses.
+   * Will cause the thread that executes to wait, if necessary, until the subprocess executing this
+   * Gfsh script has terminated, or the specified waiting time elapses.
    *
    * @throws RuntimeException if the current thread is interrupted while waiting.
    * @throws AssertionError if the specified waiting time elapses before the process exits.
    */
   public GfshScript awaitAtMost(int timeout, TimeUnit timeUnit) {
     this.timeout = timeout;
-    this.timeoutTimeUnit = timeUnit;
+    timeoutTimeUnit = timeUnit;
 
     return this;
   }
@@ -120,7 +144,6 @@ public class GfshScript {
 
   public GfshScript addToClasspath(String classpath) {
     extendedClasspath.add(classpath);
-
     return this;
   }
 
@@ -131,6 +154,13 @@ public class GfshScript {
 
   public GfshExecution execute(GfshRule gfshRule) {
     return gfshRule.execute(this);
+  }
+
+  /**
+   * this will allow you to specify a gfsh workingDir when executing the script
+   */
+  public GfshExecution execute(GfshRule gfshRule, File workingDir) {
+    return gfshRule.execute(this, workingDir);
   }
 
   public List<DebuggableCommand> getCommands() {
@@ -145,7 +175,7 @@ public class GfshScript {
     return timeoutTimeUnit;
   }
 
-  public int getTimeout() {
+  public long getTimeout() {
     return timeout;
   }
 
@@ -158,13 +188,15 @@ public class GfshScript {
   }
 
   private String defaultName() {
-    return Long.toHexString(random.nextLong());
+    return toHexString(random.nextLong());
   }
 
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append(name).append(": gfsh ");
-    builder.append(commands.stream().map(c -> "-e " + c.command).collect(Collectors.joining(" ")));
+    builder.append(commands.stream()
+        .map(c -> "-e " + c.command)
+        .collect(joining(" ")));
     return builder.toString();
   }
 }

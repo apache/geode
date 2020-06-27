@@ -38,6 +38,10 @@ public interface SessionManager {
 
   boolean isBackingCacheAvailable();
 
+  /**
+   * @deprecated no replacement. Always prefer deserialized form.
+   */
+  @Deprecated
   boolean getPreferDeserializedForm();
 
   String getStatisticsName();

@@ -192,7 +192,7 @@ public class GeodeRedisServerStartupDUnitTest {
   public void whenUnsupportedCommandsEnabledDynamicallyWithGfsh_newGeodeRedisServersWillRetainConfig()
       throws Exception {
     MemberVM locator = cluster.startLocatorVM(0);
-    MemberVM server1 = cluster.startServerVM(1, s -> s
+    cluster.startServerVM(1, s -> s
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_ENABLED, "true")

@@ -97,7 +97,7 @@ public class RegisterInterestList66 extends BaseCommand {
     try {
       Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
       regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
-      if (serverConnection.getClientVersion().compareTo(Version.GFE_80) >= 0) {
+      if (serverConnection.getClientVersion().isNotOlderThan(Version.GFE_80)) {
         // The second byte here is serializeValues
         serializeValues = regionDataPolicyPartBytes[1] == (byte) 0x01;
       }

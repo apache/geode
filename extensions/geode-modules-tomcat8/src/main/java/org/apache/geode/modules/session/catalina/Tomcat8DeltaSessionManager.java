@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.modules.session.catalina;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.session.StandardSession;
 
-public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
+public class Tomcat8DeltaSessionManager extends DeltaSessionManager<Tomcat8CommitSessionValve> {
 
   /**
    * Prepare for the beginning of active use of the public methods of this component. This method
@@ -135,6 +136,11 @@ public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
   @Override
   protected Pipeline getPipeline() {
     return getTheContext().getPipeline();
+  }
+
+  @Override
+  protected Tomcat8CommitSessionValve createCommitSessionValve() {
+    return new Tomcat8CommitSessionValve();
   }
 
   @Override

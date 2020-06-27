@@ -370,7 +370,7 @@ public class ClientProxyMembershipID
   private String getMemberIdAsString() {
     String memberIdAsString = null;
     InternalDistributedMember idm = (InternalDistributedMember) getDistributedMember();
-    if (getClientVersion().compareTo(Version.GFE_90) < 0) {
+    if (getClientVersion().isOlderThan(Version.GFE_90)) {
       memberIdAsString = idm.toString();
     } else {
       StringBuilder sb = new StringBuilder();

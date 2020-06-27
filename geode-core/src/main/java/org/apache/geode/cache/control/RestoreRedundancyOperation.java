@@ -18,6 +18,8 @@ package org.apache.geode.cache.control;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.geode.management.runtime.RestoreRedundancyResults;
+
 /**
  * Class for defining and starting a {@link CompletableFuture} that returns
  * {@link RestoreRedundancyResults}.

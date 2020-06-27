@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.internal.cache.DiskStoreAttributes.verifyNonNegativeDirSize;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1045,7 +1047,7 @@ public class AttributesFactory<K, V> {
               new Object[] {Integer.valueOf(diskSizes.length),
                   Integer.valueOf(diskDirs.length)}));
     }
-    DiskStoreFactoryImpl.verifyNonNegativeDirSize(diskSizes);
+    verifyNonNegativeDirSize(diskSizes);
     this.regionAttributes.diskSizes = diskSizes;
     if (!this.regionAttributes.hasDiskWriteAttributes()
         && !this.regionAttributes.hasDiskSynchronous()) {

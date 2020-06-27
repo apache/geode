@@ -338,14 +338,14 @@ public class InitialImageOperation {
       final ClusterDistributionManager dm =
           (ClusterDistributionManager) this.region.getDistributionManager();
       boolean allowDeltaGII = true;
-      if (FORCE_FULL_GII || recipient.getVersionObject().compareTo(Version.GFE_80) < 0) {
+      if (FORCE_FULL_GII || recipient.getVersionObject().isOlderThan(Version.GFE_80)) {
         allowDeltaGII = false;
       }
       Set keysOfUnfinishedOps = null;
       RegionVersionVector received_rvv = null;
       RegionVersionVector remote_rvv = null;
       if (this.region.getConcurrencyChecksEnabled()
-          && recipient.getVersionObject().compareTo(Version.GFE_80) >= 0) {
+          && recipient.getVersionObject().isNotOlderThan(Version.GFE_80)) {
         if (internalBeforeRequestRVV != null
             && internalBeforeRequestRVV.getRegionName().equals(this.region.getName())) {
           internalBeforeRequestRVV.run();
@@ -746,7 +746,7 @@ public class InitialImageOperation {
           Set recipients = this.region.getCacheDistributionAdvisor().adviseReplicates();
           for (Iterator it = recipients.iterator(); it.hasNext();) {
             InternalDistributedMember mbr = (InternalDistributedMember) it.next();
-            if (mbr.getVersionObject().compareTo(Version.GFE_80) < 0) {
+            if (mbr.getVersionObject().isOlderThan(Version.GFE_80)) {
               it.remove();
             }
           }
@@ -1190,7 +1190,7 @@ public class InitialImageOperation {
         region.recordEventState(msg.getSender(), msg.eventState);
       }
       if (msg.versionVector != null
-          && msg.getSender().getVersionObject().compareTo(Version.GFE_80) < 0
+          && msg.getSender().getVersionObject().isOlderThan(Version.GFE_80)
           && region.getConcurrencyChecksEnabled()) {
         // for older version, save received rvv from RegionStateMessage
         logger.debug("Applying version vector to {}: {}", region.getName(), msg.versionVector);
@@ -1599,7 +1599,7 @@ public class InitialImageOperation {
     }
 
     public boolean goWithFullGII(DistributedRegion rgn, RegionVersionVector requesterRVV) {
-      if (getSender().getVersionObject().compareTo(Version.GFE_80) < 0) {
+      if (getSender().getVersionObject().isOlderThan(Version.GFE_80)) {
         // pre-8.0 could not handle a delta-GII
         return true;
       }
@@ -1744,7 +1744,7 @@ public class InitialImageOperation {
             if (eventState != null && eventState.size() > 0) {
               RegionStateMessage.send(dm, getSender(), this.processorId, eventState, true);
             }
-          } else if (getSender().getVersionObject().compareTo(Version.GFE_80) < 0) {
+          } else if (getSender().getVersionObject().isOlderThan(Version.GFE_80)) {
             // older versions of the product expect a RegionStateMessage at this point
             if (rgn.getConcurrencyChecksEnabled() && this.versionVector == null
                 && !recoveringForLostMember) {

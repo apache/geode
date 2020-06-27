@@ -355,7 +355,7 @@ fromData,17
 toData,17
 
 org/apache/geode/distributed/internal/streaming/StreamingOperation$StreamingReplyMessage,2
-fromData,425
+fromData,417
 toData,86
 
 org/apache/geode/distributed/internal/tcpserver/InfoResponse,2
@@ -1355,10 +1355,6 @@ toData,31
 org/apache/geode/internal/cache/control/MemoryThresholds$MemoryState,1
 toData,12
 
-org/apache/geode/internal/cache/control/RegionRedundancyStatusImpl,2
-fromData,42
-toData,37
-
 org/apache/geode/internal/cache/control/ResourceAdvisor$ResourceManagerProfile,2
 fromData,67
 toData,100
@@ -1367,9 +1363,13 @@ org/apache/geode/internal/cache/control/ResourceAdvisor$ResourceProfileMessage,2
 fromData,88
 toData,72
 
-org/apache/geode/internal/cache/control/RestoreRedundancyResultsImpl,2
-fromData,46
-toData,43
+org/apache/geode/internal/cache/control/SerializableRegionRedundancyStatusImpl,2
+fromData,42
+toData,37
+
+org/apache/geode/internal/cache/control/SerializableRestoreRedundancyResultsImpl,2
+fromData,68
+toData,64
 
 org/apache/geode/internal/cache/event/EventSequenceNumberHolder,2
 fromData,22
@@ -2108,3 +2108,4 @@ toData,105
 org/apache/geode/pdx/internal/PdxType,2
 fromData,109
 toData,124
+

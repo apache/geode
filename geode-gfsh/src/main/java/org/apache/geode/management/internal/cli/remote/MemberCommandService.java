@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.remote;
 
 import java.util.Map;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.internal.CommandProcessor;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CommandServiceException;
@@ -41,6 +42,12 @@ public class MemberCommandService extends org.apache.geode.management.cli.Comman
     } catch (Exception e) {
       throw new CommandServiceException("Could not load commands.", e);
     }
+  }
+
+  @VisibleForTesting
+  public MemberCommandService(InternalCache cache, CommandProcessor commandProcessor) {
+    this.cache = cache;
+    this.commandProcessor = commandProcessor;
   }
 
   @Override

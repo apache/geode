@@ -37,10 +37,6 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
     List<byte[]> commandElems = command.getProcessedCommand();
     int SECONDS_INDEX = 2;
 
-    if (commandElems.size() != 3) {
-      return RedisResponse.error(getArgsError());
-    }
-
     ByteArrayWrapper key = command.getKey();
     byte[] delayByteArray = commandElems.get(SECONDS_INDEX);
     long delay;

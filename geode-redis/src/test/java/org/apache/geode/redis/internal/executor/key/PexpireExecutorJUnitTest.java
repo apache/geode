@@ -16,17 +16,66 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.executor.Executor;
+import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PexpireExecutorJUnitTest {
+  @Test
+  public void calledWithTooFewOptions_returnsError() {
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("PEXPIRE".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    assertThatThrownBy(() -> command.execute(mockContext()))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
+  }
 
   @Test
-  public void isAnInstanceOfExpireClass() {
-    Executor subject = new PExpireExecutor();
-    assertThat(subject instanceof ExpireExecutor).isTrue();
+  public void calledWithTooManyOptions_returnsError() {
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("PEXPIRE".getBytes());
+    commandsAsBytes.add("key".getBytes());
+    commandsAsBytes.add("100".getBytes());
+    commandsAsBytes.add("bonus".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    assertThatThrownBy(() -> command.execute(mockContext()))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
+  }
+
+  @Test
+  public void calledWithInvalidOptions_returnsError() {
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("PEXPIRE".getBytes());
+    commandsAsBytes.add("key".getBytes());
+    commandsAsBytes.add("NAN".getBytes());
+    Command command = new Command(commandsAsBytes);
+
+    RedisResponse response = command.execute(mockContext());
+
+    assertThat(response.toString())
+        .contains("value is not an integer or out of range");
+  }
+
+  public ExecutionHandlerContext mockContext() {
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    UnpooledByteBufAllocator byteBuf = new UnpooledByteBufAllocator(false);
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    return context;
   }
 }

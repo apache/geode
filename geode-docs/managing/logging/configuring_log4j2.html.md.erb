@@ -64,3 +64,33 @@ Custom Log4j 2 configuration in <%=vars.product_name%> comes with some caveats a
 
     You can enable the GEODE\_VERBOSE log statements by changing `onMatch="DENY"` to `onMatch="ACCEPT"`. Typically, it's more useful to simply enable DEBUG or TRACE on certain classes or packages instead of for the entire <%=vars.product_name%> product. However, this setting can be used for internal debugging purposes if all other debugging methods fail.
 -   The usage of filters can have an impact on performance. <%=vars.product_name%> has some logging optimizations that are deactivated when filters are used (except for the GEODE_VERBOSE marker mentioned previously).
+
+- Geode's custom Log4j 2 Appenders can be used in a custom log4j2.xml. This requires:
+ 
+  1. Specify "org.apache.geode" in the packages attribute of Configuration to enable Log4j 2 to find and use Geode classes:
+     
+    ```xml
+    <Configuration status="WARN" shutdownHook="disable" packages="org.apache.geode">
+    ```
+
+  2. Specify GeodeConsole, GeodeLogWriter, and/or GeodeAlert in the Appenders section:
+ 
+    ```xml
+    <Properties>
+      <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
+    </Properties>
+
+    <Appenders>
+      <GeodeConsole name="STDOUT" target="SYSTEM_OUT">
+        <PatternLayout pattern="${geode-pattern}"/>
+      </GeodeConsole>
+      <GeodeLogWriter name="LOGWRITER">
+        <PatternLayout pattern="${geode-pattern}"/>
+      </GeodeLogWriter>
+      <GeodeAlert name="ALERT"/>
+    </Appenders>
+    ```
+ 
+    (Note that GeodeAlert does not use a PatternLayout)
+
+  3. See the default `log4j2.xml` in the Geode source directory `geode-log4j/src/main/resources/` as a reference for creating a custom configuration.

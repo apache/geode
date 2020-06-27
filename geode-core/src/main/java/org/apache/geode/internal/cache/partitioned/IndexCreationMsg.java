@@ -357,7 +357,7 @@ public class IndexCreationMsg extends PartitionMessage {
     }
 
     for (InternalDistributedMember rec : recipients) {
-      if (rec.getVersionObject().compareTo(Version.GFE_81) < 0) {
+      if (rec.getVersionObject().isOlderThan(Version.GFE_81)) {
         throw new UnsupportedOperationException(
             "Indexes should not be created during rolling upgrade");
       }

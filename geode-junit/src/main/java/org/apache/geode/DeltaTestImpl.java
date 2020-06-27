@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TestObjectWithIdentifier;
@@ -254,6 +255,14 @@ public class DeltaTestImpl implements DataSerializable, Delta {
     }
     return false;
   }
+
+  @Override
+  public int hashCode() {
+    int result = Objects.hash(intVar, str, doubleVar);
+    result = 31 * result + Arrays.hashCode(byteArr);
+    return result;
+  }
+
 
   @Override
   public void fromDelta(DataInput in) throws IOException {

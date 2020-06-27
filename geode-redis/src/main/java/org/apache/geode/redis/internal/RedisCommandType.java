@@ -29,6 +29,10 @@ import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParamete
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
+import org.apache.geode.redis.internal.executor.connection.AuthExecutor;
+import org.apache.geode.redis.internal.executor.connection.EchoExecutor;
+import org.apache.geode.redis.internal.executor.connection.PingExecutor;
+import org.apache.geode.redis.internal.executor.connection.QuitExecutor;
 import org.apache.geode.redis.internal.executor.hash.HDelExecutor;
 import org.apache.geode.redis.internal.executor.hash.HExistsExecutor;
 import org.apache.geode.redis.internal.executor.hash.HGetAllExecutor;
@@ -42,13 +46,12 @@ import org.apache.geode.redis.internal.executor.hash.HMSetExecutor;
 import org.apache.geode.redis.internal.executor.hash.HScanExecutor;
 import org.apache.geode.redis.internal.executor.hash.HSetExecutor;
 import org.apache.geode.redis.internal.executor.hash.HSetNXExecutor;
+import org.apache.geode.redis.internal.executor.hash.HStrLenExecutor;
 import org.apache.geode.redis.internal.executor.hash.HValsExecutor;
-import org.apache.geode.redis.internal.executor.key.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.key.DelExecutor;
 import org.apache.geode.redis.internal.executor.key.ExistsExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireAtExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireExecutor;
-import org.apache.geode.redis.internal.executor.key.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.key.KeysExecutor;
 import org.apache.geode.redis.internal.executor.key.PExpireAtExecutor;
 import org.apache.geode.redis.internal.executor.key.PExpireExecutor;
@@ -63,10 +66,8 @@ import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.UnsubscribeExecutor;
-import org.apache.geode.redis.internal.executor.server.AuthExecutor;
-import org.apache.geode.redis.internal.executor.server.EchoExecutor;
-import org.apache.geode.redis.internal.executor.server.PingExecutor;
-import org.apache.geode.redis.internal.executor.server.QuitExecutor;
+import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
+import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.server.TimeExecutor;
 import org.apache.geode.redis.internal.executor.set.SAddExecutor;
@@ -119,20 +120,25 @@ public enum RedisCommandType {
    *** Supported Commands ***
    ***************************************/
 
+  /*************** Connection ****************/
+  AUTH(new AuthExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  PING(new PingExecutor(), SUPPORTED, new MaximumParameterRequirements(2)),
+  QUIT(new QuitExecutor(), SUPPORTED),
+
   /*************** Keys ******************/
 
   DEL(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   EXISTS(new ExistsExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
-  EXPIRE(new ExpireExecutor(), SUPPORTED),
-  EXPIREAT(new ExpireAtExecutor(), SUPPORTED),
-  KEYS(new KeysExecutor(), SUPPORTED),
-  PERSIST(new PersistExecutor(), SUPPORTED),
-  PEXPIRE(new PExpireExecutor(), SUPPORTED),
-  PEXPIREAT(new PExpireAtExecutor(), SUPPORTED),
-  PTTL(new PTTLExecutor(), SUPPORTED),
+  EXPIRE(new ExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  EXPIREAT(new ExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  KEYS(new KeysExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  PERSIST(new PersistExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  PEXPIRE(new PExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  PTTL(new PTTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   RENAME(new RenameExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  TTL(new TTLExecutor(), SUPPORTED),
-  TYPE(new TypeExecutor(), SUPPORTED),
+  TTL(new TTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  TYPE(new TypeExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
   /************* Strings *****************/
 
@@ -156,17 +162,12 @@ public enum RedisCommandType {
 
   /********** Publish Subscribe **********/
 
-  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED),
-  PUBLISH(new PublishExecutor(), SUPPORTED),
-  UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED),
-  PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED),
-  PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED),
+  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  PUBLISH(new PublishExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
 
-  /*************** Server ****************/
-
-  AUTH(new AuthExecutor(), SUPPORTED),
-  PING(new PingExecutor(), SUPPORTED),
-  QUIT(new QuitExecutor(), SUPPORTED),
   UNKNOWN(new UnknownExecutor(), SUPPORTED),
 
 
@@ -175,11 +176,15 @@ public enum RedisCommandType {
    ***************************************/
 
   /***************************************
+   *************** Connection *************
+   ***************************************/
+
+  ECHO(new EchoExecutor(), UNSUPPORTED),
+
+  /***************************************
    *************** Keys ******************
    ***************************************/
 
-  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
-  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
   SCAN(new ScanExecutor(), UNSUPPORTED),
 
   /***************************************
@@ -221,6 +226,7 @@ public enum RedisCommandType {
   HMGET(new HMGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   HSETNX(new HSetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  HSTRLEN(new HStrLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   HVALS(new HValsExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /***************************************
@@ -247,9 +253,10 @@ public enum RedisCommandType {
    ***************************************/
 
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED),
-  ECHO(new EchoExecutor(), UNSUPPORTED),
-  TIME(new TimeExecutor(), UNSUPPORTED),
+  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
+  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
+  TIME(new TimeExecutor(), UNSUPPORTED),
 
   /////////// UNIMPLEMENTED /////////////////////
 
@@ -304,6 +311,7 @@ public enum RedisCommandType {
   PFCOUNT(null, UNIMPLEMENTED),
   PFMERGE(null, UNIMPLEMENTED),
   PSYNC(null, UNIMPLEMENTED),
+  PUBSUB(null, UNIMPLEMENTED),
   RANDOMKEY(null, UNIMPLEMENTED),
   READONLY(null, UNIMPLEMENTED),
   READWRITE(null, UNIMPLEMENTED),

@@ -45,7 +45,7 @@ public class ClientPingMessageImpl implements ClientMessage {
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     Version clientVersion = proxy.getVersion();
     Message message = null;
-    if (clientVersion.compareTo(Version.GFE_6622) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_6622)) {
       message = getGFEMessage();
     } else {
       throw new IOException(

@@ -541,7 +541,7 @@ public abstract class PartitionMessage extends DistributionMessage
     setBooleans(this.flags, in, context);
     this.regionId = in.readInt();
     // extra field post 9.0
-    if (StaticSerialization.getVersionForDataStream(in).compareTo(Version.GFE_90) >= 0) {
+    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(Version.GFE_90)) {
       this.isTransactionDistributed = in.readBoolean();
     }
   }
@@ -585,7 +585,7 @@ public abstract class PartitionMessage extends DistributionMessage
       context.getSerializer().writeObject(this.txMemberId, out);
     out.writeInt(this.regionId);
     // extra field post 9.0
-    if (StaticSerialization.getVersionForDataStream(out).compareTo(Version.GFE_90) >= 0) {
+    if (StaticSerialization.getVersionForDataStream(out).isNotOlderThan(Version.GFE_90)) {
       out.writeBoolean(this.isTransactionDistributed);
     }
   }

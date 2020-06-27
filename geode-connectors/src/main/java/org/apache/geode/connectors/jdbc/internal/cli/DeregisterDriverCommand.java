@@ -28,7 +28,7 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DeregisterDriverCommand extends SingleGfshCommand {
+public class DeregisterDriverCommand extends GfshCommand {
 
   static final String DEREGISTER_DRIVER = "deregister driver";
   static final String DEREGISTER_DRIVER__HELP = EXPERIMENTAL

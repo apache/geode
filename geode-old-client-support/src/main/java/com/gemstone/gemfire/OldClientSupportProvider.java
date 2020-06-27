@@ -108,7 +108,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
     if (out instanceof VersionedDataOutputStream) {
       VersionedDataOutputStream vout = (VersionedDataOutputStream) out;
       Version version = vout.getVersion();
-      if (version != null && version.compareTo(Version.GFE_90) < 0) {
+      if (version != null && version.isOlderThan(Version.GFE_90)) {
         return processClassName(name, GEODE, GEMFIRE, newClassNamesToOld);
       }
     }
@@ -121,7 +121,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
     if (theThrowable == null) {
       return theThrowable;
     }
-    if (clientVersion.compareTo(Version.GFE_90) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_90)) {
       return theThrowable;
     }
 

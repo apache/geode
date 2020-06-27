@@ -17,14 +17,17 @@
 package org.apache.geode.redis.internal.data;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 
 public class RedisKeyInRegion implements RedisKeyCommands {
   protected final Region<ByteArrayWrapper, RedisData> region;
+  private final RedisStats redisStats;
 
   @SuppressWarnings("unchecked")
-  public RedisKeyInRegion(Region region) {
+  public RedisKeyInRegion(Region region, RedisStats redisStats) {
     this.region = region;
+    this.redisStats = redisStats;
   }
 
   @Override
@@ -59,7 +62,7 @@ public class RedisKeyInRegion implements RedisKeyCommands {
     long now = System.currentTimeMillis();
     if (now >= timestamp) {
       // already expired
-      del(key);
+      doExpiration(key);
     } else {
       redisData.setExpirationTimestamp(region, key, timestamp);
     }
@@ -92,7 +95,7 @@ public class RedisKeyInRegion implements RedisKeyCommands {
     RedisData result = region.get(key);
     if (result != null) {
       if (result.hasExpired()) {
-        region.remove(key);
+        doExpiration(key);
         result = null;
       }
     }
@@ -101,6 +104,12 @@ public class RedisKeyInRegion implements RedisKeyCommands {
     } else {
       return result;
     }
+  }
+
+  private void doExpiration(ByteArrayWrapper key) {
+    long start = redisStats.startExpiration();
+    region.remove(key);
+    redisStats.endExpiration(start);
   }
 
   public boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey) {

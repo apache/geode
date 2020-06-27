@@ -26,13 +26,15 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHashInRegion extends RedisKeyInRegion implements RedisHashCommands {
 
-  public RedisHashInRegion(Region<ByteArrayWrapper, RedisData> region) {
-    super(region);
+  public RedisHashInRegion(Region<ByteArrayWrapper, RedisData> region,
+      RedisStats redisStats) {
+    super(region, redisStats);
   }
 
   @Override
@@ -69,6 +71,11 @@ public class RedisHashInRegion extends RedisKeyInRegion implements RedisHashComm
   @Override
   public int hlen(ByteArrayWrapper key) {
     return getRedisHash(key).hlen();
+  }
+
+  @Override
+  public int hstrlen(ByteArrayWrapper key, ByteArrayWrapper field) {
+    return getRedisHash(key).hstrlen(field);
   }
 
   @Override

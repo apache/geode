@@ -15,11 +15,11 @@
 package org.apache.geode.internal.cache.control;
 
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
-import static org.apache.geode.cache.control.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
-import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.FAILURE;
-import static org.apache.geode.cache.control.RestoreRedundancyResults.Status.SUCCESS;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.NOT_SATISFIED;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.NO_REDUNDANT_COPIES;
+import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
+import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.FAILURE;
+import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.SUCCESS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThan;
@@ -50,11 +50,11 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.management.runtime.RegionRedundancyStatus;
+import org.apache.geode.management.runtime.RestoreRedundancyResults;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -121,9 +121,9 @@ public class RestoreRedundancyOperationDUnitTest {
   public void redundancyIsRecoveredAndPrimariesBalancedWhenRestoreRedundancyIsCalledWithNoIncludedOrExcludedRegions() {
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
-      assertThat(results.getStatus(), is(SUCCESS));
+      assertThat(results.getRegionOperationStatus(), is(SUCCESS));
       assertThat(results.getTotalPrimaryTransfersCompleted() > 0, is(true));
-      assertThat(results.getTotalPrimaryTransferTime().toMillis() > 0, is(true));
+      assertThat(results.getTotalPrimaryTransferTime() > 0, is(true));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
@@ -144,9 +144,9 @@ public class RestoreRedundancyOperationDUnitTest {
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, false);
 
-      assertThat(results.getStatus(), is(SUCCESS));
+      assertThat(results.getRegionOperationStatus(), is(SUCCESS));
       assertThat(results.getTotalPrimaryTransfersCompleted(), is(0));
-      assertThat(results.getTotalPrimaryTransferTime().toMillis(), is(0L));
+      assertThat(results.getTotalPrimaryTransferTime(), is(0L));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
@@ -168,7 +168,7 @@ public class RestoreRedundancyOperationDUnitTest {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null,
           Collections.singleton(LOW_REDUNDANCY_REGION_NAME), true);
 
-      assertThat(results.getStatus(), is(SUCCESS));
+      assertThat(results.getRegionOperationStatus(), is(SUCCESS));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME), nullValue());
@@ -196,7 +196,7 @@ public class RestoreRedundancyOperationDUnitTest {
       RestoreRedundancyResults results =
           restoreRedundancyAndGetResults(includeSet, excludeSet, true);
 
-      assertThat(results.getStatus(), is(SUCCESS));
+      assertThat(results.getRegionOperationStatus(), is(SUCCESS));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
     });
@@ -216,7 +216,7 @@ public class RestoreRedundancyOperationDUnitTest {
 
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
-      assertThat(results.getStatus(), is(FAILURE));
+      assertThat(results.getRegionOperationStatus(), is(FAILURE));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(NOT_SATISFIED));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(NOT_SATISFIED));
       assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
@@ -243,7 +243,7 @@ public class RestoreRedundancyOperationDUnitTest {
 
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
-      assertThat(results.getStatus(), is(FAILURE));
+      assertThat(results.getRegionOperationStatus(), is(FAILURE));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(NO_REDUNDANT_COPIES));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(NO_REDUNDANT_COPIES));
       assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(),
@@ -355,7 +355,7 @@ public class RestoreRedundancyOperationDUnitTest {
           .getResourceManager()
           .createRestoreRedundancyOperation()
           .redundancyStatus();
-      assertThat(results.getStatus(), is(expectedResultStatus));
+      assertThat(results.getRegionOperationStatus(), is(expectedResultStatus));
       assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(
           expectedRedundancyStatus));
       assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(
