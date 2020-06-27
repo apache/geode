@@ -41,7 +41,7 @@ public class RenameFunction implements InternalFunction {
 
   public static final String ID = "REDIS_RENAME_FUNCTION";
 
-  private final PartitionedRegion partitionedRegion;
+  private final transient PartitionedRegion partitionedRegion;
   private final transient RedisDataCommands dataCommands;
 
   public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,

@@ -4,9 +4,9 @@ org/apache/geode/redis/internal/RedisCommandType,false,executor:org/apache/geode
 org/apache/geode/redis/internal/data/RedisDataType,false,toStringValue:java/lang/String
 org/apache/geode/redis/internal/data/RedisDataTypeMismatchException,true,-2451663685348513870
 org/apache/geode/redis/internal/delta/DeltaType,false
-org/apache/geode/redis/internal/executor/CommandFunction,false,redisStats:org/apache/geode/redis/internal/RedisStats
+org/apache/geode/redis/internal/executor/CommandFunction,false
 org/apache/geode/redis/internal/executor/SingleResultRedisFunction,false
-org/apache/geode/redis/internal/executor/key/RenameFunction,false,redisStats:org/apache/geode/redis/internal/RedisStats
+org/apache/geode/redis/internal/executor/key/RenameFunction,false
 org/apache/geode/redis/internal/executor/string/SetOptions,false,exists:org/apache/geode/redis/internal/executor/string/SetOptions$Exists,expirationMillis:long,keepTTL:boolean
 org/apache/geode/redis/internal/executor/string/SetOptions$Exists,false
 org/apache/geode/redis/internal/gfsh/RedisCommandFunction,false

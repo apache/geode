@@ -25,7 +25,7 @@ import org.apache.geode.redis.internal.data.RedisData;
 
 public abstract class SingleResultRedisFunction implements InternalFunction<Object[]> {
 
-  private final PartitionedRegion partitionedRegion;
+  private final transient PartitionedRegion partitionedRegion;
 
   public SingleResultRedisFunction(Region<ByteArrayWrapper, RedisData> dataRegion) {
     this.partitionedRegion = (PartitionedRegion) dataRegion;
