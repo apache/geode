@@ -26,9 +26,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  * This class represents a single channel subscription as created by the SUBSCRIBE command
  */
 class ChannelSubscription extends AbstractSubscription {
-  private String channel;
+  private byte[] channel;
 
-  public ChannelSubscription(Client client, String channel, ExecutionHandlerContext context) {
+  public ChannelSubscription(Client client, byte[] channel, ExecutionHandlerContext context) {
     super(client, context);
 
     if (channel == null) {
@@ -38,19 +38,25 @@ class ChannelSubscription extends AbstractSubscription {
   }
 
   @Override
-  public List<Object> createResponse(String channel, byte[] message) {
+  public List<Object> createResponse(byte[] channel, byte[] message) {
     return Arrays.asList("message", channel, message);
   }
 
   @Override
   public boolean isEqualTo(Object channelOrPattern, Client client) {
-    return this.channel != null && this.channel.equals(channelOrPattern)
+    return channel != null
+        && channelOrPattern instanceof byte[]
+        && Arrays.equals(channel, (byte[]) channelOrPattern)
         && this.getClient().equals(client);
   }
 
   @Override
-  public boolean matches(String channel) {
-    return this.channel.equals(channel);
+  public boolean matches(byte[] channel) {
+    return Arrays.equals(this.channel, channel);
   }
 
+  @Override
+  public byte[] getChannelName() {
+    return channel;
+  }
 }

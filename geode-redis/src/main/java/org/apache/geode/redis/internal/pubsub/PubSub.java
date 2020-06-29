@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.List;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
@@ -38,7 +40,7 @@ public interface PubSub {
    */
   long publish(
       Region<ByteArrayWrapper, RedisData> dataRegion,
-      String channel, byte[] message);
+      byte[] channel, byte[] message);
 
   /**
    * Subscribe to a channel
@@ -48,7 +50,7 @@ public interface PubSub {
    * @param client a Client instance making the request
    * @return the number of channels subscribed to
    */
-  long subscribe(String channel, ExecutionHandlerContext context, Client client);
+  long subscribe(byte[] channel, ExecutionHandlerContext context, Client client);
 
   /**
    * Subscribe to a pattern
@@ -67,7 +69,7 @@ public interface PubSub {
    * @param client the Client which is to be unsubscribed
    * @return the number of channels still subscribed to by the client
    */
-  long unsubscribe(String channel, Client client);
+  long unsubscribe(byte[] channel, Client client);
 
   /**
    * Unsubscribe from a previously subscribed pattern
@@ -77,4 +79,13 @@ public interface PubSub {
    * @return the number of channels still subscribed to by the client
    */
   long punsubscribe(GlobPattern pattern, Client client);
+
+  /**
+   * Return a list of channel names that a client has subscribed to
+   *
+   * @param client the Client which is to be queried
+   * @return the list of channels
+   */
+  List<byte[]> findSubscribedChannels(Client client);
+
 }
