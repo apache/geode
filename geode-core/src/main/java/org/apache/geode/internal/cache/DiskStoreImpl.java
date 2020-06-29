@@ -75,6 +75,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
@@ -3521,29 +3522,81 @@ public class DiskStoreImpl implements DiskStore {
    * range.
    */
   static class OplogEntryIdSet {
-    private final IntOpenHashSet ints = new IntOpenHashSet((int) INVALID_ID);
-    private final LongOpenHashSet longs = new LongOpenHashSet((int) INVALID_ID);
+    private final List<IntOpenHashSet> intOpenHashSets;
+    private final AtomicReference<IntOpenHashSet> ints;
+    private final List<LongOpenHashSet> longOpenHashSets;
+    private final AtomicReference<LongOpenHashSet> longs;
+
+    @VisibleForTesting
+    OplogEntryIdSet(IntOpenHashSet intHashSet, LongOpenHashSet longHashSet,
+        List<IntOpenHashSet> intHashSets, List<LongOpenHashSet> longHashSets) {
+      intOpenHashSets = intHashSets;
+      intOpenHashSets.add(intHashSet);
+      ints = new AtomicReference<>(intHashSet);
+
+      longOpenHashSets = longHashSets;
+      longOpenHashSets.add(longHashSet);
+      longs = new AtomicReference<>(longHashSet);
+    }
+
+    public OplogEntryIdSet() {
+      intOpenHashSets = new ArrayList<>();
+      IntOpenHashSet intHashSet = new IntOpenHashSet((int) INVALID_ID);
+      intOpenHashSets.add(intHashSet);
+      ints = new AtomicReference<>(intHashSet);
+
+      longOpenHashSets = new ArrayList<>();
+      LongOpenHashSet longHashSet = new LongOpenHashSet((int) INVALID_ID);
+      longOpenHashSets.add(longHashSet);
+      longs = new AtomicReference<>(longHashSet);
+    }
 
     public void add(long id) {
       if (id == 0) {
         throw new IllegalArgumentException();
-      } else if (id > 0 && id <= 0x00000000FFFFFFFFL) {
-        this.ints.add((int) id);
-      } else {
-        this.longs.add(id);
+      }
+
+      try {
+        if (id > 0 && id <= 0x00000000FFFFFFFFL) {
+          this.ints.get().add((int) id);
+        } else {
+          this.longs.get().add(id);
+        }
+      } catch (IllegalArgumentException illegalArgumentException) {
+        // See GEODE-8029.
+        // Too many entries (more than 805306401 for a load factor of 0.75) on the disk-store files.
+        logger.warn(
+            "There are too many entries within the disk-store, execute an offline compaction to speed up the initialization process.",
+            illegalArgumentException);
+
+        // Overflow to the next [Int|Long]OpenHashSet and continue.
+        if (id > 0 && id <= 0x00000000FFFFFFFFL) {
+          IntOpenHashSet overflownHashSet = new IntOpenHashSet((int) INVALID_ID);
+          intOpenHashSets.add(overflownHashSet);
+          ints.set(overflownHashSet);
+
+          ints.get().add((int) id);
+        } else {
+          LongOpenHashSet overflownHashSet = new LongOpenHashSet((int) INVALID_ID);
+          longOpenHashSets.add(overflownHashSet);
+          longs.set(overflownHashSet);
+
+          longs.get().add(id);
+        }
       }
     }
 
     public boolean contains(long id) {
       if (id >= 0 && id <= 0x00000000FFFFFFFFL) {
-        return this.ints.contains((int) id);
+        return intOpenHashSets.stream().anyMatch(ints -> ints.contains((int) id));
       } else {
-        return this.longs.contains(id);
+        return longOpenHashSets.stream().anyMatch(longs -> longs.contains(id));
       }
     }
 
-    public int size() {
-      return this.ints.size() + this.longs.size();
+    public long size() {
+      return intOpenHashSets.stream().mapToInt(IntOpenHashSet::size).sum()
+          + longOpenHashSets.stream().mapToInt(LongOpenHashSet::size).sum();
     }
   }
 
@@ -3973,13 +4026,13 @@ public class DiskStoreImpl implements DiskStore {
     return this.liveEntryCount;
   }
 
-  private int deadRecordCount;
+  private long deadRecordCount;
 
-  void incDeadRecordCount(int count) {
+  void incDeadRecordCount(long count) {
     this.deadRecordCount += count;
   }
 
-  public int getDeadRecordCount() {
+  public long getDeadRecordCount() {
     return this.deadRecordCount;
   }
 
