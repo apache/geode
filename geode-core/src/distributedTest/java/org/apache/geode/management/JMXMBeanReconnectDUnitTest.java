@@ -60,6 +60,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.alerting.internal.spi.AlertingIOException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LocatorLauncher;
@@ -154,6 +155,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
     String createRegionCommand = "create region --type=REPLICATE --name=" + SEPARATOR + regionName;
     gfsh.executeAndAssertThat(createRegionCommand).statusIsSuccess();
 
+    addIgnoredException(AlertingIOException.class);
     addIgnoredException(CacheClosedException.class);
     addIgnoredException(CancelException.class);
     addIgnoredException(DistributedSystemDisconnectedException.class);
