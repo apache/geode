@@ -54,7 +54,7 @@ public interface VersionOrdinal extends Comparable<VersionOrdinal> {
    * @param version to compare to this version
    * @return true if this is older than version, otherwise false.
    */
-  boolean isOlderThan(Version version);
+  boolean isOlderThan(VersionOrdinal version);
 
   /**
    * Test if this version is not older than given version.
@@ -62,7 +62,7 @@ public interface VersionOrdinal extends Comparable<VersionOrdinal> {
    * @param version to compare to this version
    * @return true if this is the same version or newer, otherwise false.
    */
-  boolean isNotOlderThan(Version version);
+  boolean isNotOlderThan(VersionOrdinal version);
 
   /**
    * Test if this version is newer than given version.
@@ -70,7 +70,7 @@ public interface VersionOrdinal extends Comparable<VersionOrdinal> {
    * @param version to compare to this version
    * @return true if this is newer than version, otherwise false.
    */
-  boolean isNewerThan(Version version);
+  boolean isNewerThan(VersionOrdinal version);
 
   /**
    * Test if this version is not newer than given version.
@@ -78,6 +78,6 @@ public interface VersionOrdinal extends Comparable<VersionOrdinal> {
    * @param version to compare to this version
    * @return true if this is the same version or older, otherwise false.
    */
-  boolean isNotNewerThan(Version version);
+  boolean isNotNewerThan(VersionOrdinal version);
 
 }

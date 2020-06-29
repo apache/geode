@@ -105,8 +105,10 @@ public class VersionJUnitTest {
      * The factory would return Version.GFE_82 which would foil our testing.
      */
     final VersionOrdinalImpl versionOrdinal = new VersionOrdinalImpl(Version.GFE_82.ordinal);
-    assertThat(Version.GFE_82).isEqualTo(versionOrdinal);
-    assertThat(versionOrdinal).isEqualTo(Version.GFE_82);
+    assertThat(Version.GFE_82.equals(versionOrdinal))
+        .as("GFE_82 Version equals VersionOrdinal").isTrue();
+    assertThat(versionOrdinal.equals(Version.GFE_82))
+        .as("GFE_82 VersionOrdinal equals Version").isTrue();
   }
 
 }

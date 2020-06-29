@@ -96,7 +96,7 @@ public class VersionOrdinalImpl implements VersionOrdinal {
    * @return true if this is older than version, otherwise false.
    */
   @Override
-  public final boolean isOlderThan(final Version version) {
+  public final boolean isOlderThan(final VersionOrdinal version) {
     return compareTo(version) < 0;
   }
 
@@ -107,7 +107,7 @@ public class VersionOrdinalImpl implements VersionOrdinal {
    * @return true if this is the same version or newer, otherwise false.
    */
   @Override
-  public final boolean isNotOlderThan(final Version version) {
+  public final boolean isNotOlderThan(final VersionOrdinal version) {
     return compareTo(version) >= 0;
   }
 
@@ -118,7 +118,7 @@ public class VersionOrdinalImpl implements VersionOrdinal {
    * @return true if this is newer than version, otherwise false.
    */
   @Override
-  public final boolean isNewerThan(final Version version) {
+  public final boolean isNewerThan(final VersionOrdinal version) {
     return compareTo(version) > 0;
   }
 
@@ -129,7 +129,7 @@ public class VersionOrdinalImpl implements VersionOrdinal {
    * @return true if this is the same version or older, otherwise false.
    */
   @Override
-  public final boolean isNotNewerThan(final Version version) {
+  public final boolean isNotNewerThan(final VersionOrdinal version) {
     return compareTo(version) <= 0;
   }
 
