@@ -17,6 +17,7 @@
 package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,7 +38,9 @@ import java.util.Set;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
@@ -58,6 +63,9 @@ public class InternalConfigurationPersistenceServiceTest {
   private InternalConfigurationPersistenceService service;
   private InternalConfigurationPersistenceService service2;
   private Configuration configuration;
+
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
@@ -274,6 +282,14 @@ public class InternalConfigurationPersistenceServiceTest {
     doReturn(false).when(cps).lockSharedConfiguration();
     cps.createConfigurationResponse(null);
     verify(cps, times(0)).unlockSharedConfiguration();
+  }
+
+  @Test
+  public void loadFromNonExistDir() throws Exception {
+    File configDir = new File(tempFolder.getRoot(), "NonExistDir");
+    assertThatThrownBy(() -> service.loadSharedConfigurationFromDir(configDir))
+        .isInstanceOf(IOException.class)
+        .hasMessageContaining("ConfigDir does not exist:");
   }
 
   private String getDuplicateReceiversWithDefaultPropertiesXml() {

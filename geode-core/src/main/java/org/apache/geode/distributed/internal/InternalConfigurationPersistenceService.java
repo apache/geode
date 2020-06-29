@@ -688,6 +688,9 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
 
   // configDir is the dir that has all the groups structure underneath it.
   public void loadSharedConfigurationFromDir(File configDir) throws IOException {
+    if (!configDir.exists()) {
+      throw new IOException("ConfigDir does not exist: " + configDir.toPath());
+    }
     lockSharedConfiguration();
     try {
       File[] groupNames = configDir.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
