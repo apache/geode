@@ -113,12 +113,10 @@ public class RedisHash extends AbstractRedisData {
       ByteArrayWrapper field = iterator.next();
       ByteArrayWrapper value = iterator.next();
       boolean added;
-      synchronized (this) {
-        if (nx) {
-          added = hashPutIfAbsent(field, value) == null;
-        } else {
-          added = hashPut(field, value) == null;
-        }
+      if (nx) {
+        added = hashPutIfAbsent(field, value) == null;
+      } else {
+        added = hashPut(field, value) == null;
       }
       if (added) {
         if (deltaInfo == null) {
@@ -137,15 +135,13 @@ public class RedisHash extends AbstractRedisData {
       List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
-    synchronized (this) {
-      for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
-        if (hashRemove(fieldToRemove) != null) {
-          if (deltaInfo == null) {
-            deltaInfo = new RemsDeltaInfo();
-          }
-          deltaInfo.add(fieldToRemove);
-          fieldsRemoved++;
+    for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
+      if (hashRemove(fieldToRemove) != null) {
+        if (deltaInfo == null) {
+          deltaInfo = new RemsDeltaInfo();
         }
+        deltaInfo.add(fieldToRemove);
+        fieldsRemoved++;
       }
     }
     storeChanges(region, key, deltaInfo);
@@ -236,7 +232,7 @@ public class RedisHash extends AbstractRedisData {
     return returnList;
   }
 
-  public synchronized long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       ByteArrayWrapper field, long increment)
       throws NumberFormatException, ArithmeticException {
     ByteArrayWrapper oldValue = hash.get(field);
@@ -272,9 +268,10 @@ public class RedisHash extends AbstractRedisData {
     return value;
   }
 
-  public synchronized double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region,
+  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key,
-      ByteArrayWrapper field, double increment) throws NumberFormatException {
+      ByteArrayWrapper field, double increment)
+      throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.doubleToBytes(increment));
