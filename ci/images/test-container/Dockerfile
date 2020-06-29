@@ -48,10 +48,8 @@ RUN  apt-get update \
   && useradd --shell /bin/bash -u 93043 -o -c "" -m geode \
   && cp -R /etc/alternatives /etc/keep-alternatives \
   && apt-get install -y --no-install-recommends \
-    java-common \
     bellsoft-java11 \
     bellsoft-java8 \
-  && update-java-alternatives -s bellsoft-java8-amd64 \
   && rm -rf /etc/alternatives \
   && mv /etc/keep-alternatives /etc/alternatives \
   && apt-get clean \
