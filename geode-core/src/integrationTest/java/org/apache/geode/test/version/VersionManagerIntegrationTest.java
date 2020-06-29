@@ -14,36 +14,41 @@
  */
 package org.apache.geode.test.version;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 
-@Category({BackwardCompatibilityTest.class})
-public class VersionManagerJUnitTest {
+@Category(BackwardCompatibilityTest.class)
+public class VersionManagerIntegrationTest {
 
   @Test
-  public void exceptionIsNotThrownInInitialization() throws Exception {
+  public void exceptionIsNotThrownInInitialization() {
     VersionManager instance =
-        VersionManager.getInstance("--nonexistent-file?--", "--nonexistent-install-file--");
-    Assert.assertNotEquals("", instance.loadFailure);
+        VersionManager.getInstance("--nonexistent-file?--");
+    assertThat(instance.getLoadFailure()).isNotEmpty();
   }
 
   @Test
-  public void exceptionIsThrownOnUse() throws Exception {
+  public void exceptionIsThrownOnUse() {
     VersionManager instance =
-        VersionManager.getInstance("--nonexistent-file?--", "--nonexistent-install-file--");
-    Assert.assertNotEquals("", instance.loadFailure);
-    assertThatThrownBy(() -> instance.getVersionsWithoutCurrent()).hasMessage(instance.loadFailure);
-    assertThatThrownBy(() -> instance.getVersions()).hasMessage(instance.loadFailure);
+        VersionManager.getInstance("--nonexistent-file?--");
+    assertThat(instance.getLoadFailure()).isNotEmpty();
+
+    Throwable thrown = catchThrowable(() -> instance.getVersionsWithoutCurrent());
+    assertThat(thrown).hasMessage(instance.getLoadFailure());
+
+    thrown = catchThrowable(() -> instance.getVersions());
+    assertThat(thrown).hasMessage(instance.getLoadFailure());
   }
 
   @Test
-  public void managerIsAbleToFindVersions() throws Exception {
+  public void managerIsAbleToFindVersions() {
     VersionManager instance = VersionManager.getInstance();
-    Assert.assertTrue(instance.getVersionsWithoutCurrent().size() > 0);
+
+    assertThat(instance.getVersionsWithoutCurrent()).isNotEmpty();
   }
 }

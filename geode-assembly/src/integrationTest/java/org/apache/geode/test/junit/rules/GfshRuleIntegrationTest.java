@@ -26,36 +26,37 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
+import org.apache.geode.test.version.VersionManager;
 
 @Category(GfshTest.class)
 public class GfshRuleIntegrationTest {
+
+  private static final String GEODE_HOME = System.getenv("GEODE_HOME");
+  private static final String GFSH_OLD_VERSION = "1.3.0";
 
   private Path gfshCurrent;
   private Path gfsh130;
 
   @Rule
-  public GfshRule gfsh130Rule = new GfshRule("1.3.0");
+  public GfshRule gfsh130Rule = new GfshRule(GFSH_OLD_VERSION);
   @Rule
   public GfshRule gfshCurrentRule = new GfshRule();
 
   @Before
-  public void findGfshPaths() {
-    String geodeHome = System.getenv("GEODE_HOME");
-    Path geodeHomePath = Paths.get(geodeHome).toAbsolutePath();
+  public void findGfshCurrentPath() {
+    Path geodeHomePath = Paths.get(GEODE_HOME).toAbsolutePath();
     assertThat(geodeHomePath).exists();
 
     gfshCurrent = geodeHomePath.resolve("bin/gfsh");
     assertThat(gfshCurrent).exists();
+  }
 
-    Path workingPath = Paths.get("").toAbsolutePath();
-    assertThat(workingPath).exists();
+  @Before
+  public void findGfsh130Path() {
+    Path geode130Home = Paths.get(VersionManager.getInstance().getInstall(GFSH_OLD_VERSION));
+    assertThat(geode130Home).exists();
 
-    Path parentPath = workingPath.getParent().toAbsolutePath();
-    assertThat(parentPath).exists();
-
-    Path geode_old_versions_Path = parentPath.resolve("geode-old-versions");
-    assertThat(geode_old_versions_Path).exists();
-    gfsh130 = geode_old_versions_Path.resolve("1.3.0/build/apache-geode-1.3.0/bin/gfsh");
+    gfsh130 = geode130Home.resolve("bin/gfsh");
     assertThat(gfsh130).exists();
   }
 
