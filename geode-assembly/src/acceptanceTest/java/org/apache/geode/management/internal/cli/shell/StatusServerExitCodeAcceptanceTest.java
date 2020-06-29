@@ -14,9 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import static java.lang.System.lineSeparator;
 import static java.util.Arrays.stream;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.management.internal.cli.shell.StatusServerExitCodeAcceptanceTest.DirectoryTree.printDirectoryTree;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -79,6 +81,8 @@ public class StatusServerExitCodeAcceptanceTest {
 
     Path javaHomeFile = new File(javaHome).toPath();
     assertThat(javaHomeFile).exists();
+
+    printDirectoryTree(javaHomeFile.toFile());
 
     String toolsPath = javaHomeFile.toFile().getName().equalsIgnoreCase("jre")
         ? ".." + File.separator + "lib" + File.separator + "tools.jar"
@@ -205,5 +209,54 @@ public class StatusServerExitCodeAcceptanceTest {
             .format("Expected member '%s' to have pid file but could not find it.", memberName)));
 
     return new PidFile(pidFile).readPid();
+  }
+
+  public static class DirectoryTree {
+
+    /**
+     * Pretty print the directory tree and its file names.
+     */
+    public static String printDirectoryTree(File folder) {
+      if (!folder.isDirectory()) {
+        throw new IllegalArgumentException("folder is not a Directory");
+      }
+      int indent = 0;
+      StringBuilder sb = new StringBuilder();
+      printDirectoryTree(folder, indent, sb);
+      return sb.toString();
+    }
+
+    private static void printDirectoryTree(File folder, int indent, StringBuilder sb) {
+      if (!folder.isDirectory()) {
+        throw new IllegalArgumentException("folder is not a Directory");
+      }
+      sb.append(getIndentString(indent));
+      sb.append("+--");
+      sb.append(folder.getName());
+      sb.append("/");
+      sb.append(lineSeparator());
+      for (File file : folder.listFiles()) {
+        if (file.isDirectory()) {
+          printDirectoryTree(file, indent + 1, sb);
+        } else {
+          printFile(file, indent + 1, sb);
+        }
+      }
+    }
+
+    private static void printFile(File file, int indent, StringBuilder sb) {
+      sb.append(getIndentString(indent));
+      sb.append("+--");
+      sb.append(file.getName());
+      sb.append(lineSeparator());
+    }
+
+    private static String getIndentString(int indent) {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < indent; i++) {
+        sb.append("|  ");
+      }
+      return sb.toString();
+    }
   }
 }
