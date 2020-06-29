@@ -24,7 +24,7 @@ public class VersionOrdinalImplJUnitTest extends TestCase {
 
   @Test
   public void testEqualMinSameIdentity() {
-    final VersionOrdinalImpl versionOrdinal = new VersionOrdinalImpl(Short.MIN_VALUE);
+    final VersionOrdinal versionOrdinal = new VersionOrdinalImpl(Short.MIN_VALUE);
     validateEqual(versionOrdinal, versionOrdinal);
   }
 
@@ -96,8 +96,8 @@ public class VersionOrdinalImplJUnitTest extends TestCase {
   }
 
   private void validateUnequal(final short smallerShort, final short largerShort) {
-    final VersionOrdinalImpl smaller = new VersionOrdinalImpl(smallerShort);
-    final VersionOrdinalImpl larger = new VersionOrdinalImpl(largerShort);
+    final VersionOrdinal smaller = new VersionOrdinalImpl(smallerShort);
+    final VersionOrdinal larger = new VersionOrdinalImpl(largerShort);
 
     assertThat(smaller.compareTo(larger)).isLessThan(0);
     assertThat(smaller.equals(larger)).isFalse();
@@ -118,8 +118,8 @@ public class VersionOrdinalImplJUnitTest extends TestCase {
   }
 
   private void validateHash(final short ordinal) {
-    final VersionOrdinalImpl a = new VersionOrdinalImpl(ordinal);
-    final VersionOrdinalImpl b = new VersionOrdinalImpl(ordinal);
+    final VersionOrdinal a = new VersionOrdinalImpl(ordinal);
+    final VersionOrdinal b = new VersionOrdinalImpl(ordinal);
     assertThat(a.equals(b)).isTrue();
     assertThat(a.hashCode()).isEqualTo(b.hashCode());
   }
