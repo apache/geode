@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
@@ -89,7 +88,7 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
     RegionEntry entry2 = ((LocalRegion) region).getRegionEntry(server_k1);
     int entryVersion2 = entry.getVersionStamp().getEntryVersion();
     server.invoke(() -> {
-      // create a "remote" invalidateion event and invalidate the already-invalid entry
+      // create a "remote" invalidation event and invalidate the already-invalid entry
       LocalRegion localRegion = (LocalRegion) getCache().getRegion(regionPath);
       VersionTag tag = localRegion.getRegionEntry(server_k1).getVersionStamp().asVersionTag();
       InternalDistributedMember id = localRegion.getMyId();
@@ -117,22 +116,22 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
     InternalDistributedMember server2ID = server2.invoke("get ID", () -> cache.getMyId());
     pool = (PoolImpl) createClientCache(NetworkUtils.getServerHostName(), PORT1);
     // send the ping to server1 but use server2's identifier so the ping will be forwarded
-
     ClientProxyMembershipID proxyID = server1.invoke(
         () -> CacheClientNotifier.getInstance().getClientProxies().iterator().next().getProxyID());
-    logger.info("ProxyID is : " + proxyID);
     server2.invoke(() -> {
       assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
           .isFalse();
-      assertEquals(0, ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size());
+      assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size())
+          .isEqualTo(0);
     });
     PingOp.execute(pool, new ServerLocation(NetworkUtils.getServerHostName(), PORT1), server2ID);
     // if the ping made it to server2 it will have the client's ID in its health monitor
     server2.invoke(() -> {
-      assertEquals(1, ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size());
+      await("For heartbeat to be received").untilAsserted(() -> assertThat(
+          ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size())
+              .isEqualTo(1));
       ClientProxyMembershipID proxyIDFound =
           ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().iterator().next();
-      logger.info("ProxyID found in clientHealthMonitor: " + proxyIDFound);
       assertThat(
           ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
               .isTrue();
