@@ -342,7 +342,6 @@ dependencies {
     testRuntime('commons-io:commons-io')
     testRuntime('commons-validator:commons-validator')
     testRuntime('com.pholser:junit-quickcheck-generators')
-    testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-junit')) {
@@ -363,6 +362,7 @@ dependencies {
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
+    integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestRuntimeOnly('org.apache.derby:derby')
     integrationTestRuntimeOnly('xerces:xercesImpl')

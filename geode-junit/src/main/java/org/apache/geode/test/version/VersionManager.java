@@ -216,7 +216,7 @@ public class VersionManager {
       return props;
     }
 
-    try (InputStream in = VersionManager.class.getResource("/" + fileName).openStream()) {
+    try (InputStream in = url.openStream()) {
       props.load(in);
     } catch (IOException e) {
       loadFailure = "VersionManager: unable to read resource " + fileName;
