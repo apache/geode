@@ -210,14 +210,11 @@ public class SerializableRestoreRedundancyResultsImplTest {
     regionRedundancyStatus.setStatus(SATISFIED);
     restoreRedundancyResults.addRegionResult(regionRedundancyStatus);
     String jsonString = geodeMapper.writeValueAsString(restoreRedundancyResults);
+
     // deserialize the class
-
-
     RestoreRedundancyResultsImpl value =
         geodeMapper.readValue(jsonString, RestoreRedundancyResultsImpl.class);
 
     assertThat(value).usingRecursiveComparison().isEqualTo(restoreRedundancyResults);
-
-
   }
 }
