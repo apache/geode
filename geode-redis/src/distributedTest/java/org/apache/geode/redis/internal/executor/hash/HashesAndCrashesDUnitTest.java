@@ -32,9 +32,12 @@ import java.util.function.Consumer;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -70,8 +73,9 @@ public class HashesAndCrashesDUnitTest {
 
   private static int[] redisPorts;
 
+  private RedisClient redisClient;
+  private StatefulRedisConnection<String, String> connection;
   private RedisCommands<String, String> commands;
-  private static RedisClient redisClient;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -110,6 +114,14 @@ public class HashesAndCrashesDUnitTest {
             .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
 
+    gfsh.connectAndVerify(locator);
+
+  }
+
+  @Before
+  public void before() {
+    String redisPort2 = "" + redisPorts[1];
+    String redisPort3 = "" + redisPorts[2];
     DUnitSocketAddressResolver dnsResolver =
         new DUnitSocketAddressResolver(new String[] {redisPort2, redisPort3});
 
@@ -121,9 +133,16 @@ public class HashesAndCrashesDUnitTest {
     redisClient.setOptions(ClientOptions.builder()
         .autoReconnect(true)
         .build());
-
-    gfsh.connectAndVerify(locator);
+    connection = redisClient.connect();
+    commands = connection.sync();
   }
+
+  @After
+  public void after() {
+    connection.close();
+    redisClient.shutdown();
+  }
+
 
   private MemberVM startRedisVM(int vmID, int redisPort) {
     int locatorPort = locator.getPort();
@@ -137,7 +156,6 @@ public class HashesAndCrashesDUnitTest {
 
   @Test
   public void givenServerCrashesDuringHset_thenDataIsNotLost() throws Exception {
-    commands = redisClient.connect().sync();
 
     AtomicBoolean running1 = new AtomicBoolean(true);
     AtomicBoolean running2 = new AtomicBoolean(true);
@@ -210,7 +228,8 @@ public class HashesAndCrashesDUnitTest {
         return retries;
       } catch (Exception e) {
         logger.info("--->>> Handling retryable error {}", e.getMessage());
-        commands = redisClient.connect().sync();
+        connection = redisClient.connect();
+        commands = connection.sync();
         retries += 1;
       }
     } while (true);
