@@ -14,13 +14,17 @@
  */
 package org.apache.geode.management.runtime;
 
+import java.io.Serializable;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.JsonSerializable;
+
 
 /**
  * Used to calculate and store a snapshot of the redundancy status for a partitioned region.
  */
 @Experimental
-public interface RegionRedundancyStatus {
+public interface RegionRedundancyStatus extends JsonSerializable, Serializable {
 
   /**
    * The redundancy status of the region used to create this object at time of creation.
