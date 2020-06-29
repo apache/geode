@@ -59,6 +59,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.management.internal.configuration.domain.CacheElement;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.services.module.ModuleService;
 
 public class XmlUtils {
 
@@ -118,10 +119,12 @@ public class XmlUtils {
    * @param doc Target document where the node will added
    * @param xmlEntity contains definition of the xml entity
    */
-  public static void addNewNode(final Document doc, final XmlEntity xmlEntity)
+  public static void addNewNode(final Document doc, final XmlEntity xmlEntity,
+      ModuleService moduleService)
       throws IOException, XPathExpressionException, SAXException, ParserConfigurationException {
     // Build up map per call to avoid issues with caching wrong version of the map.
-    final LinkedHashMap<String, CacheElement> elementOrderMap = CacheElement.buildElementMap(doc);
+    final LinkedHashMap<String, CacheElement> elementOrderMap =
+        CacheElement.buildElementMap(doc, moduleService);
 
     final Node newNode = createNode(doc, xmlEntity.getXmlDefinition());
     final Node root = doc.getDocumentElement();

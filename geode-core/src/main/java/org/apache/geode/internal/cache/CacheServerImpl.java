@@ -77,6 +77,7 @@ import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -141,7 +142,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider,
-      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
+      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider,
+      final ModuleService moduleService) {
     super(cache);
     this.securityService = securityService;
     this.statisticsClock = statisticsClock;
@@ -153,7 +155,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
     this.cacheServerAdvisorProvider = cacheServerAdvisorProvider;
     this.serverConnectionFactory =
-        new ServerConnectionFactory(cache.getCacheConfig().getModuleService());
+        new ServerConnectionFactory(moduleService);
   }
 
   /**

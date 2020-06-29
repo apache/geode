@@ -967,10 +967,18 @@ javadoc/org/apache/geode/services/bootstrapping/BootstrappingService.html
 javadoc/org/apache/geode/services/bootstrapping/package-frame.html
 javadoc/org/apache/geode/services/bootstrapping/package-summary.html
 javadoc/org/apache/geode/services/bootstrapping/package-tree.html
+javadoc/org/apache/geode/services/bootstrapping/impl/BootstrappingServiceImpl.html
+javadoc/org/apache/geode/services/bootstrapping/impl/package-frame.html
+javadoc/org/apache/geode/services/bootstrapping/impl/package-summary.html
+javadoc/org/apache/geode/services/bootstrapping/impl/package-tree.html
 javadoc/org/apache/geode/services/management/ManagementService.html
 javadoc/org/apache/geode/services/management/package-frame.html
 javadoc/org/apache/geode/services/management/package-summary.html
 javadoc/org/apache/geode/services/management/package-tree.html
+javadoc/org/apache/geode/services/management/impl/ManagementServiceImpl.html
+javadoc/org/apache/geode/services/management/impl/package-frame.html
+javadoc/org/apache/geode/services/management/impl/package-summary.html
+javadoc/org/apache/geode/services/management/impl/package-tree.html
 javadoc/org/apache/geode/services/module/ModuleDescriptor.Builder.html
 javadoc/org/apache/geode/services/module/ModuleDescriptor.html
 javadoc/org/apache/geode/services/module/ModuleService.html
@@ -1024,6 +1032,7 @@ lib/geode-dependencies.jar
 lib/geode-gfsh-0.0.0.jar
 lib/geode-http-service-0.0.0.jar
 lib/geode-jca-0.0.0.rar
+lib/geode-launcher-0.0.0.jar
 lib/geode-log4j-0.0.0.jar
 lib/geode-logging-0.0.0.jar
 lib/geode-lucene-0.0.0.jar
@@ -1031,6 +1040,8 @@ lib/geode-management-0.0.0.jar
 lib/geode-membership-0.0.0.jar
 lib/geode-memcached-0.0.0.jar
 lib/geode-modules-0.0.0.jar
+lib/geode-module-bootstrapping-0.0.0.jar
+lib/geode-module-management-0.0.0.jar
 lib/geode-old-client-support-0.0.0.jar
 lib/geode-protobuf-0.0.0.jar
 lib/geode-protobuf-messages-0.0.0.jar

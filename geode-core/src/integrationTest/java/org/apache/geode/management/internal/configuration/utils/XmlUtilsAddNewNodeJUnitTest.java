@@ -41,9 +41,10 @@ import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.module.ModuleService;
 
 /**
- * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity)} and
+ * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} and
  * {@link XmlUtils#deleteNode(Document, XmlEntity)}. Simulates the
  * {@link InternalConfigurationPersistenceService} method of extracting {@link XmlEntity} from the
  * new
@@ -84,7 +85,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with {@link CacheXml} element with a
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} with {@link CacheXml}
+   * element with a
    * <code>name</code> attribute, <code>region</code>. It should be added after other
    * <code>region</code> elements.
    *
@@ -105,7 +107,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region").withAttribute("name", "r3")
         .withConfig(changes).build();
-    XmlUtils.addNewNode(config, xmlEntity);
+    XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -135,7 +137,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with {@link CacheXml} element that does
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} with {@link CacheXml}
+   * element that does
    * not have a name or id attribute, <code>jndi-bindings</code>. It should be added between
    * <code>pdx</code> and <code>region</code> elements.
    *
@@ -156,7 +159,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity =
         XmlEntity.builder().withType("jndi-bindings").withConfig(changes).build();
-    XmlUtils.addNewNode(config, xmlEntity);
+    XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -170,7 +173,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with an {@link Extension} that does not
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} with an {@link Extension}
+   * that does not
    * have a name or id attribute. It should be added to the end of the config xml. Attempts a name
    * collision with test:region, it should not collide with the similarly named cache:region
    * element.
@@ -193,7 +197,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region")
         .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes).build();
-    XmlUtils.addNewNode(config, xmlEntity);
+    XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -210,7 +214,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with {@link CacheXml} element with a
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} with {@link CacheXml}
+   * element with a
    * <code>name</code> attribute, <code>region</code>. It should replace existing
    * <code>region</code> element with same <code>name</code>.
    *
@@ -235,7 +240,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region").withAttribute("name", "r1")
         .withConfig(changes).build();
-    XmlUtils.addNewNode(config, xmlEntity);
+    XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -245,7 +250,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with {@link CacheXml} element that does
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} with {@link CacheXml}
+   * element that does
    * not have a name or id attribute, <code>pdx</code>. It should replace <code>pdx</code> element.
    *
    * @since GemFire 8.1
@@ -268,7 +274,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("pdx").withConfig(changes).build();
-    XmlUtils.addNewNode(config, xmlEntity);
+    XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -278,7 +284,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with an {@link Extension} that does not
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} with an {@link Extension}
+   * that does not
    * have a name or id attribute, <code>test:cache</code>. It should replace the existing
    * <code>test:cache</code> element.
    *
@@ -304,7 +311,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("cache")
         .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes).build();
-    XmlUtils.addNewNode(config, xmlEntity);
+    XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -343,7 +350,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with {@link CacheXml} element that does
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} with {@link CacheXml}
+   * element that does
    * not have a name or id attribute, <code>pdx</code>. It should remove the existing
    * <code>pdx</code> element.
    *
@@ -371,7 +379,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with an {@link Extension} that does not
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ModuleService)} with an {@link Extension}
+   * that does not
    * have a name or id attribute, <code>test:cache</code>. It should remove the existing
    * <code>test:cache</code> element.
    *

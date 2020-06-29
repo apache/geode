@@ -2672,7 +2672,7 @@ public class InternalDistributedSystem extends DistributedSystem
             do {
               retry = false;
               try {
-                cache = new InternalCacheBuilder()
+                cache = new InternalCacheBuilder(moduleService)
                     .setCacheXMLDescription(cacheXML)
                     .create(reconnectDS);
 

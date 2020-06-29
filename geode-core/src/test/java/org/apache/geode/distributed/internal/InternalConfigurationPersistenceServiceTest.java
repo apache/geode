@@ -51,6 +51,7 @@ import org.apache.geode.internal.config.JAXBServiceTest.ElementTwo;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.module.ModuleService;
 
 @RunWith(JUnitParamsRunner.class)
 public class InternalConfigurationPersistenceServiceTest {
@@ -62,9 +63,10 @@ public class InternalConfigurationPersistenceServiceTest {
   @Before
   public void setUp() throws Exception {
     service = spy(new InternalConfigurationPersistenceService(
-        JAXBService.createWithValidation(CacheConfig.class, ElementOne.class, ElementTwo.class)));
+        JAXBService.createWithValidation(CacheConfig.class, ElementOne.class, ElementTwo.class),
+        ModuleService.DEFAULT));
     service2 = spy(new InternalConfigurationPersistenceService(
-        JAXBService.createWithValidation(CacheConfig.class)));
+        JAXBService.createWithValidation(CacheConfig.class), ModuleService.DEFAULT));
     configuration = new Configuration("cluster");
 
     doReturn(configuration).when(service).getConfiguration(any());
@@ -270,7 +272,7 @@ public class InternalConfigurationPersistenceServiceTest {
   public void dontUnlockSharedConfigurationIfNoLockedPreviously() {
     JAXBService jaxbService = mock(JAXBService.class);
     InternalConfigurationPersistenceService cps =
-        spy(new InternalConfigurationPersistenceService(jaxbService));
+        spy(new InternalConfigurationPersistenceService(jaxbService, ModuleService.DEFAULT));
     doReturn(false).when(cps).lockSharedConfiguration();
     cps.createConfigurationResponse(null);
     verify(cps, times(0)).unlockSharedConfiguration();

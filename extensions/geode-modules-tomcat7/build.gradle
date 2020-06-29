@@ -49,6 +49,7 @@ dependencies {
   }
   implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
 
+  testImplementation(project(':geode-common-services'))
   testImplementation('org.httpunit:httpunit')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')

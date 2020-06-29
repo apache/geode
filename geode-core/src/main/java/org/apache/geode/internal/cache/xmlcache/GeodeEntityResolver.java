@@ -22,15 +22,16 @@ import java.util.regex.Pattern;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.ext.EntityResolver2;
+
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Resolves entities for XSDs or DTDs with SYSTEM IDs rooted at http(s)://geode.apache.org/schema
  * from
  * the classpath at /META-INF/schemas/geode.apache.org/.
  *
- * Loaded by {@link ServiceLoader} on {@link EntityResolver2} class. See file
- * <code>META-INF/services/org.xml.sax.ext.EntityResolver2</code>
+ * Loaded by {@link ServiceLoader} on {@link GeodeEntityResolver2} class. See file
+ * <code>META-INF/services/org.apache.geode.internal.cache.xmlcache.GeodeEntityResolver2</code>
  *
  *
  * @since GemFire 8.1
@@ -41,6 +42,8 @@ public class GeodeEntityResolver extends DefaultEntityResolver2 {
 
   private static final String CLASSPATH_ROOT = "/META-INF/schemas/geode.apache.org/";
 
+  private ModuleService moduleService;
+
   @Override
   public InputSource resolveEntity(final String name, final String publicId, final String baseURI,
       final String systemId) throws SAXException, IOException {
@@ -50,10 +53,15 @@ public class GeodeEntityResolver extends DefaultEntityResolver2 {
 
     Matcher matcher = SYSTEM_ID_ROOT.matcher(systemId);
     if (matcher.find()) {
-      return getClassPathInputSource(publicId, systemId, matcher.replaceFirst(CLASSPATH_ROOT));
+      return getClassPathInputSource(publicId, systemId, matcher.replaceFirst(CLASSPATH_ROOT),
+          moduleService);
     }
 
     return null;
   }
 
+  @Override
+  public void init(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 }

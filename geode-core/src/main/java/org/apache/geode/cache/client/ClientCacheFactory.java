@@ -268,7 +268,7 @@ public class ClientCacheFactory {
         return instance;
       } else {
 
-        return (InternalClientCache) new InternalCacheBuilder(cacheConfig)
+        return (InternalClientCache) new InternalCacheBuilder(cacheConfig, ModuleService.DEFAULT)
             .setIsClient(true)
             .setPoolFactory(pf)
             .create(system);

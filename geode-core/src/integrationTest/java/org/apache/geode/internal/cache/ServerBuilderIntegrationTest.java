@@ -36,6 +36,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -66,7 +67,7 @@ public class ServerBuilderIntegrationTest {
   @Test
   public void byDefaultCreatesServerWithCacheServerAcceptor() throws IOException {
     server = new ServerBuilder(cache, cache.getSecurityService(),
-        StatisticsClockFactory.disabledClock())
+        StatisticsClockFactory.disabledClock(), ModuleService.DEFAULT)
             .createServer();
     server.setPort(0);
 
@@ -81,7 +82,7 @@ public class ServerBuilderIntegrationTest {
     when(gatewayReceiver.getGatewayTransportFilters())
         .thenReturn(singletonList(mock(GatewayTransportFilter.class)));
     server = new ServerBuilder(cache, cache.getSecurityService(),
-        StatisticsClockFactory.disabledClock())
+        StatisticsClockFactory.disabledClock(), ModuleService.DEFAULT)
             .forGatewayReceiver(gatewayReceiver)
             .createServer();
     server.setPort(0);
@@ -98,7 +99,7 @@ public class ServerBuilderIntegrationTest {
     String membershipGroup = "group-m0";
     cache = (InternalCache) new CacheFactory().set(GROUPS, membershipGroup).create();
     server = new ServerBuilder(cache, cache.getSecurityService(),
-        StatisticsClockFactory.disabledClock())
+        StatisticsClockFactory.disabledClock(), ModuleService.DEFAULT)
             .createServer();
 
     assertThat(server.getCombinedGroups()).containsExactly(membershipGroup);
@@ -112,7 +113,7 @@ public class ServerBuilderIntegrationTest {
     String membershipGroup = "group-m0";
     cache = (InternalCache) new CacheFactory().set(GROUPS, membershipGroup).create();
     server = new ServerBuilder(cache, cache.getSecurityService(),
-        StatisticsClockFactory.disabledClock())
+        StatisticsClockFactory.disabledClock(), ModuleService.DEFAULT)
             .forGatewayReceiver(gatewayReceiver)
             .createServer();
 

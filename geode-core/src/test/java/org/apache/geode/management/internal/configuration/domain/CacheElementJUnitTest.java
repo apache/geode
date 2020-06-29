@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlVersion;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Test cases for {@link CacheElement}.
@@ -47,6 +48,7 @@ public class CacheElementJUnitTest {
 
   private Document loadSchema(final String schemaLocation) throws Exception {
     final CacheXmlParser entityResolver = new CacheXmlParser();
+    entityResolver.init(ModuleService.DEFAULT);
     final XMLReader xmlReader = XMLReaderFactory.createXMLReader();
     xmlReader.setEntityResolver(entityResolver);
 
@@ -90,7 +92,8 @@ public class CacheElementJUnitTest {
 
   /**
    * As of 8.1 the cache type requires that certain elements be listed in sequence. This test
-   * verifies that {@link CacheElement#buildElementMap(Document)} produces a mapping in the correct
+   * verifies that {@link CacheElement#buildElementMap(Document, ModuleService)} produces a mapping
+   * in the correct
    * order. If we change to use choice for all elements then we can abandon this mapping.
    *
    * @since GemFire 8.1
@@ -100,7 +103,8 @@ public class CacheElementJUnitTest {
     final Document doc = XmlUtils.createDocumentFromReader(
         new InputStreamReader(this.getClass().getResourceAsStream("CacheElementJUnitTest.xml")));
 
-    final LinkedHashMap<String, CacheElement> elementMap = CacheElement.buildElementMap(doc);
+    final LinkedHashMap<String, CacheElement> elementMap =
+        CacheElement.buildElementMap(doc, ModuleService.DEFAULT);
 
     final Iterator<Entry<String, CacheElement>> entries = elementMap.entrySet().iterator();
 

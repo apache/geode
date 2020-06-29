@@ -25,9 +25,9 @@ import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Unit test for {@link PivotalEntityResolver} and {@link DefaultEntityResolver2}.
@@ -57,9 +57,10 @@ public abstract class AbstractEntityResolverTest {
   @Test
   public void testDiscovery() {
     boolean found = false;
-    final ServiceLoader<EntityResolver2> entityResolvers =
-        ServiceLoader.load(EntityResolver2.class, ClassPathLoader.getLatestAsClassLoader());
-    for (final EntityResolver2 entityResolver : entityResolvers) {
+    final ServiceLoader<GeodeEntityResolver2> entityResolvers =
+        ServiceLoader.load(GeodeEntityResolver2.class, ClassPathLoader.getLatestAsClassLoader());
+    for (final GeodeEntityResolver2 entityResolver : entityResolvers) {
+      entityResolver.init(ModuleService.DEFAULT);
       if (getEntityResolver().getClass().isAssignableFrom(entityResolver.getClass())) {
         found = true;
         break;

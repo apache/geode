@@ -84,7 +84,6 @@ public class GemFireCacheImplTest {
   @Before
   public void setUp() {
     cacheConfig = mock(CacheConfig.class);
-    when(cacheConfig.getModuleService()).thenReturn(ModuleService.DEFAULT);
     internalDistributedSystem = mock(InternalDistributedSystem.class);
     poolFactory = mock(PoolFactory.class);
     replyProcessor21Factory = mock(ReplyProcessor21Factory.class);
@@ -424,7 +423,7 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl = mock(GemFireCacheImpl.class);
     when(internalDistributedSystem.getCache()).thenReturn(gemFireCacheImpl);
 
-    new InternalCacheBuilder()
+    new InternalCacheBuilder(ModuleService.DEFAULT)
         .setIsClient(true)
         .create(internalDistributedSystem);
 
@@ -700,6 +699,6 @@ public class GemFireCacheImplTest {
         mock(Function.class),
         mock(Function.class),
         mock(TXEntryStateFactory.class),
-        replyProcessor21Factory);
+        replyProcessor21Factory, ModuleService.DEFAULT);
   }
 }

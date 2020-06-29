@@ -17,19 +17,21 @@ package org.apache.geode.internal.cache.xmlcache;
 import org.junit.Before;
 import org.xml.sax.EntityResolver;
 
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Unit test for {@link GeodeEntityResolver} and {@link DefaultEntityResolver2}.
  */
 public class GeodeEntityResolverJUnitTest extends AbstractEntityResolverTest {
 
-  private EntityResolver entityResolver;
+  private GeodeEntityResolver2 entityResolver;
 
   private final String systemId = "http://geode.apache.org/schema/cache/cache-1.0.xsd";
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     entityResolver = new GeodeEntityResolver();
+    entityResolver.init(ModuleService.DEFAULT);
   }
 
   @Override

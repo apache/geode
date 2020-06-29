@@ -642,7 +642,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
       InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-      boolean useAsyncEventListeners, TypeRegistry typeRegistry) {
+      boolean useAsyncEventListeners, TypeRegistry typeRegistry, ModuleService moduleService) {
     this(isClient,
         poolFactory,
         internalDistributedSystem,
@@ -679,7 +679,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         BackupService::new,
         ClientMetadataService::new,
         TXEntryState.getFactory(),
-        ReplyProcessor21::new);
+        ReplyProcessor21::new, moduleService);
   }
 
   @VisibleForTesting
@@ -719,7 +719,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       Function<InternalCache, BackupService> backupServiceFactory,
       Function<Cache, ClientMetadataService> clientMetadataServiceFactory,
       TXEntryStateFactory txEntryStateFactory,
-      ReplyProcessor21Factory replyProcessor21Factory) {
+      ReplyProcessor21Factory replyProcessor21Factory, ModuleService moduleService) {
     this.isClient = isClient;
     this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig;
@@ -733,7 +733,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.functionServiceRegisterFunction = functionServiceRegisterFunction;
     this.systemTimerFactory = systemTimerFactory;
     this.replyProcessor21Factory = replyProcessor21Factory;
-    this.moduleService = cacheConfig.getModuleService();
+    this.moduleService = moduleService;
 
     // Synchronized to prevent a new cache from being created before an old one finishes closing
     synchronized (GemFireCacheImpl.class) {
@@ -3904,7 +3904,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     stopper.checkCancelInProgress(null);
 
     InternalCacheServer server = new ServerBuilder(this, securityService,
-        StatisticsClockFactory.disabledClock()).createServer();
+        StatisticsClockFactory.disabledClock(), moduleService).createServer();
     allCacheServers.add(server);
 
     sendAddCacheServerProfileMessage();
@@ -3998,7 +3998,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         "GatewayReceiver must be added before adding a server endpoint.");
 
     InternalCacheServer receiverServer = new ServerBuilder(this, securityService,
-        StatisticsClockFactory.disabledClock())
+        StatisticsClockFactory.disabledClock(), moduleService)
             .forGatewayReceiver(receiver).createServer();
     gatewayReceiverServer.set(receiverServer);
 

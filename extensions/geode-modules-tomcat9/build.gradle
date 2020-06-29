@@ -39,6 +39,7 @@ dependencies {
   implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat9.version'))
   implementation('javax.servlet:javax.servlet-api:4.0.1')
 
+  testImplementation(project(':geode-common-services'))
   testImplementation('org.httpunit:httpunit')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')

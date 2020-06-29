@@ -48,6 +48,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.exceptions.UserErrorException;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.services.module.ModuleService;
 
 public class CommandExecutorTest {
 
@@ -66,7 +67,8 @@ public class CommandExecutorTest {
     testCommand = mock(SingleGfshCommand.class,
         withSettings().extraInterfaces(UpdateAllConfigurationGroupsMarker.class));
     ccService =
-        spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class)));
+        spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class),
+            ModuleService.DEFAULT));
     configRegion = mock(AbstractRegion.class);
 
     doReturn(ccService).when(testCommand).getConfigurationPersistenceService();

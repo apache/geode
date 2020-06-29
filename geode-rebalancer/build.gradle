@@ -37,6 +37,7 @@ dependencies {
     exclude module: 'spring-aop'
   }
 
+  testImplementation(project(':geode-common-services'))
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')

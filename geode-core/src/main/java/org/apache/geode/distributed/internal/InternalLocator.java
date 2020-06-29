@@ -782,7 +782,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     InternalCache internalCache = GemFireCacheImpl.getInstance();
     if (internalCache == null) {
       logger.info("Creating cache for locator.");
-      this.internalCache = new InternalCacheBuilder(system.getProperties())
+      this.internalCache = new InternalCacheBuilder(system.getProperties(), moduleService)
           .create((InternalDistributedSystem) system);
       internalCache = this.internalCache;
     } else {
@@ -1247,7 +1247,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (isSharedConfigurationEnabled()) {
       configurationPersistenceService =
           new InternalConfigurationPersistenceService(newCache, workingDirectory,
-              JAXBService.create());
+              JAXBService.create(), moduleService);
       startClusterManagementService();
     }
 
@@ -1382,7 +1382,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       // configurationPersistenceService will already be created in case of auto-reconnect
       configurationPersistenceService =
           new InternalConfigurationPersistenceService(internalCache, workingDirectory,
-              JAXBService.create());
+              JAXBService.create(), moduleService);
     }
     configurationPersistenceService
         .initSharedConfiguration(loadFromSharedConfigDir());

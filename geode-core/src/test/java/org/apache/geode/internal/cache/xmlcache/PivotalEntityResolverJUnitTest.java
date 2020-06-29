@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.xmlcache;
 import org.junit.Before;
 import org.xml.sax.EntityResolver;
 
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Unit test for {@link PivotalEntityResolver} and {@link DefaultEntityResolver2}.
@@ -25,13 +26,14 @@ import org.xml.sax.EntityResolver;
  */
 public class PivotalEntityResolverJUnitTest extends AbstractEntityResolverTest {
 
-  private EntityResolver entityResolver;
+  private GeodeEntityResolver2 entityResolver;
 
   private final String systemId = "http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd";
 
   @Before
   public void setup() throws Exception {
     entityResolver = new PivotalEntityResolver();
+    entityResolver.init(ModuleService.DEFAULT);
   }
 
   @Override

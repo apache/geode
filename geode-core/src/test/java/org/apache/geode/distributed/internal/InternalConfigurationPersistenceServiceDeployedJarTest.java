@@ -47,6 +47,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalConfigurationPersistenceServiceDeployedJarTest {
   @Rule
@@ -70,7 +71,8 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
     stagingDir = tempDir.newFolder("stagingDir").toPath();
     workingDir = tempDir.newFolder("workingDir").toPath();
     service =
-        new InternalConfigurationPersistenceService(cache, lockService, null, workingDir, null);
+        new InternalConfigurationPersistenceService(cache, lockService, null, workingDir, null,
+            ModuleService.DEFAULT);
   }
 
   @Test

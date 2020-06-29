@@ -112,7 +112,7 @@ public class InternalCacheBuilderTestUtil {
   public static InternalCacheConstructor constructorOf(InternalCache constructedCache) {
     InternalCacheConstructor constructor =
         mock(InternalCacheConstructor.class, "internal cache constructor");
-    when(constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any()))
+    when(constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any()))
         .thenReturn(constructedCache);
     return constructor;
   }
@@ -144,7 +144,7 @@ public class InternalCacheBuilderTestUtil {
 
   public static final InternalCacheConstructor THROWING_CACHE_CONSTRUCTOR =
       (isClient, poolFactory, internalDistributedSystem, cacheConfig, useAsyncEventListeners,
-          typeRegistry) -> {
+          typeRegistry, moduleService) -> {
         throw new AssertionError("throwing cache constructor");
       };
 }

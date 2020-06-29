@@ -58,6 +58,7 @@ import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
@@ -259,6 +260,6 @@ public class GemFireCacheImplCloseTest {
         mock(Function.class),
         mock(Function.class),
         mock(TXEntryStateFactory.class),
-        replyProcessor21Factory);
+        replyProcessor21Factory, ModuleService.DEFAULT);
   }
 }

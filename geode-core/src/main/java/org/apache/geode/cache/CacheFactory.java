@@ -110,7 +110,7 @@ public class CacheFactory {
    * @since GemFire 6.5
    */
   public CacheFactory(Properties props) {
-    internalCacheBuilder = new InternalCacheBuilder(props);
+    internalCacheBuilder = new InternalCacheBuilder(props, ModuleService.DEFAULT);
   }
 
   /**
@@ -350,7 +350,7 @@ public class CacheFactory {
   @Deprecated
   public static Cache create(DistributedSystem system) throws CacheExistsException,
       TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
-    return CacheFactoryStatics.create(system);
+    return CacheFactoryStatics.create(system, ModuleService.DEFAULT);
   }
 
   /**
