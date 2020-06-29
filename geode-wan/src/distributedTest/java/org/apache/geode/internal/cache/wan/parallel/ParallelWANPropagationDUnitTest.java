@@ -698,6 +698,8 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 10000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 10000));
+    vm4.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
+    vm5.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
   }
 
   @Test
