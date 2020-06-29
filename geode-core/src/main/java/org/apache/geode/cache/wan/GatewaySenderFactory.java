@@ -39,8 +39,9 @@ public interface GatewaySenderFactory {
    * Indicates whether events belonging to the same transaction must be
    * delivered inside the same batch, i.e. they cannot be spread across different
    * batches.
-   * Can only be enabled on serial gateway senders with just one dispatcher
+   * It can only be enabled on serial gateway senders with just one dispatcher
    * thread or on parallel gateway senders.
+   * Besides, it cannot be enabled if batch conflation is enabled.
    *
    * @param groupTransactionEvents boolean to indicate whether events from
    *        the same transaction must be delivered inside
