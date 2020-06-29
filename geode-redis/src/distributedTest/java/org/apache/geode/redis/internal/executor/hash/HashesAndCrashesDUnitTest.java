@@ -120,10 +120,14 @@ public class HashesAndCrashesDUnitTest {
 
   @Before
   public void before() {
+    String redisPort1 = "" + redisPorts[0];
     String redisPort2 = "" + redisPorts[1];
     String redisPort3 = "" + redisPorts[2];
+    // For now only tell the client about redisPort1.
+    // That server is never restarted so clients should
+    // never fail due to the server they are connected to failing.
     DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(new String[] {redisPort2, redisPort3});
+        new DUnitSocketAddressResolver(new String[] {redisPort1});
 
     ClientResources resources = ClientResources.builder()
         .socketAddressResolver(dnsResolver)
