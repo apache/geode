@@ -225,18 +225,21 @@ public class HashesAndCrashesDUnitTest {
   }
 
   private int retryableCommand(Consumer<RedisCommands<String, String>> exe) {
-    int retries = 0;
-    do {
-      try {
-        exe.accept(commands);
-        return retries;
-      } catch (Exception e) {
-        logger.info("--->>> Handling retryable error {}", e.getMessage());
-        connection = redisClient.connect();
-        commands = connection.sync();
-        retries += 1;
-      }
-    } while (true);
+    exe.accept(commands);
+    return 0;
+    // retry should not be needed since server1 is never restarted
+    // int retries = 0;
+    // do {
+    // try {
+    // exe.accept(commands);
+    // return retries;
+    // } catch (Exception e) {
+    // logger.info("--->>> Handling retryable error {}", e.getMessage());
+    // connection = redisClient.connect();
+    // commands = connection.sync();
+    // retries += 1;
+    // }
+    // } while (true);
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {
