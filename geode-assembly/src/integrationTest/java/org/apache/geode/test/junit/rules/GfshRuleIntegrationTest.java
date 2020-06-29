@@ -39,14 +39,20 @@ public class GfshRuleIntegrationTest {
   public GfshRule gfshCurrentRule = new GfshRule();
 
   @Before
-  public void setUp() {
+  public void findGfshPaths() {
+    String geodeHome = System.getenv("GEODE_HOME");
+    Path geodeHomePath = Paths.get(geodeHome).toAbsolutePath();
+    assertThat(geodeHomePath).exists();
+
+    gfshCurrent = geodeHomePath.resolve("bin/gfsh");
+    assertThat(gfshCurrent).exists();
+
     Path workingPath = Paths.get("").toAbsolutePath();
     assertThat(workingPath).exists();
-    gfshCurrent = workingPath.resolve("build/install/apache-geode/bin/gfsh");
-    assertThat(gfshCurrent).exists();
 
     Path parentPath = workingPath.getParent().toAbsolutePath();
     assertThat(parentPath).exists();
+
     Path geode_old_versions_Path = parentPath.resolve("geode-old-versions");
     assertThat(geode_old_versions_Path).exists();
     gfsh130 = geode_old_versions_Path.resolve("1.3.0/build/apache-geode-1.3.0/bin/gfsh");
