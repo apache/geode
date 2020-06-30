@@ -106,8 +106,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private final Deque<Long> peekedIds = new LinkedBlockingDeque<Long>();
 
   /**
-   * Contains the peekedIds but not including those that were peeked to complete a transaction
-   * inside a batch when groupTransactionEvents is set.
+   * Contains the peekedIds, excepting those peeked to complete transactions
+   * inside a batch.
    */
   private final Deque<Long> peekedIdsWithoutExtra = new LinkedBlockingDeque<Long>();
 
