@@ -49,6 +49,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.OSProcess;
 
 /**
@@ -549,8 +550,21 @@ public class InternalDistributedMember
   }
 
   @Override
+  public VersionOrdinal getVersionOrdinalObject() {
+    return memberIdentifier.getVersionOrdinalObject();
+  }
+
+  /**
+   * If this member runs a version known in this JVM then return that Version.
+   * If this member does not run a known version then return Version.CURRENT.
+   *
+   * In various serialization scenarios we want the well-known version for this
+   * member, or, if it doesn't have a well-known version, we want the current
+   * (in this JVM) software version. Rather than have that logic spread around in
+   * the serialization code, it is centralized here.
+   */
   public Version getVersionObject() {
-    return memberIdentifier.getVersionObject();
+    return Version.fromOrdinalNoThrow(getVersionOrdinalObject().ordinal(), false);
   }
 
   @Override

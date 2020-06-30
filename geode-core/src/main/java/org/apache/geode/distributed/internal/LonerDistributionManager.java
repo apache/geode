@@ -189,7 +189,7 @@ public class LonerDistributionManager implements DistributionManager {
       Version version) {
     for (Iterator<InternalDistributedMember> it = members.iterator(); it.hasNext();) {
       InternalDistributedMember id = it.next();
-      if (id.getVersionObject().compareTo(version) < 0) {
+      if (id.getVersionOrdinalObject().compareTo(version) < 0) {
         it.remove();
       }
     }
@@ -200,7 +200,7 @@ public class LonerDistributionManager implements DistributionManager {
       Version version) {
     for (Iterator<InternalDistributedMember> it = members.iterator(); it.hasNext();) {
       InternalDistributedMember id = it.next();
-      if (id.getVersionObject().compareTo(version) >= 0) {
+      if (id.getVersionOrdinalObject().compareTo(version) >= 0) {
         it.remove();
       }
     }

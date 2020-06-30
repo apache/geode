@@ -7227,7 +7227,8 @@ public class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public boolean fillInValue(InternalRegion region, InitialImageOperation.Entry entry,
-        ByteArrayDataInput in, DistributionManager distributionManager, final Version version) {
+        ByteArrayDataInput in, DistributionManager distributionManager,
+        final Version version) {
       return false;
     }
 
