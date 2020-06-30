@@ -1771,12 +1771,17 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(() -> WANTestBase.stopSender("ln"));
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
-
     LogWriterUtils.getLogWriter().info("Stopped all the senders.");
 
-    // start the senders in async mode. This will ensure that the
-    // node of shadow PR that went down last will come up first
-    startSenderwithCleanQueuesInVMsAsync("ln", vm4, vm5, vm6, vm7);
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
+
+    LogWriterUtils.getLogWriter().info("Start all the senders.");
+
+    vm4.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
+    vm5.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
+    vm6.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
+    vm7.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
 
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     // wait for senders running
