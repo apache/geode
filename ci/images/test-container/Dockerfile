@@ -30,9 +30,7 @@ RUN  apt-get update \
      unzip \
      xz-utils \
   && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-  && echo "deb [arch=amd64] https://apt.bell-sw.com/ stable main" > /etc/apt/sources.list.d/bellsoft.list \
   && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && curl -fsSL https://download.bell-sw.com/pki/GPG-KEY-bellsoft | apt-key add - \
   && apt-get update \
   && apt-get install -y --no-install-recommends \
     aptitude \
@@ -48,8 +46,8 @@ RUN  apt-get update \
   && useradd --shell /bin/bash -u 93043 -o -c "" -m geode \
   && cp -R /etc/alternatives /etc/keep-alternatives \
   && apt-get install -y --no-install-recommends \
-    bellsoft-java11 \
-    bellsoft-java8 \
+    openjdk-8-jdk \
+    openjdk-11-jdk \
   && rm -rf /etc/alternatives \
   && mv /etc/keep-alternatives /etc/alternatives \
   && apt-get clean \
