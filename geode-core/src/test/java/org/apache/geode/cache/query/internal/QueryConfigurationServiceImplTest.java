@@ -52,6 +52,7 @@ import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.util.TestMethodAuthorizer;
+import org.apache.geode.services.module.ModuleService;
 
 @RunWith(JUnitParamsRunner.class)
 public class QueryConfigurationServiceImplTest {
@@ -94,7 +95,7 @@ public class QueryConfigurationServiceImplTest {
 
   @Test
   public void initThrowsExceptionWhenCacheIsNull() {
-    assertThatThrownBy(() -> configService.init(null))
+    assertThatThrownBy(() -> configService.init(null, ModuleService.DEFAULT))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(NULL_CACHE_ERROR_MESSAGE);
   }
@@ -102,7 +103,7 @@ public class QueryConfigurationServiceImplTest {
   @Test
   public void initSetsNoOpAuthorizerWhenSecurityDisabled() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(false);
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer())
         .isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
   }
@@ -112,7 +113,7 @@ public class QueryConfigurationServiceImplTest {
     setAllowUntrustedMethodInvocationSystemProperty();
     configService = new QueryConfigurationServiceImpl();
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer())
         .isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
   }
@@ -120,14 +121,14 @@ public class QueryConfigurationServiceImplTest {
   @Test
   public void initSetsRestrictedMethodAuthorizerWhenSecurityIsEnabledAndSystemPropertyIsNotSet() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
 
   @Test
   public void updateMethodAuthorizerDoesNothingWhenSecurityIsDisabled() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(false);
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     MethodInvocationAuthorizer authorizer = configService.getMethodAuthorizer();
     assertThat(authorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
 
@@ -141,7 +142,7 @@ public class QueryConfigurationServiceImplTest {
     setAllowUntrustedMethodInvocationSystemProperty();
     configService = new QueryConfigurationServiceImpl();
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
 
     MethodInvocationAuthorizer authorizer = configService.getMethodAuthorizer();
     assertThat(authorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
@@ -183,7 +184,7 @@ public class QueryConfigurationServiceImplTest {
   public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerWhenSecurityIsEnabledAndClassNameIsNull() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
 
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     assertThatThrownBy(
         () -> configService.updateMethodAuthorizer(mockCache, false, null, EMPTY_SET))
@@ -195,7 +196,7 @@ public class QueryConfigurationServiceImplTest {
   public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerWhenSecurityIsEnabledAndClassNameIsNotFound() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
 
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     String className = "FakeClassName";
     assertThatThrownBy(
@@ -208,7 +209,7 @@ public class QueryConfigurationServiceImplTest {
   public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerWhenSecurityIsEnabledAndSpecifiedClassDoesNotImplementMethodInvocationAuthorizer() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
 
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     String className = this.getClass().getName();
     assertThatThrownBy(
@@ -224,7 +225,7 @@ public class QueryConfigurationServiceImplTest {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
     when(mockCache.isClosed()).thenThrow(new RuntimeException("Test exception"));
 
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     assertThatThrownBy(() -> configService.updateMethodAuthorizer(mockCache, false,
         TestMethodAuthorizer.class.getName(), EMPTY_SET))
@@ -239,7 +240,7 @@ public class QueryConfigurationServiceImplTest {
       Class methodAuthorizerClass) {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
     doReturn(Collections.singletonList(mock(ServerCQ.class))).when(mockCqService).getAllCqs();
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
 
     assertThatThrownBy(() -> configService.updateMethodAuthorizer(mockCache, false,
@@ -258,7 +259,7 @@ public class QueryConfigurationServiceImplTest {
     ServerCQ serverCQ2 = mock(ServerCQ.class);
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
     doReturn(Arrays.asList(serverCQ1, serverCQ2)).when(mockCqService).getAllCqs();
-    configService.init(mockCache);
+    configService.init(mockCache, ModuleService.DEFAULT);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
 
     assertThatCode(() -> configService.updateMethodAuthorizer(mockCache, true,

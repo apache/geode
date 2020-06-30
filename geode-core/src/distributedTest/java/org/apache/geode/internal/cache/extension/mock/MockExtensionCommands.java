@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.extension.mock;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -30,6 +29,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -39,13 +39,14 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Mock Extension gfsh commands.
  *
  * @since GemFire 8.1
  */
-public class MockExtensionCommands implements CommandMarker {
+public class MockExtensionCommands implements GeodeCommandMarker {
 
   public static final String OPTION_VALUE = "value";
 
@@ -63,6 +64,8 @@ public class MockExtensionCommands implements CommandMarker {
 
   public static final String DESTROY_MOCK_CACHE_EXTENSION = "destroy mock cache extension";
 
+  private ModuleService moduleService;
+
   /**
    * Creates a {@link MockRegionExtension} on the given <code>regionName</code>.
    *
@@ -77,7 +80,7 @@ public class MockExtensionCommands implements CommandMarker {
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        CreateMockRegionExtensionFunction.INSTANCE, true,
+        new CreateMockRegionExtensionFunction(moduleService), true,
         CreateMockRegionExtensionFunction.toArgs(regionName, value));
   }
 
@@ -95,7 +98,7 @@ public class MockExtensionCommands implements CommandMarker {
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        AlterMockRegionExtensionFunction.INSTANCE, true,
+        new AlterMockRegionExtensionFunction(moduleService), true,
         AlterMockRegionExtensionFunction.toArgs(regionName, value));
   }
 
@@ -111,7 +114,7 @@ public class MockExtensionCommands implements CommandMarker {
   public Result destroyMockRegionExtension(
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        DestroyMockRegionExtensionFunction.INSTANCE, true,
+        new DestroyMockRegionExtensionFunction(moduleService), true,
         DestroyMockRegionExtensionFunction.toArgs(regionName));
   }
 
@@ -127,7 +130,7 @@ public class MockExtensionCommands implements CommandMarker {
   public Result createMockCacheExtension(
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        CreateMockCacheExtensionFunction.INSTANCE, true,
+        new CreateMockCacheExtensionFunction(moduleService), true,
         CreateMockCacheExtensionFunction.toArgs(value));
   }
 
@@ -143,7 +146,7 @@ public class MockExtensionCommands implements CommandMarker {
   public Result alterMockCacheExtension(
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        AlterMockCacheExtensionFunction.INSTANCE, true,
+        new AlterMockCacheExtensionFunction(moduleService), true,
         AlterMockCacheExtensionFunction.toArgs(value));
   }
 
@@ -157,7 +160,7 @@ public class MockExtensionCommands implements CommandMarker {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result destroyMockCacheExtension() {
     return executeFunctionOnAllMembersTabulateResultPersist(
-        DestroyMockCacheExtensionFunction.INSTANCE, false);
+        new DestroyMockCacheExtensionFunction(moduleService), false);
   }
 
   /**
@@ -201,4 +204,8 @@ public class MockExtensionCommands implements CommandMarker {
     return new CommandResult(resultModel);
   }
 
+  @Override
+  public void init(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 }

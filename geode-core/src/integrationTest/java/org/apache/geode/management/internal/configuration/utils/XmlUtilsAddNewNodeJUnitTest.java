@@ -75,7 +75,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
   @Before
   public void before() throws SAXException, ParserConfigurationException, IOException {
     config = XmlUtils.createDocumentFromReader(new InputStreamReader(
-        this.getClass().getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.xml")));
+        this.getClass().getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.xml")),
+        ModuleService.DEFAULT);
   }
 
   @AfterClass
@@ -99,14 +100,15 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(0, nodes.getLength());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewNamed.xml")));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewNamed.xml")),
+        ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     Element element = (Element) nodes.item(0);
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region").withAttribute("name", "r3")
-        .withConfig(changes).build();
+        .withConfig(changes).build(ModuleService.DEFAULT);
     XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -151,14 +153,16 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(0, nodes.getLength());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewUnnamed.xml")));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewUnnamed.xml")),
+        ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     Element element = (Element) nodes.item(0);
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final XmlEntity xmlEntity =
-        XmlEntity.builder().withType("jndi-bindings").withConfig(changes).build();
+        XmlEntity.builder().withType("jndi-bindings").withConfig(changes)
+            .build(ModuleService.DEFAULT);
     XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -188,7 +192,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(0, nodes.getLength());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewUnnamedExtension.xml")));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewUnnamedExtension.xml")),
+        ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     Element element = (Element) nodes.item(0);
@@ -196,7 +201,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals("test:region", element.getNodeName());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region")
-        .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes).build();
+        .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes)
+        .build(ModuleService.DEFAULT);
     XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -231,7 +237,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceNamed.xml")));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceNamed.xml")),
+        ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     element = (Element) nodes.item(0);
@@ -239,7 +246,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region").withAttribute("name", "r1")
-        .withConfig(changes).build();
+        .withConfig(changes).build(ModuleService.DEFAULT);
     XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -266,14 +273,16 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamed.xml")));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamed.xml")),
+        ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     element = (Element) nodes.item(0);
     assertEquals("bar", XmlUtils.getAttribute(element, "disk-store-name"));
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
-    final XmlEntity xmlEntity = XmlEntity.builder().withType("pdx").withConfig(changes).build();
+    final XmlEntity xmlEntity =
+        XmlEntity.builder().withType("pdx").withConfig(changes).build(ModuleService.DEFAULT);
     XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -302,7 +311,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final org.w3c.dom.Document changes =
         XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
-            "XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamedExtension.xml")));
+            "XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamedExtension.xml")),
+            ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     element = (Element) nodes.item(0);
@@ -310,7 +320,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(TEST_NAMESPACE, element.getNamespaceURI());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("cache")
-        .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes).build();
+        .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes)
+        .build(ModuleService.DEFAULT);
     XmlUtils.addNewNode(config, xmlEntity, ModuleService.DEFAULT);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -337,12 +348,13 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeNamed.xml")));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeNamed.xml")),
+        ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(0, nodes.getLength());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region").withAttribute("name", "r1")
-        .withConfig(changes).build();
+        .withConfig(changes).build(ModuleService.DEFAULT);
     XmlUtils.deleteNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -367,11 +379,13 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeUnnamed.xml")));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeUnnamed.xml")),
+        ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(0, nodes.getLength());
 
-    final XmlEntity xmlEntity = XmlEntity.builder().withType("pdx").withConfig(changes).build();
+    final XmlEntity xmlEntity =
+        XmlEntity.builder().withType("pdx").withConfig(changes).build(ModuleService.DEFAULT);
     XmlUtils.deleteNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -396,12 +410,14 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(TEST_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeUnnamedExtension.xml")));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeUnnamedExtension.xml")),
+        ModuleService.DEFAULT);
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(0, nodes.getLength());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("cache")
-        .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes).build();
+        .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes)
+        .build(ModuleService.DEFAULT);
     XmlUtils.deleteNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);

@@ -42,6 +42,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.services.module.ModuleService;
 
 public class JdbcConnectorServiceTest {
 
@@ -89,7 +90,7 @@ public class JdbcConnectorServiceTest {
     when(view.isColumnNullable(VALUE_COLUMN_NAME)).thenReturn(true);
 
     service = spy(JdbcConnectorServiceImpl.class);
-    service.init(cache);
+    service.init(cache, ModuleService.DEFAULT);
 
     keyColumns.add(KEY_COLUMN_NAME);
     allColumns.add(KEY_COLUMN_NAME);

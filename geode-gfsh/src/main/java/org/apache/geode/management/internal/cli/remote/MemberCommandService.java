@@ -22,6 +22,7 @@ import org.apache.geode.management.cli.CommandServiceException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * @deprecated since 1.3 use OnlineCommandProcessor directly
@@ -33,11 +34,12 @@ public class MemberCommandService extends org.apache.geode.management.cli.Comman
   private InternalCache cache;
   private CommandProcessor commandProcessor;
 
-  public MemberCommandService(InternalCache cache) throws CommandServiceException {
+  public MemberCommandService(InternalCache cache, ModuleService moduleService)
+      throws CommandServiceException {
     this.cache = cache;
     try {
       this.commandProcessor = cache.getService(CommandProcessor.class);
-      this.commandProcessor.init(cache);
+      this.commandProcessor.init(cache, moduleService);
     } catch (Exception e) {
       throw new CommandServiceException("Could not load commands.", e);
     }

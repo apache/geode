@@ -37,6 +37,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Function to create {@link MockCacheExtension} on a {@link Region}.
@@ -48,7 +49,11 @@ public class AlterMockCacheExtensionFunction implements Function, DataSerializab
 
   private static final long serialVersionUID = 1L;
 
-  public static final Function INSTANCE = new AlterMockCacheExtensionFunction();
+  private final ModuleService moduleService;
+
+  public AlterMockCacheExtensionFunction(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   @Override
   public void execute(FunctionContext context) {
@@ -69,7 +74,8 @@ public class AlterMockCacheExtensionFunction implements Function, DataSerializab
     }
 
     final XmlEntity xmlEntity =
-        XmlEntity.builder().withType(ELEMENT_CACHE).withNamespace(PREFIX, NAMESPACE).build();
+        XmlEntity.builder().withType(ELEMENT_CACHE).withNamespace(PREFIX, NAMESPACE)
+            .build(moduleService);
 
     final ResultSender<Object> resultSender = context.getResultSender();
     final String memberNameOrId =

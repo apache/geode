@@ -180,7 +180,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           xmlContent = generateInitialXmlContent();
         }
         try {
-          final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+          final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, moduleService);
           XmlUtils.addNewNode(doc, xmlEntity, moduleService);
           configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
           configRegion.put(group, configuration);
@@ -211,7 +211,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           String xmlContent = configuration.getCacheXmlContent();
           try {
             if (xmlContent != null && !xmlContent.isEmpty()) {
-              Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+              Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, moduleService);
               XmlUtils.deleteNode(doc, xmlEntity);
               configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
               configRegion.put(group, configuration);
@@ -249,7 +249,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
             xmlContent = sw.toString();
           }
           try {
-            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, moduleService);
             // Modify the cache attributes
             XmlUtils.modifyRootAttributes(doc, xmlEntity);
             // Change the xml content of the configuration and put it the config region
@@ -496,7 +496,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       String configurationXml = configuration.getCacheXmlContent();
       if (configurationXml != null && !configurationXml.isEmpty()) {
         try {
-          Document document = XmlUtils.createDocumentFromXml(configurationXml);
+          Document document = XmlUtils.createDocumentFromXml(configurationXml, moduleService);
           boolean removedInvalidReceivers = removeInvalidGatewayReceivers(document);
           boolean removedDuplicateReceivers = removeDuplicateGatewayReceivers(document);
           if (removedInvalidReceivers || removedDuplicateReceivers) {
@@ -820,7 +820,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     File cacheXmlFull = new File(groupConfigDir, configuration.getCacheXmlFileName());
     File propertiesFull = new File(groupConfigDir, configuration.getPropertiesFileName());
 
-    configuration.setCacheXmlFile(cacheXmlFull);
+    configuration.setCacheXmlFile(cacheXmlFull, moduleService);
     configuration.setPropertiesFile(propertiesFull);
 
     String deployedBy = getDeployedBy();

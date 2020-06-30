@@ -51,6 +51,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Domain class for defining a GemFire entity in XML.
@@ -114,12 +115,13 @@ public class XmlEntity implements VersionedDataSerializable {
    * @param key Key of the attribute to match, for example, "name" or "id".
    * @param value Value of the attribute to match.
    */
-  public XmlEntity(final String type, final String key, final String value) {
+  public XmlEntity(final String type, final String key, final String value,
+      ModuleService moduleService) {
     cacheProvider = createDefaultCacheProvider();
     this.type = type;
     attributes.put(key, value);
 
-    init();
+    init(moduleService);
   }
 
   /**
@@ -175,7 +177,7 @@ public class XmlEntity implements VersionedDataSerializable {
 
   public XmlEntity(final CacheProvider cacheProvider, final String parentType,
       final String childPrefix, final String childNamespace, final String childType,
-      final String key, final String value) {
+      final String key, final String value, ModuleService moduleService) {
     this.cacheProvider = cacheProvider;
     this.parentType = parentType;
     type = childType;
@@ -186,10 +188,10 @@ public class XmlEntity implements VersionedDataSerializable {
     attributes.put(key, value);
 
     searchString = "//" + this.parentType + '/' + childPrefix + ':' + type;
-    xmlDefinition = parseXmlForDefinition();
+    xmlDefinition = parseXmlForDefinition(moduleService);
   }
 
-  private String parseXmlForDefinition() {
+  private String parseXmlForDefinition(ModuleService moduleService) {
     final Cache cache = cacheProvider.getCache();
 
     final StringWriter stringWriter = new StringWriter();
@@ -199,7 +201,7 @@ public class XmlEntity implements VersionedDataSerializable {
     InputSource inputSource = new InputSource(new StringReader(stringWriter.toString()));
 
     try {
-      Document document = XmlUtils.getDocumentBuilder().parse(inputSource);
+      Document document = XmlUtils.getDocumentBuilder(moduleService).parse(inputSource);
       Node element = document.getElementsByTagNameNS(childNamespace, type).item(0);
       if (null != element) {
         return XmlUtils.elementToString(element);
@@ -232,19 +234,20 @@ public class XmlEntity implements VersionedDataSerializable {
   }
 
   /**
-   * Initialize new instances. Called from {@link #XmlEntity(String, String, String)} and
-   * {@link XmlEntityBuilder#build()}.
+   * Initialize new instances. Called from {@link #XmlEntity(String, String, String, ModuleService)}
+   * and
+   * {@link XmlEntityBuilder#build(ModuleService)}.
    *
    * @since GemFire 8.1
    */
-  private void init() {
+  private void init(ModuleService moduleService) {
     Assert.assertTrue(StringUtils.isNotBlank(type));
     Assert.assertTrue(StringUtils.isNotBlank(prefix));
     Assert.assertTrue(StringUtils.isNotBlank(namespace));
     Assert.assertTrue(attributes != null);
 
     if (null == xmlDefinition) {
-      xmlDefinition = loadXmlDefinition();
+      xmlDefinition = loadXmlDefinition(moduleService);
     }
   }
 
@@ -253,7 +256,7 @@ public class XmlEntity implements VersionedDataSerializable {
    *
    * @return XML string representation of the entity.
    */
-  private String loadXmlDefinition() {
+  private String loadXmlDefinition(ModuleService moduleService) {
     final Cache cache = cacheProvider.getCache();
 
     final StringWriter stringWriter = new StringWriter();
@@ -261,7 +264,7 @@ public class XmlEntity implements VersionedDataSerializable {
     CacheXmlGenerator.generate(cache, printWriter, false, false);
     printWriter.close();
 
-    return loadXmlDefinition(stringWriter.toString());
+    return loadXmlDefinition(stringWriter.toString(), moduleService);
   }
 
   /**
@@ -271,10 +274,11 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return XML for XmlEntity if found, otherwise {@code null}.
    * @since GemFire 8.1
    */
-  private String loadXmlDefinition(final String xmlDocument) {
+  private String loadXmlDefinition(final String xmlDocument, ModuleService moduleService) {
     try {
       InputSource inputSource = new InputSource(new StringReader(xmlDocument));
-      return loadXmlDefinition(XmlUtils.getDocumentBuilder().parse(inputSource));
+      return loadXmlDefinition(XmlUtils
+          .getDocumentBuilder(moduleService).parse(inputSource));
     } catch (IOException | SAXException | ParserConfigurationException | XPathExpressionException
         | TransformerFactoryConfigurationError | TransformerException e) {
       throw new InternalGemFireError("Could not parse XML when creating XMLEntity", e);
@@ -538,8 +542,8 @@ public class XmlEntity implements VersionedDataSerializable {
      * @since GemFire 8.1
      */
     @SuppressWarnings("deprecation")
-    public XmlEntity build() {
-      xmlEntity.init();
+    public XmlEntity build(ModuleService moduleService) {
+      xmlEntity.init(moduleService);
 
       final XmlEntity built = xmlEntity;
       xmlEntity = new XmlEntity();

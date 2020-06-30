@@ -31,6 +31,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.services.module.ModuleService;
 
 public class OnlineCommandProcessorTest {
 
@@ -52,7 +53,8 @@ public class OnlineCommandProcessorTest {
     when(executor.execute(any())).thenReturn(result);
 
     onlineCommandProcessor =
-        new OnlineCommandProcessor(properties, securityService, executor, null);
+        new OnlineCommandProcessor(properties, securityService, executor, null,
+            ModuleService.DEFAULT);
   }
 
   @Test

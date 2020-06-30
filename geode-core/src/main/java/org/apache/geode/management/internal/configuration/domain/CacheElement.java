@@ -115,7 +115,7 @@ public class CacheElement {
     final LinkedHashMap<String, CacheElement> elementMap = new LinkedHashMap<>();
 
     buildElementMapCacheType(elementMap,
-        resolveSchema(schemaLocationMap, CacheXml.GEODE_NAMESPACE, moduleService));
+        resolveSchema(schemaLocationMap, CacheXml.GEODE_NAMESPACE, moduleService), moduleService);
 
     // if we are ever concerned with the order of extensions or children process them here.
 
@@ -163,9 +163,9 @@ public class CacheElement {
    * @since GemFire 8.1
    */
   private static void buildElementMapCacheType(final LinkedHashMap<String, CacheElement> elementMap,
-      final InputSource inputSource)
+      final InputSource inputSource, ModuleService moduleService)
       throws SAXException, IOException, ParserConfigurationException, XPathExpressionException {
-    final Document doc = XmlUtils.getDocumentBuilder().parse(inputSource);
+    final Document doc = XmlUtils.getDocumentBuilder(moduleService).parse(inputSource);
 
     int rank = 0;
 

@@ -38,12 +38,13 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.management.internal.configuration.realizers.RegionConfigRealizer;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.services.module.ModuleService;
 
 public class RegionCreateFunctionJUnitTest {
 
   @Test
   public void testSkipIfExists() {
-    RegionCreateFunction function = spy(new RegionCreateFunction());
+    RegionCreateFunction function = spy(new RegionCreateFunction(ModuleService.DEFAULT));
     @SuppressWarnings("unchecked")
     FunctionContext<CreateRegionFunctionArgs> context = mock(FunctionContext.class);
     InternalCache internalCache = mock(InternalCache.class);

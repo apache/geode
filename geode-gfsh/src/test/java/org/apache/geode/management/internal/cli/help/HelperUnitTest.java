@@ -25,11 +25,11 @@ import java.lang.reflect.Method;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.internal.cli.commands.DescribeOfflineDiskStoreCommand;
 
 
@@ -38,7 +38,7 @@ public class HelperUnitTest {
   private CliCommand cliCommand;
   private Method method;
   private CliAvailabilityIndicator availabilityIndicator;
-  private CommandMarker commandMarker;
+  private GeodeCommandMarker commandMarker;
 
   private Annotation[][] annotations;
   private CliOption cliOption;

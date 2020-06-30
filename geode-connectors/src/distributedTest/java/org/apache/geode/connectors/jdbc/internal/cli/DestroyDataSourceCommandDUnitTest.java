@@ -39,6 +39,7 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -89,7 +90,8 @@ public class DestroyDataSourceCommandDUnitTest {
       InternalConfigurationPersistenceService ccService =
           internalLocator.getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
-      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+      Document document =
+          XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(), ModuleService.DEFAULT);
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
       AssertionsForClassTypes.assertThat(jndiBindings.getLength()).isEqualTo(0);
@@ -153,7 +155,8 @@ public class DestroyDataSourceCommandDUnitTest {
       InternalConfigurationPersistenceService ccService =
           internalLocator.getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
-      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+      Document document =
+          XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(), ModuleService.DEFAULT);
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
       AssertionsForClassTypes.assertThat(jndiBindings.getLength()).isEqualTo(0);

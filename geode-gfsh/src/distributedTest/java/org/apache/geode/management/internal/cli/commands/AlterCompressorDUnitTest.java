@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.CompressionTest;
@@ -193,7 +194,7 @@ public class AlterCompressorDUnitTest {
   }
 
   private static String addCompressor(String cacheXmlContent, String name) throws Exception {
-    Document document = XmlUtils.createDocumentFromXml(cacheXmlContent);
+    Document document = XmlUtils.createDocumentFromXml(cacheXmlContent, ModuleService.DEFAULT);
     NodeList nodeList = document.getElementsByTagName("region-attributes");
     Node compressor = document.createElement("compressor");
     Node classname = document.createElement("class-name");

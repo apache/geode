@@ -186,6 +186,7 @@ dependencies {
     javadocOnly project(':extensions:geode-modules-tomcat8')
     javadocOnly project(':geode-experimental-driver')
 
+    testImplementation(project(':geode-common-services'))
     testImplementation(project(':geode-core'))
     testImplementation(project(':geode-gfsh'))
     testImplementation(project(':geode-junit')) {

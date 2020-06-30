@@ -24,6 +24,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Generates fake JdbcConnectorService for tests.
@@ -45,7 +46,7 @@ public class TestConfigService {
       throws RegionMappingExistsException {
 
     JdbcConnectorServiceImpl service = new JdbcConnectorServiceImpl();
-    service.init(cache);
+    service.init(cache, ModuleService.DEFAULT);
     service.createRegionMapping(
         createRegionMapping(pdxClassName, ids, catalog, schema, fieldMappings));
     return service;

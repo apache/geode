@@ -39,6 +39,8 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('commons-codec:commons-codec')
 
+  compileOnly(project(':geode-common-services'))
+
   testImplementation(project(":geode-modules"))
   integrationTestImplementation(project(":geode-modules"))
   acceptanceTestImplementation(project(":geode-modules"))

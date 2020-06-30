@@ -34,6 +34,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Function to alter {@link MockRegionExtension} on a {@link Region}.
@@ -57,7 +58,11 @@ public class AlterMockRegionExtensionFunction implements Function, DataSerializa
 
   private static final long serialVersionUID = 1L;
 
-  public static final Function INSTANCE = new AlterMockRegionExtensionFunction();
+  private final ModuleService moduleService;
+
+  public AlterMockRegionExtensionFunction(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
 
   @Override
   public void execute(FunctionContext context) {
@@ -78,7 +83,8 @@ public class AlterMockRegionExtensionFunction implements Function, DataSerializa
       }
     }
 
-    XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", region.getName());
+    XmlEntity xmlEntity =
+        new XmlEntity(CacheXml.REGION, "name", region.getName(), moduleService);
 
     final ResultSender<Object> resultSender = context.getResultSender();
     final String memberNameOrId =

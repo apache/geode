@@ -24,6 +24,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DependenciesNotFoundException;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Processes remote GemFire Command Line Interface (CLI) commands. Refer to the vFabric GemFire
@@ -113,7 +114,7 @@ public abstract class CommandService {
    * @param cache Underlying <code>Cache</code> instance to be used to create a Command Service.
    * @throws CommandServiceException If command service could not be initialized.
    */
-  public static CommandService createLocalCommandService(Cache cache)
+  public static CommandService createLocalCommandService(Cache cache, ModuleService moduleService)
       throws CommandServiceException {
     if (cache == null) {
       throw new CacheClosedException("Can not create command service as cache doesn't exist.");
@@ -133,7 +134,7 @@ public abstract class CommandService {
 
       localCommandService =
           new org.apache.geode.management.internal.cli.remote.MemberCommandService(
-              (InternalCache) cache);
+              (InternalCache) cache, moduleService);
     }
 
     return localCommandService;

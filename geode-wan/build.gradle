@@ -61,7 +61,7 @@ dependencies {
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-
+  upgradeTestImplementation(project(':geode-common-services'))
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-junit'))
   upgradeTestImplementation(project(':geode-dunit'))

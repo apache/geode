@@ -207,7 +207,7 @@ public class Gfsh extends JLineShell {
     initializeEnvironment();
     // 7. Create Roo/SpringShell framework objects
     this.executionStrategy = new GfshExecutionStrategy(this);
-    this.parser = new GfshParser(new CommandManager());
+    this.parser = new GfshParser(new CommandManager(moduleService));
     // 8. Set max History file size
     setHistorySize(gfshConfig.getHistorySize());
 

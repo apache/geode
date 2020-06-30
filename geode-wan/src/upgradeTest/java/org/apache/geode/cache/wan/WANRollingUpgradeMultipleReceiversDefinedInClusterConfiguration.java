@@ -43,6 +43,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -186,7 +187,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     CacheXmlGenerator.generate(creation, printWriter, true, false, false);
     printWriter.close();
     String baseXml = stringWriter.toString();
-    Document document = XmlUtils.createDocumentFromXml(baseXml);
+    Document document = XmlUtils.createDocumentFromXml(baseXml, ModuleService.DEFAULT);
 
     // Add gateway-receiver for each attribute
     for (Attribute attribute : attributes) {
@@ -220,7 +221,8 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
         configurationRegion.get(ConfigurationPersistenceService.CLUSTER_CONFIG);
 
     // Verify the configuration contains no gateway-receiver elements
-    Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+    Document document =
+        XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(), ModuleService.DEFAULT);
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectedReceivers);
   }

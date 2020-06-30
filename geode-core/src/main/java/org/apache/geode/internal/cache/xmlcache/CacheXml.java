@@ -16,7 +16,8 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ServiceLoader;
+import java.util.List;
+import java.util.Set;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
@@ -27,8 +28,8 @@ import org.xml.sax.SAXParseException;
 
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link org.apache.geode.cache.Cache}
@@ -839,15 +840,16 @@ public abstract class CacheXml implements GeodeEntityResolver2, ErrorHandler {
                                                                  // assume the latest
       return resolveEntityByEntityResolvers(name, publicId, baseURI, systemId);
     }
-    InputSource result;
-    InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
-    if (stream != null) {
-      result = new InputSource(stream);
-    } else {
-      throw new SAXNotRecognizedException(
-          String.format("DTD not found: %s", location));
+
+    ModuleServiceResult<List<InputStream>> resourceResult =
+        moduleService.findResourceAsStream(location);
+    if (resourceResult.isSuccessful()) {
+      for (InputStream stream : resourceResult.getMessage()) {
+        return new InputSource(stream);
+      }
     }
-    return result;
+    throw new SAXNotRecognizedException(
+        String.format("DTD not found: %s", location));
   }
 
   /*
@@ -886,14 +888,16 @@ public abstract class CacheXml implements GeodeEntityResolver2, ErrorHandler {
    */
   private InputSource resolveEntityByEntityResolvers(String name, String publicId, String baseURI,
       String systemId) throws SAXException, IOException {
-    final ServiceLoader<GeodeEntityResolver2> entityResolvers =
-        ServiceLoader.load(GeodeEntityResolver2.class, ClassPathLoader.getLatest().asClassLoader());
-    for (final GeodeEntityResolver2 entityResolver : entityResolvers) {
-      entityResolver.init(moduleService);
-      final InputSource inputSource =
-          entityResolver.resolveEntity(name, publicId, baseURI, systemId);
-      if (null != inputSource) {
-        return inputSource;
+    ModuleServiceResult<Set<GeodeEntityResolver2>> serviceLoadResult =
+        moduleService.loadService(GeodeEntityResolver2.class);
+    if (serviceLoadResult.isSuccessful()) {
+      for (GeodeEntityResolver2 entityResolver : serviceLoadResult.getMessage()) {
+        entityResolver.init(moduleService);
+        final InputSource inputSource =
+            entityResolver.resolveEntity(name, publicId, baseURI, systemId);
+        if (null != inputSource) {
+          return inputSource;
+        }
       }
     }
     return null;

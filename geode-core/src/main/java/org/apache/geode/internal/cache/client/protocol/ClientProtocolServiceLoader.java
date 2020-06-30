@@ -31,7 +31,10 @@ public class ClientProtocolServiceLoader {
   private List<ClientProtocolService> initializeProtocolServices(ModuleService moduleService) {
     List<ClientProtocolService> resultList = new LinkedList<>();
     moduleService.loadService(ClientProtocolService.class)
-        .ifSuccessful(clientProtocolServices -> resultList.addAll(clientProtocolServices));
+        .ifSuccessful(clientProtocolServices -> clientProtocolServices.forEach((service -> {
+          service.init(moduleService);
+          resultList.add(service);
+        })));
     return resultList;
   }
 

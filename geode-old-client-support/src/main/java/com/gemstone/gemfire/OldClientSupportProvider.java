@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 import com.gemstone.gemfire.cache.execute.EmtpyRegionFunctionException;
@@ -54,7 +55,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
   }
 
   @Override
-  public boolean init(final Cache cache) {
+  public boolean init(final Cache cache, ModuleService moduleService) {
     InternalDataSerializer.setOldClientSupportService(this);
     return true;
   }

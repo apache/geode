@@ -28,6 +28,8 @@ dependencies {
   implementation('org.eclipse.jetty:jetty-server')
   implementation('org.apache.commons:commons-lang3')
 
+  compileOnly(project(':geode-common-services'))
+
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'

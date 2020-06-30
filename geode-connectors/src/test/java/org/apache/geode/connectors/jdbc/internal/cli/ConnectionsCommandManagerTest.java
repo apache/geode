@@ -23,13 +23,14 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
@@ -40,7 +41,7 @@ public class ConnectionsCommandManagerTest {
 
   @Before
   public void before() {
-    commandManager = new CommandManager();
+    commandManager = new CommandManager(ModuleService.DEFAULT);
   }
 
   /**
@@ -53,15 +54,15 @@ public class ConnectionsCommandManagerTest {
     packagesToScan.add(VersionCommand.class.getPackage().getName());
 
     ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
-    ServiceLoader<CommandMarker> loader =
-        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
+    ServiceLoader<GeodeCommandMarker> loader =
+        ServiceLoader.load(GeodeCommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
     loader.reload();
-    Iterator<CommandMarker> iterator = loader.iterator();
+    Iterator<GeodeCommandMarker> iterator = loader.iterator();
 
     Set<Class<?>> foundClasses;
 
     // geode's commands
-    foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
+    foundClasses = scanner.scanPackagesForClassesImplementing(GeodeCommandMarker.class,
         GfshCommand.class.getPackage().getName(),
         VersionCommand.class.getPackage().getName());
 
@@ -71,7 +72,7 @@ public class ConnectionsCommandManagerTest {
 
     Set<Class<?>> expectedClasses = new HashSet<>();
 
-    for (CommandMarker commandMarker : commandManager.getCommandMarkers()) {
+    for (GeodeCommandMarker commandMarker : commandManager.getCommandMarkers()) {
       expectedClasses.add(commandMarker.getClass());
     }
 

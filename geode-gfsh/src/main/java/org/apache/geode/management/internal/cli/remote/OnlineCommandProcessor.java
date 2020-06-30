@@ -40,11 +40,13 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * @since GemFire 7.0
  */
 public class OnlineCommandProcessor implements CommandProcessor {
+  private ModuleService moduleService;
   protected CommandExecutor executor;
   private GfshParser gfshParser;
 
@@ -59,10 +61,11 @@ public class OnlineCommandProcessor implements CommandProcessor {
 
   @VisibleForTesting
   public OnlineCommandProcessor(Properties cacheProperties, SecurityService securityService,
-      CommandExecutor commandExecutor, InternalCache cache) {
-    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, cache));
+      CommandExecutor commandExecutor, InternalCache cache, ModuleService moduleService) {
+    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, cache, moduleService));
     this.executor = commandExecutor;
     this.securityService = securityService;
+    this.moduleService = moduleService;
   }
 
   protected CommandExecutor getCommandExecutor() {
@@ -134,10 +137,13 @@ public class OnlineCommandProcessor implements CommandProcessor {
   }
 
   @Override
-  public boolean init(Cache cache) {
+  public boolean init(Cache cache, ModuleService moduleService) {
     Properties cacheProperties = cache.getDistributedSystem().getProperties();
+    this.moduleService = moduleService;
     this.securityService = ((InternalCache) cache).getSecurityService();
-    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache));
+    this.gfshParser =
+        new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache,
+            this.moduleService));
     this.executor = new CommandExecutor();
     this.cache = (InternalCache) cache;
 

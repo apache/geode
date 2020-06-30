@@ -42,6 +42,7 @@ import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -70,7 +71,7 @@ public class LuceneFunctionSecurityTest {
 
   @BeforeClass
   public static void setupFunctions() {
-    functions.add(new LuceneCreateIndexFunction());
+    functions.add(new LuceneCreateIndexFunction(ModuleService.DEFAULT));
     functions.add(new LuceneDescribeIndexFunction());
     functions.add(new LuceneDestroyIndexFunction());
     functions.add(new LuceneListIndexFunction());

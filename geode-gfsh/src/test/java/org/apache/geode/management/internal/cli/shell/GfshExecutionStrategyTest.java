@@ -23,15 +23,16 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GeodeCommandMarker;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest
@@ -122,7 +123,7 @@ public class GfshExecutionStrategyTest {
   /**
    * represents class for dummy methods
    */
-  public static class Commands implements CommandMarker {
+  public static class Commands implements GeodeCommandMarker {
     @CliMetaData(shellOnly = true)
     public ResultModel offlineCommand() {
       return ResultModel.createInfo(COMMAND1_SUCCESS);
@@ -142,6 +143,11 @@ public class GfshExecutionStrategyTest {
         interceptor = "org.apache.geode.management.internal.cli.shell.GfshExecutionStrategyTest$TestInterceptor")
     public ResultModel interceptedCommand() {
       return ResultModel.createInfo(COMMAND4_SUCCESS);
+    }
+
+    @Override
+    public void init(ModuleService moduleService) {
+
     }
   }
 

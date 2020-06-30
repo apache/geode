@@ -29,6 +29,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.services.module.ModuleService;
 
 public class MemberCommandServiceTest {
   private InternalCache cache;
@@ -43,14 +44,17 @@ public class MemberCommandServiceTest {
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
     when(cache.isClosed()).thenReturn(true);
     when(cache.getSecurityService()).thenReturn(securityService);
-    when(cache.getService(CommandProcessor.class)).thenReturn(new OnlineCommandProcessor());
+    OnlineCommandProcessor onlineCommandProcessor = new OnlineCommandProcessor();
+    onlineCommandProcessor.init(cache, ModuleService.DEFAULT);
+    when(cache.getService(CommandProcessor.class)).thenReturn(onlineCommandProcessor);
     when(distributedSystem.getProperties()).thenReturn(cacheProperties);
   }
 
   @Test
   public void processCommandError() throws Exception {
     @SuppressWarnings("deprecation")
-    MemberCommandService memberCommandService = new MemberCommandService(cache);
+    MemberCommandService memberCommandService =
+        new MemberCommandService(cache, ModuleService.DEFAULT);
 
     Result result = memberCommandService.processCommand("fake command");
 

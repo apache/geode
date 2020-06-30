@@ -52,7 +52,7 @@ public class CacheElementJUnitTest {
     final XMLReader xmlReader = XMLReaderFactory.createXMLReader();
     xmlReader.setEntityResolver(entityResolver);
 
-    return XmlUtils.getDocumentBuilder()
+    return XmlUtils.getDocumentBuilder(ModuleService.DEFAULT)
         .parse(entityResolver.resolveEntity(null, schemaLocation).getByteStream());
   }
 
@@ -101,7 +101,8 @@ public class CacheElementJUnitTest {
   @Test
   public void testBuildElementMap() throws Exception {
     final Document doc = XmlUtils.createDocumentFromReader(
-        new InputStreamReader(this.getClass().getResourceAsStream("CacheElementJUnitTest.xml")));
+        new InputStreamReader(this.getClass().getResourceAsStream("CacheElementJUnitTest.xml")),
+        ModuleService.DEFAULT);
 
     final LinkedHashMap<String, CacheElement> elementMap =
         CacheElement.buildElementMap(doc, ModuleService.DEFAULT);

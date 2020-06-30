@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Interface for a service that is linked to a cache.
@@ -33,7 +34,7 @@ public interface CacheService {
    * @return a boolean indicating whether the service was successfully initialized. If false, then
    *         the service will not subsequently be available.
    */
-  default boolean init(Cache cache) {
+  default boolean init(Cache cache, ModuleService moduleService) {
     return true;
   }
 

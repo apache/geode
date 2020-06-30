@@ -28,7 +28,8 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class ProtobufProtocolServiceJUnitTest {
   @Test
   public void initializeStatistics() {
-    ProtobufProtocolService service = new ProtobufProtocolService(ModuleService.DEFAULT);
+    ProtobufProtocolService service = new ProtobufProtocolService();
+    service.init(ModuleService.DEFAULT);
     service.initializeStatistics("first", new DummyStatisticsFactory());
     ClientStatistics firstStatistics = service.getStatistics();
     service.initializeStatistics("second", new DummyStatisticsFactory());

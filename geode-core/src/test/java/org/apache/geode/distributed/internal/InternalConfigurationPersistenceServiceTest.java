@@ -207,7 +207,8 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void removeDuplicateGatewayReceiversWithDefaultProperties() throws Exception {
     Document document =
-        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDefaultPropertiesXml());
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDefaultPropertiesXml(),
+            ModuleService.DEFAULT);
     System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
     service.removeDuplicateGatewayReceivers(document);
@@ -218,7 +219,8 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void removeInvalidGatewayReceiversWithDifferentHostNameForSenders() throws Exception {
     Document document =
-        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentHostNameForSendersXml());
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentHostNameForSendersXml(),
+            ModuleService.DEFAULT);
     System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
     service.removeInvalidGatewayReceivers(document);
@@ -229,7 +231,8 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void removeInvalidGatewayReceiversWithDifferentBindAddresses() throws Exception {
     Document document =
-        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentBindAddressesXml());
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentBindAddressesXml(),
+            ModuleService.DEFAULT);
     System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
     service.removeInvalidGatewayReceivers(document);
@@ -240,7 +243,8 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void keepValidGatewayReceiversWithDefaultBindAddress() throws Exception {
     Document document =
-        XmlUtils.createDocumentFromXml(getSingleReceiverWithDefaultBindAddressXml());
+        XmlUtils.createDocumentFromXml(getSingleReceiverWithDefaultBindAddressXml(),
+            ModuleService.DEFAULT);
     System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
     service.removeInvalidGatewayReceivers(document);
@@ -255,7 +259,8 @@ public class InternalConfigurationPersistenceServiceTest {
     Region<String, Configuration> configurationRegion = mock(Region.class);
     configuration.setCacheXmlContent(xml);
     System.out.println("Initial xml content:\n" + configuration.getCacheXmlContent());
-    Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+    Document document =
+        XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(), ModuleService.DEFAULT);
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectedInitialElements);
     Set<Map.Entry<String, Configuration>> configurationEntries = new HashSet<>();
@@ -263,7 +268,8 @@ public class InternalConfigurationPersistenceServiceTest {
     doReturn(configurationEntries).when(configurationRegion).entrySet();
     service.removeInvalidXmlConfigurations(configurationRegion);
     System.out.println("Processed xml content:\n" + configuration.getCacheXmlContent());
-    document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+    document =
+        XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(), ModuleService.DEFAULT);
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectFinalElements);
   }

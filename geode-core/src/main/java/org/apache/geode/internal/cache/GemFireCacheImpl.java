@@ -1697,7 +1697,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       // log the configuration received from the locator
       logger.info("Received cluster configuration from the locator");
-      logger.info(response.describeConfig());
+      logger.info(response.describeConfig(moduleService));
 
       Configuration clusterConfig = response.getRequestedConfiguration().get(CLUSTER_CONFIG);
       Properties clusterSecProperties =
@@ -1855,7 +1855,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (loadedServices.isSuccessful()) {
       for (CacheService service : loadedServices.getMessage()) {
         try {
-          if (service.init(this)) {
+          if (service.init(this, moduleService)) {
             this.services.put(service.getInterface(), service);
             logger.info("Initialized cache service {}", service.getClass().getName());
           }

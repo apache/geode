@@ -47,6 +47,7 @@ import org.apache.geode.internal.net.SSLUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalHttpService implements HttpService {
 
@@ -63,7 +64,7 @@ public class InternalHttpService implements HttpService {
   private List<WebAppContext> webApps = new ArrayList<>();
 
   @Override
-  public boolean init(Cache cache) {
+  public boolean init(Cache cache, ModuleService moduleService) {
     InternalDistributedSystem distributedSystem =
         (InternalDistributedSystem) cache.getDistributedSystem();
     DistributionConfig systemConfig = distributedSystem.getConfig();
