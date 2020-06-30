@@ -37,7 +37,6 @@ import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
-import org.apache.geode.redis.internal.executor.string.RedisStringCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
@@ -64,6 +63,14 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
     this.region = region;
     this.redisStats = redisStats;
     this.stripedExecutor = stripedExecutor;
+  }
+
+  public Region<ByteArrayWrapper, RedisData> getRegion() {
+    return region;
+  }
+
+  public RedisStats getRedisStats() {
+    return redisStats;
   }
 
   public StripedExecutor getStripedExecutor() {
@@ -608,145 +615,7 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
   @Override
   public int bitop(String operation, ByteArrayWrapper key,
       List<ByteArrayWrapper> sources) {
-    List<ByteArrayWrapper> sourceValues = new ArrayList<>();
-    int selfIndex = -1;
-    // Read all the source values, except for self, before locking the stripe.
-    RedisStringCommands commander = new RedisStringCommandsFunctionExecutor(region);
-    for (ByteArrayWrapper sourceKey : sources) {
-      if (sourceKey.equals(key)) {
-        // get self later after the stripe is locked
-        selfIndex = sourceValues.size();
-        sourceValues.add(null);
-      } else {
-        sourceValues.add(commander.get(sourceKey));
-      }
-    }
-    int indexOfSelf = selfIndex;
-    return stripedExecutor.execute(key, () -> doBitOp(operation, key, indexOfSelf, sourceValues));
-  }
-
-  private int doBitOp(String operation, ByteArrayWrapper key, int selfIndex,
-      List<ByteArrayWrapper> sourceValues) {
-    if (selfIndex != -1) {
-      RedisString redisString = getRedisString(key);
-      if (redisString != null) {
-        sourceValues.set(selfIndex, redisString.getValue());
-      }
-    }
-    int maxLength = 0;
-    for (ByteArrayWrapper sourceValue : sourceValues) {
-      if (sourceValue != null && maxLength < sourceValue.length()) {
-        maxLength = sourceValue.length();
-      }
-    }
-    ByteArrayWrapper newValue;
-    switch (operation) {
-      case "AND":
-        newValue = and(sourceValues, maxLength);
-        break;
-      case "OR":
-        newValue = or(sourceValues, maxLength);
-        break;
-      case "XOR":
-        newValue = xor(sourceValues, maxLength);
-        break;
-      default: // NOT
-        newValue = not(sourceValues.get(0), maxLength);
-        break;
-    }
-    if (newValue.length() == 0) {
-      region.remove(key);
-    } else {
-      RedisString redisString = getRedisStringForSet(key);
-      if (redisString == null) {
-        redisString = new RedisString(newValue);
-      } else {
-        redisString.set(newValue);
-      }
-      region.put(key, redisString);
-    }
-    return newValue.length();
-  }
-
-  private ByteArrayWrapper and(List<ByteArrayWrapper> sourceValues, int max) {
-    byte[] dest = new byte[max];
-    for (int i = 0; i < max; i++) {
-      byte b = 0;
-      boolean firstByte = true;
-      for (ByteArrayWrapper sourceValue : sourceValues) {
-        byte sourceByte = 0;
-        if (sourceValue != null && i < sourceValue.length()) {
-          sourceByte = sourceValue.toBytes()[i];
-        }
-        if (firstByte) {
-          b = sourceByte;
-          firstByte = false;
-        } else {
-          b &= sourceByte;
-        }
-      }
-      dest[i] = b;
-    }
-    return new ByteArrayWrapper(dest);
-  }
-
-  private ByteArrayWrapper or(List<ByteArrayWrapper> sourceValues, int max) {
-    byte[] dest = new byte[max];
-    for (int i = 0; i < max; i++) {
-      byte b = 0;
-      boolean firstByte = true;
-      for (ByteArrayWrapper sourceValue : sourceValues) {
-        byte sourceByte = 0;
-        if (sourceValue != null && i < sourceValue.length()) {
-          sourceByte = sourceValue.toBytes()[i];
-        }
-        if (firstByte) {
-          b = sourceByte;
-          firstByte = false;
-        } else {
-          b |= sourceByte;
-        }
-      }
-      dest[i] = b;
-    }
-    return new ByteArrayWrapper(dest);
-  }
-
-  private ByteArrayWrapper xor(List<ByteArrayWrapper> sourceValues, int max) {
-    byte[] dest = new byte[max];
-    for (int i = 0; i < max; i++) {
-      byte b = 0;
-      boolean firstByte = true;
-      for (ByteArrayWrapper sourceValue : sourceValues) {
-        byte sourceByte = 0;
-        if (sourceValue != null && i < sourceValue.length()) {
-          sourceByte = sourceValue.toBytes()[i];
-        }
-        if (firstByte) {
-          b = sourceByte;
-          firstByte = false;
-        } else {
-          b ^= sourceByte;
-        }
-      }
-      dest[i] = b;
-    }
-    return new ByteArrayWrapper(dest);
-  }
-
-  private ByteArrayWrapper not(ByteArrayWrapper sourceValue, int max) {
-    byte[] dest = new byte[max];
-    if (sourceValue == null) {
-      for (int i = 0; i < max; i++) {
-        dest[i] = ~0;
-      }
-    } else {
-      byte[] cA = sourceValue.toBytes();
-      for (int i = 0; i < max; i++) {
-        dest[i] = (byte) (~cA[i] & 0xFF);
-      }
-    }
-    return new ByteArrayWrapper(dest);
+    return RedisString.NULL.bitop(this, operation, key, sources);
   }
 
   @Override
@@ -813,7 +682,7 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
     return (RedisString) redisData;
   }
 
-  private RedisString getRedisString(ByteArrayWrapper key) {
+  RedisString getRedisString(ByteArrayWrapper key) {
     return checkStringType(getRedisData(key), false);
   }
 
@@ -825,7 +694,7 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
     return checkStringType(getRedisDataOrDefault(key, RedisString.NULL), true);
   }
 
-  private RedisString getRedisStringForSet(ByteArrayWrapper key) {
+  RedisString getRedisStringForSet(ByteArrayWrapper key) {
     RedisData redisData = getRedisData(key);
     if (redisData == null || redisData.getType() != REDIS_STRING) {
       return null;

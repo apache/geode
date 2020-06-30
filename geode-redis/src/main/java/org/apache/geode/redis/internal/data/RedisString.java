@@ -32,7 +32,7 @@ import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
-  public static final RedisString NULL = new NullRedisString();
+  public static final NullRedisString NULL = new NullRedisString();
 
   private ByteArrayWrapper value;
 
