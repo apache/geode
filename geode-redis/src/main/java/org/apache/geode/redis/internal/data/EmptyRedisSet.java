@@ -34,6 +34,11 @@ class EmptyRedisSet extends RedisSet {
   }
 
   @Override
+  public boolean isNull() {
+    return true;
+  }
+
+  @Override
   List<Object> sscan(Pattern matchPattern, int count, int cursor) {
     return emptyList();
   }

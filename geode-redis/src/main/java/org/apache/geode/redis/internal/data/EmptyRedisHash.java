@@ -30,6 +30,11 @@ public class EmptyRedisHash extends RedisHash {
   }
 
   @Override
+  public boolean isNull() {
+    return true;
+  }
+
+  @Override
   public int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     region.put(key, new RedisHash(fieldsToSet));

@@ -41,6 +41,11 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
+  public boolean isNull() {
+    return true;
+  }
+
+  @Override
   protected void valueAppend(byte[] bytes) {
     throw new UnsupportedOperationException();
   }
@@ -166,25 +171,19 @@ public class NullRedisString extends RedisString {
         return setnx(redisDataCommands, key, value, options);
       }
 
-      if (options.isXX() && redisDataCommands.getRedisData(key) == null) {
+      if (options.isXX() && redisDataCommands.getNonNullRedisData(key).isNull()) {
         return false;
       }
     }
 
-    RedisString redisString = redisDataCommands.getRedisStringForSet(key);
-    if (redisString == null) {
-      redisString = new RedisString(value);
-    } else {
-      redisString.set(value);
-    }
+    RedisString redisString = redisDataCommands.setRedisString(key, value);
     redisString.handleSetExpiration(options);
-    redisDataCommands.getRegion().put(key, redisString);
     return true;
   }
 
   private boolean setnx(RedisDataCommands redisDataCommands, ByteArrayWrapper key,
       ByteArrayWrapper value, SetOptions options) {
-    if (redisDataCommands.getRedisData(key) != null) {
+    if (redisDataCommands.getNonNullRedisData(key).exists()) {
       return false;
     }
     RedisString redisString = new RedisString(value);
@@ -228,7 +227,7 @@ public class NullRedisString extends RedisString {
       List<ByteArrayWrapper> sourceValues) {
     if (selfIndex != -1) {
       RedisString redisString = redisDataCommands.getRedisString(key);
-      if (redisString != null) {
+      if (!redisString.isNull()) {
         sourceValues.set(selfIndex, redisString.getValue());
       }
     }
@@ -256,13 +255,7 @@ public class NullRedisString extends RedisString {
     if (newValue.length() == 0) {
       redisDataCommands.getRegion().remove(key);
     } else {
-      RedisString redisString = redisDataCommands.getRedisStringForSet(key);
-      if (redisString == null) {
-        redisString = new RedisString(newValue);
-      } else {
-        redisString.set(newValue);
-      }
-      redisDataCommands.getRegion().put(key, redisString);
+      redisDataCommands.setRedisString(key, newValue);
     }
     return newValue.length();
   }

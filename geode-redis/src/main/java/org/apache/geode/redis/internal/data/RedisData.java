@@ -22,6 +22,19 @@ import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
 
 public interface RedisData extends Delta, DataSerializable {
+  NullRedisData NULL = new NullRedisData();
+
+  /**
+   * Returns true if this instance does not exist.
+   */
+  default boolean isNull() {
+    return false;
+  }
+
+  default boolean exists() {
+    return !isNull();
+  }
+
   RedisDataType getType();
 
   void setExpirationTimestamp(Region<ByteArrayWrapper, RedisData> region,
@@ -37,4 +50,14 @@ public interface RedisData extends Delta, DataSerializable {
   boolean hasExpired(long now);
 
   long pttl(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key);
+
+  int pexpireat(RedisDataCommands redisDataCommands, ByteArrayWrapper key, long timestamp);
+
+  void doExpiration(RedisDataCommands redisDataCommands, ByteArrayWrapper key);
+
+  String type();
+
+  boolean rename(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper oldKey,
+      ByteArrayWrapper newKey);
+
 }
