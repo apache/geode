@@ -23,6 +23,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 /**
@@ -154,6 +155,43 @@ public class NullRedisString extends RedisString {
     return newBytes.length;
   }
 
+  /**
+   * SET is currently mostly implemented here. It does not have an implementation on
+   * RedisString which is a bit odd.
+   */
+  public boolean set(RedisDataCommands redisDataCommands, ByteArrayWrapper key,
+      ByteArrayWrapper value, SetOptions options) {
+    if (options != null) {
+      if (options.isNX()) {
+        return setnx(redisDataCommands, key, value, options);
+      }
+
+      if (options.isXX() && redisDataCommands.getRedisData(key) == null) {
+        return false;
+      }
+    }
+
+    RedisString redisString = redisDataCommands.getRedisStringForSet(key);
+    if (redisString == null) {
+      redisString = new RedisString(value);
+    } else {
+      redisString.set(value);
+    }
+    redisString.handleSetExpiration(options);
+    redisDataCommands.getRegion().put(key, redisString);
+    return true;
+  }
+
+  private boolean setnx(RedisDataCommands redisDataCommands, ByteArrayWrapper key,
+      ByteArrayWrapper value, SetOptions options) {
+    if (redisDataCommands.getRedisData(key) != null) {
+      return false;
+    }
+    RedisString redisString = new RedisString(value);
+    redisString.handleSetExpiration(options);
+    redisDataCommands.getRegion().put(key, redisString);
+    return true;
+  }
 
   /**
    * bitop is currently only implemented here. It does not have an implementation on

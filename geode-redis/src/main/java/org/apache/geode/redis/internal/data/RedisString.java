@@ -29,6 +29,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
+import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
@@ -678,6 +679,17 @@ public class RedisString extends AbstractRedisData {
         super.toString() + ", " +
         "value=" + value +
         '}';
+  }
+
+  protected void handleSetExpiration(SetOptions options) {
+    long setExpiration = options == null ? 0L : options.getExpiration();
+    if (setExpiration != 0) {
+      long now = System.currentTimeMillis();
+      long timestamp = now + setExpiration;
+      setExpirationTimestampNoDelta(timestamp);
+    } else if (options == null || !options.isKeepTTL()) {
+      persistNoDelta();
+    }
   }
 
   ////// methods that modify the "value" field ////////////

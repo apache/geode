@@ -172,7 +172,7 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
     return true;
   }
 
-  private RedisData getRedisData(ByteArrayWrapper key) {
+  RedisData getRedisData(ByteArrayWrapper key) {
     return getRedisDataOrDefault(key, null);
   }
 
@@ -538,50 +538,7 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
-    return stripedExecutor.execute(key, () -> doset(key, value, options));
-  }
-
-  private boolean doset(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
-    if (options != null) {
-      if (options.isNX()) {
-        return setnx(key, value, options);
-      }
-
-      if (options.isXX() && getRedisData(key) == null) {
-        return false;
-      }
-    }
-
-    RedisString redisString = getRedisStringForSet(key);
-    if (redisString == null) {
-      redisString = new RedisString(value);
-    } else {
-      redisString.set(value);
-    }
-    handleSetExpiration(redisString, options);
-    region.put(key, redisString);
-    return true;
-  }
-
-  private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
-    if (getRedisData(key) != null) {
-      return false;
-    }
-    RedisString redisString = new RedisString(value);
-    handleSetExpiration(redisString, options);
-    region.put(key, redisString);
-    return true;
-  }
-
-  private void handleSetExpiration(RedisString redisString, SetOptions options) {
-    long setExpiration = options == null ? 0L : options.getExpiration();
-    if (setExpiration != 0) {
-      long now = System.currentTimeMillis();
-      long timestamp = now + setExpiration;
-      redisString.setExpirationTimestampNoDelta(timestamp);
-    } else if (options == null || !options.isKeepTTL()) {
-      redisString.persistNoDelta();
-    }
+    return stripedExecutor.execute(key, () -> RedisString.NULL.set(this, key, value, options));
   }
 
   @Override
