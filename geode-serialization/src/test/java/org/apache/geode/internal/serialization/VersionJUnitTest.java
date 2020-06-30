@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -68,4 +69,19 @@ public class VersionJUnitTest {
       throws UnsupportedSerializationVersionException {
     Version.fromOrdinal(Version.CURRENT_ORDINAL);
   }
+
+  @Test
+  public void ordinalImplMatchesVersion() {
+    /*
+     * We are not using the Version.getVersionOrdinal(short) factory method here
+     * because we intend to test that Version and VersionOrdinal are cross-comparable.
+     * The factory would return Version.GFE_82 which would foil our testing.
+     */
+    final VersionOrdinalImpl versionOrdinal = new VersionOrdinalImpl(Version.GFE_82.ordinal);
+    assertThat(Version.GFE_82.equals(versionOrdinal))
+        .as("GFE_82 Version equals VersionOrdinal").isTrue();
+    assertThat(versionOrdinal.equals(Version.GFE_82))
+        .as("GFE_82 VersionOrdinal equals Version").isTrue();
+  }
+
 }

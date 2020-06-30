@@ -204,9 +204,9 @@ public class CreateGatewaySenderCommandTest {
     // Create a set of mixed version members
     Set<DistributedMember> members = new HashSet<>();
     InternalDistributedMember currentVersionMember = mock(InternalDistributedMember.class);
-    when(currentVersionMember.getVersionObject()).thenReturn(Version.CURRENT);
+    when(currentVersionMember.getVersionOrdinalObject()).thenReturn(Version.CURRENT);
     InternalDistributedMember oldVersionMember = mock(InternalDistributedMember.class);
-    when(oldVersionMember.getVersionObject()).thenReturn(Version.GEODE_1_4_0);
+    when(oldVersionMember.getVersionOrdinalObject()).thenReturn(Version.GEODE_1_4_0);
     members.add(currentVersionMember);
     members.add(oldVersionMember);
     doReturn(members).when(command).getMembers(any(), any());

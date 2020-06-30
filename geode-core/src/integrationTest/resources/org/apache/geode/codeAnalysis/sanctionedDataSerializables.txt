@@ -282,74 +282,6 @@ toData,12
 toDataPre_GFE_7_1_0_0,12
 toDataPre_GFE_9_0_0_0,12
 
-org/apache/geode/distributed/internal/membership/adapter/LocalViewMessage,2
-fromData,8
-toData,8
-
-org/apache/geode/distributed/internal/membership/gms/GMSMembershipView,2
-fromData,121
-toData,72
-
-org/apache/geode/distributed/internal/membership/gms/locator/FindCoordinatorRequest,2
-fromData,112
-toData,132
-
-org/apache/geode/distributed/internal/membership/gms/locator/FindCoordinatorResponse,2
-fromData,130
-toData,114
-
-org/apache/geode/distributed/internal/membership/gms/locator/GetViewRequest,2
-fromData,1
-toData,1
-
-org/apache/geode/distributed/internal/membership/gms/locator/GetViewResponse,2
-fromData,20
-toData,17
-
-org/apache/geode/distributed/internal/membership/gms/messages/FinalCheckPassedMessage,2
-fromData,20
-toData,17
-
-org/apache/geode/distributed/internal/membership/gms/messages/HeartbeatMessage,2
-fromData,11
-toData,11
-
-org/apache/geode/distributed/internal/membership/gms/messages/HeartbeatRequestMessage,2
-fromData,30
-toData,27
-
-org/apache/geode/distributed/internal/membership/gms/messages/InstallViewMessage,2
-fromData,60
-toData,56
-
-org/apache/geode/distributed/internal/membership/gms/messages/JoinRequestMessage,2
-fromData,63
-toData,60
-
-org/apache/geode/distributed/internal/membership/gms/messages/JoinResponseMessage,2
-fromData,63
-toData,57
-
-org/apache/geode/distributed/internal/membership/gms/messages/LeaveRequestMessage,2
-fromData,28
-toData,25
-
-org/apache/geode/distributed/internal/membership/gms/messages/NetworkPartitionMessage,2
-fromData,1
-toData,1
-
-org/apache/geode/distributed/internal/membership/gms/messages/RemoveMemberMessage,2
-fromData,28
-toData,25
-
-org/apache/geode/distributed/internal/membership/gms/messages/SuspectMembersMessage,2
-fromData,63
-toData,92
-
-org/apache/geode/distributed/internal/membership/gms/messages/ViewAckMessage,2
-fromData,40
-toData,37
-
 org/apache/geode/distributed/internal/streaming/StreamingOperation$RequestStreamingMessage,2
 fromData,17
 toData,17
@@ -357,14 +289,6 @@ toData,17
 org/apache/geode/distributed/internal/streaming/StreamingOperation$StreamingReplyMessage,2
 fromData,425
 toData,86
-
-org/apache/geode/distributed/internal/tcpserver/InfoResponse,2
-fromData,9
-toData,9
-
-org/apache/geode/distributed/internal/tcpserver/VersionResponse,2
-fromData,11
-toData,11
 
 org/apache/geode/internal/DSFIDFactory,2
 fromData,8
@@ -577,9 +501,6 @@ toData,7
 org/apache/geode/internal/admin/remote/LicenseInfoResponse,2
 fromData,18
 toData,15
-
-org/apache/geode/internal/admin/remote/MissingPersistentIDsRequest,1
-fromData,7
 
 org/apache/geode/internal/admin/remote/MissingPersistentIDsResponse,2
 fromData,129
@@ -947,7 +868,7 @@ org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllEntryData,1
 toData,252
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllMessage,2
-fromData,217
+fromData,214
 toData,188
 
 org/apache/geode/internal/cache/DistributedRegionFunctionStreamingMessage,2
@@ -955,7 +876,7 @@ fromData,177
 toData,174
 
 org/apache/geode/internal/cache/DistributedRemoveAllOperation$RemoveAllMessage,2
-fromData,217
+fromData,194
 toData,188
 
 org/apache/geode/internal/cache/DistributedTombstoneOperation$TombstoneMessage,2
@@ -1640,7 +1561,7 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/partitioned/PutAllPRMessage,2
-fromData,187
+fromData,164
 toData,201
 
 org/apache/geode/internal/cache/partitioned/PutAllPRMessage$PutAllReplyMessage,2
@@ -1668,7 +1589,7 @@ fromData,54
 toData,35
 
 org/apache/geode/internal/cache/partitioned/RemoveAllPRMessage,2
-fromData,194
+fromData,164
 toData,201
 
 org/apache/geode/internal/cache/partitioned/RemoveAllPRMessage$RemoveAllReplyMessage,2
@@ -1914,7 +1835,7 @@ fromData,45
 toData,112
 
 org/apache/geode/internal/cache/tx/RemotePutAllMessage,2
-fromData,227
+fromData,224
 toData,180
 
 org/apache/geode/internal/cache/tx/RemotePutAllMessage$PutAllReplyMessage,2
@@ -1930,7 +1851,7 @@ fromData,84
 toData,95
 
 org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage,2
-fromData,207
+fromData,204
 toData,180
 
 org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage$RemoveAllReplyMessage,2
@@ -2034,7 +1955,7 @@ fromData,17
 toData,17
 
 org/apache/geode/management/internal/configuration/domain/Configuration,2
-fromData,110
+fromData,111
 toData,62
 
 org/apache/geode/management/internal/configuration/domain/ConfigurationChangeResult,2

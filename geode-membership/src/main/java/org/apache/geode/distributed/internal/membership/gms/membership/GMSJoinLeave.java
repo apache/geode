@@ -1466,6 +1466,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         }
       }
 
+      newView.correctWrongVersionIn(localAddress);
+
       if (isJoined && isNetworkPartition(newView, true)) {
         if (quorumRequired) {
           Set<ID> crashes = newView.getActualCrashedMembers(currentView);

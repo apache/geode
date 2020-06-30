@@ -68,6 +68,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -1587,6 +1588,36 @@ public class GMSJoinLeaveJUnitTest {
     } catch (MembershipConfigurationException e) {
       // expected
     }
+  }
+
+  // GEODE-8240 could cause this member's identifier to have the wrong version so patch it up
+  @Test
+  public void repairWrongVersionInView() throws Exception {
+
+    initMocks();
+
+    List<MemberIdentifier> viewmembers =
+        Arrays.asList(new MemberIdentifier[] {mockMembers[0], gmsJoinLeaveMemberId});
+
+    final GMSMembershipView<MemberIdentifier> viewWithWrongVersion =
+        new GMSMembershipView<>(mockMembers[0], 2, viewmembers);
+
+    // clone member ID
+    final MemberIdentifierImpl myMemberIDWithWrongVersion =
+        new MemberIdentifierImpl(gmsJoinLeaveMemberId.getMemberData());
+
+    // this test must live in the 1.12 and later lines so pick a pre-1.12 version
+    final Version oldVersion = Version.GEODE_1_11_0;
+    myMemberIDWithWrongVersion.setVersionObjectForTest(oldVersion);
+
+    viewWithWrongVersion.remove(gmsJoinLeaveMemberId);
+    viewWithWrongVersion.add(myMemberIDWithWrongVersion);
+
+    gmsJoinLeave.installView(viewWithWrongVersion);
+
+    assertThat(
+        gmsJoinLeave.getView().getCanonicalID(gmsJoinLeaveMemberId).getVersionOrdinalObject())
+            .isEqualTo(Version.getCurrentVersion());
   }
 
   private void installView() throws Exception {
