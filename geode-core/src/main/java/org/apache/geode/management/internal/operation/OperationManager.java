@@ -25,6 +25,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.operation.RestoreRedundancyRequest;
 import org.apache.geode.management.runtime.OperationResult;
 
 @Experimental
@@ -42,6 +43,7 @@ public class OperationManager implements AutoCloseable {
     // initialize the list of operation performers
     performers = new ConcurrentHashMap<>();
     registerOperation(RebalanceOperation.class, new RebalanceOperationPerformer());
+    registerOperation(RestoreRedundancyRequest.class, new RestoreRedundancyPerformer());
   }
 
   /**
