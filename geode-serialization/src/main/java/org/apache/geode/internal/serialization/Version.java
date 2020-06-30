@@ -35,7 +35,7 @@ import org.apache.geode.annotations.Immutable;
  * @since GemFire 5.7
  */
 @Immutable
-public class Version implements Comparable<Version> {
+public class Version extends VersionOrdinalImpl {
 
   /** The name of this version */
   private final transient String name;
@@ -51,9 +51,6 @@ public class Version implements Comparable<Version> {
   private final byte minorVersion;
   private final byte release;
   private final byte patch;
-
-  /** byte used as ordinal to represent this <code>Version</code> */
-  private final short ordinal;
 
   public static final int HIGHEST_VERSION = 125;
 
@@ -319,13 +316,13 @@ public class Version implements Comparable<Version> {
   /** Creates a new instance of <code>Version</code> */
   private Version(String product, String name, byte major, byte minor, byte release, byte patch,
       short ordinal) {
+    super(ordinal);
     this.productName = product;
     this.name = name;
     this.majorVersion = major;
     this.minorVersion = minor;
     this.release = release;
     this.patch = patch;
-    this.ordinal = ordinal;
     this.methodSuffix = this.productName + "_" + this.majorVersion + "_" + this.minorVersion + "_"
         + this.release + "_" + this.patch;
     if (ordinal != TOKEN_ORDINAL) {
@@ -527,11 +524,6 @@ public class Version implements Comparable<Version> {
     return this.patch;
   }
 
-  public short ordinal() {
-    return this.ordinal;
-  }
-
-
   /**
    * Returns whether this <code>Version</code> is compatible with the input <code>Version</code>
    *
@@ -543,39 +535,6 @@ public class Version implements Comparable<Version> {
   }
 
   /**
-   * Finds the Version instance corresponding to the given ordinal and returns the result of
-   * compareTo(Version)
-   *
-   * @param other the ordinal of the other Version object
-   * @return negative if this version is older, positive if this version is newer, 0 if this is the
-   *         same version
-   */
-  public int compareTo(short other) {
-    // first try to find the actual Version object
-    Version v = fromOrdinalNoThrow(other, false);
-    if (v == null) {
-      // failing that we use the old method of comparing Versions:
-      return this.ordinal() - other;
-    }
-    return compareTo(v);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public int compareTo(Version other) {
-    if (other != null) {
-      // byte min/max can't overflow int, so use (a-b)
-      final int thisOrdinal = this.ordinal;
-      final int otherOrdinal = other.ordinal;
-      return (thisOrdinal - otherOrdinal);
-    } else {
-      return 1;
-    }
-  }
-
-  /**
    * Returns a string representation for this <code>Version</code>.
    *
    * @return the name of this operation.
@@ -583,40 +542,6 @@ public class Version implements Comparable<Version> {
   @Override
   public String toString() {
     return this.productName + " " + this.name;
-  }
-
-  public static String toString(short ordinal) {
-    if (ordinal <= CURRENT.ordinal) {
-      try {
-        return fromOrdinal(ordinal).toString();
-      } catch (UnsupportedSerializationVersionException uve) {
-        // ignored in toString()
-      }
-    }
-    return "UNKNOWN[ordinal=" + ordinal + ']';
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    if (other == this)
-      return true;
-    if (other != null && other.getClass() == Version.class) {
-      return this.ordinal == ((Version) other).ordinal;
-    } else {
-      return false;
-    }
-  }
-
-  public boolean equals(Version other) {
-    return other != null && this.ordinal == other.ordinal;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = 17;
-    final int mult = 37;
-    result = mult * result + this.ordinal;
-    return result;
   }
 
   public byte[] toBytes() {
@@ -633,50 +558,6 @@ public class Version implements Comparable<Version> {
   public static Iterable<? extends Version> getAllVersions() {
     return Arrays.asList(VALUES).stream().filter(x -> x != null && x != TEST_VERSION)
         .collect(Collectors.toList());
-  }
-
-  public boolean isCurrentVersion() {
-    return this.ordinal == CURRENT.ordinal;
-  }
-
-  /**
-   * Test if this version is older than given version.
-   *
-   * @param version to compare to this version
-   * @return true if this is older than version, otherwise false.
-   */
-  public final boolean isOlderThan(final Version version) {
-    return compareTo(version) < 0;
-  }
-
-  /**
-   * Test if this version is not older than given version.
-   *
-   * @param version to compare to this version
-   * @return true if this is the same version or newer, otherwise false.
-   */
-  public final boolean isNotOlderThan(final Version version) {
-    return compareTo(version) >= 0;
-  }
-
-  /**
-   * Test if this version is newer than given version.
-   *
-   * @param version to compare to this version
-   * @return true if this is newer than version, otherwise false.
-   */
-  public final boolean isNewerThan(final Version version) {
-    return compareTo(version) > 0;
-  }
-
-  /**
-   * Test if this version is not newer than given version.
-   *
-   * @param version to compare to this version
-   * @return true if this is the same version or older, otherwise false.
-   */
-  public final boolean isNotNewerThan(final Version version) {
-    return compareTo(version) <= 0;
   }
 
 }

@@ -4398,7 +4398,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     // This block prevents sending a message to old members that do not know about
     // the RemoveCacheServerProfileMessage
-    otherMembers.removeIf(member -> Version.GEODE_1_5_0.compareTo(member.getVersionObject()) > 0);
+    otherMembers
+        .removeIf(member -> Version.GEODE_1_5_0.compareTo(member.getVersionOrdinalObject()) > 0);
 
     if (!otherMembers.isEmpty()) {
       if (logger.isDebugEnabled()) {

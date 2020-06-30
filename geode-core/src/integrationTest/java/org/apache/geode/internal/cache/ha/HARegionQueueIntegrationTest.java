@@ -509,7 +509,7 @@ public class HARegionQueueIntegrationTest {
   private InternalDistributedMember createMember() {
     // Create an InternalDistributedMember
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(member.getVersionObject()).thenReturn(Version.CURRENT);
+    when(member.getVersionOrdinalObject()).thenReturn(Version.CURRENT);
     return member;
   }
 

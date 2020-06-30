@@ -240,7 +240,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
       final Version version = StaticSerialization.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.putAllDataCount; i++) {
-        this.putAllData[i] = new PutAllEntryData(in, context, this.eventId, i, version, bytesIn);
+        this.putAllData[i] = new PutAllEntryData(in, context, this.eventId, i);
       }
 
       boolean hasTags = in.readBoolean();

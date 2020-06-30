@@ -235,7 +235,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
       final Version version = StaticSerialization.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.removeAllDataCount; i++) {
-        this.removeAllData[i] = new RemoveAllEntryData(in, this.eventId, i, version, bytesIn,
+        this.removeAllData[i] = new RemoveAllEntryData(in, this.eventId, i,
             context);
       }
 

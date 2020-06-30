@@ -344,7 +344,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
 
         String msg =
             String.format("memberID cannot be null for persistent regions: %s", tag);
-        RuntimeException ex = (sender.getVersionObject().isOlderThan(Version.GFE_80))
+        RuntimeException ex = (sender.getVersionOrdinalObject().isOlderThan(Version.GFE_80))
             ? new InternalGemFireException(msg) : new InvalidVersionException(msg);
         throw ex;
       }

@@ -156,7 +156,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       final Version version = StaticSerialization.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < putAllSize; i++) {
-        putAllEntries[i] = new PutAllEntryData(in, context, this.eventID, i, version, bytesIn);
+        putAllEntries[i] = new PutAllEntryData(in, context, this.eventID, i);
       }
 
       boolean hasTags = in.readBoolean();
@@ -206,7 +206,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     final Version version = StaticSerialization.getVersionForDataStreamOrNull(in);
     final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
     for (int i = 0; i < removeAllSize; i++) {
-      removeAllData[i] = new RemoveAllEntryData(in, this.eventID, i, version, bytesIn, context);
+      removeAllData[i] = new RemoveAllEntryData(in, this.eventID, i, context);
     }
 
     boolean hasTags = in.readBoolean();

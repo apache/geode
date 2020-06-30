@@ -338,14 +338,14 @@ public class InitialImageOperation {
       final ClusterDistributionManager dm =
           (ClusterDistributionManager) this.region.getDistributionManager();
       boolean allowDeltaGII = true;
-      if (FORCE_FULL_GII || recipient.getVersionObject().isOlderThan(Version.GFE_80)) {
+      if (FORCE_FULL_GII || recipient.getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
         allowDeltaGII = false;
       }
       Set keysOfUnfinishedOps = null;
       RegionVersionVector received_rvv = null;
       RegionVersionVector remote_rvv = null;
       if (this.region.getConcurrencyChecksEnabled()
-          && recipient.getVersionObject().isNotOlderThan(Version.GFE_80)) {
+          && recipient.getVersionOrdinalObject().isNotOlderThan(Version.GFE_80)) {
         if (internalBeforeRequestRVV != null
             && internalBeforeRequestRVV.getRegionName().equals(this.region.getName())) {
           internalBeforeRequestRVV.run();
@@ -746,7 +746,7 @@ public class InitialImageOperation {
           Set recipients = this.region.getCacheDistributionAdvisor().adviseReplicates();
           for (Iterator it = recipients.iterator(); it.hasNext();) {
             InternalDistributedMember mbr = (InternalDistributedMember) it.next();
-            if (mbr.getVersionObject().isOlderThan(Version.GFE_80)) {
+            if (mbr.getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
               it.remove();
             }
           }
@@ -815,7 +815,7 @@ public class InitialImageOperation {
    * @param entries entries to add to the region
    * @return false if should abort (region was destroyed or cache was closed)
    */
-  boolean processChunk(List entries, InternalDistributedMember sender, Version remoteVersion)
+  boolean processChunk(List entries, InternalDistributedMember sender)
       throws IOException, ClassNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final boolean isTraceEnabled = logger.isTraceEnabled();
@@ -1190,7 +1190,7 @@ public class InitialImageOperation {
         region.recordEventState(msg.getSender(), msg.eventState);
       }
       if (msg.versionVector != null
-          && msg.getSender().getVersionObject().isOlderThan(Version.GFE_80)
+          && msg.getSender().getVersionOrdinalObject().isOlderThan(Version.GFE_80)
           && region.getConcurrencyChecksEnabled()) {
         // for older version, save received rvv from RegionStateMessage
         logger.debug("Applying version vector to {}: {}", region.getName(), msg.versionVector);
@@ -1322,7 +1322,7 @@ public class InitialImageOperation {
               // bug 37461: don't allow abort flag to be reset
               boolean isAborted = this.abort; // volatile fetch
               if (!isAborted) {
-                isAborted = !processChunk(m.entries, m.getSender(), m.remoteVersion);
+                isAborted = !processChunk(m.entries, m.getSender());
                 if (isAborted) {
                   this.abort = true; // volatile store
                 } else {
@@ -1599,7 +1599,7 @@ public class InitialImageOperation {
     }
 
     public boolean goWithFullGII(DistributedRegion rgn, RegionVersionVector requesterRVV) {
-      if (getSender().getVersionObject().isOlderThan(Version.GFE_80)) {
+      if (getSender().getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
         // pre-8.0 could not handle a delta-GII
         return true;
       }
@@ -1744,7 +1744,7 @@ public class InitialImageOperation {
             if (eventState != null && eventState.size() > 0) {
               RegionStateMessage.send(dm, getSender(), this.processorId, eventState, true);
             }
-          } else if (getSender().getVersionObject().isOlderThan(Version.GFE_80)) {
+          } else if (getSender().getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
             // older versions of the product expect a RegionStateMessage at this point
             if (rgn.getConcurrencyChecksEnabled() && this.versionVector == null
                 && !recoveringForLostMember) {
