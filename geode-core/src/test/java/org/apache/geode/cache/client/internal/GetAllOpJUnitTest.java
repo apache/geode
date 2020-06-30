@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +35,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.fake.Fakes;
 
 public class GetAllOpJUnitTest {
@@ -44,8 +42,6 @@ public class GetAllOpJUnitTest {
   private GemFireCacheImpl cache = Fakes.cache();
   private LocalRegion region = mock(LocalRegion.class);
   ArrayList<Integer> keys;
-
-  protected static final Logger logger = LogService.getLogger();
 
   @Before
   public void setup() {
