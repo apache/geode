@@ -82,7 +82,7 @@ public class StatusServerExitCodeAcceptanceTest {
     Path javaHomeFile = new File(javaHome).toPath();
     assertThat(javaHomeFile).exists();
 
-    printDirectoryTree(javaHomeFile.toFile());
+    System.out.println(printDirectoryTree(javaHomeFile.toFile()));
 
     String toolsPath = javaHomeFile.toFile().getName().equalsIgnoreCase("jre")
         ? ".." + File.separator + "lib" + File.separator + "tools.jar"
