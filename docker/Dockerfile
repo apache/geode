@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM bellsoft/liberica-openjdk-alpine:8
+FROM openjdk:8-jre-alpine
 
 # runtime dependencies
 RUN apk add --no-cache \
