@@ -86,7 +86,7 @@ public class TestExecuter
     final FileTree testClassFiles = testExecutionSpec.getCandidateClassFiles();
 
     Runnable detector;
-    if (testExecutionSpec.isScanForTestClasses()) {
+    if (testExecutionSpec.isScanForTestClasses() && testFramework.getDetector() != null) {
       TestFrameworkDetector
           testFrameworkDetector =
           testExecutionSpec.getTestFramework().getDetector();
