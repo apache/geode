@@ -107,9 +107,9 @@ public abstract class SocketUtils {
     int amountRead;
     // if bytes are available we read that number of bytes. Otherwise we do a blocking read
     // of buffer.remaining() bytes
-    int amountToRead =
-        stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
-            : inputBuffer.remaining();
+    int amountToRead = inputBuffer.remaining();
+    // stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
+    // : inputBuffer.remaining();
     if (inputBuffer.hasArray()) {
       amountRead = stream.read(inputBuffer.array(),
           inputBuffer.arrayOffset() + inputBuffer.position(), amountToRead);

@@ -567,6 +567,9 @@ public class Connection implements Runnable {
   }
 
   private void setSocketBufferSize(Socket sock, boolean send, int requestedSize) {
+    if (conduit.useTLSOverOldIO()) {
+      return;
+    }
     if (requestedSize > 0) {
       try {
         int currentSize = send ? sock.getSendBufferSize() : sock.getReceiveBufferSize();
@@ -1154,8 +1157,8 @@ public class Connection implements Runnable {
     int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
     boolean useTLSOverOldIO = getConduit().useTLSOverOldIO();
     if (useTLSOverOldIO) {
-      int socketBufferSize =
-          sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
+      int socketBufferSize = -1;
+      // sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
       socket = getConduit().getSocketCreator().forAdvancedUse().connect(
           new HostAndPort(remoteID.getHostName(), remoteID.getDirectChannelPort()),
           0, null, false, socketBufferSize, true);
@@ -1620,6 +1623,7 @@ public class Connection implements Runnable {
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
+              conduit.getStats().incFinalCheckResponsesReceived(); // BRUCE: remove stat
               amountRead = SocketUtils.readFromSocket(socket, buff, socket.getInputStream());
             } else {
               amountRead = buff.position();
@@ -1765,6 +1769,7 @@ public class Connection implements Runnable {
             .handshakeIfSocketIsSSL(socket, getConduit().idleConnectionTimeout);
       }
       ioFilter = new NioPlainEngine(getBufferPool(), getConduit().useDirectBuffers(), inputStream);
+      ((NioPlainEngine) ioFilter).setStatistics(conduit.getStats());
     }
   }
 
@@ -2726,7 +2731,6 @@ public class Connection implements Runnable {
       stats.incReceivedBytes(msg.getBytesRead());
       stats.incMessageChannelTime(msg.resetTimestamp());
       msg.process(dm, processor);
-      // dispatchMessage(msg, len, false);
     } catch (SocketTimeoutException timeout) {
       throw timeout;
     } catch (IOException e) {
@@ -2778,7 +2782,6 @@ public class Connection implements Runnable {
    */
   private void processInputBuffer() throws ConnectionException, IOException {
     inputBuffer.flip();
-
     ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
     peerDataBuffer.flip();
 
@@ -2789,7 +2792,7 @@ public class Connection implements Runnable {
       int remaining = peerDataBuffer.remaining();
       if (lengthSet || remaining >= MSG_HEADER_BYTES) {
         if (!lengthSet) {
-          if (readMessageHeader(peerDataBuffer)) {
+          if (!readMessageHeader(peerDataBuffer)) {
             break;
           }
         }
@@ -2807,7 +2810,6 @@ public class Connection implements Runnable {
             try {
               readMessage(peerDataBuffer);
             } catch (SerializationException e) {
-              logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
               throw e;
             }
           } else {
@@ -2945,6 +2947,10 @@ public class Connection implements Runnable {
     return false;
   }
 
+  /**
+   * read the header of the next message. returns true if the header was read, false if
+   * there was a problem
+   */
   private boolean readMessageHeader(ByteBuffer peerDataBuffer) throws IOException {
     int headerStartPos = peerDataBuffer.position();
     messageLength = peerDataBuffer.getInt();
@@ -2964,13 +2970,13 @@ public class Connection implements Runnable {
       readerShuttingDown = true;
       requestClose(String.format("Unknown P2P message type: %s",
           nioMessageTypeInteger));
-      return true;
+      return false;
     }
     lengthSet = true;
     // keep the header "in" the buffer until we have read the entire msg.
     // Trust me: this will reduce copying on large messages.
     peerDataBuffer.position(headerStartPos);
-    return false;
+    return true;
   }
 
   private void readMessage(ByteBuffer peerDataBuffer) {
@@ -3061,7 +3067,7 @@ public class Connection implements Runnable {
       } catch (IOException ex) {
         // ignored
       }
-    } else /* (nioMessageType == END_CHUNKED_MSG_TYPE) */ {
+    } else /* (messageType == END_CHUNKED_MSG_TYPE) */ {
       MsgDestreamer md = obtainMsgDestreamer(messageId, remoteVersion);
       owner.getConduit().getStats().incMessagesBeingReceived(md.size() == 0,
           messageLength);

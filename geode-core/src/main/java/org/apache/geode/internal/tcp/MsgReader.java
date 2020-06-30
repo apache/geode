@@ -52,19 +52,19 @@ public class MsgReader {
 
     Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
-    int nioMessageLength = unwrappedBuffer.getInt();
+    int messageLength = unwrappedBuffer.getInt();
     /* nioMessageVersion = */
-    Connection.calcHdrVersion(nioMessageLength);
-    nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
-    byte nioMessageType = unwrappedBuffer.get();
-    short nioMsgId = unwrappedBuffer.getShort();
+    Connection.calcHdrVersion(messageLength);
+    messageLength = Connection.calcMsgByteSize(messageLength);
+    byte messageType = unwrappedBuffer.get();
+    short messageId = unwrappedBuffer.getShort();
 
-    boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
+    boolean directAck = (messageType & Connection.DIRECT_ACK_BIT) != 0;
     if (directAck) {
-      nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+      messageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
     }
 
-    header.setFields(nioMessageLength, nioMessageType, nioMsgId);
+    header.setFields(messageLength, messageType, messageId);
 
     return header;
   }
@@ -76,18 +76,18 @@ public class MsgReader {
    */
   DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException {
-    ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
-    Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
+    ByteBuffer inputBuffer = readAtLeast(header.messageLength);
+    Assert.assertTrue(inputBuffer.remaining() >= header.messageLength);
     this.getStats().incMessagesBeingReceived(true, header.messageLength);
     long startSer = this.getStats().startMsgDeserialization();
     try {
-      byteBufferInputStream.setBuffer(nioInputBuffer);
+      byteBufferInputStream.setBuffer(inputBuffer);
       ReplyProcessor21.initMessageRPId();
       return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
     } finally {
       this.getStats().endMsgDeserialization(startSer);
       this.getStats().decMessagesBeingReceived(header.messageLength);
-      ioFilter.doneReadingDirectAck(nioInputBuffer);
+      ioFilter.doneReadingDirectAck(inputBuffer);
     }
   }
 

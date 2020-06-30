@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.Assert;
 
 /**
@@ -32,6 +33,7 @@ public class NioPlainEngine implements NioFilter {
   private final BufferPool bufferPool;
   private final boolean useDirectBuffers;
   private final InputStream inputStream;
+  private DMStats stats; // BRUCE: remove stat
 
   int lastReadPosition;
   int lastProcessedPosition;
@@ -42,6 +44,10 @@ public class NioPlainEngine implements NioFilter {
     this.bufferPool = bufferPool;
     this.useDirectBuffers = useDirectBuffers;
     this.inputStream = inputStream;
+  }
+
+  public void setStatistics(DMStats stats) { // BRUCE: remove stat
+    this.stats = stats;
   }
 
   @Override
@@ -101,6 +107,9 @@ public class NioPlainEngine implements NioFilter {
     buffer.position(lastReadPosition);
 
     while (buffer.position() < (lastProcessedPosition + bytes)) {
+      if (stats != null) { // BRUCE: remove stat
+        stats.incFinalCheckRequestsSent();
+      }
       int amountRead = SocketUtils.readFromSocket(socket, buffer, inputStream);
       if (amountRead < 0) {
         throw new EOFException();
@@ -117,15 +126,6 @@ public class NioPlainEngine implements NioFilter {
     lastProcessedPosition += bytes;
 
     return buffer;
-  }
-
-  public void doneReading(ByteBuffer unwrappedBuffer) {
-    if (unwrappedBuffer.position() != 0) {
-      unwrappedBuffer.compact();
-    } else {
-      unwrappedBuffer.position(unwrappedBuffer.limit());
-      unwrappedBuffer.limit(unwrappedBuffer.capacity());
-    }
   }
 
   @Override
