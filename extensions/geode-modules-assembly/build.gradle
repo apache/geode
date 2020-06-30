@@ -239,3 +239,7 @@ tasks.register('distTcServer30', Zip) {
 task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distAppServer'])
 
 build.dependsOn dist
+
+sonarqube {
+  skipProject = true
+}

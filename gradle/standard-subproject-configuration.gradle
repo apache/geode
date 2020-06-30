@@ -33,17 +33,4 @@ def thisProjectScoped = project
   }
 }
 
-thisProjectScoped.tasks.named('assemble').configure {
-  // This is a semi-lazy hook so that our test sources are compiled most of the time.
-  dependsOn(
-    [
-      thisProjectScoped.tasks.named('compileTestJava'),
-      thisProjectScoped.tasks.named('compileIntegrationTestJava'),
-      thisProjectScoped.tasks.named('compileDistributedTestJava'),
-      thisProjectScoped.tasks.named('compileAcceptanceTestJava'),
-      thisProjectScoped.tasks.named('compileUiTestJava'),
-      thisProjectScoped.tasks.named('compilePerformanceTestJava'),
-      thisProjectScoped.tasks.named('compileUpgradeTestJava'),
-    ]
-  )
-}
+

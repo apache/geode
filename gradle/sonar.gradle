@@ -29,27 +29,3 @@ sonarqube {
     property "sonar.projectDescription", "Apache Geode"
   }
 }
-
-project("extensions:geode-modules") {
-  sonarqube {
-    skipProject = true
-  }
-}
-
-project("extensions:geode-modules-assembly") {
-  sonarqube {
-    skipProject = true
-  }
-}
-
-project("extensions:geode-modules-session") {
-  sonarqube {
-    skipProject = true
-  }
-}
-
-project("extensions:geode-modules-tomcat7") {
-  sonarqube {
-    skipProject = true
-  }
-}
