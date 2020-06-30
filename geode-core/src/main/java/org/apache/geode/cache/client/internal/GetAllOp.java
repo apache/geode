@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.SerializationException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -74,23 +75,32 @@ public class GetAllOp {
       VersionedObjectList result = null;
       ServerConnectivityException se = null;
       List retryList = new ArrayList();
-      List callableTasks =
-          constructGetAllTasks(region.getFullPath(), serverToFilterMap, (PoolImpl) pool, callback);
-      Map<ServerLocation, Object> results =
-          SingleHopClientExecutor.submitGetAll(serverToFilterMap,
-              callableTasks, cms, (LocalRegion) region);
-      for (ServerLocation server : results.keySet()) {
-        Object serverResult = results.get(server);
-        if (serverResult instanceof ServerConnectivityException) {
-          se = (ServerConnectivityException) serverResult;
-          retryList.addAll(serverToFilterMap.get(server));
-        } else {
-          if (result == null) {
-            result = (VersionedObjectList) serverResult;
+      try {
+        List callableTasks =
+            constructGetAllTasks(region.getFullPath(), serverToFilterMap, (PoolImpl) pool,
+                callback);
+        Map<ServerLocation, Object> results =
+            SingleHopClientExecutor.submitGetAll(serverToFilterMap,
+                callableTasks, cms, (LocalRegion) region);
+        for (ServerLocation server : results.keySet()) {
+          Object serverResult = results.get(server);
+          if (serverResult instanceof ServerConnectivityException) {
+            se = (ServerConnectivityException) serverResult;
+            retryList.addAll(serverToFilterMap.get(server));
           } else {
-            result.addAll((VersionedObjectList) serverResult);
+            if (result == null) {
+              result = (VersionedObjectList) serverResult;
+            } else {
+              result.addAll((VersionedObjectList) serverResult);
+            }
           }
         }
+      } catch (ServerOperationException serverOperationException) {
+        if (!(serverOperationException.getCause() instanceof SerializationException)) {
+          throw serverOperationException;
+        }
+        se = serverOperationException;
+        retryList = keys;
       }
 
       if (se != null) {
