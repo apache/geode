@@ -14,8 +14,10 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -27,6 +29,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -66,7 +69,9 @@ public class GetAllOpJUnitTest {
         .thenReturn("/testRegion");
     VersionedObjectList vol = new VersionedObjectList();
     when(pool.execute(any())).thenReturn(vol);
-    GetAllOp.execute(pool, region, keys, -1, null);
+    VersionedObjectList result = GetAllOp.execute(pool, region, keys, -1, null);
+    assertThat(result.getKeys()).isEqualTo(keys);
+    Mockito.verify(pool, times(1)).execute(any());
   }
 
   @Test(expected = ServerOperationException.class)
@@ -76,7 +81,9 @@ public class GetAllOpJUnitTest {
         .thenReturn("/testRegion");
     VersionedObjectList vol = new VersionedObjectList();
     when(pool.execute(any())).thenReturn(vol);
-    GetAllOp.execute(pool, region, keys, -1, null);
+    VersionedObjectList result = GetAllOp.execute(pool, region, keys, -1, null);
+    assertThat(result).isNull();
+    Mockito.verify(pool, times(0)).execute(any());
   }
 
   @Test(expected = BucketMovedException.class)
@@ -86,7 +93,9 @@ public class GetAllOpJUnitTest {
         .thenReturn("/testRegion");
     VersionedObjectList vol = new VersionedObjectList();
     when(pool.execute(any())).thenReturn(vol);
-    GetAllOp.execute(pool, region, keys, -1, null);
+    VersionedObjectList result = GetAllOp.execute(pool, region, keys, -1, null);
+    assertThat(result).isNull();
+    Mockito.verify(pool, times(0)).execute(any());
   }
 
 }
