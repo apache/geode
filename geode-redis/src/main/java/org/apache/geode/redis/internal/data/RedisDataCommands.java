@@ -22,7 +22,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +37,6 @@ import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
-import org.apache.geode.redis.internal.netty.Coder;
 
 /**
  * Provides a method for every commands that can be done
@@ -83,15 +81,7 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> dodel(key));
-  }
-
-  private boolean dodel(ByteArrayWrapper key) {
-    RedisData redisData = getRedisData(key);
-    if (redisData == null) {
-      return false;
-    }
-    return region.remove(key) != null;
+    return stripedExecutor.execute(key, () -> region.remove(key) != null);
   }
 
   @Override
@@ -205,18 +195,7 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
   public long sadd(
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
-    return stripedExecutor.execute(key, () -> dosadd(key, membersToAdd));
-  }
-
-  private long dosadd(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd) {
-    RedisSet redisSet = checkSetType(getRedisData(key));
-
-    if (redisSet != null) {
-      return redisSet.sadd(membersToAdd, region, key);
-    } else {
-      region.create(key, new RedisSet(membersToAdd));
-      return membersToAdd.size();
-    }
+    return stripedExecutor.execute(key, () -> getRedisSet(key).sadd(membersToAdd, region, key));
   }
 
   @Override
@@ -406,17 +385,7 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    return stripedExecutor.execute(key, () -> dohset(key, fieldsToSet, NX));
-  }
-
-  private int dohset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    RedisHash hash = checkHashType(getRedisData(key));
-    if (hash != null) {
-      return hash.hset(region, key, fieldsToSet, NX);
-    } else {
-      region.put(key, new RedisHash(fieldsToSet));
-      return fieldsToSet.size() / 2;
-    }
+    return stripedExecutor.execute(key, () -> getRedisHash(key).hset(region, key, fieldsToSet, NX));
   }
 
   @Override
@@ -471,35 +440,14 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
-    return stripedExecutor.execute(key, () -> dohincrby(key, field, increment));
-  }
-
-  private long dohincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
-    RedisHash hash = checkHashType(getRedisData(key));
-    if (hash != null) {
-      return hash.hincrby(region, key, field, increment);
-    } else {
-      region.put(key,
-          new RedisHash(Arrays.asList(field, new ByteArrayWrapper(Coder.longToBytes(increment)))));
-      return increment;
-    }
+    return stripedExecutor.execute(key,
+        () -> getRedisHash(key).hincrby(region, key, field, increment));
   }
 
   @Override
   public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
-    return stripedExecutor.execute(key, () -> dohincrbyfloat(key, field, increment));
-  }
-
-  private double dohincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
-    RedisHash hash = checkHashType(getRedisData(key));
-    if (hash != null) {
-      return hash.hincrbyfloat(region, key, field, increment);
-    } else {
-      region.put(key,
-          new RedisHash(
-              Arrays.asList(field, new ByteArrayWrapper(Coder.doubleToBytes(increment)))));
-      return increment;
-    }
+    return stripedExecutor.execute(key,
+        () -> getRedisHash(key).hincrbyfloat(region, key, field, increment));
   }
 
   private RedisHash getRedisHash(ByteArrayWrapper key) {

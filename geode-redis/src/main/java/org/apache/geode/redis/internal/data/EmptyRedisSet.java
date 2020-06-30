@@ -62,7 +62,8 @@ class EmptyRedisSet extends RedisSet {
   @Override
   long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
       Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
-    throw new UnsupportedOperationException();
+    region.create(key, new RedisSet(membersToAdd));
+    return membersToAdd.size();
   }
 
   @Override
