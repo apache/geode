@@ -72,3 +72,6 @@ eclipse.classpath.file {
   }
 }
 
+sonarqube {
+  skipProject = true
+}
