@@ -536,7 +536,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       Object[] values = ((Object[]) res);
       // create another ObjectPartList for the Object[]
       ObjectPartList serializedValueObjs = new ObjectPartList(values.length, false);
-      for (int i = 0; i < values.length; i += 2) {
+      for (int i = 0; i < values.length - 1; i += 2) {
         Object key = values[i];
         Object value = values[i + 1];
         addObjectToPartList(serializedValueObjs, key, value, securityService);

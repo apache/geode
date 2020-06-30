@@ -518,7 +518,7 @@ public class AvailablePort {
       if (protocolString == null) {
         protocolString = args[i];
 
-      } else if (args[i].equals("addr")) {
+      } else if (args[i].equals("addr") && i < args.length - 1) {
         addrString = args[++i];
       } else if (portString == null) {
         portString = args[i];
